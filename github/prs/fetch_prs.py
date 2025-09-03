@@ -1,0 +1,13 @@
+from github_client import GithubClient
+import argparse
+
+
+def fetch_all_prs(months_back=1):
+    client = GithubClient()
+    client.fetch_prs(months_back=months_back)
+
+if __name__ == "__main__":
+    parser = argparse.ArgumentParser(description="Fetch Pull requests from the last N months.")
+    parser.add_argument("--months", type=int, default=1, help="Number of months back to fetch (default: 1)")
+    args = parser.parse_args()
+    fetch_all_prs(months_back=args.months)
