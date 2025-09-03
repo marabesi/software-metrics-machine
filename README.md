@@ -263,6 +263,7 @@ options:
 - Metrics
   - <https://github.com/adamtornhill/code-maat>
   - <https://pragprog.com/titles/atevol/software-design-x-rays/>
+  - <https://github.com/fouadh/gocan>
 - Platform
   - <https://python-poetry.org/>
   - <https://matplotlib.org/>
