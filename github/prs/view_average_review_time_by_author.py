@@ -45,19 +45,6 @@ if __name__ == "__main__":
     repo = LoadPrs()
     prs = getattr(repo, "all_prs", [])
 
-    def filter_prs_by_labels(prs: List[dict], labels: Iterable[str]) -> List[dict]:
-        """Return PRs that have at least one label in the provided labels set."""
-        labels_set = set(labels or [])
-        if not labels_set:
-            return prs
-        filtered = []
-        for pr in prs:
-            pr_labels = pr.get("labels") or []
-            names = {l.get("name") for l in pr_labels if isinstance(l, dict)}
-            if names & labels_set:
-                filtered.append(pr)
-        return filtered
-
     def average_open_time_by_author(prs: List[dict], top: int = 10) -> List[Tuple[str, float]]:
         """Compute average open time in days for merged PRs grouped by author.
 
@@ -93,7 +80,7 @@ if __name__ == "__main__":
 
     if args.labels:
         labels = [s.strip() for s in args.labels.split(",") if s.strip()]
-        prs = filter_prs_by_labels(prs, labels)
+        prs = repo.filter_prs_by_labels(prs, labels)
 
     print(f"Loaded {len(prs)} PRs after filtering")
 

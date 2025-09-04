@@ -40,24 +40,7 @@ if __name__ == "__main__":
     args = parser.parse_args()
 
     repo = LoadPrs()
-    prs = getattr(repo, "all_prs", [])
-
-    def filter_prs_by_labels(prs: List[dict], labels: Iterable[str]) -> List[dict]:
-        """Return PRs that have at least one label in the provided labels set.
-
-        labels: iterable of label names (case-sensitive by default, match exact name)
-        """
-        labels_set = set(labels or [])
-        if not labels_set:
-            return prs
-        filtered = []
-        for pr in prs:
-            pr_labels = pr.get("labels") or []
-            # PR labels are objects with 'name'
-            names = {l.get("name") for l in pr_labels if isinstance(l, dict)}
-            if names & labels_set:
-                filtered.append(pr)
-        return filtered
+    prs = repo.all_prs
 
     def top_authors(prs: List[dict], top: int = 10) -> List[Tuple[str, int]]:
         counts = Counter()
@@ -72,7 +55,7 @@ if __name__ == "__main__":
 
     if args.labels:
         labels = [s.strip() for s in args.labels.split(",") if s.strip()]
-        prs = filter_prs_by_labels(prs, labels)
+        prs = repo.filter_prs_by_labels(prs, labels)
 
     print(f"Loaded {len(prs)} PRs after filtering")
 

@@ -13,6 +13,11 @@
   --top="20" \
 	--out-file="dist/prs_by_authors.png" \
   && \
+./run-github.sh prs/view_average_review_time_by_author.py \
+  --labels="dependencies" \
+  --top="20" \
+	--out-file="dist/view_average_review_time_by_author.png" \
+  && \
 ./run-github.sh prs/view_average_of_prs_open_by_month.py \
 	  --labels="dependencies" \
 	  --out-file="dist" \

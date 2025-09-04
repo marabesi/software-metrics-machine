@@ -64,7 +64,7 @@ class LoadPrs(BaseRepository):
                 labels_list = [str(l).strip().lower() for l in labels]
 
         if labels_list:
-            all_prs = self.__filter_prs_by_labels(all_prs, labels_list)
+            all_prs = self.filter_prs_by_labels(all_prs, labels_list)
 
         print(f"Calculating average open days for {len(all_prs)} PRs")
         for pr in all_prs:
@@ -79,14 +79,13 @@ class LoadPrs(BaseRepository):
         avg_by_month = [sum(pr_months[m])/len(pr_months[m]) for m in months]
         return months, avg_by_month
 
-    def __filter_prs_by_labels(self, prs: List[dict], labels: Iterable[str]) -> List[dict]:
+    def filter_prs_by_labels(self, prs: List[dict], labels: Iterable[str]) -> List[dict]:
         labels_set = {l.lower() for l in (labels or [])}
         if not labels_set:
             return prs
         filtered: List[dict] = []
         for pr in prs:
             pr_labels = pr.get("labels") or []
-            # PR labels are objects with 'name'
             names = {(l.get("name") or "").lower() for l in pr_labels if isinstance(l, dict)}
             if names & labels_set:
                 filtered.append(pr)
