@@ -2,7 +2,7 @@ import argparse
 import matplotlib.pyplot as plt
 from collections import Counter
 
-from base_viewer import MatplotViewer
+from infrastructure.base_viewer import MatplotViewer
 from repository_workflows import LoadWorkflows
 
 class ViewWorkflowByStatus(MatplotViewer):

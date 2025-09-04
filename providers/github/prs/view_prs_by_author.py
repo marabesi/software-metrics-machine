@@ -1,6 +1,6 @@
 import matplotlib.pyplot as plt
 
-from base_viewer import MatplotViewer
+from infrastructure.base_viewer import MatplotViewer
 from prs.prs_repository import LoadPrs
 import argparse
 from collections import Counter

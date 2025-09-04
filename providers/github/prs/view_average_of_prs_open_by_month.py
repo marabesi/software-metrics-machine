@@ -1,8 +1,8 @@
 import argparse
 import matplotlib.pyplot as plt
 
-from configuration import Configuration
-from base_viewer import MatplotViewer
+from infrastructure.configuration import Configuration
+from infrastructure.base_viewer import MatplotViewer
 from prs.prs_repository import LoadPrs
 
 class ViewAverageOfPrsOpenByMonth(MatplotViewer):

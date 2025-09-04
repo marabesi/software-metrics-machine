@@ -43,7 +43,7 @@ This section provides the needed configuration to get started with Metrics machi
 ### Environment requirements
 
 - python 3.10+
-- poetry installed
+- poetry installed --no-root
 
 If you are on a mac, you can easily install them using the following commands:
 

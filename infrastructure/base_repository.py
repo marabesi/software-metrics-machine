@@ -1,4 +1,4 @@
-from configuration import Configuration
+from infrastructure.configuration import Configuration
 
 class BaseRepository:
 

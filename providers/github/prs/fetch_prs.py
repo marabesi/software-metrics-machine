@@ -1,5 +1,5 @@
 from github_client import GithubClient
-from configuration import Configuration
+from infrastructure.configuration import Configuration
 import argparse
 
 

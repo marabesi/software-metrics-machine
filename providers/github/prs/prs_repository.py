@@ -1,8 +1,8 @@
 import json
 from typing import List, Iterable
 from datetime import datetime, timezone
-from base_repository import BaseRepository
-from configuration import Configuration
+from infrastructure.base_repository import BaseRepository
+from infrastructure.configuration import Configuration
 
 class LoadPrs(BaseRepository):
     def __init__(self):

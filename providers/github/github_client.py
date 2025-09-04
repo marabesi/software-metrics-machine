@@ -6,7 +6,7 @@ import json
 from workflows.repository_workflows import LoadWorkflows
 from pathlib import Path
 from typing import Optional
-from configuration import Configuration
+from infrastructure.configuration import Configuration
 
 class GithubClient:
 

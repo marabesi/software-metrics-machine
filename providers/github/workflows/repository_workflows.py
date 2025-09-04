@@ -1,6 +1,6 @@
 import json
 from pathlib import Path
-from base_repository import BaseRepository
+from infrastructure.base_repository import BaseRepository
 
 class LoadWorkflows(BaseRepository):
 

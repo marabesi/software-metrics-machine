@@ -8,6 +8,8 @@
 	--start-date="2025-05-01" \
 	--end-date="2025-08-30" \
   && \
+
+# view
 ./run-github.sh prs/view_prs_by_author.py \
   --labels="dependencies" \
   --top="20" \
