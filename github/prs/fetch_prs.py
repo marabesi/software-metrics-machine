@@ -1,9 +1,10 @@
 from github_client import GithubClient
+from configuration import Configuration
 import argparse
 
 
 def fetch_all_prs(months_back=1):
-    client = GithubClient()
+    client = GithubClient(configuration=Configuration())
     client.fetch_prs(months_back=months_back)
 
 if __name__ == "__main__":

@@ -1,7 +1,8 @@
 import json
 from pathlib import Path
+from base_repository import BaseRepository
 
-class LoadWorkflows:
+class LoadWorkflows(BaseRepository):
 
     def __init__(self):
         self.all_runs = []

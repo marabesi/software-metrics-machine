@@ -1,8 +1,9 @@
+import argparse
 import matplotlib.pyplot as plt
 
+from configuration import Configuration
 from base_viewer import MatplotViewer
 from prs.prs_repository import LoadPrs
-import argparse
 from collections import defaultdict
 from typing import List, Tuple, Iterable
 from datetime import datetime

@@ -2,10 +2,11 @@ import json
 from typing import List, Iterable
 from datetime import datetime, timezone
 from base_repository import BaseRepository
+from configuration import Configuration
 
 class LoadPrs(BaseRepository):
     def __init__(self):
-        super().__init__()
+        super().__init__(configuration=Configuration())
         self.file = super().default_path_for("prs.json")
         self.all_prs = []
         self.all_prs = self.__load()

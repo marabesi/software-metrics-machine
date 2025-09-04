@@ -1,5 +1,4 @@
 import os
-import sys
 from datetime import datetime, timezone
 import pandas as pd
 import requests
@@ -7,26 +6,16 @@ import json
 from workflows.repository_workflows import LoadWorkflows
 from pathlib import Path
 from typing import Optional
+from configuration import Configuration
 
 class GithubClient:
 
-    def __init__(self):
-        self.token = os.getenv("GITHUB_TOKEN")
-        self.REPO = os.getenv("REPO")
+    def __init__(self, configuration: Configuration):
         self.HEADERS = {
-            "Authorization": f"token {self.token}",
+            "Authorization": f"token {configuration.github_token}",
             "Accept": "application/vnd.github+json",
         }
-
-        if not self.token:
-            print("❌  You must export GITHUB_TOKEN before running.")
-            sys.exit(1)
-
-        # format: owner/repo
-        if not self.REPO:
-            print("❌  Set REPO=owner/repo (e.g. octocat/Hello-World)")
-            sys.exit(1)
-
+        self.REPO = configuration.github_repository
         Path("data").mkdir(exist_ok=True)
 
     def fetch_prs(self, months_back=1, state='all', per_page=100, sort='created', direction='desc'):

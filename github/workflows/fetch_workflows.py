@@ -1,10 +1,11 @@
 import argparse
 from github_client import GithubClient
+from configuration import Configuration
 from workflows.repository_workflows import LoadWorkflows
 from datetime import datetime
 
 def fetch_all_workflow_runs(target_branch, with_jobs, start_date, end_date):
-    client = GithubClient()
+    client = GithubClient(configuration=Configuration())
     client.fetch_workflows(target_branch=target_branch, start_date=start_date, end_date=end_date)
     if with_jobs:
         client.fetch_jobs_for_workflows(LoadWorkflows())
