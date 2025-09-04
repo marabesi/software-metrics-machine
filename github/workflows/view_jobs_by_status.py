@@ -156,7 +156,7 @@ class ViewJobsByStatus(MatplotViewer):
 
         # right: delivery executions grouped by conclusion (day or week)
         if aggregate_by_week:
-            dates, conclusions, matrix = count_delivery_by_week(jobs, job_name=job_name)
+            dates, conclusions, matrix = self.count_delivery_by_week(jobs, job_name=job_name)
         else:
             dates, conclusions, matrix = self.count_delivery_by_day(jobs, job_name=job_name)
 
