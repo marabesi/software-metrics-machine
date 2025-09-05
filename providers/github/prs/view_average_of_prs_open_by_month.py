@@ -1,7 +1,6 @@
 import argparse
 import matplotlib.pyplot as plt
 
-from infrastructure.configuration import Configuration
 from infrastructure.base_viewer import MatplotViewer
 from prs.prs_repository import LoadPrs
 

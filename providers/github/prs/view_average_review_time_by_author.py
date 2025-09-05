@@ -5,7 +5,7 @@ from infrastructure.configuration import Configuration
 from infrastructure.base_viewer import MatplotViewer
 from prs.prs_repository import LoadPrs
 from collections import defaultdict
-from typing import List, Tuple, Iterable
+from typing import List, Tuple
 from datetime import datetime
 
 
