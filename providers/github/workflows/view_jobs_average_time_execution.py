@@ -18,7 +18,7 @@ class ViewJobsByStatus(MatplotViewer):
         return [p.strip().lower() for p in str(val).split(',') if p.strip()]
 
 
-    def main(self, workflow_name: str | None = None, out_file: str | None = None, _cli_filters: dict = {}, top: int = 20) -> None:
+    def main(self, workflow_name: str | None = None, out_file: str | None = None, _cli_filters: dict = {}, top: int = 20, exclude_jobs: str = None) -> None:
         """Compute average job execution time (completed_at - started_at) grouped by job name and plot top-N.
 
         Averages are shown in minutes.
@@ -41,8 +41,6 @@ class ViewJobsByStatus(MatplotViewer):
         run_ids = {r.get('id') for r in runs if r.get('id') is not None}
         jobs = [j for j in jobs if j.get('run_id') in run_ids]
 
-        print(f"Found {len(runs)} workflow runs and {len(jobs)} jobs after filtering")
-
         # optional filter by target branch (accepts comma-separated values)
         if target_vals := self._split_and_normalize(_cli_filters.get('target_branch')):
             allowed = set(target_vals)
@@ -55,6 +53,12 @@ class ViewJobsByStatus(MatplotViewer):
 
             runs = [r for r in runs if branch_matches(r)]
             jobs = [j for j in jobs if branch_matches(j)]
+
+        if exclude_jobs:
+            exclude = [s.strip() for s in exclude_jobs.split(",") if s.strip()]
+            jobs = workflows.filter_by_job_name(jobs, exclude)
+
+        print(f"Found {len(runs)} workflow runs and {len(jobs)} jobs after filtering")
 
         # aggregate durations by job name
         sums = defaultdict(float)
@@ -76,24 +80,6 @@ class ViewJobsByStatus(MatplotViewer):
                 continue
             sums[name] += secs
             counts[name] += 1
-
-        # prepare status summary (useful if plotting pipeline summary)
-        status_counts = Counter(r.get('conclusion') or 'None' for r in runs)
-
-        if not counts:
-            print('No completed jobs with timestamps to compute averages')
-            # show only workflow status summary
-            fig, ax = plt.subplots(1, 1, figsize=(8, 5))
-            bars = ax.bar(list(status_counts.keys()), list(status_counts.values()), color='skyblue')
-            ax.set_title('Status of Workflows')
-            ax.set_xlabel('Status')
-            ax.set_ylabel('Count')
-            for bar in bars:
-                h = bar.get_height()
-                ax.annotate(f'{int(h)}', xy=(bar.get_x() + bar.get_width() / 2, h), xytext=(0, 3), textcoords='offset points', ha='center', va='bottom')
-            fig.tight_layout()
-            super().output(plt, fig, out_file)
-            return
 
         averages = [(name, (sums[name] / counts[name]) / 60.0) for name in counts.keys()]  # minutes
         # sort by average descending (longest first)
@@ -123,7 +109,8 @@ if __name__ == '__main__':
     parser.add_argument('--out-file', '-o', type=str, default=None, help='Optional path to save the plot image')
     parser.add_argument('--top', type=int, default=20, help='How many top job names to show')
     parser.add_argument('--event', dest='event', type=str, default=None, help='Filter runs by event (comma-separated e.g. push,pull_request,schedule)')
-    parser.add_argument('--target-branch', dest='target_branch', type=str, default=None, help='Filter runs/jobs by target branch name (comma-separated)')
+    parser.add_argument('--target-branch', dest='target_branch', type=str, default=None, help='Filter jobs by target branch name (comma-separated)')
+    parser.add_argument('--exclude-jobs', dest='exclude_jobs', type=str, default=None, help='Removes jobs that contain the name from the chart (comma-separated)')
     args = parser.parse_args()
 
     _cli_filters = {'event': args.event, 'target_branch': args.target_branch}
@@ -133,4 +120,5 @@ if __name__ == '__main__':
         out_file=args.out_file,
         _cli_filters=_cli_filters,
         top=args.top,
+        exclude_jobs=args.exclude_jobs
     )
