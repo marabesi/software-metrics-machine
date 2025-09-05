@@ -9,7 +9,7 @@
 	--end-date="2025-08-30" \
   && \
 
-# view
+# view prs
 ./run-github.sh prs/view_prs_by_author.py \
   --labels="dependencies" \
   --top="20" \
@@ -25,9 +25,16 @@
 	  --out-file="dist" \
 	  --out-file="dist/average_open_prs.png" \
 && \
+
+# view pipelines
 ./run-github.sh workflows/view_workflow_by_status.py \
   --workflow-name="Node CI" \
   --out-file="dist/pipeline_by_status.png" \
+&& \
+./run-github.sh workflows/view_jobs_average_time_execution.py \
+  --workflow-name="Node CI" \
+  --exclude-jobs="setup" \
+  --out-file="dist/view_jobs_average_time_execution.png" \
 && \
 ./run-github.sh workflows/view_jobs_by_status.py \
   --workflow-name="Node CI" \
