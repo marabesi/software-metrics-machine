@@ -11,7 +11,7 @@ from datetime import datetime
 
 class ViewAverageReviewTimeByAuthor(MatplotViewer):
 
-    def plot_average_open_time(self, pairs: List[Tuple[str, float]], title: str = "Average PR open time by author", out_file: str | None = None) -> None:
+    def plot_average_open_time(self, pairs: List[Tuple[str, float]], title: str = "Average PR open time until merged by author", out_file: str | None = None) -> None:
         """pairs: list of (author, avg_days)"""
         if not pairs:
             print("No merged PRs to plot")
