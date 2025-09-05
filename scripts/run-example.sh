@@ -1,13 +1,23 @@
 #!/bin/bash
 
+
+## FETCH REPOSITORY BASED DATA
+
+./fetch-codemaat.sh
+
+## FETCH GITHUB BASED DATA
+
 # fetch
 ./run-github.sh prs/fetch_prs.py --months="4"
+
 ./run-github.sh workflows/fetch_workflows.py \
 	--target-branch="main" \
 	--with-jobs="true" \
 	--start-date="2025-05-01" \
 	--end-date="2025-08-30" \
   && \
+
+## PLOTS
 
 # view prs
 ./run-github.sh prs/view_prs_by_author.py \

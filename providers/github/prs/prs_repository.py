@@ -7,16 +7,20 @@ from infrastructure.configuration import Configuration
 class LoadPrs(BaseRepository):
     def __init__(self):
         super().__init__(configuration=Configuration())
-        self.file = super().default_path_for("prs.json")
+        self.file = "prs.json"
         self.all_prs = []
         self.all_prs = self.__load()
 
     def __load(self):
         all_prs = []
         print(f"Loading PRs")
+        contents = super().read_file_if_exists(self.file)
 
-        with open(self.file, 'r') as f:
-            all_prs = json.load(f)
+        if contents is None:
+            print(f"No PRs file found at {self.file}. Please run fetch_prs first.")
+            return all_prs
+
+        all_prs = json.loads(contents)
 
         print(f"Loaded {len(all_prs)} PRs")
         print("Load complete.")

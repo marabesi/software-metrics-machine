@@ -1,9 +1,29 @@
 from infrastructure.configuration import Configuration
+import json
+from typing import Optional
+from pathlib import Path
 
 class BaseRepository:
 
-  def __init__(self, configuration: Configuration):
-    self.default_dir = configuration.store_data
+    def __init__(self, configuration: Configuration):
+      self.default_dir = configuration.store_data
 
-  def default_path_for(self, filename: str) -> str:
-    return "{}/{}".format(self.default_dir, filename)
+    def default_path_for(self, filename: str) -> str:
+      final_path = self.default_dir + "/" + filename
+      p = Path(final_path)
+      print(f"Using data directory: {p.absolute()}")
+      return p.absolute()
+
+    def read_file_if_exists(self, filename: str) -> Optional[str]:
+        final_path = self.default_dir + "/" + filename
+        p = Path(final_path)
+        if p.is_file():
+            return p.read_text(encoding="utf-8")
+        return None
+
+    def store_file(self, file: str, data: str) -> None:
+        final_path = self.default_dir + "/" + file
+
+        with open(final_path, "w") as f:
+            json.dump(data, f, indent=2)
+        print(f"  → Data written to {final_path}")

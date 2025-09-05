@@ -8,6 +8,8 @@ class Configuration:
       self.github_repository = os.getenv("REPO")
       self.store_data = os.getenv("STORE_DATA_AT", "data")
 
+      print(f"Configuration: git_provider={self.git_provider} repository={self.github_repository} store_data={self.store_data}")
+
       if self.git_provider.lower() == "github":
         if not self.github_token:
             print("❌  You must export GITHUB_TOKEN before running.")
