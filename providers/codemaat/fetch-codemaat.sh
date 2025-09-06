@@ -55,29 +55,37 @@ echo "Git log extracted to $store_data/$git_log_file"
 echo "Running CodeMaat analyses... this may take a while depending on the size of the repository."
 
 echo "Running age data extraction ..."
-java -jar $codemaat -l "$store_data/$git_log_file" -c git -a age > "$store_data/age.csv"
-echo "Done."
 
-echo "Running abs-churn data extraction ..."
-java -jar $codemaat -l "$store_data/$git_log_file" -c git -a abs-churn > "$store_data/abs-churn.csv"
-echo "Done."
+# ensure codemaat jar exists
+if [ ! -f "$codemaat" ]; then
+  echo "❌ CodeMaat jar not found at $codemaat. Please ensure the file exists."
+  exit 1
+fi
 
-echo "Running author-churn data extraction ..."
-java -jar $codemaat -l "$store_data/$git_log_file" -c git -a author-churn > "$store_data/author-churn.csv"
-echo "Done."
+# helper to run codemaat action and skip if output exists
+run_codemaat() {
+  local action="$1"
+  local out="$2"
+  local outpath="$store_data/$out"
+  if [ -f "$outpath" ] && [ -s "$outpath" ]; then
+    echo "Skipping $action: output already exists at $outpath"
+    return
+  fi
+  echo "Running $action data extraction ..."
+  java -jar "$codemaat" -l "$store_data/$git_log_file" -c git -a "$action" > "$outpath"
+  echo "Done."
+}
 
-echo "Running entity-ownership data extraction ..."
-java -jar $codemaat -l "$store_data/$git_log_file" -c git -a entity-ownership > "$store_data/entity-ownership.csv"
-echo "Done."
+run_codemaat age age.csv
 
-echo "Running entity-effort data extraction ..."
-java -jar $codemaat -l "$store_data/$git_log_file" -c git -a entity-effort > "$store_data/entity-effort.csv"
-echo "Done."
+run_codemaat abs-churn abs-churn.csv
 
-echo "Running entity-churn data extraction ..."
-java -jar $codemaat -l "$store_data/$git_log_file" -c git -a entity-churn > "$store_data/entity-churn.csv"
-echo "Done."
+run_codemaat author-churn author-churn.csv
 
-echo "Running coupling data extraction ..."
-java -jar $codemaat -l "$store_data/$git_log_file" -c git -a coupling > "$store_data/coupling.csv"
-echo "Done."
+run_codemaat entity-ownership entity-ownership.csv
+
+run_codemaat entity-effort entity-effort.csv
+
+run_codemaat entity-churn entity-churn.csv
+
+run_codemaat coupling coupling.csv

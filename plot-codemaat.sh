@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # FETCH GIT BASED DATA
-./providers/codemaat/fetch-codemaat.sh 2020-01-01
+./providers/codemaat/fetch-codemaat.sh 2025-05-01
 
 # view
 ./run-codemaat.sh code-churn.py \

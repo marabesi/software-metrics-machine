@@ -2,9 +2,10 @@ import argparse
 import matplotlib.pyplot as plt
 
 from infrastructure.base_viewer import MatplotViewer
+from infrastructure.viewable import Viewable
 from codemaat_repository import CodemaatRepository
 
-class CodeChurnViewer(MatplotViewer):
+class CodeChurnViewer(MatplotViewer, Viewable):
     def render(self, repository: CodemaatRepository, out_file: str | None = None) -> None:
         df = repository.get_code_churn()
 
