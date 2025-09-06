@@ -2,6 +2,32 @@
 
 git_directory=$GIT_REPOSITORY_LOCATION
 store_data="$STORE_DATA_AT"
+
+# parse options: support --force; remaining args are start_date and optional sub_folder
+force=false
+POSITIONAL=()
+while [[ $# -gt 0 ]]; do
+  case "$1" in
+    --force)
+      force=true
+      shift
+      ;;
+    --)
+      shift
+      break
+      ;;
+    -*)
+      echo "Unknown option: $1"
+      exit 1
+      ;;
+    *)
+      POSITIONAL+=("$1")
+      shift
+      ;;
+  esac
+done
+set -- "${POSITIONAL[@]}"
+
 start_date=$1
 sub_folder=$2
 
@@ -67,9 +93,13 @@ run_codemaat() {
   local action="$1"
   local out="$2"
   local outpath="$store_data/$out"
-  if [ -f "$outpath" ] && [ -s "$outpath" ]; then
-    echo "Skipping $action: output already exists at $outpath"
-    return
+  if [ "$force" = false ]; then
+    if [ -f "$outpath" ] && [ -s "$outpath" ]; then
+      echo "Skipping $action: output already exists at $outpath"
+      return
+    fi
+  else
+    echo "Force mode: regenerating $outpath"
   fi
   echo "Running $action data extraction ..."
   java -jar "$codemaat" -l "$store_data/$git_log_file" -c git -a "$action" > "$outpath"
