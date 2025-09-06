@@ -45,6 +45,8 @@ This section provides the needed configuration to get started with Metrics machi
 * python 3.10+
 * poetry installed --no-root
 
+### MacOs
+
 If you are on a mac, you can easily install them using the following commands:
 
 ```bash
@@ -68,10 +70,34 @@ Python 3.11.0
 
 ## Providers
 
-* If your are using [GitHub/Github actions](providers/github/README.md)
-* If your are using [GitLab](providers/gitlab/README.md)
+This project is built based on a provider model, where each provider is responsible to extract data from a specific source. This is because depending on the desired metric, it might come from a difference source. For example, there are metrics extractd about coupling that are from the git log. Other metrics such as pipeline execution and pull request open days average comes from GitHub API (or other providers).
+
+### Git
+
+[Git](providers/codemaat/README.md) is the only common provider, as it is used to extract code churn and hotspots. Which
+means, it can be used regardless of the vendor. The following metrics are supported:
+
+* Code churn
+* Hotspots
+* Age of code
+* Authors per file
+
+### Github
+
+If your are using [GitHub/Github actions](providers/github/README.md), the following metrics are supported:
+
+* Pull requests open days average
+* Pipeline success rate
+* Pipeline average time to complete
+
+### GitLab
+
+* If your are using [GitLab](providers/gitlab/README.md), this is a placeholder for future work.
 
 ## References
+
+This project uses other tools to extract the metrics, and is inspired by other works in the field of software metrics.
+Here are some references:
 
 * Metrics
   * <https://github.com/adamtornhill/code-maat>

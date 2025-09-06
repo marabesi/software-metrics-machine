@@ -67,6 +67,13 @@ The docs described in this section are tailored to a hands-on approach, it is re
 
 ## Pull requests
 
+Before diving into the different visualizations, let' go throug the assessment of the data fetched. It is a previous step to understand the data and its quality. It will help to understand the data and its limitations and verify that the fetched
+data fulfilled the parameters set during the fetching step.
+
+```bash
+./run-github.sh prs/view_prs_summary.py
+```
+
 ### Pull requests - Average open by month
 
 ```bash
