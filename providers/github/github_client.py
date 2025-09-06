@@ -16,9 +16,13 @@ class GithubClient:
         self.REPO = configuration.github_repository
         self.pr_repository = LoadPrs()
 
-    def fetch_prs(self, months_back=1, state='all', per_page=100, sort='created', direction='desc'):
+    def fetch_prs(self, months_back=1, force=None):
         """Pulls all pull requests (open+closed) via pagination, stopping when PRs are older than `months_back` months."""
         pr_json_path = "prs.json"
+
+        if force:
+            print(f"Force re-fetching PRs even if already fetched")
+            self.pr_repository.remove_file(pr_json_path)
 
         contents = self.pr_repository.read_file_if_exists(pr_json_path)
         if contents is not None:

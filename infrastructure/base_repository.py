@@ -27,3 +27,10 @@ class BaseRepository:
         with open(final_path, "w") as f:
             json.dump(data, f, indent=2)
         print(f"  → Data written to {final_path}")
+
+    def remove_file(self, filename: str) -> Optional[str]:
+        final_path = self.default_dir + "/" + filename
+        p = Path(final_path)
+        if p.is_file():
+            return p.unlink()
+        return None
