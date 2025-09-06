@@ -8,4 +8,7 @@
   --out-file="dist/code_churn.png" \
 && \
 ./run-codemaat.sh coupling.py \
-  --out-file="dist/code_coupling.png"
+  --out-file="dist/code_coupling.png" \
+&& \
+./run-codemaat.sh entity_churn.py \
+  --out-file="dist/code_entity_churn.png"
