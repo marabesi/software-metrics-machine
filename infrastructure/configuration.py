@@ -1,6 +1,7 @@
 import os
 import sys
 
+
 class Configuration:
     def __init__(self):
         self.git_provider = "github"
@@ -9,7 +10,9 @@ class Configuration:
         self.store_data = os.getenv("STORE_DATA_AT")
         self.git_repository_location = os.getenv("GIT_REPOSITORY_LOCATION")
 
-        print(f"Configuration: git_provider={self.git_provider} repository={self.github_repository} store_data={self.store_data}")
+        print(
+            f"Configuration: {self.git_provider} repository={self.github_repository} store_data={self.store_data}"
+        )
 
         if not self.git_repository_location:
             print("❌  You must export GIT_REPOSITORY_LOCATION before running.")

@@ -4,16 +4,17 @@ from pathlib import Path
 from infrastructure.configuration import Configuration
 import json
 
+
 class BaseRepository:
 
     def __init__(self, configuration: Configuration):
-      self.default_dir = configuration.store_data
+        self.default_dir = configuration.store_data
 
     def default_path_for(self, filename: str) -> str:
-      final_path = self.default_dir + "/" + filename
-      p = Path(final_path)
-      print(f"Using data directory: {p.absolute()}")
-      return p.absolute()
+        final_path = self.default_dir + "/" + filename
+        p = Path(final_path)
+        print(f"Using data directory: {p.absolute()}")
+        return p.absolute()
 
     def read_file_if_exists(self, filename: str) -> Optional[str]:
         final_path = self.default_dir + "/" + filename
@@ -37,8 +38,8 @@ class BaseRepository:
         return None
 
     def created_at_key_sort(self, collection):
-            created = collection.get("created_at")
-            if created:
-                return datetime.fromisoformat(created.replace("Z", "+00:00"))
-            else:
-                return datetime.min.replace(tzinfo=timezone.utc)
+        created = collection.get("created_at")
+        if created:
+            return datetime.fromisoformat(created.replace("Z", "+00:00"))
+        else:
+            return datetime.min.replace(tzinfo=timezone.utc)

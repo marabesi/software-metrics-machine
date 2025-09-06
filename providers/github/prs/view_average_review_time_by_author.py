@@ -1,7 +1,6 @@
 import argparse
 import matplotlib.pyplot as plt
 
-from infrastructure.configuration import Configuration
 from infrastructure.base_viewer import MatplotViewer
 from prs.prs_repository import LoadPrs
 from collections import defaultdict
@@ -11,7 +10,12 @@ from datetime import datetime
 
 class ViewAverageReviewTimeByAuthor(MatplotViewer):
 
-    def plot_average_open_time(self, pairs: List[Tuple[str, float]], title: str = "Average PR open time until merged by author", out_file: str | None = None) -> None:
+    def plot_average_open_time(
+        self,
+        pairs: List[Tuple[str, float]],
+        title: str = "Average PR open time until merged by author",
+        out_file: str | None = None,
+    ) -> None:
         """pairs: list of (author, avg_days)"""
         if not pairs:
             print("No merged PRs to plot")
@@ -36,16 +40,31 @@ class ViewAverageReviewTimeByAuthor(MatplotViewer):
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Plot average PR open time by author")
-    parser.add_argument("--top", type=int, default=10, help="How many top authors to show")
-    parser.add_argument("--labels", "-l", type=str, default=None,
-                        help="Comma-separated list of label names to filter PRs by (e.g. bug,enhancement)")
-    parser.add_argument("--out-file", "-o", type=str, default=None, help="Optional path to save the plot image")
+    parser.add_argument(
+        "--top", type=int, default=10, help="How many top authors to show"
+    )
+    parser.add_argument(
+        "--labels",
+        "-l",
+        type=str,
+        default=None,
+        help="Comma-separated list of label names to filter PRs by (e.g. bug,enhancement)",
+    )
+    parser.add_argument(
+        "--out-file",
+        "-o",
+        type=str,
+        default=None,
+        help="Optional path to save the plot image",
+    )
     args = parser.parse_args()
 
     repo = LoadPrs()
     prs = getattr(repo, "all_prs", [])
 
-    def average_open_time_by_author(prs: List[dict], top: int = 10) -> List[Tuple[str, float]]:
+    def average_open_time_by_author(
+        prs: List[dict], top: int = 10
+    ) -> List[Tuple[str, float]]:
         """Compute average open time in days for merged PRs grouped by author.
 
         Returns top authors sorted by average descending.
@@ -85,4 +104,6 @@ if __name__ == "__main__":
     print(f"Loaded {len(prs)} PRs after filtering")
 
     top = average_open_time_by_author(prs, top=args.top)
-    ViewAverageReviewTimeByAuthor().plot_average_open_time(top, title=f"Top {len(top)} PR authors by avg open time", out_file=args.out_file)
+    ViewAverageReviewTimeByAuthor().plot_average_open_time(
+        top, title=f"Top {len(top)} PR authors by avg open time", out_file=args.out_file
+    )

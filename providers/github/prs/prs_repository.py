@@ -4,6 +4,7 @@ from datetime import datetime, timezone
 from infrastructure.base_repository import BaseRepository
 from infrastructure.configuration import Configuration
 
+
 class LoadPrs(BaseRepository):
     def __init__(self):
         super().__init__(configuration=Configuration())
@@ -13,7 +14,7 @@ class LoadPrs(BaseRepository):
 
     def __load(self):
         all_prs = []
-        print(f"Loading PRs")
+        print("Loading PRs")
         contents = super().read_file_if_exists(self.file)
 
         if contents is None:
@@ -24,7 +25,7 @@ class LoadPrs(BaseRepository):
 
         print(f"Loaded {len(all_prs)} PRs")
         print("Load complete.")
- 
+
         all_prs.sort(key=super().created_at_key_sort)
 
         return all_prs
@@ -33,7 +34,11 @@ class LoadPrs(BaseRepository):
         return [pr for pr in self.all_prs if pr.get("merged_at") is not None]
 
     def closed(self):
-        return [pr for pr in self.all_prs if pr.get("closed_at") is not None and pr.get("merged_at") is None]
+        return [
+            pr
+            for pr in self.all_prs
+            if pr.get("closed_at") is not None and pr.get("merged_at") is None
+        ]
 
     def __pr_open_days(self, pr):
         """Return how many days the PR was open until merged."""
@@ -48,7 +53,9 @@ class LoadPrs(BaseRepository):
 
         return (closed - created).days
 
-    def average_by_month(self, author: str | None = None, labels: Iterable[str] | str | None = None):
+    def average_by_month(
+        self, author: str | None = None, labels: Iterable[str] | str | None = None
+    ):
         """Calculate average open days grouped by month.
 
         labels may be None, a list/iterable of label names, or a comma-separated string.
@@ -62,9 +69,11 @@ class LoadPrs(BaseRepository):
         labels_list: List[str] = []
         if labels:
             if isinstance(labels, str):
-                labels_list = [l.strip().lower() for l in labels.split(",") if l.strip()]
+                labels_list = [
+                    label.strip().lower() for label in labels.split(",") if label.strip()
+                ]
             else:
-                labels_list = [str(l).strip().lower() for l in labels]
+                labels_list = [str(label).strip().lower() for label in labels]
 
         if labels_list:
             all_prs = self.filter_prs_by_labels(all_prs, labels_list)
@@ -79,17 +88,21 @@ class LoadPrs(BaseRepository):
             pr_months.setdefault(month_key, []).append(days)
 
         months = sorted(pr_months.keys())
-        avg_by_month = [sum(pr_months[m])/len(pr_months[m]) for m in months]
+        avg_by_month = [sum(pr_months[m]) / len(pr_months[m]) for m in months]
         return months, avg_by_month
 
-    def filter_prs_by_labels(self, prs: List[dict], labels: Iterable[str]) -> List[dict]:
-        labels_set = {l.lower() for l in (labels or [])}
+    def filter_prs_by_labels(
+        self, prs: List[dict], labels: Iterable[str]
+    ) -> List[dict]:
+        labels_set = {label.lower() for label in (labels or [])}
         if not labels_set:
             return prs
         filtered: List[dict] = []
         for pr in prs:
             pr_labels = pr.get("labels") or []
-            names = {(l.get("name") or "").lower() for l in pr_labels if isinstance(l, dict)}
+            names = {
+                (label.get("name") or "").lower() for label in pr_labels if isinstance(label, dict)
+            }
             if names & labels_set:
                 filtered.append(pr)
         return filtered

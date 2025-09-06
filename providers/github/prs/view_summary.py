@@ -11,14 +11,16 @@ def summarize_prs(prs: List[dict]) -> dict:
     summary["total_prs"] = total
 
     if total == 0:
-        summary.update({
-            "first_pr": None,
-            "last_pr": None,
-            "closed_prs": 0,
-            "merged_prs": 0,
-            "without_conclusion": 0,
-            "unique_authors": 0,
-        })
+        summary.update(
+            {
+                "first_pr": None,
+                "last_pr": None,
+                "closed_prs": 0,
+                "merged_prs": 0,
+                "without_conclusion": 0,
+                "unique_authors": 0,
+            }
+        )
         return summary
 
     # first and last based on the loaded order
@@ -50,6 +52,7 @@ def summarize_prs(prs: List[dict]) -> dict:
 
     summary["unique_authors"] = len(authors)
     return summary
+
 
 def brief_pr(pr: dict) -> str:
     if not pr:
@@ -93,12 +96,20 @@ def print_summary(summary: dict) -> None:
     print(f"  PRs without conclusion (open): {summary['without_conclusion']}")
     print(f"  Unique authors: {summary['unique_authors']}")
 
-    first_created = summary['first_pr'].get('created_at') if summary.get('first_pr') else None
-    last_created = summary['last_pr'].get('created_at') if summary.get('last_pr') else None
+    first_created = (
+        summary["first_pr"].get("created_at") if summary.get("first_pr") else None
+    )
+    last_created = (
+        summary["last_pr"].get("created_at") if summary.get("last_pr") else None
+    )
     if first_created and last_created:
         try:
-            dt_first = datetime.fromisoformat(first_created.replace('Z', '+00:00')).astimezone(timezone.utc)
-            dt_last = datetime.fromisoformat(last_created.replace('Z', '+00:00')).astimezone(timezone.utc)
+            dt_first = datetime.fromisoformat(
+                first_created.replace("Z", "+00:00")
+            ).astimezone(timezone.utc)
+            dt_last = datetime.fromisoformat(
+                last_created.replace("Z", "+00:00")
+            ).astimezone(timezone.utc)
             # ensure dt_first <= dt_last
             if dt_first > dt_last:
                 dt_first, dt_last = dt_last, dt_first
@@ -116,9 +127,20 @@ def print_summary(summary: dict) -> None:
                 new_year = dt.year + total_month // 12
                 new_month = (total_month % 12) + 1
                 new_day = min(dt.day, _last_day_of_month(new_year, new_month))
-                return datetime(new_year, new_month, new_day, dt.hour, dt.minute, dt.second, dt.microsecond, tzinfo=timezone.utc)
+                return datetime(
+                    new_year,
+                    new_month,
+                    new_day,
+                    dt.hour,
+                    dt.minute,
+                    dt.second,
+                    dt.microsecond,
+                    tzinfo=timezone.utc,
+                )
 
-            months = (dt_last.year - dt_first.year) * 12 + (dt_last.month - dt_first.month)
+            months = (dt_last.year - dt_first.year) * 12 + (
+                dt_last.month - dt_first.month
+            )
             # adjust if adding months overshoots
             candidate = _add_months(dt_first, months)
             while candidate > dt_last and months > 0:
@@ -129,7 +151,9 @@ def print_summary(summary: dict) -> None:
             days = remainder.days
             hours = remainder.seconds // 3600
             minutes = (remainder.seconds % 3600) // 60
-            print(f"  Timespan between first and last PR: {months} months, {days} days, {hours} hours, {minutes} minutes")
+            print(
+                f"  Timespan between first and last PR: {months} months, {days} days, {hours} hours, {minutes} minutes"
+            )
         except Exception:
             print("  Timespan: unknown (could not parse created_at timestamps)")
     else:

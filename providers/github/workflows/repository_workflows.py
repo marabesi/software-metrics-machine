@@ -3,6 +3,7 @@ from typing import List, Iterable
 from infrastructure.base_repository import BaseRepository
 from infrastructure.configuration import Configuration
 
+
 class LoadWorkflows(BaseRepository):
 
     def __init__(self):
@@ -12,11 +13,13 @@ class LoadWorkflows(BaseRepository):
         self.all_runs = []
         self.all_jobs = []
 
-        print(f"Loading runs")
+        print("Loading runs")
 
         contents = super().read_file_if_exists(self.pipeline_file)
         if contents is None:
-            print(f"No workflow file found at {self.pipeline_file}. Please fetch it first.")
+            print(
+                f"No workflow file found at {self.pipeline_file}. Please fetch it first."
+            )
             return self.all_runs
 
         self.all_runs = json.loads(contents)
@@ -29,14 +32,14 @@ class LoadWorkflows(BaseRepository):
 
     def runs(self):
         return self.all_runs
-    
+
     def jobs(self):
         return self.all_jobs
 
     def __load_jobs(self):
         contents = super().read_file_if_exists(self.jobs_file)
         if contents is None:
-            print(f"No jobs file found at jobs.json. Please fetch it first.")
+            print("No jobs file found at jobs.json. Please fetch it first.")
             return
 
         self.all_jobs = []
@@ -45,13 +48,15 @@ class LoadWorkflows(BaseRepository):
         print(f"Loaded {len(self.all_jobs)} jobs")
         print("Load complete.")
 
-    def filter_by_job_name(self, jobs: List[dict], job_name: Iterable[str]) -> List[dict]:
+    def filter_by_job_name(
+        self, jobs: List[dict], job_name: Iterable[str]
+    ) -> List[dict]:
         """Return jobs excluding any whose name matches one of the provided job_name values.
 
         Matching is case-insensitive and uses substring matching: if any provided token
         appears in the job's name, that job is excluded.
         """
-        job_name_set = {str(l).strip().lower() for l in (job_name or []) if l}
+        job_name_set = {str(job).strip().lower() for job in (job_name or []) if job}
         if not job_name_set:
             return jobs
 

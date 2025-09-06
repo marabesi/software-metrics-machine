@@ -6,6 +6,7 @@ from datetime import datetime
 from infrastructure.base_viewer import MatplotViewer
 from repository_workflows import LoadWorkflows
 
+
 class ViewJobsByStatus(MatplotViewer):
 
     def _split_and_normalize(self, val: str):
@@ -14,8 +15,7 @@ class ViewJobsByStatus(MatplotViewer):
             return None
         if isinstance(val, (list, tuple)):
             return [str(v).strip().lower() for v in val if v]
-        return [p.strip().lower() for p in str(val).split(',') if p.strip()]
-
+        return [p.strip().lower() for p in str(val).split(",") if p.strip()]
 
     def count_delivery_by_day(self, jobs, job_name: str):
         """Return (dates, conclusions, matrix) grouping delivery job executions by day and conclusion.
@@ -66,7 +66,6 @@ class ViewJobsByStatus(MatplotViewer):
 
         return dates, ordered, matrix
 
-
     def count_delivery_by_week(self, jobs, job_name: str):
         """Return (weeks, conclusions, matrix) grouping job executions by ISO week and conclusion.
 
@@ -115,8 +114,15 @@ class ViewJobsByStatus(MatplotViewer):
 
         return weeks, ordered, matrix
 
-
-    def main(self, job_name: str, workflow_name: str | None = None, out_file: str | None = None, with_pipeline: bool = False, aggregate_by_week: bool = False, _cli_filters: dict = {}) -> None:
+    def main(
+        self,
+        job_name: str,
+        workflow_name: str | None = None,
+        out_file: str | None = None,
+        with_pipeline: bool = False,
+        aggregate_by_week: bool = False,
+        _cli_filters: dict = {},
+    ) -> None:
         workflows = LoadWorkflows()
         runs = workflows.runs()
         jobs = workflows.jobs()
@@ -124,26 +130,33 @@ class ViewJobsByStatus(MatplotViewer):
         # optional filter by workflow name (case-insensitive substring match)
         if workflow_name:
             wf_low = workflow_name.lower()
-            runs = [r for r in runs if (r.get('name') or '').lower().find(wf_low) != -1]
+            runs = [r for r in runs if (r.get("name") or "").lower().find(wf_low) != -1]
 
         # optional filter by event (e.g. push, pull_request) - accepts comma-separated or single value
-        if event_vals := self._split_and_normalize(_cli_filters.get('event')):
+        if event_vals := self._split_and_normalize(_cli_filters.get("event")):
             allowed = set(event_vals)
-            runs = [r for r in runs if (r.get('event') or '').lower() in allowed]
+            runs = [r for r in runs if (r.get("event") or "").lower() in allowed]
 
         # restrict jobs to only those belonging to the selected runs
-        run_ids = {r.get('id') for r in runs if r.get('id') is not None}
-        jobs = [j for j in jobs if j.get('run_id') in run_ids]
+        run_ids = {r.get("id") for r in runs if r.get("id") is not None}
+        jobs = [j for j in jobs if j.get("run_id") in run_ids]
 
         print(f"Found {len(runs)} workflow runs and {len(jobs)} jobs after filtering")
 
         # optional filter by target branch (accepts comma-separated values)
-        if target_vals := self._split_and_normalize(_cli_filters.get('target_branch')):
+        if target_vals := self._split_and_normalize(_cli_filters.get("target_branch")):
             allowed = set(target_vals)
+
             def branch_matches(obj):
                 # check common fields that may carry branch name
-                for key in ('head_branch', 'head_ref', 'ref', 'base_ref', 'base_branch'):
-                    val = (obj.get(key) or '')
+                for key in (
+                    "head_branch",
+                    "head_ref",
+                    "ref",
+                    "base_ref",
+                    "base_branch",
+                ):
+                    val = obj.get(key) or ""
                     if val and val.lower() in allowed:
                         return True
                 return False
@@ -152,30 +165,41 @@ class ViewJobsByStatus(MatplotViewer):
             jobs = [j for j in jobs if branch_matches(j)]
 
         # left: workflow conclusions (existing)
-        status_counts = Counter(run.get('conclusion') or 'None' for run in runs)
+        status_counts = Counter(run.get("conclusion") or "None" for run in runs)
 
         # right: delivery executions grouped by conclusion (day or week)
         if aggregate_by_week:
-            dates, conclusions, matrix = self.count_delivery_by_week(jobs, job_name=job_name)
+            dates, conclusions, matrix = self.count_delivery_by_week(
+                jobs, job_name=job_name
+            )
         else:
-            dates, conclusions, matrix = self.count_delivery_by_day(jobs, job_name=job_name)
+            dates, conclusions, matrix = self.count_delivery_by_day(
+                jobs, job_name=job_name
+            )
 
         # If with_pipeline is True show both workflow summary and job chart side-by-side
         if with_pipeline:
             fig, (ax_left, ax_right) = plt.subplots(1, 2, figsize=(14, 5))
 
             # plot status counts on the left axis
-            bars = ax_left.bar(list(status_counts.keys()), list(status_counts.values()), color='skyblue')
-            ax_left.set_title('Status of Workflows')
-            ax_left.set_xlabel('Status')
-            ax_left.set_ylabel('Count')
+            bars = ax_left.bar(
+                list(status_counts.keys()),
+                list(status_counts.values()),
+                color="skyblue",
+            )
+            ax_left.set_title("Status of Workflows")
+            ax_left.set_xlabel("Status")
+            ax_left.set_ylabel("Count")
             for bar in bars:
                 height = bar.get_height()
-                ax_left.annotate(f'{int(height)}',
-                                 xy=(bar.get_x() + bar.get_width() / 2, height),
-                                 xytext=(0, 3),
-                                 textcoords="offset points",
-                                 ha='center', va='bottom')
+                ax_left.annotate(
+                    f"{int(height)}",
+                    xy=(bar.get_x() + bar.get_width() / 2, height),
+                    xytext=(0, 3),
+                    textcoords="offset points",
+                    ha="center",
+                    va="bottom",
+                )
 
             plot_ax = ax_right
         else:
@@ -200,21 +224,33 @@ class ViewJobsByStatus(MatplotViewer):
 
             # title/xlabel depend on aggregation mode
             if aggregate_by_week:
-                plot_ax.set_title(f'Executions of job "{job_name}" by week (stacked by conclusion)')
-                plot_ax.set_xlabel('Week (YYYY-Www)')
+                plot_ax.set_title(
+                    f'Executions of job "{job_name}" by week (stacked by conclusion)'
+                )
+                plot_ax.set_xlabel("Week (YYYY-Www)")
             else:
-                plot_ax.set_title(f'Executions of job "{job_name}" by day (stacked by conclusion)')
-                plot_ax.set_xlabel('Day')
+                plot_ax.set_title(
+                    f'Executions of job "{job_name}" by day (stacked by conclusion)'
+                )
+                plot_ax.set_xlabel("Day")
 
-            plot_ax.set_ylabel('Executions')
-            plot_ax.tick_params(axis='x', rotation=45)
-            plot_ax.legend(title='conclusion')
+            plot_ax.set_ylabel("Executions")
+            plot_ax.tick_params(axis="x", rotation=45)
+            plot_ax.legend(title="conclusion")
 
             # annotate totals on top of each stacked bar
             for i, total in enumerate(bottoms):
-                plot_ax.text(i, total + max(1, max(bottoms) * 0.01), str(total), ha='center')
+                plot_ax.text(
+                    i, total + max(1, max(bottoms) * 0.01), str(total), ha="center"
+                )
         else:
-            plot_ax.text(0.5, 0.5, f'No {job_name} job executions found', ha='center', va='center')
+            plot_ax.text(
+                0.5,
+                0.5,
+                f"No {job_name} job executions found",
+                ha="center",
+                va="center",
+            )
             plot_ax.set_axis_off()
 
         fig.tight_layout()
@@ -224,19 +260,51 @@ class ViewJobsByStatus(MatplotViewer):
 if __name__ == "__main__":
 
     parser = argparse.ArgumentParser(description="Plot workflow/job status charts")
-    parser.add_argument("--job-name", type=str, help="Job name to count/plot", required=True)
-    parser.add_argument("--workflow-name", "-w", type=str, default=None, help="Optional workflow name (case-insensitive substring) to filter runs and jobs")
-    parser.add_argument("--out-file", "-o", type=str, default=None, help="Optional path to save the plot image")
-    parser.add_argument("--with-pipeline", type=str, help="Show workflow summary alongside job chart")
-    parser.add_argument("--aggregate-by-week", dest="aggregate_by_week", action="store_true", help="Aggregate job executions by ISO week instead of day")
-    parser.add_argument("--event", dest="event", type=str, default=None, help="Filter runs by event (comma-separated e.g. push,pull_request,schedule)")
-    parser.add_argument("--target-branch", dest="target_branch", type=str, default=None, help="Filter runs/jobs by target branch name (comma-separated)")
+    parser.add_argument(
+        "--job-name", type=str, help="Job name to count/plot", required=True
+    )
+    parser.add_argument(
+        "--workflow-name",
+        "-w",
+        type=str,
+        default=None,
+        help="Optional workflow name (case-insensitive substring) to filter runs and jobs",
+    )
+    parser.add_argument(
+        "--out-file",
+        "-o",
+        type=str,
+        default=None,
+        help="Optional path to save the plot image",
+    )
+    parser.add_argument(
+        "--with-pipeline", type=str, help="Show workflow summary alongside job chart"
+    )
+    parser.add_argument(
+        "--aggregate-by-week",
+        dest="aggregate_by_week",
+        action="store_true",
+        help="Aggregate job executions by ISO week instead of day",
+    )
+    parser.add_argument(
+        "--event",
+        dest="event",
+        type=str,
+        default=None,
+        help="Filter runs by event (comma-separated e.g. push,pull_request,schedule)",
+    )
+    parser.add_argument(
+        "--target-branch",
+        dest="target_branch",
+        type=str,
+        default=None,
+        help="Filter runs/jobs by target branch name (comma-separated)",
+    )
     args = parser.parse_args()
 
     _cli_filters: dict = {}
-    _cli_filters['event'] = args.event
-    _cli_filters['target_branch'] = args.target_branch
-
+    _cli_filters["event"] = args.event
+    _cli_filters["target_branch"] = args.target_branch
 
     ViewJobsByStatus().main(
         job_name=args.job_name,

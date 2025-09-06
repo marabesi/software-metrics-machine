@@ -6,6 +6,8 @@ import json
 from workflows.repository_workflows import LoadWorkflows
 from infrastructure.configuration import Configuration
 from prs.prs_repository import LoadPrs
+
+
 class GithubClient:
 
     def __init__(self, configuration: Configuration):
@@ -17,11 +19,10 @@ class GithubClient:
         self.pr_repository = LoadPrs()
 
     def fetch_prs(self, months_back=1, force=None):
-        """Pulls all pull requests (open+closed) via pagination, stopping when PRs are older than `months_back` months."""
         pr_json_path = "prs.json"
 
         if force:
-            print(f"Force re-fetching PRs even if already fetched")
+            print("Force re-fetching PRs even if already fetched")
             self.pr_repository.remove_file(pr_json_path)
 
         contents = self.pr_repository.read_file_if_exists(pr_json_path)
@@ -42,7 +43,9 @@ class GithubClient:
             page_prs = r.json()
 
             for pr in page_prs:
-                created = datetime.fromisoformat(pr["created_at"].replace("Z", "+00:00"))
+                created = datetime.fromisoformat(
+                    pr["created_at"].replace("Z", "+00:00")
+                )
                 if created < cutoff:
                     stop = True
                     break
@@ -58,7 +61,9 @@ class GithubClient:
         runs_json_path = "workflows.json"
         contents = self.pr_repository.read_file_if_exists(runs_json_path)
         if contents is not None:
-            print(f"Workflows file already exists. Loading workflows from {runs_json_path}")
+            print(
+                f"Workflows file already exists. Loading workflows from {runs_json_path}"
+            )
             return
 
         print(f"Fetching workflow runs for {self.REPO} {start_date} to {end_date}…")
@@ -67,7 +72,15 @@ class GithubClient:
         url = f"https://api.github.com/repos/{self.REPO}/actions/runs?per_page=100"
         while url:
             print(f"  → fetching {url}")
-            r = requests.get(url, headers=self.HEADERS, params={"branch": target_branch, "created": f"{start_date}..{end_date}", "exclude_pull_requests": "true"})
+            r = requests.get(
+                url,
+                headers=self.HEADERS,
+                params={
+                    "branch": target_branch,
+                    "created": f"{start_date}..{end_date}",
+                    "exclude_pull_requests": "true",
+                },
+            )
             r.raise_for_status()
             data = r.json()
             for run in data.get("workflow_runs", []):
@@ -79,11 +92,12 @@ class GithubClient:
         self.pr_repository.store_file(runs_json_path, runs)
         return runs
 
-
     def fetch_jobs_for_workflows(self, workflows: LoadWorkflows):
         # Make progress resumable by storing a small progress file and writing jobs incrementally.
         jobs_json_path = self.pr_repository.default_path_for("jobs.json")
-        jobs_json_path_incompleted = self.pr_repository.default_path_for("jobs_incompleted.json")
+        jobs_json_path_incompleted = self.pr_repository.default_path_for(
+            "jobs_incompleted.json"
+        )
         progress_path = self.pr_repository.default_path_for("jobs_progress.json")
 
         contents = self.pr_repository.read_file_if_exists("jobs.json")
@@ -120,7 +134,7 @@ class GithubClient:
         try:
             for run in all_runs:
                 run_counter += 1
-                run_id = run.get('id')
+                run_id = run.get("id")
                 if not run_id:
                     continue
                 if run_id in processed_runs:
@@ -128,7 +142,11 @@ class GithubClient:
                     continue
 
                 # if we have a partial for this run, resume from that URL
-                if partial and partial.get("run_id") == run_id and partial.get("next_url"):
+                if (
+                    partial
+                    and partial.get("run_id") == run_id
+                    and partial.get("next_url")
+                ):
                     url = partial.get("next_url")
                 else:
                     url = f"https://api.github.com/repos/{self.REPO}/actions/runs/{run_id}/jobs?per_page=100"
@@ -138,7 +156,7 @@ class GithubClient:
                     r = requests.get(url, headers=self.HEADERS)
                     r.raise_for_status()
                     data = r.json()
-                    page_jobs = data.get('jobs', [])
+                    page_jobs = data.get("jobs", [])
                     if page_jobs:
                         all_jobs.extend(page_jobs)
 
@@ -148,7 +166,10 @@ class GithubClient:
 
                     if next_url:
                         # save partial progress for this run
-                        prog = {"processed_run_ids": list(processed_runs), "partial": {"run_id": run_id, "next_url": next_url}}
+                        prog = {
+                            "processed_run_ids": list(processed_runs),
+                            "partial": {"run_id": run_id, "next_url": next_url},
+                        }
                         self.pr_repository.store_file("jobs_progress.json", prog)
 
                         # persist jobs so far
@@ -158,7 +179,10 @@ class GithubClient:
                     else:
                         # finished this run
                         processed_runs.add(run_id)
-                        prog = {"processed_run_ids": list(processed_runs), "partial": None}
+                        prog = {
+                            "processed_run_ids": list(processed_runs),
+                            "partial": None,
+                        }
 
                         self.pr_repository.store_file("jobs_progress.json", prog)
                         self.pr_repository.store_file("jobs_incompleted.json", all_jobs)
@@ -181,4 +205,3 @@ class GithubClient:
                 pass
 
         print(f"  → Jobs written to {jobs_json_path}")
-

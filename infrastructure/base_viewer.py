@@ -10,4 +10,4 @@ class MatplotViewer:
             plt.show()
 
     def __ensure_png(self, path: str) -> str:
-        return path if path.lower().endswith('.png') else f"{path}.png"
+        return path if path.lower().endswith(".png") else f"{path}.png"
