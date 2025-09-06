@@ -28,7 +28,7 @@ class CodemaatRepository(BaseRepository):
         return df
 
     def get_entity_ownership(self):
-        df = pd.read_csv("data/entity-ownership.csv")
+        df = pd.read_csv(f"{self.configuration.store_data}/entity-ownership.csv")
         return df
 
     def apply_ignore_file_patterns(

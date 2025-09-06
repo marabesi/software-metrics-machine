@@ -18,4 +18,9 @@
 ./run-codemaat.sh entity_effort.py \
   --top=30 \
   --ignore-files="*.json,*.snap,*md,*.yml" \
-  --out-file="dist/code_entity_effort.png"
+  --out-file="dist/code_entity_effort.png" \
+&& \
+./run-codemaat.sh entity_ownership.py \
+  --top=30 \
+  --ignore-files="*.json,*.snap,*md,*.yml" \
+  --out-file="dist/code_entity_ownership.png"
