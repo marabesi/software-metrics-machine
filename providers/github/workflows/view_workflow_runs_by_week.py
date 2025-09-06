@@ -16,7 +16,7 @@ class ViewWorkflowRunsByWeek(MatplotViewer):
             return [str(v).strip().lower() for v in val if v]
         return [p.strip().lower() for p in str(val).split(',') if p.strip()]
 
-    def main(self, workflow_name: str | None = None, out_file: str | None = None, _cli_filters: dict = {}) -> None:
+    def main(self, workflow_name: str | None = None, out_file: str | None = None, _cli_filters: dict = {}, include_defined_only: bool = False) -> None:
         """Plot number of workflow runs per week aggregated by workflow name.
 
         Weeks are represented as ISO year-week strings (YYYY-WW).
@@ -44,6 +44,19 @@ class ViewWorkflowRunsByWeek(MatplotViewer):
                         return True
                 return False
             runs = [r for r in runs if branch_matches(r)]
+
+        # optional include-defined-only filter: keep only workflows whose defined file ends with .yml
+        if include_defined_only:
+            def is_defined_yaml(run_obj: dict) -> bool:
+                # prefer explicit 'path' field if present, else try 'workflow_path' or 'file'
+                path = (run_obj.get('path') or run_obj.get('workflow_path') or run_obj.get('file') or '')
+                if isinstance(path, str) and path.strip().lower().endswith('.yml') or path.strip().lower().endswith('.yaml'):
+                    return True
+                # fallback: if no path metadata, check the workflow name
+                name = (run_obj.get('name') or '')
+                return isinstance(name, str) and name.strip().lower().endswith('.yml')
+
+            runs = [r for r in runs if is_defined_yaml(r)]
 
         print(f"Found {len(runs)} runs after filtering")
 
@@ -110,7 +123,8 @@ if __name__ == '__main__':
     parser.add_argument('--out-file', '-o', type=str, default=None, help='Optional path to save the plot image')
     parser.add_argument('--event', dest='event', type=str, default=None, help='Filter runs by event (comma-separated e.g. push,pull_request)')
     parser.add_argument('--target-branch', dest='target_branch', type=str, default=None, help='Filter runs by target branch (comma-separated)')
+    parser.add_argument('--include-defined-only', dest='include_defined_only', help='If set, include only workflows that are defined as .yml files (by path or name ending with .yml or .yaml)')
     args = parser.parse_args()
 
     _cli_filters = {'event': args.event, 'target_branch': args.target_branch}
-    ViewWorkflowRunsByWeek().main(workflow_name=args.workflow_name, out_file=args.out_file, _cli_filters=_cli_filters)
+    ViewWorkflowRunsByWeek().main(workflow_name=args.workflow_name, out_file=args.out_file, _cli_filters=_cli_filters, include_defined_only=args.include_defined_only)
