@@ -13,4 +13,9 @@
 ./run-codemaat.sh entity_churn.py \
   --top=30 \
   --ignore-files="*.json,*.snap" \
-  --out-file="dist/code_entity_churn.png"
+  --out-file="dist/code_entity_churn.png" \
+&& \
+./run-codemaat.sh entity_effort.py \
+  --top=30 \
+  --ignore-files="*.json,*.snap,*md,*.yml" \
+  --out-file="dist/code_entity_effort.png"
