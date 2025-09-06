@@ -1,5 +1,6 @@
 import json
 import argparse
+from collections import Counter
 from typing import List
 from datetime import datetime
 from workflows.repository_workflows import LoadWorkflows
@@ -62,6 +63,20 @@ def summarize_runs(runs: List[dict]) -> dict:
     workflows = {r.get('name') for r in runs if r.get('name')}
     summary['unique_workflows'] = len(workflows)
 
+    # aggregate counts by workflow name and capture a representative path (if available)
+    name_counts = Counter()
+    name_paths = {}
+    for r in runs:
+        name = r.get('name') or '<unnamed>'
+        name_counts[name] += 1
+        # prefer explicit 'path' field if present, else try 'workflow_path' or 'file'
+        if name not in name_paths:
+            path = r.get('path') or r.get('workflow_path') or r.get('file') or None
+            if path:
+                name_paths[name] = path
+
+    summary['runs_by_workflow'] = {k: {'count': v, 'path': name_paths.get(k)} for k, v in name_counts.items()}
+
     return summary
 
 def print_run(first, last) -> None:
@@ -94,6 +109,17 @@ def print_summary(summary: dict) -> None:
     print(f"  Completed runs: {summary['completed']}")
     print(f"  In-progress runs: {summary['in_progress']}")
     print(f"  Queued runs: {summary['queued']}")
+
+    # print runs aggregated by workflow name (sorted by count desc)
+    runs_by_wf = summary.get('runs_by_workflow', {})
+    if runs_by_wf:
+        print("")
+        print('Runs by workflow name:')
+        # runs_by_wf now maps name -> {'count': n, 'path': p}
+        for name, info in sorted(runs_by_wf.items(), key=lambda x: x[1].get('count', 0), reverse=True):
+            cnt = info.get('count', 0)
+            path = info.get('path') or '<no path>'
+            print(f"  {cnt:4d}  {name}  ({path})")
 
     # print first/last with formatted dates
     first = summary['first_run']
