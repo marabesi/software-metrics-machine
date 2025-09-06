@@ -1,6 +1,7 @@
 import argparse
 import json
 from typing import List
+from datetime import datetime
 
 from prs.prs_repository import LoadPrs
 
@@ -74,6 +75,23 @@ def print_summary(summary: dict) -> None:
     print(f"  Closed (not merged) PRs: {summary['closed_prs']}")
     print(f"  PRs without conclusion (open): {summary['without_conclusion']}")
     print(f"  Unique authors: {summary['unique_authors']}")
+
+    # compute timespan between first and last PR created_at
+    first_created = summary['first_pr'].get('created_at') if summary.get('first_pr') else None
+    last_created = summary['last_pr'].get('created_at') if summary.get('last_pr') else None
+    if first_created and last_created:
+        try:
+            dt_first = datetime.fromisoformat(first_created.replace('Z', '+00:00'))
+            dt_last = datetime.fromisoformat(last_created.replace('Z', '+00:00'))
+            total_seconds = int(abs((dt_last - dt_first).total_seconds()))
+            days = total_seconds // 86400
+            hours = (total_seconds % 86400) // 3600
+            minutes = (total_seconds % 3600) // 60
+            print(f"  Timespan between first and last PR: {days} days, {hours} hours, {minutes} minutes")
+        except Exception:
+            print("  Timespan: unknown (could not parse created_at timestamps)")
+    else:
+        print("  Timespan: unknown (missing created_at in first/last PR)")
     print("")
     print("First PR:")
     print(f"  {brief_pr(summary['first_pr'])}")
