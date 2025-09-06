@@ -1,5 +1,12 @@
 #!/bin/bash
 
+## FETCH GITHUB BASED DATA
+./run-github.sh workflows/fetch_workflows.py \
+  --target-branch="main" \
+  --with-jobs="true" \
+  --start-date="2025-05-01" \
+  --end-date="2025-08-30"
+
 workflow="Node CI"
 
 # view pipelines
@@ -19,4 +26,8 @@ workflow="Node CI"
   --event="push" \
   --target-branch="main" \
   --with-pipeline="true" \
-  --out-file="dist/pipeline_delivery.png"
+  --out-file="dist/pipeline_delivery.png" \
+  && \
+./run-github.sh workflows/view_workflow_runs_by_week.py \
+  --include-defined-only="true" \
+  --out-file="dist/pipeline_run_by_week.png" 
