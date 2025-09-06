@@ -1,51 +1,66 @@
-import networkx as nx
+import argparse
 import matplotlib.pyplot as plt
-import pandas as pd
+import networkx as nx
 
-df = pd.read_csv("data/coupling.csv")
+from infrastructure.base_viewer import MatplotViewer
+from infrastructure.viewable import Viewable
+from codemaat_repository import CodemaatRepository
 
-# Get top 50 entities by sum of degree
-top_entities = (
-    df.groupby("entity")["degree"].sum().sort_values(ascending=False).head(50).index
-)
-df_top = df[df["entity"].isin(top_entities) & df["coupled"].isin(top_entities)]
 
-G = nx.Graph()
+class CouplingViewer(MatplotViewer, Viewable):
+    def render(self, repo: CodemaatRepository, out_file: str | None = None) -> None:
+        df = repo.get_coupling()
 
-# Add edges weighted by degree
-for _, row in df.iterrows():
-    if row["degree"] > 0.5:  # filter to highlight stronger couplings
-        G.add_edge(row["entity"], row["coupled"], weight=row["degree"])
+        G = nx.Graph()
 
-plt.figure(figsize=(10, 8))
-pos = nx.spring_layout(G, k=0.5, iterations=50)
+        # Add edges weighted by degree
+        for _, row in df.iterrows():
+            if row["degree"] > 0.5:  # filter to highlight stronger couplings
+                G.add_edge(row["entity"], row["coupled"], weight=row["degree"])
 
-# Get edge weights
-edges = G.edges(data=True)
-weights = [edge[2]["weight"] for edge in edges]
+        fig = plt.figure(figsize=(10, 8))
+        pos = nx.spring_layout(G, k=0.5, iterations=50)
 
-# Normalize weights for colormap
-norm = plt.Normalize(min(weights), max(weights))
-cmap = plt.cm.viridis
-edge_colors = [cmap(norm(w)) for w in weights]
+        # Get edge weights
+        edges = G.edges(data=True)
+        weights = [edge[2]["weight"] for edge in edges]
 
-nx.draw(
-    G,
-    pos,
-    with_labels=True,
-    node_size=500,
-    font_size=8,
-    edge_color=edge_colors,
-    width=2,
-)
-plt.title("Code Coupling Network (Edge Color by Weight)")
-plt.show()
-nx.draw(
-    G,
-    pos,
-    with_labels=True,
-    node_size=500,
-    font_size=8,
-    edge_color=edge_colors,
-    width=2,
-)
+        # Normalize weights for colormap
+        norm = plt.Normalize(min(weights), max(weights))
+        cmap = plt.cm.viridis
+        edge_colors = [cmap(norm(w)) for w in weights]
+
+        nx.draw(
+            G,
+            pos,
+            with_labels=True,
+            node_size=500,
+            font_size=8,
+            edge_color=edge_colors,
+            width=2,
+        )
+        plt.title("Code Coupling Network (Edge Color by Weight)")
+        nx.draw(
+            G,
+            pos,
+            with_labels=True,
+            node_size=500,
+            font_size=8,
+            edge_color=edge_colors,
+            width=2,
+        )
+
+        super().output(plt, fig, out_file=out_file)
+
+
+if __name__ == "__main__":
+    parser = argparse.ArgumentParser(description="Plot coupling graph")
+    parser.add_argument(
+        "--out-file",
+        "-o",
+        type=str,
+        default=None,
+        help="Optional path to save the plot image",
+    )
+    args = parser.parse_args()
+    viewer = CouplingViewer().render(CodemaatRepository(), out_file=args.out_file)

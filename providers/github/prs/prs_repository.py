@@ -70,7 +70,9 @@ class LoadPrs(BaseRepository):
         if labels:
             if isinstance(labels, str):
                 labels_list = [
-                    label.strip().lower() for label in labels.split(",") if label.strip()
+                    label.strip().lower()
+                    for label in labels.split(",")
+                    if label.strip()
                 ]
             else:
                 labels_list = [str(label).strip().lower() for label in labels]
@@ -101,7 +103,9 @@ class LoadPrs(BaseRepository):
         for pr in prs:
             pr_labels = pr.get("labels") or []
             names = {
-                (label.get("name") or "").lower() for label in pr_labels if isinstance(label, dict)
+                (label.get("name") or "").lower()
+                for label in pr_labels
+                if isinstance(label, dict)
             }
             if names & labels_set:
                 filtered.append(pr)

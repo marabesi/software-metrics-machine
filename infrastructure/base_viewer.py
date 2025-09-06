@@ -11,7 +11,7 @@ class MatplotViewer:
             if os.path.isabs(out_file):
                 store_at = out_file
             else:
-                store_at = os.path.join(cfg.store_data or '', out_file)
+                store_at = os.path.join(cfg.store_data or "", out_file)
 
             save_path = self.__ensure_png(store_at)
 

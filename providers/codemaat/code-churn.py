@@ -5,8 +5,11 @@ from infrastructure.base_viewer import MatplotViewer
 from infrastructure.viewable import Viewable
 from codemaat_repository import CodemaatRepository
 
+
 class CodeChurnViewer(MatplotViewer, Viewable):
-    def render(self, repository: CodemaatRepository, out_file: str | None = None) -> None:
+    def render(
+        self, repository: CodemaatRepository, out_file: str | None = None
+    ) -> None:
         df = repository.get_code_churn()
 
         dates = df["date"]
@@ -24,7 +27,7 @@ class CodeChurnViewer(MatplotViewer, Viewable):
         plt.xticks(rotation=45, ha="right")
 
         super().output(plt, fig, out_file=out_file)
-    
+
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Plot the code churn rate over time")
