@@ -20,6 +20,7 @@ class LoadWorkflows(BaseRepository):
             return self.all_runs
 
         self.all_runs = json.loads(contents)
+        self.all_runs.sort(key=super().created_at_key_sort)
 
         print(f"Loaded {len(self.all_runs)} runs")
         print("Load complete.")

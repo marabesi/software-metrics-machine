@@ -1,7 +1,8 @@
-from infrastructure.configuration import Configuration
-import json
+from datetime import datetime, timezone
 from typing import Optional
 from pathlib import Path
+from infrastructure.configuration import Configuration
+import json
 
 class BaseRepository:
 
@@ -34,3 +35,10 @@ class BaseRepository:
         if p.is_file():
             return p.unlink()
         return None
+
+    def created_at_key_sort(self, collection):
+            created = collection.get("created_at")
+            if created:
+                return datetime.fromisoformat(created.replace("Z", "+00:00"))
+            else:
+                return datetime.min.replace(tzinfo=timezone.utc)

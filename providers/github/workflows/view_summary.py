@@ -1,36 +1,8 @@
-import json
 import argparse
 from collections import Counter
 from typing import List
-from datetime import datetime
 from workflows.repository_workflows import LoadWorkflows
-import locale as pylocale
-
-
-def datetime_to_local(date: str, locale: str = 'en_US.UTF-8') -> str:
-    if not date:
-        return "<none>"
-    try:
-        prev = pylocale.setlocale(pylocale.LC_TIME)
-    except Exception:
-        prev = None
-    try:
-        try:
-            pylocale.setlocale(pylocale.LC_TIME, locale)
-        except Exception:
-            pass
-        try:
-            dt = datetime.fromisoformat(date.replace('Z', '+00:00'))
-        except Exception:
-            return "<invalid>"
-        return dt.astimezone().strftime('%c')
-    finally:
-        try:
-            if prev is not None:
-                pylocale.setlocale(pylocale.LC_TIME, prev)
-        except Exception:
-            pass
-
+from date_and_time import datetime_to_local
 
 def summarize_runs(runs: List[dict]) -> dict:
     summary = {}
@@ -85,7 +57,7 @@ def print_run(first, last) -> None:
     created_at = first.get('created_at')
     started_at = first.get('run_started_at')
     ended_at = first.get('updated_at')
-    print(f"  Created at: {datetime_to_local(created_at)}")
+    print(f"  Created run at: {datetime_to_local(created_at)}")
     print(f"  Started run at: {datetime_to_local(started_at)}")
     print(f"  Updated run at: {datetime_to_local(ended_at)} (Ended at)")
     
@@ -94,7 +66,7 @@ def print_run(first, last) -> None:
     created_at = last.get('created_at')
     started_at = last.get('run_started_at')
     ended_at = last.get('updated_at')
-    print(f"  Created at: {datetime_to_local(created_at)}")
+    print(f"  Created run at: {datetime_to_local(created_at)}")
     print(f"  Started run at: {datetime_to_local(started_at)}")
     print(f"  Updated run at: {datetime_to_local(ended_at)} (Ended at)")
 

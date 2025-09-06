@@ -24,14 +24,8 @@ class LoadPrs(BaseRepository):
 
         print(f"Loaded {len(all_prs)} PRs")
         print("Load complete.")
-        def created_at_key(pr):
-            created = pr.get("created_at")
-            if created:
-                return datetime.fromisoformat(created.replace("Z", "+00:00"))
-            else:
-                return datetime.min.replace(tzinfo=timezone.utc)
  
-        all_prs.sort(key=created_at_key)
+        all_prs.sort(key=super().created_at_key_sort)
 
         return all_prs
 

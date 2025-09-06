@@ -2,7 +2,7 @@ import argparse
 from typing import List
 from datetime import datetime, timezone, timedelta
 from prs.prs_repository import LoadPrs
-import locale as pylocale
+from date_and_time import datetime_to_local
 
 
 def summarize_prs(prs: List[dict]) -> dict:
@@ -50,18 +50,6 @@ def summarize_prs(prs: List[dict]) -> dict:
 
     summary["unique_authors"] = len(authors)
     return summary
-
-def datetime_to_local(date: str, locale: str = 'en_US.UTF-8') -> str:
-    """"Convert %Y-%m-%dT%H:%M:%SZ string to local timezone and format it according to locale."""
-    try:
-        pylocale.setlocale(pylocale.LC_TIME, locale)
-    except Exception as e:
-        print(f"Warning: Could not set locale to '{locale}': {e}. Using default locale.")
- 
-    dt_utc = datetime.strptime(date, "%Y-%m-%dT%H:%M:%SZ").replace(tzinfo=timezone.utc)
-
-    as_time = dt_utc.astimezone()
-    return as_time.strftime('%d %b %Y, %H:%M')
 
 def brief_pr(pr: dict) -> str:
     if not pr:
