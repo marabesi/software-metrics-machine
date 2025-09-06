@@ -23,7 +23,7 @@ jobs:
           pip install poetry
 
       - name: Install dependencies (poetry)
-        run: poetry install --no-interaction --no-ansi
+        run: poetry install --no-interaction --no-ansi --no-root
 
       - name: Run flake8
         run: poetry run flake8
