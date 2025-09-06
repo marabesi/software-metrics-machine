@@ -2,6 +2,7 @@
 
 # fetch
 ./run-github.sh prs/fetch_prs.py --months="4"
+# ./run-github.sh prs/fetch_prs.py --cutoff-date="2025-09-05" --force=true
 
 # view prs
 ./run-github.sh prs/view_prs_by_author.py \
@@ -16,5 +17,4 @@
   && \
 ./run-github.sh prs/view_average_of_prs_open_by_month.py \
     --labels="dependencies" \
-    --out-file="dist" \
     --out-file="dist/pr_average_open_prs.png"

@@ -18,7 +18,7 @@ class GithubClient:
         self.REPO = configuration.github_repository
         self.pr_repository = LoadPrs()
 
-    def fetch_prs(self, months_back=1, force=None):
+    def fetch_prs(self, months_back=1, cutoff_date=None, force=None):
         pr_json_path = "prs.json"
 
         if force:
@@ -30,11 +30,34 @@ class GithubClient:
             print(f"PRs file already exists. Loading PRs from {pr_json_path}")
             return
 
-        print(f"Fetching PRs for {self.REPO} (last {months_back} month(s))…")
+        # validate mutually exclusive parameters
+        if months_back is not None and cutoff_date is not None:
+            raise ValueError("Provide only one of 'months_back' or 'cutoff_date'.")
+
+        # default behaviour: if neither provided, use 1 month back
+        if months_back is None and cutoff_date is None:
+            months_back = 1
+
         prs = []
         url = f"https://api.github.com/repos/{self.REPO}/pulls?state=all&per_page=100&sort=created&direction=desc"
-        cutoff = datetime.now(timezone.utc) - pd.DateOffset(months=months_back)
-        cutoff = cutoff.to_pydatetime()
+
+        if cutoff_date is not None:
+            # parse cutoff_date (expected YYYY-MM-DD)
+            try:
+                cutoff = datetime.fromisoformat(cutoff_date)
+                # make timezone-aware at UTC
+                if cutoff.tzinfo is None:
+                    cutoff = cutoff.replace(tzinfo=timezone.utc)
+            except Exception:
+                # try parsing common format
+                cutoff = datetime.strptime(cutoff_date, "%Y-%m-%d").replace(
+                    tzinfo=timezone.utc
+                )
+            print(f"Fetching PRs for {self.REPO} since {cutoff.isoformat()}…")
+        else:
+            cutoff = datetime.now(timezone.utc) - pd.DateOffset(months=months_back)
+            cutoff = cutoff.to_pydatetime()
+            print(f"Fetching PRs for {self.REPO} (last {months_back} month(s))…")
         stop = False
         while url and not stop:
             print(f"  → fetching {url}")
