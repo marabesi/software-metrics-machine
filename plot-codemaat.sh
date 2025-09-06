@@ -11,4 +11,6 @@
   --out-file="dist/code_coupling.png" \
 && \
 ./run-codemaat.sh entity_churn.py \
+  --top=30 \
+  --ignore-files="*.json,*.snap" \
   --out-file="dist/code_entity_churn.png"
