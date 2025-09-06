@@ -1,3 +1,4 @@
 #!/bin/bash
 
-./fetch-codemaat.sh
+export PYTHONPATH="$(pwd):$PYTHONPATH"
+cd ./providers/codemaat && poetry run python "$@"

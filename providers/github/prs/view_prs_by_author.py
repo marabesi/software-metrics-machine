@@ -1,9 +1,9 @@
+import argparse
+from collections import Counter
 import matplotlib.pyplot as plt
 
 from infrastructure.base_viewer import MatplotViewer
 from prs.prs_repository import LoadPrs
-import argparse
-from collections import Counter
 from typing import List, Tuple
 
 
@@ -79,5 +79,5 @@ if __name__ == "__main__":
 
     top = top_authors(prs, top=args.top)
     ViewPrsByAuthor().plot_top_authors(
-        top, title=f"Top {len(top)} PR authors", out_file=args.out_file
+        top, title=f"Top {len(top)} PR authors", ut_file=args.out_file
     )
