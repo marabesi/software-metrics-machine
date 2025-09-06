@@ -119,3 +119,6 @@ run_codemaat entity-effort entity-effort.csv
 run_codemaat entity-churn entity-churn.csv
 
 run_codemaat coupling coupling.csv
+
+echo "..."
+echo "..."
