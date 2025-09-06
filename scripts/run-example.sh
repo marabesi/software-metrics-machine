@@ -44,7 +44,7 @@
 ./run-github.sh workflows/view_jobs_average_time_execution.py \
   --workflow-name="Node CI" \
   --exclude-jobs="setup" \
-  --out-file="dist/view_jobs_average_time_execution.png" \
+  --out-file="dist/pipeline_jobs_average_time_execution.png" \
 && \
 ./run-github.sh workflows/view_jobs_by_status.py \
   --workflow-name="Node CI" \
@@ -53,4 +53,4 @@
   --event="push" \
   --target-branch="main" \
   --with-pipeline="true" \
-  --out-file="dist/delivery.png"
+  --out-file="dist/pipeline_delivery.png"
