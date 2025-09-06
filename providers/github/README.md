@@ -3,7 +3,8 @@
 ## Basic configuration with env
 
 This project currently uses env variables to define two key properties: the repository, the token and the repository.
-Before executing any command, make sure to have them set:
+This is required by the GitHub API to authenticate and authorize the requests to fetch the data. Before executing any
+command, make sure to have them set as follows:
 
 ```bash
 export REPO=user/repo

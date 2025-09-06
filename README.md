@@ -54,6 +54,15 @@ brew install python
 brew install poetry
 ```
 
+### Define where to store the data
+
+This project uses a folder to store the data fetched from the different providers, set the env variable `STORE_DATA_AT`
+to point to the desired location. Use absolute path.
+
+```bash
+export STORE_DATA_AT=/path/to/data/folder
+```
+
 ### Checkpoint
 
 Once installed python and poetry, run the following command:
@@ -68,9 +77,27 @@ You should see an output something like the following:
 Python 3.11.0
 ```
 
+Let's now check the env variables for data storage, run the following command:
+
+```bash
+env
+```
+
+You should see an output something like the following:
+
+```plaintext
+STORE_DATA_AT=/path/to/data/folder
+```
+
 ## Providers
 
-This project is built based on a provider model, where each provider is responsible to extract data from a specific source. This is because depending on the desired metric, it might come from a difference source. For example, there are metrics extractd about coupling that are from the git log. Other metrics such as pipeline execution and pull request open days average comes from GitHub API (or other providers).
+This project is built based on a provider model, where each provider is responsible to extract data from a specific source.
+This is because depending on the desired metric, it might come from a difference source. For example, there are metrics
+extractd about coupling that are from the git log. Other metrics such as pipeline execution and pull request open days
+average comes from GitHub API (or other providers).
+
+Each provider has its own configuration and requirements, please refer to the specific README.md file in each provider
+folder as pointed below.
 
 ### Git
 

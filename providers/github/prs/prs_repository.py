@@ -24,10 +24,15 @@ class LoadPrs(BaseRepository):
 
         print(f"Loaded {len(all_prs)} PRs")
         print("Load complete.")
+        def created_at_key(pr):
+            created = pr.get("created_at")
+            if created:
+                return datetime.fromisoformat(created.replace("Z", "+00:00"))
+            else:
+                return datetime.min.replace(tzinfo=timezone.utc)
+ 
+        all_prs.sort(key=created_at_key)
 
-        first_pr = all_prs[0]
-        last_pr = all_prs[-1]
-        print(f"  → first PR {first_pr['created_at']} last PR {last_pr['created_at']} ")
         return all_prs
 
     def merged(self):

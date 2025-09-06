@@ -4,7 +4,6 @@ import pandas as pd
 import requests
 import json
 from workflows.repository_workflows import LoadWorkflows
-from pathlib import Path
 from infrastructure.configuration import Configuration
 from prs.prs_repository import LoadPrs
 class GithubClient:
