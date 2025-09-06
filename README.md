@@ -15,22 +15,22 @@ production. Software Metrics Machine provides insights beyond traditional metric
 
 ## Philosophy Drivers
 
-* **Continuous Feedback Loops:**  A constant cycle of observation, analysis, and adjustment is essential.
-* **Pipeline Health:**  Maintain a consistently green and stable development pipeline.
-* **Controlled Code Churn:** Minimize unnecessary code changes, as they often indicate underlying issues.
-* **Knowledge Sharing:** Actively avoid knowledge silos – encourage collaboration and knowledge transfer.
-* **Data-Based Technical Debt:** Define and prioritize technical debt based on *real* data and impact.
+* Continuous Feedback Loops: A constant cycle of observation, analysis, and adjustment is essential.
+* Pipeline Health: Maintain a consistently green and stable development pipeline.
+* Controlled Code Churn: Minimize unnecessary code changes, as they often indicate underlying issues.
+* Knowledge Sharing: Actively avoid knowledge silos – encourage collaboration and knowledge transfer.
+* Data-Based Technical Debt: Define and prioritize technical debt based on *real* data and impact.
 
 ## Facets
 
 This project relies on metrics that are extracted from:
 
-- Pipeline
-  - Success rate of pipeline ✅
-  - Average time to complete pipeline from start to finish 🚧
-- Pull requests
-  - Average of Pull requests opened ✅
-- Git history
+* Pipeline
+  * Success rate of pipeline ✅
+  * Average time to complete pipeline from start to finish 🚧
+* Pull requests
+  * Average of Pull requests opened ✅
+* Git history
   * Code churn  ✅
   * Hotspots  ✅
   * Change Frequency 🚧
@@ -54,16 +54,7 @@ brew install python
 brew install poetry
 ```
 
-### Define where to store the data
-
-This project uses a folder to store the data fetched from the different providers, set the env variable `STORE_DATA_AT`
-to point to the desired location. Use absolute path.
-
-```bash
-export STORE_DATA_AT=/path/to/data/folder
-```
-
-### Checkpoint
+### Checkpoint python and poetry installation
 
 Once installed python and poetry, run the following command:
 
@@ -76,6 +67,32 @@ You should see an output something like the following:
 ```plaintext
 Python 3.11.0
 ```
+
+### Clone the repository
+
+```bash
+git clone https://github.com/marabesi/software-metrics-machine.git
+```
+
+### Install dependencies
+
+Change directory to the cloned repository and install the dependencies using poetry:
+
+```bash
+cd software-metrics-machine
+poetry install --no-root
+```
+
+### Define where to store the data
+
+This project uses a folder to store the data fetched from the different providers, set the env variable `STORE_DATA_AT`
+to point to the desired location. Use absolute path.
+
+```bash
+export STORE_DATA_AT=/path/to/data/folder
+```
+
+### Checkpoint store data
 
 Let's now check the env variables for data storage, run the following command:
 
