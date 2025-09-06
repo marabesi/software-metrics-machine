@@ -1,5 +1,9 @@
 # GitHub provider
 
+This provider is focused on fetching and visualizing data from GitHub repositories, specifically pull requests and
+workflows (pipelines). It leverages the GitHub REST API to gather the necessary information and provides a set of
+tools to visualize and analyze the data.
+
 ## Basic configuration with env
 
 This project currently uses env variables to define two key properties: the repository, the token and the repository.
@@ -36,7 +40,7 @@ A JSON response should be return with the user information, something similar to
 
 That is it! You are ready to go and start fetching your data!
 
-### Fetching data ⬇️
+## Fetching data ⬇️
 
 Fetching the data before operating it is the most first step to get started with metrics. This application provides utilities to fetch data based on date time criteria as it is a standard to use it as a cut off for data analysis. Filters are optional.
 
@@ -58,21 +62,25 @@ Pipeline
 
 ### Limitations
 
-GitHub however, has a limit on requests that can be done to collect data, which impacts the accessibility and the data analysis that Metrics Machine can do. For that end, the library has implemented a mechanism of pause and resume to start off where the last downloaded data has been stored, to avoid missing the data needed.
+GitHub however, has a limit on requests that can be done to collect data, which impacts the accessibility and the data
+analysis that Metrics Machine can do. For that end, the library has implemented a mechanism of pause and resume to start
+off where the last downloaded data has been stored, to avoid missing the data needed.
 
 <https://docs.github.com/en/rest/using-the-rest-api/rate-limits-for-the-rest-api?apiVersion=2022-11-28#primary-rate-limit-for-authenticated-users>
 
 ## Dataviz documentation
 
-The docs described in this section are tailored to a hands-on approach, it is recommended to play around with the commands and the different options to incorporate how its possibilities.
+The docs described in this section are tailored to a hands-on approach, it is recommended to play around with the commands
+and the different options to incorporate how its possibilities.
 
 ## Pull requests
 
-Before diving into the different visualizations, let' go throug the assessment of the data fetched. It is a previous step to understand the data and its quality. It will help to understand the data and its limitations and verify that the fetched
+Before diving into the different visualizations, let' go throug the assessment of the data fetched. It is a previous step
+to understand the data and its quality. It will help to understand the data and its limitations and verify that the fetched
 data fulfilled the parameters set during the fetching step.
 
 ```bash
-./run-github.sh prs/view_prs_summary.py
+./run-github.sh prs/view_summary.py
 ```
 
 ### Pull requests - Average open by month
@@ -146,7 +154,15 @@ options:
 
 ---
 
-## Pipeline
+## Pipeline (Workflows and Jobs)
+
+Before diving into the different visualizations, let' go throug the assessment of the data fetched. It is a previous step
+to understand the data and its quality. It will help to understand the data and its limitations and verify that the fetched
+data fulfilled the parameters set during the fetching step.
+
+```bash
+./run-github.sh workflows/view_summary.py
+```
 
 ### Pipeline - Workflow runs by status
 

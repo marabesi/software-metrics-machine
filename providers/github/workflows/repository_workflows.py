@@ -1,24 +1,30 @@
 import json
-from pathlib import Path
 from typing import List, Iterable
 from infrastructure.base_repository import BaseRepository
+from infrastructure.configuration import Configuration
 
 class LoadWorkflows(BaseRepository):
 
     def __init__(self):
+        super().__init__(configuration=Configuration())
+        self.pipeline_file = "workflows.json"
+        self.jobs_file = "jobs.json"
         self.all_runs = []
         self.all_jobs = []
 
         print(f"Loading runs")
-        with open('data/workflows.json', 'r') as f:
-            self.all_runs = json.load(f)
+
+        contents = super().read_file_if_exists(self.pipeline_file)
+        if contents is None:
+            print(f"No workflow file found at {self.pipeline_file}. Please fetch it first.")
+            return self.all_runs
+
+        self.all_runs = json.loads(contents)
 
         print(f"Loaded {len(self.all_runs)} runs")
         print("Load complete.")
-        p = Path("data/jobs.json")  # repo-relative path
-        if p.exists():
-            print(f"Found {p} ({p.stat().st_size} bytes)")
-            self.__load_jobs()
+
+        self.__load_jobs()
 
     def runs(self):
         return self.all_runs
@@ -27,10 +33,13 @@ class LoadWorkflows(BaseRepository):
         return self.all_jobs
 
     def __load_jobs(self):
+        contents = super().read_file_if_exists(self.jobs_file)
+        if contents is None:
+            print(f"No jobs file found at jobs.json. Please fetch it first.")
+            return
+
         self.all_jobs = []
-        print(f"Loading jobs")
-        with open('data/jobs.json', 'r') as f:
-            self.all_jobs = json.load(f)
+        self.all_jobs = json.loads(contents)
 
         print(f"Loaded {len(self.all_jobs)} jobs")
         print("Load complete.")
