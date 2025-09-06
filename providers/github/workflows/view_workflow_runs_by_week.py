@@ -1,6 +1,6 @@
 import argparse
 import matplotlib.pyplot as plt
-from collections import defaultdict, OrderedDict
+from collections import defaultdict 
 from datetime import datetime
 
 from infrastructure.base_viewer import MatplotViewer
@@ -105,12 +105,19 @@ class ViewWorkflowRunsByWeek(MatplotViewer):
         colors = plt.cm.tab20.colors
         for i, name in enumerate(workflow_names):
             vals = data_matrix[i]
-            ax.bar(weeks, vals, bottom=bottom, label=name, color=colors[i % len(colors)])
+            container = ax.bar(weeks, vals, bottom=bottom, label=name, color=colors[i % len(colors)])
+            # add data labels centered on each stacked segment (show only non-zero values)
+            try:
+                labels = [str(v) if v else '' for v in vals]
+                ax.bar_label(container, labels=labels, label_type='center', fontsize=8)
+            except Exception:
+                # bar_label may not be available on very old matplotlib versions; ignore if it fails
+                pass
             bottom = [b + v for b, v in zip(bottom, vals)]
 
         ax.set_xlabel('Week (YYYY-WW)')
         ax.set_ylabel('Number of runs')
-        ax.set_title('Workflow runs per week by workflow name')
+        ax.set_title('Workflow runs per week by workflow name ('  + str(len(runs))+ ' in total)')
         ax.legend(loc='upper left', bbox_to_anchor=(1, 1))
         plt.xticks(rotation=45)
         fig.tight_layout()
