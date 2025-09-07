@@ -80,7 +80,13 @@ class GithubClient:
 
         self.pr_repository.store_file(pr_json_path, prs)
 
-    def fetch_workflows(self, target_branch: str, start_date, end_date):
+    def fetch_workflows(
+        self,
+        target_branch: str | None,
+        start_date: str | None,
+        end_date: str | None,
+        raw_filters=None,
+    ):
         runs_json_path = "workflows.json"
         contents = self.pr_repository.read_file_if_exists(runs_json_path)
         if contents is not None:
@@ -89,26 +95,38 @@ class GithubClient:
             )
             return
 
-        print(f"Fetching workflow runs for {self.REPO} {start_date} to {end_date}…")
+        params = {}
+        if target_branch:
+            params["branch"] = target_branch
+        if start_date and end_date:
+            params["created"] = f"{start_date}..{end_date}"
+            print(
+                f"Fetching workflow runs for {self.REPO} {start_date} to {end_date}… (it will return 1000 runs at max)"
+            )
+        if raw_filters:
+            for f in raw_filters.split(","):
+                if "=" in f:
+                    k, v = f.split("=", 1)
+                    params[k] = v
 
         runs = []
         url = f"https://api.github.com/repos/{self.REPO}/actions/runs?per_page=100"
         while url:
-            print(f"  → fetching {url}")
+            print(f"  → fetching {url} with params: {str(params)}")
             r = requests.get(
                 url,
                 headers=self.HEADERS,
-                params={
-                    "branch": target_branch,
-                    "created": f"{start_date}..{end_date}",
-                    "exclude_pull_requests": "true",
-                },
+                params={**params} if params else None,
             )
             r.raise_for_status()
             data = r.json()
+            total = data.get("total_count", 0)
+            print(f"    → Response says it has {total} runs")
             for run in data.get("workflow_runs", []):
                 runs.append(run)
-            # next page logic
+
+            print(f"    → Fetched total of {len(runs)} runs out of {total}")
+
             link = r.links.get("next")
             print(f"  → link: {link}")
             url = link["url"] if link else None

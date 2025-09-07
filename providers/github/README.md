@@ -60,13 +60,26 @@ Pipeline
  --end-date="2025-08-30"
 ```
 
+The above command will fetch all the workflow runs from the `main` branch, including the jobs executed, from May 1st, 2025 to August 30th, 2025.
+There are limits that are applied by GitHub, please refer to the limitations section below. For further details on the parameters, please refer to the
+[GitHub Api documentation](https://docs.github.com/en/rest/actions/workflow-runs?apiVersion=2022-11-28#list-workflow-runs-for-a-repository).
+
 ### Limitations
+
+#### Requests
 
 GitHub however, has a limit on requests that can be done to collect data, which impacts the accessibility and the data
 analysis that Metrics Machine can do. For that end, the library has implemented a mechanism of pause and resume to start
 off where the last downloaded data has been stored, to avoid missing the data needed.
 
 <https://docs.github.com/en/rest/using-the-rest-api/rate-limits-for-the-rest-api?apiVersion=2022-11-28#primary-rate-limit-for-authenticated-users>
+
+#### Workflow runs
+
+There is a limitation of 1000 workflow runs that can be fetched from the GitHub API if using certain parameters, such as:
+[actor, branch, check_suite_id, created, event, head_sha, status](https://github.com/orgs/community/discussions/41630#discussioncomment-10054510),
+which can impact the data analysis that Metrics Machine can do. For that end, this project has implemented filters that
+can be applied or not. By default none is used.
 
 ## Dataviz documentation
 
