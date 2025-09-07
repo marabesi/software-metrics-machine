@@ -16,9 +16,9 @@ class GithubClient:
             "Accept": "application/vnd.github+json",
         }
         self.REPO = configuration.github_repository
-        self.pr_repository = LoadPrs()
 
     def fetch_prs(self, months_back=1, cutoff_date=None, force=None):
+        self.pr_repository = LoadPrs()
         pr_json_path = "prs.json"
 
         if force:
@@ -87,8 +87,9 @@ class GithubClient:
         end_date: str | None,
         raw_filters=None,
     ):
+        workflow_repository = LoadWorkflows()
         runs_json_path = "workflows.json"
-        contents = self.pr_repository.read_file_if_exists(runs_json_path)
+        contents = workflow_repository.read_file_if_exists(runs_json_path)
         if contents is not None:
             print(
                 f"Workflows file already exists. Loading workflows from {runs_json_path}"
@@ -130,18 +131,18 @@ class GithubClient:
             link = r.links.get("next")
             print(f"  → link: {link}")
             url = link["url"] if link else None
-        self.pr_repository.store_file(runs_json_path, runs)
+        workflow_repository.store_file(runs_json_path, runs)
         return runs
 
-    def fetch_jobs_for_workflows(self, workflows: LoadWorkflows):
+    def fetch_jobs_for_workflows(
+        self, workflows: LoadWorkflows, start_date=None, end_date=None, raw_filters=None
+    ):
         # Make progress resumable by storing a small progress file and writing jobs incrementally.
-        jobs_json_path = self.pr_repository.default_path_for("jobs.json")
-        jobs_json_path_incompleted = self.pr_repository.default_path_for(
-            "jobs_incompleted.json"
-        )
-        progress_path = self.pr_repository.default_path_for("jobs_progress.json")
+        jobs_json_path = workflows.default_path_for("jobs.json")
+        jobs_json_path_incompleted = workflows.default_path_for("jobs_incompleted.json")
+        progress_path = workflows.default_path_for("jobs_progress.json")
 
-        contents = self.pr_repository.read_file_if_exists("jobs.json")
+        contents = workflows.read_file_if_exists("jobs.json")
         if contents is not None:
             print(f"Jobs file already exists. Loading jobs from {jobs_json_path}")
             return
@@ -168,9 +169,16 @@ class GithubClient:
                 processed_runs = set()
                 partial = None
 
-        all_runs = workflows.runs()
+        all_runs = workflows.runs({"start_date": start_date, "end_date": end_date})
         total_runs = len(all_runs)
         run_counter = 0
+        params = {}
+
+        if raw_filters:
+            for f in raw_filters.split(","):
+                if "=" in f:
+                    k, v = f.split("=", 1)
+                    params[k] = v
 
         try:
             for run in all_runs:
@@ -194,7 +202,9 @@ class GithubClient:
 
                 while url:
                     print(f" run {run_counter} of {total_runs}  → fetching {url}")
-                    r = requests.get(url, headers=self.HEADERS)
+                    r = requests.get(
+                        url, headers=self.HEADERS, params={**params} if params else None
+                    )
                     r.raise_for_status()
                     data = r.json()
                     page_jobs = data.get("jobs", [])
@@ -211,10 +221,10 @@ class GithubClient:
                             "processed_run_ids": list(processed_runs),
                             "partial": {"run_id": run_id, "next_url": next_url},
                         }
-                        self.pr_repository.store_file("jobs_progress.json", prog)
+                        workflows.store_file("jobs_progress.json", prog)
 
                         # persist jobs so far
-                        self.pr_repository.store_file("jobs_incompleted.json", all_jobs)
+                        workflows.store_file("jobs_incompleted.json", all_jobs)
 
                         url = next_url
                     else:
@@ -225,21 +235,22 @@ class GithubClient:
                             "partial": None,
                         }
 
-                        self.pr_repository.store_file("jobs_progress.json", prog)
-                        self.pr_repository.store_file("jobs_incompleted.json", all_jobs)
+                        workflows.store_file("jobs_progress.json", prog)
+                        workflows.store_file("jobs_incompleted.json", all_jobs)
 
                         url = None
 
         except Exception:
             # on any failure, ensure progress and jobs are persisted before raising
             prog = {"processed_run_ids": list(processed_runs), "partial": partial}
-            self.pr_repository.store_file("jobs_progress.json", prog)
-            self.pr_repository.store_file(jobs_json_path_incompleted, all_jobs)
+            workflows.store_file("jobs_progress.json", prog)
+            workflows.store_file(jobs_json_path_incompleted, all_jobs)
             raise
 
         # completed all runs successfully; remove progress file
         if os.path.exists(progress_path):
             try:
+                workflows.remove_file()
                 os.remove(progress_path)
                 os.rename(jobs_json_path_incompleted, jobs_json_path)
             except Exception:

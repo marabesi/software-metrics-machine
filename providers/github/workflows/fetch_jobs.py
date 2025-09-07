@@ -1,13 +1,14 @@
 import argparse
 from github_client import GithubClient
 from infrastructure.configuration import Configuration
+from workflows.repository_workflows import LoadWorkflows
 from datetime import datetime
 
 
-def fetch_all_workflow_runs(target_branch, start_date, end_date, raw_filters):
+def fetch_all_job_runs(start_date, end_date, raw_filters):
     client = GithubClient(configuration=Configuration())
-    client.fetch_workflows(
-        target_branch=target_branch,
+    client.fetch_jobs_for_workflows(
+        LoadWorkflows(),
         start_date=start_date,
         end_date=end_date,
         raw_filters=raw_filters,
@@ -16,13 +17,7 @@ def fetch_all_workflow_runs(target_branch, start_date, end_date, raw_filters):
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(
-        description="Fetch workflow runs from the last N months or between start/end dates."
-    )
-    parser.add_argument(
-        "--target-branch",
-        type=str,
-        default=None,
-        help="The branch to filter workflow runs",
+        description="Fetch workflow runs between start/end dates and fetch their jobs."
     )
     parser.add_argument(
         "--start-date",
@@ -35,7 +30,7 @@ if __name__ == "__main__":
     parser.add_argument(
         "--raw-filters",
         type=str,
-        help="Filters to apply to the GitHub API request, in the form key=value,key2=value2 (e.g., event=push,actor=someuser). See https://docs.github.com/en/rest/actions/workflow-runs?apiVersion=2022-11-28#list-workflow-runs-for-a-repository for possible filters.",  # noqa
+        help="Filters to apply to the GitHub API request, in the form key=value,key2=value2 (e.g., filter=all). See https://docs.github.com/en/rest/actions/workflow-runs?apiVersion=2022-11-28#re-run-a-job-from-a-workflow-run for possible filters.",  # noqa
     )
     args = parser.parse_args()
 
@@ -51,8 +46,7 @@ if __name__ == "__main__":
         except Exception as e:
             parser.error(f"Invalid date(s): {e}")
 
-    fetch_all_workflow_runs(
-        target_branch=args.target_branch,
+    fetch_all_job_runs(
         start_date=args.start_date,
         end_date=args.end_date,
         raw_filters=args.raw_filters,

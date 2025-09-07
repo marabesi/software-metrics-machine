@@ -3,7 +3,6 @@
 ## FETCH GITHUB BASED DATA
 ./run-github.sh workflows/fetch_workflows.py \
   --target-branch="main" \
-  --with-jobs="true" \
   --start-date="2025-05-01" \
   --end-date="2025-08-30"
 

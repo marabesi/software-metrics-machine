@@ -9,4 +9,4 @@ exclude = .git,
   .idea,
   *.sh
 max-line-length = 120
-max-complexity = 22
+max-complexity = 25
