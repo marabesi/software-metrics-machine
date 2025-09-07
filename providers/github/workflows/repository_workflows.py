@@ -31,8 +31,15 @@ class LoadWorkflows(BaseRepository):
 
         self.__load_jobs()
 
-    def jobs(self):
-        return self.all_jobs
+    def jobs(self, filters=None):
+        if not filters:
+            return self.all_jobs
+
+        start_date = filters.get("start_date")
+        end_date = filters.get("end_date")
+
+        if start_date and end_date:
+            return self.__filter_by_date_range(self.all_jobs, start_date, end_date)
 
     def runs(self, filters=None):
         if not filters:

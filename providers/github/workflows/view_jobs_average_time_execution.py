@@ -24,15 +24,23 @@ class ViewJobsByStatus(MatplotViewer):
         _cli_filters: dict = {},
         top: int = 20,
         exclude_jobs: str = None,
+        start_date: str | None = None,
+        end_date: str | None = None,
+        force_all_jobs: bool = False,
     ) -> None:
         """Compute average job execution time (completed_at - started_at) grouped by job name and plot top-N.
 
         Averages are shown in minutes.
         """
         workflows = LoadWorkflows()
-        runs = workflows.runs()
-        jobs = workflows.jobs()
-
+        if start_date and end_date:
+            filters = {"start_date": start_date, "end_date": end_date}
+            print(f"Applying date filter: {filters}")
+            runs = workflows.runs(filters=filters)
+            jobs = workflows.jobs(filters=filters)
+        else:
+            runs = workflows.runs()
+            jobs = workflows.jobs()
         # optional filter by workflow name (case-insensitive substring match)
         if workflow_name:
             wf_low = workflow_name.lower()
@@ -43,9 +51,10 @@ class ViewJobsByStatus(MatplotViewer):
             allowed = set(event_vals)
             runs = [r for r in runs if (r.get("event") or "").lower() in allowed]
 
-        # restrict jobs to only those belonging to the selected runs
-        run_ids = {r.get("id") for r in runs if r.get("id") is not None}
-        jobs = [j for j in jobs if j.get("run_id") in run_ids]
+        if not force_all_jobs:
+            # restrict jobs to only those belonging to the selected runs
+            run_ids = {r.get("id") for r in runs if r.get("id") is not None}
+            jobs = [j for j in jobs if j.get("run_id") in run_ids]
 
         # optional filter by target branch (accepts comma-separated values)
         if target_vals := self._split_and_normalize(_cli_filters.get("target_branch")):
@@ -120,6 +129,11 @@ class ViewJobsByStatus(MatplotViewer):
         plot_ax.set_yticklabels(names)
         plot_ax.set_xlabel("Average job duration (minutes)")
         plot_ax.set_title(f"Top {len(names)} job names by average duration")
+        if workflow_name:
+            plot_ax.set_title(
+                f"Top {len(names)} job names by average duration for '{workflow_name}'"
+            )
+
         for i, v in enumerate(mins):
             plot_ax.text(
                 v + max(0.1, max(mins) * 0.01), y_pos[i], f"{v:.2f}", va="center"
@@ -171,6 +185,20 @@ if __name__ == "__main__":
         default=None,
         help="Removes jobs that contain the name from the chart (comma-separated)",
     )
+    parser.add_argument(
+        "--start-date",
+        type=str,
+        help="Start date (inclusive) in YYYY-MM-DD",
+    )
+    parser.add_argument(
+        "--end-date", type=str, help="End date (inclusive) in YYYY-MM-DD"
+    )
+    parser.add_argument(
+        "--force-all-jobs",
+        type=bool,
+        default=False,
+        help="include setup jobs used by GitHub actions, such as 'Set up job' or 'Checkout code'",
+    )
     args = parser.parse_args()
 
     _cli_filters = {"event": args.event, "target_branch": args.target_branch}
@@ -181,4 +209,7 @@ if __name__ == "__main__":
         _cli_filters=_cli_filters,
         top=args.top,
         exclude_jobs=args.exclude_jobs,
+        start_date=args.start_date,
+        end_date=args.end_date,
+        force_all_jobs=args.force_all_jobs,
     )
