@@ -74,7 +74,7 @@ class LoadWorkflows(BaseRepository):
 
         return filtered
 
-    def __to_dt(v):
+    def __to_dt(self, v):
         # accept None, datetime, date, or ISO string
         if v is None:
             return None

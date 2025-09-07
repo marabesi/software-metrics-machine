@@ -250,7 +250,6 @@ class GithubClient:
         # completed all runs successfully; remove progress file
         if os.path.exists(progress_path):
             try:
-                workflows.remove_file()
                 os.remove(progress_path)
                 os.rename(jobs_json_path_incompleted, jobs_json_path)
             except Exception:
