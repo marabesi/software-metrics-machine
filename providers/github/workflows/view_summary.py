@@ -76,7 +76,7 @@ def print_run(first, last) -> None:
     print(f"  Updated run at: {datetime_to_local(ended_at)} (Ended at)")
 
 
-def print_summary(summary: dict) -> None:
+def print_summary(summary: dict, max_workflows: int = 10) -> None:
     if summary.get("total_runs", 0) == 0:
         print("No workflow runs available.")
         return
@@ -94,9 +94,10 @@ def print_summary(summary: dict) -> None:
         print("")
         print("Runs by workflow name:")
         # runs_by_wf now maps name -> {'count': n, 'path': p}
-        for name, info in sorted(
+        sorted_items = sorted(
             runs_by_wf.items(), key=lambda x: x[1].get("count", 0), reverse=True
-        ):
+        )
+        for name, info in sorted_items[:max_workflows]:
             cnt = info.get("count", 0)
             path = info.get("path") or "<no path>"
             print(f"  {cnt:4d}  {name}  ({path})")
@@ -112,9 +113,15 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(
         description="Print a quick summary of workflow runs"
     )
+    parser.add_argument(
+        "--max-workflows",
+        type=int,
+        default=10,
+        help="Maximum number of workflows to list in the summary (default: 10)",
+    )
     args = parser.parse_args()
 
     lw = LoadWorkflows()
     runs = lw.runs()
     summary = summarize_runs(runs)
-    print_summary(summary)
+    print_summary(summary, max_workflows=args.max_workflows)
