@@ -27,6 +27,7 @@ workflow="Node CI"
   --with-pipeline="true" \
   --out-file="dist/pipeline_delivery.png" \
   && \
-./run-github.sh workflows/view_workflow_runs_by_week.py \
+./run-github.sh workflows/view_workflow_runs_by.py \
   --include-defined-only="true" \
+  --aggregate-by="week" \
   --out-file="dist/pipeline_run_by_week.png" 

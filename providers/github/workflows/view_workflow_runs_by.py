@@ -1,5 +1,6 @@
 import argparse
 import matplotlib.pyplot as plt
+import matplotlib.dates as mdates
 from collections import defaultdict
 from datetime import datetime
 
@@ -7,8 +8,7 @@ from infrastructure.base_viewer import MatplotViewer
 from repository_workflows import LoadWorkflows
 
 
-class ViewWorkflowRunsByWeek(MatplotViewer):
-
+class ViewWorkflowRunsBy(MatplotViewer):
     def _split_and_normalize(self, val: str):
         if not val:
             return None
@@ -22,10 +22,11 @@ class ViewWorkflowRunsByWeek(MatplotViewer):
         out_file: str | None = None,
         _cli_filters: dict = {},
         include_defined_only: bool = False,
+        aggregate_by: str = "week",
     ) -> None:
-        """Plot number of workflow runs per week aggregated by workflow name.
+        """Plot number of workflow runs per week or month aggregated by workflow name.
 
-        Weeks are represented as ISO year-week strings (YYYY-WW).
+        aggregate_by: 'week' (default) or 'month'
         """
         loader = LoadWorkflows()
         runs = loader.runs()
@@ -63,20 +64,17 @@ class ViewWorkflowRunsByWeek(MatplotViewer):
         if include_defined_only:
 
             def is_defined_yaml(run_obj: dict) -> bool:
-                # prefer explicit 'path' field if present, else try 'workflow_path' or 'file'
                 path = (
                     run_obj.get("path")
                     or run_obj.get("workflow_path")
                     or run_obj.get("file")
                     or ""
                 )
-                if (
-                    isinstance(path, str)
-                    and path.strip().lower().endswith(".yml")
+                if isinstance(path, str) and (
+                    path.strip().lower().endswith(".yml")
                     or path.strip().lower().endswith(".yaml")
                 ):
                     return True
-                # fallback: if no path metadata, check the workflow name
                 name = run_obj.get("name") or ""
                 return isinstance(name, str) and name.strip().lower().endswith(".yml")
 
@@ -84,9 +82,9 @@ class ViewWorkflowRunsByWeek(MatplotViewer):
 
         print(f"Found {len(runs)} runs after filtering")
 
-        # aggregate counts by (week, workflow_name)
+        # aggregate counts by (period_key, workflow_name)
         counts = defaultdict(lambda: defaultdict(int))
-        weeks_set = set()
+        period_set = set()
         workflow_names = set()
 
         for r in runs:
@@ -97,57 +95,108 @@ class ViewWorkflowRunsByWeek(MatplotViewer):
             try:
                 dt = datetime.fromisoformat(created.replace("Z", "+00:00"))
             except Exception:
-                # try other common format
                 try:
                     dt = datetime.strptime(created, "%Y-%m-%dT%H:%M:%SZ")
                 except Exception:
                     continue
 
-            iso_year, iso_week, _ = dt.isocalendar()
-            week_key = f"{iso_year}-{iso_week:02d}"
-            counts[week_key][name] += 1
-            weeks_set.add(week_key)
+            if aggregate_by == "week":
+                iso_year, iso_week, _ = dt.isocalendar()
+                key = f"{iso_year}-{iso_week:02d}"
+            else:
+                key = dt.strftime("%Y-%m")
+
+            counts[key][name] += 1
+            period_set.add(key)
             workflow_names.add(name)
 
-        if not weeks_set:
-            print("No weekly data to plot")
+        if not period_set:
+            print("No data to plot")
             return
 
-        weeks = sorted(weeks_set)
+        periods = sorted(period_set)
         workflow_names = sorted(workflow_names)
 
-        # build matrix of counts per workflow per week
+        # build matrix of counts per workflow per period
         data_matrix = []
         for name in workflow_names:
-            row = [counts[w].get(name, 0) for w in weeks]
+            row = [counts[p].get(name, 0) for p in periods]
             data_matrix.append(row)
 
-        # stacked bar plot: weeks on x-axis, each workflow as a stacked segment
-        fig, ax = plt.subplots(figsize=(max(8, len(weeks) * 0.6), 6))
+        # representative datetime for each period
+        rep_dates = []
+        for p in periods:
+            try:
+                y_str, part_str = p.split("-")
+                y = int(y_str)
+                part = int(part_str)
+                if aggregate_by == "week":
+                    rep = datetime.fromisocalendar(y, part, 1)
+                else:
+                    rep = datetime(y, part, 1)
+            except Exception:
+                rep = None
+            rep_dates.append(rep)
 
-        bottom = [0] * len(weeks)
+        x_vals = mdates.date2num(rep_dates)
+
+        # plotting
+        fig, ax = plt.subplots(figsize=(max(8, len(periods) * 0.6), 6))
+        bottom = [0] * len(periods)
         colors = plt.cm.tab20.colors
+        bar_width = 6.5 if aggregate_by == "week" else 20
+
         for i, name in enumerate(workflow_names):
             vals = data_matrix[i]
-            container = ax.bar(
-                weeks, vals, bottom=bottom, label=name, color=colors[i % len(colors)]
+            cont = ax.bar(
+                x_vals,
+                vals,
+                bottom=bottom,
+                label=name,
+                color=colors[i % len(colors)],
+                width=bar_width,
+                align="center",
             )
-            # add data labels centered on each stacked segment (show only non-zero values)
             try:
                 labels = [str(v) if v else "" for v in vals]
-                ax.bar_label(container, labels=labels, label_type="center", fontsize=8)
+                ax.bar_label(cont, labels=labels, label_type="center", fontsize=8)
             except Exception:
-                # bar_label may not be available on very old matplotlib versions; ignore if it fails
                 pass
             bottom = [b + v for b, v in zip(bottom, vals)]
 
-        ax.set_xlabel("Week (YYYY-WW)")
+        ax.set_xlabel("Week (YYYY-WW)" if aggregate_by == "week" else "Month (YYYY-MM)")
         ax.set_ylabel("Number of runs")
         ax.set_title(
-            "Workflow runs per week by workflow name (" + str(len(runs)) + " in total)"
+            "Workflow runs per %s by workflow name (%d in total)"
+            % ("week" if aggregate_by == "week" else "month", len(runs))
         )
         ax.legend(loc="upper left", bbox_to_anchor=(1, 1))
+
+        # draw separators where month changes
+        months = [d.month for d in rep_dates]
+        month_change_idxs = [
+            i for i in range(1, len(months)) if months[i] != months[i - 1]
+        ]
+        for idx in month_change_idxs:
+            xline = (x_vals[idx - 1] + x_vals[idx]) / 2.0
+            ax.axvline(x=xline, color="0.7", linestyle="--", linewidth=0.8)
+
+        # tick labels
+        tick_labels = []
+        for p, d in zip(periods, rep_dates):
+            if d:
+                month = d.strftime("%b %Y")
+            else:
+                month = ""
+            if aggregate_by == "week":
+                tick_labels.append(f"{p}\n{month}")
+            else:
+                tick_labels.append(month)
+
+        ax.set_xticks(x_vals)
+        ax.set_xticklabels(tick_labels)
         plt.xticks(rotation=45)
+        ax.set_xlim(min(x_vals) - 2, max(x_vals) + 2)
         fig.tight_layout()
         super().output(plt, fig, out_file)
 
@@ -189,12 +238,20 @@ if __name__ == "__main__":
         dest="include_defined_only",
         help="If set, include only workflows that are defined as .yml or .yaml",
     )
+    parser.add_argument(
+        "--aggregate-by",
+        dest="aggregate_by",
+        choices=["week", "month"],
+        default="week",
+        help="Aggregate the data by 'week' (default) or 'month'",
+    )
     args = parser.parse_args()
 
     _cli_filters = {"event": args.event, "target_branch": args.target_branch}
-    ViewWorkflowRunsByWeek().main(
+    ViewWorkflowRunsBy().main(
         workflow_name=args.workflow_name,
         out_file=args.out_file,
         _cli_filters=_cli_filters,
         include_defined_only=args.include_defined_only,
+        aggregate_by=args.aggregate_by,
     )
