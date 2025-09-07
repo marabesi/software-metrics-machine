@@ -199,9 +199,11 @@ class ViewJobsByStatus(MatplotViewer):
                 color="skyblue",
             )
 
-            ax_left.set_title("Status of Workflows")
+            ax_left.set_title(f"Status of Workflows - {len(runs)} runs")
             if workflow_name:
-                ax_left.set_title(f"Status of Workflows ({workflow_name})")
+                ax_left.set_title(
+                    f"Status of Workflows ({workflow_name}) - {len(runs)} runs"
+                )
 
             ax_left.set_xlabel("Status")
             ax_left.set_ylabel("Count")
