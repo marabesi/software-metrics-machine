@@ -5,7 +5,7 @@ from infrastructure.base_viewer import MatplotViewer
 from prs.prs_repository import LoadPrs
 
 
-class ViewAverageOfPrsOpenByMonth(MatplotViewer):
+class ViewAverageOfPrsOpenBy(MatplotViewer):
     def main(
         self,
         out_file: str | None = None,
@@ -48,7 +48,7 @@ class ViewAverageOfPrsOpenByMonth(MatplotViewer):
 
 
 if __name__ == "__main__":
-    parser = argparse.ArgumentParser(description="Plot average PR open days by month")
+    parser = argparse.ArgumentParser(description="Plot average PR open")
     parser.add_argument(
         "--out-file",
         "-o",
@@ -78,7 +78,7 @@ if __name__ == "__main__":
         help="Aggregate the averages by 'month' (default) or 'week'",
     )
     args = parser.parse_args()
-    ViewAverageOfPrsOpenByMonth().main(
+    ViewAverageOfPrsOpenBy().main(
         out_file=args.out_file,
         author=args.author,
         labels=args.labels,

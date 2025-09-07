@@ -86,14 +86,14 @@ data fulfilled the parameters set during the fetching step.
 ### Pull requests - Average open by month
 
 ```bash
-./run-github.sh prs/view_average_of_prs_open_by_month.py \
+./run-github.sh prs/view_average_of_prs_open_by.py \
    --author="dependabot" \
    --labels="dependencies" \
    --out-file="dist"
 ```
 
 ```markdown
-usage: view_average_of_prs_open_by_month.py [-h] [--out-file OUT_FILE] [--author AUTHOR] [--labels LABELS]
+usage: view_average_of_prs_open_by.py [-h] [--out-file OUT_FILE] [--author AUTHOR] [--labels LABELS]
 
 Plot average PR open days by month
 
@@ -134,13 +134,13 @@ options:
 ### Pull requests - average of open pull request
 
 ```bash
-./run-github.sh prs/view_average_of_prs_open_by_month.py \
+./run-github.sh prs/view_average_of_prs_open_by.py \
  --author="dependabot" \
  --labels="dependencies"
 ```
 
 ```markdown
-usage: view_average_of_prs_open_by_month.py [-h] [--out-file OUT_FILE] [--author AUTHOR] [--labels LABELS]
+usage: view_average_of_prs_open_by.py [-h] [--out-file OUT_FILE] [--author AUTHOR] [--labels LABELS]
 
 Plot average PR open days by month
 

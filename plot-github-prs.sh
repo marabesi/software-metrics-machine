@@ -18,12 +18,12 @@
   --top="20" \
   --out-file="dist/pr_view_average_review_time_by_author.png" \
   && \
-./run-github.sh prs/view_average_of_prs_open_by_month.py \
+./run-github.sh prs/view_average_of_prs_open_by.py \
     --labels="" \
     --aggregate-by="month" \
     --out-file="plots/pr_average_open_prs_by_month.png" \
   && \
-./run-github.sh prs/view_average_of_prs_open_by_month.py \
+./run-github.sh prs/view_average_of_prs_open_by.py \
     --labels="" \
     --aggregate-by="week" \
     --out-file="plots/pr_average_open_prs_by_week.png"
