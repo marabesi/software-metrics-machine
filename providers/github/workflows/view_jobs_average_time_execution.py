@@ -128,10 +128,12 @@ class ViewJobsByStatus(MatplotViewer):
         plot_ax.set_yticks(y_pos)
         plot_ax.set_yticklabels(names)
         plot_ax.set_xlabel("Average job duration (minutes)")
-        plot_ax.set_title(f"Top {len(names)} job names by average duration")
+        plot_ax.set_title(
+            f"Top {len(names)} jobs by average duration for {len(runs)} runs - {len(jobs)} jobs"
+        )
         if workflow_name:
             plot_ax.set_title(
-                f"Top {len(names)} job names by average duration for '{workflow_name}'"
+                f"Top {len(names)} jobs by average duration for '{workflow_name}' - {len(runs)} runs - {len(jobs)} jobs"
             )
 
         for i, v in enumerate(mins):

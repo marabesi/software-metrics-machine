@@ -39,6 +39,10 @@ class ViewWorkflowByStatus(MatplotViewer):
             list(status_counts.keys()), list(status_counts.values()), color="skyblue"
         )
         ax.set_title("Status of Pipeline Runs")
+        if workflow_name:
+            ax.set_title(
+                f"Status of Pipeline Runs for '{workflow_name}' - Total {len(runs)}"
+            )
         ax.set_xlabel("Status")
         ax.set_ylabel("Count")
         for bar in bars:

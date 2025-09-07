@@ -121,11 +121,21 @@ class ViewJobsByStatus(MatplotViewer):
         out_file: str | None = None,
         with_pipeline: bool = False,
         aggregate_by_week: bool = False,
-        _cli_filters: dict = {},
+        raw_filters: dict = {},
+        start_date: str | None = None,
+        end_date: str | None = None,
+        force_all_jobs: bool = False,
     ) -> None:
         workflows = LoadWorkflows()
-        runs = workflows.runs()
-        jobs = workflows.jobs()
+
+        if start_date and end_date:
+            filters = {"start_date": start_date, "end_date": end_date}
+            print(f"Applying date filter: {filters}")
+            runs = workflows.runs(filters=filters)
+            jobs = workflows.jobs(filters=filters)
+        else:
+            runs = workflows.runs()
+            jobs = workflows.jobs()
 
         # optional filter by workflow name (case-insensitive substring match)
         if workflow_name:
@@ -133,18 +143,19 @@ class ViewJobsByStatus(MatplotViewer):
             runs = [r for r in runs if (r.get("name") or "").lower().find(wf_low) != -1]
 
         # optional filter by event (e.g. push, pull_request) - accepts comma-separated or single value
-        if event_vals := self._split_and_normalize(_cli_filters.get("event")):
+        if event_vals := self._split_and_normalize(raw_filters.get("event")):
             allowed = set(event_vals)
             runs = [r for r in runs if (r.get("event") or "").lower() in allowed]
 
-        # restrict jobs to only those belonging to the selected runs
-        run_ids = {r.get("id") for r in runs if r.get("id") is not None}
-        jobs = [j for j in jobs if j.get("run_id") in run_ids]
+        if not force_all_jobs:
+            # restrict jobs to only those belonging to the selected runs
+            run_ids = {r.get("id") for r in runs if r.get("id") is not None}
+            jobs = [j for j in jobs if j.get("run_id") in run_ids]
 
         print(f"Found {len(runs)} workflow runs and {len(jobs)} jobs after filtering")
 
         # optional filter by target branch (accepts comma-separated values)
-        if target_vals := self._split_and_normalize(_cli_filters.get("target_branch")):
+        if target_vals := self._split_and_normalize(raw_filters.get("target_branch")):
             allowed = set(target_vals)
 
             def branch_matches(obj):
@@ -187,7 +198,11 @@ class ViewJobsByStatus(MatplotViewer):
                 list(status_counts.values()),
                 color="skyblue",
             )
+
             ax_left.set_title("Status of Workflows")
+            if workflow_name:
+                ax_left.set_title(f"Status of Workflows ({workflow_name})")
+
             ax_left.set_xlabel("Status")
             ax_left.set_ylabel("Count")
             for bar in bars:
@@ -300,6 +315,20 @@ if __name__ == "__main__":
         default=None,
         help="Filter runs/jobs by target branch name (comma-separated)",
     )
+    parser.add_argument(
+        "--start-date",
+        type=str,
+        help="Start date (inclusive) in YYYY-MM-DD",
+    )
+    parser.add_argument(
+        "--end-date", type=str, help="End date (inclusive) in YYYY-MM-DD"
+    )
+    parser.add_argument(
+        "--force-all-jobs",
+        type=bool,
+        default=False,
+        help="include setup jobs used by GitHub actions, such as 'Set up job' or 'Checkout code'",
+    )
     args = parser.parse_args()
 
     _cli_filters: dict = {}
@@ -312,5 +341,8 @@ if __name__ == "__main__":
         out_file=args.out_file,
         with_pipeline=args.with_pipeline,
         aggregate_by_week=args.aggregate_by_week,
-        _cli_filters=_cli_filters,
+        raw_filters=_cli_filters,
+        start_date=args.start_date,
+        end_date=args.end_date,
+        force_all_jobs=args.force_all_jobs,
     )
