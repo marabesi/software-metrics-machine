@@ -10,7 +10,7 @@ class ViewAverageOfPrsOpenBy(MatplotViewer):
         self,
         out_file: str | None = None,
         author: str | None = None,
-        labels=[],
+        labels: str | None = None,
         aggregate_by: str = "month",
     ):
         repository = LoadPrs()

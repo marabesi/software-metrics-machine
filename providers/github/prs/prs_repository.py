@@ -53,31 +53,19 @@ class LoadPrs(BaseRepository):
 
         return (closed - created).days
 
-    def average_by_month(
-        self, author: str | None = None, labels: Iterable[str] | str | None = None
-    ):
+    def average_by_month(self, author: str | None = None, labels: str | None = None):
         """Calculate average open days grouped by month.
 
-        labels may be None, a list/iterable of label names, or a comma-separated string.
+        labels are comma-separated string.
         Matching is case-insensitive.
         """
         pr_months = {}
 
         all_prs = self.all_prs
 
-        # normalize labels argument into a list of lowercase names
-        labels_list: List[str] = []
         if labels:
-            if isinstance(labels, str):
-                labels_list = [
-                    label.strip().lower()
-                    for label in labels.split(",")
-                    if label.strip()
-                ]
-            else:
-                labels_list = [str(label).strip().lower() for label in labels]
-
-        if labels_list:
+            # normalize labels argument into a list of lowercase names
+            labels_list = self.__normalize_labels(labels)
             all_prs = self.filter_prs_by_labels(all_prs, labels_list)
 
         print(f"Calculating average open days for {len(all_prs)} PRs")
@@ -93,31 +81,19 @@ class LoadPrs(BaseRepository):
         avg_by_month = [sum(pr_months[m]) / len(pr_months[m]) for m in months]
         return months, avg_by_month
 
-    def average_by_week(
-        self, author: str | None = None, labels: Iterable[str] | str | None = None
-    ):
+    def average_by_week(self, author: str | None = None, labels: str | None = None):
         """Calculate average open days grouped by ISO week (YYYY-Www).
 
-        labels may be None, a list/iterable of label names, or a comma-separated string.
+        labels may be None, or a comma-separated string.
         Matching is case-insensitive.
         """
         pr_weeks = {}
 
         all_prs = self.all_prs
 
-        # normalize labels argument into a list of lowercase names (same logic as average_by_month)
-        labels_list: List[str] = []
         if labels:
-            if isinstance(labels, str):
-                labels_list = [
-                    label.strip().lower()
-                    for label in labels.split(",")
-                    if label.strip()
-                ]
-            else:
-                labels_list = [str(label).strip().lower() for label in labels]
-
-        if labels_list:
+            # normalize labels argument into a list of lowercase names (same logic as average_by_month)
+            labels_list = self.__normalize_labels(labels)
             all_prs = self.filter_prs_by_labels(all_prs, labels_list)
 
         print(f"Calculating average open days for {len(all_prs)} PRs (by week)")
@@ -154,3 +130,17 @@ class LoadPrs(BaseRepository):
             if names & labels_set:
                 filtered.append(pr)
         return filtered
+
+    def __normalize_labels(self, labels: str | None) -> List[str]:
+        # normalize labels argument into a list of lowercase names
+        labels_list: List[str] = []
+        if labels:
+            if isinstance(labels, str):
+                labels_list = [
+                    label.strip().lower()
+                    for label in labels.split(",")
+                    if label.strip()
+                ]
+            else:
+                labels_list = [str(label).strip().lower() for label in labels]
+        return labels_list
