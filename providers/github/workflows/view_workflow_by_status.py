@@ -7,12 +7,21 @@ from repository_workflows import LoadWorkflows
 
 
 class ViewWorkflowByStatus(MatplotViewer):
-    def main(self, out_file: str | None = None, workflow_name: str | None = None):
+    def main(
+        self,
+        out_file: str | None = None,
+        workflow_name: str | None = None,
+        start_date: str | None = None,
+        end_date: str | None = None,
+    ) -> None:
         workflows = LoadWorkflows()
-        runs = workflows.runs()
 
-        print(f"Total workflow runs: {len(runs)}")
-        # optional filter by workflow name (case-insensitive substring match)
+        if start_date and end_date:
+            filters = {"start_date": start_date, "end_date": end_date}
+            runs = workflows.runs(filters)
+        else:
+            runs = workflows.runs()
+
         if workflow_name:
             name_low = workflow_name.lower()
             runs = [
@@ -22,7 +31,7 @@ class ViewWorkflowByStatus(MatplotViewer):
         # workflow conclusions
         status_counts = Counter(run.get("conclusion") or "undefined" for run in runs)
 
-        print(f"Total workflow runs: {len(runs)}")
+        print(f"Total workflow runs after filters: {len(runs)}")
 
         print("Workflow status counts:", status_counts)
         fig, ax = plt.subplots(figsize=(8, 5))
@@ -64,7 +73,19 @@ if __name__ == "__main__":
         default=None,
         help="Optional workflow name (case-insensitive substring) to filter runs",
     )
+    parser.add_argument(
+        "--start-date",
+        type=str,
+        help="Start date (inclusive) in YYYY-MM-DD",
+    )
+    parser.add_argument(
+        "--end-date", type=str, help="End date (inclusive) in YYYY-MM-DD"
+    )
     args = parser.parse_args()
+
     ViewWorkflowByStatus().main(
-        out_file=args.out_file, workflow_name=args.workflow_name
+        out_file=args.out_file,
+        workflow_name=args.workflow_name,
+        start_date=args.start_date,
+        end_date=args.end_date,
     )
