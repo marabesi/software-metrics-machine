@@ -25,10 +25,17 @@ class BaseRepository:
 
     def store_file(self, file: str, data: str) -> None:
         final_path = self.default_dir + "/" + file
+        p = Path(final_path)
+        # ensure parent directory exists
+        try:
+            p.parent.mkdir(parents=True, exist_ok=True)
+        except Exception:
+            # if directory creation fails, let the file write raise the appropriate error
+            pass
 
-        with open(final_path, "w") as f:
+        with p.open("w", encoding="utf-8") as f:
             json.dump(data, f, indent=2)
-        print(f"  → Data written to {final_path}")
+        print(f"  → Data written to {p}")
 
     def remove_file(self, filename: str) -> Optional[str]:
         final_path = self.default_dir + "/" + filename

@@ -79,5 +79,5 @@ if __name__ == "__main__":
 
     top = top_authors(prs, top=args.top)
     ViewPrsByAuthor().plot_top_authors(
-        top, title=f"Top {len(top)} PR authors", ut_file=args.out_file
+        top, title=f"Top {len(top)} PR authors", out_file=args.out_file
     )

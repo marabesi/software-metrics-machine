@@ -4,6 +4,9 @@
 ./run-github.sh prs/fetch_prs.py --months="4"
 # ./run-github.sh prs/fetch_prs.py --cutoff-date="2025-09-05" --force=true
 
+# view summary
+./run-github.sh prs/view_summary.py
+
 # view prs
 ./run-github.sh prs/view_prs_by_author.py \
   --labels="dependencies" \
