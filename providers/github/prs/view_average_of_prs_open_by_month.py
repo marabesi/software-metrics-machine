@@ -6,27 +6,40 @@ from prs.prs_repository import LoadPrs
 
 
 class ViewAverageOfPrsOpenByMonth(MatplotViewer):
-    def main(self, out_file: str | None = None, author: str | None = None, labels=[]):
+    def main(
+        self,
+        out_file: str | None = None,
+        author: str | None = None,
+        labels=[],
+        aggregate_by: str = "month",
+    ):
         repository = LoadPrs()
 
         print(f"  → {len(repository.merged())} PRs were merged")
 
         print(f"  → {len(repository.closed())} PRs were closed")
 
-        months, avg_by_month = repository.average_by_month(author=author, labels=labels)
+        if aggregate_by == "week":
+            x_vals, y_vals = repository.average_by_week(author=author, labels=labels)
+            title = "Average PR Open Days by Week"
+            xlabel = "Week"
+        else:
+            x_vals, y_vals = repository.average_by_month(author=author, labels=labels)
+            title = "Average PR Open Days by Month"
+            xlabel = "Month"
 
         fig, ax = plt.subplots(figsize=(12, 5))
-        ax.plot(months, avg_by_month, marker="o", color="tab:blue")
-        for i, avg in enumerate(avg_by_month):
+        ax.plot(x_vals, y_vals, marker="o", color="tab:blue")
+        for i, avg in enumerate(y_vals):
             ax.annotate(
                 f"{avg:.1f}",
-                (months[i], avg),
+                (x_vals[i], avg),
                 textcoords="offset points",
                 xytext=(0, 5),
                 ha="center",
             )
-        ax.set_title("Average PR Open Days by Month")
-        ax.set_xlabel("Month")
+        ax.set_title(title)
+        ax.set_xlabel(xlabel)
         ax.set_ylabel("Average Days Open")
         plt.xticks(rotation=45)
         fig.tight_layout()
@@ -57,7 +70,17 @@ if __name__ == "__main__":
         default=None,
         help="Comma-separated list of label names to filter PRs by (e.g. bug,enhancement)",
     )
+    parser.add_argument(
+        "--aggregate-by",
+        "-g",
+        choices=["month", "week"],
+        default="month",
+        help="Aggregate the averages by 'month' (default) or 'week'",
+    )
     args = parser.parse_args()
     ViewAverageOfPrsOpenByMonth().main(
-        out_file=args.out_file, author=args.author, labels=args.labels
+        out_file=args.out_file,
+        author=args.author,
+        labels=args.labels,
+        aggregate_by=args.aggregate_by,
     )

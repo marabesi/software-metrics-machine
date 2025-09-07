@@ -93,6 +93,50 @@ class LoadPrs(BaseRepository):
         avg_by_month = [sum(pr_months[m]) / len(pr_months[m]) for m in months]
         return months, avg_by_month
 
+    def average_by_week(
+        self, author: str | None = None, labels: Iterable[str] | str | None = None
+    ):
+        """Calculate average open days grouped by ISO week (YYYY-Www).
+
+        labels may be None, a list/iterable of label names, or a comma-separated string.
+        Matching is case-insensitive.
+        """
+        pr_weeks = {}
+
+        all_prs = self.all_prs
+
+        # normalize labels argument into a list of lowercase names (same logic as average_by_month)
+        labels_list: List[str] = []
+        if labels:
+            if isinstance(labels, str):
+                labels_list = [
+                    label.strip().lower()
+                    for label in labels.split(",")
+                    if label.strip()
+                ]
+            else:
+                labels_list = [str(label).strip().lower() for label in labels]
+
+        if labels_list:
+            all_prs = self.filter_prs_by_labels(all_prs, labels_list)
+
+        print(f"Calculating average open days for {len(all_prs)} PRs (by week)")
+        for pr in all_prs:
+            if author and pr.get("user", {}).get("login", "").lower() != author.lower():
+                continue
+            created = datetime.fromisoformat(pr["created_at"].replace("Z", "+00:00"))
+            # isocalendar() may return a tuple; take year and week reliably
+            iso = created.isocalendar()
+            year = iso[0]
+            week = iso[1]
+            week_key = f"{year}-W{week:02d}"
+            days = self.__pr_open_days(pr)
+            pr_weeks.setdefault(week_key, []).append(days)
+
+        weeks = sorted(pr_weeks.keys())
+        avg_by_week = [sum(pr_weeks[w]) / len(pr_weeks[w]) for w in weeks]
+        return weeks, avg_by_week
+
     def filter_prs_by_labels(
         self, prs: List[dict], labels: Iterable[str]
     ) -> List[dict]:
