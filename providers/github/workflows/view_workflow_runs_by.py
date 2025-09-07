@@ -9,27 +9,24 @@ from repository_workflows import LoadWorkflows
 
 
 class ViewWorkflowRunsBy(MatplotViewer):
-    def _split_and_normalize(self, val: str):
-        if not val:
-            return None
-        if isinstance(val, (list, tuple)):
-            return [str(v).strip().lower() for v in val if v]
-        return [p.strip().lower() for p in str(val).split(",") if p.strip()]
 
     def main(
         self,
         workflow_name: str | None = None,
         out_file: str | None = None,
-        _cli_filters: dict = {},
+        raw_filters: dict = {},
         include_defined_only: bool = False,
         aggregate_by: str = "week",
+        start_date: str | None = None,
+        end_date: str | None = None,
     ) -> None:
-        """Plot number of workflow runs per week or month aggregated by workflow name.
-
-        aggregate_by: 'week' (default) or 'month'
-        """
         loader = LoadWorkflows()
-        runs = loader.runs()
+        if start_date and end_date:
+            filters = {"start_date": start_date, "end_date": end_date}
+            print(f"Applying date filter: {filters}")
+            runs = loader.runs(filters)
+        else:
+            runs = loader.runs()
 
         # optional filter by workflow name (case-insensitive substring)
         if workflow_name:
@@ -37,12 +34,12 @@ class ViewWorkflowRunsBy(MatplotViewer):
             runs = [r for r in runs if (r.get("name") or "").lower().find(wf_low) != -1]
 
         # optional event filter
-        if event_vals := self._split_and_normalize(_cli_filters.get("event")):
+        if event_vals := self._split_and_normalize(raw_filters.get("event")):
             allowed = set(event_vals)
             runs = [r for r in runs if (r.get("event") or "").lower() in allowed]
 
         # optional target branch filter
-        if target_vals := self._split_and_normalize(_cli_filters.get("target_branch")):
+        if target_vals := self._split_and_normalize(raw_filters.get("target_branch")):
             allowed = set(target_vals)
 
             def branch_matches(obj):
@@ -200,6 +197,13 @@ class ViewWorkflowRunsBy(MatplotViewer):
         fig.tight_layout()
         super().output(plt, fig, out_file)
 
+    def _split_and_normalize(self, val: str):
+        if not val:
+            return None
+        if isinstance(val, (list, tuple)):
+            return [str(v).strip().lower() for v in val if v]
+        return [p.strip().lower() for p in str(val).split(",") if p.strip()]
+
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(
@@ -245,13 +249,22 @@ if __name__ == "__main__":
         default="week",
         help="Aggregate the data by 'week' (default) or 'month'",
     )
+    parser.add_argument(
+        "--start-date",
+        type=str,
+        help="Start date (inclusive) in YYYY-MM-DD",
+    )
+    parser.add_argument(
+        "--end-date", type=str, help="End date (inclusive) in YYYY-MM-DD"
+    )
     args = parser.parse_args()
 
-    _cli_filters = {"event": args.event, "target_branch": args.target_branch}
     ViewWorkflowRunsBy().main(
         workflow_name=args.workflow_name,
         out_file=args.out_file,
-        _cli_filters=_cli_filters,
+        raw_filters={"event": args.event, "target_branch": args.target_branch},
         include_defined_only=args.include_defined_only,
         aggregate_by=args.aggregate_by,
+        start_date=args.start_date,
+        end_date=args.end_date,
     )
