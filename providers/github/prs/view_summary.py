@@ -19,6 +19,8 @@ def summarize_prs(prs: List[dict]) -> dict:
                 "merged_prs": 0,
                 "without_conclusion": 0,
                 "unique_authors": 0,
+                "unique_labels": 0,
+                "labels": {},
             }
         )
         return summary
@@ -49,8 +51,24 @@ def summarize_prs(prs: List[dict]) -> dict:
                 authors.add("<unknown>")
         else:
             authors.add(str(user))
-
     summary["unique_authors"] = len(authors)
+
+    # aggregate labels used across all PRs and count occurrences
+    labels_count: dict = {}
+    for p in prs:
+        pr_labels = p.get("labels") or []
+        for lbl in pr_labels:
+            if not isinstance(lbl, dict):
+                # fallback when labels are strings
+                name = str(lbl).strip().lower()
+            else:
+                name = (lbl.get("name") or "").strip().lower()
+            if not name:
+                continue
+            labels_count[name] = labels_count.get(name, 0) + 1
+
+    summary["labels"] = labels_count
+    summary["unique_labels"] = len(labels_count)
     return summary
 
 
@@ -95,6 +113,7 @@ def print_summary(summary: dict) -> None:
     print(f"  Closed (not merged) PRs: {summary['closed_prs']}")
     print(f"  PRs without conclusion (open): {summary['without_conclusion']}")
     print(f"  Unique authors: {summary['unique_authors']}")
+    print(f"  Unique labels: {summary['unique_labels']}")
 
     first_created = (
         summary["first_pr"].get("created_at") if summary.get("first_pr") else None
@@ -164,6 +183,13 @@ def print_summary(summary: dict) -> None:
     print("")
     print("Last PR:")
     print(f"  {brief_pr(summary['last_pr'])}")
+
+    print("")
+    print("Labels used:")
+    for lbl, count in sorted(
+        summary.get("labels", {}).items(), key=lambda x: x[1], reverse=True
+    ):
+        print(f"  {lbl}: {count}")
 
 
 if __name__ == "__main__":
