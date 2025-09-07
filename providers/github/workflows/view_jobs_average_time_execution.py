@@ -101,6 +101,15 @@ class ViewJobsByStatus(MatplotViewer):
         averages.sort(key=lambda x: x[1], reverse=True)
         averages = averages[:top]
 
+        if not averages:
+            print("No job durations found after filtering")
+            fig, plot_ax = plt.subplots(1, 1, figsize=(10, 4))
+            plot_ax.text(0.5, 0.5, "No job durations found", ha="center", va="center")
+            plot_ax.axis("off")
+            fig.tight_layout()
+            super().output(plt, fig, out_file)
+            return
+
         names, mins = zip(*averages)
 
         fig, plot_ax = plt.subplots(1, 1, figsize=(10, max(4, len(names) * 0.5)))

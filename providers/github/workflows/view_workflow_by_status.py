@@ -20,7 +20,7 @@ class ViewWorkflowByStatus(MatplotViewer):
             ]
 
         # workflow conclusions
-        status_counts = Counter(run.get("conclusion") or "None" for run in runs)
+        status_counts = Counter(run.get("conclusion") or "undefined" for run in runs)
 
         print(f"Total workflow runs: {len(runs)}")
 
@@ -29,7 +29,7 @@ class ViewWorkflowByStatus(MatplotViewer):
         bars = ax.bar(
             list(status_counts.keys()), list(status_counts.values()), color="skyblue"
         )
-        ax.set_title("Status of Workflows")
+        ax.set_title("Status of Pipeline Runs")
         ax.set_xlabel("Status")
         ax.set_ylabel("Count")
         for bar in bars:
@@ -49,7 +49,7 @@ class ViewWorkflowByStatus(MatplotViewer):
 
 
 if __name__ == "__main__":
-    parser = argparse.ArgumentParser(description="Plot workflow status summary")
+    parser = argparse.ArgumentParser(description="Plot pipeline status summary")
     parser.add_argument(
         "--out-file",
         "-o",

@@ -31,6 +31,9 @@ class LoadWorkflows(BaseRepository):
 
         self.__load_jobs()
 
+    def jobs(self):
+        return self.all_jobs
+
     def runs(self, filters=None):
         if not filters:
             return self.all_runs
@@ -38,32 +41,17 @@ class LoadWorkflows(BaseRepository):
         start_date = filters.get("start_date")
         end_date = filters.get("end_date")
 
-        def _to_dt(v):
-            # accept None, datetime, date, or ISO string
-            if v is None:
-                return None
-            if isinstance(v, datetime):
-                if v.tzinfo is None:
-                    return v.replace(tzinfo=timezone.utc)
-                return v.astimezone(timezone.utc)
-            if isinstance(v, date):
-                # convert date to datetime at midnight UTC
-                return datetime(v.year, v.month, v.day, tzinfo=timezone.utc)
-            if isinstance(v, str):
-                try:
-                    dt = datetime.fromisoformat(v.replace("Z", "+00:00"))
-                    if dt.tzinfo is None:
-                        return dt.replace(tzinfo=timezone.utc)
-                    return dt.astimezone(timezone.utc)
-                except Exception:
-                    return None
-            return None
+        if start_date and end_date:
+            return self.__filter_by_date_range(self.all_runs, start_date, end_date)
 
-        sd = _to_dt(start_date)
-        ed = _to_dt(end_date)
+    def __filter_by_date_range(
+        self, items: List[dict], start_date: datetime, end_date: datetime
+    ):
+        filtered = []
+        sd = self.__to_dt(start_date)
+        ed = self.__to_dt(end_date)
 
-        filtered: List[dict] = []
-        for run in self.all_runs:
+        for run in items:
             created = run.get("created_at")
             if not created:
                 continue
@@ -86,8 +74,26 @@ class LoadWorkflows(BaseRepository):
 
         return filtered
 
-    def jobs(self):
-        return self.all_jobs
+    def __to_dt(v):
+        # accept None, datetime, date, or ISO string
+        if v is None:
+            return None
+        if isinstance(v, datetime):
+            if v.tzinfo is None:
+                return v.replace(tzinfo=timezone.utc)
+            return v.astimezone(timezone.utc)
+        if isinstance(v, date):
+            # convert date to datetime at midnight UTC
+            return datetime(v.year, v.month, v.day, tzinfo=timezone.utc)
+        if isinstance(v, str):
+            try:
+                dt = datetime.fromisoformat(v.replace("Z", "+00:00"))
+                if dt.tzinfo is None:
+                    return dt.replace(tzinfo=timezone.utc)
+                return dt.astimezone(timezone.utc)
+            except Exception:
+                return None
+        return None
 
     def __load_jobs(self):
         contents = super().read_file_if_exists(self.jobs_file)
