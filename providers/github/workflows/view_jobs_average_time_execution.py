@@ -146,6 +146,22 @@ class ViewJobsByStatus(MatplotViewer):
                 va="center",
             )
 
+        # show the sum of the averages (minutes) prominently on the plot
+        try:
+            total_avg = sum(mins)
+            plot_ax.text(
+                0.99,
+                0.99,
+                f"Sum of averages: {total_avg:.2f} min",
+                transform=plot_ax.transAxes,
+                ha="right",
+                va="top",
+                fontsize=9,
+                bbox=dict(facecolor="white", alpha=0.6, edgecolor="none"),
+            )
+        except Exception:
+            pass
+
         fig.tight_layout()
         super().output(plt, fig, out_file)
 
