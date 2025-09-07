@@ -136,9 +136,14 @@ class ViewJobsByStatus(MatplotViewer):
                 f"Top {len(names)} jobs by average duration for '{workflow_name}' - {len(runs)} runs - {len(jobs)} jobs"
             )
 
+        counts_for_names = [counts.get(n, 0) for n in names]
         for i, v in enumerate(mins):
+            cnt = counts_for_names[i]
             plot_ax.text(
-                v + max(0.1, max(mins) * 0.01), y_pos[i], f"{v:.2f}", va="center"
+                v + max(0.1, max(mins) * 0.01),
+                y_pos[i],
+                f"{v:.2f}m ({cnt})",
+                va="center",
             )
 
         fig.tight_layout()
