@@ -176,7 +176,7 @@ class ViewJobsByStatus(MatplotViewer):
             jobs = [j for j in jobs if branch_matches(j)]
 
         # left: workflow conclusions (existing)
-        status_counts = Counter(run.get("conclusion") or "None" for run in runs)
+        status_counts = Counter(run.get("conclusion") or "undefined" for run in runs)
 
         # right: delivery executions grouped by conclusion (day or week)
         if aggregate_by_week:
@@ -222,7 +222,17 @@ class ViewJobsByStatus(MatplotViewer):
 
         # plot delivery executions on the chosen axis as stacked bars by conclusion
         if dates and matrix:
-            bottoms = [0] * len(dates)
+            # use integer x positions for stability and to allow numeric annotations
+            x = list(range(len(dates)))
+
+            # compute true totals per column (used for annotations)
+            totals = [sum(row[i] for row in matrix) for i in range(len(dates))]
+            max_total = max(totals) if totals else 0
+
+            # determine a minimum visible height for any non-zero segment
+            min_display = max(0.5, max(1.0, max_total) * 0.02)
+
+            # color mapping for conclusions
             color_map = {
                 "success": "#2ca02c",
                 "failure": "#d62728",
@@ -232,10 +242,27 @@ class ViewJobsByStatus(MatplotViewer):
                 "None": "#1f77b4",
             }
             cmap = plt.get_cmap("tab20")
+
+            display_bottoms = [0] * len(dates)
             for idx, (conc, row) in enumerate(zip(conclusions, matrix)):
                 color = color_map.get(conc, cmap(idx))
-                plot_ax.bar(dates, row, bottom=bottoms, label=conc, color=color)
-                bottoms = [b + r for b, r in zip(bottoms, row)]
+                # ensure very small non-zero counts are visible by bumping them to min_display
+                display_row = [
+                    (v if v == 0 else (v if v >= min_display else min_display))
+                    for v in row
+                ]
+                container = plot_ax.bar(
+                    x, display_row, bottom=display_bottoms, label=conc, color=color
+                )
+                # label each segment with its true count (only where >0)
+                try:
+                    seg_labels = [str(v) if v else "" for v in row]
+                    plot_ax.bar_label(
+                        container, labels=seg_labels, label_type="center", fontsize=8
+                    )
+                except Exception:
+                    pass
+                display_bottoms = [b + d for b, d in zip(display_bottoms, display_row)]
 
             # title/xlabel depend on aggregation mode
             if aggregate_by_week:
@@ -251,13 +278,19 @@ class ViewJobsByStatus(MatplotViewer):
 
             plot_ax.set_ylabel("Executions")
             plot_ax.tick_params(axis="x", rotation=45)
+            plot_ax.set_xticks(x)
+            plot_ax.set_xticklabels(dates)
             plot_ax.legend(title="conclusion")
 
-            # annotate totals on top of each stacked bar
-            for i, total in enumerate(bottoms):
-                plot_ax.text(
-                    i, total + max(1, max(bottoms) * 0.01), str(total), ha="center"
-                )
+            # annotate totals on top of each stacked bar, using true totals
+            offset = max(1, max(display_bottoms) * 0.02)
+            for i, total in enumerate(totals):
+                y = display_bottoms[i]
+                plot_ax.text(i, y + offset, str(total), ha="center", va="bottom")
+            # ensure y-limits provide some headroom
+            plot_ax.set_ylim(
+                0, max(display_bottoms) + max(1.0, max(display_bottoms) * 0.05)
+            )
         else:
             plot_ax.text(
                 0.5,
