@@ -6,6 +6,10 @@
   --start-date="2025-05-01" \
   --end-date="2025-08-30"
 
+./run-github.sh workflows/view_summary.py
+
+./run-github.sh workflows/view_jobs_summary.py
+
 workflow="Node CI"
 
 # view pipelines

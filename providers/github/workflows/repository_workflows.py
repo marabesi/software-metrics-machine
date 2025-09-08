@@ -112,6 +112,7 @@ class LoadWorkflows(BaseRepository):
         self.all_jobs = json.loads(contents)
 
         print(f"Loaded {len(self.all_jobs)} jobs")
+        self.all_jobs.sort(key=super().created_at_key_sort)
         print("Load complete.")
 
     def filter_by_job_name(
