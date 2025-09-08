@@ -21,7 +21,7 @@ class LoadWorkflows(BaseRepository):
             print(
                 f"No workflow file found at {self.pipeline_file}. Please fetch it first."
             )
-            return self.all_runs
+            return
 
         self.all_runs = json.loads(contents)
         self.all_runs.sort(key=super().created_at_key_sort)
