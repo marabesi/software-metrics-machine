@@ -1,7 +1,7 @@
 #!/bin/bash
 
-git_directory=$GIT_REPOSITORY_LOCATION
-store_data="$STORE_DATA_AT"
+git_directory=$SSM_GIT_REPOSITORY_LOCATION
+store_data="$SSM_STORE_DATA_AT"
 
 # parse options: support --force; remaining args are start_date and optional sub_folder
 force=false
@@ -32,12 +32,12 @@ start_date=$1
 sub_folder=$2
 
 if [ -z "$git_directory" ]; then
-  echo "❌ GIT_REPOSITORY_LOCATION is not set. Export GIT_REPOSITORY_LOCATION to point the git repository to be used."
+  echo "❌ SSM_GIT_REPOSITORY_LOCATION is not set. Export SSM_GIT_REPOSITORY_LOCATION to point the git repository to be used."
   exit 1
 fi
 
 if [ -z "$store_data" ]; then
-  echo "❌ STORE_DATA_AT is not set. Export STORE_DATA_AT to a directory where results will be written."
+  echo "❌ SSM_STORE_DATA_AT is not set. Export SSM_STORE_DATA_AT to a directory where results will be written."
   exit 1
 fi
 

@@ -15,7 +15,7 @@ class GithubClient:
             "Authorization": f"token {configuration.github_token}",
             "Accept": "application/vnd.github+json",
         }
-        self.REPO = configuration.github_repository
+        self.repository_slug = configuration.github_repository
 
     def fetch_prs(self, months_back=1, cutoff_date=None, force=None):
         self.pr_repository = LoadPrs()
@@ -39,7 +39,7 @@ class GithubClient:
             months_back = 1
 
         prs = []
-        url = f"https://api.github.com/repos/{self.REPO}/pulls?state=all&per_page=100&sort=created&direction=desc"
+        url = f"https://api.github.com/repos/{self.repository_slug}/pulls?state=all&per_page=100&sort=created&direction=desc"  # noqa
 
         if cutoff_date is not None:
             # parse cutoff_date (expected YYYY-MM-DD)
@@ -53,11 +53,15 @@ class GithubClient:
                 cutoff = datetime.strptime(cutoff_date, "%Y-%m-%d").replace(
                     tzinfo=timezone.utc
                 )
-            print(f"Fetching PRs for {self.REPO} since {cutoff.isoformat()}…")
+            print(
+                f"Fetching PRs for {self.repository_slug} since {cutoff.isoformat()}…"
+            )
         else:
             cutoff = datetime.now(timezone.utc) - pd.DateOffset(months=months_back)
             cutoff = cutoff.to_pydatetime()
-            print(f"Fetching PRs for {self.REPO} (last {months_back} month(s))…")
+            print(
+                f"Fetching PRs for {self.repository_slug} (last {months_back} month(s))…"
+            )
         stop = False
         while url and not stop:
             print(f"  → fetching {url}")
@@ -102,7 +106,7 @@ class GithubClient:
         if start_date and end_date:
             params["created"] = f"{start_date}..{end_date}"
             print(
-                f"Fetching workflow runs for {self.REPO} {start_date} to {end_date}… (it will return 1000 runs at max)"
+                f"Fetching workflow runs for {self.repository_slug} {start_date} to {end_date}… (it will return 1000 runs at max)"  # noqa
             )
         if raw_filters:
             for f in raw_filters.split(","):
@@ -111,7 +115,7 @@ class GithubClient:
                     params[k] = v
 
         runs = []
-        url = f"https://api.github.com/repos/{self.REPO}/actions/runs?per_page=100"
+        url = f"https://api.github.com/repos/{self.repository_slug}/actions/runs?per_page=100"
         while url:
             print(f"  → fetching {url} with params: {str(params)}")
             r = requests.get(
@@ -198,7 +202,7 @@ class GithubClient:
                 ):
                     url = partial.get("next_url")
                 else:
-                    url = f"https://api.github.com/repos/{self.REPO}/actions/runs/{run_id}/jobs?per_page=100"
+                    url = f"https://api.github.com/repos/{self.repository_slug}/actions/runs/{run_id}/jobs?per_page=100"
 
                 while url:
                     print(f" run {run_counter} of {total_runs}  → fetching {url}")
