@@ -154,6 +154,31 @@ class ViewJobsByStatus(MatplotViewer):
 
         print(f"Found {len(runs)} workflow runs and {len(jobs)} jobs after filtering")
 
+        # derive display labels from job objects if possible
+        display_job_name = job_name or "<job>"
+        display_workflow_name = workflow_name or None
+        # prefer explicit fields on job objects
+        for j in jobs:
+            if not display_job_name or display_job_name == "<job>":
+                if j.get("name"):
+                    display_job_name = j.get("name")
+            if not display_workflow_name:
+                wf = j.get("workflow_name") or j.get("workflow") or j.get("run_name")
+                if wf:
+                    display_workflow_name = wf
+            if display_job_name and display_workflow_name:
+                break
+        # fallback: try to resolve workflow name via run_id -> run name mapping
+        if not display_workflow_name:
+            run_map = {r.get("id"): r.get("name") for r in runs if r.get("id")}
+            for j in jobs:
+                rid = j.get("run_id") or j.get("runId")
+                if rid and rid in run_map:
+                    display_workflow_name = run_map[rid]
+                    break
+        if not display_workflow_name:
+            display_workflow_name = "<any>"
+
         # optional filter by target branch (accepts comma-separated values)
         if target_vals := self._split_and_normalize(raw_filters.get("target_branch")):
             allowed = set(target_vals)
@@ -269,12 +294,12 @@ class ViewJobsByStatus(MatplotViewer):
             # title/xlabel depend on aggregation mode
             if aggregate_by_week:
                 plot_ax.set_title(
-                    f'Executions of job "{job_name}" by week (stacked by conclusion)'
+                    f'Executions of job "{display_job_name}" in workflow "{display_workflow_name}" by week (stacked by conclusion)'  # noqa
                 )
                 plot_ax.set_xlabel("Week (YYYY-Www)")
             else:
                 plot_ax.set_title(
-                    f'Executions of job "{job_name}" by day (stacked by conclusion)'
+                    f'Executions of job "{display_job_name}" in workflow "{display_workflow_name}" by day (stacked by conclusion)'  # noqa
                 )
                 plot_ax.set_xlabel("Day")
 
