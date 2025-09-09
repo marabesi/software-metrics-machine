@@ -30,22 +30,39 @@ def summarize_jobs(jobs: List[dict]) -> dict:
     concl_counter = Counter((j.get("conclusion") or "unknown") for j in jobs)
     summary["conclusions"] = dict(concl_counter)
 
-    # unique job names
-    job_names = {j.get("name") for j in jobs if j.get("name")}
-    summary["unique_jobs"] = len(job_names)
+    # build a mapping from run_id -> workflow name by loading runs if available
+    lw = LoadWorkflows()
+    runs = lw.runs() or []
+    run_id_to_name = {r.get("id"): r.get("name") for r in runs if r.get("id")}
 
-    # aggregate counts by job name and capture a representative run_id (if available)
+    # unique composite job names (job.name + workflow name)
+    composite_names = set()
+
+    # aggregate counts by composite job name and capture a representative run_id (if available)
     name_counts = Counter()
     name_runs = {}
     for j in jobs:
-        name = j.get("name") or "<unnamed>"
-        name_counts[name] += 1
-        # prefer to capture the run_id if available
-        if name not in name_runs:
+        job_name = j.get("name") or "<unnamed>"
+        # try to obtain workflow/run name from job metadata or lookup by run_id
+        wf_name = j.get("workflow_name") or j.get("workflow") or j.get("run_name")
+        if not wf_name:
+            run_id = j.get("run_id") or j.get("runId")
+            wf_name = run_id_to_name.get(run_id)
+
+        if wf_name:
+            composite = f"{job_name} :: {wf_name}"
+        else:
+            composite = job_name
+
+        composite_names.add(composite)
+        name_counts[composite] += 1
+        # prefer to capture the run_id if available for this composite key
+        if composite not in name_runs:
             run_id = j.get("run_id") or j.get("runId") or None
             if run_id:
-                name_runs[name] = run_id
+                name_runs[composite] = run_id
 
+    summary["unique_jobs"] = len(composite_names)
     summary["jobs_by_name"] = {
         k: {"count": v, "run_id": name_runs.get(k)} for k, v in name_counts.items()
     }
@@ -101,8 +118,7 @@ def print_summary(summary: dict, max_jobs: int = 10) -> None:
         )
         for name, info in sorted_items[:max_jobs]:
             cnt = info.get("count", 0)
-            run_id = info.get("run_id") or "<no run_id>"
-            print(f"  {cnt:4d}  {name}  (run_id: {run_id})")
+            print(f"  {cnt:4d}  {name} ")
 
     # print first/last with formatted dates
     first = summary["first_job"]
