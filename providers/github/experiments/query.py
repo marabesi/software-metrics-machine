@@ -1,13 +1,3 @@
-#!/usr/bin/env python3
-"""Simple CLI to run a jq expression against JSON input (file or stdin).
-
-Usage examples:
-  cat data.json | python experiments/query.py '.[] | {id: .id, name: .name}'
-  python experiments/query.py -f data.json '.items | map(.id)'
-
-This will try to use the python `jq` module if installed; otherwise it will fall back
-to calling the `jq` binary on the system PATH.
-"""
 from __future__ import annotations
 
 import argparse
@@ -22,17 +12,9 @@ from infrastructure.configuration import Configuration
 def load_input(file_name: str | None = None) -> Any:
     cfg = Configuration()
     data_dir = cfg.store_data
-    if not data_dir:
-        raise SystemExit(
-            "SSM_STORE_DATA_AT is not configured; cannot locate stored JSON data."
-        )
     pdir = Path(data_dir)
-    if not pdir.exists() or not pdir.is_dir():
-        raise SystemExit(f"Configured store_data directory does not exist: {data_dir}")
 
-    # If a filename (basename) is provided, load that file from the store_data folder
     if file_name:
-        # reject paths; only accept basename
         if Path(file_name).name != file_name:
             raise SystemExit(
                 "Please provide only the filename (no path). The file will be loaded from the configured store_data folder."  # noqa
