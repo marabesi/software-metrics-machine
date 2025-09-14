@@ -1,5 +1,5 @@
 import argparse
-from typing import List
+from typing import List, Optional
 from datetime import datetime, timezone, timedelta
 from prs.prs_repository import LoadPrs
 from date_and_time import datetime_to_local
@@ -192,12 +192,58 @@ def print_summary(summary: dict) -> None:
         print(f"  {lbl}: {count}")
 
 
+def filter_prs_by_date(
+    prs: List[dict], start_date: Optional[str], end_date: Optional[str]
+) -> List[dict]:
+    """Filter PRs by their created_at field based on start_date and end_date."""
+    start = (
+        datetime.fromisoformat(start_date).replace(tzinfo=timezone.utc)
+        if start_date
+        else None
+    )
+    end = (
+        datetime.fromisoformat(end_date).replace(tzinfo=timezone.utc)
+        if end_date
+        else None
+    )
+
+    filtered = []
+    for pr in prs:
+        created_at = pr.get("created_at")
+        if not created_at:
+            continue
+
+        created_at_dt = datetime.fromisoformat(created_at.replace("Z", "+00:00"))
+        if start and created_at_dt < start:
+            continue
+        if end and created_at_dt > end:
+            continue
+
+        filtered.append(pr)
+
+    return filtered
+
+
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Print a quick summary of loaded PRs")
     parser.add_argument("--csv", help="Export summary as CSV to the given file path")
+    parser.add_argument(
+        "--start-date",
+        type=str,
+        help="Filter PRs created on or after this date (ISO 8601)",
+    )
+    parser.add_argument(
+        "--end-date",
+        type=str,
+        help="Filter PRs created on or before this date (ISO 8601)",
+    )
     args = parser.parse_args()
 
     prs = LoadPrs().all_prs
+
+    # Apply date filtering
+    prs = filter_prs_by_date(prs, args.start_date, args.end_date)
+
     summary = summarize_prs(prs)
 
     print_summary(summary)

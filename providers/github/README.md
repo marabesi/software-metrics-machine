@@ -42,21 +42,67 @@ That is it! You are ready to go and start fetching your data!
 
 ## Fetching data ⬇️
 
-Fetching the data before operating it is the most first step to get started with metrics. This application provides utilities to fetch data based on date time criteria as it is a standard to use it as a cut off for data analysis. Filters are optional.
+Fetching the data before operating it is the most first step to get started with metrics. This application provides
+utilities to fetch data based on date time criteria as it is a standard to use it as a cut off for data analysis. Filters
+are optional.
 
-Pull requests
+### Pull requests
 
 ```markdown
 ./run-github.sh prs/fetch_prs.py --months="4"
 ```
 
-Pipeline
+The above command will fetch all the pull requests from the last 4 months. This project comes with a summary to see what data was fetched.
+
+```bash
+./run-github.sh prs/view_summary.py
+```
+
+The output of the above command should be similar to the following:
 
 ```markdown
+PRs summary:
+  Total  PRs: 502
+  Merged PRs: 285
+  Closed (not merged) PRs: 116
+  PRs without conclusion (open): 101
+  Unique authors: 199
+  Unique labels: 13
+  Timespan between first and last PR: 5 months, 24 days, 5 hours, 47 minutes
+
+First PR:
+  Created at 13 Mar 2025, 15:44
+  Merged  at 13 Mar 2025, 15:45
+  Closed  at 13 Mar 2025, 15:45
+  https://github.com/github/github-mcp-server/pull/7
+  #7 ---  'Use full go version' --- by SamMorrowDrums
+
+Last PR:
+  Created at 06 Sep 2025, 22:32
+  Not merged
+  Closed  at 06 Sep 2025, 22:33
+  https://github.com/github/github-mcp-server/pull/1059
+  #1059 ---  'Update README.md' --- by isabelschoepsthiel
+
+Labels used:
+  dependencies: 32
+```
+
+Te summary accepts two parameters to filter the data fetched, `--start-date` and `--end-date`:
+
+```bash
+./run-github.sh prs/view_summary.py \
+  --start-date="2025-08-01" \
+  --end-date="2025-08-31"
+```
+
+### Pipeline
+
+```bash
 ./run-github.sh workflows/fetch_workflows.py \
- --target-branch="main" \
- --start-date="2025-05-01" \
- --end-date="2025-08-30"
+  --target-branch="main" \
+  --start-date="2025-05-01" \
+  --end-date="2025-08-30"
 ```
 
 The above command will fetch all the workflow runs from the `main` branch, including the jobs executed, from May 1st, 2025 to August 30th, 2025.
