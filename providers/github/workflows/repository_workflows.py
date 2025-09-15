@@ -108,11 +108,23 @@ class LoadWorkflows(BaseRepository):
             print("No jobs file found at jobs.json. Please fetch it first.")
             return
 
-        self.all_jobs = []
         self.all_jobs = json.loads(contents)
-
         print(f"Loaded {len(self.all_jobs)} jobs")
         self.all_jobs.sort(key=super().created_at_key_sort)
+
+        # Create a mapping of run_id to runs for quick lookup
+        run_id_to_run = {run["id"]: run for run in self.all_runs if "id" in run}
+
+        # Assign jobs to their corresponding runs
+        for job in self.all_jobs:
+            run_id = job.get("run_id")
+            if run_id and run_id in run_id_to_run:
+                run = run_id_to_run[run_id]
+                if "jobs" not in run:
+                    run["jobs"] = []  # Initialize the jobs list if not present
+                run["jobs"].append(job)
+
+        print("Jobs have been associated with their corresponding runs.")
         print("Load complete.")
 
     def filter_by_job_name(
