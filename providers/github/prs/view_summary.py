@@ -224,6 +224,17 @@ def filter_prs_by_date(
     return filtered
 
 
+def main(start_date: Optional[str] = None, end_date: Optional[str] = None):
+    prs = LoadPrs().all_prs
+
+    if start_date and end_date:
+        prs = filter_prs_by_date(prs, start_date, end_date)
+
+    summary = summarize_prs(prs)
+
+    print_summary(summary)
+
+
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Print a quick summary of loaded PRs")
     parser.add_argument("--csv", help="Export summary as CSV to the given file path")
