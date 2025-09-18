@@ -4,7 +4,7 @@ from collections import Counter, defaultdict
 from datetime import datetime
 
 from infrastructure.base_viewer import MatplotViewer
-from repository_workflows import LoadWorkflows
+from workflows.repository_workflows import LoadWorkflows
 
 
 class ViewJobsByStatus(MatplotViewer):
