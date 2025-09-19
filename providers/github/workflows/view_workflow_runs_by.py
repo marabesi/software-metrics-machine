@@ -5,7 +5,7 @@ from collections import defaultdict
 from datetime import datetime
 
 from infrastructure.base_viewer import MatplotViewer
-from repository_workflows import LoadWorkflows
+from providers.github.workflows.repository_workflows import LoadWorkflows
 
 
 class ViewWorkflowRunsBy(MatplotViewer):
@@ -195,7 +195,7 @@ class ViewWorkflowRunsBy(MatplotViewer):
         plt.xticks(rotation=45)
         ax.set_xlim(min(x_vals) - 2, max(x_vals) + 2)
         fig.tight_layout()
-        super().output(plt, fig, out_file)
+        return super().output(plt, fig, out_file)
 
     def _split_and_normalize(self, val: str):
         if not val:

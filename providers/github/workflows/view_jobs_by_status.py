@@ -4,7 +4,7 @@ from collections import Counter, defaultdict
 from datetime import datetime
 
 from infrastructure.base_viewer import MatplotViewer
-from workflows.repository_workflows import LoadWorkflows
+from providers.github.workflows.repository_workflows import LoadWorkflows
 
 
 class ViewJobsByStatus(MatplotViewer):
@@ -329,7 +329,7 @@ class ViewJobsByStatus(MatplotViewer):
             plot_ax.set_axis_off()
 
         fig.tight_layout()
-        super().output(plt, fig, out_file)
+        return super().output(plt, fig, out_file)
 
 
 if __name__ == "__main__":

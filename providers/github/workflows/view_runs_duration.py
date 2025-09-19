@@ -4,7 +4,7 @@ from datetime import datetime
 from typing import List
 
 from infrastructure.base_viewer import MatplotViewer
-from repository_workflows import LoadWorkflows
+from providers.github.workflows.repository_workflows import LoadWorkflows
 
 
 def _parse_dt(v: str):
@@ -140,7 +140,7 @@ class ViewRunsDuration(MatplotViewer):
         ax.set_title(f"Runs aggregated by name - {title_metric} ({len(rows)} items)")
         fig.tight_layout()
 
-        super().output(plt, fig, out_file)
+        return super().output(plt, fig, out_file)
 
 
 if __name__ == "__main__":

@@ -4,7 +4,7 @@ import matplotlib.dates as mdates
 from datetime import datetime, date, timedelta
 
 from infrastructure.base_viewer import MatplotViewer
-from prs.prs_repository import LoadPrs
+from providers.github.prs.prs_repository import LoadPrs
 
 
 class ViewAverageOfPrsOpenBy(MatplotViewer):

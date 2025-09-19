@@ -1,8 +1,8 @@
 import argparse
 from collections import Counter
 from typing import List
-from workflows.repository_workflows import LoadWorkflows
-from date_and_time import datetime_to_local
+from providers.github.workflows.repository_workflows import LoadWorkflows
+from infrastructure.date_and_time import datetime_to_local
 
 
 def summarize_jobs(jobs: List[dict]) -> dict:

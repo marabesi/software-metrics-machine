@@ -1,7 +1,7 @@
 import argparse
-from github_client import GithubClient
+from providers.github.github_client import GithubClient
 from infrastructure.configuration import Configuration
-from workflows.repository_workflows import LoadWorkflows
+from providers.github.workflows.repository_workflows import LoadWorkflows
 from datetime import datetime
 
 

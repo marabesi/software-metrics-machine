@@ -2,7 +2,7 @@ import argparse
 import matplotlib.pyplot as plt
 
 from infrastructure.base_viewer import MatplotViewer
-from prs.prs_repository import LoadPrs
+from providers.github.prs.prs_repository import LoadPrs
 from collections import defaultdict
 from typing import List, Tuple
 from datetime import datetime

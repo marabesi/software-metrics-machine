@@ -163,7 +163,7 @@ class ViewJobsByStatus(MatplotViewer):
             pass
 
         fig.tight_layout()
-        super().output(plt, fig, out_file)
+        return super().output(plt, fig, out_file)
 
 
 if __name__ == "__main__":

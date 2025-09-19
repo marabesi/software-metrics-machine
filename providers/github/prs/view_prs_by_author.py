@@ -3,7 +3,7 @@ from collections import Counter
 import matplotlib.pyplot as plt
 
 from infrastructure.base_viewer import MatplotViewer
-from prs.prs_repository import LoadPrs
+from providers.github.prs.prs_repository import LoadPrs
 from typing import List, Tuple
 
 

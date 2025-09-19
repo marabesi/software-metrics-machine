@@ -28,6 +28,7 @@ class MatplotViewer:
             print(f"Saved plot to {save_path}")
             plt.close(fig)
         else:
+            return fig
             plt.show()
 
     def __ensure_png(self, path: str) -> str:

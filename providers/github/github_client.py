@@ -3,9 +3,9 @@ from datetime import datetime, timezone
 import pandas as pd
 import requests
 import json
-from workflows.repository_workflows import LoadWorkflows
+from providers.github.workflows.repository_workflows import LoadWorkflows
 from infrastructure.configuration import Configuration
-from prs.prs_repository import LoadPrs
+from providers.github.prs.prs_repository import LoadPrs
 
 
 class GithubClient:

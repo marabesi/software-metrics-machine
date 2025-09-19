@@ -1,8 +1,109 @@
-import argparse
-from typing import List, Optional
+from typing import List
+from providers.github.prs.prs_repository import LoadPrs
+from infrastructure.date_and_time import datetime_to_local
 from datetime import datetime, timezone, timedelta
-from prs.prs_repository import LoadPrs
-from date_and_time import datetime_to_local
+
+
+def add_arguments(subparser):
+    """
+    Define the arguments for the PRs summarize command.
+
+    Args:
+        subparser (argparse.ArgumentParser): The subparser to which arguments will be added.
+    """
+    subparser.add_argument("--csv", help="Export summary as CSV to the given file path")
+    subparser.add_argument(
+        "--start-date",
+        type=str,
+        help="Filter PRs created on or after this date (ISO 8601)",
+    )
+    subparser.add_argument(
+        "--end-date",
+        type=str,
+        help="Filter PRs created on or before this date (ISO 8601)",
+    )
+    subparser.set_defaults(func=execute)
+
+
+def execute(args):
+    """
+    Execute the logic for the PRs summarize command.
+
+    Args:
+        args (argparse.Namespace): Parsed arguments.
+    """
+
+    prs = LoadPrs().all_prs
+
+    # Apply date filtering
+    if args.start_date or args.end_date:
+        prs = filter_prs_by_date(prs, args.start_date, args.end_date)
+
+    summary = summarize_prs(prs)
+
+    if args.csv:
+        print(f"Exporting summary to {args.csv}...")
+        export_summary_to_csv(summary, args.csv)
+    else:
+        print_summary(summary)
+
+
+def filter_prs_by_date(prs, start_date, end_date):
+    """
+    Filter PRs by their created_at field based on start_date and end_date.
+
+    Args:
+        prs (list): List of PRs.
+        start_date (str): Start date in ISO 8601 format.
+        end_date (str): End date in ISO 8601 format.
+
+    Returns:
+        list: Filtered list of PRs.
+    """
+
+    start = (
+        datetime.fromisoformat(start_date).replace(tzinfo=timezone.utc)
+        if start_date
+        else None
+    )
+    end = (
+        datetime.fromisoformat(end_date).replace(tzinfo=timezone.utc)
+        if end_date
+        else None
+    )
+
+    filtered = []
+    for pr in prs:
+        created_at = pr.get("created_at")
+        if not created_at:
+            continue
+
+        created_at_dt = datetime.fromisoformat(created_at.replace("Z", "+00:00"))
+        if start and created_at_dt < start:
+            continue
+        if end and created_at_dt > end:
+            continue
+
+        filtered.append(pr)
+
+    return filtered
+
+
+def export_summary_to_csv(summary, file_path):
+    """
+    Export the summary to a CSV file.
+
+    Args:
+        summary (list): Summary data.
+        file_path (str): Path to the CSV file.
+    """
+    import csv
+
+    with open(file_path, mode="w", newline="") as csv_file:
+        writer = csv.writer(csv_file)
+        writer.writerow(["Metric", "Value"])
+        for metric, value in summary.items():
+            writer.writerow([metric, value])
 
 
 def summarize_prs(prs: List[dict]) -> dict:
@@ -190,71 +291,3 @@ def print_summary(summary: dict) -> None:
         summary.get("labels", {}).items(), key=lambda x: x[1], reverse=True
     ):
         print(f"  {lbl}: {count}")
-
-
-def filter_prs_by_date(
-    prs: List[dict], start_date: Optional[str], end_date: Optional[str]
-) -> List[dict]:
-    """Filter PRs by their created_at field based on start_date and end_date."""
-    start = (
-        datetime.fromisoformat(start_date).replace(tzinfo=timezone.utc)
-        if start_date
-        else None
-    )
-    end = (
-        datetime.fromisoformat(end_date).replace(tzinfo=timezone.utc)
-        if end_date
-        else None
-    )
-
-    filtered = []
-    for pr in prs:
-        created_at = pr.get("created_at")
-        if not created_at:
-            continue
-
-        created_at_dt = datetime.fromisoformat(created_at.replace("Z", "+00:00"))
-        if start and created_at_dt < start:
-            continue
-        if end and created_at_dt > end:
-            continue
-
-        filtered.append(pr)
-
-    return filtered
-
-
-def main(start_date: Optional[str] = None, end_date: Optional[str] = None):
-    prs = LoadPrs().all_prs
-
-    if start_date and end_date:
-        prs = filter_prs_by_date(prs, start_date, end_date)
-
-    summary = summarize_prs(prs)
-
-    print_summary(summary)
-
-
-if __name__ == "__main__":
-    parser = argparse.ArgumentParser(description="Print a quick summary of loaded PRs")
-    parser.add_argument("--csv", help="Export summary as CSV to the given file path")
-    parser.add_argument(
-        "--start-date",
-        type=str,
-        help="Filter PRs created on or after this date (ISO 8601)",
-    )
-    parser.add_argument(
-        "--end-date",
-        type=str,
-        help="Filter PRs created on or before this date (ISO 8601)",
-    )
-    args = parser.parse_args()
-
-    prs = LoadPrs().all_prs
-
-    # Apply date filtering
-    prs = filter_prs_by_date(prs, args.start_date, args.end_date)
-
-    summary = summarize_prs(prs)
-
-    print_summary(summary)
