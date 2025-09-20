@@ -1,4 +1,3 @@
-import argparse
 import matplotlib.pyplot as plt
 from collections import Counter
 
@@ -58,38 +57,4 @@ class ViewWorkflowByStatus(MatplotViewer):
 
         fig.tight_layout()
 
-        super().output(plt, fig, out_file)
-
-
-if __name__ == "__main__":
-    parser = argparse.ArgumentParser(description="Plot pipeline status summary")
-    parser.add_argument(
-        "--out-file",
-        "-o",
-        type=str,
-        default=None,
-        help="Optional path to save the plot image",
-    )
-    parser.add_argument(
-        "--workflow-name",
-        "-w",
-        type=str,
-        default=None,
-        help="Optional workflow name (case-insensitive substring) to filter runs",
-    )
-    parser.add_argument(
-        "--start-date",
-        type=str,
-        help="Start date (inclusive) in YYYY-MM-DD",
-    )
-    parser.add_argument(
-        "--end-date", type=str, help="End date (inclusive) in YYYY-MM-DD"
-    )
-    args = parser.parse_args()
-
-    ViewWorkflowByStatus().main(
-        out_file=args.out_file,
-        workflow_name=args.workflow_name,
-        start_date=args.start_date,
-        end_date=args.end_date,
-    )
+        return super().output(plt, fig, out_file)
