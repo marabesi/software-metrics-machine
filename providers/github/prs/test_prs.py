@@ -1,5 +1,5 @@
 from click.testing import CliRunner
-from providers.github.prs.cli.fetch_prs import command as fetch_prs
+from providers.github.prs.cli.cli_fetch_prs import command as fetch_prs
 
 
 def test_hello_world():
