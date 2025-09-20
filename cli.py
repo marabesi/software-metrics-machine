@@ -24,7 +24,7 @@ def add_commands_from_groups(module_groups):
         for module_path in module_paths:
             module = importlib.import_module(module_path)
             if hasattr(module, "command"):
-                print(f"Loading command from {module_path} into group {group_name}...")
+                # print(f"Loading command from {module_path} into group {group_name}...")
                 group.add_command(module.command)
 
         main.add_command(group)

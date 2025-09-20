@@ -1,5 +1,5 @@
 import panel as pn
-from providers.github.workflows.view_workflow_by_status import ViewWorkflowByStatus
+from providers.github.workflows.cli.view_workflow_by_status import ViewWorkflowByStatus
 
 pn.extension()
 
