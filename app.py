@@ -9,6 +9,9 @@ from providers.github.prs.plots.view_average_of_prs_open_by import (
 from providers.github.prs.plots.view_average_review_time_by_author import (
     ViewAverageReviewTimeByAuthor,
 )
+from providers.github.prs.plots.view_prs_by_author import (
+    ViewPrsByAuthor,
+)
 
 pn.extension()
 
@@ -31,6 +34,10 @@ def plot_review_time_by_author():
     return ViewAverageReviewTimeByAuthor().plot_average_open_time(title="test")
 
 
+def prs_by_author():
+    return ViewPrsByAuthor().plot_top_authors(title="test", top=10)
+
+
 dashboard = pn.Column(
     "## Charts Viewer with Date Picker",
     start_date_picker,
@@ -50,6 +57,9 @@ dashboard = pn.Column(
     ),
     pn.Row(
         pn.Column("### An By", pn.bind(plot_review_time_by_author)),
+    ),
+    pn.Row(
+        pn.Column("### xxxx By", pn.bind(prs_by_author)),
     ),
 )
 

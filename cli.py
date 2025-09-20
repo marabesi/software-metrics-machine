@@ -35,6 +35,7 @@ module_groups = {
         "providers.github.prs.cli.fetch_prs",
         "providers.github.prs.cli.cli_average_of_prs_open_by",
         "providers.github.prs.cli.view_average_review_time_by_author",
+        "providers.github.prs.cli.view_prs_by_author",
     ],
     # "workflows": [
     #     "providers.github.workflows.cli.view_jobs_by_status",
