@@ -34,7 +34,7 @@ from providers.github.prs.plots.view_average_of_prs_open_by import (
     default="month",
     help="Aggregate the averages by 'month' (default) or 'week'",
 )
-def main(out_file, author, labels, aggregate_by):
+def average_prs_open_by(out_file, author, labels, aggregate_by):
     """Plot average PR open."""
     ViewAverageOfPrsOpenBy().main(
         out_file=out_file,
@@ -44,4 +44,4 @@ def main(out_file, author, labels, aggregate_by):
     )
 
 
-command = main
+command = average_prs_open_by
