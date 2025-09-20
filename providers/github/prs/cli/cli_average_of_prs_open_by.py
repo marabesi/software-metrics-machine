@@ -1,6 +1,6 @@
 import click
 
-from providers.github.prs.views.view_average_of_prs_open_by import (
+from providers.github.prs.plots.view_average_of_prs_open_by import (
     ViewAverageOfPrsOpenBy,
 )
 
@@ -44,5 +44,4 @@ def main(out_file, author, labels, aggregate_by):
     )
 
 
-if __name__ == "__main__":
-    main()
+command = main

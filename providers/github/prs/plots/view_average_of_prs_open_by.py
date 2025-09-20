@@ -1,4 +1,3 @@
-import argparse
 import matplotlib.pyplot as plt
 import matplotlib.dates as mdates
 from datetime import datetime, date, timedelta
@@ -136,43 +135,4 @@ class ViewAverageOfPrsOpenBy(MatplotViewer):
         plt.xticks(rotation=45)
         fig.tight_layout()
 
-        super().output(plt, fig, out_file)
-
-
-if __name__ == "__main__":
-    parser = argparse.ArgumentParser(description="Plot average PR open")
-    parser.add_argument(
-        "--out-file",
-        "-o",
-        type=str,
-        default=None,
-        help="Optional path to save the plot image",
-    )
-    parser.add_argument(
-        "--author",
-        "-a",
-        type=str,
-        default=None,
-        help="Optional username to filter PRs by author",
-    )
-    parser.add_argument(
-        "--labels",
-        "-l",
-        type=str,
-        default=None,
-        help="Comma-separated list of label names to filter PRs by (e.g. bug,enhancement)",
-    )
-    parser.add_argument(
-        "--aggregate-by",
-        "-g",
-        choices=["month", "week"],
-        default="month",
-        help="Aggregate the averages by 'month' (default) or 'week'",
-    )
-    args = parser.parse_args()
-    ViewAverageOfPrsOpenBy().main(
-        out_file=args.out_file,
-        author=args.author,
-        labels=args.labels,
-        aggregate_by=args.aggregate_by,
-    )
+        return super().output(plt, fig, out_file)

@@ -33,7 +33,7 @@ def add_commands_from_groups(module_groups):
 module_groups = {
     "prs": [
         "providers.github.prs.cli.fetch_prs",
-        # "providers.github.prs.cli.view_summary",
+        "providers.github.prs.cli.cli_average_of_prs_open_by",
     ],
     # "workflows": [
     #     "providers.github.workflows.cli.view_jobs_by_status",
