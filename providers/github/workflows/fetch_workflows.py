@@ -1,5 +1,5 @@
 import argparse
-from github_client import GithubClient
+from providers.github.github_client import GithubClient
 from infrastructure.configuration import Configuration
 from datetime import datetime
 
