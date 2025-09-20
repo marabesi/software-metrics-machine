@@ -4,28 +4,7 @@ from infrastructure.date_and_time import datetime_to_local
 from datetime import datetime, timezone, timedelta
 
 
-def add_arguments(subparser):
-    """
-    Define the arguments for the PRs summarize command.
-
-    Args:
-        subparser (argparse.ArgumentParser): The subparser to which arguments will be added.
-    """
-    subparser.add_argument("--csv", help="Export summary as CSV to the given file path")
-    subparser.add_argument(
-        "--start-date",
-        type=str,
-        help="Filter PRs created on or after this date (ISO 8601)",
-    )
-    subparser.add_argument(
-        "--end-date",
-        type=str,
-        help="Filter PRs created on or before this date (ISO 8601)",
-    )
-    subparser.set_defaults(func=execute)
-
-
-def execute(args):
+def execute(csv, start_date, end_date):
     """
     Execute the logic for the PRs summarize command.
 
@@ -36,14 +15,14 @@ def execute(args):
     prs = LoadPrs().all_prs
 
     # Apply date filtering
-    if args.start_date or args.end_date:
-        prs = filter_prs_by_date(prs, args.start_date, args.end_date)
+    if start_date or end_date:
+        prs = filter_prs_by_date(prs, start_date, end_date)
 
     summary = summarize_prs(prs)
 
-    if args.csv:
-        print(f"Exporting summary to {args.csv}...")
-        export_summary_to_csv(summary, args.csv)
+    if csv:
+        print(f"Exporting summary to {csv}...")
+        export_summary_to_csv(summary, csv)
     else:
         print_summary(summary)
 
