@@ -22,6 +22,9 @@ from providers.github.workflows.plots.view_workflow_runs_by import ViewWorkflowR
 
 from providers.codemaat.plots.code_churn import CodeChurnViewer
 from providers.codemaat.plots.entity_churn import EntityChurnViewer
+from providers.codemaat.plots.entity_effort import EntityEffortViewer
+from providers.codemaat.plots.entity_ownership import EntityOnershipViewer
+
 from providers.codemaat.codemaat_repository import CodemaatRepository
 
 pn.extension()
@@ -104,13 +107,23 @@ def plot_prs_by_author(start_date, end_date):
 
 def plot_code_churn(start_date, end_date):
     return CodeChurnViewer().render(
-        CodemaatRepository(), start_date=start_date, end_date=end_date
+        CodemaatRepository(),
     )
 
 
 def plot_entity_churn(start_date, end_date):
-    return EntityChurnViewer().render(
-        CodemaatRepository(), start_date=start_date, end_date=end_date
+    return EntityChurnViewer().render(CodemaatRepository())
+
+
+def plot_entity_effort():
+    return EntityEffortViewer().render(
+        CodemaatRepository(),
+    )
+
+
+def plot_entity_ownership():
+    return EntityOnershipViewer().render(
+        CodemaatRepository(),
     )
 
 
@@ -171,6 +184,24 @@ source_code_section = pn.Column(
                 plot_entity_churn,
                 start_date=start_date_picker,
                 end_date=end_date_picker,
+            ),
+        ),
+        sizing_mode="stretch_width",
+    ),
+    pn.Row(
+        pn.Column(
+            "### Entity Effort",
+            pn.bind(
+                plot_entity_effort,
+            ),
+        ),
+        sizing_mode="stretch_width",
+    ),
+    pn.Row(
+        pn.Column(
+            "### Entity Ownership",
+            pn.bind(
+                plot_entity_ownership,
             ),
         ),
         sizing_mode="stretch_width",
