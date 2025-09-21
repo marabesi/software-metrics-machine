@@ -53,7 +53,9 @@ class LoadPrs(BaseRepository):
 
         return (closed - created).days
 
-    def average_by_month(self, author: str | None = None, labels: str | None = None):
+    def average_by_month(
+        self, author: str | None = None, labels: str | None = None, prs=[]
+    ):
         """Calculate average open days grouped by month.
 
         labels are comma-separated string.
@@ -61,7 +63,7 @@ class LoadPrs(BaseRepository):
         """
         pr_months = {}
 
-        all_prs = self.all_prs
+        all_prs = prs
 
         if labels:
             # normalize labels argument into a list of lowercase names
@@ -81,7 +83,9 @@ class LoadPrs(BaseRepository):
         avg_by_month = [sum(pr_months[m]) / len(pr_months[m]) for m in months]
         return months, avg_by_month
 
-    def average_by_week(self, author: str | None = None, labels: str | None = None):
+    def average_by_week(
+        self, author: str | None = None, labels: str | None = None, prs=[]
+    ):
         """Calculate average open days grouped by ISO week (YYYY-Www).
 
         labels may be None, or a comma-separated string.
@@ -89,7 +93,7 @@ class LoadPrs(BaseRepository):
         """
         pr_weeks = {}
 
-        all_prs = self.all_prs
+        all_prs = prs
 
         if labels:
             # normalize labels argument into a list of lowercase names (same logic as average_by_month)

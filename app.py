@@ -67,21 +67,19 @@ pipeline_section = pn.Column(
 
 # PRs Section
 def plot_average_prs_open_by(start_date, end_date):
-    # if start_date and end_date:
-    #     print(f"Filtering Average PRs Open By data from {start_date} to {end_date}")
-    return ViewAverageOfPrsOpenBy().main()
+    return ViewAverageOfPrsOpenBy().main(start_date=start_date, end_date=end_date)
 
 
 def plot_average_review_time_by_author(start_date, end_date):
-    # if start_date and end_date:
-    #     print(f"Filtering Average Review Time By Author data from {start_date} to {end_date}")
-    return ViewAverageReviewTimeByAuthor().plot_average_open_time(title="testtts")
+    return ViewAverageReviewTimeByAuthor().plot_average_open_time(
+        title="Average Review Time By Author", start_date=start_date, end_date=end_date
+    )
 
 
 def plot_prs_by_author(start_date, end_date):
-    # if start_date and end_date:
-    #     print(f"Filtering PRs By Author data from {start_date} to {end_date}")
-    return ViewPrsByAuthor().plot_top_authors("asdasdassa")
+    return ViewPrsByAuthor().plot_top_authors(
+        title="PRs By Author", start_date=start_date, end_date=end_date
+    )
 
 
 prs_section = pn.Column(

@@ -19,7 +19,9 @@ class ViewPrsByAuthor(MatplotViewer):
     ) -> None:
 
         repo = LoadPrs()
-        prs = repo.filter_prs_by_date_range(start_date=start_date, end_date=end_date)
+        prs = repo.filter_by_date_range(
+            repo.all_prs, start_date=start_date, end_date=end_date
+        )
 
         if not prs:
             print("No PRs to plot")

@@ -18,8 +18,10 @@ class ViewAverageOfPrsOpenBy(MatplotViewer):
     ):
         repository = LoadPrs()
 
-        prs = repository.filter_prs_by_date_range(
-            start_date=start_date, end_date=end_date
+        prs = repository.all_prs
+
+        prs = repository.filter_by_date_range(
+            prs, start_date=start_date, end_date=end_date
         )
         print(f"Filtered PRs count: {len(prs)}")
 
