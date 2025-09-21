@@ -9,7 +9,7 @@ class EntityEffortViewer(MatplotViewer, Viewable):
     def render(
         self,
         repo: CodemaatRepository,
-        top_n: int | None = None,
+        top_n: int | None = 30,
         ignore_files: str | None = None,
         out_file: str | None = None,
     ) -> None:
@@ -21,7 +21,7 @@ class EntityEffortViewer(MatplotViewer, Viewable):
         effort_per_entity = df.groupby("entity")["total-revs"].max().sort_values()
 
         # Limit the number of entities displayed
-        if top_n and len(effort_per_entity) > top_n:
+        if len(effort_per_entity) > top_n:
             effort_per_entity = effort_per_entity[-top_n:]
 
         entities = effort_per_entity.index
