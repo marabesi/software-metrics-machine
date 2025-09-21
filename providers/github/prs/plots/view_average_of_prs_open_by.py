@@ -13,15 +13,20 @@ class ViewAverageOfPrsOpenBy(MatplotViewer):
         author: str | None = None,
         labels: str | None = None,
         aggregate_by: str = "month",
+        start_date: str | None = None,
+        end_date: str | None = None,
     ):
         repository = LoadPrs()
 
-        print(f"  → {len(repository.merged())} PRs were merged")
-
-        print(f"  → {len(repository.closed())} PRs were closed")
+        prs = repository.filter_prs_by_date_range(
+            start_date=start_date, end_date=end_date
+        )
+        print(f"Filtered PRs count: {len(prs)}")
 
         if aggregate_by == "week":
-            x_vals, y_vals = repository.average_by_week(author=author, labels=labels)
+            x_vals, y_vals = repository.average_by_week(
+                author=author, labels=labels, prs=prs
+            )
             # x_vals are ISO week strings like 'YYYY-Www' — convert to a datetime for the week's Monday
             week_dates = []
             for wk in x_vals:
@@ -45,7 +50,9 @@ class ViewAverageOfPrsOpenBy(MatplotViewer):
             title = "Average PR Open Days by Week"
             xlabel = "Week"
         else:
-            x_vals, y_vals = repository.average_by_month(author=author, labels=labels)
+            x_vals, y_vals = repository.average_by_month(
+                author=author, labels=labels, prs=prs
+            )
             title = "Average PR Open Days by Month"
             xlabel = "Month"
 

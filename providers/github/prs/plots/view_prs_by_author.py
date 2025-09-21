@@ -14,10 +14,13 @@ class ViewPrsByAuthor(MatplotViewer):
         top: int = 10,
         labels: List[str] | None = None,
         out_file: str | None = None,
+        start_date: str | None = None,
+        end_date: str | None = None,
     ) -> None:
 
         repo = LoadPrs()
-        prs = repo.all_prs
+        prs = repo.filter_prs_by_date_range(start_date=start_date, end_date=end_date)
+
         if not prs:
             print("No PRs to plot")
             return

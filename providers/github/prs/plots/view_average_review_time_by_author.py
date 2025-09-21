@@ -15,11 +15,13 @@ class ViewAverageReviewTimeByAuthor(MatplotViewer):
         top: int = 10,
         labels: List[str] | None = None,
         out_file: str | None = None,
+        start_date: str | None = None,
+        end_date: str | None = None,
     ) -> None:
         """pairs: list of (author, avg_days)"""
 
         repo = LoadPrs()
-        pairs = repo.all_prs
+        pairs = repo.filter_prs_by_date_range(start_date=start_date, end_date=end_date)
 
         if not pairs:
             print("No merged PRs to plot")
