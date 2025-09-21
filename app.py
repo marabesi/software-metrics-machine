@@ -20,6 +20,10 @@ start_date_picker = pn.widgets.DatePicker(name="Start Date", value=date(2024, 4,
 end_date_picker = pn.widgets.DatePicker(name="End Date", value=date(2025, 9, 30))
 
 
+# Shared Header Section
+header_section = pn.Row(start_date_picker, end_date_picker, sizing_mode="stretch_width")
+
+
 # Pipeline Section
 def plot_workflow_by_status(start_date, end_date):
     # if start_date and end_date:
@@ -29,8 +33,6 @@ def plot_workflow_by_status(start_date, end_date):
 
 pipeline_section = pn.Column(
     "## Pipeline Section",
-    start_date_picker,
-    end_date_picker,
     pn.bind(
         plot_workflow_by_status, start_date=start_date_picker, end_date=end_date_picker
     ),
@@ -58,8 +60,6 @@ def plot_prs_by_author(start_date, end_date):
 
 prs_section = pn.Column(
     "## PRs Section",
-    start_date_picker,
-    end_date_picker,
     pn.Row(
         pn.Column(
             "### Average PRs Open By",
@@ -95,8 +95,13 @@ prs_section = pn.Column(
     ),
 )
 
-dashboard = pn.Tabs(
-    ("Pipeline", pipeline_section), ("PRs", prs_section), sizing_mode="stretch_width"
+dashboard = pn.Column(
+    header_section,
+    pn.Tabs(
+        ("Pipeline", pipeline_section),
+        ("PRs", prs_section),
+        sizing_mode="stretch_width",
+    ),
 )
 
 dashboard.servable()
