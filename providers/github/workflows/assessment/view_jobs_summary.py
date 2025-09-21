@@ -1,4 +1,3 @@
-import argparse
 from collections import Counter
 from typing import List
 from providers.github.workflows.repository_workflows import LoadWorkflows
@@ -90,7 +89,9 @@ def print_job(first, last) -> None:
     print(f"  Completed/Updated at: {datetime_to_local(ended_at)}")
 
 
-def print_summary(summary: dict, max_jobs: int = 10) -> None:
+def print_summary(max_jobs: int = 10) -> None:
+    lw = LoadWorkflows()
+    summary = summarize_jobs(lw.jobs())
     if summary.get("total_jobs", 0) == 0:
         print("No job executions available.")
         return
@@ -125,21 +126,3 @@ def print_summary(summary: dict, max_jobs: int = 10) -> None:
     last = summary["last_job"]
 
     print_job(first, last)
-
-
-if __name__ == "__main__":
-    parser = argparse.ArgumentParser(
-        description="Print a quick summary of job executions"
-    )
-    parser.add_argument(
-        "--max-jobs",
-        type=int,
-        default=10,
-        help="Maximum number of job names to list in the summary (default: 10)",
-    )
-    args = parser.parse_args()
-
-    lw = LoadWorkflows()
-    jobs = lw.jobs()
-    summary = summarize_jobs(jobs)
-    print_summary(summary, max_jobs=args.max_jobs)
