@@ -1,10 +1,11 @@
 import os
 from infrastructure.configuration import Configuration
+from matplotlib.figure import Figure
 
 
 class MatplotViewer:
 
-    def output(self, plt, fig, out_file):
+    def output(self, plt, fig: Figure, out_file):
         if out_file:
             cfg = Configuration()
             # if out_file is an absolute path, respect it; otherwise join with configured store path
@@ -28,6 +29,7 @@ class MatplotViewer:
             print(f"Saved plot to {save_path}")
             plt.close(fig)
         else:
+            fig.set_size_inches(8, 4)
             return fig
             plt.show()
 

@@ -68,7 +68,8 @@ prs_section = pn.Column(
                 start_date=start_date_picker,
                 end_date=end_date_picker,
             ),
-        )
+        ),
+        sizing_mode="stretch_width",
     ),
     pn.Row(
         pn.Column(
@@ -78,7 +79,8 @@ prs_section = pn.Column(
                 start_date=start_date_picker,
                 end_date=end_date_picker,
             ),
-        )
+        ),
+        sizing_mode="stretch_width",
     ),
     pn.Row(
         pn.Column(
@@ -89,12 +91,12 @@ prs_section = pn.Column(
                 end_date=end_date_picker,
             ),
         ),
+        sizing_mode="stretch_width",
     ),
 )
 
 dashboard = pn.Tabs(
-    ("Pipeline", pipeline_section),
-    ("PRs", prs_section),
+    ("Pipeline", pipeline_section), ("PRs", prs_section), sizing_mode="stretch_width"
 )
 
 dashboard.servable()
