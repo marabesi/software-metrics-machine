@@ -6,6 +6,9 @@ from providers.github.workflows.plots.view_jobs_average_time_execution import (
 from providers.github.workflows.plots.view_workflow_by_status import (
     ViewWorkflowByStatus,
 )
+from providers.github.workflows.plots.view_runs_duration import (
+    ViewRunsDuration,
+)
 from providers.github.prs.plots.view_average_of_prs_open_by import (
     ViewAverageOfPrsOpenBy,
 )
@@ -38,6 +41,10 @@ def plot_view_jobs_by_execution_time(start_date, end_date):
     return ViewJobsByStatus().main()
 
 
+def plot_workflow_run_duration(start_date, end_date):
+    return ViewRunsDuration().main()
+
+
 pipeline_section = pn.Column(
     "## Pipeline Section",
     pn.Row(
@@ -47,6 +54,7 @@ pipeline_section = pn.Column(
             end_date=end_date_picker,
         )
     ),
+    pn.Row(plot_workflow_run_duration(start_date_picker, end_date_picker)),
     pn.Row(plot_view_jobs_by_execution_time(start_date_picker, end_date_picker)),
 )
 

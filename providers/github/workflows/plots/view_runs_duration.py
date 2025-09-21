@@ -1,4 +1,3 @@
-import argparse
 import matplotlib.pyplot as plt
 from datetime import datetime
 from typing import List
@@ -141,34 +140,3 @@ class ViewRunsDuration(MatplotViewer):
         fig.tight_layout()
 
         return super().output(plt, fig, out_file)
-
-
-if __name__ == "__main__":
-    parser = argparse.ArgumentParser(description="Plot runs as durations (Gantt-like)")
-    parser.add_argument("--out-file", "-o", type=str, default=None)
-    parser.add_argument(
-        "--workflow-name",
-        "-w",
-        action="append",
-        help="Workflow name (exact match, case-insensitive). Can be repeated or supply comma-separated values.",
-    )
-    parser.add_argument("--start-date", type=str, default=None)
-    parser.add_argument("--end-date", type=str, default=None)
-    parser.add_argument("--max-runs", type=int, default=100)
-    args = parser.parse_args()
-
-    # normalize workflow name argument into a list (split comma-separated values)
-    wf_names = None
-    if args.workflow_name:
-        wf_names = []
-        for item in args.workflow_name:
-            parts = [p.strip() for p in item.split(",") if p.strip()]
-            wf_names.extend(parts)
-
-    ViewRunsDuration().main(
-        out_file=args.out_file,
-        workflow_name=wf_names,
-        start_date=args.start_date,
-        end_date=args.end_date,
-        max_runs=args.max_runs,
-    )
