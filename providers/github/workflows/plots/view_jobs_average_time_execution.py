@@ -1,10 +1,9 @@
-import argparse
 import matplotlib.pyplot as plt
 from collections import defaultdict
 from datetime import datetime
 
 from infrastructure.base_viewer import MatplotViewer
-from repository_workflows import LoadWorkflows
+from providers.github.workflows.repository_workflows import LoadWorkflows
 
 
 class ViewJobsByStatus(MatplotViewer):
@@ -164,75 +163,3 @@ class ViewJobsByStatus(MatplotViewer):
 
         fig.tight_layout()
         return super().output(plt, fig, out_file)
-
-
-if __name__ == "__main__":
-    parser = argparse.ArgumentParser(
-        description="Plot average job execution time by job name"
-    )
-    parser.add_argument(
-        "--workflow-name",
-        "-w",
-        type=str,
-        default=None,
-        help="Optional workflow name (case-insensitive substring) to filter runs and jobs",
-    )
-    parser.add_argument(
-        "--out-file",
-        "-o",
-        type=str,
-        default=None,
-        help="Optional path to save the plot image",
-    )
-    parser.add_argument(
-        "--top", type=int, default=20, help="How many top job names to show"
-    )
-    parser.add_argument(
-        "--event",
-        dest="event",
-        type=str,
-        default=None,
-        help="Filter runs by event (comma-separated e.g. push,pull_request,schedule)",
-    )
-    parser.add_argument(
-        "--target-branch",
-        dest="target_branch",
-        type=str,
-        default=None,
-        help="Filter jobs by target branch name (comma-separated)",
-    )
-    parser.add_argument(
-        "--exclude-jobs",
-        dest="exclude_jobs",
-        type=str,
-        default=None,
-        help="Removes jobs that contain the name from the chart (comma-separated)",
-    )
-    parser.add_argument(
-        "--start-date",
-        type=str,
-        help="Start date (inclusive) in YYYY-MM-DD",
-    )
-    parser.add_argument(
-        "--end-date", type=str, help="End date (inclusive) in YYYY-MM-DD"
-    )
-    parser.add_argument(
-        "--force-all-jobs",
-        type=bool,
-        default=False,
-        help="include setup jobs used by GitHub actions, such as 'Set up job' or 'Checkout code'",
-    )
-    args = parser.parse_args()
-
-    _cli_filters = {"event": args.event, "target_branch": args.target_branch}
-
-    ViewJobsByStatus().main(
-        workflow_name=args.workflow_name,
-        out_file=args.out_file,
-        _cli_filters=_cli_filters,
-        top=args.top,
-        exclude_jobs=args.exclude_jobs,
-        start_date=args.start_date,
-        end_date=args.end_date,
-        force_all_jobs=args.force_all_jobs,
-    )

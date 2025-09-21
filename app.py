@@ -1,5 +1,8 @@
 from datetime import date
 import panel as pn
+from providers.github.workflows.plots.view_jobs_average_time_execution import (
+    ViewJobsByStatus,
+)
 from providers.github.workflows.plots.view_workflow_by_status import (
     ViewWorkflowByStatus,
 )
@@ -31,11 +34,20 @@ def plot_workflow_by_status(start_date, end_date):
     return ViewWorkflowByStatus().main(start_date=start_date, end_date=end_date)
 
 
+def plot_view_jobs_by_execution_time(start_date, end_date):
+    return ViewJobsByStatus().main()
+
+
 pipeline_section = pn.Column(
     "## Pipeline Section",
-    pn.bind(
-        plot_workflow_by_status, start_date=start_date_picker, end_date=end_date_picker
+    pn.Row(
+        pn.bind(
+            plot_workflow_by_status,
+            start_date=start_date_picker,
+            end_date=end_date_picker,
+        )
     ),
+    pn.Row(plot_view_jobs_by_execution_time(start_date_picker, end_date_picker)),
 )
 
 
