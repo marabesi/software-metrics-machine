@@ -39,15 +39,15 @@ def plot_workflow_by_status(start_date, end_date):
 
 
 def plot_view_jobs_by_execution_time(start_date, end_date):
-    return ViewJobsByStatus().main()
+    return ViewJobsByStatus().main(start_date=start_date, end_date=end_date)
 
 
 def plot_workflow_run_duration(start_date, end_date):
-    return ViewRunsDuration().main()
+    return ViewRunsDuration().main(start_date=start_date, end_date=end_date)
 
 
 def plot_workflow_run_by(start_date, end_date):
-    return ViewWorkflowRunsBy().main()
+    return ViewWorkflowRunsBy().main(start_date=start_date, end_date=end_date)
 
 
 pipeline_section = pn.Column(
@@ -59,9 +59,25 @@ pipeline_section = pn.Column(
             end_date=end_date_picker,
         )
     ),
-    pn.Row(plot_workflow_run_by(start_date_picker, end_date_picker)),
-    pn.Row(plot_workflow_run_duration(start_date_picker, end_date_picker)),
-    pn.Row(plot_view_jobs_by_execution_time(start_date_picker, end_date_picker)),
+    pn.Row(
+        pn.bind(
+            plot_workflow_run_by, start_date=start_date_picker, end_date=end_date_picker
+        )
+    ),
+    pn.Row(
+        pn.bind(
+            plot_workflow_run_duration,
+            start_date=start_date_picker,
+            end_date=end_date_picker,
+        )
+    ),
+    pn.Row(
+        pn.bind(
+            plot_view_jobs_by_execution_time,
+            start_date=start_date_picker,
+            end_date=end_date_picker,
+        )
+    ),
 )
 
 
