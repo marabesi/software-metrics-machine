@@ -26,7 +26,19 @@ from providers.github.prs.plots.view_average_review_time_by_author import (
     default=None,
     help="Optional path to save the plot image",
 )
-def review_time_by_author(top, labels, out_file):
+@click.option(
+    "--start-date",
+    type=str,
+    default=None,
+    help="Filter PRs created on or after this date (ISO 8601)",
+)
+@click.option(
+    "--end-date",
+    type=str,
+    default=None,
+    help="Filter PRs created on or before this date (ISO 8601)",
+)
+def review_time_by_author(top, labels, out_file, start_date, end_date):
     """Plot average PR open time by author."""
 
     return ViewAverageReviewTimeByAuthor().plot_average_open_time(
