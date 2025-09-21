@@ -32,10 +32,17 @@ pn.extension()
 # Widgets
 start_date_picker = pn.widgets.DatePicker(name="Start Date", value=date(2024, 4, 1))
 end_date_picker = pn.widgets.DatePicker(name="End Date", value=date(2025, 9, 30))
+anonymize = pn.widgets.Checkbox(name="Anonymize Data", value=False)
 
 
 # Shared Header Section
-header_section = pn.Row(start_date_picker, end_date_picker, sizing_mode="stretch_width")
+header_section = pn.Column("## Software Metrics Dashboard", pn.Row(anonymize))
+header_section_prs = pn.Row(
+    start_date_picker, end_date_picker, sizing_mode="stretch_width"
+)
+header_section_pipeline = pn.Row(
+    start_date_picker, end_date_picker, sizing_mode="stretch_width"
+)
 
 
 # Pipeline Section
@@ -59,6 +66,7 @@ def plot_workflow_run_by(start_date, end_date):
 
 pipeline_section = pn.Column(
     "## Pipeline Section",
+    header_section_pipeline,
     pn.Row(
         pn.bind(
             plot_workflow_by_status,
@@ -129,6 +137,7 @@ def plot_entity_ownership():
 
 prs_section = pn.Column(
     "## PRs Section",
+    header_section_prs,
     pn.Row(
         pn.Column(
             "### Average PRs Open By",
