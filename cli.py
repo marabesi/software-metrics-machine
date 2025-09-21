@@ -38,10 +38,10 @@ module_groups = {
         "providers.github.prs.cli.view_prs_by_author",
         "providers.github.prs.cli.view_summary",
     ],
-    # "workflows": [
-    #     "providers.github.workflows.cli.view_jobs_by_status",
-    #     "providers.github.workflows.cli.view_jobs_average_time_execution",
-    # ],
+    "workflows": [
+        "providers.github.workflows.cli.fetch_workflows",
+        # "providers.github.workflows.cli.view_jobs_average_time_execution",
+    ],
 }
 
 add_commands_from_groups(module_groups)
