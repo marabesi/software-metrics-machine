@@ -18,6 +18,7 @@ from providers.github.prs.plots.view_average_review_time_by_author import (
 from providers.github.prs.plots.view_prs_by_author import (
     ViewPrsByAuthor,
 )
+from providers.github.workflows.plots.view_workflow_runs_by import ViewWorkflowRunsBy
 
 pn.extension()
 
@@ -45,6 +46,10 @@ def plot_workflow_run_duration(start_date, end_date):
     return ViewRunsDuration().main()
 
 
+def plot_workflow_run_by(start_date, end_date):
+    return ViewWorkflowRunsBy().main()
+
+
 pipeline_section = pn.Column(
     "## Pipeline Section",
     pn.Row(
@@ -54,6 +59,7 @@ pipeline_section = pn.Column(
             end_date=end_date_picker,
         )
     ),
+    pn.Row(plot_workflow_run_by(start_date_picker, end_date_picker)),
     pn.Row(plot_workflow_run_duration(start_date_picker, end_date_picker)),
     pn.Row(plot_view_jobs_by_execution_time(start_date_picker, end_date_picker)),
 )

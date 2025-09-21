@@ -30,7 +30,7 @@ from providers.github.workflows.plots.view_workflow_by_status import (
     type=str,
     help="End date (inclusive) in YYYY-MM-DD",
 )
-def view_workflow_by_status(out_file, workflow_name, start_date, end_date):
+def workflow_by_status(out_file, workflow_name, start_date, end_date):
     return ViewWorkflowByStatus().main(
         out_file=out_file,
         workflow_name=workflow_name,
@@ -39,4 +39,4 @@ def view_workflow_by_status(out_file, workflow_name, start_date, end_date):
     )
 
 
-command = view_workflow_by_status
+command = workflow_by_status

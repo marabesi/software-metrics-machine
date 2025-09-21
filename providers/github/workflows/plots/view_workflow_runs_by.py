@@ -1,4 +1,3 @@
-import argparse
 import matplotlib.pyplot as plt
 import matplotlib.dates as mdates
 from collections import defaultdict
@@ -203,68 +202,3 @@ class ViewWorkflowRunsBy(MatplotViewer):
         if isinstance(val, (list, tuple)):
             return [str(v).strip().lower() for v in val if v]
         return [p.strip().lower() for p in str(val).split(",") if p.strip()]
-
-
-if __name__ == "__main__":
-    parser = argparse.ArgumentParser(
-        description="Plot workflow runs per week aggregated by workflow name"
-    )
-    parser.add_argument(
-        "--workflow-name",
-        "-w",
-        type=str,
-        default=None,
-        help="Optional workflow name (case-insensitive substring) to filter runs",
-    )
-    parser.add_argument(
-        "--out-file",
-        "-o",
-        type=str,
-        default=None,
-        help="Optional path to save the plot image",
-    )
-    parser.add_argument(
-        "--event",
-        dest="event",
-        type=str,
-        default=None,
-        help="Filter runs by event (comma-separated e.g. push,pull_request)",
-    )
-    parser.add_argument(
-        "--target-branch",
-        dest="target_branch",
-        type=str,
-        default=None,
-        help="Filter runs by target branch (comma-separated)",
-    )
-    parser.add_argument(
-        "--include-defined-only",
-        dest="include_defined_only",
-        help="If set, include only workflows that are defined as .yml or .yaml",
-    )
-    parser.add_argument(
-        "--aggregate-by",
-        dest="aggregate_by",
-        choices=["week", "month"],
-        default="week",
-        help="Aggregate the data by 'week' (default) or 'month'",
-    )
-    parser.add_argument(
-        "--start-date",
-        type=str,
-        help="Start date (inclusive) in YYYY-MM-DD",
-    )
-    parser.add_argument(
-        "--end-date", type=str, help="End date (inclusive) in YYYY-MM-DD"
-    )
-    args = parser.parse_args()
-
-    ViewWorkflowRunsBy().main(
-        workflow_name=args.workflow_name,
-        out_file=args.out_file,
-        raw_filters={"event": args.event, "target_branch": args.target_branch},
-        include_defined_only=args.include_defined_only,
-        aggregate_by=args.aggregate_by,
-        start_date=args.start_date,
-        end_date=args.end_date,
-    )
