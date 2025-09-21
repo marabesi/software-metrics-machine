@@ -29,7 +29,7 @@ class MatplotViewer:
             print(f"Saved plot to {save_path}")
             plt.close(fig)
         else:
-            fig.set_size_inches(8, 4)
+            # fig.set_size_inches(8, 4)
             return fig
             plt.show()
 

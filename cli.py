@@ -33,7 +33,7 @@ def add_commands_from_groups(module_groups):
 module_groups = {
     "prs": [
         "providers.github.prs.cli.fetch_prs",
-        "providers.github.prs.cli.cli_average_of_prs_open_by",
+        "providers.github.prs.cli.average_of_prs_open_by",
         "providers.github.prs.cli.view_average_review_time_by_author",
         "providers.github.prs.cli.view_prs_by_author",
         "providers.github.prs.cli.view_summary",
@@ -47,6 +47,13 @@ module_groups = {
         "providers.github.workflows.cli.jobs_summary",
         "providers.github.workflows.cli.jobs_average_time_execution",
         "providers.github.workflows.cli.jobs_by_status",
+    ],
+    "codemaat": [
+        "providers.codemaat.cli.code_churn",
+        "providers.codemaat.cli.coupling",
+        "providers.codemaat.cli.entity_churn",
+        "providers.codemaat.cli.entity_effort",
+        "providers.codemaat.cli.entity_ownership",
     ],
 }
 

@@ -1,9 +1,8 @@
-import argparse
 import matplotlib.pyplot as plt
 
 from infrastructure.base_viewer import MatplotViewer
 from infrastructure.viewable import Viewable
-from codemaat_repository import CodemaatRepository
+from providers.codemaat.codemaat_repository import CodemaatRepository
 
 
 class EntityChurnViewer(MatplotViewer, Viewable):
@@ -13,6 +12,8 @@ class EntityChurnViewer(MatplotViewer, Viewable):
         top_n: int = 30,
         ignore_files: str | None = None,
         out_file: str | None = None,
+        start_date: str | None = None,
+        end_date: str | None = None,
     ) -> None:
         df = repo.get_entity_churn()
 
@@ -45,34 +46,4 @@ class EntityChurnViewer(MatplotViewer, Viewable):
         plt.xticks(rotation=45, ha="right")
         plt.tight_layout()
 
-        super().output(plt, fig, out_file=out_file)
-
-
-if __name__ == "__main__":
-    parser = argparse.ArgumentParser(description="Plot coupling graph")
-    parser.add_argument(
-        "--out-file",
-        "-o",
-        type=str,
-        default=None,
-        help="Optional path to save the plot image",
-    )
-    parser.add_argument(
-        "--top",
-        type=int,
-        default=None,
-        help="Optional number of top entities to display (by total churn)",
-    )
-    parser.add_argument(
-        "--ignore-files",
-        dest="ignore_files",
-        type=str,
-        default=None,
-        help="Optional comma-separated glob patterns to ignore (e.g. '*.json,**/**/*.png')",
-    )
-    args = parser.parse_args()
-    viewer = EntityChurnViewer()
-    df_repo = CodemaatRepository()
-    viewer.render(
-        df_repo, top_n=args.top, ignore_files=args.ignore_files, out_file=args.out_file
-    )
+        return super().output(plt, fig, out_file=out_file)

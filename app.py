@@ -20,6 +20,10 @@ from providers.github.prs.plots.view_prs_by_author import (
 )
 from providers.github.workflows.plots.view_workflow_runs_by import ViewWorkflowRunsBy
 
+from providers.codemaat.plots.code_churn import CodeChurnViewer
+from providers.codemaat.plots.entity_churn import EntityChurnViewer
+from providers.codemaat.codemaat_repository import CodemaatRepository
+
 pn.extension()
 
 # Widgets
@@ -98,6 +102,18 @@ def plot_prs_by_author(start_date, end_date):
     )
 
 
+def plot_code_churn(start_date, end_date):
+    return CodeChurnViewer().render(
+        CodemaatRepository(), start_date=start_date, end_date=end_date
+    )
+
+
+def plot_entity_churn(start_date, end_date):
+    return EntityChurnViewer().render(
+        CodemaatRepository(), start_date=start_date, end_date=end_date
+    )
+
+
 prs_section = pn.Column(
     "## PRs Section",
     pn.Row(
@@ -135,11 +151,38 @@ prs_section = pn.Column(
     ),
 )
 
+source_code_section = pn.Column(
+    "## Source code Section",
+    pn.Row(
+        pn.Column(
+            "### Code Churn",
+            pn.bind(
+                plot_code_churn,
+                start_date=start_date_picker,
+                end_date=end_date_picker,
+            ),
+        ),
+        sizing_mode="stretch_width",
+    ),
+    pn.Row(
+        pn.Column(
+            "### Entity Churn",
+            pn.bind(
+                plot_entity_churn,
+                start_date=start_date_picker,
+                end_date=end_date_picker,
+            ),
+        ),
+        sizing_mode="stretch_width",
+    ),
+)
+
 dashboard = pn.Column(
     header_section,
     pn.Tabs(
         ("Pipeline", pipeline_section),
-        ("PRs", prs_section),
+        ("Pull requests", prs_section),
+        ("Source code", source_code_section),
         sizing_mode="stretch_width",
     ),
 )

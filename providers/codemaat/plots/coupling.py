@@ -1,10 +1,9 @@
-import argparse
 import matplotlib.pyplot as plt
 import networkx as nx
 
 from infrastructure.base_viewer import MatplotViewer
 from infrastructure.viewable import Viewable
-from codemaat_repository import CodemaatRepository
+from providers.codemaat.codemaat_repository import CodemaatRepository
 
 
 class CouplingViewer(MatplotViewer, Viewable):
@@ -50,17 +49,4 @@ class CouplingViewer(MatplotViewer, Viewable):
             width=2,
         )
 
-        super().output(plt, fig, out_file=out_file)
-
-
-if __name__ == "__main__":
-    parser = argparse.ArgumentParser(description="Plot coupling graph")
-    parser.add_argument(
-        "--out-file",
-        "-o",
-        type=str,
-        default=None,
-        help="Optional path to save the plot image",
-    )
-    args = parser.parse_args()
-    viewer = CouplingViewer().render(CodemaatRepository(), out_file=args.out_file)
+        return super().output(plt, fig, out_file=out_file)
