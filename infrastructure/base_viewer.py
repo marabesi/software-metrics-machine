@@ -25,7 +25,7 @@ class MatplotViewer:
                     # if directory creation fails, let fig.savefig raise the appropriate error
                     pass
 
-            fig.savefig(save_path, dpi=150)
+            fig.savefig(save_path, dpi=900)
             print(f"Saved plot to {save_path}")
             plt.close(fig)
         else:
