@@ -7,6 +7,9 @@ from providers.github.prs.prs_repository import LoadPrs
 
 
 class ViewAverageOfPrsOpenBy(MatplotViewer):
+    def __init__(self, repository: LoadPrs):
+        self.repository = repository
+
     def main(
         self,
         out_file: str | None = None,
@@ -16,17 +19,15 @@ class ViewAverageOfPrsOpenBy(MatplotViewer):
         start_date: str | None = None,
         end_date: str | None = None,
     ):
-        repository = LoadPrs()
+        prs = self.repository.all_prs
 
-        prs = repository.all_prs
-
-        prs = repository.filter_by_date_range(
+        prs = self.repository.filter_by_date_range(
             prs, start_date=start_date, end_date=end_date
         )
         print(f"Filtered PRs count: {len(prs)}")
 
         if aggregate_by == "week":
-            x_vals, y_vals = repository.average_by_week(
+            x_vals, y_vals = self.repository.average_by_week(
                 author=author, labels=labels, prs=prs
             )
             # x_vals are ISO week strings like 'YYYY-Www' — convert to a datetime for the week's Monday
@@ -52,7 +53,7 @@ class ViewAverageOfPrsOpenBy(MatplotViewer):
             title = "Average PR Open Days by Week"
             xlabel = "Week"
         else:
-            x_vals, y_vals = repository.average_by_month(
+            x_vals, y_vals = self.repository.average_by_month(
                 author=author, labels=labels, prs=prs
             )
             title = "Average PR Open Days by Month"

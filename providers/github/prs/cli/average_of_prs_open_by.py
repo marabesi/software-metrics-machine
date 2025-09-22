@@ -1,5 +1,6 @@
 import click
 
+from providers.github.prs.prs_repository import LoadPrs
 from providers.github.prs.plots.view_average_of_prs_open_by import (
     ViewAverageOfPrsOpenBy,
 )
@@ -48,7 +49,7 @@ from providers.github.prs.plots.view_average_of_prs_open_by import (
 )
 def average_prs_open_by(out_file, author, labels, aggregate_by, start_date, end_date):
     """Plot average PR open."""
-    ViewAverageOfPrsOpenBy().main(
+    ViewAverageOfPrsOpenBy(repository=LoadPrs()).main(
         out_file=out_file,
         author=author,
         labels=labels,

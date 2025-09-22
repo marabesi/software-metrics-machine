@@ -7,6 +7,8 @@ from typing import List, Tuple
 
 
 class ViewPrsByAuthor(MatplotViewer):
+    def __init__(self, repository: LoadPrs):
+        self.repository = repository
 
     def plot_top_authors(
         self,
@@ -18,9 +20,8 @@ class ViewPrsByAuthor(MatplotViewer):
         end_date: str | None = None,
     ) -> None:
 
-        repo = LoadPrs()
-        prs = repo.filter_by_date_range(
-            repo.all_prs, start_date=start_date, end_date=end_date
+        prs = self.repository.filter_by_date_range(
+            self.repository.all_prs, start_date=start_date, end_date=end_date
         )
 
         if not prs:
@@ -29,7 +30,7 @@ class ViewPrsByAuthor(MatplotViewer):
 
         if labels:
             labels = [s.strip() for s in labels.split(",") if s.strip()]
-            prs = repo.filter_prs_by_labels(prs, labels)
+            prs = self.repository.filter_prs_by_labels(prs, labels)
 
         print(f"Loaded {len(prs)} PRs after filtering")
 

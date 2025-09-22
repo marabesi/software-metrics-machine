@@ -9,6 +9,9 @@ from datetime import datetime
 
 class ViewAverageReviewTimeByAuthor(MatplotViewer):
 
+    def __init__(self, repository: LoadPrs):
+        self.repository = repository
+
     def plot_average_open_time(
         self,
         title: str,
@@ -20,9 +23,8 @@ class ViewAverageReviewTimeByAuthor(MatplotViewer):
     ) -> None:
         """pairs: list of (author, avg_days)"""
 
-        repo = LoadPrs()
-        all_prs = repo.all_prs
-        pairs = repo.filter_by_date_range(
+        all_prs = self.repository.all_prs
+        pairs = self.repository.filter_by_date_range(
             all_prs, start_date=start_date, end_date=end_date
         )
 
@@ -34,7 +36,7 @@ class ViewAverageReviewTimeByAuthor(MatplotViewer):
 
         if labels:
             labels = [s.strip() for s in labels.split(",") if s.strip()]
-            pairs = repo.filter_prs_by_labels(pairs, labels)
+            pairs = self.repository.filter_prs_by_labels(pairs, labels)
 
         authors, avgs = zip(*pairs)
         # horizontal bar chart with largest on top
