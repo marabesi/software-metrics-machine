@@ -25,8 +25,8 @@ header_section_pipeline = pn.Row(
 dashboard = pn.Column(
     header_section,
     pn.Tabs(
-        ("Pipeline", pipeline_section),
-        ("Pull requests", prs_section),
+        ("Pipeline", pipeline_section(start_date_picker, end_date_picker)),
+        ("Pull requests", prs_section(start_date_picker, end_date_picker)),
         ("Source code", source_code_section),
         sizing_mode="stretch_width",
     ),
