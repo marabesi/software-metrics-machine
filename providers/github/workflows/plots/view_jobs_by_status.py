@@ -215,7 +215,9 @@ class ViewJobsByStatus(MatplotViewer):
 
         # If with_pipeline is True show both workflow summary and job chart side-by-side
         if with_pipeline:
-            fig, (ax_left, ax_right) = plt.subplots(1, 2, figsize=(14, 5))
+            fig, (ax_left, ax_right) = plt.subplots(
+                1, 2, figsize=super().get_fig_size()
+            )
 
             # plot status counts on the left axis
             bars = ax_left.bar(
@@ -245,7 +247,7 @@ class ViewJobsByStatus(MatplotViewer):
 
             plot_ax = ax_right
         else:
-            fig, plot_ax = plt.subplots(1, 1, figsize=(8, 5))
+            fig, plot_ax = plt.subplots(1, 1, figsize=super().get_fig_size())
 
         # plot delivery executions on the chosen axis as stacked bars by conclusion
         if dates and matrix:

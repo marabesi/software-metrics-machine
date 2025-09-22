@@ -59,7 +59,7 @@ class ViewAverageOfPrsOpenBy(MatplotViewer):
             title = "Average PR Open Days by Month"
             xlabel = "Month"
 
-        fig, ax = plt.subplots(figsize=(12, 5))
+        fig, ax = plt.subplots(figsize=super().get_fig_size())
         if aggregate_by == "week":
             # plot using datetime x values
             ax.plot(week_dates, y_vals, marker="o", color="tab:blue")

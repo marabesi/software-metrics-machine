@@ -113,7 +113,7 @@ class ViewJobsByStatus(MatplotViewer):
 
         if not averages:
             print("No job durations found after filtering")
-            fig, plot_ax = plt.subplots(1, 1, figsize=(10, 4))
+            fig, plot_ax = plt.subplots(1, 1, figsize=super().get_fig_size())
             plot_ax.text(0.5, 0.5, "No job durations found", ha="center", va="center")
             plot_ax.axis("off")
             fig.tight_layout()
@@ -122,7 +122,7 @@ class ViewJobsByStatus(MatplotViewer):
 
         names, mins = zip(*averages)
 
-        fig, plot_ax = plt.subplots(1, 1, figsize=(10, max(4, len(names) * 0.5)))
+        fig, plot_ax = plt.subplots(1, 1, figsize=super().get_fig_size())
 
         y_pos = list(range(len(names)))[::-1]
         plot_ax.barh(y_pos, mins, color="#4c78a8")

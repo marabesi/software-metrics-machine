@@ -27,7 +27,7 @@ class EntityEffortViewer(MatplotViewer, Viewable):
         entities = effort_per_entity.index
         efforts = effort_per_entity.values
 
-        fig, ax = plt.subplots(figsize=(10, max(6, len(entities) // 10)))
+        fig, ax = plt.subplots(figsize=super().get_fig_size())
         ax.barh(entities, efforts, color="tab:purple")
         ax.set_xlabel("Total Effort (Revisions)")
         ax.set_ylabel("Entity")

@@ -35,7 +35,7 @@ class EntityChurnViewer(MatplotViewer, Viewable):
         added = df["added"]
         deleted = df["deleted"]
 
-        fig, ax = plt.subplots(figsize=(12, 6))
+        fig, ax = plt.subplots(figsize=super().get_fig_size())
         ax.bar(dates, added, label="Added", color="tab:blue")
         ax.bar(dates, deleted, bottom=added, label="Deleted", color="tab:red")
 

@@ -38,7 +38,8 @@ class ViewPrsByAuthor(MatplotViewer):
 
         authors, counts = zip(*prs)
         # horizontal bar chart with largest on top
-        fig, ax = plt.subplots(figsize=(10, max(4, len(authors) * 0.5)))
+        fig, ax = plt.subplots(figsize=super().get_fig_size())
+
         y_pos = range(len(authors))[::-1]
         ax.barh(y_pos, counts, color="#4c78a8")
         ax.set_yticks(y_pos)

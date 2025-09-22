@@ -5,6 +5,9 @@ from matplotlib.figure import Figure
 
 class MatplotViewer:
 
+    def get_fig_size(self):
+        return (9, 4)
+
     def output(self, plt, fig: Figure, out_file):
         if out_file:
             cfg = Configuration()

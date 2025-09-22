@@ -17,7 +17,7 @@ class CouplingViewer(MatplotViewer, Viewable):
             if row["degree"] > 0.5:  # filter to highlight stronger couplings
                 G.add_edge(row["entity"], row["coupled"], weight=row["degree"])
 
-        fig = plt.figure(figsize=(10, 8))
+        fig = plt.figure(figsize=super().get_fig_size())
         pos = nx.spring_layout(G, k=0.5, iterations=50)
 
         # Get edge weights

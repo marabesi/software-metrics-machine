@@ -140,7 +140,7 @@ class ViewWorkflowRunsBy(MatplotViewer):
 
         # plotting
         fig, ax = plt.subplots(
-            figsize=(12, 6)
+            figsize=super().get_fig_size()
         )  # Ensure a consistent width for better readability
         bottom = [0] * len(periods)
         colors = plt.cm.tab20.colors

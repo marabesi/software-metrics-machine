@@ -109,7 +109,7 @@ class ViewRunsDuration(MatplotViewer):
             ylabel = "Average minutes"
             title_metric = "Average"
 
-        fig, ax = plt.subplots(figsize=(max(8, len(names) * 0.4), 6))
+        fig, ax = plt.subplots(figsize=super().get_fig_size())
         x = list(range(len(names)))
         bars = ax.bar(x, values, color="tab:blue")
 

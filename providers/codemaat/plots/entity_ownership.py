@@ -38,7 +38,7 @@ class EntityOnershipViewer(MatplotViewer, Viewable):
             index="entity", columns="author", values="deleted"
         ).fillna(0)
 
-        fig, ax = plt.subplots(figsize=(12, 6))
+        fig, ax = plt.subplots(figsize=super().get_fig_size())
         bottom = None
         for author in pivot.columns:
             ax.bar(pivot.index, pivot[author], label=f"{author} added", bottom=bottom)
