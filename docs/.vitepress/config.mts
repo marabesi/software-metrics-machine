@@ -4,6 +4,7 @@ import { defineConfig } from 'vitepress'
 export default defineConfig({
   title: "Software metrics machine",
   description: "Stop pointing, start measuring",
+  base: '/software-metrics-machine/',
   themeConfig: {
     // https://vitepress.dev/reference/default-theme-config
     nav: [
