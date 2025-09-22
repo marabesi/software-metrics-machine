@@ -6,6 +6,8 @@ hero:
   name: "Software metrics machine"
   text: "Welcome to the Software Metrics Machine documentation"
   tagline: Stop pointing, start measuring
+  #https://www.flaticon.com/free-icon/data-analysis_12959231?term=dashboard&page=1&position=65&origin=search&related_id=12959231
+  image: data-analysis.png
 features:
   - title: GitHub Integration ✅
     link: ./github.md
