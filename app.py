@@ -8,8 +8,8 @@ from dashboard.source_code_section import source_code_section
 pn.extension()
 
 # Widgets
-start_date_picker = pn.widgets.DatePicker(name="Start Date", value=date(2024, 4, 1))
-end_date_picker = pn.widgets.DatePicker(name="End Date", value=date(2025, 9, 30))
+start_date_picker = pn.widgets.DatePicker(name="Start Date", value=date(2025, 8, 5))
+end_date_picker = pn.widgets.DatePicker(name="End Date", value=date(2025, 8, 15))
 anonymize = pn.widgets.Checkbox(name="Anonymize Data", value=False)
 
 

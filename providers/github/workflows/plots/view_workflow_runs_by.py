@@ -139,7 +139,9 @@ class ViewWorkflowRunsBy(MatplotViewer):
         x_vals = mdates.date2num(rep_dates)
 
         # plotting
-        fig, ax = plt.subplots(figsize=(max(8, len(periods) * 0.6), 6))
+        fig, ax = plt.subplots(
+            figsize=(12, 6)
+        )  # Ensure a consistent width for better readability
         bottom = [0] * len(periods)
         colors = plt.cm.tab20.colors
         bar_width = 6.5 if aggregate_by == "week" else 20
