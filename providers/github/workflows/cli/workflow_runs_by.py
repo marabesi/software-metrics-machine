@@ -1,5 +1,6 @@
 import click
 
+from providers.github.workflows.repository_workflows import LoadWorkflows
 from providers.github.workflows.plots.view_workflow_runs_by import ViewWorkflowRunsBy
 
 
@@ -61,7 +62,7 @@ def workflow_runs_by(
     start_date,
     end_date,
 ):
-    return ViewWorkflowRunsBy().main(
+    return ViewWorkflowRunsBy(repository=LoadWorkflows()).main(
         workflow_name=workflow_name,
         out_file=out_file,
         raw_filters={"event": event, "target_branch": target_branch},

@@ -8,6 +8,9 @@ from providers.github.workflows.repository_workflows import LoadWorkflows
 
 class ViewJobsByStatus(MatplotViewer):
 
+    def __init__(self, repository: LoadWorkflows):
+        self.repository = repository
+
     def _split_and_normalize(self, val: str):
         """Turn a comma-separated string into a list of lowercase trimmed values, or return None."""
         if not val:
@@ -31,15 +34,14 @@ class ViewJobsByStatus(MatplotViewer):
 
         Averages are shown in minutes.
         """
-        workflows = LoadWorkflows()
         if start_date and end_date:
             filters = {"start_date": start_date, "end_date": end_date}
             print(f"Applying date filter: {filters}")
-            runs = workflows.runs(filters=filters)
-            jobs = workflows.jobs(filters=filters)
+            runs = self.repository.runs(filters=filters)
+            jobs = self.repository.jobs(filters=filters)
         else:
-            runs = workflows.runs()
-            jobs = workflows.jobs()
+            runs = self.repository.runs()
+            jobs = self.repository.jobs()
         # optional filter by workflow name (case-insensitive substring match)
         if workflow_name:
             wf_low = workflow_name.lower()
@@ -77,7 +79,7 @@ class ViewJobsByStatus(MatplotViewer):
 
         if exclude_jobs:
             exclude = [s.strip() for s in exclude_jobs.split(",") if s.strip()]
-            jobs = workflows.filter_by_job_name(jobs, exclude)
+            jobs = self.repository.filter_by_job_name(jobs, exclude)
 
         print(f"Found {len(runs)} workflow runs and {len(jobs)} jobs after filtering")
 

@@ -1,4 +1,5 @@
 import click
+from providers.github.workflows.repository_workflows import LoadWorkflows
 from providers.github.workflows.plots.view_runs_duration import ViewRunsDuration
 
 
@@ -42,7 +43,7 @@ def workflows_run_durantion(out_file, workflow_name, start_date, end_date, max_r
             parts = [p.strip() for p in item.split(",") if p.strip()]
             wf_names.extend(parts)
 
-    return ViewRunsDuration().main(
+    return ViewRunsDuration(repository=LoadWorkflows()).main(
         out_file=out_file,
         workflow_name=wf_names,
         start_date=start_date,

@@ -9,25 +9,36 @@ from providers.github.workflows.plots.view_runs_duration import (
     ViewRunsDuration,
 )
 from providers.github.workflows.plots.view_workflow_runs_by import ViewWorkflowRunsBy
+from providers.github.workflows.repository_workflows import LoadWorkflows
 
 pn.extension()
+
+repository = LoadWorkflows()
 
 
 # Pipeline Section
 def plot_workflow_by_status(start_date, end_date):
-    return ViewWorkflowByStatus().main(start_date=start_date, end_date=end_date)
+    return ViewWorkflowByStatus(repository=repository).main(
+        start_date=start_date, end_date=end_date
+    )
 
 
 def plot_view_jobs_by_execution_time(start_date, end_date):
-    return ViewJobsByStatus().main(start_date=start_date, end_date=end_date)
+    return ViewJobsByStatus(repository=repository).main(
+        start_date=start_date, end_date=end_date
+    )
 
 
 def plot_workflow_run_duration(start_date, end_date):
-    return ViewRunsDuration().main(start_date=start_date, end_date=end_date)
+    return ViewRunsDuration(repository=repository).main(
+        start_date=start_date, end_date=end_date
+    )
 
 
 def plot_workflow_run_by(start_date, end_date):
-    return ViewWorkflowRunsBy().main(start_date=start_date, end_date=end_date)
+    return ViewWorkflowRunsBy(repository=repository).main(
+        start_date=start_date, end_date=end_date
+    )
 
 
 def pipeline_section(start_date_picker, end_date_picker):

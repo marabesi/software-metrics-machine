@@ -1,5 +1,6 @@
 import click
 
+from providers.github.workflows.repository_workflows import LoadWorkflows
 from providers.github.workflows.plots.view_jobs_by_status import ViewJobsByStatus
 
 
@@ -78,7 +79,7 @@ def jobs_by_status(
     _cli_filters["event"] = event
     _cli_filters["target_branch"] = target_branch
 
-    return ViewJobsByStatus().main(
+    return ViewJobsByStatus(repository=LoadWorkflows()).main(
         job_name=job_name,
         workflow_name=workflow_name,
         out_file=out_file,

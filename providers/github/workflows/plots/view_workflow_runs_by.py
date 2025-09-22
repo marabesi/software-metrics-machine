@@ -9,6 +9,9 @@ from providers.github.workflows.repository_workflows import LoadWorkflows
 
 class ViewWorkflowRunsBy(MatplotViewer):
 
+    def __init__(self, repository: LoadWorkflows):
+        self.repository = repository
+
     def main(
         self,
         workflow_name: str | None = None,
@@ -19,13 +22,12 @@ class ViewWorkflowRunsBy(MatplotViewer):
         start_date: str | None = None,
         end_date: str | None = None,
     ) -> None:
-        loader = LoadWorkflows()
         if start_date and end_date:
             filters = {"start_date": start_date, "end_date": end_date}
             print(f"Applying date filter: {filters}")
-            runs = loader.runs(filters)
+            runs = self.repository.runs(filters)
         else:
-            runs = loader.runs()
+            runs = self.repository.runs()
 
         # optional filter by workflow name (case-insensitive substring)
         if workflow_name:

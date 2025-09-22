@@ -19,6 +19,9 @@ def _parse_dt(v: str):
 
 
 class ViewRunsDuration(MatplotViewer):
+    def __init__(self, repository: LoadWorkflows):
+        self.repository = repository
+
     def main(
         self,
         out_file: str | None = None,
@@ -29,12 +32,11 @@ class ViewRunsDuration(MatplotViewer):
         metric: str = "avg",
         sort_by: str = "avg",
     ) -> None:
-        loader = LoadWorkflows()
         if start_date and end_date:
             filters = {"start_date": start_date, "end_date": end_date}
-            runs = loader.runs(filters)
+            runs = self.repository.runs(filters)
         else:
-            runs = loader.runs()
+            runs = self.repository.runs()
 
         if workflow_name:
             # normalize provided list of names

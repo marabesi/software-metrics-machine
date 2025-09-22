@@ -6,6 +6,9 @@ from providers.github.workflows.repository_workflows import LoadWorkflows
 
 
 class ViewWorkflowByStatus(MatplotViewer):
+    def __init__(self, repository: LoadWorkflows):
+        self.repository = repository
+
     def main(
         self,
         out_file: str | None = None,
@@ -13,13 +16,11 @@ class ViewWorkflowByStatus(MatplotViewer):
         start_date: str | None = None,
         end_date: str | None = None,
     ) -> None:
-        workflows = LoadWorkflows()
-
         if start_date and end_date:
             filters = {"start_date": start_date, "end_date": end_date}
-            runs = workflows.runs(filters)
+            runs = self.repository.runs(filters)
         else:
-            runs = workflows.runs()
+            runs = self.repository.runs()
 
         if workflow_name:
             name_low = workflow_name.lower()

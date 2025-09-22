@@ -1,5 +1,6 @@
 import click
 
+from providers.github.workflows.repository_workflows import LoadWorkflows
 from providers.github.workflows.plots.view_workflow_by_status import (
     ViewWorkflowByStatus,
 )
@@ -31,7 +32,7 @@ from providers.github.workflows.plots.view_workflow_by_status import (
     help="End date (inclusive) in YYYY-MM-DD",
 )
 def workflow_by_status(out_file, workflow_name, start_date, end_date):
-    return ViewWorkflowByStatus().main(
+    return ViewWorkflowByStatus(repository=LoadWorkflows()).main(
         out_file=out_file,
         workflow_name=workflow_name,
         start_date=start_date,
