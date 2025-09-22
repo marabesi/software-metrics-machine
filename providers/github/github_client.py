@@ -17,7 +17,7 @@ class GithubClient:
         }
         self.repository_slug = configuration.github_repository
 
-    def fetch_prs(self, months_back=1, cutoff_date=None, force=None):
+    def fetch_prs(self, start_date=None, end_date=None, months=1, force=None):
         self.pr_repository = LoadPrs()
         pr_json_path = "prs.json"
 
@@ -30,38 +30,30 @@ class GithubClient:
             print(f"PRs file already exists. Loading PRs from {pr_json_path}")
             return
 
-        # validate mutually exclusive parameters
-        if months_back is not None and cutoff_date is not None:
-            raise ValueError("Provide only one of 'months_back' or 'cutoff_date'.")
+        if not start_date or not end_date:
+            print(
+                f"No start_date or end_date provided. Defaulting to the last {months} month(s)."
+            )
+            end_date = datetime.now(timezone.utc)
+            start_date = end_date - pd.DateOffset(months=months)
+            start_date = start_date.to_pydatetime()
 
-        # default behaviour: if neither provided, use 1 month back
-        if months_back is None and cutoff_date is None:
-            months_back = 1
+        if start_date and end_date:
+            try:
+                start_date = datetime.fromisoformat(start_date).replace(
+                    tzinfo=timezone.utc
+                )
+                end_date = datetime.fromisoformat(end_date).replace(tzinfo=timezone.utc)
+            except ValueError:
+                raise ValueError("Dates must be in ISO format: YYYY-MM-DD")
+
+        print(
+            f"Fetching PRs for {self.repository_slug} from {start_date} to {end_date}…"
+        )
 
         prs = []
         url = f"https://api.github.com/repos/{self.repository_slug}/pulls?state=all&per_page=100&sort=created&direction=desc"  # noqa
 
-        if cutoff_date is not None:
-            # parse cutoff_date (expected YYYY-MM-DD)
-            try:
-                cutoff = datetime.fromisoformat(cutoff_date)
-                # make timezone-aware at UTC
-                if cutoff.tzinfo is None:
-                    cutoff = cutoff.replace(tzinfo=timezone.utc)
-            except Exception:
-                # try parsing common format
-                cutoff = datetime.strptime(cutoff_date, "%Y-%m-%d").replace(
-                    tzinfo=timezone.utc
-                )
-            print(
-                f"Fetching PRs for {self.repository_slug} since {cutoff.isoformat()}…"
-            )
-        else:
-            cutoff = datetime.now(timezone.utc) - pd.DateOffset(months=months_back)
-            cutoff = cutoff.to_pydatetime()
-            print(
-                f"Fetching PRs for {self.repository_slug} (last {months_back} month(s))…"
-            )
         stop = False
         while url and not stop:
             print(f"  → fetching {url}")
@@ -73,10 +65,12 @@ class GithubClient:
                 created = datetime.fromisoformat(
                     pr["created_at"].replace("Z", "+00:00")
                 )
-                if created < cutoff:
+                if created < start_date:
                     stop = True
                     break
-                prs.append(pr)
+                if created <= end_date:
+                    prs.append(pr)
+
             # next page logic
             link = r.links.get("next")
             print(f"  → link: {link}")
