@@ -8,6 +8,10 @@ hero:
   tagline: Stop pointing, start measuring
   #https://www.flaticon.com/free-icon/data-analysis_12959231?term=dashboard&page=1&position=65&origin=search&related_id=12959231
   image: data-analysis.png
+  actions:
+    - theme: brand
+      text: What is Software Metrics Machine?
+      link: /what-is-smm
 features:
   - title: GitHub Integration ✅
     link: ./github.md

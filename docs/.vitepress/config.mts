@@ -13,6 +13,12 @@ export default defineConfig({
 
     sidebar: [
       {
+        text: 'Introduction',
+        items: [
+          { text: 'What is SMM', link: '/what-is-smm' },
+        ]
+      },
+      {
         text: 'Integrations',
         items: [
           { text: 'GitHub', link: '/github' },
