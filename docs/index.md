@@ -4,22 +4,15 @@ layout: home
 
 hero:
   name: "Software metrics machine"
-  text: "A VitePress Site"
-  tagline: My great project tagline
-  actions:
-    - theme: brand
-      text: Markdown Examples
-      link: /markdown-examples
-    - theme: alt
-      text: API Examples
-      link: /api-examples
-
+  text: "Welcome to the Software Metrics Machine documentation"
+  tagline: Stop pointing, start measuring
 features:
-  - title: Feature A
+  - title: GitHub Integration ✅
+    link: ./github.md
     details: Lorem ipsum dolor sit amet, consectetur adipiscing elit
-  - title: Feature B
+  - title: Codemaat Integration ✅
+    link: ./codemaat.md
     details: Lorem ipsum dolor sit amet, consectetur adipiscing elit
-  - title: Feature C
+  - title: GitLab Integration 🚧
+    link: ./gitlab.md
     details: Lorem ipsum dolor sit amet, consectetur adipiscing elit
----
-
