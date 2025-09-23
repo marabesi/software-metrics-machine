@@ -8,13 +8,18 @@ from providers.codemaat.codemaat_repository import CodemaatRepository
 
 
 class CouplingViewer(MatplotViewer, Viewable):
-    def render(self, repo: CodemaatRepository, out_file: str | None = None) -> Figure:
+    def render(
+        self, repo: CodemaatRepository, out_file: str | None = None, top_n: int = 2
+    ) -> Figure:
         df = repo.get_coupling()
+
+        # Sort by degree and select top N items
+        top_df = df.nlargest(top_n, "degree")
 
         G = nx.Graph()
 
         # Add edges weighted by degree
-        for _, row in df.iterrows():
+        for _, row in top_df.iterrows():
             if row["degree"] > 0.5:  # filter to highlight stronger couplings
                 G.add_edge(row["entity"], row["coupled"], weight=row["degree"])
 
@@ -39,15 +44,6 @@ class CouplingViewer(MatplotViewer, Viewable):
             edge_color=edge_colors,
             width=2,
         )
-        plt.title("Code Coupling Network (Edge Color by Weight)")
-        nx.draw(
-            G,
-            pos,
-            with_labels=True,
-            node_size=500,
-            font_size=8,
-            edge_color=edge_colors,
-            width=2,
-        )
+        plt.title(f"Top {top_n} Code Coupling Network (Edge Color by Weight)")
 
         return super().output(plt, fig, out_file=out_file)
