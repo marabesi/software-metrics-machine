@@ -119,7 +119,7 @@ class ViewJobsByStatus(MatplotViewer):
     def main(
         self,
         job_name: str,
-        workflow_name: str | None = None,
+        workflow_path: str | None = None,
         out_file: str | None = None,
         with_pipeline: bool = False,
         aggregate_by_week: bool = False,
@@ -138,9 +138,9 @@ class ViewJobsByStatus(MatplotViewer):
             jobs = self.repository.jobs()
 
         # optional filter by workflow name (case-insensitive substring match)
-        if workflow_name:
-            wf_low = workflow_name.lower()
-            runs = [r for r in runs if (r.get("name") or "").lower().find(wf_low) != -1]
+        if workflow_path:
+            wf_low = workflow_path.lower()
+            runs = [r for r in runs if (r.get("path") or "").lower().find(wf_low) != -1]
 
         # optional filter by event (e.g. push, pull_request) - accepts comma-separated or single value
         if event_vals := self._split_and_normalize(raw_filters.get("event")):
@@ -156,21 +156,21 @@ class ViewJobsByStatus(MatplotViewer):
 
         # derive display labels from job objects if possible
         display_job_name = job_name or "<job>"
-        display_workflow_name = workflow_name or None
+        display_workflow_name = workflow_path or None
         # prefer explicit fields on job objects
         for j in jobs:
             if not display_job_name or display_job_name == "<job>":
                 if j.get("name"):
                     display_job_name = j.get("name")
             if not display_workflow_name:
-                wf = j.get("workflow_name") or j.get("workflow") or j.get("run_name")
+                wf = j.get("workflow_path") or j.get("workflow") or j.get("run_name")
                 if wf:
                     display_workflow_name = wf
             if display_job_name and display_workflow_name:
                 break
         # fallback: try to resolve workflow name via run_id -> run name mapping
         if not display_workflow_name:
-            run_map = {r.get("id"): r.get("name") for r in runs if r.get("id")}
+            run_map = {r.get("id"): r.get("path") for r in runs if r.get("id")}
             for j in jobs:
                 rid = j.get("run_id") or j.get("runId")
                 if rid and rid in run_map:
@@ -227,9 +227,9 @@ class ViewJobsByStatus(MatplotViewer):
             )
 
             ax_left.set_title(f"Status of Workflows - {len(runs)} runs")
-            if workflow_name:
+            if workflow_path:
                 ax_left.set_title(
-                    f"Status of Workflows ({workflow_name}) - {len(runs)} runs"
+                    f"Status of Workflows ({workflow_path}) - {len(runs)} runs"
                 )
 
             ax_left.set_xlabel("Status")

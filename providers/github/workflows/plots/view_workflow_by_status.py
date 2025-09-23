@@ -12,7 +12,7 @@ class ViewWorkflowByStatus(MatplotViewer):
     def main(
         self,
         out_file: str | None = None,
-        workflow_name: str | None = None,
+        workflow_path: str | None = None,
         start_date: str | None = None,
         end_date: str | None = None,
     ) -> None:
@@ -22,10 +22,10 @@ class ViewWorkflowByStatus(MatplotViewer):
         else:
             runs = self.repository.runs()
 
-        if workflow_name:
-            name_low = workflow_name.lower()
+        if workflow_path:
+            name_low = workflow_path.lower()
             runs = [
-                r for r in runs if (r.get("name") or "").lower().find(name_low) != -1
+                r for r in runs if (r.get("path") or "").lower().find(name_low) != -1
             ]
 
         # workflow conclusions
@@ -39,9 +39,9 @@ class ViewWorkflowByStatus(MatplotViewer):
             list(status_counts.keys()), list(status_counts.values()), color="skyblue"
         )
         ax.set_title("Status of Pipeline Runs")
-        if workflow_name:
+        if workflow_path:
             ax.set_title(
-                f"Status of Pipeline Runs for '{workflow_name}' - Total {len(runs)}"
+                f"Status of Pipeline Runs for '{workflow_path}' - Total {len(runs)}"
             )
         ax.set_xlabel("Status")
         ax.set_ylabel("Count")

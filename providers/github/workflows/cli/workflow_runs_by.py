@@ -6,11 +6,11 @@ from providers.github.workflows.plots.view_workflow_runs_by import ViewWorkflowR
 
 @click.command()
 @click.option(
-    "--workflow-name",
+    "--workflow-path",
     "-w",
     type=str,
     default=None,
-    help="Optional workflow name (case-insensitive substring) to filter runs",
+    help="Optional workflow path (case-insensitive substring) to filter runs",
 )
 @click.option(
     "--out-file",
@@ -53,7 +53,7 @@ from providers.github.workflows.plots.view_workflow_runs_by import ViewWorkflowR
     help="End date (inclusive) in YYYY-MM-DD",
 )
 def workflow_runs_by(
-    workflow_name,
+    workflow_path,
     out_file,
     event,
     target_branch,
@@ -62,12 +62,10 @@ def workflow_runs_by(
     start_date,
     end_date,
 ):
+    # Filter runs by workflow path
     return ViewWorkflowRunsBy(repository=LoadWorkflows()).main(
-        workflow_name=workflow_name,
         out_file=out_file,
-        raw_filters={"event": event, "target_branch": target_branch},
-        include_defined_only=include_defined_only,
-        aggregate_by=aggregate_by,
+        workflow_path=workflow_path,
         start_date=start_date,
         end_date=end_date,
     )

@@ -12,11 +12,11 @@ from providers.github.workflows.plots.view_jobs_by_status import ViewJobsByStatu
     help="Job name to count/plot",
 )
 @click.option(
-    "--workflow-name",
+    "--workflow-path",
     "-w",
     type=str,
     default=None,
-    help="Optional workflow name (case-insensitive substring) to filter runs and jobs",
+    help="Optional workflow path (case-insensitive substring) to filter runs and jobs",
 )
 @click.option(
     "--out-file",
@@ -50,6 +50,7 @@ from providers.github.workflows.plots.view_jobs_by_status import ViewJobsByStatu
 @click.option(
     "--start-date",
     type=str,
+    default=None,
     help="Start date (inclusive) in YYYY-MM-DD",
 )
 @click.option(
@@ -65,7 +66,7 @@ from providers.github.workflows.plots.view_jobs_by_status import ViewJobsByStatu
 )
 def jobs_by_status(
     job_name,
-    workflow_name,
+    workflow_path,
     out_file,
     with_pipeline,
     aggregate_by_week,
@@ -81,7 +82,7 @@ def jobs_by_status(
 
     return ViewJobsByStatus(repository=LoadWorkflows()).main(
         job_name=job_name,
-        workflow_name=workflow_name,
+        workflow_path=workflow_path,
         out_file=out_file,
         with_pipeline=with_pipeline,
         aggregate_by_week=aggregate_by_week,

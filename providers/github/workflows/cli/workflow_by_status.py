@@ -15,11 +15,11 @@ from providers.github.workflows.plots.view_workflow_by_status import (
     help="Optional path to save the plot image",
 )
 @click.option(
-    "--workflow-name",
+    "--workflow-path",
     "-w",
     type=str,
     default=None,
-    help="Optional workflow name (case-insensitive substring) to filter runs",
+    help="Optional workflow path (case-insensitive substring) to filter runs",
 )
 @click.option(
     "--start-date",
@@ -31,10 +31,10 @@ from providers.github.workflows.plots.view_workflow_by_status import (
     type=str,
     help="End date (inclusive) in YYYY-MM-DD",
 )
-def workflow_by_status(out_file, workflow_name, start_date, end_date):
+def workflow_by_status(out_file, workflow_path, start_date, end_date):
     return ViewWorkflowByStatus(repository=LoadWorkflows()).main(
         out_file=out_file,
-        workflow_name=workflow_name,
+        workflow_path=workflow_path,
         start_date=start_date,
         end_date=end_date,
     )

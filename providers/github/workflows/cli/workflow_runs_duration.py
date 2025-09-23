@@ -12,10 +12,10 @@ from providers.github.workflows.plots.view_runs_duration import ViewRunsDuration
     help="Optional path to save the plot image",
 )
 @click.option(
-    "--workflow-name",
+    "--workflow-path",
     "-w",
     multiple=True,
-    help="Workflow name (exact match, case-insensitive). Can be repeated or supply comma-separated values.",
+    help="Workflow path (exact match, case-insensitive). Can be repeated or supply comma-separated values.",
 )
 @click.option(
     "--start-date",
@@ -35,21 +35,13 @@ from providers.github.workflows.plots.view_runs_duration import ViewRunsDuration
     default=100,
     help="Maximum number of runs to include in the plot",
 )
-def workflows_run_durantion(out_file, workflow_name, start_date, end_date, max_runs):
-    # Normalize workflow_name into a list (split comma-separated values)
-    wf_names = []
-    if workflow_name:
-        for item in workflow_name:
-            parts = [p.strip() for p in item.split(",") if p.strip()]
-            wf_names.extend(parts)
-
+def workflows_run_duration(out_file, workflow_path, start_date, end_date, max_runs):
     return ViewRunsDuration(repository=LoadWorkflows()).main(
         out_file=out_file,
-        workflow_name=wf_names,
+        workflow_path=workflow_path,
         start_date=start_date,
         end_date=end_date,
-        max_runs=max_runs,
     )
 
 
-command = workflows_run_durantion
+command = workflows_run_duration

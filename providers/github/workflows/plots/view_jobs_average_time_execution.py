@@ -21,7 +21,7 @@ class ViewJobsByStatus(MatplotViewer):
 
     def main(
         self,
-        workflow_name: str | None = None,
+        workflow_path: str | None = None,
         out_file: str | None = None,
         _cli_filters: dict = {},
         top: int = 20,
@@ -43,9 +43,9 @@ class ViewJobsByStatus(MatplotViewer):
             runs = self.repository.runs()
             jobs = self.repository.jobs()
         # optional filter by workflow name (case-insensitive substring match)
-        if workflow_name:
-            wf_low = workflow_name.lower()
-            runs = [r for r in runs if (r.get("name") or "").lower().find(wf_low) != -1]
+        if workflow_path:
+            wf_low = workflow_path.lower()
+            runs = [r for r in runs if (r.get("path") or "").lower().find(wf_low) != -1]
 
         # optional filter by event (e.g. push, pull_request) - accepts comma-separated or single value
         if event_vals := self._split_and_normalize(_cli_filters.get("event")):
@@ -132,9 +132,9 @@ class ViewJobsByStatus(MatplotViewer):
         plot_ax.set_title(
             f"Top {len(names)} jobs by average duration for {len(runs)} runs - {len(jobs)} jobs"
         )
-        if workflow_name:
+        if workflow_path:
             plot_ax.set_title(
-                f"Top {len(names)} jobs by average duration for '{workflow_name}' - {len(runs)} runs - {len(jobs)} jobs"
+                f"Top {len(names)} jobs by average duration for '{workflow_path}' - {len(runs)} runs - {len(jobs)} jobs"
             )
 
         counts_for_names = [counts.get(n, 0) for n in names]

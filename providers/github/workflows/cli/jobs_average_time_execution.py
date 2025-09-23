@@ -8,11 +8,11 @@ from providers.github.workflows.plots.view_jobs_average_time_execution import (
 
 @click.command()
 @click.option(
-    "--workflow-name",
+    "--workflow-path",
     "-w",
     type=str,
     default=None,
-    help="Optional workflow name (case-insensitive substring) to filter runs and jobs",
+    help="Optional workflow path (case-insensitive substring) to filter runs and jobs",
 )
 @click.option(
     "--out-file",
@@ -48,6 +48,7 @@ from providers.github.workflows.plots.view_jobs_average_time_execution import (
 @click.option(
     "--start-date",
     type=str,
+    default=None,
     help="Start date (inclusive) in YYYY-MM-DD",
 )
 @click.option(
@@ -62,7 +63,7 @@ from providers.github.workflows.plots.view_jobs_average_time_execution import (
     help="Include setup jobs used by GitHub actions, such as 'Set up job' or 'Checkout code'",
 )
 def jobs_by_execution_time(
-    workflow_name,
+    workflow_path,
     out_file,
     top,
     event,
@@ -73,7 +74,7 @@ def jobs_by_execution_time(
     force_all_jobs,
 ):
     return ViewJobsByStatus(repository=LoadWorkflows()).main(
-        workflow_name=workflow_name,
+        workflow_path=workflow_path,
         out_file=out_file,
         _cli_filters={"event": event, "target_branch": target_branch},
         top=top,

@@ -25,7 +25,7 @@ class ViewRunsDuration(MatplotViewer):
     def main(
         self,
         out_file: str | None = None,
-        workflow_name: List[str] | None = None,
+        workflow_path: List[str] | None = None,
         start_date: str | None = None,
         end_date: str | None = None,
         max_runs: int = 50,
@@ -38,20 +38,20 @@ class ViewRunsDuration(MatplotViewer):
         else:
             runs = self.repository.runs()
 
-        if workflow_name:
+        if workflow_path:
             # normalize provided list of names
-            name_tokens = [n.strip().lower() for n in workflow_name if n]
+            name_tokens = [n.strip().lower() for n in workflow_path if n]
 
             def matches_any(name: str) -> bool:
                 nl = (name or "").lower()
                 return any(tok == nl for tok in name_tokens)
 
-            runs = [r for r in runs if matches_any(r.get("name") or "")]
+            runs = [r for r in runs if matches_any(r.get("path") or "")]
 
         # group durations by run name
         groups = {}
         for r in runs:
-            name = r.get("name") or "<unnamed>"
+            name = r.get("path") or "<unnamed>"
             start = (
                 r.get("run_started_at") or r.get("created_at") or r.get("started_at")
             )

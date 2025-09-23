@@ -14,7 +14,7 @@ class ViewWorkflowRunsBy(MatplotViewer):
 
     def main(
         self,
-        workflow_name: str | None = None,
+        workflow_path: str | None = None,
         out_file: str | None = None,
         raw_filters: dict = {},
         include_defined_only: bool = False,
@@ -30,9 +30,9 @@ class ViewWorkflowRunsBy(MatplotViewer):
             runs = self.repository.runs()
 
         # optional filter by workflow name (case-insensitive substring)
-        if workflow_name:
-            wf_low = workflow_name.lower()
-            runs = [r for r in runs if (r.get("name") or "").lower().find(wf_low) != -1]
+        if workflow_path:
+            wf_low = workflow_path.lower()
+            runs = [r for r in runs if (r.get("path") or "").lower().find(wf_low) != -1]
 
         # optional event filter
         if event_vals := self._split_and_normalize(raw_filters.get("event")):
@@ -73,7 +73,7 @@ class ViewWorkflowRunsBy(MatplotViewer):
                     or path.strip().lower().endswith(".yaml")
                 ):
                     return True
-                name = run_obj.get("name") or ""
+                name = run_obj.get("path") or ""
                 return isinstance(name, str) and name.strip().lower().endswith(".yml")
 
             runs = [r for r in runs if is_defined_yaml(r)]
@@ -86,7 +86,7 @@ class ViewWorkflowRunsBy(MatplotViewer):
         workflow_names = set()
 
         for r in runs:
-            name = (r.get("name") or "<unnamed>").strip()
+            name = (r.get("path") or "<unnamed>").strip()
             created = r.get("created_at") or r.get("run_started_at") or r.get("created")
             if not created:
                 continue
