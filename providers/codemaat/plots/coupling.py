@@ -1,3 +1,4 @@
+from matplotlib.figure import Figure
 import matplotlib.pyplot as plt
 import networkx as nx
 
@@ -7,7 +8,7 @@ from providers.codemaat.codemaat_repository import CodemaatRepository
 
 
 class CouplingViewer(MatplotViewer, Viewable):
-    def render(self, repo: CodemaatRepository, out_file: str | None = None) -> None:
+    def render(self, repo: CodemaatRepository, out_file: str | None = None) -> Figure:
         df = repo.get_coupling()
 
         G = nx.Graph()

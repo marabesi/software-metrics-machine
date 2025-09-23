@@ -8,7 +8,7 @@ class MatplotViewer:
     def get_fig_size(self):
         return (9, 4)
 
-    def output(self, plt, fig: Figure, out_file):
+    def output(self, plt, fig: Figure, out_file) -> Figure:
         if out_file:
             cfg = Configuration()
             # if out_file is an absolute path, respect it; otherwise join with configured store path
@@ -31,6 +31,7 @@ class MatplotViewer:
             fig.savefig(save_path, dpi=900)
             print(f"Saved plot to {save_path}")
             plt.close(fig)
+            return fig
         else:
             # fig.set_size_inches(8, 4)
             return fig
