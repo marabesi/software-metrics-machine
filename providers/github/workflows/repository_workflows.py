@@ -6,8 +6,8 @@ from infrastructure.configuration import Configuration
 
 class LoadWorkflows(BaseRepository):
 
-    def __init__(self):
-        super().__init__(configuration=Configuration())
+    def __init__(self, configuration: Configuration):
+        super().__init__(configuration=configuration)
         self.pipeline_file = "workflows.json"
         self.jobs_file = "jobs.json"
         self.all_runs = []
@@ -96,3 +96,8 @@ class LoadWorkflows(BaseRepository):
                 continue
             filtered.append(job)
         return filtered
+
+    def get_unique_workflow_names(self) -> List[str]:
+        """Return a list of unique workflow names."""
+        workflow_names = {run.get("name", "") for run in self.all_runs if "name" in run}
+        return list(workflow_names)

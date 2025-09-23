@@ -1,8 +1,16 @@
+import pytest
+from infrastructure.configuration import Configuration
 from providers.github.prs.prs_repository import LoadPrs
 from unittest.mock import patch
 
 
-def test_load_provided_data_when_exists():
+@pytest.fixture
+def mock_os_env(monkeypatch):
+    """Fixture to mock os.getenv to always return 'faked'."""
+    monkeypatch.setattr("os.getenv", lambda key, default=None: "faked")
+
+
+def test_load_provided_data_when_exists(mock_os_env):
     mocked_prs_data = [
         {"id": 1, "title": "Fix bug", "author": "user1", "created_at": "2025-09-20"},
     ]
@@ -11,7 +19,7 @@ def test_load_provided_data_when_exists():
         "providers.github.prs.prs_repository.LoadPrs.read_file_if_exists",
         return_value=mocked_prs_data,
     ):
-        repository = LoadPrs()
+        repository = LoadPrs(configuration=Configuration())
         all_prs = repository.read_file_if_exists("prs.json")
 
         assert len(all_prs) == 1

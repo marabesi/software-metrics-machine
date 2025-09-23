@@ -6,8 +6,8 @@ from infrastructure.configuration import Configuration
 
 
 class LoadPrs(BaseRepository):
-    def __init__(self):
-        super().__init__(configuration=Configuration())
+    def __init__(self, configuration: Configuration):
+        super().__init__(configuration=configuration)
         self.file = "prs.json"
         self.all_prs = []
         self.all_prs = self.__load()
