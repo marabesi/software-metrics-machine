@@ -36,7 +36,7 @@ def plot_prs_by_author(start_date, end_date):
     )
 
 
-def prs_section(start_date_picker, end_date_picker):
+def prs_section(start_date_picker, end_date_picker, anonymize=False):
     return pn.Column(
         "## PRs Section",
         pn.Row(start_date_picker, end_date_picker, sizing_mode="stretch_width"),
