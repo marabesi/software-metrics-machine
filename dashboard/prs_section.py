@@ -15,61 +15,52 @@ pn.extension()
 prs_repository = LoadPrs()
 
 
-# PRs Section
-def plot_average_prs_open_by(start_date, end_date):
+def plot_average_prs_open_by(date_range_picker):
     return ViewAverageOfPrsOpenBy(repository=prs_repository).main(
-        start_date=start_date, end_date=end_date
+        start_date=date_range_picker[0], end_date=date_range_picker[1]
     )
 
 
-def plot_average_review_time_by_author(start_date, end_date):
+def plot_average_review_time_by_author(date_range_picker):
     return ViewAverageReviewTimeByAuthor(
         repository=prs_repository
     ).plot_average_open_time(
-        title="Average Review Time By Author", start_date=start_date, end_date=end_date
+        title="Average Review Time By Author",
+        start_date=date_range_picker[0],
+        end_date=date_range_picker[1],
     )
 
 
-def plot_prs_by_author(start_date, end_date):
+def plot_prs_by_author(date_range_picker):
     return ViewPrsByAuthor(repository=prs_repository).plot_top_authors(
-        title="PRs By Author", start_date=start_date, end_date=end_date
+        title="PRs By Author",
+        start_date=date_range_picker[0],
+        end_date=date_range_picker[1],
     )
 
 
-def prs_section(start_date_picker, end_date_picker, anonymize=False):
+def prs_section(date_range_picker, anonymize=False):
     return pn.Column(
         "## PRs Section",
-        pn.Row(start_date_picker, end_date_picker, sizing_mode="stretch_width"),
+        pn.Row(date_range_picker, sizing_mode="stretch_width"),
         pn.Row(
             pn.Column(
                 "### Average PRs Open By",
-                pn.bind(
-                    plot_average_prs_open_by,
-                    start_date=start_date_picker,
-                    end_date=end_date_picker,
-                ),
+                pn.bind(plot_average_prs_open_by, date_range_picker),
             ),
             sizing_mode="stretch_width",
         ),
         pn.Row(
             pn.Column(
                 "### Average Review Time By Author",
-                pn.bind(
-                    plot_average_review_time_by_author,
-                    start_date=start_date_picker,
-                    end_date=end_date_picker,
-                ),
+                pn.bind(plot_average_review_time_by_author, date_range_picker),
             ),
             sizing_mode="stretch_width",
         ),
         pn.Row(
             pn.Column(
                 "### PRs By Author",
-                pn.bind(
-                    plot_prs_by_author,
-                    start_date=start_date_picker,
-                    end_date=end_date_picker,
-                ),
+                pn.bind(plot_prs_by_author, date_range_picker),
             ),
             sizing_mode="stretch_width",
         ),
