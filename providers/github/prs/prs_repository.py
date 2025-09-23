@@ -148,3 +148,8 @@ class LoadPrs(BaseRepository):
             else:
                 labels_list = [str(label).strip().lower() for label in labels]
         return labels_list
+
+    def get_unique_authors(self) -> List[str]:
+        """Return a list of unique author names from the PRs."""
+        authors = {pr.get("user", {}).get("login", "") for pr in self.all_prs}
+        return sorted(author for author in authors if author)

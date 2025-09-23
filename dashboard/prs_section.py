@@ -41,9 +41,21 @@ def plot_prs_by_author(date_range_picker):
 
 
 def prs_section(date_range_picker, anonymize=False):
+    # Fetch unique authors from the repository
+    unique_authors = prs_repository.get_unique_authors()
+
+    # Create a Select widget for authors with default unchecked
+    author_select = pn.widgets.MultiSelect(
+        name="Select Authors",
+        options=unique_authors,
+        size=10,
+        value=[],
+    )
+
     return pn.Column(
         "## PRs Section",
         pn.Row(date_range_picker, sizing_mode="stretch_width"),
+        pn.Row(author_select, sizing_mode="stretch_width"),
         pn.Row(
             pn.Column(
                 "### Average PRs Open By",

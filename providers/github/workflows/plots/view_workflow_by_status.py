@@ -50,7 +50,7 @@ class ViewWorkflowByStatus(MatplotViewer):
             ax.annotate(
                 f"{int(height)}",
                 xy=(bar.get_x() + bar.get_width() / 2, height),
-                xytext=(0, 3),
+                xytext=(0, 0.2),
                 textcoords="offset points",
                 ha="center",
                 va="bottom",
