@@ -23,34 +23,45 @@ workflow_selector = pn.widgets.Select(
     name="Select Workflow",
     description="Select Workflow",
     options=workflow_names,
-    value=(
-        workflow_names[0] if workflow_names else None
-    ),  # Default to the first workflow if available
 )
 
 
+def sanitize_workflow_path(selected_value):
+    if selected_value == "All":
+        return None  # No filtering
+    return selected_value
+
+
 # Pipeline Section
-def plot_workflow_by_status(date_range_picker):
+def plot_workflow_by_status(date_range_picker, workflow_selector):
     return ViewWorkflowByStatus(repository=repository).main(
-        start_date=date_range_picker[0], end_date=date_range_picker[1]
+        start_date=date_range_picker[0],
+        end_date=date_range_picker[1],
+        workflow_path=sanitize_workflow_path(workflow_selector),
     )
 
 
-def plot_view_jobs_by_execution_time(date_range_picker):
+def plot_view_jobs_by_execution_time(date_range_picker, workflow_selector):
     return ViewJobsByStatus(repository=repository).main(
-        start_date=date_range_picker[0], end_date=date_range_picker[1]
+        start_date=date_range_picker[0],
+        end_date=date_range_picker[1],
+        workflow_path=sanitize_workflow_path(workflow_selector),
     )
 
 
-def plot_workflow_run_duration(date_range_picker):
+def plot_workflow_run_duration(date_range_picker, workflow_selector):
     return ViewRunsDuration(repository=repository).main(
-        start_date=date_range_picker[0], end_date=date_range_picker[1]
+        start_date=date_range_picker[0],
+        end_date=date_range_picker[1],
+        workflow_path=sanitize_workflow_path(workflow_selector),
     )
 
 
-def plot_workflow_run_by(date_range_picker):
+def plot_workflow_run_by(date_range_picker, workflow_selector):
     return ViewWorkflowRunsBy(repository=repository).main(
-        start_date=date_range_picker[0], end_date=date_range_picker[1]
+        start_date=date_range_picker[0],
+        end_date=date_range_picker[1],
+        workflow_path=sanitize_workflow_path(workflow_selector),
     )
 
 
@@ -59,8 +70,14 @@ def pipeline_section(date_range_picker):
     return pn.Column(
         "## Pipeline Section",
         pn.Row(date_range_picker, workflow_selector, align=("start", "center")),
-        pn.Row(pn.bind(plot_workflow_by_status, date_range_picker)),
-        pn.Row(pn.bind(plot_workflow_run_by, date_range_picker)),
-        pn.Row(pn.bind(plot_workflow_run_duration, date_range_picker)),
-        pn.Row(pn.bind(plot_view_jobs_by_execution_time, date_range_picker)),
+        pn.Row(pn.bind(plot_workflow_by_status, date_range_picker, workflow_selector)),
+        pn.Row(pn.bind(plot_workflow_run_by, date_range_picker, workflow_selector)),
+        pn.Row(
+            pn.bind(plot_workflow_run_duration, date_range_picker, workflow_selector)
+        ),
+        pn.Row(
+            pn.bind(
+                plot_view_jobs_by_execution_time, date_range_picker, workflow_selector
+            )
+        ),
     )

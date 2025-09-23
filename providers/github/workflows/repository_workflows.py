@@ -104,4 +104,6 @@ class LoadWorkflows(BaseRepository):
 
     def get_unique_workflow_paths(self) -> List[str]:
         workflow_names = {run.get("path", "") for run in self.all_runs if "path" in run}
-        return list(workflow_names)
+        listWithPaths = list(workflow_names)
+        listWithPaths.insert(0, "All")
+        return listWithPaths
