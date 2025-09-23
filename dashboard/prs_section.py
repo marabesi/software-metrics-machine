@@ -1,4 +1,5 @@
 import panel as pn
+from infrastructure.configuration import Configuration
 from providers.github.prs.plots.view_average_of_prs_open_by import (
     ViewAverageOfPrsOpenBy,
 )
@@ -12,7 +13,7 @@ from providers.github.prs.plots.view_prs_by_author import (
 from providers.github.prs.prs_repository import LoadPrs
 
 pn.extension()
-prs_repository = LoadPrs()
+prs_repository = LoadPrs(configuration=Configuration())
 
 
 def plot_average_prs_open_by(date_range_picker):

@@ -101,3 +101,7 @@ class LoadWorkflows(BaseRepository):
         """Return a list of unique workflow names."""
         workflow_names = {run.get("name", "") for run in self.all_runs if "name" in run}
         return list(workflow_names)
+
+    def get_unique_workflow_paths(self) -> List[str]:
+        workflow_names = {run.get("path", "") for run in self.all_runs if "path" in run}
+        return list(workflow_names)
