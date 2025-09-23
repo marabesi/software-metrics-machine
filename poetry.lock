@@ -1730,6 +1730,18 @@ files = [
 ]
 
 [[package]]
+name = "squarify"
+version = "0.4.4"
+description = "Pure Python implementation of the squarify treemap layout algorithm"
+optional = false
+python-versions = "*"
+groups = ["main"]
+files = [
+    {file = "squarify-0.4.4-py3-none-any.whl", hash = "sha256:d7597724e29d48aa14fd2f551060d6b09e1f0a67e4cd3ea329fe03b4c9a56f11"},
+    {file = "squarify-0.4.4.tar.gz", hash = "sha256:b8a110c8dc5f1cd1402ca12d79764a081e90bfc445346cfa166df929753ecb46"},
+]
+
+[[package]]
 name = "tornado"
 version = "6.5.2"
 description = "Tornado is a Python web framework and asynchronous networking library, originally developed at FriendFeed."
@@ -1998,4 +2010,4 @@ files = [
 [metadata]
 lock-version = "2.1"
 python-versions = ">=3.13"
-content-hash = "bb97e5ebeda0ef81f5c3a694c9f3687875b26c712f937d402ea469fbbe226e83"
+content-hash = "03356573972f7bf9838a966939a2dbb4e03541bdbfa385c9568028d023d94f28"

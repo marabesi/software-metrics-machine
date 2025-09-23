@@ -20,8 +20,9 @@ def plot_entity_churn():
 
 
 def plot_entity_effort():
-    return EntityEffortViewer().render(
-        CodemaatRepository(),
+    return EntityEffortViewer().render_treemap(
+        top_n=10,
+        repo=CodemaatRepository(),
     )
 
 
