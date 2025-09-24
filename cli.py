@@ -41,6 +41,7 @@ module_groups = {
     "workflows": [
         "providers.github.workflows.cli.fetch_workflows",
         "providers.github.workflows.cli.fetch_jobs",
+        "providers.github.workflows.cli.workflow_summary",
         "providers.github.workflows.cli.workflow_by_status",
         "providers.github.workflows.cli.workflow_runs_duration",
         "providers.github.workflows.cli.workflow_runs_by",

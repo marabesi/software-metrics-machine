@@ -1,7 +1,5 @@
-import argparse
 from collections import Counter
 from typing import List
-from providers.github.workflows.repository_workflows import LoadWorkflows
 from infrastructure.date_and_time import datetime_to_local
 
 
@@ -107,21 +105,3 @@ def print_summary(summary: dict, max_workflows: int = 10) -> None:
     last = summary["last_run"]
 
     print_run(first, last)
-
-
-if __name__ == "__main__":
-    parser = argparse.ArgumentParser(
-        description="Print a quick summary of workflow runs"
-    )
-    parser.add_argument(
-        "--max-workflows",
-        type=int,
-        default=10,
-        help="Maximum number of workflows to list in the summary (default: 10)",
-    )
-    args = parser.parse_args()
-
-    lw = LoadWorkflows()
-    runs = lw.runs()
-    summary = summarize_runs(runs)
-    print_summary(summary, max_workflows=args.max_workflows)
