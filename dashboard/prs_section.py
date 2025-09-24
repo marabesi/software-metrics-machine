@@ -15,17 +15,18 @@ from providers.github.prs.prs_repository import LoadPrs
 pn.extension("tabulator")
 prs_repository = LoadPrs(configuration=Configuration())
 
-unique_labels = prs_repository.get_unique_labels()
-label_names = [label["label_name"] for label in unique_labels]
+
+def normalize_label(selected_labels):
+    if "All" in selected_labels:
+        return None
+    return ",".join(selected_labels)
 
 
 def plot_average_prs_open_by(date_range_picker, selected_labels):
-    # print(','.join(selected_labels))
-    # exit()
     return ViewAverageOfPrsOpenBy(repository=prs_repository).main(
         start_date=date_range_picker[0],
         end_date=date_range_picker[1],
-        labels=",".join(selected_labels),
+        labels=normalize_label(selected_labels),
     )
 
 
@@ -36,7 +37,7 @@ def plot_average_review_time_by_author(date_range_picker, selected_labels):
         title="Average Review Time By Author",
         start_date=date_range_picker[0],
         end_date=date_range_picker[1],
-        labels=",".join(selected_labels),
+        labels=normalize_label(selected_labels),
     )
 
 
@@ -45,15 +46,16 @@ def plot_prs_by_author(date_range_picker, selected_labels):
         title="PRs By Author",
         start_date=date_range_picker[0],
         end_date=date_range_picker[1],
-        labels=",".join(selected_labels),
+        labels=normalize_label(selected_labels),
     )
 
 
 def prs_section(date_range_picker, anonymize=False):
-    # Fetch unique authors from the repository
     unique_authors = prs_repository.get_unique_authors()
+    unique_labels = prs_repository.get_unique_labels()
+    label_names = [label["label_name"] for label in unique_labels]
+    label_names.insert(0, "All")
 
-    # Create a Select widget for authors with default unchecked
     author_select = pn.widgets.MultiSelect(
         name="Select Authors",
         options=unique_authors,
@@ -65,7 +67,7 @@ def prs_section(date_range_picker, anonymize=False):
         name="Select Labels",
         options=label_names,
         size=min(10, len(label_names)),
-        value=label_names,
+        value=[],
     )
 
     return pn.Column(

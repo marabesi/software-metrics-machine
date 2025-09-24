@@ -38,6 +38,10 @@ class ViewAverageReviewTimeByAuthor(MatplotViewer):
 
         pairs = self.__average_open_time_by_author(pairs, top)
 
+        if len(pairs) == 0:
+            print("No PRs to plot after filtering")
+            return
+
         authors, avgs = zip(*pairs)
         # horizontal bar chart with largest on top
         fig, ax = plt.subplots(figsize=(super().get_fig_size()))

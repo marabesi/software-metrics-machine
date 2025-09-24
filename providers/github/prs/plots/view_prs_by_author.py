@@ -35,6 +35,10 @@ class ViewPrsByAuthor(MatplotViewer):
 
         prs = self.top_authors(prs, top)
 
+        if len(prs) == 0:
+            print("No PRs to plot after filtering")
+            return
+
         authors, counts = zip(*prs)
         # horizontal bar chart with largest on top
         fig, ax = plt.subplots(figsize=super().get_fig_size())
