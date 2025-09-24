@@ -30,10 +30,10 @@ from providers.github.prs.prs_repository import LoadPrs
     default="text",
     help="Either 'text' or 'json' to specify the output format",
 )
-def pr_data_summary(csv, start_date, end_date, output):
+def summary(csv, start_date, end_date, output):
     return PrViewSummary(repository=LoadPrs(configuration=Configuration())).main(
         csv=csv, start_date=start_date, end_date=end_date, output_format=output
     )
 
 
-command = pr_data_summary
+command = summary
