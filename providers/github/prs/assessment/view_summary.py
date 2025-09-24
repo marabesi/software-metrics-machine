@@ -1,7 +1,34 @@
 import json
 import csv
+from typing import TypedDict, List, Union
 
 from providers.github.prs.prs_repository import LoadPrs
+
+
+class LabelSummary(TypedDict):
+    label_name: str
+    prs_count: int
+
+
+class PRDetails(TypedDict):
+    number: Union[str, None]
+    title: Union[str, None]
+    login: Union[str, None]
+    created: Union[str, None]
+    merged: Union[str, None]
+    closed: Union[str, None]
+
+
+class SummaryResult(TypedDict):
+    total_prs: int
+    merged_prs: int
+    closed_prs: int
+    without_conclusion: int
+    unique_authors: int
+    unique_labels: int
+    labels: List[LabelSummary]
+    first_pr: PRDetails
+    last_pr: PRDetails
 
 
 class PrViewSummary:
@@ -9,19 +36,9 @@ class PrViewSummary:
         self.repository = repository
         self.prs = repository.all_prs
 
-    def main(self, csv=None, start_date=None, end_date=None, output_format=None):
-        """
-        Execute the logic for the PRs summarize command.
-
-        Args:
-            csv (str): Path to export summary as CSV.
-            start_date (str): Start date for filtering PRs.
-            end_date (str): End date for filtering PRs.
-            output_format (str): Format of the output, either 'text' or 'json'.
-
-        Returns:
-            dict: The structured summary if output_format is not provided.
-        """
+    def main(
+        self, csv=None, start_date=None, end_date=None, output_format=None
+    ) -> SummaryResult | None:
         self.csv = csv
         self.start_date = start_date
         self.end_date = end_date
@@ -45,14 +62,6 @@ class PrViewSummary:
                 return structured_summary
 
     def __export_summary_to_csv(self, summary):
-        """
-        Export the summary to a CSV file.
-
-        Args:
-            summary (list): Summary data.
-            file_path (str): Path to the CSV file.
-        """
-
         with open(self.csv, mode="w", newline="") as csv_file:
             writer = csv.writer(csv_file)
             writer.writerow(["Metric", "Value"])
@@ -60,9 +69,6 @@ class PrViewSummary:
                 writer.writerow([metric, value])
 
     def __summarize_prs(self):
-        """
-        Summarize the PRs.
-        """
         summary = {}
         total = len(self.prs)
         summary["total_prs"] = total
@@ -134,10 +140,7 @@ class PrViewSummary:
         summary["unique_labels"] = len(labels_list)
         return summary
 
-    def __get_structured_summary(self, summary):
-        """
-        Create a structured summary object.
-        """
+    def __get_structured_summary(self, summary) -> SummaryResult:
         structured_summary = {
             "total_prs": summary.get("total_prs", 0),
             "merged_prs": summary.get("merged_prs", 0),
@@ -145,7 +148,7 @@ class PrViewSummary:
             "without_conclusion": summary.get("without_conclusion", 0),
             "unique_authors": summary.get("unique_authors", 0),
             "unique_labels": summary.get("unique_labels", 0),
-            "labels": summary.get("labels", {}),
+            "labels": summary.get("labels", []),
             "first_pr": self.__brief_pr(summary.get("first_pr")),
             "last_pr": self.__brief_pr(summary.get("last_pr")),
         }
