@@ -105,18 +105,7 @@ class PrViewSummary:
         summary["without_conclusion"] = len(without)
 
         # count unique authors (use login when available)
-        authors = set()
-        for p in self.prs:
-            user = p.get("user") or {}
-            if isinstance(user, dict):
-                login = user.get("login")
-                if login:
-                    authors.add(login)
-                else:
-                    authors.add("<unknown>")
-            else:
-                authors.add(str(user))
-        summary["unique_authors"] = len(authors)
+        summary["unique_authors"] = len(self.repository.get_unique_authors())
 
         # aggregate labels used across all PRs and count occurrences
         labels_list = []
