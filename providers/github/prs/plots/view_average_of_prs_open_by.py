@@ -14,6 +14,7 @@ class ViewAverageOfPrsOpenBy(MatplotViewer):
         self,
         out_file: str | None = None,
         author: str | None = None,
+        authors: str | None = None,
         labels: str | None = None,
         aggregate_by: str = "month",
         start_date: str | None = None,
@@ -21,8 +22,8 @@ class ViewAverageOfPrsOpenBy(MatplotViewer):
     ):
         prs = self.repository.all_prs
 
-        prs = self.repository.filter_by_date_range(
-            prs, start_date=start_date, end_date=end_date
+        prs = self.repository.prs_with_filters(
+            {"start_date": start_date, "end_date": end_date, "authors": authors}
         )
         print(f"Filtered PRs count: {len(prs)}")
 
