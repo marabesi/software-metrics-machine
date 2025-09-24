@@ -1,11 +1,12 @@
 import json
+import csv
 
 from providers.github.prs.prs_repository import LoadPrs
-from datetime import datetime, timezone
 
 
 class PrViewSummary:
     def __init__(self, repository: LoadPrs):
+        self.repository = repository
         self.prs = repository.all_prs
 
     def main(self, csv=None, start_date=None, end_date=None, output_format=None):
@@ -25,44 +26,23 @@ class PrViewSummary:
         self.start_date = start_date
         self.end_date = end_date
 
-        # Apply date filtering
-        if self.start_date or self.end_date:
-            self.prs = self.__filter_prs_by_date()
+        self.prs = self.repository.prs_with_filters(
+            {"start_date": self.start_date, "end_date": self.end_date}
+        )
 
         summary = self.__summarize_prs()
 
         if self.csv:
             print(f"Exporting summary to {self.csv}...")
             self.__export_summary_to_csv(summary)
-            return
-
-        structured_summary = self.__get_structured_summary(summary)
-
-        if output_format == "text":
-            print(structured_summary)
-            return
-
-        if output_format == "json":
-            print(json.dumps(structured_summary, indent=4))
-            return
-
-        return structured_summary
-
-    def __filter_prs_by_date(self):
-        start = (
-            datetime.fromisoformat(self.start_date).replace(tzinfo=timezone.utc)
-            if self.start_date
-            else None
-        )
-        end = (
-            datetime.fromisoformat(self.end_date).replace(tzinfo=timezone.utc)
-            if self.end_date
-            else None
-        )
-
-        filtered = self.prs.filter_by_date_range(self.prs, start, end)
-
-        return filtered
+        else:
+            structured_summary = self.__get_structured_summary(summary)
+            if output_format == "text":
+                self.__print_text_summary(structured_summary)
+            elif output_format == "json":
+                print(json.dumps(structured_summary, indent=4))
+            else:
+                return structured_summary
 
     def __export_summary_to_csv(self, summary):
         """
@@ -72,7 +52,6 @@ class PrViewSummary:
             summary (list): Summary data.
             file_path (str): Path to the CSV file.
         """
-        import csv
 
         with open(self.csv, mode="w", newline="") as csv_file:
             writer = csv.writer(csv_file)
@@ -193,3 +172,40 @@ class PrViewSummary:
             "merged": merged,
             "closed": closed,
         }
+
+    def __print_text_summary(self, structured_summary):
+        """
+        Print the structured summary in a readable text format.
+
+        Args:
+            structured_summary (dict): The structured summary object.
+        """
+        print("\nPRs Summary:\n")
+        print(f"Total PRs: {structured_summary['total_prs']}")
+        print(f"Merged PRs: {structured_summary['merged_prs']}")
+        print(f"Closed PRs: {structured_summary['closed_prs']}")
+        print(f"PRs Without Conclusion: {structured_summary['without_conclusion']}")
+        print(f"Unique Authors: {structured_summary['unique_authors']}")
+        print(f"Unique Labels: {structured_summary['unique_labels']}")
+
+        print("\nLabels:")
+        for label in structured_summary["labels"]:
+            print(f"  - {label['label_name']}: {label['prs_count']} PRs")
+
+        print("\nFirst PR:")
+        first_pr = structured_summary["first_pr"]
+        print(f"  Number: {first_pr['number']}")
+        print(f"  Title: {first_pr['title']}")
+        print(f"  Author: {first_pr['login']}")
+        print(f"  Created: {first_pr['created']}")
+        print(f"  Merged: {first_pr['merged']}")
+        print(f"  Closed: {first_pr['closed']}")
+
+        print("\nLast PR:")
+        last_pr = structured_summary["last_pr"]
+        print(f"  Number: {last_pr['number']}")
+        print(f"  Title: {last_pr['title']}")
+        print(f"  Author: {last_pr['login']}")
+        print(f"  Created: {last_pr['created']}")
+        print(f"  Merged: {last_pr['merged']}")
+        print(f"  Closed: {last_pr['closed']}")

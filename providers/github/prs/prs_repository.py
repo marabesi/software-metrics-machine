@@ -153,3 +153,15 @@ class LoadPrs(BaseRepository):
         """Return a list of unique author names from the PRs."""
         authors = {pr.get("user", {}).get("login", "") for pr in self.all_prs}
         return sorted(author for author in authors if author)
+
+    def prs_with_filters(self, filters=None):
+        if not filters:
+            return self.all_prs
+
+        start_date = filters.get("start_date")
+        end_date = filters.get("end_date")
+
+        if start_date and end_date:
+            return super().filter_by_date_range(self.all_prs, start_date, end_date)
+
+        return self.all_prs

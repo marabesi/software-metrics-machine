@@ -72,9 +72,9 @@ class BaseRepository:
                 # if created_at cannot be parsed, skip this run
                 continue
 
-            if sd and created_dt < sd:
+            if sd and created_dt <= sd:
                 continue
-            if ed and created_dt > ed:
+            if ed and created_dt >= ed:
                 continue
 
             filtered.append(run)
