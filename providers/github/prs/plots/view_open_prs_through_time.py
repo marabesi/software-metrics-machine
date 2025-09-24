@@ -48,7 +48,12 @@ class ViewOpenPrsThroughTime(MatplotViewer):
         fig, ax = plt.subplots(figsize=super().get_fig_size())
 
         ax.bar(dates, opened, label="Opened", color="blue")
+        for i, count in enumerate(opened):
+            ax.text(i, count, str(count), ha="center", va="bottom")
+
         ax.bar(dates, closed, label="Closed", color="red", bottom=opened)
+        for i, count in enumerate(closed):
+            ax.text(i, opened[i] + count, str(count), ha="center", va="bottom")
 
         ax.set_xlabel("Date")
         ax.set_ylabel("Number of PRs")

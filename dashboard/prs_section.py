@@ -18,13 +18,13 @@ prs_repository = LoadPrs(configuration=FilesystemConfiguration().build())
 
 
 def normalize_label(selected_labels):
-    if "All" in selected_labels:
+    if len(selected_labels) == 0:
         return None
     return ",".join(selected_labels)
 
 
 def normalize_authors(author_select):
-    if "All" in author_select:
+    if len(author_select) == 0:
         return None
     return ",".join(author_select)
 
@@ -72,22 +72,20 @@ def plot_prs_by_author(date_range_picker, selected_labels):
 
 def prs_section(date_range_picker, anonymize=False):
     unique_authors = prs_repository.get_unique_authors()
-    unique_authors.insert(0, "All")
 
     unique_labels = prs_repository.get_unique_labels()
     label_names = [label["label_name"] for label in unique_labels]
-    label_names.insert(0, "All")
 
     author_select = pn.widgets.MultiChoice(
         name="Select Authors",
         options=unique_authors,
-        value=["All"],
+        value=[],
     )
 
     label_selector = pn.widgets.MultiChoice(
         name="Select Labels",
         options=label_names,
-        value=["All"],
+        value=[],
     )
 
     return pn.Column(
