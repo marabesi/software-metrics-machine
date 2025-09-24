@@ -1,6 +1,8 @@
 import click
 
-from providers.github.prs.assessment.view_summary import execute
+from infrastructure.configuration import Configuration
+from providers.github.prs.assessment.view_summary import PrViewSummary
+from providers.github.prs.prs_repository import LoadPrs
 
 
 @click.command()
@@ -22,8 +24,16 @@ from providers.github.prs.assessment.view_summary import execute
     default=None,
     help="Filter PRs created on or before this date (ISO 8601)",
 )
-def pr_data_summary(csv, start_date, end_date):
-    return execute(csv, start_date, end_date)
+@click.option(
+    "--output",
+    type=str,
+    default="text",
+    help="Either 'text' or 'json' to specify the output format",
+)
+def pr_data_summary(csv, start_date, end_date, output):
+    return PrViewSummary(repository=LoadPrs(configuration=Configuration())).main(
+        csv=csv, start_date=start_date, end_date=end_date, output_format=output
+    )
 
 
 command = pr_data_summary
