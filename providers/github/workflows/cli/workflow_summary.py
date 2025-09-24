@@ -11,9 +11,15 @@ from providers.github.workflows.assessment.view_summary import WorkflowRunSummar
     type=int,
     help="Maximum number of workflows to list in the summary (default: 10)",
 )
-def summary(max_workflows):
+@click.option(
+    "--output",
+    type=str,
+    default="text",
+    help="Either 'text' or 'json' to specify the output format",
+)
+def summary(max_workflows, output):
     lw = WorkflowRunSummary(repository=LoadWorkflows(configuration=Configuration()))
-    lw.print_summary(max_workflows=max_workflows)
+    lw.print_summary(max_workflows=max_workflows, output_format=output)
 
 
 command = summary
