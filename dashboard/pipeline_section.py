@@ -1,5 +1,7 @@
 import panel as pn
+import pandas as pd
 from infrastructure.configuration import Configuration
+from providers.github.workflows.assessment.view_summary import WorkflowRunSummary
 from providers.github.workflows.plots.view_jobs_average_time_execution import (
     ViewJobsByStatus,
 )
@@ -12,7 +14,7 @@ from providers.github.workflows.plots.view_runs_duration import (
 from providers.github.workflows.plots.view_workflow_runs_by import ViewWorkflowRunsBy
 from providers.github.workflows.repository_workflows import LoadWorkflows
 
-pn.extension()
+pn.extension("tabulator")
 
 # Initialize the repository to fetch workflow names
 repository = LoadWorkflows(configuration=Configuration())
@@ -65,10 +67,51 @@ def plot_workflow_run_by(date_range_picker, workflow_selector):
     )
 
 
+def plot_workflow_summary():
+    """
+    Generate a styled summary table for the Panel app.
+
+    :return: A Panel object displaying the workflow summary as a table.
+    """
+    summary = WorkflowRunSummary(repository=repository).print_summary()
+
+    if summary["total_runs"] == 0:
+        return pn.pane.Markdown("### No workflow runs available.")
+
+    summary_data = pd.DataFrame(
+        {
+            "Metric": [
+                "Total Runs",
+                "Completed Runs",
+                "In-progress Runs",
+                "Queued Runs",
+                "Unique Workflows",
+            ],
+            "Value": [
+                summary["total_runs"],
+                summary["completed"],
+                summary["in_progress"],
+                summary["queued"],
+                summary["unique_workflows"],
+            ],
+        }
+    )
+
+    summary_table = pn.widgets.Tabulator(
+        summary_data, name="Workflow Summary", layout="fit_data_fill", show_index=False
+    )
+
+    return pn.Column(
+        "### Workflow Summary",
+        summary_table,
+    )
+
+
 # Ensure the DateRangePicker triggers updates by linking its parameters to the bindings
 def pipeline_section(date_range_picker):
     return pn.Column(
         "## Pipeline Section",
+        pn.Row(pn.bind(plot_workflow_summary)),
         pn.Row(
             pn.Column(date_range_picker, align="center"),
             pn.Column(workflow_selector, align="end"),

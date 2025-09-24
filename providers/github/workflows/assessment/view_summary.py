@@ -24,7 +24,7 @@ class WorkflowRunSummary:
     def __init__(self, repository: LoadWorkflows):
         self.runs = repository.runs()
 
-    def compute_summary(self) -> WorkflowRunSummaryStructure:
+    def __compute_summary(self) -> WorkflowRunSummaryStructure:
         """
         Compute the summary of workflow runs.
 
@@ -40,7 +40,7 @@ class WorkflowRunSummary:
         :param output_format: Specifies the output format. Accepts 'text' or 'json'.
                               If not provided, returns the summary structure.
         """
-        summary = self.compute_summary()
+        summary = self.__compute_summary()
 
         if output_format:
             if output_format not in ["text", "json"]:
