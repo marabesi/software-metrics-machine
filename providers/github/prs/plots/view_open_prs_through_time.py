@@ -8,7 +8,7 @@ class ViewOpenPrsThroughTime(MatplotViewer):
     def __init__(self, repository: LoadPrs):
         self.repository = repository
 
-    def plot_prs_timeline_histogram(
+    def main(
         self,
         title: str,
         out_file: str | None = None,

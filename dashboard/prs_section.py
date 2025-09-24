@@ -6,6 +6,7 @@ from providers.github.prs.plots.view_average_of_prs_open_by import (
 from providers.github.prs.plots.view_average_review_time_by_author import (
     ViewAverageReviewTimeByAuthor,
 )
+from providers.github.prs.plots.view_open_prs_through_time import ViewOpenPrsThroughTime
 from providers.github.prs.plots.view_prs_by_author import (
     ViewPrsByAuthor,
 )
@@ -51,6 +52,15 @@ def plot_average_review_time_by_author(
     )
 
 
+def plot_workflow_runs_through_time(date_range_picker, author_select):
+    return ViewOpenPrsThroughTime(repository=prs_repository).main(
+        start_date=date_range_picker[0],
+        end_date=date_range_picker[1],
+        title="Workflow Runs Through Time",
+        authors=normalize_authors(author_select),
+    )
+
+
 def plot_prs_by_author(date_range_picker, selected_labels):
     return ViewPrsByAuthor(repository=prs_repository).plot_top_authors(
         title="PRs By Author",
@@ -88,6 +98,9 @@ def prs_section(date_range_picker, anonymize=False):
             pn.Column(date_range_picker, sizing_mode="stretch_width"),
             pn.Column(author_select, sizing_mode="stretch_width"),
             pn.Column(label_selector, sizing_mode="stretch_width"),
+        ),
+        pn.Row(
+            pn.bind(plot_workflow_runs_through_time, date_range_picker, author_select)
         ),
         pn.Row(
             pn.Column(

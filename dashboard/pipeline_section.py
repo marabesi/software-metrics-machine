@@ -30,11 +30,10 @@ workflow_selector = pn.widgets.Select(
 
 def sanitize_workflow_path(selected_value):
     if selected_value == "All":
-        return None  # No filtering
+        return None
     return selected_value
 
 
-# Pipeline Section
 def plot_workflow_by_status(date_range_picker, workflow_selector):
     return ViewWorkflowByStatus(repository=repository).main(
         start_date=date_range_picker[0],
