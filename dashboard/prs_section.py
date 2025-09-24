@@ -78,17 +78,15 @@ def prs_section(date_range_picker, anonymize=False):
     label_names = [label["label_name"] for label in unique_labels]
     label_names.insert(0, "All")
 
-    author_select = pn.widgets.MultiSelect(
+    author_select = pn.widgets.MultiChoice(
         name="Select Authors",
         options=unique_authors,
-        size=10,
         value=["All"],
     )
 
-    label_selector = pn.widgets.MultiSelect(
+    label_selector = pn.widgets.MultiChoice(
         name="Select Labels",
         options=label_names,
-        size=min(10, len(label_names)),
         value=["All"],
     )
 
