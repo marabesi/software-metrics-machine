@@ -18,7 +18,9 @@ from providers.github.workflows.assessment.view_summary import WorkflowRunSummar
     help="Either 'text' or 'json' to specify the output format",
 )
 def summary(max_workflows, output):
-    lw = WorkflowRunSummary(repository=LoadWorkflows(configuration=Configuration()))
+    lw = WorkflowRunSummary(
+        repository=LoadWorkflows(configuration=Configuration().build())
+    )
     lw.print_summary(max_workflows=max_workflows, output_format=output)
 
 

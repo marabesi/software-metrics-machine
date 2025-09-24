@@ -1,5 +1,5 @@
 import pytest
-from infrastructure.configuration import Configuration
+from infrastructure.filesystem_configuration import FilesystemConfiguration
 from providers.github.prs.prs_repository import LoadPrs
 from unittest.mock import patch
 
@@ -19,7 +19,7 @@ def test_load_provided_data_when_exists(mock_os_env):
         "providers.github.prs.prs_repository.LoadPrs.read_file_if_exists",
         return_value=mocked_prs_data,
     ):
-        repository = LoadPrs(configuration=Configuration())
+        repository = LoadPrs(configuration=FilesystemConfiguration().build())
         all_prs = repository.read_file_if_exists("prs.json")
 
         assert len(all_prs) == 1

@@ -6,11 +6,11 @@ import shutil
 import subprocess
 from pathlib import Path
 from typing import Any
-from infrastructure.configuration import Configuration
+from infrastructure.filesystem_configuration import FilesystemConfiguration
 
 
 def load_input(file_name: str | None = None) -> Any:
-    cfg = Configuration()
+    cfg = FilesystemConfiguration().build()
     data_dir = cfg.store_data
     pdir = Path(data_dir)
 

@@ -1,6 +1,6 @@
 import click
 
-from infrastructure.configuration import Configuration
+from infrastructure.filesystem_configuration import FilesystemConfiguration
 from providers.github.prs.assessment.view_summary import PrViewSummary
 from providers.github.prs.prs_repository import LoadPrs
 
@@ -31,9 +31,9 @@ from providers.github.prs.prs_repository import LoadPrs
     help="Either 'text' or 'json' to specify the output format",
 )
 def summary(csv, start_date, end_date, output):
-    return PrViewSummary(repository=LoadPrs(configuration=Configuration())).main(
-        csv=csv, start_date=start_date, end_date=end_date, output_format=output
-    )
+    return PrViewSummary(
+        repository=LoadPrs(configuration=FilesystemConfiguration().build())
+    ).main(csv=csv, start_date=start_date, end_date=end_date, output_format=output)
 
 
 command = summary

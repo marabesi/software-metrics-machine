@@ -1,5 +1,5 @@
 import panel as pn
-from infrastructure.configuration import Configuration
+from infrastructure.filesystem_configuration import FilesystemConfiguration
 from providers.github.prs.plots.view_average_of_prs_open_by import (
     ViewAverageOfPrsOpenBy,
 )
@@ -13,7 +13,7 @@ from providers.github.prs.plots.view_prs_by_author import (
 from providers.github.prs.prs_repository import LoadPrs
 
 pn.extension("tabulator")
-prs_repository = LoadPrs(configuration=Configuration())
+prs_repository = LoadPrs(configuration=FilesystemConfiguration().build())
 
 
 def normalize_label(selected_labels):
