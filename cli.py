@@ -48,6 +48,7 @@ module_groups = {
         "providers.github.workflows.cli.jobs_summary",
         "providers.github.workflows.cli.jobs_average_time_execution",
         "providers.github.workflows.cli.jobs_by_status",
+        "providers.github.workflows.cli.workflow_deployment_frequency",
     ],
     "codemaat": [
         "providers.codemaat.cli.code_churn",
