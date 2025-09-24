@@ -2,6 +2,7 @@ from datetime import date
 import panel as pn
 from panel.template import MaterialTemplate
 
+from dashboard import insights_section
 from dashboard.pipeline_section import pipeline_section
 from dashboard.prs_section import prs_section
 from dashboard.source_code_section import source_code_section
@@ -27,10 +28,12 @@ template.header.append(header_section)
 
 template.main.append(
     pn.Tabs(
+        ("Insights", insights_section),
         ("Pipeline", pipeline_section),
         ("Pull requests", prs_section),
         ("Source code", source_code_section),
         sizing_mode="stretch_width",
+        active=1,
     )
 )
 
