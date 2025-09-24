@@ -3,6 +3,7 @@ from typing import List, Iterable
 from datetime import datetime, timezone
 from infrastructure.base_repository import BaseRepository
 from infrastructure.configuration import Configuration
+from providers.github.prs.types import LabelSummary
 
 
 class LoadPrs(BaseRepository):
@@ -165,3 +166,23 @@ class LoadPrs(BaseRepository):
             return super().filter_by_date_range(self.all_prs, start_date, end_date)
 
         return self.all_prs
+
+    def get_unique_labels(self) -> List[LabelSummary]:
+        labels_list = []
+        labels_count: dict = {}
+        for p in self.all_prs:
+            pr_labels = p.get("labels") or []
+            for lbl in pr_labels:
+                if not isinstance(lbl, dict):
+                    # fallback when labels are strings
+                    name = str(lbl).strip().lower()
+                else:
+                    name = (lbl.get("name") or "").strip().lower()
+                if not name:
+                    continue
+                labels_count[name] = labels_count.get(name, 0) + 1
+
+        for label, count in labels_count.items():
+            labels_list.append({"label_name": label, "prs_count": count})
+
+        return labels_list

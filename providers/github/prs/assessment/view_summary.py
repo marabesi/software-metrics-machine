@@ -1,34 +1,8 @@
 import json
 import csv
-from typing import TypedDict, List, Union
 
 from providers.github.prs.prs_repository import LoadPrs
-
-
-class LabelSummary(TypedDict):
-    label_name: str
-    prs_count: int
-
-
-class PRDetails(TypedDict):
-    number: Union[str, None]
-    title: Union[str, None]
-    login: Union[str, None]
-    created: Union[str, None]
-    merged: Union[str, None]
-    closed: Union[str, None]
-
-
-class SummaryResult(TypedDict):
-    total_prs: int
-    merged_prs: int
-    closed_prs: int
-    without_conclusion: int
-    unique_authors: int
-    unique_labels: int
-    labels: List[LabelSummary]
-    first_pr: PRDetails
-    last_pr: PRDetails
+from providers.github.prs.types import SummaryResult
 
 
 class PrViewSummary:
@@ -104,26 +78,9 @@ class PrViewSummary:
         summary["closed_prs"] = len(closed)
         summary["without_conclusion"] = len(without)
 
-        # count unique authors (use login when available)
         summary["unique_authors"] = len(self.repository.get_unique_authors())
 
-        # aggregate labels used across all PRs and count occurrences
-        labels_list = []
-        labels_count: dict = {}
-        for p in self.prs:
-            pr_labels = p.get("labels") or []
-            for lbl in pr_labels:
-                if not isinstance(lbl, dict):
-                    # fallback when labels are strings
-                    name = str(lbl).strip().lower()
-                else:
-                    name = (lbl.get("name") or "").strip().lower()
-                if not name:
-                    continue
-                labels_count[name] = labels_count.get(name, 0) + 1
-
-        for label, count in labels_count.items():
-            labels_list.append({"label_name": label, "prs_count": count})
+        labels_list = self.repository.get_unique_labels()
 
         summary["labels"] = labels_list
         summary["unique_labels"] = len(labels_list)
