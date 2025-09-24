@@ -102,7 +102,7 @@ def plot_workflow_summary():
     )
 
     return pn.Column(
-        "### Workflow Summary",
+        "### Workflow General Data Summary",
         summary_table,
     )
 

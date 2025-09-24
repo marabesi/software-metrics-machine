@@ -6,6 +6,7 @@ from dashboard import insights_section
 from dashboard.pipeline_section import pipeline_section
 from dashboard.prs_section import prs_section
 from dashboard.source_code_section import source_code_section
+from dashboard.configuration_section import configuration_section
 
 pn.extension()
 
@@ -32,6 +33,7 @@ template.main.append(
         ("Pipeline", pipeline_section),
         ("Pull requests", prs_section),
         ("Source code", source_code_section),
+        ("Configuration", configuration_section),
         sizing_mode="stretch_width",
         active=1,
     )
