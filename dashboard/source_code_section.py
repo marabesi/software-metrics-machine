@@ -6,7 +6,7 @@ from providers.codemaat.plots.entity_effort import EntityEffortViewer
 from providers.codemaat.plots.entity_ownership import EntityOnershipViewer
 from providers.codemaat.codemaat_repository import CodemaatRepository
 
-pn.extension()
+pn.extension("tabulator")
 
 
 def plot_code_churn():

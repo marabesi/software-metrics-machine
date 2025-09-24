@@ -32,11 +32,11 @@ class ViewAverageReviewTimeByAuthor(MatplotViewer):
             print("No merged PRs to plot")
             return
 
-        pairs = self.__average_open_time_by_author(pairs, top)
-
         if labels:
             labels = [s.strip() for s in labels.split(",") if s.strip()]
             pairs = self.repository.filter_prs_by_labels(pairs, labels)
+
+        pairs = self.__average_open_time_by_author(pairs, top)
 
         authors, avgs = zip(*pairs)
         # horizontal bar chart with largest on top
