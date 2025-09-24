@@ -23,19 +23,25 @@ def mock_loader(mock_os_env):
 
 
 def test_get_unique_workflow_names(mock_loader):
-    """Test that get_unique_workflow_names returns unique workflow names."""
     result = mock_loader.get_unique_workflow_names()
-    assert len(result) == 3  # Ensure the sets have the same elements
+    assert len(result) == 3
 
 
 def test_get_unique_workflow_paths(mock_loader):
-    """Test that get_unique_workflow_paths returns unique workflow paths."""
     mock_loader.all_runs = [
         {"path": "/workflows/build.yml", "id": 1},
         {"path": "/workflows/test.yml", "id": 2},
         {"path": "/workflows/deploy.yml", "id": 3},
-        {"path": "/workflows/build.yml", "id": 4},  # Duplicate path
+        {"path": "/workflows/build.yml", "id": 4},
+        {"path": "/workflows/build.yml", "id": 4},
     ]
 
     result = mock_loader.get_unique_workflow_paths()
-    assert len(result) == 3  # Ensure the sets have the same elements
+    assert len(result) == 4
+
+
+def test_adds_all_option_by_default(mock_loader):
+    mock_loader.all_runs = []
+
+    result = mock_loader.get_unique_workflow_paths()
+    assert result[0] == "All"

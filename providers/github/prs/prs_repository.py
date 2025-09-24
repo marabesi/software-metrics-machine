@@ -162,23 +162,24 @@ class LoadPrs(BaseRepository):
         start_date = filters.get("start_date")
         end_date = filters.get("end_date")
 
+        filtered = self.all_prs
         if start_date and end_date:
-            return super().filter_by_date_range(self.all_prs, start_date, end_date)
+            filtered = super().filter_by_date_range(filtered, start_date, end_date)
 
         authors = filters.get("authors")
         if authors:
+            filtered_authors = []
             author_list = [a.strip().lower() for a in authors.split(",") if a.strip()]
-            filtered = []
-            for pr in self.all_prs:
+            for pr in filtered:
                 user = pr.get("user") or {}
                 login = user.get("login") if isinstance(user, dict) else str(user)
                 if not login:
                     login = "<unknown>"
                 if login.lower() in author_list:
-                    filtered.append(pr)
-            return filtered
+                    filtered_authors.append(pr)
+            filtered = filtered_authors
 
-        return self.all_prs
+        return filtered
 
     def get_unique_labels(self) -> List[LabelSummary]:
         labels_list = []

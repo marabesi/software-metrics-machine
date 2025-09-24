@@ -22,15 +22,24 @@ def normalize_label(selected_labels):
     return ",".join(selected_labels)
 
 
-def plot_average_prs_open_by(date_range_picker, selected_labels):
+def normalize_authors(author_select):
+    if "All" in author_select:
+        return None
+    return ",".join(author_select)
+
+
+def plot_average_prs_open_by(date_range_picker, selected_labels, author_select):
     return ViewAverageOfPrsOpenBy(repository=prs_repository).main(
         start_date=date_range_picker[0],
         end_date=date_range_picker[1],
         labels=normalize_label(selected_labels),
+        authors=normalize_authors(author_select),
     )
 
 
-def plot_average_review_time_by_author(date_range_picker, selected_labels):
+def plot_average_review_time_by_author(
+    date_range_picker, selected_labels, author_select
+):
     return ViewAverageReviewTimeByAuthor(
         repository=prs_repository
     ).plot_average_open_time(
@@ -38,6 +47,7 @@ def plot_average_review_time_by_author(date_range_picker, selected_labels):
         start_date=date_range_picker[0],
         end_date=date_range_picker[1],
         labels=normalize_label(selected_labels),
+        authors=normalize_authors(author_select),
     )
 
 
@@ -52,6 +62,8 @@ def plot_prs_by_author(date_range_picker, selected_labels):
 
 def prs_section(date_range_picker, anonymize=False):
     unique_authors = prs_repository.get_unique_authors()
+    unique_authors.insert(0, "All")
+
     unique_labels = prs_repository.get_unique_labels()
     label_names = [label["label_name"] for label in unique_labels]
     label_names.insert(0, "All")
@@ -60,14 +72,14 @@ def prs_section(date_range_picker, anonymize=False):
         name="Select Authors",
         options=unique_authors,
         size=10,
-        value=unique_authors,
+        value=["All"],
     )
 
     label_selector = pn.widgets.MultiSelect(
         name="Select Labels",
         options=label_names,
         size=min(10, len(label_names)),
-        value=[],
+        value=["All"],
     )
 
     return pn.Column(
@@ -80,7 +92,12 @@ def prs_section(date_range_picker, anonymize=False):
         pn.Row(
             pn.Column(
                 "### Average PRs Open By",
-                pn.bind(plot_average_prs_open_by, date_range_picker, label_selector),
+                pn.bind(
+                    plot_average_prs_open_by,
+                    date_range_picker,
+                    label_selector,
+                    author_select,
+                ),
             ),
             sizing_mode="stretch_width",
         ),
@@ -91,6 +108,7 @@ def prs_section(date_range_picker, anonymize=False):
                     plot_average_review_time_by_author,
                     date_range_picker,
                     label_selector,
+                    author_select,
                 ),
             ),
             sizing_mode="stretch_width",

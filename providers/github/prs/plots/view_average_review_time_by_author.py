@@ -20,12 +20,12 @@ class ViewAverageReviewTimeByAuthor(MatplotViewer):
         out_file: str | None = None,
         start_date: str | None = None,
         end_date: str | None = None,
+        authors: str | None = None,
     ) -> None:
         """pairs: list of (author, avg_days)"""
 
-        all_prs = self.repository.all_prs
-        pairs = self.repository.filter_by_date_range(
-            all_prs, start_date=start_date, end_date=end_date
+        pairs = self.repository.prs_with_filters(
+            {"start_date": start_date, "end_date": end_date, "authors": authors}
         )
 
         if not pairs:
