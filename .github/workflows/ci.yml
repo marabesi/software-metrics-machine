@@ -58,6 +58,8 @@ jobs:
           echo "SSM_GITHUB_REPOSITORY=fake/repo-test"
           mkdir -p "$(pwd)/tmp_test/repo"
           cp -R "$(pwd)/fixtures/github" "$(pwd)/tmp_test"
+          chmod -R 777 "$(pwd)/tmp_test"
+          ls -la "$(pwd)/tmp_test"
 
       - name: Run pytest
         run: poetry run pytest
