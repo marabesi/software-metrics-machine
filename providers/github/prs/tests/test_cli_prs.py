@@ -102,5 +102,4 @@ def test_average_prs_open_by():
                 "month",
             ],
         )
-        assert result.output == 0
         assert result.exit_code == 0

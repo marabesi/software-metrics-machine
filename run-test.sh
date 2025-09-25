@@ -14,6 +14,7 @@ cp -R "$(pwd)/fixtures/github" "$(pwd)/tmp_test"
 export SSM_STORE_DATA_AT="$(pwd)/tmp_test/github"
 export SSM_GIT_REPOSITORY_LOCATION="$(pwd)/tmp_test/repo"
 export SSM_GITHUB_REPOSITORY="fake/repo-test"
+export SSM_GITHUB_TOKEN="fake-token"
 
 echo "Running tests..."
 export PYTHONPATH="$(pwd):$PYTHONPATH"

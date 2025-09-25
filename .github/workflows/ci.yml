@@ -56,6 +56,7 @@ jobs:
           echo "SSM_STORE_DATA_AT=$(pwd)/tmp_test/github" >> $GITHUB_ENV
           echo "SSM_GIT_REPOSITORY_LOCATION=$(pwd)/tmp_test/repo" >> $GITHUB_ENV
           echo "SSM_GITHUB_REPOSITORY=fake/repo-test" >> $GITHUB_ENV
+          echo "SSM_GITHUB_TOKEN=fake-token" >> $GITHUB_ENV
           mkdir -p "$(pwd)/tmp_test/repo"
           cp -R "$(pwd)/fixtures/github" "$(pwd)/tmp_test"
           chmod -R 755 "$(pwd)/tmp_test"
