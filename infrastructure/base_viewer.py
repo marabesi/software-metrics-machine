@@ -1,5 +1,5 @@
 import os
-from infrastructure.configuration_builder import ConfigurationBuilder
+from infrastructure.configuration.configuration_builder import ConfigurationBuilder
 from matplotlib.figure import Figure
 
 

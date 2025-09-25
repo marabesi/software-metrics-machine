@@ -6,7 +6,7 @@ import shutil
 import subprocess
 from pathlib import Path
 from typing import Any
-from infrastructure.configuration_builder import ConfigurationBuilder
+from infrastructure.configuration.configuration_builder import ConfigurationBuilder
 
 
 def load_input(file_name: str | None = None) -> Any:

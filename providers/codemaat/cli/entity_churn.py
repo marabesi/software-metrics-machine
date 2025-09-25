@@ -1,6 +1,9 @@
 import click
 
-from infrastructure.configuration_builder import ConfigurationBuilder, Driver
+from infrastructure.configuration.configuration_builder import (
+    ConfigurationBuilder,
+    Driver,
+)
 from providers.codemaat.codemaat_repository import CodemaatRepository
 from providers.codemaat.plots.entity_churn import EntityChurnViewer
 

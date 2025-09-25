@@ -1,5 +1,8 @@
 import pytest
-from infrastructure.configuration_builder import ConfigurationBuilder, Driver
+from infrastructure.configuration.configuration_builder import (
+    ConfigurationBuilder,
+    Driver,
+)
 from providers.github.prs.prs_repository import LoadPrs
 from unittest.mock import patch
 

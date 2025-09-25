@@ -1,5 +1,5 @@
 from enum import Enum
-from infrastructure.configuration import Configuration
+from infrastructure.configuration.configuration import Configuration
 
 
 class Driver(Enum):

@@ -3,7 +3,7 @@ from pathlib import PurePosixPath
 import typing
 
 from infrastructure.base_repository import BaseRepository
-from infrastructure.configuration import Configuration
+from infrastructure.configuration.configuration import Configuration
 
 
 class CodemaatRepository(BaseRepository):

@@ -1,7 +1,7 @@
 from datetime import datetime, date, timezone
 from typing import List, Optional
 from pathlib import Path
-from infrastructure.configuration import Configuration
+from infrastructure.configuration.configuration import Configuration
 import json
 
 

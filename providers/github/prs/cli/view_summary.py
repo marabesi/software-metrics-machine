@@ -1,6 +1,9 @@
 import click
 
-from infrastructure.configuration_builder import ConfigurationBuilder, Driver
+from infrastructure.configuration.configuration_builder import (
+    ConfigurationBuilder,
+    Driver,
+)
 from providers.github.prs.assessment.view_summary import PrViewSummary
 from providers.github.prs.prs_repository import LoadPrs
 

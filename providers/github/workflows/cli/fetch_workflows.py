@@ -1,6 +1,9 @@
 import click
 from providers.github.github_client import GithubClient
-from infrastructure.configuration_builder import ConfigurationBuilder, Driver
+from infrastructure.configuration.configuration_builder import (
+    ConfigurationBuilder,
+    Driver,
+)
 
 
 def fetch_all_workflow_runs(target_branch, start_date, end_date, raw_filters):

@@ -1,5 +1,8 @@
 import panel as pn
-from infrastructure.configuration_builder import ConfigurationBuilder, Driver
+from infrastructure.configuration.configuration_builder import (
+    ConfigurationBuilder,
+    Driver,
+)
 from providers.codemaat.plots.code_churn import CodeChurnViewer
 from providers.codemaat.plots.coupling import CouplingViewer
 from providers.codemaat.plots.entity_churn import EntityChurnViewer

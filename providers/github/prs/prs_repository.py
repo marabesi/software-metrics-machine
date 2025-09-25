@@ -2,7 +2,7 @@ import json
 from typing import List, Iterable
 from datetime import datetime, timezone
 from infrastructure.base_repository import BaseRepository
-from infrastructure.configuration import Configuration
+from infrastructure.configuration.configuration import Configuration
 from providers.github.prs.types import LabelSummary
 
 

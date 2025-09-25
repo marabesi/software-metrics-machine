@@ -1,6 +1,9 @@
 import click
 from providers.github.github_client import GithubClient
-from infrastructure.configuration_builder import ConfigurationBuilder, Driver
+from infrastructure.configuration.configuration_builder import (
+    ConfigurationBuilder,
+    Driver,
+)
 
 
 @click.command(name="fetch", help="Fetch pull requests from GitHub")

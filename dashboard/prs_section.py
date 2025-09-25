@@ -1,5 +1,8 @@
 import panel as pn
-from infrastructure.configuration_builder import ConfigurationBuilder, Driver
+from infrastructure.configuration.configuration_builder import (
+    ConfigurationBuilder,
+    Driver,
+)
 from providers.github.prs.plots.view_average_of_prs_open_by import (
     ViewAverageOfPrsOpenBy,
 )

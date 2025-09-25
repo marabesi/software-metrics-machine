@@ -1,6 +1,9 @@
 import click
 
-from infrastructure.configuration_builder import ConfigurationBuilder, Driver
+from infrastructure.configuration.configuration_builder import (
+    ConfigurationBuilder,
+    Driver,
+)
 from providers.github.workflows.plots.view_deployment_frequency import (
     ViewDeploymentFrequency,
 )

@@ -4,7 +4,7 @@ import pandas as pd
 import requests
 import json
 from providers.github.workflows.repository_workflows import LoadWorkflows
-from infrastructure.configuration import Configuration
+from infrastructure.configuration.configuration import Configuration
 from providers.github.prs.prs_repository import LoadPrs
 
 

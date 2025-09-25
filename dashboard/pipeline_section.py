@@ -1,6 +1,9 @@
 import panel as pn
 import pandas as pd
-from infrastructure.configuration_builder import ConfigurationBuilder, Driver
+from infrastructure.configuration.configuration_builder import (
+    ConfigurationBuilder,
+    Driver,
+)
 from providers.github.workflows.assessment.view_summary import WorkflowRunSummary
 from providers.github.workflows.plots.view_jobs_average_time_execution import (
     ViewJobsByStatus,

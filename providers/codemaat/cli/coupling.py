@@ -1,6 +1,9 @@
 import click
 
-from infrastructure.configuration_builder import ConfigurationBuilder, Driver
+from infrastructure.configuration.configuration_builder import (
+    ConfigurationBuilder,
+    Driver,
+)
 from providers.codemaat.plots.coupling import CouplingViewer
 
 
