@@ -1,5 +1,6 @@
 [![CI](https://github.com/marabesi/software-metrics-machine/actions/workflows/ci.yml/badge.svg)](https://github.com/marabesi/software-metrics-machine/actions/workflows/ci.yml)
 [![Coverage Status](https://coveralls.io/repos/github/marabesi/software-metrics-machine/badge.svg?branch=main)](https://coveralls.io/github/marabesi/software-metrics-machine?branch=main)
+[![Docs](https://github.com/marabesi/software-metrics-machine/actions/workflows/static.yml/badge.svg)](https://github.com/marabesi/software-metrics-machine/actions/workflows/static.yml)
 
 # Software Metrics Machine
 
