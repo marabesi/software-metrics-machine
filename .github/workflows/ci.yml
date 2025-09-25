@@ -54,7 +54,12 @@ jobs:
         run: echo "PYTHONPATH=$(pwd)" >> $GITHUB_ENV
 
       - name: Run pytest
-        run: poetry run pytest
+        env:
+          SSM_STORE_DATA_AT: "$(pwd)/tmp_test/github"
+          SSM_GIT_REPOSITORY_LOCATION: "$(pwd)/tmp_test/repo"
+          SSM_GITHUB_REPOSITORY: "fake/repo-test"
+        run: |
+          poetry run pytest
 
 
   acceptance:
