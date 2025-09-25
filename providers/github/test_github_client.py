@@ -1,18 +1,7 @@
 import pytest
 from unittest.mock import patch, MagicMock
 from providers.github.github_client import GithubClient
-from infrastructure.configuration.configuration import Configuration
-
-
-class InMemoryConfiguration(Configuration):
-    def __init__(self):
-        super().__init__(
-            git_provider="github",
-            github_token="fake_token",
-            github_repository="fake/repo",
-            store_data="in_memory",
-            git_repository_location="in_memory",
-        )
+from tests.in_memory_configuration import InMemoryConfiguration
 
 
 class TestGithubClient:
@@ -70,7 +59,6 @@ class TestGithubClient:
             ) as mock_store,
         ):
 
-            # Mock the response from requests.get
             mock_response = MagicMock()
             mock_response.json.return_value = {
                 "total_count": 2,
