@@ -53,13 +53,12 @@ jobs:
       - name: Set PYTHONPATH
         run: |
           echo "PYTHONPATH=$(pwd)" >> $GITHUB_ENV
-          echo "SSM_STORE_DATA_AT=$(pwd)/tmp_test/github"
-          echo "SSM_GIT_REPOSITORY_LOCATION=$(pwd)/tmp_test/repo"
-          echo "SSM_GITHUB_REPOSITORY=fake/repo-test"
+          echo "SSM_STORE_DATA_AT=$(pwd)/tmp_test/github" >> $GITHUB_ENV
+          echo "SSM_GIT_REPOSITORY_LOCATION=$(pwd)/tmp_test/repo" >> $GITHUB_ENV
+          echo "SSM_GITHUB_REPOSITORY=fake/repo-test" >> $GITHUB_ENV
           mkdir -p "$(pwd)/tmp_test/repo"
           cp -R "$(pwd)/fixtures/github" "$(pwd)/tmp_test"
-          chmod -R 777 "$(pwd)/tmp_test"
-          ls -la "$(pwd)/tmp_test"
+          chmod -R 755 "$(pwd)/tmp_test"
 
       - name: Run pytest
         run: poetry run pytest
