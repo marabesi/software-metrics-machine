@@ -1,0 +1,266 @@
+[
+  {
+    "id": 47164977046,
+    "run_id": 16663333374,
+    "workflow_name": "Docker",
+    "head_branch": "main",
+    "run_url": "https://api.github.com/repos/github/github-mcp-server/actions/runs/16663333374",
+    "run_attempt": 1,
+    "node_id": "CR_kwDOODGMVM8AAAAK-0Bvlg",
+    "head_sha": "45e90aedd4445e0e61ead8cb165b45cc8e249f1e",
+    "url": "https://api.github.com/repos/github/github-mcp-server/actions/jobs/47164977046",
+    "html_url": "https://github.com/github/github-mcp-server/actions/runs/16663333374/job/47164977046",
+    "status": "completed",
+    "conclusion": "success",
+    "created_at": "2025-08-01T00:48:52Z",
+    "started_at": "2025-08-01T00:48:58Z",
+    "completed_at": "2025-08-01T00:50:31Z",
+    "name": "build",
+    "steps": [
+      {
+        "name": "Set up job",
+        "status": "completed",
+        "conclusion": "success",
+        "number": 1,
+        "started_at": "2025-08-01T00:48:59Z",
+        "completed_at": "2025-08-01T00:49:03Z"
+      },
+      {
+        "name": "Checkout repository",
+        "status": "completed",
+        "conclusion": "success",
+        "number": 2,
+        "started_at": "2025-08-01T00:49:03Z",
+        "completed_at": "2025-08-01T00:49:05Z"
+      },
+      {
+        "name": "Install cosign",
+        "status": "completed",
+        "conclusion": "success",
+        "number": 3,
+        "started_at": "2025-08-01T00:49:05Z",
+        "completed_at": "2025-08-01T00:49:05Z"
+      },
+      {
+        "name": "Set up Docker Buildx",
+        "status": "completed",
+        "conclusion": "success",
+        "number": 4,
+        "started_at": "2025-08-01T00:49:05Z",
+        "completed_at": "2025-08-01T00:49:15Z"
+      },
+      {
+        "name": "Log into registry ghcr.io",
+        "status": "completed",
+        "conclusion": "success",
+        "number": 5,
+        "started_at": "2025-08-01T00:49:15Z",
+        "completed_at": "2025-08-01T00:49:15Z"
+      },
+      {
+        "name": "Extract Docker metadata",
+        "status": "completed",
+        "conclusion": "success",
+        "number": 6,
+        "started_at": "2025-08-01T00:49:15Z",
+        "completed_at": "2025-08-01T00:49:16Z"
+      },
+      {
+        "name": "Go Build Cache for Docker",
+        "status": "completed",
+        "conclusion": "success",
+        "number": 7,
+        "started_at": "2025-08-01T00:49:16Z",
+        "completed_at": "2025-08-01T00:49:18Z"
+      },
+      {
+        "name": "Inject go-build-cache",
+        "status": "completed",
+        "conclusion": "success",
+        "number": 8,
+        "started_at": "2025-08-01T00:49:18Z",
+        "completed_at": "2025-08-01T00:49:24Z"
+      },
+      {
+        "name": "Build and push Docker image",
+        "status": "completed",
+        "conclusion": "success",
+        "number": 9,
+        "started_at": "2025-08-01T00:49:24Z",
+        "completed_at": "2025-08-01T00:50:02Z"
+      },
+      {
+        "name": "Sign the published Docker image",
+        "status": "completed",
+        "conclusion": "success",
+        "number": 10,
+        "started_at": "2025-08-01T00:50:02Z",
+        "completed_at": "2025-08-01T00:50:14Z"
+      },
+      {
+        "name": "Post Build and push Docker image",
+        "status": "completed",
+        "conclusion": "success",
+        "number": 15,
+        "started_at": "2025-08-01T00:50:14Z",
+        "completed_at": "2025-08-01T00:50:14Z"
+      },
+      {
+        "name": "Post Inject go-build-cache",
+        "status": "completed",
+        "conclusion": "success",
+        "number": 16,
+        "started_at": "2025-08-01T00:50:14Z",
+        "completed_at": "2025-08-01T00:50:27Z"
+      },
+      {
+        "name": "Post Go Build Cache for Docker",
+        "status": "completed",
+        "conclusion": "success",
+        "number": 17,
+        "started_at": "2025-08-01T00:50:27Z",
+        "completed_at": "2025-08-01T00:50:27Z"
+      },
+      {
+        "name": "Post Log into registry ghcr.io",
+        "status": "completed",
+        "conclusion": "success",
+        "number": 18,
+        "started_at": "2025-08-01T00:50:27Z",
+        "completed_at": "2025-08-01T00:50:27Z"
+      },
+      {
+        "name": "Post Set up Docker Buildx",
+        "status": "completed",
+        "conclusion": "success",
+        "number": 19,
+        "started_at": "2025-08-01T00:50:27Z",
+        "completed_at": "2025-08-01T00:50:29Z"
+      },
+      {
+        "name": "Post Checkout repository",
+        "status": "completed",
+        "conclusion": "success",
+        "number": 20,
+        "started_at": "2025-08-01T00:50:29Z",
+        "completed_at": "2025-08-01T00:50:29Z"
+      },
+      {
+        "name": "Complete job",
+        "status": "completed",
+        "conclusion": "success",
+        "number": 21,
+        "started_at": "2025-08-01T00:50:29Z",
+        "completed_at": "2025-08-01T00:50:29Z"
+      }
+    ],
+    "check_run_url": "https://api.github.com/repos/github/github-mcp-server/check-runs/47164977046",
+    "labels": [
+      "ubuntu-latest-xl"
+    ],
+    "runner_id": 1067246465,
+    "runner_name": "GitHub Actions 1067246465",
+    "runner_group_id": 44,
+    "runner_group_name": ""
+  },
+  {
+    "id": 47208689668,
+    "run_id": 16677809571,
+    "workflow_name": "Build and Test Go Project",
+    "head_branch": "v0.10.0",
+    "run_url": "https://api.github.com/repos/github/github-mcp-server/actions/runs/16677809571",
+    "run_attempt": 1,
+    "node_id": "CR_kwDOODGMVM8AAAAK_dtwBA",
+    "head_sha": "45e90aedd4445e0e61ead8cb165b45cc8e249f1e",
+    "url": "https://api.github.com/repos/github/github-mcp-server/actions/jobs/47208689668",
+    "html_url": "https://github.com/github/github-mcp-server/actions/runs/16677809571/job/47208689668",
+    "status": "completed",
+    "conclusion": "success",
+    "created_at": "2025-08-01T14:35:37Z",
+    "started_at": "2025-08-01T14:35:40Z",
+    "completed_at": "2025-08-01T14:36:43Z",
+    "name": "build (ubuntu-latest)",
+    "steps": [
+      {
+        "name": "Set up job",
+        "status": "completed",
+        "conclusion": "success",
+        "number": 1,
+        "started_at": "2025-08-01T14:35:40Z",
+        "completed_at": "2025-08-01T14:35:41Z"
+      },
+      {
+        "name": "Check out code",
+        "status": "completed",
+        "conclusion": "success",
+        "number": 2,
+        "started_at": "2025-08-01T14:35:41Z",
+        "completed_at": "2025-08-01T14:35:42Z"
+      },
+      {
+        "name": "Set up Go",
+        "status": "completed",
+        "conclusion": "success",
+        "number": 3,
+        "started_at": "2025-08-01T14:35:42Z",
+        "completed_at": "2025-08-01T14:35:53Z"
+      },
+      {
+        "name": "Download dependencies",
+        "status": "completed",
+        "conclusion": "success",
+        "number": 4,
+        "started_at": "2025-08-01T14:35:53Z",
+        "completed_at": "2025-08-01T14:35:53Z"
+      },
+      {
+        "name": "Run unit tests",
+        "status": "completed",
+        "conclusion": "success",
+        "number": 5,
+        "started_at": "2025-08-01T14:35:53Z",
+        "completed_at": "2025-08-01T14:36:23Z"
+      },
+      {
+        "name": "Build",
+        "status": "completed",
+        "conclusion": "success",
+        "number": 6,
+        "started_at": "2025-08-01T14:36:23Z",
+        "completed_at": "2025-08-01T14:36:40Z"
+      },
+      {
+        "name": "Post Set up Go",
+        "status": "completed",
+        "conclusion": "success",
+        "number": 11,
+        "started_at": "2025-08-01T14:36:40Z",
+        "completed_at": "2025-08-01T14:36:41Z"
+      },
+      {
+        "name": "Post Check out code",
+        "status": "completed",
+        "conclusion": "success",
+        "number": 12,
+        "started_at": "2025-08-01T14:36:41Z",
+        "completed_at": "2025-08-01T14:36:41Z"
+      },
+      {
+        "name": "Complete job",
+        "status": "completed",
+        "conclusion": "success",
+        "number": 13,
+        "started_at": "2025-08-01T14:36:41Z",
+        "completed_at": "2025-08-01T14:36:41Z"
+      }
+    ],
+    "check_run_url": "https://api.github.com/repos/github/github-mcp-server/check-runs/47208689668",
+    "labels": [
+      "ubuntu-latest"
+    ],
+    "runner_id": 1067393447,
+    "runner_name": "GitHub Actions 1067393447",
+    "runner_group_id": 0,
+    "runner_group_name": "GitHub Actions"
+  }
+]

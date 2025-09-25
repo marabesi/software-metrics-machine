@@ -222,3 +222,4 @@ __marimo__/
 
 node_modules/
 **/.vitepress/cache
+tmp_test/
