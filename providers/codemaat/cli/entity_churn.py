@@ -1,5 +1,6 @@
 import click
 
+from infrastructure.configuration_builder import ConfigurationBuilder, Driver
 from providers.codemaat.codemaat_repository import CodemaatRepository
 from providers.codemaat.plots.entity_churn import EntityChurnViewer
 
@@ -27,7 +28,7 @@ from providers.codemaat.plots.entity_churn import EntityChurnViewer
 def entity_churn(out_file, top, ignore_files):
     """Plot entity churn graph."""
     viewer = EntityChurnViewer()
-    df_repo = CodemaatRepository()
+    df_repo = CodemaatRepository(configuration=ConfigurationBuilder(Driver.CLI).build())
     viewer.render(df_repo, top_n=top, ignore_files=ignore_files, out_file=out_file)
 
 

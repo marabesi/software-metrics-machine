@@ -1,6 +1,6 @@
 import click
 
-from infrastructure.filesystem_configuration import FilesystemConfiguration
+from infrastructure.configuration_builder import ConfigurationBuilder, Driver
 from providers.github.workflows.plots.view_deployment_frequency import (
     ViewDeploymentFrequency,
 )
@@ -41,7 +41,9 @@ from providers.github.workflows.repository_workflows import LoadWorkflows
 )
 def deployment_frequency(out_file, workflow_path, job_name, start_date, end_date):
     return ViewDeploymentFrequency(
-        repository=LoadWorkflows(configuration=FilesystemConfiguration().build())
+        repository=LoadWorkflows(
+            configuration=ConfigurationBuilder(driver=Driver.CLI).build()
+        )
     ).plot(
         out_file=out_file,
         workflow_path=workflow_path,

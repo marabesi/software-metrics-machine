@@ -1,5 +1,5 @@
 import pytest
-from infrastructure.filesystem_configuration import FilesystemConfiguration
+from infrastructure.configuration_builder import ConfigurationBuilder, Driver
 from providers.github.workflows.repository_workflows import LoadWorkflows
 
 
@@ -12,7 +12,9 @@ def mock_os_env(monkeypatch):
 @pytest.fixture
 def mock_loader(mock_os_env):
     """Fixture to set up a mock instance of LoadWorkflows with sample data."""
-    loader = LoadWorkflows(configuration=FilesystemConfiguration().build())
+    loader = LoadWorkflows(
+        configuration=ConfigurationBuilder(driver=Driver.CLI).build()
+    )
     loader.all_runs = [
         {"name": "Build Workflow", "id": 1},
         {"name": "Test Workflow", "id": 2},

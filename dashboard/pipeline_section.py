@@ -1,6 +1,6 @@
 import panel as pn
 import pandas as pd
-from infrastructure.filesystem_configuration import FilesystemConfiguration
+from infrastructure.configuration_builder import ConfigurationBuilder, Driver
 from providers.github.workflows.assessment.view_summary import WorkflowRunSummary
 from providers.github.workflows.plots.view_jobs_average_time_execution import (
     ViewJobsByStatus,
@@ -17,7 +17,9 @@ from providers.github.workflows.repository_workflows import LoadWorkflows
 pn.extension("tabulator")
 
 # Initialize the repository to fetch workflow names
-repository = LoadWorkflows(configuration=FilesystemConfiguration().build())
+repository = LoadWorkflows(
+    configuration=ConfigurationBuilder(Driver.APPLICATION).build()
+)
 workflow_names = repository.get_unique_workflow_paths()
 
 # Create a selector widget for filtering workflows

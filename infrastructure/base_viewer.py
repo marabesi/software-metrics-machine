@@ -1,5 +1,5 @@
 import os
-from infrastructure.filesystem_configuration import FilesystemConfiguration
+from infrastructure.configuration_builder import ConfigurationBuilder
 from matplotlib.figure import Figure
 
 
@@ -10,7 +10,7 @@ class MatplotViewer:
 
     def output(self, plt, fig: Figure, out_file) -> Figure:
         if out_file:
-            cfg = FilesystemConfiguration().build()
+            cfg = ConfigurationBuilder().build()
             # if out_file is an absolute path, respect it; otherwise join with configured store path
             if os.path.isabs(out_file):
                 store_at = out_file

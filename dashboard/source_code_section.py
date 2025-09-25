@@ -1,4 +1,5 @@
 import panel as pn
+from infrastructure.configuration_builder import ConfigurationBuilder, Driver
 from providers.codemaat.plots.code_churn import CodeChurnViewer
 from providers.codemaat.plots.coupling import CouplingViewer
 from providers.codemaat.plots.entity_churn import EntityChurnViewer
@@ -8,27 +9,29 @@ from providers.codemaat.codemaat_repository import CodemaatRepository
 
 pn.extension("tabulator")
 
+repository = CodemaatRepository(
+    configuration=ConfigurationBuilder(Driver.APPLICATION).build()
+)
+
 
 def plot_code_churn():
-    return CodeChurnViewer().render(
-        CodemaatRepository(),
-    )
+    return CodeChurnViewer().render(repository=repository)
 
 
 def plot_entity_churn():
-    return EntityChurnViewer().render(CodemaatRepository())
+    return EntityChurnViewer().render(repo=repository)
 
 
 def plot_entity_effort():
     return EntityEffortViewer().render_treemap(
         top_n=10,
-        repo=CodemaatRepository(),
+        repo=repository,
     )
 
 
 def plot_entity_ownership():
     return EntityOnershipViewer().render(
-        CodemaatRepository(),
+        repo=repository,
     )
 
 
@@ -49,7 +52,7 @@ def plot_code_coupling_with_controls():
 
     # Callback to update the plot based on slider values
     def update_plot(zoom, x_pan, y_pan):
-        fig = coupling_viewer.render(CodemaatRepository())
+        fig = coupling_viewer.render(repo=repository)
         ax = fig.gca()
         ax.set_xlim(ax.get_xlim()[0] * zoom + x_pan, ax.get_xlim()[1] * zoom + x_pan)
         ax.set_ylim(ax.get_ylim()[0] * zoom + y_pan, ax.get_ylim()[1] * zoom + y_pan)

@@ -1,6 +1,6 @@
 import click
 from providers.github.github_client import GithubClient
-from infrastructure.filesystem_configuration import FilesystemConfiguration
+from infrastructure.configuration_builder import ConfigurationBuilder, Driver
 
 
 @click.command(name="fetch", help="Fetch pull requests from GitHub")
@@ -26,7 +26,7 @@ from infrastructure.filesystem_configuration import FilesystemConfiguration
     help="Filter PRs created on or before this date (ISO 8601)",
 )
 def execute(months=1, force=None, start_date=None, end_date=None):
-    client = GithubClient(configuration=FilesystemConfiguration().build())
+    client = GithubClient(configuration=ConfigurationBuilder(driver=Driver.CLI).build())
     client.fetch_prs(
         months=months,
         force=force,

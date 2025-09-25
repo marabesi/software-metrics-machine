@@ -1,11 +1,11 @@
 import click
 from providers.github.github_client import GithubClient
-from infrastructure.filesystem_configuration import FilesystemConfiguration
+from infrastructure.configuration_builder import ConfigurationBuilder, Driver
 from providers.github.workflows.repository_workflows import LoadWorkflows
 
 
 def fetch_all_job_runs(start_date, end_date, raw_filters):
-    client = GithubClient(configuration=FilesystemConfiguration().build())
+    client = GithubClient(configuration=ConfigurationBuilder(driver=Driver.CLI).build())
     client.fetch_jobs_for_workflows(
         LoadWorkflows(),
         start_date=start_date,

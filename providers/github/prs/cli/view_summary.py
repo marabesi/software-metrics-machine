@@ -1,6 +1,6 @@
 import click
 
-from infrastructure.filesystem_configuration import FilesystemConfiguration
+from infrastructure.configuration_builder import ConfigurationBuilder, Driver
 from providers.github.prs.assessment.view_summary import PrViewSummary
 from providers.github.prs.prs_repository import LoadPrs
 
@@ -32,7 +32,9 @@ from providers.github.prs.prs_repository import LoadPrs
 )
 def summary(csv, start_date, end_date, output):
     return PrViewSummary(
-        repository=LoadPrs(configuration=FilesystemConfiguration().build())
+        repository=LoadPrs(
+            configuration=ConfigurationBuilder(driver=Driver.CLI).build()
+        )
     ).main(csv=csv, start_date=start_date, end_date=end_date, output_format=output)
 
 

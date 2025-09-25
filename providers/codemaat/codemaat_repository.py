@@ -3,12 +3,12 @@ from pathlib import PurePosixPath
 import typing
 
 from infrastructure.base_repository import BaseRepository
-from infrastructure.filesystem_configuration import FilesystemConfiguration
+from infrastructure.configuration import Configuration
 
 
 class CodemaatRepository(BaseRepository):
-    def __init__(self):
-        self.configuration = FilesystemConfiguration().build()
+    def __init__(self, configuration: Configuration):
+        self.configuration = configuration
         super().__init__(configuration=self.configuration)
 
     def get_code_churn(self):

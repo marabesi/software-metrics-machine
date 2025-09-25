@@ -1,4 +1,5 @@
 import click
+from infrastructure.configuration_builder import ConfigurationBuilder, Driver
 from providers.codemaat.codemaat_repository import CodemaatRepository
 from providers.codemaat.plots.entity_effort import EntityEffortViewer
 
@@ -26,7 +27,7 @@ from providers.codemaat.plots.entity_effort import EntityEffortViewer
 def entity_effort(out_file, top, ignore_files):
     """Plot entity (File) effort."""
     viewer = EntityEffortViewer()
-    df_repo = CodemaatRepository()
+    df_repo = CodemaatRepository(configuration=ConfigurationBuilder(Driver.CLI).build())
     viewer.render(df_repo, top_n=top, ignore_files=ignore_files, out_file=out_file)
 
 

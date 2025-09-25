@@ -1,5 +1,6 @@
 import click
 
+from infrastructure.configuration_builder import ConfigurationBuilder, Driver
 from providers.codemaat.plots.code_churn import CodeChurnViewer
 from providers.codemaat.codemaat_repository import CodemaatRepository
 
@@ -14,7 +15,10 @@ from providers.codemaat.codemaat_repository import CodemaatRepository
 )
 def code_churn(out_file):
     """Plot the code churn rate over time."""
-    return CodeChurnViewer().render(CodemaatRepository(), out_file=out_file)
+    return CodeChurnViewer().render(
+        CodemaatRepository(configuration=ConfigurationBuilder(Driver.CLI).build()),
+        out_file=out_file,
+    )
 
 
 command = code_churn
