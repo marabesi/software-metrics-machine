@@ -57,3 +57,38 @@ class TestGithubClient:
                 headers=self.headers,
             )
             mocked_store.assert_called_once()
+
+    def test_fetch_workflows(self):
+        with (
+            patch("requests.get") as mock_get,
+            patch(
+                "infrastructure.base_repository.BaseRepository.read_file_if_exists",
+                return_value=None,
+            ) as mock_read,
+            patch(
+                "infrastructure.base_repository.BaseRepository.store_file"
+            ) as mock_store,
+        ):
+
+            # Mock the response from requests.get
+            mock_response = MagicMock()
+            mock_response.json.return_value = {
+                "total_count": 2,
+                "workflow_runs": [],
+            }
+            mock_response.links = {}
+            mock_response.status_code = 200
+            mock_get.return_value = mock_response
+
+            # Call the method
+            self.github_client.fetch_workflows(
+                target_branch="main", start_date="2025-01-01", end_date="2025-12-31"
+            )
+
+            mock_read.assert_called_with("workflows.json")
+            mock_get.assert_called_once_with(
+                f"https://api.github.com/repos/{self.configuration.github_repository}/actions/runs?per_page=100",
+                headers=self.headers,
+                params={"branch": "main", "created": "2025-01-01..2025-12-31"},
+            )
+            mock_store.assert_called_once_with("workflows.json", [])
