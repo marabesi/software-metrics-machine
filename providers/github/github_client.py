@@ -17,6 +17,7 @@ class GithubClient:
         }
         self.repository_slug = configuration.github_repository
         self.pr_repository = LoadPrs(configuration=configuration)
+        self.configuration = configuration
 
     def fetch_prs(self, start_date=None, end_date=None, months=1, force=None):
         pr_json_path = "prs.json"
@@ -87,7 +88,7 @@ class GithubClient:
         end_date: str | None,
         raw_filters=None,
     ):
-        workflow_repository = LoadWorkflows()
+        workflow_repository = LoadWorkflows(configuration=self.configuration)
         runs_json_path = "workflows.json"
         contents = workflow_repository.read_file_if_exists(runs_json_path)
         if contents is not None:

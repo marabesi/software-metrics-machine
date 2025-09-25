@@ -3,12 +3,21 @@ import sys
 
 
 class Configuration:
-    def __init__(self):
-        self.git_provider = "github"
-        self.github_token = os.getenv("SSM_GITHUB_TOKEN")
-        self.github_repository = os.getenv("SSM_GITHUB_REPOSITORY")
-        self.store_data = os.getenv("SSM_STORE_DATA_AT")
-        self.git_repository_location = os.getenv("SSM_GIT_REPOSITORY_LOCATION")
+    def __init__(
+        self,
+        git_provider="github",
+        github_token=None,
+        github_repository=None,
+        store_data=None,
+        git_repository_location=None,
+    ):
+        self.git_provider = git_provider
+        self.github_token = github_token or os.getenv("SSM_GITHUB_TOKEN")
+        self.github_repository = github_repository or os.getenv("SSM_GITHUB_REPOSITORY")
+        self.store_data = store_data or os.getenv("SSM_STORE_DATA_AT")
+        self.git_repository_location = git_repository_location or os.getenv(
+            "SSM_GIT_REPOSITORY_LOCATION"
+        )
 
         print(
             f"Configuration: {self.git_provider} repository={self.github_repository} store_data={self.store_data}"
