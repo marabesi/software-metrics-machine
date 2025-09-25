@@ -16,9 +16,9 @@ class GithubClient:
             "Accept": "application/vnd.github+json",
         }
         self.repository_slug = configuration.github_repository
+        self.pr_repository = LoadPrs(configuration=configuration)
 
     def fetch_prs(self, start_date=None, end_date=None, months=1, force=None):
-        self.pr_repository = LoadPrs()
         pr_json_path = "prs.json"
 
         if force:
@@ -37,6 +37,8 @@ class GithubClient:
             end_date = datetime.now(timezone.utc)
             start_date = end_date - pd.DateOffset(months=months)
             start_date = start_date.to_pydatetime()
+            start_date = str(start_date)
+            end_date = str(end_date)
 
         if start_date and end_date:
             try:

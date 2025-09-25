@@ -1,5 +1,6 @@
 import os
-from infrastructure.configuration.configuration_builder import ConfigurationBuilder
+from infrastructure.base_repository import BaseRepository
+from infrastructure.configuration.configuration import Configuration
 from matplotlib.figure import Figure
 
 
@@ -8,9 +9,9 @@ class MatplotViewer:
     def get_fig_size(self):
         return (9, 4)
 
-    def output(self, plt, fig: Figure, out_file) -> Figure:
+    def output(self, plt, fig: Figure, out_file, repository: BaseRepository) -> Figure:
         if out_file:
-            cfg = ConfigurationBuilder().build()
+            cfg: Configuration = repository.configuration
             # if out_file is an absolute path, respect it; otherwise join with configured store path
             if os.path.isabs(out_file):
                 store_at = out_file

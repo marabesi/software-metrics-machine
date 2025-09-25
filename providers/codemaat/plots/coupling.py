@@ -46,4 +46,4 @@ class CouplingViewer(MatplotViewer, Viewable):
         )
         plt.title(f"Top {top_n} Code Coupling Network (Edge Color by Weight)")
 
-        return super().output(plt, fig, out_file=out_file)
+        return super().output(plt, fig, out_file=out_file, repository=repo)

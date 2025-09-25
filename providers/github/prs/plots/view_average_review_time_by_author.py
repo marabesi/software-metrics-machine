@@ -56,7 +56,7 @@ class ViewAverageReviewTimeByAuthor(MatplotViewer):
             ax.text(v + max(0.1, max(avgs) * 0.01), y_pos[i], f"{v:.2f}", va="center")
 
         fig.tight_layout()
-        return super().output(plt, fig, out_file)
+        return super().output(plt, fig, out_file, repository=self.repository)
 
     def __average_open_time_by_author(
         self, prs: List[dict], top: int

@@ -35,12 +35,12 @@ class ViewWorkflowRunsBy(MatplotViewer):
             runs = [r for r in runs if (r.get("path") or "").lower().find(wf_low) != -1]
 
         # optional event filter
-        if event_vals := self._split_and_normalize(raw_filters.get("event")):
+        if event_vals := self.__split_and_normalize(raw_filters.get("event")):
             allowed = set(event_vals)
             runs = [r for r in runs if (r.get("event") or "").lower() in allowed]
 
         # optional target branch filter
-        if target_vals := self._split_and_normalize(raw_filters.get("target_branch")):
+        if target_vals := self.__split_and_normalize(raw_filters.get("target_branch")):
             allowed = set(target_vals)
 
             def branch_matches(obj):
@@ -198,9 +198,9 @@ class ViewWorkflowRunsBy(MatplotViewer):
         plt.xticks(rotation=45)
         ax.set_xlim(min(x_vals) - 2, max(x_vals) + 2)
         fig.tight_layout()
-        return super().output(plt, fig, out_file)
+        return super().output(plt, fig, out_file, repository=self.repository)
 
-    def _split_and_normalize(self, val: str):
+    def __split_and_normalize(self, val: str):
         if not val:
             return None
         if isinstance(val, (list, tuple)):

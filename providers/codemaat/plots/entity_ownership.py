@@ -67,4 +67,4 @@ class EntityOnershipViewer(MatplotViewer, Viewable):
         plt.xticks(rotation=45, ha="right")
         ax.legend(loc="upper right", bbox_to_anchor=(1.2, 1))
         plt.tight_layout()
-        return super().output(plt, fig, out_file=out_file)
+        return super().output(plt, fig, out_file=out_file, repository=repo)

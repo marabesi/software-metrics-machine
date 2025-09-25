@@ -1,5 +1,9 @@
 import click
 
+from infrastructure.configuration.configuration_builder import (
+    ConfigurationBuilder,
+    Driver,
+)
 from providers.github.prs.prs_repository import LoadPrs
 from providers.github.prs.plots.view_prs_by_author import ViewPrsByAuthor
 
@@ -38,7 +42,11 @@ from providers.github.prs.plots.view_prs_by_author import ViewPrsByAuthor
     help="Filter PRs created on or before this date (ISO 8601)",
 )
 def prs_by_author(top, labels, out_file, start_date, end_date):
-    return ViewPrsByAuthor(repository=LoadPrs()).plot_top_authors(
+    return ViewPrsByAuthor(
+        repository=LoadPrs(
+            configuration=ConfigurationBuilder(driver=Driver.CLI).build()
+        )
+    ).plot_top_authors(
         title=f"Top {top} PR authors",
         top=top,
         labels=labels,

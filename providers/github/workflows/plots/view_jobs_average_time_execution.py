@@ -117,7 +117,7 @@ class ViewJobsByStatus(MatplotViewer):
             plot_ax.text(0.5, 0.5, "No job durations found", ha="center", va="center")
             plot_ax.axis("off")
             fig.tight_layout()
-            super().output(plt, fig, out_file)
+            super().output(plt, fig, out_file, repository=self.repository)
             return
 
         names, mins = zip(*averages)
@@ -164,4 +164,4 @@ class ViewJobsByStatus(MatplotViewer):
             pass
 
         fig.tight_layout()
-        return super().output(plt, fig, out_file)
+        return super().output(plt, fig, out_file, repository=self.repository)

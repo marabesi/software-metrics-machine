@@ -9,6 +9,7 @@ class BaseRepository:
 
     def __init__(self, configuration: Configuration):
         self.default_dir = configuration.store_data
+        self.configuration = configuration
 
     def default_path_for(self, filename: str) -> str:
         final_path = self.default_dir + "/" + filename

@@ -46,4 +46,4 @@ class EntityChurnViewer(MatplotViewer, Viewable):
         plt.xticks(rotation=45, ha="right")
         plt.tight_layout()
 
-        return super().output(plt, fig, out_file=out_file)
+        return super().output(plt, fig, out_file=out_file, repository=repo)

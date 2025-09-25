@@ -1,5 +1,9 @@
 import click
 
+from infrastructure.configuration.configuration_builder import (
+    ConfigurationBuilder,
+    Driver,
+)
 from providers.github.prs.prs_repository import LoadPrs
 from providers.github.prs.plots.view_average_review_time_by_author import (
     ViewAverageReviewTimeByAuthor,
@@ -42,7 +46,11 @@ from providers.github.prs.plots.view_average_review_time_by_author import (
 def review_time_by_author(top, labels, out_file, start_date, end_date):
     """Plot average PR open time by author."""
 
-    return ViewAverageReviewTimeByAuthor(repository=LoadPrs()).plot_average_open_time(
+    return ViewAverageReviewTimeByAuthor(
+        repository=LoadPrs(
+            configuration=ConfigurationBuilder(driver=Driver.CLI).build()
+        )
+    ).plot_average_open_time(
         title=f"Top {top} PR authors by avg open time",
         top=top,
         labels=labels,

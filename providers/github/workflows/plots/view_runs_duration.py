@@ -141,4 +141,4 @@ class ViewRunsDuration(MatplotViewer):
         ax.set_title(f"Runs aggregated by name - {title_metric} ({len(rows)} items)")
         fig.tight_layout()
 
-        return super().output(plt, fig, out_file)
+        return super().output(plt, fig, out_file, repository=self.repository)

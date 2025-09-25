@@ -82,4 +82,4 @@ class ViewDeploymentFrequency(MatplotViewer):
 
         fig.tight_layout()
 
-        return super().output(plt, fig, out_file)
+        return super().output(plt, fig, out_file, repository=self.repository)

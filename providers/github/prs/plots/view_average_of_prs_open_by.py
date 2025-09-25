@@ -146,4 +146,4 @@ class ViewAverageOfPrsOpenBy(MatplotViewer):
         plt.xticks(rotation=45)
         fig.tight_layout()
 
-        return super().output(plt, fig, out_file)
+        return super().output(plt, fig, out_file, repository=self.repository)

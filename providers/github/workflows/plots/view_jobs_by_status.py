@@ -331,4 +331,4 @@ class ViewJobsByStatus(MatplotViewer):
             plot_ax.set_axis_off()
 
         fig.tight_layout()
-        return super().output(plt, fig, out_file)
+        return super().output(plt, fig, out_file, repository=self.repository)

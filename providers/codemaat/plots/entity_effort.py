@@ -37,7 +37,7 @@ class EntityEffortViewer(MatplotViewer, Viewable):
         )
         plt.tight_layout()
 
-        return super().output(plt, fig, out_file=out_file)
+        return super().output(plt, fig, out_file=out_file, repository=repo)
 
     def render_treemap(
         self,
@@ -74,4 +74,4 @@ class EntityEffortViewer(MatplotViewer, Viewable):
         )
         ax.axis("off")
 
-        return super().output(plt, fig, out_file=out_file)
+        return super().output(plt, fig, out_file=out_file, repository=repo)

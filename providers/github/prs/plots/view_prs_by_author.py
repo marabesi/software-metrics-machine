@@ -55,7 +55,7 @@ class ViewPrsByAuthor(MatplotViewer):
 
         fig.tight_layout()
 
-        return super().output(plt, fig, out_file)
+        return super().output(plt, fig, out_file, repository=self.repository)
 
     def top_authors(self, prs: List[dict], top: int) -> List[Tuple[str, int]]:
         counts = Counter()

@@ -29,4 +29,4 @@ class CodeChurnViewer(MatplotViewer, Viewable):
         ax.legend()
         plt.xticks(rotation=45, ha="right")
 
-        return super().output(plt, fig, out_file=out_file)
+        return super().output(plt, fig, out_file=out_file, repository=repository)

@@ -7,7 +7,7 @@ from providers.github.prs.prs_repository import LoadPrs
 from unittest.mock import patch
 
 
-@pytest.fixture
+@pytest.fixture(scope="function")
 def mock_os_env(monkeypatch):
     """Fixture to mock os.getenv to always return 'faked'."""
     monkeypatch.setattr("os.getenv", lambda key, default=None: "faked")
