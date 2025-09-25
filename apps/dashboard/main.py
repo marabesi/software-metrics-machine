@@ -2,13 +2,13 @@ from datetime import date
 import panel as pn
 from panel.template import MaterialTemplate
 
-from dashboard import insights_section
-from dashboard.pipeline_section import pipeline_section
-from dashboard.prs_section import prs_section
-from dashboard.source_code_section import source_code_section
-from dashboard.configuration_section import configuration_section
+from apps.dashboard.insights_section import insights_section
+from apps.dashboard.pipeline_section import pipeline_section
+from apps.dashboard.prs_section import prs_section
+from apps.dashboard.source_code_section import source_code_section
+from apps.dashboard.configuration_section import configuration_section
 
-pn.extension()
+pn.extension("tabulator")
 
 start_end_date_picker = pn.widgets.DateRangePicker(
     name="Select Date Range", value=(date(2025, 8, 5), date(2025, 8, 15))

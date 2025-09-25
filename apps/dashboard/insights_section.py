@@ -3,7 +3,7 @@ import panel as pn
 pn.extension("tabulator")
 
 
-source_code_section = pn.Column(
+insights_section = pn.Column(
     "## Insight section",
     pn.Row(),
 )
