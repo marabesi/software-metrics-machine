@@ -61,6 +61,7 @@ class BaseRepository:
 
         for run in items:
             created = run.get("created_at")
+
             if not created:
                 continue
             try:
@@ -73,9 +74,9 @@ class BaseRepository:
                 # if created_at cannot be parsed, skip this run
                 continue
 
-            if sd and created_dt <= sd:
+            if sd and created_dt < sd:
                 continue
-            if ed and created_dt >= ed:
+            if ed and created_dt > ed:
                 continue
 
             filtered.append(run)
