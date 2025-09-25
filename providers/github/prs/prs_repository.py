@@ -13,24 +13,6 @@ class LoadPrs(BaseRepository):
         self.all_prs = []
         self.all_prs = self.__load()
 
-    def __load(self):
-        all_prs = []
-        print("Loading PRs")
-        contents = super().read_file_if_exists(self.file)
-
-        if contents is None:
-            print(f"No PRs file found at {self.file}. Please run fetch_prs first.")
-            return all_prs
-
-        all_prs = json.loads(contents)
-
-        print(f"Loaded {len(all_prs)} PRs")
-        print("Load complete.")
-
-        all_prs.sort(key=super().created_at_key_sort)
-
-        return all_prs
-
     def merged(self):
         return [pr for pr in self.all_prs if pr.get("merged_at") is not None]
 
@@ -200,3 +182,21 @@ class LoadPrs(BaseRepository):
             labels_list.append({"label_name": label, "prs_count": count})
 
         return labels_list
+
+    def __load(self):
+        all_prs = []
+        print("Loading PRs")
+        contents = super().read_file_if_exists(self.file)
+
+        if contents is None:
+            print(f"No PRs file found at {self.file}. Please run fetch_prs first.")
+            return all_prs
+
+        all_prs = json.loads(contents)
+
+        print(f"Loaded {len(all_prs)} PRs")
+        print("Load complete.")
+
+        all_prs.sort(key=super().created_at_key_sort)
+
+        return all_prs
