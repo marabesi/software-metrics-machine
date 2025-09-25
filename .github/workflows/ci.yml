@@ -51,15 +51,14 @@ jobs:
         run: poetry install --no-interaction --no-ansi --no-root
 
       - name: Set PYTHONPATH
-        run: echo "PYTHONPATH=$(pwd)" >> $GITHUB_ENV
+        run: |
+          echo "PYTHONPATH=$(pwd)" >> $GITHUB_ENV
+          echo "SSM_STORE_DATA_AT=$(pwd)/tmp_test/github"
+          echo "SSM_GIT_REPOSITORY_LOCATION=$(pwd)/tmp_test/repo"
+          echo "SSM_GITHUB_REPOSITORY=fake/repo-test"
 
       - name: Run pytest
-        env:
-          SSM_STORE_DATA_AT: "$(pwd)/tmp_test/github"
-          SSM_GIT_REPOSITORY_LOCATION: "$(pwd)/tmp_test/repo"
-          SSM_GITHUB_REPOSITORY: "fake/repo-test"
-        run: |
-          poetry run pytest
+        run: poetry run pytest
 
 
   acceptance:
