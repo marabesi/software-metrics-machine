@@ -31,7 +31,9 @@ from providers.codemaat.plots.entity_churn import EntityChurnViewer
 def entity_churn(out_file, top, ignore_files):
     """Plot entity churn graph."""
     viewer = EntityChurnViewer()
-    df_repo = CodemaatRepository(configuration=ConfigurationBuilder(Driver.CLI).build())
+    df_repo = CodemaatRepository(
+        configuration=ConfigurationBuilder(Driver.JSON).build()
+    )
     viewer.render(df_repo, top_n=top, ignore_files=ignore_files, out_file=out_file)
 
 

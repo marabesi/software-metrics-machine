@@ -17,7 +17,7 @@ from providers.github.prs.plots.view_prs_by_author import (
 from providers.github.prs.prs_repository import LoadPrs
 
 pn.extension("tabulator")
-prs_repository = LoadPrs(configuration=ConfigurationBuilder(Driver.APPLICATION).build())
+prs_repository = LoadPrs(configuration=ConfigurationBuilder(Driver.JSON).build())
 
 
 def normalize_label(selected_labels):

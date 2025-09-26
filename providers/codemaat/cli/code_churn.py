@@ -19,7 +19,7 @@ from providers.codemaat.codemaat_repository import CodemaatRepository
 def code_churn(out_file):
     """Plot the code churn rate over time."""
     return CodeChurnViewer().render(
-        CodemaatRepository(configuration=ConfigurationBuilder(Driver.CLI).build()),
+        CodemaatRepository(configuration=ConfigurationBuilder(Driver.JSON).build()),
         out_file=out_file,
     )
 

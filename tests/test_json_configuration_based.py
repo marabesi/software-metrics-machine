@@ -3,13 +3,11 @@ from infrastructure.configuration_file_system_handler import (
     ConfigurationFileSystemHandler,
 )
 
-path = "."
-
 
 class TestJsonConfigurationBased:
 
-    def test_create_json_configuration_file(self):
-        file_system_handler = ConfigurationFileSystemHandler(path)
+    def test_create_json_configuration_file(sel, tmp_path):
+        file_system_handler = ConfigurationFileSystemHandler(tmp_path)
         configuration = Configuration(
             git_provider="github",
             github_token="token",
@@ -19,8 +17,8 @@ class TestJsonConfigurationBased:
         )
         assert True is file_system_handler.store_file("my_conf.json", configuration)
 
-    def test_reads_a_valid_configuration(self):
-        file_system_handler = ConfigurationFileSystemHandler(path)
+    def test_reads_a_valid_configuration(self, tmp_path):
+        file_system_handler = ConfigurationFileSystemHandler(tmp_path)
         configuration = Configuration(
             git_provider="github",
             github_token="token",

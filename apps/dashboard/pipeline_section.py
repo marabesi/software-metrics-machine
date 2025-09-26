@@ -19,13 +19,9 @@ from providers.github.workflows.repository_workflows import LoadWorkflows
 
 pn.extension("tabulator")
 
-# Initialize the repository to fetch workflow names
-repository = LoadWorkflows(
-    configuration=ConfigurationBuilder(Driver.APPLICATION).build()
-)
+repository = LoadWorkflows(configuration=ConfigurationBuilder(Driver.JSON).build())
 workflow_names = repository.get_unique_workflow_paths()
 
-# Create a selector widget for filtering workflows
 workflow_selector = pn.widgets.Select(
     name="Select Workflow",
     description="Select Workflow",

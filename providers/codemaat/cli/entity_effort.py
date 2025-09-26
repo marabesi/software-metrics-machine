@@ -30,7 +30,9 @@ from providers.codemaat.plots.entity_effort import EntityEffortViewer
 def entity_effort(out_file, top, ignore_files):
     """Plot entity (File) effort."""
     viewer = EntityEffortViewer()
-    df_repo = CodemaatRepository(configuration=ConfigurationBuilder(Driver.CLI).build())
+    df_repo = CodemaatRepository(
+        configuration=ConfigurationBuilder(Driver.JSON).build()
+    )
     viewer.render(df_repo, top_n=top, ignore_files=ignore_files, out_file=out_file)
 
 

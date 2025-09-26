@@ -6,7 +6,7 @@ import json
 class FileSystemHandler:
 
     def __init__(self, path):
-        self.default_dir = path
+        self.default_dir = str(path)
 
     def read_file_if_exists(self, filename: str) -> Optional[str]:
         final_path = self.default_dir + "/" + filename

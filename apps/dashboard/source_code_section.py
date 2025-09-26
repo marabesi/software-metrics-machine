@@ -12,9 +12,7 @@ from providers.codemaat.codemaat_repository import CodemaatRepository
 
 pn.extension("tabulator")
 
-repository = CodemaatRepository(
-    configuration=ConfigurationBuilder(Driver.APPLICATION).build()
-)
+repository = CodemaatRepository(configuration=ConfigurationBuilder(Driver.JSON).build())
 
 
 def plot_code_churn():

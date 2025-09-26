@@ -18,7 +18,7 @@ from providers.codemaat.plots.coupling import CouplingViewer
 def coupling(out_file):
     """Plot coupling graph."""
     return CouplingViewer().render(
-        configuration=ConfigurationBuilder(Driver.CLI).build(), out_file=out_file
+        configuration=ConfigurationBuilder(Driver.JSON).build(), out_file=out_file
     )
 
 
