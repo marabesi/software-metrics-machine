@@ -37,29 +37,12 @@ class ViewDeploymentFrequency(MatplotViewer):
                 r for r in runs if (r.get("path") or "").lower().find(name_low) != -1
             ]
 
-        deployments = {}
+        df = self.repository.get_deployment_frequency(job_name=job_name)
 
-        for run in runs:
-            jobs = run.get("jobs", [])
-            for job in jobs:
-                if job.get("name") == job_name and job.get("conclusion") == "success":
-                    created_at = job.get("created_at")[:10]  # Extract date only
-                    week_key = f"{created_at[:4]}-W{int(created_at[5:7]) // 7 + 1}"
-                    month_key = created_at[:7]
-
-                    if week_key not in deployments:
-                        deployments[week_key] = {"weekly": 0, "monthly": 0}
-                    if month_key not in deployments:
-                        deployments[month_key] = {"weekly": 0, "monthly": 0}
-
-                    deployments[week_key]["weekly"] += 1
-                    deployments[month_key]["monthly"] += 1
-
-        weeks = sorted([key for key in deployments.keys() if "W" in key])
-        months = sorted([key for key in deployments.keys() if "W" not in key])
-
-        weekly_counts = [deployments[week]["weekly"] for week in weeks]
-        monthly_counts = [deployments[month]["monthly"] for month in months]
+        weekly_counts = df["weekly_counts"]
+        monthly_counts = df["monthly_counts"]
+        weeks = df["weeks"]
+        months = df["months"]
 
         fig, ax = plt.subplots(2, 1, figsize=super().get_fig_size(), sharex=True)
 

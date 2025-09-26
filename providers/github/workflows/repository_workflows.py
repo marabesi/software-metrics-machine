@@ -50,31 +50,6 @@ class LoadWorkflows(BaseRepository):
         if start_date and end_date:
             return super().filter_by_date_range(self.all_runs, start_date, end_date)
 
-    def __load_jobs(self):
-        contents = super().read_file_if_exists(self.jobs_file)
-        if contents is None:
-            print("No jobs file found at jobs.json. Please fetch it first.")
-            return
-
-        self.all_jobs = json.loads(contents)
-        print(f"Loaded {len(self.all_jobs)} jobs")
-        self.all_jobs.sort(key=super().created_at_key_sort)
-
-        # Create a mapping of run_id to runs for quick lookup
-        run_id_to_run = {run["id"]: run for run in self.all_runs if "id" in run}
-
-        # Assign jobs to their corresponding runs
-        for job in self.all_jobs:
-            run_id = job.get("run_id")
-            if run_id and run_id in run_id_to_run:
-                run = run_id_to_run[run_id]
-                if "jobs" not in run:
-                    run["jobs"] = []  # Initialize the jobs list if not present
-                run["jobs"].append(job)
-
-        print("Jobs have been associated with their corresponding runs.")
-        print("Load complete.")
-
     def filter_by_job_name(
         self, jobs: List[dict], job_name: Iterable[str]
     ) -> List[dict]:
@@ -107,3 +82,61 @@ class LoadWorkflows(BaseRepository):
         listWithPaths = list(workflow_names)
         listWithPaths.insert(0, "All")
         return listWithPaths
+
+    def get_deployment_frequency(self, job_name: str):
+        deployments = {}
+        runs = self.all_runs
+
+        for run in runs:
+            jobs = run.get("jobs", [])
+            for job in jobs:
+                if job.get("name") == job_name and job.get("conclusion") == "success":
+                    created_at = job.get("created_at")[:10]  # Extract date only
+                    week_key = f"{created_at[:4]}-W{int(created_at[5:7]) // 7 + 1}"
+                    month_key = created_at[:7]
+
+                    if week_key not in deployments:
+                        deployments[week_key] = {"weekly": 0, "monthly": 0}
+                    if month_key not in deployments:
+                        deployments[month_key] = {"weekly": 0, "monthly": 0}
+
+                    deployments[week_key]["weekly"] += 1
+                    deployments[month_key]["monthly"] += 1
+
+        weeks = sorted([key for key in deployments.keys() if "W" in key])
+        months = sorted([key for key in deployments.keys() if "W" not in key])
+
+        weekly_counts = [deployments[week]["weekly"] for week in weeks]
+        monthly_counts = [deployments[month]["monthly"] for month in months]
+
+        return {
+            "weeks": weeks,
+            "months": months,
+            "weekly_counts": weekly_counts,
+            "monthly_counts": monthly_counts,
+        }
+
+    def __load_jobs(self):
+        contents = super().read_file_if_exists(self.jobs_file)
+        if contents is None:
+            print("No jobs file found at jobs.json. Please fetch it first.")
+            return
+
+        self.all_jobs = json.loads(contents)
+        print(f"Loaded {len(self.all_jobs)} jobs")
+        self.all_jobs.sort(key=super().created_at_key_sort)
+
+        # Create a mapping of run_id to runs for quick lookup
+        run_id_to_run = {run["id"]: run for run in self.all_runs if "id" in run}
+
+        # Assign jobs to their corresponding runs
+        for job in self.all_jobs:
+            run_id = job.get("run_id")
+            if run_id and run_id in run_id_to_run:
+                run = run_id_to_run[run_id]
+                if "jobs" not in run:
+                    run["jobs"] = []  # Initialize the jobs list if not present
+                run["jobs"].append(job)
+
+        print("Jobs have been associated with their corresponding runs.")
+        print("Load complete.")

@@ -1,52 +1,59 @@
-import pytest
-from infrastructure.configuration.configuration_builder import (
-    ConfigurationBuilder,
-    Driver,
-)
+from unittest.mock import patch
 from providers.github.workflows.repository_workflows import LoadWorkflows
+from tests.builders import as_json_string
+from tests.in_memory_configuration import InMemoryConfiguration
 
 
-@pytest.fixture
-def mock_os_env(monkeypatch):
-    """Fixture to mock os.getenv to always return 'faked'."""
-    monkeypatch.setattr("os.getenv", lambda key, default=None: "faked")
+class TestRepositoryWorkflows:
+    def test_get_unique_workflow_names(self):
+        workflows_with_duplicates = as_json_string(
+            [
+                {"name": "Build Workflow", "id": 1},
+                {"name": "Test Workflow", "id": 2},
+                {"name": "Deploy Workflow", "id": 3},
+                {"name": "Build Workflow", "id": 4},  # Duplicate name
+            ]
+        )
+        with (
+            patch(
+                "infrastructure.base_repository.BaseRepository.read_file_if_exists",
+                return_value=workflows_with_duplicates,
+            ),
+        ):
+            loader = LoadWorkflows(configuration=InMemoryConfiguration())
+            result = loader.get_unique_workflow_names()
+            assert len(result) == 3
 
+    def test_get_unique_workflow_paths(self):
+        workflows_with_duplicated_paths = as_json_string(
+            [
+                {"path": "/workflows/build.yml", "id": 1},
+                {"path": "/workflows/test.yml", "id": 2},
+                {"path": "/workflows/deploy.yml", "id": 3},
+                {"path": "/workflows/build.yml", "id": 4},
+                {"path": "/workflows/build.yml", "id": 5},
+            ]
+        )
+        with (
+            patch(
+                "infrastructure.base_repository.BaseRepository.read_file_if_exists",
+                return_value=workflows_with_duplicated_paths,
+            ),
+        ):
+            loader = LoadWorkflows(configuration=InMemoryConfiguration())
 
-@pytest.fixture
-def mock_loader(mock_os_env):
-    """Fixture to set up a mock instance of LoadWorkflows with sample data."""
-    loader = LoadWorkflows(
-        configuration=ConfigurationBuilder(driver=Driver.CLI).build()
-    )
-    loader.all_runs = [
-        {"name": "Build Workflow", "id": 1},
-        {"name": "Test Workflow", "id": 2},
-        {"name": "Deploy Workflow", "id": 3},
-        {"name": "Build Workflow", "id": 4},  # Duplicate name
-    ]
-    return loader
+            result = loader.get_unique_workflow_paths()
+            assert len(result) == 4
 
+    def test_adds_all_option_by_default(self):
+        empty_workflow_runs = as_json_string([])
+        with (
+            patch(
+                "infrastructure.base_repository.BaseRepository.read_file_if_exists",
+                return_value=empty_workflow_runs,
+            ),
+        ):
+            loader = LoadWorkflows(configuration=InMemoryConfiguration())
 
-def test_get_unique_workflow_names(mock_loader):
-    result = mock_loader.get_unique_workflow_names()
-    assert len(result) == 3
-
-
-def test_get_unique_workflow_paths(mock_loader):
-    mock_loader.all_runs = [
-        {"path": "/workflows/build.yml", "id": 1},
-        {"path": "/workflows/test.yml", "id": 2},
-        {"path": "/workflows/deploy.yml", "id": 3},
-        {"path": "/workflows/build.yml", "id": 4},
-        {"path": "/workflows/build.yml", "id": 4},
-    ]
-
-    result = mock_loader.get_unique_workflow_paths()
-    assert len(result) == 4
-
-
-def test_adds_all_option_by_default(mock_loader):
-    mock_loader.all_runs = []
-
-    result = mock_loader.get_unique_workflow_paths()
-    assert result[0] == "All"
+            result = loader.get_unique_workflow_paths()
+            assert result[0] == "All"
