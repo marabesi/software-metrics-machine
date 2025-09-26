@@ -16,7 +16,6 @@ def cli():
 
         @functools.wraps(f)
         def wrapper(*args, **kwargs):
-            # echo = kwargs.pop('echo', False)
             result = f(*args, **kwargs)
             if result.exit_code != 0:  # Show output only on error
                 sys.stdout.write(result.output)
@@ -26,4 +25,5 @@ def cli():
 
     class_.invoke = invoke_wrapper(class_.invoke)
     cli_runner = class_()
-    yield cli_runner
+    with cli_runner.isolated_filesystem():
+        yield cli_runner

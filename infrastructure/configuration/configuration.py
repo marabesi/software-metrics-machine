@@ -41,8 +41,3 @@ class Configuration:
                     "❌  Set SSM_GITHUB_REPOSITORY=owner/repo (e.g. octocat/Hello-World)"
                 )
                 sys.exit(1)
-
-            self.HEADERS = {
-                "Authorization": f"token {self.github_token}",
-                "Accept": "application/vnd.github+json",
-            }
