@@ -89,7 +89,7 @@ jobs:
 
   acceptance:
     needs: pytest
-    name: "Acceptance tests"
+    name: "Acceptance tests CLI"
     runs-on: ubuntu-latest
     steps:
       - name: Checkout

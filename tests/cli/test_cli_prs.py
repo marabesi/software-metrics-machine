@@ -1,18 +1,11 @@
-from click.testing import CliRunner
+from apps.cli.main import main
 from providers.github.prs.cli.fetch_prs import command as fetch_prs
-from providers.github.prs.cli.view_prs_by_author import prs_by_author
-from providers.github.prs.cli.view_average_review_time_by_author import (
-    review_time_by_author,
-)
 from providers.github.prs.cli.view_summary import summary
 from providers.github.prs.cli.average_of_prs_open_by import average_prs_open_by
 from unittest.mock import patch
 
 
 class TestCliCommands:
-    def setup_method(self):
-        self.runner = CliRunner()
-
     def fetch_prs_fake_response(self):
         return [
             {
@@ -21,40 +14,58 @@ class TestCliCommands:
             }
         ]
 
-    def test_can_run_fetch_prs_command(self):
-        result = self.runner.invoke(fetch_prs, ["--help"])
+    def test_can_run_fetch_prs_command(self, cli):
+        result = cli.invoke(main, ["--help"])
         assert result.exit_code == 0
         assert "Show this message and exit" in result.output
 
-    def test_prs_by_author(self):
+    def test_prs_by_author(self, cli):
         with patch("requests.get") as mock_get:
             mock_get.return_value.json.return_value = self.fetch_prs_fake_response()
             mock_get.return_value.status_code = 200
 
-            result = self.runner.invoke(
-                prs_by_author,
-                ["--top", "5", "--labels", "bug", "--out-file", "output.png"],
+            result = cli.invoke(
+                main,
+                [
+                    "prs",
+                    "by-author",
+                    "--top",
+                    "5",
+                    "--labels",
+                    "bug",
+                    "--out-file",
+                    "output.png",
+                ],
             )
             assert result.exit_code == 0
 
-    def test_review_time_by_author(self):
+    def test_review_time_by_author(self, cli):
         with patch("requests.get") as mock_get:
             mock_get.return_value.json.return_value = self.fetch_prs_fake_response()
             mock_get.return_value.status_code = 200
 
-            result = self.runner.invoke(
-                review_time_by_author,
-                ["--top", "5", "--labels", "enhancement", "--out-file", "output.png"],
+            result = cli.invoke(
+                main,
+                [
+                    "prs",
+                    "review-time-by-author",
+                    "--top",
+                    "5",
+                    "--labels",
+                    "enhancement",
+                    "--out-file",
+                    "output.png",
+                ],
             )
             assert result.exit_code == 0
             assert "Loaded 2 PRs" in result.output
 
-    def test_summary(self):
+    def test_summary(self, cli):
         with patch("requests.get") as mock_get:
             mock_get.return_value.json.return_value = self.fetch_prs_fake_response()
             mock_get.return_value.status_code = 200
 
-            result = self.runner.invoke(
+            result = cli.invoke(
                 summary,
                 [
                     "--csv",
@@ -69,20 +80,20 @@ class TestCliCommands:
             )
             assert result.exit_code == 0
 
-    def test_execute(self):
+    def test_fetch_prs_from_last_three_months(self, cli):
         with patch("requests.get") as mock_get:
             mock_get.return_value.json.return_value = self.fetch_prs_fake_response()
             mock_get.return_value.status_code = 200
 
-            result = self.runner.invoke(fetch_prs, ["--months", "3", "--force", "true"])
+            result = cli.invoke(fetch_prs, ["--months", "3"])
             assert result.exit_code == 0
 
-    def test_average_prs_open_by(self):
+    def test_average_prs_open_by(self, cli):
         with patch("requests.get") as mock_get:
             mock_get.return_value.json.return_value = self.fetch_prs_fake_response()
             mock_get.return_value.status_code = 200
 
-            result = self.runner.invoke(
+            result = cli.invoke(
                 average_prs_open_by,
                 [
                     "--out-file",

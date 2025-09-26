@@ -41,7 +41,7 @@ from providers.github.prs.plots.view_prs_by_author import ViewPrsByAuthor
     default=None,
     help="Filter PRs created on or before this date (ISO 8601)",
 )
-def prs_by_author(top, labels, out_file, start_date, end_date):
+def by_author(top, labels, out_file, start_date, end_date):
     return ViewPrsByAuthor(
         repository=LoadPrs(
             configuration=ConfigurationBuilder(driver=Driver.CLI).build()
@@ -56,4 +56,4 @@ def prs_by_author(top, labels, out_file, start_date, end_date):
     )
 
 
-command = prs_by_author
+command = by_author

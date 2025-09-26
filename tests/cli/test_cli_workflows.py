@@ -1,4 +1,3 @@
-import pytest
 from apps.cli.main import main
 from unittest.mock import patch
 
@@ -12,13 +11,11 @@ class TestWorkflowsCliCommands:
             }
         ]
 
-    @pytest.fixture
     def test_can_run_fetch_workflows_command(self, cli):
         result = cli.invoke(main, ["workflows", "--help"])
         assert result.exit_code == 0
         assert "Show this message and exit" in result.output
 
-    @pytest.fixture
     def test_deployment_frequency_by_author(self, cli):
         deployment_frequency = [
             {
