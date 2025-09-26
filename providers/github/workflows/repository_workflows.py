@@ -1,3 +1,4 @@
+from datetime import datetime
 import json
 from typing import List, Iterable
 from infrastructure.base_repository import BaseRepository
@@ -83,7 +84,7 @@ class LoadWorkflows(BaseRepository):
         listWithPaths.insert(0, "All")
         return listWithPaths
 
-    def get_deployment_frequency(self, job_name: str):
+    def get_deployment_frequency_for_job(self, job_name: str):
         deployments = {}
         runs = self.all_runs
 
@@ -92,11 +93,13 @@ class LoadWorkflows(BaseRepository):
             for job in jobs:
                 if job.get("name") == job_name and job.get("conclusion") == "success":
                     created_at = job.get("created_at")[:10]  # Extract date only
-                    week_key = f"{created_at[:4]}-W{int(created_at[5:7]) // 7 + 1}"
-                    month_key = created_at[:7]
+                    created_at = datetime.fromisoformat(created_at + "T00:00:00+00:00")
+                    # Correcting the calculation of week_key
+                    week_key = f"{created_at.year}-W{created_at.isocalendar()[1]:02d}"
+                    month_key = f"{created_at.year}-{created_at.month:02d}"
 
                     if week_key not in deployments:
-                        deployments[week_key] = {"weekly": 0, "monthly": 0}
+                        deployments[week_key] = {"weekly": 0}
                     if month_key not in deployments:
                         deployments[month_key] = {"weekly": 0, "monthly": 0}
 

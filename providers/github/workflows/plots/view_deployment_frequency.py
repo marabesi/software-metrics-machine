@@ -37,7 +37,7 @@ class ViewDeploymentFrequency(MatplotViewer):
                 r for r in runs if (r.get("path") or "").lower().find(name_low) != -1
             ]
 
-        df = self.repository.get_deployment_frequency(job_name=job_name)
+        df = self.repository.get_deployment_frequency_for_job(job_name=job_name)
 
         weekly_counts = df["weekly_counts"]
         monthly_counts = df["monthly_counts"]
