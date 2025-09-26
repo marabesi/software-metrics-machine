@@ -51,7 +51,7 @@ from providers.github.prs.plots.view_average_of_prs_open_by import (
     default=None,
     help="Filter PRs created on or before this date (ISO 8601)",
 )
-def average_prs_open_by(out_file, author, labels, aggregate_by, start_date, end_date):
+def average_open_by(out_file, author, labels, aggregate_by, start_date, end_date):
     """Plot average PR open."""
     ViewAverageOfPrsOpenBy(
         repository=LoadPrs(
@@ -67,4 +67,4 @@ def average_prs_open_by(out_file, author, labels, aggregate_by, start_date, end_
     )
 
 
-command = average_prs_open_by
+command = average_open_by

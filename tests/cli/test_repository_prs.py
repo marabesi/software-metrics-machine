@@ -1,11 +1,12 @@
 import pytest
-import json
 from infrastructure.configuration.configuration_builder import (
     ConfigurationBuilder,
     Driver,
 )
 from providers.github.prs.prs_repository import LoadPrs
 from unittest.mock import patch
+
+from tests.builders import as_json_string
 
 
 class TestRepositoryPrs:
@@ -106,7 +107,7 @@ class TestRepositoryPrs:
         assert authors == ["user1", "user2"]
 
     def test_prs_with_filters_star_date(self):
-        prs_fetched = json.dumps(
+        prs_fetched = as_json_string(
             [
                 {
                     "id": 1,
@@ -133,7 +134,7 @@ class TestRepositoryPrs:
             assert filtered[0]["id"] == 1
 
     def test_prs_with_filters_end_date(self):
-        prs_fetched = json.dumps(
+        prs_fetched = as_json_string(
             [
                 {
                     "id": 1,

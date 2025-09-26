@@ -1,27 +1,40 @@
+import pytest
 from apps.cli.main import main
-from providers.github.prs.cli.fetch_prs import command as fetch_prs
-from providers.github.prs.cli.view_summary import summary
-from providers.github.prs.cli.average_of_prs_open_by import average_prs_open_by
 from unittest.mock import patch
 
 
 class TestCliCommands:
-    def fetch_prs_fake_response(self):
-        return [
-            {
-                "created_at": "2011-01-26T19:01:12Z",
-                "closed_at": "2011-01-26T19:01:12Z",
-            }
-        ]
+
+    @pytest.fixture(scope="class", autouse=True)
+    def reset_mock_get(self):
+        with patch("requests.get") as mock_get:
+            mock_get.reset_mock()
+            yield mock_get
 
     def test_can_run_fetch_prs_command(self, cli):
         result = cli.invoke(main, ["--help"])
         assert result.exit_code == 0
         assert "Show this message and exit" in result.output
 
+    def test_fetch_prs_from_last_three_months(self, cli):
+        with patch("requests.get") as mock_get:
+            mock_get.return_value.json.return_value = self.__fetch_prs_fake_response()
+            mock_get.return_value.status_code = 200
+
+            result = cli.invoke(
+                main,
+                [
+                    "prs",
+                    "fetch",
+                    "--months",
+                    "3",
+                ],
+            )
+            assert result.exit_code == 0
+
     def test_prs_by_author(self, cli):
         with patch("requests.get") as mock_get:
-            mock_get.return_value.json.return_value = self.fetch_prs_fake_response()
+            mock_get.return_value.json.return_value = self.__fetch_prs_fake_response()
             mock_get.return_value.status_code = 200
 
             result = cli.invoke(
@@ -38,10 +51,11 @@ class TestCliCommands:
                 ],
             )
             assert result.exit_code == 0
+            assert "Loaded 2 PRs" in result.output
 
     def test_review_time_by_author(self, cli):
         with patch("requests.get") as mock_get:
-            mock_get.return_value.json.return_value = self.fetch_prs_fake_response()
+            mock_get.return_value.json.return_value = self.__fetch_prs_fake_response()
             mock_get.return_value.status_code = 200
 
             result = cli.invoke(
@@ -62,12 +76,14 @@ class TestCliCommands:
 
     def test_summary(self, cli):
         with patch("requests.get") as mock_get:
-            mock_get.return_value.json.return_value = self.fetch_prs_fake_response()
+            mock_get.return_value.json.return_value = self.__fetch_prs_fake_response()
             mock_get.return_value.status_code = 200
 
             result = cli.invoke(
-                summary,
+                main,
                 [
+                    "prs",
+                    "summary",
                     "--csv",
                     "data.csv",
                     "--start-date",
@@ -80,22 +96,16 @@ class TestCliCommands:
             )
             assert result.exit_code == 0
 
-    def test_fetch_prs_from_last_three_months(self, cli):
-        with patch("requests.get") as mock_get:
-            mock_get.return_value.json.return_value = self.fetch_prs_fake_response()
-            mock_get.return_value.status_code = 200
-
-            result = cli.invoke(fetch_prs, ["--months", "3"])
-            assert result.exit_code == 0
-
     def test_average_prs_open_by(self, cli):
         with patch("requests.get") as mock_get:
-            mock_get.return_value.json.return_value = self.fetch_prs_fake_response()
+            mock_get.return_value.json.return_value = self.__fetch_prs_fake_response()
             mock_get.return_value.status_code = 200
 
             result = cli.invoke(
-                average_prs_open_by,
+                main,
                 [
+                    "prs",
+                    "average-open-by",
                     "--out-file",
                     "output.png",
                     "--author",
@@ -107,3 +117,11 @@ class TestCliCommands:
                 ],
             )
             assert result.exit_code == 0
+
+    def __fetch_prs_fake_response(self):
+        return [
+            {
+                "created_at": "2011-01-26T19:01:12Z",
+                "closed_at": "2011-01-26T19:01:12Z",
+            }
+        ]
