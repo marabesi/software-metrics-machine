@@ -3,7 +3,7 @@ import pytest
 from apps.cli.main import main
 from unittest.mock import patch
 
-from infrastructure.configuration_file_system_handler import (
+from infrastructure.configuration.configuration_file_system_handler import (
     ConfigurationFileSystemHandler,
 )
 from tests.file_handler_for_testing import FileHandlerForTesting
