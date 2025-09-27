@@ -1,8 +1,5 @@
 import panel as pn
-from infrastructure.configuration.configuration_builder import (
-    ConfigurationBuilder,
-    Driver,
-)
+from infrastructure.configuration.configuration import Configuration
 from providers.codemaat.plots.code_churn import CodeChurnViewer
 from providers.codemaat.plots.coupling import CouplingViewer
 from providers.codemaat.plots.entity_churn import EntityChurnViewer
@@ -12,63 +9,61 @@ from providers.codemaat.codemaat_repository import CodemaatRepository
 
 pn.extension("tabulator")
 
-repository = CodemaatRepository(configuration=ConfigurationBuilder(Driver.JSON).build())
 
+def source_code_section(configuration: Configuration):
+    repository = CodemaatRepository(configuration=configuration)
 
-def plot_code_churn():
-    return CodeChurnViewer().render(repository=repository)
+    def plot_code_churn():
+        return CodeChurnViewer().render(repository=repository)
 
+    def plot_entity_churn():
+        return EntityChurnViewer().render(repo=repository)
 
-def plot_entity_churn():
-    return EntityChurnViewer().render(repo=repository)
+    def plot_entity_effort():
+        return EntityEffortViewer().render_treemap(
+            top_n=10,
+            repo=repository,
+        )
 
+    def plot_entity_ownership():
+        return EntityOnershipViewer().render(
+            repo=repository,
+        )
 
-def plot_entity_effort():
-    return EntityEffortViewer().render_treemap(
-        top_n=10,
-        repo=repository,
-    )
+    # Refactor plot_code_coupling to include zoom and pan controls using Panel sliders
+    def plot_code_coupling_with_controls():
+        coupling_viewer = CouplingViewer()
 
+        # Create sliders for zoom and pan
+        zoom_slider = pn.widgets.FloatSlider(
+            name="Zoom", start=-50, end=100.0, step=0.1, value=1.0
+        )
+        x_pan_slider = pn.widgets.FloatSlider(
+            name="Pan X", start=-1.0, end=100.0, step=0.1, value=0.0
+        )
+        y_pan_slider = pn.widgets.FloatSlider(
+            name="Pan Y", start=-1.0, end=100.0, step=0.1, value=0.0
+        )
 
-def plot_entity_ownership():
-    return EntityOnershipViewer().render(
-        repo=repository,
-    )
+        # Callback to update the plot based on slider values
+        def update_plot(zoom, x_pan, y_pan):
+            fig = coupling_viewer.render(repo=repository)
+            ax = fig.gca()
+            ax.set_xlim(
+                ax.get_xlim()[0] * zoom + x_pan, ax.get_xlim()[1] * zoom + x_pan
+            )
+            ax.set_ylim(
+                ax.get_ylim()[0] * zoom + y_pan, ax.get_ylim()[1] * zoom + y_pan
+            )
+            return fig
 
+        # Bind sliders to the update function
+        interactive_plot = pn.bind(
+            update_plot, zoom=zoom_slider, x_pan=x_pan_slider, y_pan=y_pan_slider
+        )
 
-# Refactor plot_code_coupling to include zoom and pan controls using Panel sliders
-def plot_code_coupling_with_controls():
-    coupling_viewer = CouplingViewer()
+        return pn.Column(zoom_slider, x_pan_slider, y_pan_slider, interactive_plot)
 
-    # Create sliders for zoom and pan
-    zoom_slider = pn.widgets.FloatSlider(
-        name="Zoom", start=-50, end=100.0, step=0.1, value=1.0
-    )
-    x_pan_slider = pn.widgets.FloatSlider(
-        name="Pan X", start=-1.0, end=100.0, step=0.1, value=0.0
-    )
-    y_pan_slider = pn.widgets.FloatSlider(
-        name="Pan Y", start=-1.0, end=100.0, step=0.1, value=0.0
-    )
-
-    # Callback to update the plot based on slider values
-    def update_plot(zoom, x_pan, y_pan):
-        fig = coupling_viewer.render(repo=repository)
-        ax = fig.gca()
-        ax.set_xlim(ax.get_xlim()[0] * zoom + x_pan, ax.get_xlim()[1] * zoom + x_pan)
-        ax.set_ylim(ax.get_ylim()[0] * zoom + y_pan, ax.get_ylim()[1] * zoom + y_pan)
-        return fig
-
-    # Bind sliders to the update function
-    interactive_plot = pn.bind(
-        update_plot, zoom=zoom_slider, x_pan=x_pan_slider, y_pan=y_pan_slider
-    )
-
-    return pn.Column(zoom_slider, x_pan_slider, y_pan_slider, interactive_plot)
-
-
-# Update source_code_section to use the new plot_code_coupling_with_controls
-def source_code_section():
     return pn.Column(
         "## Source code Section",
         pn.Row(

@@ -1,8 +1,5 @@
 import panel as pn
-from infrastructure.configuration.configuration_builder import (
-    ConfigurationBuilder,
-    Driver,
-)
+from infrastructure.configuration.configuration import Configuration
 from providers.github.prs.plots.view_average_of_prs_open_by import (
     ViewAverageOfPrsOpenBy,
 )
@@ -17,63 +14,58 @@ from providers.github.prs.plots.view_prs_by_author import (
 from providers.github.prs.prs_repository import LoadPrs
 
 pn.extension("tabulator")
-prs_repository = LoadPrs(configuration=ConfigurationBuilder(Driver.JSON).build())
 
 
-def normalize_label(selected_labels):
-    if len(selected_labels) == 0:
-        return None
-    return ",".join(selected_labels)
+def prs_section(date_range_picker, configuration: Configuration, anonymize=False):
+    prs_repository = LoadPrs(configuration=configuration)
 
+    def normalize_label(selected_labels):
+        if len(selected_labels) == 0:
+            return None
+        return ",".join(selected_labels)
 
-def normalize_authors(author_select):
-    if len(author_select) == 0:
-        return None
-    return ",".join(author_select)
+    def normalize_authors(author_select):
+        if len(author_select) == 0:
+            return None
+        return ",".join(author_select)
 
+    def plot_average_prs_open_by(date_range_picker, selected_labels, author_select):
+        return ViewAverageOfPrsOpenBy(repository=prs_repository).main(
+            start_date=date_range_picker[0],
+            end_date=date_range_picker[1],
+            labels=normalize_label(selected_labels),
+            authors=normalize_authors(author_select),
+        )
 
-def plot_average_prs_open_by(date_range_picker, selected_labels, author_select):
-    return ViewAverageOfPrsOpenBy(repository=prs_repository).main(
-        start_date=date_range_picker[0],
-        end_date=date_range_picker[1],
-        labels=normalize_label(selected_labels),
-        authors=normalize_authors(author_select),
-    )
+    def plot_average_review_time_by_author(
+        date_range_picker, selected_labels, author_select
+    ):
+        return ViewAverageReviewTimeByAuthor(
+            repository=prs_repository
+        ).plot_average_open_time(
+            title="Average Review Time By Author",
+            start_date=date_range_picker[0],
+            end_date=date_range_picker[1],
+            labels=normalize_label(selected_labels),
+            authors=normalize_authors(author_select),
+        )
 
+    def plot_workflow_runs_through_time(date_range_picker, author_select):
+        return ViewOpenPrsThroughTime(repository=prs_repository).main(
+            start_date=date_range_picker[0],
+            end_date=date_range_picker[1],
+            title="Workflow Runs Through Time",
+            authors=normalize_authors(author_select),
+        )
 
-def plot_average_review_time_by_author(
-    date_range_picker, selected_labels, author_select
-):
-    return ViewAverageReviewTimeByAuthor(
-        repository=prs_repository
-    ).plot_average_open_time(
-        title="Average Review Time By Author",
-        start_date=date_range_picker[0],
-        end_date=date_range_picker[1],
-        labels=normalize_label(selected_labels),
-        authors=normalize_authors(author_select),
-    )
+    def plot_prs_by_author(date_range_picker, selected_labels):
+        return ViewPrsByAuthor(repository=prs_repository).plot_top_authors(
+            title="PRs By Author",
+            start_date=date_range_picker[0],
+            end_date=date_range_picker[1],
+            labels=normalize_label(selected_labels),
+        )
 
-
-def plot_workflow_runs_through_time(date_range_picker, author_select):
-    return ViewOpenPrsThroughTime(repository=prs_repository).main(
-        start_date=date_range_picker[0],
-        end_date=date_range_picker[1],
-        title="Workflow Runs Through Time",
-        authors=normalize_authors(author_select),
-    )
-
-
-def plot_prs_by_author(date_range_picker, selected_labels):
-    return ViewPrsByAuthor(repository=prs_repository).plot_top_authors(
-        title="PRs By Author",
-        start_date=date_range_picker[0],
-        end_date=date_range_picker[1],
-        labels=normalize_label(selected_labels),
-    )
-
-
-def prs_section(date_range_picker, anonymize=False):
     unique_authors = prs_repository.get_unique_authors()
 
     unique_labels = prs_repository.get_unique_labels()

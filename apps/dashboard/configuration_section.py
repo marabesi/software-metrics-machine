@@ -1,16 +1,11 @@
 import panel as pn
 
-from infrastructure.configuration.configuration_builder import (
-    ConfigurationBuilder,
-    Driver,
-)
+from infrastructure.configuration.configuration import Configuration
 
 pn.extension("tabulator")
 
 
-def configuration_section():
-
-    configuration = ConfigurationBuilder(Driver.JSON).build()
+def configuration_section(configuration: Configuration):
 
     def form_section():
         """

@@ -26,11 +26,11 @@ header_section = pn.Column()
 header_section_prs = pn.Row(start_end_date_picker, sizing_mode="stretch_width")
 header_section_pipeline = pn.Row(start_end_date_picker, sizing_mode="stretch_width")
 
-insights_section = insights_section()
-pipeline_section = pipeline_section(start_end_date_picker)
-prs_section = prs_section(start_end_date_picker, anonymize=anonymize)
-source_code_section = source_code_section()
-configuration_section = configuration_section()
+insights_section = insights_section(configuration)
+pipeline_section = pipeline_section(start_end_date_picker, configuration)
+prs_section = prs_section(start_end_date_picker, configuration, anonymize=anonymize)
+source_code_section = source_code_section(configuration)
+configuration_section = configuration_section(configuration)
 
 template = MaterialTemplate(
     title=f"Software Metrics Machine - {configuration.github_repository}"

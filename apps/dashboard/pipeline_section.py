@@ -1,9 +1,6 @@
 import panel as pn
 import pandas as pd
-from infrastructure.configuration.configuration_builder import (
-    ConfigurationBuilder,
-    Driver,
-)
+from infrastructure.configuration.configuration import Configuration
 from providers.github.workflows.assessment.view_summary import WorkflowRunSummary
 from providers.github.workflows.plots.view_jobs_average_time_execution import (
     ViewJobsByStatus,
@@ -20,8 +17,8 @@ from providers.github.workflows.repository_workflows import LoadWorkflows
 pn.extension("tabulator")
 
 
-def pipeline_section(date_range_picker):
-    repository = LoadWorkflows(configuration=ConfigurationBuilder(Driver.JSON).build())
+def pipeline_section(date_range_picker, configuration: Configuration):
+    repository = LoadWorkflows(configuration=configuration)
     workflow_names = repository.get_unique_workflow_paths()
 
     workflow_selector = pn.widgets.Select(
