@@ -15,6 +15,10 @@ class CodeChurnViewer(MatplotViewer, Viewable):
     ) -> None:
         df = repository.get_code_churn()
 
+        if df.empty:
+            print("No code churn data available to plot")
+            return
+
         dates = df["date"]
         added = df["added"]
         deleted = df["deleted"]
