@@ -15,7 +15,7 @@ to point to the desired location. Use absolute path.
 export SSM_GIT_REPOSITORY_LOCATION=/my/path/to/git/repo
 ```
 
-This provider in addition to the SSM_GIT_REPOSITORY_LOCATION env variable, requires the SSM_STORE_DATA_AT env variable to know
+This provider in addition to the SSM_GIT_REPOSITORY_LOCATION env variable, requires the SMM_STORE_DATA_AT env variable to know
 where to store the fetched data.
 
 ### Checkpoint
@@ -30,5 +30,5 @@ You should see an output something like the following:
 
 ```plaintext
 SSM_GIT_REPOSITORY_LOCATION=/my/path/to/git/repo
-SSM_STORE_DATA_AT=/path/to/data/folder
+SMM_STORE_DATA_AT=/path/to/data/folder
 ```

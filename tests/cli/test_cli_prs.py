@@ -25,7 +25,7 @@ class TestCliCommands:
 
     def test_fetch_prs_from_last_three_months(self, cli, tmp_path):
         path_string = str(tmp_path)
-        os.environ["SSM_STORE_DATA_AT"] = path_string
+        os.environ["SMM_STORE_DATA_AT"] = path_string
         ConfigurationFileSystemHandler(path_string).store_file(
             "smm_config.json", InMemoryConfiguration(path_string)
         )
@@ -55,7 +55,7 @@ class TestCliCommands:
 
     def test_with_stored_data_plot_prs_by_author(self, cli, tmp_path):
         path_string = str(tmp_path)
-        os.environ["SSM_STORE_DATA_AT"] = path_string
+        os.environ["SMM_STORE_DATA_AT"] = path_string
 
         ConfigurationFileSystemHandler(path_string).store_file(
             "smm_config.json", InMemoryConfiguration(path_string)
@@ -90,7 +90,7 @@ class TestCliCommands:
 
     def test_with_stored_data_review_time_by_author(self, cli, tmp_path):
         path_string = str(tmp_path)
-        os.environ["SSM_STORE_DATA_AT"] = path_string
+        os.environ["SMM_STORE_DATA_AT"] = path_string
         ConfigurationFileSystemHandler(path_string).store_file(
             "smm_config.json", InMemoryConfiguration(path_string)
         )
@@ -124,7 +124,7 @@ class TestCliCommands:
 
     def test_with_stored_data__summary(self, cli, tmp_path):
         path_string = str(tmp_path)
-        os.environ["SSM_STORE_DATA_AT"] = path_string
+        os.environ["SMM_STORE_DATA_AT"] = path_string
         ConfigurationFileSystemHandler(path_string).store_file(
             "smm_config.json", InMemoryConfiguration(path_string)
         )
@@ -160,7 +160,7 @@ class TestCliCommands:
 
     def test_with_stored_data_plot_average_prs_open_by(self, cli, tmp_path):
         path_string = str(tmp_path)
-        os.environ["SSM_STORE_DATA_AT"] = path_string
+        os.environ["SMM_STORE_DATA_AT"] = path_string
         ConfigurationFileSystemHandler(path_string).store_file(
             "smm_config.json", InMemoryConfiguration(path_string)
         )

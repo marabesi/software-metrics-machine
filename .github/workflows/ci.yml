@@ -53,7 +53,7 @@ jobs:
       - name: Set PYTHONPATH
         run: |
           echo "PYTHONPATH=$(pwd)" >> $GITHUB_ENV
-          echo "SSM_STORE_DATA_AT=$(pwd)/tmp_test/github" >> $GITHUB_ENV
+          echo "SMM_STORE_DATA_AT=$(pwd)/tmp_test/github" >> $GITHUB_ENV
           echo "SSM_GIT_REPOSITORY_LOCATION=$(pwd)/tmp_test/repo" >> $GITHUB_ENV
           echo "SSM_GITHUB_REPOSITORY=fake/repo-test" >> $GITHUB_ENV
           echo "SSM_GITHUB_TOKEN=fake-token" >> $GITHUB_ENV

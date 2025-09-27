@@ -17,7 +17,7 @@ class TestWorkflowsCliCommands:
 
     def test_deployment_frequency_by_author(self, cli, tmp_path):
         path_string = str(tmp_path)
-        os.environ["SSM_STORE_DATA_AT"] = path_string
+        os.environ["SMM_STORE_DATA_AT"] = path_string
         ConfigurationFileSystemHandler(path_string).store_file(
             "smm_config.json", InMemoryConfiguration(path_string)
         )

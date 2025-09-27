@@ -89,11 +89,11 @@ poetry install --no-root
 
 ### Define where to store the data
 
-This project uses a folder to store the data fetched from the different providers, set the env variable `SSM_STORE_DATA_AT`
+This project uses a folder to store the data fetched from the different providers, set the env variable `SMM_STORE_DATA_AT`
 to point to the desired location. Use absolute path.
 
 ```bash
-export SSM_STORE_DATA_AT=/path/to/data/folder
+export SMM_STORE_DATA_AT=/path/to/data/folder
 ```
 
 ### Checkpoint store data
@@ -107,7 +107,7 @@ env
 You should see an output something like the following:
 
 ```plaintext
-SSM_STORE_DATA_AT=/path/to/data/folder
+SMM_STORE_DATA_AT=/path/to/data/folder
 ```
 
 ## Providers

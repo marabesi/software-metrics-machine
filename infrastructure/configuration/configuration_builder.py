@@ -32,7 +32,7 @@ class ConfigurationBuilder:
         :return: A Configuration instance.
         """
         if self.driver == Driver.JSON or self.driver == Driver.CLI:
-            path = os.getenv("SSM_STORE_DATA_AT")
+            path = os.getenv("SMM_STORE_DATA_AT")
             if not path:
                 raise ValueError("Path must be provided when using JSON driver")
             return ConfigurationFileSystemHandler(path).read_file_if_exists(

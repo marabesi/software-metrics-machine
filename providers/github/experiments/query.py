@@ -86,7 +86,7 @@ def main(argv: list[str] | None = None) -> int:
         "--file",
         type=str,
         default=None,
-        help="Filename (basename) to load from the configured store_data folder (SSM_STORE_DATA_AT). If omitted, all JSON files in the folder will be merged and queried.",  # noqa
+        help="Filename (basename) to load from the configured store_data folder (SMM_STORE_DATA_AT). If omitted, all JSON files in the folder will be merged and queried.",  # noqa
     )
     parser.add_argument(
         "--raw",
