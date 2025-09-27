@@ -1,5 +1,5 @@
 import matplotlib.pyplot as plt
-import squarify  # For treemap visualization
+import squarify
 
 from infrastructure.base_viewer import MatplotViewer
 from infrastructure.viewable import Viewable
@@ -15,6 +15,10 @@ class EntityEffortViewer(MatplotViewer, Viewable):
         out_file: str | None = None,
     ) -> None:
         df = repo.get_entity_effort()
+
+        if df.empty:
+            print("No entity effort data available to plot")
+            return None
 
         df = repo.apply_ignore_file_patterns(df, ignore_files)
 
@@ -47,6 +51,10 @@ class EntityEffortViewer(MatplotViewer, Viewable):
         out_file: str | None = None,
     ) -> None:
         df = repo.get_entity_effort()
+
+        if df.empty:
+            print("No entity effort data available to plot")
+            return None
 
         df = repo.apply_ignore_file_patterns(df, ignore_files)
 

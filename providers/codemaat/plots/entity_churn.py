@@ -17,6 +17,10 @@ class EntityChurnViewer(MatplotViewer, Viewable):
     ) -> None:
         df = repo.get_entity_churn()
 
+        if df.empty:
+            print("No entity churn data available to plot")
+            return None
+
         # default ordering: by total churn (added + deleted) descending
         df["total_churn"] = df.get("added", 0) + df.get("deleted", 0)
 

@@ -48,14 +48,15 @@ def source_code_section(configuration: Configuration):
         # Callback to update the plot based on slider values
         def update_plot(zoom, x_pan, y_pan):
             fig = coupling_viewer.render(repo=repository)
-            ax = fig.gca()
-            ax.set_xlim(
-                ax.get_xlim()[0] * zoom + x_pan, ax.get_xlim()[1] * zoom + x_pan
-            )
-            ax.set_ylim(
-                ax.get_ylim()[0] * zoom + y_pan, ax.get_ylim()[1] * zoom + y_pan
-            )
-            return fig
+            if fig is not None:
+                ax = fig.gca()
+                ax.set_xlim(
+                    ax.get_xlim()[0] * zoom + x_pan, ax.get_xlim()[1] * zoom + x_pan
+                )
+                ax.set_ylim(
+                    ax.get_ylim()[0] * zoom + y_pan, ax.get_ylim()[1] * zoom + y_pan
+                )
+                return fig
 
         # Bind sliders to the update function
         interactive_plot = pn.bind(

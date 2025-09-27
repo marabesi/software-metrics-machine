@@ -4,6 +4,7 @@ from infrastructure.configuration.configuration_builder import (
     ConfigurationBuilder,
     Driver,
 )
+from providers.codemaat.codemaat_repository import CodemaatRepository
 from providers.codemaat.plots.coupling import CouplingViewer
 
 
@@ -18,7 +19,10 @@ from providers.codemaat.plots.coupling import CouplingViewer
 def coupling(out_file):
     """Plot coupling graph."""
     return CouplingViewer().render(
-        configuration=ConfigurationBuilder(Driver.JSON).build(), out_file=out_file
+        repo=CodemaatRepository(
+            configuration=ConfigurationBuilder(Driver.JSON).build()
+        ),
+        out_file=out_file,
     )
 
 

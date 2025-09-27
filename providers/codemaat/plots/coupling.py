@@ -12,6 +12,9 @@ class CouplingViewer(MatplotViewer, Viewable):
         self, repo: CodemaatRepository, out_file: str | None = None, top_n: int = 2
     ) -> Figure:
         df = repo.get_coupling()
+        if df.empty:
+            print("No coupling data available to plot")
+            return None
 
         # Sort by degree and select top N items
         top_df = df.nlargest(top_n, "degree")

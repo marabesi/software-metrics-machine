@@ -15,6 +15,10 @@ class EntityOnershipViewer(MatplotViewer, Viewable):
     ) -> None:
         df = repo.get_entity_ownership()
 
+        if df.empty:
+            print("No entity ownership data available to plot")
+            return None
+
         df = repo.apply_ignore_file_patterns(df, ignore_files)
 
         ownership = (
