@@ -1,4 +1,5 @@
 import pandas as pd
+from pathlib import Path
 from pathlib import PurePosixPath
 import typing
 
@@ -12,24 +13,34 @@ class CodemaatRepository(BaseRepository):
         super().__init__(configuration=self.configuration)
 
     def get_code_churn(self):
-        df = pd.read_csv(f"{self.configuration.store_data}/abs-churn.csv")
-        return df
+        file_path = Path(f"{self.configuration.store_data}/abs-churn.csv")
+        if not file_path.exists():
+            return pd.DataFrame()
+        return pd.read_csv(file_path)
 
     def get_coupling(self):
-        df = pd.read_csv(f"{self.configuration.store_data}/coupling.csv")
-        return df
+        file_path = Path(f"{self.configuration.store_data}/coupling.csv")
+        if not file_path.exists():
+            return pd.DataFrame()
+        return pd.read_csv(file_path)
 
     def get_entity_churn(self):
-        df = pd.read_csv(f"{self.configuration.store_data}/entity-churn.csv")
-        return df
+        file_path = Path(f"{self.configuration.store_data}/entity-churn.csv")
+        if not file_path.exists():
+            return pd.DataFrame()
+        return pd.read_csv(file_path)
 
     def get_entity_effort(self):
-        df = pd.read_csv(f"{self.configuration.store_data}/entity-effort.csv")
-        return df
+        file_path = Path(f"{self.configuration.store_data}/entity-effort.csv")
+        if not file_path.exists():
+            return pd.DataFrame()
+        return pd.read_csv(file_path)
 
     def get_entity_ownership(self):
-        df = pd.read_csv(f"{self.configuration.store_data}/entity-ownership.csv")
-        return df
+        file_path = Path(f"{self.configuration.store_data}/entity-ownership.csv")
+        if not file_path.exists():
+            return pd.DataFrame()
+        return pd.read_csv(file_path)
 
     def apply_ignore_file_patterns(
         self, df: typing.Any, ignore_files: str | None
