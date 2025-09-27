@@ -37,12 +37,10 @@ def pipeline_section(date_range_picker, configuration: Configuration):
 
     def plot_deployment_frequency(date_range_picker):
         return ViewDeploymentFrequency(repository=repository).plot(
+            workflow_path=configuration.deployment_frequency_target_pipeline,
+            job_name=configuration.deployment_frequency_target_job,
             start_date=date_range_picker[0],
             end_date=date_range_picker[1],
-            workflow_path=sanitize_workflow_path(
-                configuration.deployment_frequency_target_pipeline
-            ),
-            job_name=configuration.deployment_frequency_target_job,
         )
 
     def plot_workflow_by_status(date_range_picker, workflow_selector):

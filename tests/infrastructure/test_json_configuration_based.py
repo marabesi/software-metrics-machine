@@ -25,6 +25,8 @@ class TestJsonConfigurationBased:
             github_token="token",
             github_repository="owner/repo",
             git_repository_location="/my/repo",
+            deployment_frequency_target_pipeline="my_pipeline",
+            deployment_frequency_target_job="my_job",
         )
         file = "my_conf.json"
         configuration_file_system_handler.store_file(file, configuration)
@@ -35,3 +37,5 @@ class TestJsonConfigurationBased:
         assert read_configuration.github_repository == "owner/repo"
         assert read_configuration.store_data == str(tmp_path)
         assert read_configuration.git_repository_location == "/my/repo"
+        assert read_configuration.deployment_frequency_target_pipeline == "my_pipeline"
+        assert read_configuration.deployment_frequency_target_job == "my_job"

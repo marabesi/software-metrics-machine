@@ -18,6 +18,10 @@ class ConfigurationFileSystemHandler:
             github_repository=data.get("github_repository"),
             store_data=self.default_dir,
             git_repository_location=data.get("git_repository_location"),
+            deployment_frequency_target_pipeline=data.get(
+                "deployment_frequency_target_pipeline"
+            ),
+            deployment_frequency_target_job=data.get("deployment_frequency_target_job"),
         )
 
     def store_file(self, file: str, data: Configuration) -> bool:

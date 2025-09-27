@@ -25,6 +25,7 @@ class ViewDeploymentFrequency(MatplotViewer):
         :param start_date: Start date for filtering runs.
         :param end_date: End date for filtering runs.
         """
+
         if start_date and end_date:
             filters = {"start_date": start_date, "end_date": end_date}
             runs = self.repository.runs(filters)
@@ -36,6 +37,8 @@ class ViewDeploymentFrequency(MatplotViewer):
             runs = [
                 r for r in runs if (r.get("path") or "").lower().find(name_low) != -1
             ]
+
+        print(f"Filtered to {len(runs)} runs after applying workflow path filter")
 
         df = self.repository.get_deployment_frequency_for_job(job_name=job_name)
 
