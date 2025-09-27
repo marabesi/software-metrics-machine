@@ -16,7 +16,7 @@ if (NODE_ENV === 'production') {
     [
       'script',
       {},
-      "window.dataLayer = window.dataLayer || [];  function gtag(){dataLayer.push(arguments);}  gtag('js', new Date());  gtag('config', '" + id + "'); gtag('set', 'cookie_flags', 'SameSite=None;Secure');",
+      "window.dataLayer = window.dataLayer || [];  function gtag(){dataLayer.push(arguments);}  gtag('js', new Date());  gtag('config', '" + id + "',  { cookie_flags: 'Secure;SameSite=None' });",
     ]);
 }
 
