@@ -2,6 +2,9 @@ import panel as pn
 import pandas as pd
 from infrastructure.configuration.configuration import Configuration
 from providers.github.workflows.assessment.view_summary import WorkflowRunSummary
+from providers.github.workflows.plots.view_deployment_frequency import (
+    ViewDeploymentFrequency,
+)
 from providers.github.workflows.plots.view_jobs_average_time_execution import (
     ViewJobsByStatus,
 )
@@ -31,6 +34,16 @@ def pipeline_section(date_range_picker, configuration: Configuration):
         if selected_value == "All":
             return None
         return selected_value
+
+    def plot_deployment_frequency(date_range_picker):
+        return ViewDeploymentFrequency(repository=repository).plot(
+            start_date=date_range_picker[0],
+            end_date=date_range_picker[1],
+            workflow_path=sanitize_workflow_path(
+                configuration.deployment_frequency_target_pipeline
+            ),
+            job_name=configuration.deployment_frequency_target_job,
+        )
 
     def plot_workflow_by_status(date_range_picker, workflow_selector):
         return ViewWorkflowByStatus(repository=repository).main(
@@ -110,6 +123,7 @@ def pipeline_section(date_range_picker, configuration: Configuration):
             pn.Column(workflow_selector, align="end"),
             align="start",
         ),
+        pn.Row(pn.bind(plot_deployment_frequency, date_range_picker)),
         pn.Row(pn.bind(plot_workflow_by_status, date_range_picker, workflow_selector)),
         pn.Row(pn.bind(plot_workflow_run_by, date_range_picker, workflow_selector)),
         pn.Row(

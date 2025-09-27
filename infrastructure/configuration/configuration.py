@@ -6,14 +6,16 @@ class Configuration:
         github_repository=None,
         store_data=None,
         git_repository_location=None,
-        target_pipeline=None,
-        target_job=None,
+        deployment_frequency_target_pipeline=None,
+        deployment_frequency_target_job=None,
     ):
         self.git_provider = git_provider
         self.github_token = github_token
         self.github_repository = github_repository
         self.store_data = store_data
         self.git_repository_location = git_repository_location
+        self.deployment_frequency_target_pipeline = deployment_frequency_target_pipeline
+        self.deployment_frequency_target_job = deployment_frequency_target_job
 
         print("git_repository_location", self.git_repository_location)
         print(
