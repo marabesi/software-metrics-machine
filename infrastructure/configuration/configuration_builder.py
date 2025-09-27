@@ -8,7 +8,6 @@ from tests.in_memory_configuration import InMemoryConfiguration
 
 
 class Driver(Enum):
-    APPLICATION = "APPLICATION"
     CLI = "CLI"
     JSON = "JSON"
     IN_MEMORY = "IN_MEMORY"
@@ -41,4 +40,4 @@ class ConfigurationBuilder:
         if self.driver == Driver.IN_MEMORY:
             return InMemoryConfiguration(".")
 
-        return Configuration()
+        raise ValueError("Invalid configuration")
