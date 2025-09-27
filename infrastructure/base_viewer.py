@@ -2,6 +2,7 @@ import os
 from infrastructure.base_repository import BaseRepository
 from infrastructure.configuration.configuration import Configuration
 from matplotlib.figure import Figure
+import panel as pn
 
 
 class MatplotViewer:
@@ -35,7 +36,10 @@ class MatplotViewer:
             return fig
         else:
             # fig.set_size_inches(8, 4)
-            return fig
+            # return fig
+            return pn.pane.Matplotlib(
+                fig, dpi=144, tight=True, format="svg", sizing_mode="stretch_width"
+            )
             plt.show()
 
     def __ensure_png(self, path: str) -> str:
