@@ -12,3 +12,8 @@ repos:
         entry: poetry run flake8 .
         language: system
         types: [python] 
+      - id: pytest
+        name: pytest
+        entry: ./run-tests.sh
+        language: system
+        types: [bash] 
