@@ -59,24 +59,8 @@ class TestRepositoryWorkflows:
             result = loader.get_unique_workflow_paths()
             assert result[0] == "All"
 
-    def test_deployment_frequency(self):
-        empty_workflow_runs = as_json_string(
-            [
-                {
-                    "id": 1,
-                    "path": "/workflows/build.yml",
-                    "status": "success",
-                    "created_at": "2023-10-01T12:00:00Z",
-                    "jobs": [
-                        {
-                            "name": "Deploy",
-                            "conclusion": "success",
-                            "created_at": "2023-10-01T12:05:00Z",
-                        }
-                    ],
-                },
-            ]
-        )
+    def test_show_empty_deployment_frequency_when_no_data(self):
+        empty_workflow_runs = as_json_string([])
         with (
             patch(
                 "infrastructure.base_repository.BaseRepository.read_file_if_exists",
@@ -85,6 +69,97 @@ class TestRepositoryWorkflows:
         ):
             loader = LoadWorkflows(configuration=InMemoryConfiguration("."))
 
-            result = loader.get_deployment_frequency_for_job("Deploy")
+            result = loader.get_deployment_frequency_for_job(
+                job_name="Deploy", filters=None
+            )
+            assert 0 == len(result["months"])
+            assert 0 == len(result["weeks"])
+            assert 0 == len(result["weekly_counts"])
+            assert 0 == len(result["monthly_counts"])
+
+    def test_deployment_frequency(self):
+        single_deployment = as_json_string(
+            [
+                {
+                    "id": 1,
+                    "path": "/workflows/build.yml",
+                    "status": "success",
+                    "created_at": "2023-10-01T09:00:00Z",
+                },
+            ]
+        )
+
+        def mocked_read_file_if_exists(file):
+            if file == "workflows.json":
+                return single_deployment
+            elif file == "jobs.json":
+                return as_json_string(
+                    [
+                        {
+                            "id": 105,
+                            "run_id": 1,
+                            "name": "Deploy",
+                            "conclusion": "success",
+                            "started_at": "2023-10-01T09:05:00Z",
+                            "completed_at": "2023-10-01T09:10:00Z",
+                        },
+                    ]
+                )
+            return None
+
+        with patch(
+            "infrastructure.base_repository.BaseRepository.read_file_if_exists",
+            side_effect=mocked_read_file_if_exists,
+        ):
+            loader = LoadWorkflows(configuration=InMemoryConfiguration("."))
+
+            result = loader.get_deployment_frequency_for_job(
+                job_name="Deploy", filters=None
+            )
             assert "2023-10" in result["months"]
             assert "2023-W39" in result["weeks"]
+
+    def test_should_not_compute_when_job_failed(self):
+        single_deployment = as_json_string(
+            [
+                {
+                    "id": 1,
+                    "path": "/workflows/build.yml",
+                    "status": "success",
+                    "created_at": "2023-10-01T09:00:00Z",
+                },
+            ]
+        )
+
+        def mocked_read_file_if_exists(file):
+            if file == "workflows.json":
+                return single_deployment
+            elif file == "jobs.json":
+                return as_json_string(
+                    [
+                        {
+                            "id": 105,
+                            "run_id": 1,
+                            "name": "Deploy",
+                            "conclusion": "fail",
+                            "started_at": "2023-10-01T09:05:00Z",
+                            "completed_at": "2023-10-01T09:10:00Z",
+                        },
+                    ]
+                )
+            return None
+
+        with patch(
+            "infrastructure.base_repository.BaseRepository.read_file_if_exists",
+            side_effect=mocked_read_file_if_exists,
+        ):
+            loader = LoadWorkflows(configuration=InMemoryConfiguration("."))
+
+            result = loader.get_deployment_frequency_for_job(
+                job_name="Deploy", filters=None
+            )
+
+            assert 0 == len(result["months"])
+            assert 0 == len(result["weeks"])
+            assert 0 == len(result["weekly_counts"])
+            assert 0 == len(result["monthly_counts"])

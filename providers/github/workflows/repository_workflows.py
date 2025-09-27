@@ -84,17 +84,16 @@ class LoadWorkflows(BaseRepository):
         listWithPaths.insert(0, "All")
         return listWithPaths
 
-    def get_deployment_frequency_for_job(self, job_name: str):
+    def get_deployment_frequency_for_job(self, job_name: str, filters=None):
         deployments = {}
-        runs = self.all_runs
+        runs = self.runs(filters)
 
         for run in runs:
             jobs = run.get("jobs", [])
             for job in jobs:
                 if job.get("name") == job_name and job.get("conclusion") == "success":
-                    created_at = job.get("created_at")[:10]  # Extract date only
+                    created_at = job.get("completed_at")[:10]
                     created_at = datetime.fromisoformat(created_at + "T00:00:00+00:00")
-                    # Correcting the calculation of week_key
                     week_key = f"{created_at.year}-W{created_at.isocalendar()[1]:02d}"
                     month_key = f"{created_at.year}-{created_at.month:02d}"
 
@@ -108,10 +107,17 @@ class LoadWorkflows(BaseRepository):
 
         weeks = sorted([key for key in deployments.keys() if "W" in key])
         months = sorted([key for key in deployments.keys() if "W" not in key])
-
         weekly_counts = [deployments[week]["weekly"] for week in weeks]
         monthly_counts = [deployments[month]["monthly"] for month in months]
 
+        print(
+            {
+                "weeks": weeks,
+                "months": months,
+                "weekly_counts": weekly_counts,
+                "monthly_counts": monthly_counts,
+            }
+        )
         return {
             "weeks": weeks,
             "months": months,
@@ -129,10 +135,8 @@ class LoadWorkflows(BaseRepository):
         print(f"Loaded {len(self.all_jobs)} jobs")
         self.all_jobs.sort(key=super().created_at_key_sort)
 
-        # Create a mapping of run_id to runs for quick lookup
         run_id_to_run = {run["id"]: run for run in self.all_runs if "id" in run}
 
-        # Assign jobs to their corresponding runs
         for job in self.all_jobs:
             run_id = job.get("run_id")
             if run_id and run_id in run_id_to_run:

@@ -22,23 +22,30 @@ class TestWorkflowsCliCommands:
             "smm_config.json", InMemoryConfiguration(path_string)
         )
 
-        deployment_frequency = [
+        single_deployment_frequency = [
             {
                 "id": 1,
                 "path": "/workflows/build.yml",
                 "status": "success",
                 "created_at": "2023-10-01T12:00:00Z",
-                "jobs": [
-                    {
-                        "name": "Deploy",
-                        "conclusion": "success",
-                        "created_at": "2023-10-01T12:05:00Z",
-                    }
-                ],
             },
         ]
         FileHandlerForTesting(path_string).store_file(
-            "workflows.json", deployment_frequency
+            "workflows.json", single_deployment_frequency
+        )
+
+        FileHandlerForTesting(path_string).store_file(
+            "jobs.json",
+            [
+                {
+                    "id": 105,
+                    "run_id": 1,
+                    "name": "Deploy",
+                    "conclusion": "success",
+                    "started_at": "2023-10-01T09:05:00Z",
+                    "completed_at": "2023-10-01T09:10:00Z",
+                },
+            ],
         )
 
         result = cli.invoke(
