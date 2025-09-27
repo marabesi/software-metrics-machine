@@ -7,10 +7,10 @@ WORKDIR /app
 # Copy the requirements file to the container
 COPY pyproject.toml poetry.lock README.md ./
 
-# Install Poetry
+# Install only production dependencies using Poetry
 RUN pip install --no-cache-dir poetry && \
     poetry config virtualenvs.create false && \
-    poetry install --no-interaction --no-ansi
+    poetry install --only main --no-interaction --no-ansi
 
 # Copy the rest of the application code to the container
 COPY . .
