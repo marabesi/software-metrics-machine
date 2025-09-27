@@ -7,7 +7,7 @@ from tests.in_memory_configuration import InMemoryConfiguration
 class TestGithubClient:
     @pytest.fixture(autouse=True)
     def setup(self):
-        self.configuration = InMemoryConfiguration()
+        self.configuration = InMemoryConfiguration(".")
         self.github_client = GithubClient(configuration=self.configuration)
         self.headers = {
             "Authorization": f"token {self.configuration.github_token}",

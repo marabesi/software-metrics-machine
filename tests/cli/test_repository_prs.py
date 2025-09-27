@@ -11,11 +11,9 @@ from tests.builders import as_json_string
 
 class TestRepositoryPrs:
     @pytest.fixture(scope="function", autouse=True)
-    def setup(self, monkeypatch):
-        """Fixture to mock os.getenv and initialize LoadPrs."""
-        monkeypatch.setattr("os.getenv", lambda key, default=None: "faked")
+    def setup(self):
         self.repository = LoadPrs(
-            configuration=ConfigurationBuilder(driver=Driver.CLI).build()
+            configuration=ConfigurationBuilder(driver=Driver.IN_MEMORY).build()
         )
 
     def test_load_provided_data_when_exists(self):
@@ -33,7 +31,7 @@ class TestRepositoryPrs:
             return_value=mocked_prs_data,
         ):
             repository = LoadPrs(
-                configuration=ConfigurationBuilder(driver=Driver.CLI).build()
+                configuration=ConfigurationBuilder(driver=Driver.IN_MEMORY).build()
             )
             all_prs = repository.read_file_if_exists("prs.json")
 
@@ -67,14 +65,7 @@ class TestRepositoryPrs:
             {"created_at": "2025-09-15T00:00:00Z", "merged_at": "2025-09-20T00:00:00Z"},
         ]
 
-        # Debugging output to verify test data
-        print("Test PRs:", self.repository.all_prs)
-
         months, averages = self.repository.average_by_month(prs=self.repository.all_prs)
-
-        # Debugging output to verify method output
-        print("Months:", months)
-        print("Averages:", averages)
 
         assert months == ["2025-09"]
         assert averages == [7.0]
@@ -84,7 +75,9 @@ class TestRepositoryPrs:
             {"created_at": "2025-09-01T00:00:00Z", "merged_at": "2025-09-06T00:00:00Z"},
             {"created_at": "2025-09-15T00:00:00Z", "merged_at": "2025-09-20T00:00:00Z"},
         ]
+
         weeks, averages = self.repository.average_by_week(prs=self.repository.all_prs)
+
         assert weeks == ["2025-W36", "2025-W38"]
         assert averages == [5.0, 5.0]
 
@@ -93,7 +86,9 @@ class TestRepositoryPrs:
             {"id": 1, "labels": [{"name": "bug"}]},
             {"id": 2, "labels": [{"name": "enhancement"}]},
         ]
+
         filtered = self.repository.filter_prs_by_labels(prs, ["bug"])
+
         assert len(filtered) == 1
         assert filtered[0]["id"] == 1
 
@@ -103,7 +98,9 @@ class TestRepositoryPrs:
             {"user": {"login": "user2"}},
             {"user": {"login": "user1"}},
         ]
+
         authors = self.repository.get_unique_authors()
+
         assert authors == ["user1", "user2"]
 
     def test_prs_with_filters_star_date(self):
@@ -126,10 +123,12 @@ class TestRepositoryPrs:
             return_value=prs_fetched,
         ):
             repository = LoadPrs(
-                configuration=ConfigurationBuilder(driver=Driver.CLI).build()
+                configuration=ConfigurationBuilder(driver=Driver.IN_MEMORY).build()
             )
             filters = {"start_date": "2025-09-01", "end_date": "2025-09-15"}
+
             filtered = repository.prs_with_filters(filters)
+
             assert len(filtered) == 1
             assert filtered[0]["id"] == 1
 
@@ -153,10 +152,12 @@ class TestRepositoryPrs:
             return_value=prs_fetched,
         ):
             repository = LoadPrs(
-                configuration=ConfigurationBuilder(driver=Driver.CLI).build()
+                configuration=ConfigurationBuilder(driver=Driver.IN_MEMORY).build()
             )
+
             filters = {"start_date": "2025-09-10", "end_date": "2025-09-15"}
             filtered = repository.prs_with_filters(filters)
+
             assert len(filtered) == 1
             assert filtered[0]["id"] == 2
 
@@ -165,7 +166,9 @@ class TestRepositoryPrs:
             {"labels": [{"name": "bug"}, {"name": "enhancement"}]},
             {"labels": [{"name": "bug"}]},
         ]
+
         labels = self.repository.get_unique_labels()
+
         assert len(labels) == 2
         assert labels[0]["label_name"] == "bug"
         assert labels[0]["prs_count"] == 2

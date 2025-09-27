@@ -3,7 +3,11 @@ import pytest
 from apps.cli.main import main
 from unittest.mock import patch
 
+from infrastructure.configuration_file_system_handler import (
+    ConfigurationFileSystemHandler,
+)
 from tests.file_handler_for_testing import FileHandlerForTesting
+from tests.in_memory_configuration import InMemoryConfiguration
 
 
 class TestCliCommands:
@@ -20,7 +24,12 @@ class TestCliCommands:
         assert "Show this message and exit" in result.output
 
     def test_fetch_prs_from_last_three_months(self, cli, tmp_path):
-        os.environ["SSM_STORE_DATA_AT"] = str(tmp_path)
+        path_string = str(tmp_path)
+        os.environ["SSM_STORE_DATA_AT"] = path_string
+        ConfigurationFileSystemHandler(path_string).store_file(
+            "smm_config.json", InMemoryConfiguration(path_string)
+        )
+
         with patch("requests.get") as mock_get:
             fetch_prs_fake_response = [
                 {
@@ -47,6 +56,10 @@ class TestCliCommands:
     def test_with_stored_data_plot_prs_by_author(self, cli, tmp_path):
         path_string = str(tmp_path)
         os.environ["SSM_STORE_DATA_AT"] = path_string
+
+        ConfigurationFileSystemHandler(path_string).store_file(
+            "smm_config.json", InMemoryConfiguration(path_string)
+        )
         pull_requests_data = [
             {
                 "created_at": "2011-01-26T19:01:12Z",
@@ -78,6 +91,9 @@ class TestCliCommands:
     def test_with_stored_data_review_time_by_author(self, cli, tmp_path):
         path_string = str(tmp_path)
         os.environ["SSM_STORE_DATA_AT"] = path_string
+        ConfigurationFileSystemHandler(path_string).store_file(
+            "smm_config.json", InMemoryConfiguration(path_string)
+        )
         pull_requests_data = [
             {
                 "created_at": "2011-01-26T19:01:12Z",
@@ -109,6 +125,9 @@ class TestCliCommands:
     def test_with_stored_data__summary(self, cli, tmp_path):
         path_string = str(tmp_path)
         os.environ["SSM_STORE_DATA_AT"] = path_string
+        ConfigurationFileSystemHandler(path_string).store_file(
+            "smm_config.json", InMemoryConfiguration(path_string)
+        )
         pull_requests_data = [
             {
                 "created_at": "2011-01-26T19:01:12Z",
@@ -142,6 +161,9 @@ class TestCliCommands:
     def test_with_stored_data_plot_average_prs_open_by(self, cli, tmp_path):
         path_string = str(tmp_path)
         os.environ["SSM_STORE_DATA_AT"] = path_string
+        ConfigurationFileSystemHandler(path_string).store_file(
+            "smm_config.json", InMemoryConfiguration(path_string)
+        )
         pull_requests_data = [
             {
                 "created_at": "2011-01-26T19:01:12Z",

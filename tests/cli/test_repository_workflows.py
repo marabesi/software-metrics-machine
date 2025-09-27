@@ -21,7 +21,7 @@ class TestRepositoryWorkflows:
                 return_value=workflows_with_duplicates,
             ),
         ):
-            loader = LoadWorkflows(configuration=InMemoryConfiguration())
+            loader = LoadWorkflows(configuration=InMemoryConfiguration("."))
             result = loader.get_unique_workflow_names()
             assert len(result) == 3
 
@@ -41,7 +41,7 @@ class TestRepositoryWorkflows:
                 return_value=workflows_with_duplicated_paths,
             ),
         ):
-            loader = LoadWorkflows(configuration=InMemoryConfiguration())
+            loader = LoadWorkflows(configuration=InMemoryConfiguration("."))
 
             result = loader.get_unique_workflow_paths()
             assert len(result) == 4
@@ -54,7 +54,7 @@ class TestRepositoryWorkflows:
                 return_value=empty_workflow_runs,
             ),
         ):
-            loader = LoadWorkflows(configuration=InMemoryConfiguration())
+            loader = LoadWorkflows(configuration=InMemoryConfiguration("."))
 
             result = loader.get_unique_workflow_paths()
             assert result[0] == "All"
@@ -83,7 +83,7 @@ class TestRepositoryWorkflows:
                 return_value=empty_workflow_runs,
             ),
         ):
-            loader = LoadWorkflows(configuration=InMemoryConfiguration())
+            loader = LoadWorkflows(configuration=InMemoryConfiguration("."))
 
             result = loader.get_deployment_frequency_for_job("Deploy")
             assert "2023-10" in result["months"]

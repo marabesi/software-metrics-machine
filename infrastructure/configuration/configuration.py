@@ -1,7 +1,3 @@
-import os
-import sys
-
-
 class Configuration:
     def __init__(
         self,
@@ -12,32 +8,29 @@ class Configuration:
         git_repository_location=None,
     ):
         self.git_provider = git_provider
-        self.github_token = github_token or os.getenv("SSM_GITHUB_TOKEN")
-        self.github_repository = github_repository or os.getenv("SSM_GITHUB_REPOSITORY")
-        self.store_data = store_data or os.getenv("SSM_STORE_DATA_AT")
-        self.git_repository_location = git_repository_location or os.getenv(
-            "SSM_GIT_REPOSITORY_LOCATION"
-        )
+        self.github_token = github_token
+        self.github_repository = github_repository
+        self.store_data = store_data
+        self.git_repository_location = git_repository_location
 
+        print("git_repository_location", self.git_repository_location)
         print(
             f"Configuration: {self.git_provider} repository={self.github_repository} store_data={self.store_data}"
         )
 
         if not self.git_repository_location:
-            print("❌  You must export SSM_GIT_REPOSITORY_LOCATION before running.")
-            sys.exit(1)
+            raise ValueError(
+                "❌  You must provide git_repository_location before running."
+            )
 
         if not self.store_data:
-            print("❌  You must export SSM_STORE_DATA_AT before running.")
-            sys.exit(1)
+            raise ValueError("❌  You must provide store_data before running.")
 
         if self.git_provider.lower() == "github":
             if not self.github_token:
-                print("❌  You must export SSM_GITHUB_TOKEN before running.")
-                sys.exit(1)
+                raise ValueError("❌  You must provide git_provider before running.")
             # format: owner/repo
             if not self.github_repository:
-                print(
-                    "❌  Set SSM_GITHUB_REPOSITORY=owner/repo (e.g. octocat/Hello-World)"
+                raise ValueError(
+                    "❌ You must provide github_repository (e.g. octocat/Hello-World)"
                 )
-                sys.exit(1)
