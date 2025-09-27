@@ -2,7 +2,6 @@ from datetime import datetime, date, timezone
 from typing import List, Optional
 from pathlib import Path
 from infrastructure.configuration.configuration import Configuration
-
 from infrastructure.file_system_handler import FileSystemHandler
 
 
@@ -54,17 +53,15 @@ class BaseRepository:
                 else:
                     created_dt = created_dt.astimezone(timezone.utc)
             except Exception:
-                # if created_at cannot be parsed, skip this run
+                print(f"Could not parse created_at date: {created}")
                 continue
 
-            print(f"sd={sd}, ed={ed}, created_dt={created_dt}")
             if sd.date() <= created_dt.date() <= ed.date():
                 filtered.append(run)
 
         return filtered
 
     def __to_dt(self, v):
-        # accept None, datetime, date, or ISO string
         if v is None:
             return None
         if isinstance(v, datetime):
@@ -72,7 +69,6 @@ class BaseRepository:
                 return v.replace(tzinfo=timezone.utc)
             return v.astimezone(timezone.utc)
         if isinstance(v, date):
-            # convert date to datetime at midnight UTC
             return datetime(v.year, v.month, v.day, tzinfo=timezone.utc)
         if isinstance(v, str):
             try:

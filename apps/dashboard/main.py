@@ -22,9 +22,9 @@ start_end_date_picker = pn.widgets.DateRangePicker(
 anonymize = pn.widgets.Checkbox(name="Anonymize Data", value=False)
 
 
-header_section = pn.Column()
-header_section_prs = pn.Row(start_end_date_picker, sizing_mode="stretch_width")
-header_section_pipeline = pn.Row(start_end_date_picker, sizing_mode="stretch_width")
+header_section = pn.Row(start_end_date_picker, sizing_mode="stretch_width")
+header_section_prs = pn.Row()
+header_section_pipeline = pn.Row()
 
 insights_section = insights_section(configuration)
 pipeline_section = pipeline_section(start_end_date_picker, configuration)
@@ -33,10 +33,11 @@ source_code_section = source_code_section(configuration)
 configuration_section = configuration_section(configuration)
 
 template = MaterialTemplate(
-    title=f"Software Metrics Machine - {configuration.github_repository}"
+    title=f"Software Metrics Machine - {configuration.github_repository}",
+    sidebar=[header_section],
 )
 
-template.header.append(header_section)
+# template.header.append(header_section)
 
 template.main.append(
     pn.Tabs(
