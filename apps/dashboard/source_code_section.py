@@ -68,45 +68,46 @@ def plot_code_coupling_with_controls():
 
 
 # Update source_code_section to use the new plot_code_coupling_with_controls
-source_code_section = pn.Column(
-    "## Source code Section",
-    pn.Row(
-        pn.Column(
-            "## Code Churn",
-            pn.bind(
-                plot_code_churn,
+def source_code_section():
+    return pn.Column(
+        "## Source code Section",
+        pn.Row(
+            pn.Column(
+                "## Code Churn",
+                pn.bind(
+                    plot_code_churn,
+                ),
             ),
+            sizing_mode="stretch_width",
         ),
-        sizing_mode="stretch_width",
-    ),
-    pn.Row(
-        pn.Column(
-            "## Entity Churn",
-            pn.bind(
-                plot_entity_churn,
+        pn.Row(
+            pn.Column(
+                "## Entity Churn",
+                pn.bind(
+                    plot_entity_churn,
+                ),
             ),
+            sizing_mode="stretch_width",
         ),
-        sizing_mode="stretch_width",
-    ),
-    pn.Row(
-        pn.Column(
-            "## Entity Effort",
-            pn.bind(
-                plot_entity_effort,
+        pn.Row(
+            pn.Column(
+                "## Entity Effort",
+                pn.bind(
+                    plot_entity_effort,
+                ),
             ),
+            sizing_mode="stretch_width",
         ),
-        sizing_mode="stretch_width",
-    ),
-    pn.Row(
-        pn.Column(
-            "## Entity Ownership",
-            pn.bind(
-                plot_entity_ownership,
+        pn.Row(
+            pn.Column(
+                "## Entity Ownership",
+                pn.bind(
+                    plot_entity_ownership,
+                ),
             ),
+            sizing_mode="stretch_width",
         ),
-        sizing_mode="stretch_width",
-    ),
-    pn.Row(
-        plot_code_coupling_with_controls(),
-    ),
-)
+        pn.Row(
+            plot_code_coupling_with_controls(),
+        ),
+    )

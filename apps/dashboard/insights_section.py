@@ -3,7 +3,8 @@ import panel as pn
 pn.extension("tabulator")
 
 
-insights_section = pn.Column(
-    "## Insight section",
-    pn.Row(),
-)
+def insights_section():
+    return pn.Column(
+        "## Insight section",
+        pn.Row(),
+    )

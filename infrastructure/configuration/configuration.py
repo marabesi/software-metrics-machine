@@ -6,6 +6,8 @@ class Configuration:
         github_repository=None,
         store_data=None,
         git_repository_location=None,
+        target_pipeline=None,
+        target_job=None,
     ):
         self.git_provider = git_provider
         self.github_token = github_token
