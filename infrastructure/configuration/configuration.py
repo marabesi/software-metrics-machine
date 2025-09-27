@@ -26,10 +26,6 @@ class Configuration:
             raise ValueError(
                 "❌  You must provide git_repository_location before running."
             )
-
-        if not self.store_data:
-            raise ValueError("❌  You must provide store_data before running.")
-
         if self.git_provider.lower() == "github":
             if not self.github_token:
                 raise ValueError("❌  You must provide git_provider before running.")

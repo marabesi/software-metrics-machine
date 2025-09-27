@@ -12,7 +12,6 @@ class TestJsonConfigurationBased:
             git_provider="github",
             github_token="token",
             github_repository="owner/repo",
-            store_data="/tmp",
             git_repository_location="/my/repo",
         )
         assert True is file_system_handler.store_file("my_conf.json", configuration)
@@ -23,15 +22,15 @@ class TestJsonConfigurationBased:
             git_provider="github",
             github_token="token",
             github_repository="owner/repo",
-            store_data="/tmp",
             git_repository_location="/my/repo",
         )
         file = "my_conf.json"
+        configuration.store_data = str(tmp_path)
         file_system_handler.store_file(file, configuration)
 
         read_configuration = file_system_handler.read_file_if_exists(file)
         assert read_configuration.git_provider == "github"
         assert read_configuration.github_token == "token"
         assert read_configuration.github_repository == "owner/repo"
-        assert read_configuration.store_data == "/tmp"
+        assert read_configuration.store_data == str(tmp_path)
         assert read_configuration.git_repository_location == "/my/repo"

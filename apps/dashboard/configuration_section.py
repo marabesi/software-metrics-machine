@@ -14,13 +14,19 @@ def configuration_section(configuration: Configuration):
         :return: A Panel layout containing the form.
         """
         text_field_1 = pn.widgets.TextInput(
-            name="Field 1",
-            placeholder="Enter text for Field 1",
+            name="Repository",
+            placeholder="",
             value=configuration.github_repository,
             disabled=True,
         )
-        text_field_2 = pn.widgets.TextInput(
-            name="Field 2", placeholder="Enter text for Field 2"
+        text_field_2 = pn.widgets.TextAreaInput(
+            name="Data stored at",
+            placeholder="",
+            value=configuration.store_data,
+            rows=6,
+            auto_grow=True,
+            disabled=True,
+            max_rows=10,
         )
         save_button = pn.widgets.Button(name="Save", button_type="primary")
 
