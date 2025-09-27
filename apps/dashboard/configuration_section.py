@@ -1,9 +1,16 @@
 import panel as pn
 
+from infrastructure.configuration.configuration_builder import (
+    ConfigurationBuilder,
+    Driver,
+)
+
 pn.extension("tabulator")
 
 
 def configuration_section():
+
+    configuration = ConfigurationBuilder(Driver.JSON).build()
 
     def form_section():
         """
@@ -12,7 +19,10 @@ def configuration_section():
         :return: A Panel layout containing the form.
         """
         text_field_1 = pn.widgets.TextInput(
-            name="Field 1", placeholder="Enter text for Field 1", disabled=True
+            name="Field 1",
+            placeholder="Enter text for Field 1",
+            value=configuration.github_repository,
+            disabled=True,
         )
         text_field_2 = pn.widgets.TextInput(
             name="Field 2", placeholder="Enter text for Field 2"
