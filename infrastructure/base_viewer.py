@@ -8,7 +8,7 @@ import panel as pn
 class MatplotViewer:
 
     def get_fig_size(self):
-        return (9, 4)
+        return (10, 4)
 
     def output(self, plt, fig: Figure, out_file, repository: BaseRepository) -> Figure:
         if out_file:
@@ -35,7 +35,6 @@ class MatplotViewer:
             plt.close(fig)
             return fig
         else:
-            # fig.set_size_inches(8, 4)
             # return fig
             return pn.pane.Matplotlib(
                 fig, dpi=144, tight=True, format="svg", sizing_mode="stretch_width"

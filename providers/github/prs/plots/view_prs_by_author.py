@@ -19,8 +19,8 @@ class ViewPrsByAuthor(MatplotViewer):
         start_date: str | None = None,
         end_date: str | None = None,
     ) -> None:
-        prs = self.repository.filter_by_date_range(
-            self.repository.all_prs, start_date=start_date, end_date=end_date
+        prs = self.repository.prs_with_filters(
+            {"start_date": start_date, "end_date": end_date}
         )
 
         if not prs:

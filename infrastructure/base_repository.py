@@ -57,12 +57,9 @@ class BaseRepository:
                 # if created_at cannot be parsed, skip this run
                 continue
 
-            if sd and created_dt < sd:
-                continue
-            if ed and created_dt > ed:
-                continue
-
-            filtered.append(run)
+            print(f"sd={sd}, ed={ed}, created_dt={created_dt}")
+            if sd.date() <= created_dt.date() <= ed.date():
+                filtered.append(run)
 
         return filtered
 
