@@ -1,22 +1,22 @@
+import os
 from apps.cli.main import main
-from unittest.mock import patch
+
+from tests.file_handler_for_testing import FileHandlerForTesting
 
 
 class TestWorkflowsCliCommands:
-    def fetch_workflows_fake_response(self):
-        return [
-            {
-                "created_at": "2011-01-26T19:01:12Z",
-                "closed_at": "2011-01-26T19:01:12Z",
-            }
-        ]
 
     def test_can_run_fetch_workflows_command(self, cli):
         result = cli.invoke(main, ["workflows", "--help"])
         assert result.exit_code == 0
         assert "Show this message and exit" in result.output
 
-    def test_deployment_frequency_by_author(self, cli):
+    def test_deployment_frequency_by_author(self, cli, tmp_path):
+        os.environ["SSM_STORE_DATA_AT"] = str(tmp_path)
+
+        path_string = str(tmp_path)
+        os.environ["SSM_STORE_DATA_AT"] = path_string
+
         deployment_frequency = [
             {
                 "id": 1,
@@ -32,21 +32,20 @@ class TestWorkflowsCliCommands:
                 ],
             },
         ]
+        FileHandlerForTesting(path_string).store_file(
+            "workflows.json", deployment_frequency
+        )
 
-        with patch("requests.get") as mock_get:
-            mock_get.return_value.json.return_value = deployment_frequency
-            mock_get.return_value.status_code = 200
-
-            result = cli.invoke(
-                main,
-                [
-                    "workflows",
-                    "deployment-frequency",
-                    "--job-name",
-                    "Deploy",
-                    "--out-file",
-                    "deployment_frequency_out.png",
-                ],
-            )
-            assert result.exit_code == 0
-            assert "Loaded 2 jobs" in result.output
+        result = cli.invoke(
+            main,
+            [
+                "workflows",
+                "deployment-frequency",
+                "--job-name",
+                "Deploy",
+                "--out-file",
+                "deployment_frequency_out.png",
+            ],
+        )
+        assert result.exit_code == 0
+        assert "Loaded 1 runs" in result.output
