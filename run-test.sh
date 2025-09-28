@@ -12,9 +12,20 @@ mkdir -p "$(pwd)/tmp_test/repo"
 cp -R "$(pwd)/fixtures/github" "$(pwd)/tmp_test"
 
 export SMM_STORE_DATA_AT="$(pwd)/tmp_test/github"
-export SSM_GIT_REPOSITORY_LOCATION="$(pwd)/tmp_test/repo"
-export SSM_GITHUB_REPOSITORY="fake/repo-test"
-export SSM_GITHUB_TOKEN="fake-token"
+
+TEMPLATE=$(cat <<EOF
+{
+  "git_provider": "github",
+  "github_token": "fake-token",
+  "github_repository": "fake-repo-test",
+  "git_repository_location": "$(pwd)/tmp_test/repo",
+  "deployment_frequency_target_pipeline": "",
+  "deployment_frequency_target_job": ""
+}
+EOF
+)
+
+echo "$TEMPLATE" > "$(pwd)/tmp_test/github/smm_config.json"
 
 echo "Running tests..."
 export PYTHONPATH="$(pwd):$PYTHONPATH"
