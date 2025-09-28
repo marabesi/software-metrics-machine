@@ -13,6 +13,13 @@ pn.extension("tabulator")
 def source_code_section(configuration: Configuration, start_end_date_picker):
     repository = CodemaatRepository(configuration=configuration)
 
+    ignore_pattern_files = pn.widgets.TextAreaInput(
+        placeholder="Ignore file patterns (comma-separated) - e.g. *.json,**/**/*.png",
+        rows=6,
+        auto_grow=True,
+        max_rows=10,
+    )
+
     def plot_code_churn(date_range_picker):
         return CodeChurnViewer().render(
             repository=repository,
@@ -20,18 +27,20 @@ def source_code_section(configuration: Configuration, start_end_date_picker):
             end_date=date_range_picker[1],
         )
 
-    def plot_entity_churn():
-        return EntityChurnViewer().render(repo=repository)
+    def plot_entity_churn(ignore_pattern):
+        return EntityChurnViewer().render(repo=repository, ignore_files=ignore_pattern)
 
-    def plot_entity_effort():
+    def plot_entity_effort(ignore_pattern):
         return EntityEffortViewer().render_treemap(
             top_n=10,
             repo=repository,
+            ignore_files=ignore_pattern,
         )
 
-    def plot_entity_ownership():
+    def plot_entity_ownership(ignore_pattern):
         return EntityOnershipViewer().render(
             repo=repository,
+            ignore_files=ignore_pattern,
         )
 
     # Refactor plot_code_coupling to include zoom and pan controls using Panel sliders
@@ -79,12 +88,11 @@ def source_code_section(configuration: Configuration, start_end_date_picker):
             ),
             sizing_mode="stretch_width",
         ),
+        pn.Row(ignore_pattern_files),
         pn.Row(
             pn.Column(
                 "## Entity Churn",
-                pn.bind(
-                    plot_entity_churn,
-                ),
+                pn.bind(plot_entity_churn, ignore_pattern_files),
             ),
             sizing_mode="stretch_width",
         ),

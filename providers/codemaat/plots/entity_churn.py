@@ -17,6 +17,7 @@ class EntityChurnViewer(MatplotViewer, Viewable):
     ) -> None:
         df = repo.get_entity_churn()
 
+        print(f"Ignore patterns: {ignore_files}")
         if df.empty:
             print("No entity churn data available to plot")
             return None

@@ -52,7 +52,7 @@ class CodemaatRepository(BaseRepository):
         return pd.read_csv(file_path)
 
     def apply_ignore_file_patterns(
-        self, df: typing.Any, ignore_files: str | None
+        self, df: pd.DataFrame, ignore_files: str | None
     ) -> typing.Any:
         ignore_patterns: typing.List[str] = ignore_files or []
         if ignore_patterns:

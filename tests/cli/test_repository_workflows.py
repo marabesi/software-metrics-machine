@@ -1,5 +1,7 @@
 from unittest.mock import patch
 
+import pytest
+
 from providers.github.workflows.repository_workflows import LoadWorkflows
 from tests.builders import as_json_string
 from tests.in_memory_configuration import InMemoryConfiguration
@@ -143,6 +145,10 @@ class TestRepositoryWorkflows:
             )
             assert "2023-10" in result["months"]
             assert "2023-W39" in result["weeks"]
+
+    @pytest.mark.skip(reason="Not implemented yet")
+    def test_should_calculate_all_weeks_between_two_dates_when_data_exists(self):
+        pass
 
     def test_should_not_compute_when_job_failed(self):
         single_deployment = as_json_string(
