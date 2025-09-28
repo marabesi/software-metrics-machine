@@ -14,8 +14,9 @@ class TestWorkflowsCliCommands:
         result = cli.invoke(main, ["workflows", "--help"])
         assert 0 == result.exit_code
         assert "Show this message and exit" in result.output
+        assert "" == result.stderr
 
-    def test_deployment_frequency_by_author(self, cli, tmp_path):
+    def test_deployment_frequency_by_job(self, cli, tmp_path):
         path_string = str(tmp_path)
         os.environ["SMM_STORE_DATA_AT"] = path_string
         ConfigurationFileSystemHandler(path_string).store_file(

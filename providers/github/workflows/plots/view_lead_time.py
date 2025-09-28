@@ -1,15 +1,9 @@
 from datetime import datetime
-from typing import NamedTuple
 import matplotlib.pyplot as plt
 import pandas as pd
 
-from infrastructure.base_viewer import MatplotViewer
+from infrastructure.base_viewer import MatplotViewer, PlotResult
 from providers.github.workflows.repository_workflows import LoadWorkflows
-
-
-class PlotResult(NamedTuple):
-    matplotlib: plt.Figure
-    data: pd.DataFrame
 
 
 class ViewLeadTime(MatplotViewer):
