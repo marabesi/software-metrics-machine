@@ -47,7 +47,7 @@ template.main.append(
         ("Source code", source_code_section),
         ("Configuration", configuration_section),
         sizing_mode="stretch_width",
-        active=1,
+        active=3,
     )
 )
 
