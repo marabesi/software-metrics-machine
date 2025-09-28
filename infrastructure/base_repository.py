@@ -8,7 +8,7 @@ from infrastructure.file_system_handler import FileSystemHandler
 class BaseRepository:
 
     def __init__(self, configuration: Configuration):
-        self.default_dir = configuration.store_data
+        self.default_dir = str(configuration.store_data)
         self.file_system_handler = FileSystemHandler(self.default_dir)
         self.configuration = configuration
 

@@ -8,9 +8,10 @@ from providers.github.workflows.repository_workflows import LoadWorkflows
 
 
 def fetch_all_job_runs(start_date, end_date, raw_filters):
-    client = GithubClient(configuration=ConfigurationBuilder(driver=Driver.CLI).build())
+    configuration = ConfigurationBuilder(driver=Driver.CLI).build()
+    client = GithubClient(configuration=configuration)
     client.fetch_jobs_for_workflows(
-        LoadWorkflows(),
+        LoadWorkflows(configuration=configuration),
         start_date=start_date,
         end_date=end_date,
         raw_filters=raw_filters,
@@ -21,13 +22,15 @@ def fetch_all_job_runs(start_date, end_date, raw_filters):
 @click.option(
     "--start-date",
     type=str,
-    required=True,
+    required=False,
+    default=None,
     help="Start date (inclusive) in YYYY-MM-DD",
 )
 @click.option(
     "--end-date",
     type=str,
-    required=True,
+    required=False,
+    default=None,
     help="End date (inclusive) in YYYY-MM-DD",
 )
 @click.option(

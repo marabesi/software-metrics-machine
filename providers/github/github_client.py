@@ -202,12 +202,13 @@ class GithubClient:
                     url = f"https://api.github.com/repos/{self.repository_slug}/actions/runs/{run_id}/jobs?per_page=100"
 
                 while url:
-                    print(f" run {run_counter} of {total_runs}  → fetching {url}")
+                    print(f" run {run_counter} of {total_runs} → fetching {url}")
                     r = requests.get(
                         url, headers=self.HEADERS, params={**params} if params else None
                     )
                     r.raise_for_status()
                     data = r.json()
+
                     page_jobs = data.get("jobs", [])
                     if page_jobs:
                         all_jobs.extend(page_jobs)
@@ -223,8 +224,6 @@ class GithubClient:
                             "partial": {"run_id": run_id, "next_url": next_url},
                         }
                         workflows.store_file("jobs_progress.json", prog)
-
-                        # persist jobs so far
                         workflows.store_file("jobs_incompleted.json", all_jobs)
 
                         url = next_url
@@ -245,7 +244,7 @@ class GithubClient:
             # on any failure, ensure progress and jobs are persisted before raising
             prog = {"processed_run_ids": list(processed_runs), "partial": partial}
             workflows.store_file("jobs_progress.json", prog)
-            workflows.store_file(jobs_json_path_incompleted, all_jobs)
+            # workflows.store_file(jobs_json_path_incompleted, all_jobs)
             raise
 
         # completed all runs successfully; remove progress file

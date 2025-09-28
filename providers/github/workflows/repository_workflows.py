@@ -51,6 +51,8 @@ class LoadWorkflows(BaseRepository):
         if start_date and end_date:
             return super().filter_by_date_range(self.all_runs, start_date, end_date)
 
+        return self.all_runs
+
     def filter_by_job_name(
         self, jobs: List[dict], job_name: Iterable[str]
     ) -> List[dict]:
