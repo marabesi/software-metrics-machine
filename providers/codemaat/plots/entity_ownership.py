@@ -1,4 +1,5 @@
 import matplotlib.pyplot as plt
+import pandas as pd
 
 from infrastructure.base_viewer import MatplotViewer
 from infrastructure.viewable import Viewable
@@ -17,6 +18,8 @@ class EntityOnershipViewer(MatplotViewer, Viewable):
         df = repo.get_entity_ownership(authors.split(",") if authors else [])
 
         if df.empty:
+            # Create an empty DataFrame with expected columns
+            df = pd.DataFrame(columns=["entity", "author", "added", "deleted"])
             print("No entity ownership data available to plot")
 
         df = repo.apply_ignore_file_patterns(df, ignore_files)
