@@ -20,7 +20,7 @@ class TestCliCommands:
 
     def test_can_run_fetch_prs_command(self, cli):
         result = cli.invoke(main, ["--help"])
-        assert result.exit_code == 0
+        assert 0 == result.exit_code
         assert "Show this message and exit" in result.output
 
     def test_fetch_prs_from_last_three_months(self, cli, tmp_path):
@@ -85,7 +85,7 @@ class TestCliCommands:
                 "output.png",
             ],
         )
-        assert result.exit_code == 0
+        assert 0 == result.exit_code
         assert "Loaded 2 PRs" in result.output
 
     def test_with_stored_data_review_time_by_author(self, cli, tmp_path):
@@ -119,7 +119,7 @@ class TestCliCommands:
                 "output.png",
             ],
         )
-        assert result.exit_code == 0
+        assert 0 == result.exit_code
         assert "Loaded 2 PRs" in result.output
 
     def test_with_stored_data__summary(self, cli, tmp_path):
@@ -155,7 +155,7 @@ class TestCliCommands:
                 "text",
             ],
         )
-        assert result.exit_code == 0
+        assert 0 == result.exit_code
         assert "Loaded 2 PRs" in result.output
 
     def test_with_stored_data_plot_average_prs_open_by(self, cli, tmp_path):
@@ -191,6 +191,6 @@ class TestCliCommands:
                 "month",
             ],
         )
-        assert result.exit_code == 0
+        assert 0 == result.exit_code
         assert "Loaded 2 PRs" in result.output
         assert "Filtered PRs count: 2" in result.output

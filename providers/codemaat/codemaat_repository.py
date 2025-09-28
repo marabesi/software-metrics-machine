@@ -12,11 +12,20 @@ class CodemaatRepository(BaseRepository):
         self.configuration = configuration
         super().__init__(configuration=self.configuration)
 
-    def get_code_churn(self):
+    def get_code_churn(self, filters: None = None):
         file_path = Path(f"{self.configuration.store_data}/abs-churn.csv")
         if not file_path.exists():
             return pd.DataFrame()
-        return pd.read_csv(file_path)
+        data = pd.read_csv(file_path)
+        if filters:
+            start_date = filters.get("start_date")
+            end_date = filters.get("end_date")
+            if start_date and end_date:
+                sd = pd.to_datetime(start_date).date()
+                ed = pd.to_datetime(end_date).date()
+                data["date"] = pd.to_datetime(data["date"]).dt.date
+                data = data[(data["date"] >= sd) & (data["date"] <= ed)]
+        return data
 
     def get_coupling(self):
         file_path = Path(f"{self.configuration.store_data}/coupling.csv")

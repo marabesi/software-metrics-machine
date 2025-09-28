@@ -12,7 +12,7 @@ class TestWorkflowsCliCommands:
 
     def test_can_run_fetch_workflows_command(self, cli):
         result = cli.invoke(main, ["workflows", "--help"])
-        assert result.exit_code == 0
+        assert 0 == result.exit_code
         assert "Show this message and exit" in result.output
 
     def test_deployment_frequency_by_author(self, cli, tmp_path):
@@ -59,5 +59,5 @@ class TestWorkflowsCliCommands:
                 "deployment_frequency_out.png",
             ],
         )
-        assert result.exit_code == 0
+        assert 0 == result.exit_code
         assert "Loaded 1 runs" in result.output

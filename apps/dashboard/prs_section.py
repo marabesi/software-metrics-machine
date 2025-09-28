@@ -86,7 +86,6 @@ def prs_section(date_range_picker, configuration: Configuration, anonymize=False
     return pn.Column(
         "## PRs Section",
         pn.Row(
-            pn.Column(date_range_picker, sizing_mode="stretch_width"),
             pn.Column(author_select, sizing_mode="stretch_width"),
             pn.Column(label_selector, sizing_mode="stretch_width"),
         ),
