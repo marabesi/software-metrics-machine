@@ -42,16 +42,16 @@ class ViewDeploymentFrequency(MatplotViewer):
 
         print(f"Filtered to {len(runs)} runs after applying workflow path filter")
 
-        df = self.repository.get_deployment_frequency_for_job(
+        aggregated = self.repository.get_deployment_frequency_for_job(
             job_name=job_name, filters=filters
         )
 
-        weekly_counts = df["weekly_counts"]
-        monthly_counts = df["monthly_counts"]
-        weeks = df["weeks"]
-        months = df["months"]
+        weekly_counts = aggregated["weekly_counts"]
+        monthly_counts = aggregated["monthly_counts"]
+        weeks = aggregated["weeks"]
+        months = aggregated["months"]
 
-        fig, ax = plt.subplots(2, 1, figsize=super().get_fig_size(), sharex=True)
+        fig, ax = plt.subplots(2, 1, figsize=super().get_fig_size())
 
         ax[0].bar(weeks, weekly_counts, color="blue")
         ax[0].set_title("Weekly Deployment Frequency")
