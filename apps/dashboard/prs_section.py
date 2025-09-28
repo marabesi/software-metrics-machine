@@ -74,12 +74,14 @@ def prs_section(date_range_picker, configuration: Configuration, anonymize=False
     author_select = pn.widgets.MultiChoice(
         name="Select Authors",
         options=unique_authors,
+        placeholder="Select authors to filter, by the default all are included",
         value=[],
     )
 
     label_selector = pn.widgets.MultiChoice(
         name="Select Labels",
         options=label_names,
+        placeholder="Select labels to filter, by the default all are included",
         value=[],
     )
 

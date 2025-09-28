@@ -28,13 +28,25 @@ from providers.codemaat.plots.entity_ownership import EntityOnershipViewer
     default=None,
     help="Optional comma-separated glob patterns to ignore (e.g. '*.json,**/**/*.png')",
 )
-def entity_ownership(out_file, top, ignore_files):
+@click.option(
+    "--authors",
+    type=str,
+    default=None,
+    help="Optional comma-separated list of authors to filter by (e.g. 'Jane,John')",
+)
+def entity_ownership(out_file, top, ignore_files, authors):
     """Plot entity (File) ownership."""
     viewer = EntityOnershipViewer()
     df_repo = CodemaatRepository(
         configuration=ConfigurationBuilder(Driver.JSON).build()
     )
-    viewer.render(df_repo, top_n=top, ignore_files=ignore_files, out_file=out_file)
+    viewer.render(
+        df_repo,
+        top_n=top,
+        ignore_files=ignore_files,
+        out_file=out_file,
+        authors=authors,
+    )
 
 
 command = entity_ownership

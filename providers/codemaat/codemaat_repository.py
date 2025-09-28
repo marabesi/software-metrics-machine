@@ -1,7 +1,7 @@
 import pandas as pd
 from pathlib import Path
 from pathlib import PurePosixPath
-import typing
+from typing import List, Any
 
 from infrastructure.base_repository import BaseRepository
 from infrastructure.configuration.configuration import Configuration
@@ -45,16 +45,23 @@ class CodemaatRepository(BaseRepository):
             return pd.DataFrame()
         return pd.read_csv(file_path)
 
-    def get_entity_ownership(self):
+    def get_entity_ownership(self, authors: List[str] = []):
         file_path = Path(f"{self.configuration.store_data}/entity-ownership.csv")
         if not file_path.exists():
             return pd.DataFrame()
-        return pd.read_csv(file_path)
+        data = pd.read_csv(file_path)
+        return data[data["author"].isin(authors)] if authors else data
+
+    def get_entity_ownership_unique_authors(self):
+        df = self.get_entity_ownership()
+        if df.empty:
+            return []
+        return df["author"].dropna().unique().tolist()
 
     def apply_ignore_file_patterns(
         self, df: pd.DataFrame, ignore_files: str | None
-    ) -> typing.Any:
-        ignore_patterns: typing.List[str] = ignore_files or []
+    ) -> Any:
+        ignore_patterns: List[str] = ignore_files or []
         if ignore_patterns:
             # normalize patterns list (split by comma if necessary)
             if isinstance(ignore_patterns, str):

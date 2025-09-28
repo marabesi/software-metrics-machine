@@ -20,12 +20,19 @@ def source_code_section(configuration: Configuration, start_end_date_picker):
         max_rows=10,
     )
 
+    author_select = pn.widgets.MultiChoice(
+        name="Select Authors",
+        placeholder="Select authors to filter, by the default all are included",
+        options=repository.get_entity_ownership_unique_authors(),
+        value=[],
+    )
+
     # Add a select input for pre-selected values
     pre_selected_values = pn.widgets.Select(
         name="Ignore patterns",
         options={
             "None": "",
-            "Js/Ts projects": "*.json,**/**/*.png,*.snap,*.yml.*.yaml",
+            "Js/Ts projects": "*.json,**/**/*.png,*.snap,*.yml,*.yaml,*.md",
             "Python and Markdown": "*.py,*.md",
             "All Text Files": "*.txt,*.log",
         },
@@ -54,10 +61,11 @@ def source_code_section(configuration: Configuration, start_end_date_picker):
             ignore_files=ignore_pattern,
         )
 
-    def plot_entity_ownership(ignore_pattern):
+    def plot_entity_ownership(ignore_pattern, authors):
         return EntityOnershipViewer().render(
             repo=repository,
             ignore_files=ignore_pattern,
+            authors=",".join(authors),
         )
 
     # Refactor plot_code_coupling to include zoom and pan controls using Panel sliders
@@ -120,10 +128,11 @@ def source_code_section(configuration: Configuration, start_end_date_picker):
             ),
             sizing_mode="stretch_width",
         ),
+        pn.Row(author_select, sizing_mode="stretch_width"),
         pn.Row(
             pn.Column(
                 "## Entity Ownership",
-                pn.bind(plot_entity_ownership, ignore_pattern_files),
+                pn.bind(plot_entity_ownership, ignore_pattern_files, author_select),
             ),
             sizing_mode="stretch_width",
         ),

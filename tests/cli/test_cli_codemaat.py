@@ -127,3 +127,48 @@ class TestCliCommands:
             ["codemaat", "entity-ownership", "--out-file", "entity_ownership.png"],
         )
         assert "No entity ownership data available to plot" in result.output
+
+    def test_list_the_number_of_revision_found_for_entity_ownership(
+        self, cli, tmp_path
+    ):
+        path_string = str(tmp_path)
+        os.environ["SMM_STORE_DATA_AT"] = path_string
+        ConfigurationFileSystemHandler(path_string).store_file(
+            "smm_config.json", InMemoryConfiguration(path_string)
+        )
+
+        csv_data = """entity,author,added,deleted
+file.txt,John,10,2"""
+        FileHandlerForTesting(path_string).store_file("entity-ownership.csv", csv_data)
+
+        result = cli.invoke(
+            main,
+            ["codemaat", "entity-ownership", "--out-file", "entity_ownership.png"],
+        )
+
+        assert "Found 1 row for entity ownership" in result.output
+
+    def test_filter_entity_ownership_by_author(self, cli, tmp_path):
+        path_string = str(tmp_path)
+        os.environ["SMM_STORE_DATA_AT"] = path_string
+        ConfigurationFileSystemHandler(path_string).store_file(
+            "smm_config.json", InMemoryConfiguration(path_string)
+        )
+
+        csv_data = """entity,author,added,deleted
+file.txt,John,10,2"""
+        FileHandlerForTesting(path_string).store_file("entity-ownership.csv", csv_data)
+
+        result = cli.invoke(
+            main,
+            [
+                "codemaat",
+                "entity-ownership",
+                "--out-file",
+                "entity_ownership.png",
+                "--authors",
+                "Jane",
+            ],
+        )
+
+        assert "Found 0 row for entity ownership" in result.output

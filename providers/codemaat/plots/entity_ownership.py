@@ -12,14 +12,16 @@ class EntityOnershipViewer(MatplotViewer, Viewable):
         top_n: int = 30,
         ignore_files: str | None = None,
         out_file: str | None = None,
+        authors: str | None = None,
     ) -> None:
-        df = repo.get_entity_ownership()
+        df = repo.get_entity_ownership(authors.split(",") if authors else [])
 
         if df.empty:
             print("No entity ownership data available to plot")
-            return None
 
         df = repo.apply_ignore_file_patterns(df, ignore_files)
+
+        print(f"Found {len(df)} row for entity ownership")
 
         ownership = (
             df.groupby(["entity", "author"])[["added", "deleted"]].sum().reset_index()

@@ -92,3 +92,70 @@ class TestCodemaatRepository:
                 )
 
                 assert 1 == len(df["date"])
+
+    def test_return_empty_list_when_no_authors_are_found(self):
+        with patch("pathlib.Path.exists", return_value=True):
+            mock_df = pd.DataFrame()
+
+            with patch("pandas.read_csv", return_value=mock_df):
+                repository = CodemaatRepository(
+                    configuration=InMemoryConfiguration(store_data=".")
+                )
+
+                df = repository.get_entity_ownership_unique_authors()
+
+                assert [] == df
+
+    def test_return_unique_authors(self):
+        with patch("pathlib.Path.exists", return_value=True):
+            mock_df = pd.DataFrame(
+                {
+                    "entity": ["file.txt", "file2.txt", "file3.txt"],
+                    "author": ["Author1", "Author1", "Author2"],
+                }
+            )
+
+            with patch("pandas.read_csv", return_value=mock_df):
+                repository = CodemaatRepository(
+                    configuration=InMemoryConfiguration(store_data=".")
+                )
+
+                df = repository.get_entity_ownership_unique_authors()
+
+                assert ["Author1", "Author2"] == df
+
+    def test_should_filter_entity_effort_by_author(self):
+        with patch("pathlib.Path.exists", return_value=True):
+            mock_df = pd.DataFrame(
+                {
+                    "entity": ["file.txt", "file2.txt", "file3.txt"],
+                    "author": ["Author1", "Author1", "Author2"],
+                }
+            )
+
+            with patch("pandas.read_csv", return_value=mock_df):
+                repository = CodemaatRepository(
+                    configuration=InMemoryConfiguration(store_data=".")
+                )
+
+                df = repository.get_entity_ownership(["Author2"])
+
+                assert 1 == len(df)
+
+    def test_should_return_all_items_when_empty_authors_is_given(self):
+        with patch("pathlib.Path.exists", return_value=True):
+            mock_df = pd.DataFrame(
+                {
+                    "entity": ["file.txt", "file2.txt", "file3.txt"],
+                    "author": ["Author1", "Author1", "Author2"],
+                }
+            )
+
+            with patch("pandas.read_csv", return_value=mock_df):
+                repository = CodemaatRepository(
+                    configuration=InMemoryConfiguration(store_data=".")
+                )
+
+                df = repository.get_entity_ownership([])
+
+                assert 3 == len(df)
