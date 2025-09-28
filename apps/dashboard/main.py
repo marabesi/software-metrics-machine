@@ -29,7 +29,7 @@ header_section_pipeline = pn.Row()
 insights_section = insights_section(configuration)
 pipeline_section = pipeline_section(start_end_date_picker, configuration)
 prs_section = prs_section(start_end_date_picker, configuration, anonymize=anonymize)
-source_code_section = source_code_section(configuration)
+source_code_section = source_code_section(configuration, start_end_date_picker)
 configuration_section = configuration_section(configuration)
 
 template = MaterialTemplate(

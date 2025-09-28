@@ -10,11 +10,15 @@ from providers.codemaat.codemaat_repository import CodemaatRepository
 pn.extension("tabulator")
 
 
-def source_code_section(configuration: Configuration):
+def source_code_section(configuration: Configuration, start_end_date_picker):
     repository = CodemaatRepository(configuration=configuration)
 
-    def plot_code_churn():
-        return CodeChurnViewer().render(repository=repository)
+    def plot_code_churn(date_range_picker):
+        return CodeChurnViewer().render(
+            repository=repository,
+            start_date=date_range_picker[0],
+            end_date=date_range_picker[1],
+        )
 
     def plot_entity_churn():
         return EntityChurnViewer().render(repo=repository)
@@ -71,9 +75,7 @@ def source_code_section(configuration: Configuration):
         pn.Row(
             pn.Column(
                 "## Code Churn",
-                pn.bind(
-                    plot_code_churn,
-                ),
+                pn.bind(plot_code_churn, start_end_date_picker),
             ),
             sizing_mode="stretch_width",
         ),

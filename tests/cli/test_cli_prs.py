@@ -70,7 +70,9 @@ class TestCliCommands:
                 "closed_at": "2011-01-26T19:01:12Z",
             },
         ]
-        FileHandlerForTesting(path_string).store_file("prs.json", pull_requests_data)
+        FileHandlerForTesting(path_string).store_json_file(
+            "prs.json", pull_requests_data
+        )
 
         result = cli.invoke(
             main,
@@ -104,7 +106,9 @@ class TestCliCommands:
                 "closed_at": "2011-01-26T19:01:12Z",
             },
         ]
-        FileHandlerForTesting(path_string).store_file("prs.json", pull_requests_data)
+        FileHandlerForTesting(path_string).store_json_file(
+            "prs.json", pull_requests_data
+        )
 
         result = cli.invoke(
             main,
@@ -138,7 +142,9 @@ class TestCliCommands:
                 "closed_at": "2011-01-26T19:01:12Z",
             },
         ]
-        FileHandlerForTesting(path_string).store_file("prs.json", pull_requests_data)
+        FileHandlerForTesting(path_string).store_json_file(
+            "prs.json", pull_requests_data
+        )
 
         result = cli.invoke(
             main,
@@ -174,7 +180,9 @@ class TestCliCommands:
                 "closed_at": "2011-01-26T19:01:12Z",
             },
         ]
-        FileHandlerForTesting(path_string).store_file("prs.json", pull_requests_data)
+        FileHandlerForTesting(path_string).store_json_file(
+            "prs.json", pull_requests_data
+        )
 
         result = cli.invoke(
             main,

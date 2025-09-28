@@ -13,11 +13,10 @@ class CodeChurnViewer(MatplotViewer, Viewable):
         start_date: str | None = None,
         end_date: str | None = None,
     ) -> None:
-        df = repository.get_code_churn()
+        df = repository.get_code_churn({"start_date": start_date, "end_date": end_date})
 
         if df.empty:
             print("No code churn data available to plot")
-            return
 
         dates = df["date"]
         added = df["added"]

@@ -8,12 +8,21 @@ class FileHandlerForTesting:
     def __init__(self, path):
         self.default_dir = str(path)
 
-    def store_file(self, file: str, data: str) -> bool:
+    def store_json_file(self, file: str, data: str) -> bool:
         final_path = self.default_dir + "/" + file
         p = Path(final_path)
 
         with p.open("w", encoding="utf-8") as f:
             json.dump(data, f, indent=2)
+        print(f"  → Data written to {p}")
+        return True
+
+    def store_file(self, file: str, data: str) -> bool:
+        final_path = self.default_dir + "/" + file
+        p = Path(final_path)
+
+        with p.open("w", encoding="utf-8") as f:
+            f.write(data)
         print(f"  → Data written to {p}")
         return True
 

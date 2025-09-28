@@ -16,11 +16,25 @@ from providers.codemaat.codemaat_repository import CodemaatRepository
     default=None,
     help="Optional path to save the plot image",
 )
-def code_churn(out_file):
+@click.option(
+    "--start-date",
+    type=str,
+    default=None,
+    help="Filter code churn data on or after this date (ISO 8601)",
+)
+@click.option(
+    "--end-date",
+    type=str,
+    default=None,
+    help="Filter code churn data on or before this date (ISO 8601)",
+)
+def code_churn(out_file, start_date, end_date):
     """Plot the code churn rate over time."""
     return CodeChurnViewer().render(
         CodemaatRepository(configuration=ConfigurationBuilder(Driver.JSON).build()),
         out_file=out_file,
+        start_date=start_date,
+        end_date=end_date,
     )
 
 

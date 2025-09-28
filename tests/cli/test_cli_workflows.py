@@ -30,11 +30,11 @@ class TestWorkflowsCliCommands:
                 "created_at": "2023-10-01T12:00:00Z",
             },
         ]
-        FileHandlerForTesting(path_string).store_file(
+        FileHandlerForTesting(path_string).store_json_file(
             "workflows.json", single_deployment_frequency
         )
 
-        FileHandlerForTesting(path_string).store_file(
+        FileHandlerForTesting(path_string).store_json_file(
             "jobs.json",
             [
                 {
