@@ -20,6 +20,23 @@ def source_code_section(configuration: Configuration, start_end_date_picker):
         max_rows=10,
     )
 
+    # Add a select input for pre-selected values
+    pre_selected_values = pn.widgets.Select(
+        name="Ignore patterns",
+        options={
+            "None": "",
+            "Js/Ts projects": "*.json,**/**/*.png,*.snap,*.yml.*.yaml",
+            "Python and Markdown": "*.py,*.md",
+            "All Text Files": "*.txt,*.log",
+        },
+        value="",
+    )
+
+    def update_ignore_pattern(event):
+        ignore_pattern_files.value = event.new
+
+    pre_selected_values.param.watch(update_ignore_pattern, "value")
+
     def plot_code_churn(date_range_picker):
         return CodeChurnViewer().render(
             repository=repository,
@@ -88,7 +105,7 @@ def source_code_section(configuration: Configuration, start_end_date_picker):
             ),
             sizing_mode="stretch_width",
         ),
-        pn.Row(ignore_pattern_files),
+        pn.Row(ignore_pattern_files, pre_selected_values, sizing_mode="stretch_width"),
         pn.Row(
             pn.Column(
                 "## Entity Churn",
@@ -99,18 +116,14 @@ def source_code_section(configuration: Configuration, start_end_date_picker):
         pn.Row(
             pn.Column(
                 "## Entity Effort",
-                pn.bind(
-                    plot_entity_effort,
-                ),
+                pn.bind(plot_entity_effort, ignore_pattern_files),
             ),
             sizing_mode="stretch_width",
         ),
         pn.Row(
             pn.Column(
                 "## Entity Ownership",
-                pn.bind(
-                    plot_entity_ownership,
-                ),
+                pn.bind(plot_entity_ownership, ignore_pattern_files),
             ),
             sizing_mode="stretch_width",
         ),
