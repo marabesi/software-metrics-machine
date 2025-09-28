@@ -28,12 +28,10 @@ class ViewWorkflowByStatus(MatplotViewer):
                 r for r in runs if (r.get("path") or "").lower().find(name_low) != -1
             ]
 
-        # workflow conclusions
         status_counts = Counter(run.get("conclusion") or "undefined" for run in runs)
 
         print(f"Total workflow runs after filters: {len(runs)}")
 
-        print("Workflow status counts:", status_counts)
         fig, ax = plt.subplots(figsize=super().get_fig_size())
         bars = ax.bar(
             list(status_counts.keys()), list(status_counts.values()), color="skyblue"

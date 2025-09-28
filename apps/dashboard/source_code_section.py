@@ -27,7 +27,6 @@ def source_code_section(configuration: Configuration, start_end_date_picker):
         value=[],
     )
 
-    # Add a select input for pre-selected values
     pre_selected_values = pn.widgets.Select(
         name="Ignore patterns",
         options={
@@ -37,6 +36,18 @@ def source_code_section(configuration: Configuration, start_end_date_picker):
             "All Text Files": "*.txt,*.log",
         },
         value="",
+    )
+
+    top_entries = pn.widgets.Select(
+        name="Limit to top N entries",
+        options={
+            "10": "10",
+            "20": "20",
+            "50": "50",
+            "100": "100",
+            "1000": "1000",
+        },
+        value="10",
     )
 
     def update_ignore_pattern(event):
@@ -51,21 +62,24 @@ def source_code_section(configuration: Configuration, start_end_date_picker):
             end_date=date_range_picker[1],
         )
 
-    def plot_entity_churn(ignore_pattern):
-        return EntityChurnViewer().render(repo=repository, ignore_files=ignore_pattern)
+    def plot_entity_churn(ignore_pattern, top):
+        return EntityChurnViewer().render(
+            repo=repository, ignore_files=ignore_pattern, top_n=int(top)
+        )
 
-    def plot_entity_effort(ignore_pattern):
+    def plot_entity_effort(ignore_pattern, top):
         return EntityEffortViewer().render_treemap(
-            top_n=10,
+            top_n=int(top),
             repo=repository,
             ignore_files=ignore_pattern,
         )
 
-    def plot_entity_ownership(ignore_pattern, authors):
+    def plot_entity_ownership(ignore_pattern, authors, top):
         return EntityOnershipViewer().render(
             repo=repository,
             ignore_files=ignore_pattern,
             authors=",".join(authors),
+            top_n=int(top),
         )
 
     # Refactor plot_code_coupling to include zoom and pan controls using Panel sliders
@@ -113,18 +127,23 @@ def source_code_section(configuration: Configuration, start_end_date_picker):
             ),
             sizing_mode="stretch_width",
         ),
-        pn.Row(ignore_pattern_files, pre_selected_values, sizing_mode="stretch_width"),
+        pn.Row(
+            ignore_pattern_files,
+            pre_selected_values,
+            top_entries,
+            sizing_mode="stretch_width",
+        ),
         pn.Row(
             pn.Column(
                 "## Entity Churn",
-                pn.bind(plot_entity_churn, ignore_pattern_files),
+                pn.bind(plot_entity_churn, ignore_pattern_files, top_entries),
             ),
             sizing_mode="stretch_width",
         ),
         pn.Row(
             pn.Column(
                 "## Entity Effort",
-                pn.bind(plot_entity_effort, ignore_pattern_files),
+                pn.bind(plot_entity_effort, ignore_pattern_files, top_entries),
             ),
             sizing_mode="stretch_width",
         ),
@@ -132,7 +151,12 @@ def source_code_section(configuration: Configuration, start_end_date_picker):
         pn.Row(
             pn.Column(
                 "## Entity Ownership",
-                pn.bind(plot_entity_ownership, ignore_pattern_files, author_select),
+                pn.bind(
+                    plot_entity_ownership,
+                    ignore_pattern_files,
+                    author_select,
+                    top_entries,
+                ),
             ),
             sizing_mode="stretch_width",
         ),
