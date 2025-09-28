@@ -1,4 +1,5 @@
 import matplotlib.pyplot as plt
+from datetime import datetime
 
 from infrastructure.base_viewer import MatplotViewer
 from providers.github.workflows.repository_workflows import LoadWorkflows
@@ -60,6 +61,17 @@ class ViewDeploymentFrequency(MatplotViewer):
 
         for i, count in enumerate(weekly_counts):
             ax[0].text(i, count, str(count), ha="center", va="bottom")
+
+        week_dates = [datetime.strptime(week + "-1", "%Y-W%W-%w") for week in weeks]
+        current_month = None
+
+        for i, week_date in enumerate(week_dates):
+            if current_month is None:
+                current_month = week_date.month
+
+            if week_date.month != current_month:
+                ax[0].axvline(x=i - 0.5, color="gray", linestyle="--", alpha=0.7)
+                current_month = week_date.month
 
         ax[1].bar(months, monthly_counts, color="green")
         ax[1].set_title("Monthly Deployment Frequency")
