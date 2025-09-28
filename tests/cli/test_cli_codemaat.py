@@ -20,9 +20,19 @@ class TestCliCommands:
 
         result = cli.invoke(
             main,
-            ["codemaat", "code-churn", "--out-file", "code_churn.png"],
+            [
+                "codemaat",
+                "code-churn",
+                "--out-file",
+                "code_churn.png",
+                "--start-date",
+                "2025-01-01",
+                "--end-date",
+                "2025-01-01",
+            ],
         )
         assert "No code churn data available to plot" in result.output
+        assert result.stderr == ""
 
     def test_given_the_data_it_renders_code_churn(self, cli, tmp_path):
         path_string = str(tmp_path)

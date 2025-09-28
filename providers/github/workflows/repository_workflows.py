@@ -112,14 +112,6 @@ class LoadWorkflows(BaseRepository):
         weekly_counts = [deployments[week]["weekly"] for week in weeks]
         monthly_counts = [deployments[month]["monthly"] for month in months]
 
-        print(
-            {
-                "weeks": weeks,
-                "months": months,
-                "weekly_counts": weekly_counts,
-                "monthly_counts": monthly_counts,
-            }
-        )
         return {
             "weeks": weeks,
             "months": months,

@@ -18,6 +18,11 @@ class CodeChurnViewer(MatplotViewer, Viewable):
         if df.empty:
             print("No code churn data available to plot")
 
+        if "date" not in df or "added" not in df or "deleted" not in df:
+            df["date"] = []
+            df["added"] = []
+            df["deleted"] = []
+
         dates = df["date"]
         added = df["added"]
         deleted = df["deleted"]
