@@ -1,6 +1,8 @@
 from datetime import datetime
 import json
 from typing import List, Iterable
+
+import pandas as pd
 from infrastructure.base_repository import BaseRepository
 from infrastructure.configuration.configuration import Configuration
 
@@ -117,6 +119,57 @@ class LoadWorkflows(BaseRepository):
             "months": months,
             "weekly_counts": weekly_counts,
             "monthly_counts": monthly_counts,
+        }
+
+    def get_lead_time_for_job(self, job_name: str, filters=None):
+        lead_times = []
+        runs = self.runs(filters)
+
+        for run in runs:
+            jobs = run.get("jobs", [])
+            for job in jobs:
+                if job.get("name") == job_name and job.get("conclusion") == "success":
+                    created_at = job.get("started_at")
+                    completed_at = job.get("completed_at")
+                    if created_at and completed_at:
+                        start_dt = datetime.fromisoformat(
+                            created_at.replace("Z", "+00:00")
+                        )
+                        end_dt = datetime.fromisoformat(
+                            completed_at.replace("Z", "+00:00")
+                        )
+                        lead_time = (
+                            end_dt - start_dt
+                        ).total_seconds() / 3600.0  # in hours
+                        lead_times.append((start_dt, end_dt, lead_time))
+
+        df = pd.DataFrame(
+            lead_times, columns=["start_time", "end_time", "lead_time_hours"]
+        )
+        if df.empty:
+            return {
+                "weeks": [],
+                "months": [],
+                "weekly_avg": [],
+                "monthly_avg": [],
+            }
+
+        df["week"] = df["start_time"].dt.to_period("W").astype(str)
+        df["month"] = df["start_time"].dt.to_period("M").astype(str)
+
+        weekly_avg = df.groupby("week")["lead_time_hours"].mean().reset_index()
+        monthly_avg = df.groupby("month")["lead_time_hours"].mean().reset_index()
+
+        weeks = weekly_avg["week"].tolist()
+        months = monthly_avg["month"].tolist()
+        weekly_avg_values = weekly_avg["lead_time_hours"].tolist()
+        monthly_avg_values = monthly_avg["lead_time_hours"].tolist()
+
+        return {
+            "weeks": weeks,
+            "months": months,
+            "weekly_avg": weekly_avg_values,
+            "monthly_avg": monthly_avg_values,
         }
 
     def __load_jobs(self):
