@@ -54,18 +54,21 @@ jobs:
         run: |
           echo "PYTHONPATH=$(pwd)" >> $GITHUB_ENV
           echo "SMM_STORE_DATA_AT=$(pwd)/tmp_test/github" >> $GITHUB_ENV
+          mkdir -p "$(pwd)/tmp_test/github"
+
           TEMPLATE=$(cat <<EOF
-          {
-            "git_provider": "github",
-            "github_token": "fake-token",
-            "github_repository": "fake-repo-test",
-            "git_repository_location": "$(pwd)/tmp_test/repo",
-            "deployment_frequency_target_pipeline": "",
-            "deployment_frequency_target_job": ""
-          }
+            {
+              "git_provider": "github",
+              "github_token": "fake-token",
+              "github_repository": "fake-repo-test",
+              "git_repository_location": "$(pwd)/tmp_test/repo",
+              "deployment_frequency_target_pipeline": "",
+              "deployment_frequency_target_job": ""
+            }
           EOF
           )
-          echo "$TEMPLATE" > "$(pwd)/tmp_test/github/smm_config.json"
+
+          echo "$TEMPLATE" >> "$(pwd)/tmp_test/github/smm_config.json"
           mkdir -p "$(pwd)/tmp_test/repo"
           cp -R "$(pwd)/fixtures/github" "$(pwd)/tmp_test"
           chmod -R 755 "$(pwd)/tmp_test"
