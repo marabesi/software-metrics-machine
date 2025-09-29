@@ -30,6 +30,31 @@ By focusing on these metrics, SSM enables teams to:
 - Identify and address inefficiencies in the development process.
 - Foster a culture of continuous improvement and collaboration.
 
+### Providers
+
+To accomplish SSM mission, this project is built based on a provider model, where each provider is responsible to extract
+data from a specific source. This is because depending on the desired metric, it might come from a difference source. For
+example, there are metrics extractd about coupling that are from the git log. Other metrics such as pipeline execution
+and pull request open days average comes from GitHub API (or other providers).
+
+#### Codemaat
+
+[Git](./codemaat.md) is the only common provider, as it is used to extract code churn and hotspots. Which
+means, it can be used regardless of the vendor. The following metrics are supported:
+
+- Code churn
+- Hotspots
+- Age of code
+- Authors per file
+
+#### Github
+
+If your are using [GitHub/Github actions](./github.md), the following metrics are supported:
+
+- Pull requests open days average
+- Pipeline success rate
+- Pipeline average time to complete
+
 ## Why Join the SSM Project?
 
 For new joiners and those unfamiliar with SSM, this project offers an opportunity to:
@@ -38,4 +63,5 @@ For new joiners and those unfamiliar with SSM, this project offers an opportunit
 - Learn about advanced metrics and their applications in real-world scenarios.
 - Be part of a community that values data-driven decision-making and continuous improvement.
 
-Whether you're a developer, a project manager, or simply someone passionate about improving software development practices, SSM provides the tools and insights you need to succeed.
+Whether you're a developer, a project manager, or simply someone passionate about improving software development practices,
+SSM provides the tools and insights you need to succeed.

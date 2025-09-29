@@ -44,38 +44,6 @@ This project relies on metrics that are extracted from:
 
 The official documentation is hosted at [github pages](https://marabesi.github.io/software-metrics-machine/getting-started.html).
 
-## Providers
-
-This project is built based on a provider model, where each provider is responsible to extract data from a specific source.
-This is because depending on the desired metric, it might come from a difference source. For example, there are metrics
-extractd about coupling that are from the git log. Other metrics such as pipeline execution and pull request open days
-average comes from GitHub API (or other providers).
-
-Each provider has its own configuration and requirements, please refer to the specific README.md file in each provider
-folder as pointed below.
-
-### Git
-
-[Git](providers/codemaat/README.md) is the only common provider, as it is used to extract code churn and hotspots. Which
-means, it can be used regardless of the vendor. The following metrics are supported:
-
-* Code churn
-* Hotspots
-* Age of code
-* Authors per file
-
-### Github
-
-If your are using [GitHub/Github actions](providers/github/README.md), the following metrics are supported:
-
-* Pull requests open days average
-* Pipeline success rate
-* Pipeline average time to complete
-
-### GitLab
-
-* If your are using [GitLab](providers/gitlab/README.md), this is a placeholder for future work.
-
 ## References
 
 This project uses other tools to extract the metrics, and is inspired by other works in the field of software metrics.
