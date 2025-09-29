@@ -70,12 +70,14 @@ class EntityEffortViewer(MatplotViewer, Viewable):
 
         # Create a treemap
         fig, ax = plt.subplots(figsize=super().get_fig_size())
+        # Adjust font size for labels in the treemap
         squarify.plot(
             sizes=efforts,
             label=[f"{entity}\n{effort}" for entity, effort in zip(entities, efforts)],
             color=plt.cm.viridis(efforts / max(efforts)),
             alpha=0.8,
             ax=ax,
+            text_kwargs={"fontsize": 8},  # Set font size to smaller value
         )
         ax.set_title(
             f"Entity Effort Treemap (Top {min(top_n, len(effort_per_entity))} Entities by Total Revisions)"

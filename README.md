@@ -42,73 +42,7 @@ This project relies on metrics that are extracted from:
 
 ## Getting started
 
-This section provides the needed configuration to get started with Metrics machine, it requires knowledge of env variables and python ecosystem tools.
-
-### Environment requirements
-
-* python 3.10+
-* poetry installed --no-root
-
-### MacOs
-
-If you are on a mac, you can easily install them using the following commands:
-
-```bash
-brew install python
-brew install poetry
-```
-
-### Checkpoint python and poetry installation
-
-Once installed python and poetry, run the following command:
-
-```bash
-poetry run python --version
-```
-
-You should see an output something like the following:
-
-```plaintext
-Python 3.11.0
-```
-
-### Clone the repository
-
-```bash
-git clone https://github.com/marabesi/software-metrics-machine.git
-```
-
-### Install dependencies
-
-Change directory to the cloned repository and install the dependencies using poetry:
-
-```bash
-cd software-metrics-machine
-poetry install --no-root
-```
-
-### Define where to store the data
-
-This project uses a folder to store the data fetched from the different providers, set the env variable `SMM_STORE_DATA_AT`
-to point to the desired location. Use absolute path.
-
-```bash
-export SMM_STORE_DATA_AT=/path/to/data/folder
-```
-
-### Checkpoint store data
-
-Let's now check the env variables for data storage, run the following command:
-
-```bash
-env
-```
-
-You should see an output something like the following:
-
-```plaintext
-SMM_STORE_DATA_AT=/path/to/data/folder
-```
+The official documentation is hosted at [github pages](https://marabesi.github.io/software-metrics-machine/getting-started.md).
 
 ## Providers
 

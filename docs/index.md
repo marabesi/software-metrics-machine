@@ -13,7 +13,7 @@ hero:
       text: What is Software Metrics Machine?
       link: /what-is-smm
 features:
-  - title: GitHub Integration ✅
+  - title: I am usin GitHub and GitHub Actions ✅
     link: ./github.md
     details: Lorem ipsum dolor sit amet, consectetur adipiscing elit
   - title: Codemaat Integration ✅
