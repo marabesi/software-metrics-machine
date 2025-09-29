@@ -15,13 +15,23 @@ The way this project works goes through three main steps:
 2. Store the data in a structured way (json files)
 3. Analyze and visualize the data
 
-## Environment requirements
+## Setting up the project
+
+### Clone the repository
+
+```bash
+git clone https://github.com/marabesi/software-metrics-machine.git
+```
+
+## Local setup
+
+### Environment requirements
 
 * python 3.10+
 * poetry installed --no-root
 * java (for running codemaat)
 
-## MacOs
+### MacOs
 
 If you are on a mac, you can easily install them using the following commands:
 
@@ -30,7 +40,7 @@ brew install python
 brew install poetry
 ```
 
-## Checkpoint python and poetry installation
+### Checkpoint python and poetry installation
 
 Once installed python and poetry, run the following command:
 
@@ -44,13 +54,7 @@ You should see an output something like the following:
 Python 3.11.0
 ```
 
-## Clone the repository
-
-```bash
-git clone https://github.com/marabesi/software-metrics-machine.git
-```
-
-## Install dependencies
+### Install dependencies
 
 Change directory to the cloned repository and install the dependencies using poetry:
 
@@ -83,7 +87,7 @@ in the folder pointed to store the data, create a configuration file named `smm_
 
 A table wih the full configuration options is available at [Configuration options](getting-started.md#configuration-options).
 
-## Checkpoint store data
+### Checkpoint store data
 
 Let's now check the env variables for data storage, run the following command:
 
@@ -97,7 +101,45 @@ You should see an output something like the following:
 SMM_STORE_DATA_AT=/path/to/data/folder
 ```
 
-With this, you are ready to start using Software Metrics Machine and fetch data from your repository.
+With this, you are ready to start using Software Metrics Machine and fetch data from your repository with a local
+setup.
+
+## Docker setup
+
+This project provides a docker image to run the commands without the need to install python and poetry. To build the
+docker image, run the following command in the root of the cloned repository:
+
+```bash
+docker build -t smm:latest .
+```
+
+Running the commands using docker is done using the provided script `run-cli.sh`, for example:
+
+```bash
+docker run --rm -e SMM_STORE_DATA_AT="/data" -v $(pwd)/downloads:/data smm sh ./run-cli.sh
+```
+
+### Checkpoint docker setup
+
+To check the docker setup, run the following command:
+
+```bash
+docker run --rm -e SMM_STORE_DATA_AT="/data" -v $(pwd)/downloads:/data smm sh ./run-cli.sh
+```
+
+You should see an output something like the following:
+
+```plaintext
+Usage: main.py [OPTIONS] COMMAND [ARGS]...
+
+Options:
+  --help  Show this message and exit.
+
+Commands:
+  codemaat
+  prs
+  workflows
+```
 
 ## Configuration options
 

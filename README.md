@@ -42,7 +42,7 @@ This project relies on metrics that are extracted from:
 
 ## Getting started
 
-The official documentation is hosted at [github pages](https://marabesi.github.io/software-metrics-machine/getting-started.md).
+The official documentation is hosted at [github pages](https://marabesi.github.io/software-metrics-machine/getting-started.html).
 
 ## Providers
 
