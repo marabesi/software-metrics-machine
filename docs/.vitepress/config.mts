@@ -45,7 +45,7 @@ export default defineConfig({
         items: [
           { text: 'GitHub', link: '/github' },
           { text: 'Codemaat', link: '/codemaat' },
-          { text: 'GitLab', link: '/gitlab' }
+          // { text: 'GitLab', link: '/gitlab' }
         ]
       }
     ],

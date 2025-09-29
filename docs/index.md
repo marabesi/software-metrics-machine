@@ -19,6 +19,6 @@ features:
   - title: Codemaat Integration ✅
     link: ./codemaat.md
     details: Lorem ipsum dolor sit amet, consectetur adipiscing elit
-  - title: GitLab Integration 🚧
-    link: ./gitlab.md
-    details: Lorem ipsum dolor sit amet, consectetur adipiscing elit
+  # - title: GitLab Integration 🚧
+  #   link: ./gitlab.md
+  #   details: Lorem ipsum dolor sit amet, consectetur adipiscing elit
