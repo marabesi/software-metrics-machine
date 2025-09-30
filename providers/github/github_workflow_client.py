@@ -23,6 +23,7 @@ class GithubWorkflowClient:
         start_date: str | None,
         end_date: str | None,
         raw_filters=None,
+        step_by: str | None = None,
     ):
         workflow_repository = LoadWorkflows(configuration=self.configuration)
         runs_json_path = "workflows.json"
@@ -36,11 +37,7 @@ class GithubWorkflowClient:
         params = {}
         if target_branch:
             params["branch"] = target_branch
-        if start_date and end_date:
-            params["created"] = f"{start_date}..{end_date}"
-            print(
-                f"Fetching workflow runs for {self.repository_slug} {start_date} to {end_date} (it will return 1000 runs at max)"  # noqa
-            )
+
         if raw_filters:
             for f in raw_filters.split(","):
                 if "=" in f:
@@ -48,27 +45,68 @@ class GithubWorkflowClient:
                     params[k] = v
 
         runs = []
-        url = f"https://api.github.com/repos/{self.repository_slug}/actions/runs?per_page=100"
-        while url:
-            print(f"  → fetching {url} with params: {str(params)}")
-            r = requests.get(
-                url,
-                headers=self.HEADERS,
-                params={**params} if params else None,
-            )
-            r.raise_for_status()
-            data = r.json()
-            total = data.get("total_count", 0)
-            print(f"    → Response says it has {total} runs")
-            for run in data.get("workflow_runs", []):
-                runs.append(run)
 
-            print(f"    → Fetched total of {len(runs)} runs out of {total}")
+        if step_by == "day" and start_date and end_date:
+            from datetime import datetime, timedelta
 
-            link = r.links.get("next")
-            print(f"  → link: {link}")
-            url = link["url"] if link else None
+            current_date = datetime.strptime(start_date, "%Y-%m-%d")
+            end_date_obj = datetime.strptime(end_date, "%Y-%m-%d")
+
+            while current_date <= end_date_obj:
+                day_str = current_date.strftime("%Y-%m-%d")
+                params["created"] = f"{day_str}..{day_str}"
+                print(f"Fetching workflow runs for {self.repository_slug} on {day_str}")
+
+                url = f"https://api.github.com/repos/{self.repository_slug}/actions/runs?per_page=100"
+                while url:
+                    print(f"  → fetching {url} with params: {str(params)}")
+                    r = requests.get(
+                        url,
+                        headers=self.HEADERS,
+                        params={**params} if params else None,
+                    )
+                    r.raise_for_status()
+                    data = r.json()
+                    total = data.get("total_count", 0)
+                    print(f"    → Response says it has {total} runs")
+                    for run in data.get("workflow_runs", []):
+                        runs.append(run)
+
+                    print(f"    → Fetched total of {len(runs)} runs out of {total}")
+
+                    link = r.links.get("next")
+                    print(f"  → link: {link}")
+                    url = link["url"] if link else None
+                current_date += timedelta(days=1)
+        else:
+            if start_date and end_date:
+                params["created"] = f"{start_date}..{end_date}"
+                print(
+                    f"Fetching workflow runs for {self.repository_slug} {start_date} to {end_date} (it will return 1000 runs at max)"  # noqa
+                )
+            url = f"https://api.github.com/repos/{self.repository_slug}/actions/runs?per_page=100"
+            while url:
+                print(f"  → fetching {url} with params: {str(params)}")
+                r = requests.get(
+                    url,
+                    headers=self.HEADERS,
+                    params={**params} if params else None,
+                )
+                r.raise_for_status()
+                data = r.json()
+                total = data.get("total_count", 0)
+                print(f"    → Response says it has {total} runs")
+                for run in data.get("workflow_runs", []):
+                    runs.append(run)
+
+                print(f"    → Fetched total of {len(runs)} runs out of {total}")
+
+                link = r.links.get("next")
+                print(f"  → link: {link}")
+                url = link["url"] if link else None
+
         workflow_repository.store_file(runs_json_path, runs)
+
         return runs
 
     def fetch_jobs_for_workflows(

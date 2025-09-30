@@ -1,5 +1,5 @@
 import pytest
-from unittest.mock import patch, MagicMock
+from unittest.mock import call, patch, MagicMock
 from providers.github.github_workflow_client import GithubWorkflowClient
 from providers.github.workflows.repository_workflows import LoadWorkflows
 from tests.in_memory_configuration import InMemoryConfiguration
@@ -26,7 +26,6 @@ class TestGithubWorkflowsClient:
                 "infrastructure.base_repository.BaseRepository.store_file"
             ) as mock_store,
         ):
-
             mock_response = MagicMock()
             mock_response.json.return_value = {
                 "total_count": 2,
@@ -36,7 +35,6 @@ class TestGithubWorkflowsClient:
             mock_response.status_code = 200
             mock_get.return_value = mock_response
 
-            # Call the method
             self.github_client.fetch_workflows(
                 target_branch="main", start_date="2025-01-01", end_date="2025-12-31"
             )
@@ -48,6 +46,51 @@ class TestGithubWorkflowsClient:
                 params={"branch": "main", "created": "2025-01-01..2025-12-31"},
             )
             mock_store.assert_called_once_with("workflows.json", [])
+
+    def test_fetch_workflows_by_step(self):
+        with (
+            patch("requests.get") as mock_get,
+            patch(
+                "infrastructure.base_repository.BaseRepository.read_file_if_exists",
+                return_value=None,
+            ),
+            patch("infrastructure.base_repository.BaseRepository.store_file"),
+        ):
+            mock_response = MagicMock()
+            mock_response.json.return_value = {
+                "total_count": 1,
+                "workflow_runs": [{"id": 1, "created_at": "2025-06-15T12:00:00Z"}],
+            }
+            mock_response.links = {}
+            mock_response.status_code = 200
+            mock_get.return_value = mock_response
+
+            self.github_client.fetch_workflows(
+                target_branch="main",
+                start_date="2025-01-01",
+                end_date="2025-01-02",
+                step_by="day",
+            )
+
+            expected_calls = [
+                call(
+                    f"https://api.github.com/repos/{self.configuration.github_repository}/actions/runs?per_page=100",
+                    headers={
+                        "Authorization": "token fake_token",
+                        "Accept": "application/vnd.github+json",
+                    },
+                    params={"branch": "main", "created": "2025-01-01..2025-01-01"},
+                ),
+                call(
+                    "https://api.github.com/repos/fake/repo/actions/runs?per_page=100",
+                    headers={
+                        "Authorization": "token fake_token",
+                        "Accept": "application/vnd.github+json",
+                    },
+                    params={"branch": "main", "created": "2025-01-02..2025-01-02"},
+                ),
+            ]
+        mock_get.assert_has_calls(expected_calls, True)
 
     def test_fetch_jobs(self):
         def side_effect_repository_read(path):
@@ -75,7 +118,6 @@ class TestGithubWorkflowsClient:
             mock_response.status_code = 200
             mock_get.return_value = mock_response
 
-            # Call the method
             self.github_client.fetch_jobs_for_workflows(
                 LoadWorkflows(self.configuration),
                 start_date="2025-01-01",
