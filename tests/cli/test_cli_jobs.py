@@ -22,7 +22,7 @@ class TestJobsCliCommands:
             yield mock_get
 
     def test_can_run_fetch_jobs_command(self, cli):
-        result = cli.invoke(main, ["workflows", "fetch-jobs", "--help"])
+        result = cli.invoke(main, ["pipelines", "fetch-jobs", "--help"])
         assert 0 == result.exit_code
         assert "Show this message and exit" in result.output
 
@@ -86,7 +86,7 @@ class TestJobsCliCommands:
             result = cli.invoke(
                 main,
                 [
-                    "workflows",
+                    "pipelines",
                     "fetch-jobs",
                 ],
             )

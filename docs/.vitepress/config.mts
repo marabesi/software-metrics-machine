@@ -43,8 +43,12 @@ export default defineConfig({
       {
         text: 'Integrations',
         items: [
-          { text: 'GitHub', link: '/github' },
-          { text: 'Codemaat', link: '/codemaat' },
+          { text: 'GitHub', link: '/github', items: [
+            { text: 'CLI', link: '/github/cli' },
+          ]},
+          { text: 'Codemaat', link: '/codemaat', items: [
+            { text: 'CLI', link: '/codemaat/cli' },
+          ]},
           // { text: 'GitLab', link: '/gitlab' }
         ]
       }

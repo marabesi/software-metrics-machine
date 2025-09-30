@@ -12,7 +12,14 @@ tools to visualize and analyze the data.
 > Before following the steps below, make sure you have followed the [Getting Started](./getting-started.md) guide to set up
 > the project and have Python, Poetry and Java installed.
 
-## Generating a token
+You should expect to have the dashboard and the CLI up and running in a few minutes after following the steps below. The
+steps that follows are organized as follows.
+
+1. Generating the github token
+2. Fetching the data from GitHub
+3. Visualizing the data using the dashboard or CLI commands
+
+## Generating the GitHub token
 
 To interact with the GitHub API and fetch the data needed for this project, you need to generate a personal access token.
 Follow these steps:
@@ -26,7 +33,7 @@ Follow these steps:
 4. Generate the token and copy it. Make sure to store it securely, as you won't be able to see it again.
 5. Store it in the configuration file [smm_config.json](./getting-started.md#configuration-options) under the key `github_token`.
 
-## Basic configuration with env
+## Configuration with env
 
 This project currently uses env variables to define two key properties: the repository, the token and the repository.
 This is required by the GitHub API to authenticate and authorize the requests to fetch the data. Before executing any
@@ -65,7 +72,7 @@ That is it! You are ready to go and start fetching your data!
 
 Fetching the data before operating it is the most first step to get started with metrics. This application provides
 utilities to fetch data based on date time criteria as it is a standard to use it as a cut off for data analysis. Filters
-are optional.
+are optional. [See the CLI documentation for more details](./github/cli.md).
 
 ### Pull requests
 
@@ -76,7 +83,7 @@ are optional.
 ### Workflows (pipelines)
 
 ```bash
-./run-cli.sh workflows fetch
+./run-cli.sh pipelines fetch
 ```
 
 ## Visualizing data
@@ -84,13 +91,8 @@ are optional.
 This project provides commands to visualize the fetched data using various metrics. Visualization helps in understanding
 trends, identifying bottlenecks, and making informed decisions based on the data. The two options to visualize data are:
 
-1. CLI commands that generate charts and display them using matplotlib.
-2. A dashboard (web application) that provides an interactive interface to explore the data.
-
-### CLI commands
-
-The CLI commands are designed to generate specific charts based on the fetched data. Each command corresponds to a
-particular metric or analysis.
+1. A dashboard (web application) that provides an interactive interface to explore the data.
+2. CLI commands that generate charts and display them using matplotlib.
 
 ### Dashboard
 
@@ -100,3 +102,8 @@ following command:
 ```bash
 ./run-dashboard.sh
 ```
+
+### CLI commands
+
+The CLI commands are designed to generate specific charts based on the fetched data. Each command corresponds to a
+particular metric or analysis. [See the CLI documentation for more details](./github/cli.md).

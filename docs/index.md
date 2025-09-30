@@ -4,7 +4,7 @@ layout: home
 
 hero:
   name: "Software metrics machine"
-  text: "Welcome to the Software Metrics Machine documentation"
+  text: "The place to visualize and analyze your sofware development process"
   tagline: Stop pointing, start measuring
   #https://www.flaticon.com/free-icon/data-analysis_12959231?term=dashboard&page=1&position=65&origin=search&related_id=12959231
   image: ./data-analysis.png
@@ -13,12 +13,10 @@ hero:
       text: What is Software Metrics Machine?
       link: /what-is-smm
 features:
-  - title: I am usin GitHub and GitHub Actions ✅
-    link: ./github.md
-    details: Lorem ipsum dolor sit amet, consectetur adipiscing elit
-  - title: Codemaat Integration ✅
-    link: ./codemaat.md
-    details: Lorem ipsum dolor sit amet, consectetur adipiscing elit
-  # - title: GitLab Integration 🚧
-  #   link: ./gitlab.md
-  #   details: Lorem ipsum dolor sit amet, consectetur adipiscing elit
+  - title: Privacy first 🔐 
+    details: This tool is designed to run locally, ensuring that your data remains private and secure never leaving your environment.
+  - title: Integrates with your source control version 🧑🏼‍💻
+    link: ./supported-providers.md
+    details: GitHub, GitLab, Bitbucket
+  - title: One image is worth a thousand words 📊
+    details: Visualize your data with interactive charts and graphs that make it easy to understand complex metrics at a glance.

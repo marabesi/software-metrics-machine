@@ -8,3 +8,8 @@ locally to be able to extract the data.
 > Before following the steps below, make sure you have followed the [Getting Started](./getting-started.md) guide to set up
 > the project and have Python, Poetry and Java installed.
 
+## Fetching data
+
+Fetching the data before operating it is the most first step to get started with metrics. This application provides
+utilities to fetch data based on date time criteria as it is a standard to use it as a cut off for data analysis. Filters
+are optional.

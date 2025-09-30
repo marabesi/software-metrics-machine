@@ -38,7 +38,7 @@ module_groups = {
         "providers.github.prs.cli.view_prs_by_author",
         "providers.github.prs.cli.view_summary",
     ],
-    "workflows": [
+    "pipelines": [
         "providers.github.workflows.cli.fetch_workflows",
         "providers.github.workflows.cli.fetch_jobs",
         "providers.github.workflows.cli.workflow_summary",

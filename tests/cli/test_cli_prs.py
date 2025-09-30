@@ -23,11 +23,49 @@ class TestCliCommands:
         assert 0 == result.exit_code
         assert "Show this message and exit" in result.output
 
-    def test_fetch_prs_from_last_three_months(self, cli, tmp_path):
+    def test_fetch_prs_between_dates(self, cli, tmp_path):
         path_string = str(tmp_path)
+        configuration = InMemoryConfiguration(path_string)
         os.environ["SMM_STORE_DATA_AT"] = path_string
         ConfigurationFileSystemHandler(path_string).store_file(
-            "smm_config.json", InMemoryConfiguration(path_string)
+            "smm_config.json", configuration
+        )
+
+        with patch("requests.get") as mock_get:
+            fetch_prs_fake_response = [
+                {
+                    "created_at": "2011-01-26T19:01:12Z",
+                    "closed_at": "2011-01-26T19:01:12Z",
+                }
+            ]
+
+            mock_get.return_value.json.return_value = fetch_prs_fake_response
+            mock_get.return_value.status_code = 200
+
+            result = cli.invoke(
+                main,
+                [
+                    "prs",
+                    "fetch",
+                    "--start-date",
+                    "2023-01-01",
+                    "--end-date",
+                    "2023-01-31",
+                ],
+            )
+
+            assert (
+                f"Fetching PRs for {configuration.github_repository} from 2023-01-01 to 2023-01-31"
+                in result.output
+            )  # noqa
+            assert f"Data written to {str(tmp_path)}" in result.output
+
+    def test_fetch_prs_from_last_month(self, cli, tmp_path):
+        path_string = str(tmp_path)
+        os.environ["SMM_STORE_DATA_AT"] = path_string
+        configuration = InMemoryConfiguration(path_string)
+        ConfigurationFileSystemHandler(path_string).store_file(
+            "smm_config.json", configuration
         )
 
         with patch("requests.get") as mock_get:
@@ -47,7 +85,7 @@ class TestCliCommands:
                     "prs",
                     "fetch",
                     "--months",
-                    "3",
+                    "1",
                 ],
             )
             mock_get.assert_called_once()

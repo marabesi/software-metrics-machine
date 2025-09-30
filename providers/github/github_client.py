@@ -51,7 +51,7 @@ class GithubClient:
                 raise ValueError("Dates must be in ISO format: YYYY-MM-DD")
 
         print(
-            f"Fetching PRs for {self.repository_slug} from {start_date} to {end_date}…"
+            f"Fetching PRs for {self.repository_slug} from {start_date.date()} to {end_date.date()}"  # noqa
         )
 
         prs = []
@@ -103,7 +103,7 @@ class GithubClient:
         if start_date and end_date:
             params["created"] = f"{start_date}..{end_date}"
             print(
-                f"Fetching workflow runs for {self.repository_slug} {start_date} to {end_date}… (it will return 1000 runs at max)"  # noqa
+                f"Fetching workflow runs for {self.repository_slug} {start_date} to {end_date} (it will return 1000 runs at max)"  # noqa
             )
         if raw_filters:
             for f in raw_filters.split(","):
