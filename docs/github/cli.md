@@ -12,8 +12,11 @@ This document provides a guide for developers to run GitHub-related analyses usi
 
 | Option         | Description                         | Example                  |
 |----------------|-------------------------------------|--------------------------|
-| `--start-date` | Fetches PRs created after a date.   | `--start-date=2025-01-01`     |
-| `--end-date`   | Fetches PRs created before a date.  | `--end-date=2025-12-31`     |
+| Start date     | Fetches PRs created after a date.   | `--start-date=2025-01-01`|
+| End date       | Fetches PRs created before a date.  | `--end-date=2025-12-31`  |
+
+Filtering the data fetch from PRs by date is done logically while fetching the data, this is not a feature that GitHub
+API provides.
 
 ### View Average Review Time by Author
 
@@ -23,11 +26,11 @@ This document provides a guide for developers to run GitHub-related analyses usi
 
 | Option         | Description                          | Example                  |
 |----------------|--------------------------------------|--------------------------|
-| `--labels`     | Filters PRs by the labels attached to it.      | `--labels=my_label,anothe_label`       |
-| `--start-date` | Fetches PRs created after a date.   | `--start-date=2025-01-01`     |
-| `--end-date`   | Fetches PRs created before a date.  | `--end-date=2025-12-31`     |
-| `--top`        | If the list is too big --top will show only the top x results from the list.  | `--top=10`     |
-| `--out-file`   | The name of the file to store the generated chart  | `--out-file=my_chart.png` or   `--out-file=subfolder/my_chart.png`   |
+| Labels         | Filters PRs by the labels attached to it.      | `--labels=my_label,anothe_label`       |
+| Start date     | Fetches PRs created after a date.   | `--start-date=2025-01-01`     |
+| End date       | Fetches PRs created before a date.  | `--end-date=2025-12-31`     |
+| Limit          | If the list is too big --top will show only the top x results from the list.  | `--top=10`     |
+| File           | The name of the file to store the generated chart  | `--out-file=my_chart.png` or   `--out-file=subfolder/my_chart.png`   |
 
 ### View PRs by Author
 
