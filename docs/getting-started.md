@@ -141,6 +141,11 @@ Commands:
   workflows
 ```
 
+## Ready to go
+
+You are now ready to start using Software Metrics Machine and fetch data from your repository. The next step is to
+pick a provider and start fetching data.
+
 ## Configuration options
 
 The configuration file `smm_config.json` supports the following options:

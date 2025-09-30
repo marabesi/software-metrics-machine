@@ -33,19 +33,14 @@ Follow these steps:
 4. Generate the token and copy it. Make sure to store it securely, as you won't be able to see it again.
 5. Store it in the configuration file [smm_config.json](./getting-started.md#configuration-options) under the key `github_token`.
 
-## Configuration with env
+### Check token is working
 
-This project currently uses env variables to define two key properties: the repository, the token and the repository.
-This is required by the GitHub API to authenticate and authorize the requests to fetch the data. Before executing any
-command, make sure to have them set as follows:
+To check if the token is working, you can set it as an environment variable in your terminal session and then do a test
+request. Start running the following command:
 
 ```bash
 export SSM_GITHUB_TOKEN=ghp_123123123
 ```
-
-To persist those changes, use the bash profile or the zshrc, this way whenever you open a new terminal it will be already set.
-
-### Check point
 
 Once the variables have been set, test your connection with Github with the following command:
 
@@ -73,6 +68,11 @@ That is it! You are ready to go and start fetching your data!
 Fetching the data before operating it is the most first step to get started with metrics. This application provides
 utilities to fetch data based on date time criteria as it is a standard to use it as a cut off for data analysis. Filters
 are optional. [See the CLI documentation for more details](./github/cli.md).
+
+> [!NOTE]
+> Fetching data may take a while depending on activity in the repository, by defalt it fetches
+> every pull request and every workflow run in the repository. To fine tune the fetching process, use the options
+> available in the [CLI documentation](./github/cli.md).
 
 ### Pull requests
 
