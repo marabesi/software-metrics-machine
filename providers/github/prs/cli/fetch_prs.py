@@ -1,5 +1,5 @@
 import click
-from providers.github.github_client import GithubClient
+from providers.github.github_client import GithubPrsClient
 from infrastructure.configuration.configuration_builder import (
     ConfigurationBuilder,
     Driver,
@@ -29,7 +29,9 @@ from infrastructure.configuration.configuration_builder import (
     help="Filter PRs created on or before this date (ISO 8601)",
 )
 def execute(months=1, force=None, start_date=None, end_date=None):
-    client = GithubClient(configuration=ConfigurationBuilder(driver=Driver.CLI).build())
+    client = GithubPrsClient(
+        configuration=ConfigurationBuilder(driver=Driver.CLI).build()
+    )
     client.fetch_prs(
         months=months,
         force=force,

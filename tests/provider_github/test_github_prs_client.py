@@ -1,6 +1,6 @@
 import pytest
 from unittest.mock import patch, MagicMock
-from providers.github.github_client import GithubClient
+from providers.github.github_client import GithubPrsClient
 from tests.in_memory_configuration import InMemoryConfiguration
 
 
@@ -8,7 +8,7 @@ class TestGithubPrsClient:
     @pytest.fixture(autouse=True)
     def setup(self):
         self.configuration = InMemoryConfiguration(".")
-        self.github_client = GithubClient(configuration=self.configuration)
+        self.github_client = GithubPrsClient(configuration=self.configuration)
         self.headers = {
             "Authorization": f"token {self.configuration.github_token}",
             "Accept": "application/vnd.github+json",

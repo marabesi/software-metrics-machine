@@ -5,7 +5,7 @@ from infrastructure.configuration.configuration import Configuration
 from providers.github.prs.prs_repository import LoadPrs
 
 
-class GithubClient:
+class GithubPrsClient:
 
     def __init__(self, configuration: Configuration):
         self.HEADERS = {
