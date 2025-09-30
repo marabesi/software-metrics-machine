@@ -97,3 +97,39 @@ class TestJobsCliCommands:
                 in result.output
             )
             assert f" → Jobs written to {str(tmp_path)}" in result.output
+
+    def test_not_fetch_when_workflow_falls_off_the_start_date_and_end_date(
+        self, cli, tmp_path
+    ):
+        path_string = str(tmp_path)
+        os.environ["SMM_STORE_DATA_AT"] = path_string
+        configuration = InMemoryConfiguration(path_string)
+        ConfigurationFileSystemHandler(path_string).store_file(
+            "smm_config.json", configuration
+        )
+        single_run = [
+            {
+                "id": 1,
+                "path": "/workflows/build.yml",
+                "status": "success",
+                "created_at": "2023-10-01T12:00:00Z",
+            },
+        ]
+        FileHandlerForTesting(path_string).store_json_file("workflows.json", single_run)
+
+        result = cli.invoke(
+            main,
+            [
+                "pipelines",
+                "fetch-jobs",
+                "--start-date",
+                "2023-01-01",
+                "--end-date",
+                "2023-01-31",
+            ],
+        )
+
+        assert (
+            "No runs to fetch jobs for in the date range 2023-01-01 to 2023-01-31"
+            in result.output
+        )

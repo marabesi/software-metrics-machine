@@ -16,7 +16,7 @@ class TestWorkflowsCliCommands:
         assert "Show this message and exit" in result.output
         assert "" == result.stderr
 
-    def test_should_fetch_data_between_dates(self, cli, tmp_path):
+    def test_should_fetch_workflow_data_between_dates(self, cli, tmp_path):
         path_string = str(tmp_path)
         os.environ["SMM_STORE_DATA_AT"] = path_string
         configuration = InMemoryConfiguration(path_string)
@@ -40,7 +40,10 @@ class TestWorkflowsCliCommands:
             f"Fetching workflow runs for {configuration.github_repository} 2023-01-01 to 2023-01-31 (it will return 1000 runs at max)"  # noqa
             in result.output
         )
-        assert "fetching https://api.github.com/repos/fake/repo/actions/runs?per_page=100 with params: {'created': '2023-01-01..2023-01-31'}"  # noqa
+        assert (
+            "fetching https://api.github.com/repos/fake/repo/actions/runs?per_page=100 with params: {'created': '2023-01-01..2023-01-31'}"  # noqa
+            in result.output
+        )
 
     def test_deployment_frequency_by_job(self, cli, tmp_path):
         path_string = str(tmp_path)

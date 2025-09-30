@@ -1,19 +1,9 @@
 import click
-from providers.github.github_client import GithubClient
 from infrastructure.configuration.configuration_builder import (
     ConfigurationBuilder,
     Driver,
 )
-
-
-def fetch_all_workflow_runs(target_branch, start_date, end_date, raw_filters):
-    client = GithubClient(configuration=ConfigurationBuilder(driver=Driver.CLI).build())
-    client.fetch_workflows(
-        target_branch=target_branch,
-        start_date=start_date,
-        end_date=end_date,
-        raw_filters=raw_filters,
-    )
+from providers.github.github_workflow_client import GithubWorkflowClient
 
 
 @click.command()
@@ -39,7 +29,10 @@ def fetch_all_workflow_runs(target_branch, start_date, end_date, raw_filters):
     ),
 )
 def fetch(target_branch, start_date, end_date, raw_filters):
-    fetch_all_workflow_runs(
+    client = GithubWorkflowClient(
+        configuration=ConfigurationBuilder(driver=Driver.CLI).build()
+    )
+    client.fetch_workflows(
         target_branch=target_branch,
         start_date=start_date,
         end_date=end_date,
