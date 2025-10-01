@@ -39,12 +39,79 @@ class TestGithubPrsClient:
 
             mock_read.assert_called_once_with("prs.json")
             mock_get.assert_called_once_with(
-                f"https://api.github.com/repos/{self.configuration.github_repository}/pulls?state=all&per_page=100&sort=created&direction=desc",  # noqa
+                f"https://api.github.com/repos/{self.configuration.github_repository}/pulls",
                 headers=self.headers,
+                params={
+                    "state": "all",
+                    "per_page": 100,
+                    "sort": "created",
+                    "direction": "desc",
+                },
             )
             mocked_store.assert_called_once()
 
-    def test_fetch_prs_with_filters(self):
+    @pytest.mark.parametrize(
+        "filters, expected",
+        [
+            (
+                "state=open",
+                {
+                    "state": "open",
+                    "per_page": 100,
+                    "sort": "created",
+                    "direction": "desc",
+                },
+            ),
+            (
+                "per_page=20",
+                {
+                    "state": "all",
+                    "per_page": 20,
+                    "sort": "created",
+                    "direction": "desc",
+                },
+            ),
+            (
+                "sort=popularity",
+                {
+                    "state": "all",
+                    "per_page": 100,
+                    "sort": "popularity",
+                    "direction": "desc",
+                },
+            ),
+            (
+                "direction=asc",
+                {
+                    "state": "all",
+                    "per_page": 100,
+                    "sort": "created",
+                    "direction": "asc",
+                },
+            ),
+            (
+                "base=main",
+                {
+                    "state": "all",
+                    "per_page": 100,
+                    "sort": "created",
+                    "direction": "desc",
+                    "base": "main",
+                },
+            ),
+            (
+                "state=open,base=main,per_page=1,sort=popularity,direction=asc",
+                {
+                    "state": "open",
+                    "per_page": 1,
+                    "sort": "popularity",
+                    "direction": "asc",
+                    "base": "main",
+                },
+            ),
+        ],
+    )
+    def test_fetch_prs_with_filters(self, filters, expected):
         with (
             patch(
                 "infrastructure.base_repository.BaseRepository.read_file_if_exists"
@@ -65,11 +132,12 @@ class TestGithubPrsClient:
             mock_response.status_code = 200
             mock_get.return_value = mock_response
 
-            self.github_client.fetch_prs(raw_filters="state=open")
+            self.github_client.fetch_prs(raw_filters=filters)
 
             mock_read.assert_called_once_with("prs.json")
             mock_get.assert_called_once_with(
-                f"https://api.github.com/repos/{self.configuration.github_repository}/pulls?state=open&per_page=100&sort=created&direction=desc",  # noqa
+                f"https://api.github.com/repos/{self.configuration.github_repository}/pulls",
                 headers=self.headers,
+                params=expected,
             )
             mocked_store.assert_called_once()

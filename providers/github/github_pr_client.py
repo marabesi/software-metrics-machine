@@ -62,15 +62,39 @@ class GithubPrsClient:
 
         prs = []
         state = "all"
+        per_page = 100
+        sort = "created"
+        direction = "desc"
+
         if "state" in params:
             state = params["state"]
+        if "per_page" in params:
+            per_page = int(params["per_page"])
+        if "sort" in params:
+            sort = params["sort"]
+        if "direction" in params:
+            direction = params["direction"]
 
-        url = f"https://api.github.com/repos/{self.repository_slug}/pulls?state={state}&per_page=100&sort=created&direction=desc"  # noqa
+        url = f"https://api.github.com/repos/{self.repository_slug}/pulls"  # noqa
 
         stop = False
         while url and not stop:
             print(f"  → fetching {url}")
-            r = requests.get(url, headers=self.HEADERS)
+            r = requests.get(
+                url,
+                headers=self.HEADERS,
+                params={
+                    "state": state,
+                    "per_page": per_page,
+                    "sort": sort,
+                    "direction": direction,
+                    **{
+                        k: v
+                        for k, v in params.items()
+                        if k not in ["state", "per_page", "sort", "direction"]
+                    },
+                },
+            )
             r.raise_for_status()
             page_prs = r.json()
 
