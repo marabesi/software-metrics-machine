@@ -16,7 +16,9 @@ class GithubPrsClient:
         self.pr_repository = LoadPrs(configuration=configuration)
         self.configuration = configuration
 
-    def fetch_prs(self, start_date=None, end_date=None, months=1, force=None):
+    def fetch_prs(
+        self, start_date=None, end_date=None, months=1, force=None, raw_filters=None
+    ):
         pr_json_path = "prs.json"
 
         if force:
@@ -27,6 +29,13 @@ class GithubPrsClient:
         if contents is not None:
             print(f"PRs file already exists. Loading PRs from {pr_json_path}")
             return
+
+        params = {}
+        if raw_filters:
+            for f in raw_filters.split(","):
+                if "=" in f:
+                    k, v = f.split("=", 1)
+                    params[k] = v
 
         if not start_date or not end_date:
             print(
@@ -52,7 +61,11 @@ class GithubPrsClient:
         )
 
         prs = []
-        url = f"https://api.github.com/repos/{self.repository_slug}/pulls?state=all&per_page=100&sort=created&direction=desc"  # noqa
+        state = "all"
+        if "state" in params:
+            state = params["state"]
+
+        url = f"https://api.github.com/repos/{self.repository_slug}/pulls?state={state}&per_page=100&sort=created&direction=desc"  # noqa
 
         stop = False
         while url and not stop:

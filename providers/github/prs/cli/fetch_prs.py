@@ -1,5 +1,5 @@
 import click
-from providers.github.github_client import GithubPrsClient
+from providers.github.github_pr_client import GithubPrsClient
 from infrastructure.configuration.configuration_builder import (
     ConfigurationBuilder,
     Driver,
@@ -28,7 +28,14 @@ from infrastructure.configuration.configuration_builder import (
     default=None,
     help="Filter PRs created on or before this date (ISO 8601)",
 )
-def execute(months=1, force=None, start_date=None, end_date=None):
+@click.option(
+    "--raw-filters",
+    type=str,
+    help="Filters to apply to the GitHub API request, in the form key=value,key2=value2"
+    "(e.g., event=push,actor=someuser). See https://docs.github.com/en/rest/pulls/pulls"
+    "for possible filters.",
+)
+def execute(months=1, force=None, start_date=None, end_date=None, raw_filters=None):
     client = GithubPrsClient(
         configuration=ConfigurationBuilder(driver=Driver.CLI).build()
     )
@@ -37,6 +44,7 @@ def execute(months=1, force=None, start_date=None, end_date=None):
         force=force,
         start_date=start_date,
         end_date=end_date,
+        raw_filters=raw_filters,
     )
 
 

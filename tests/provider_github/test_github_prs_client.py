@@ -1,6 +1,6 @@
 import pytest
 from unittest.mock import patch, MagicMock
-from providers.github.github_client import GithubPrsClient
+from providers.github.github_pr_client import GithubPrsClient
 from tests.in_memory_configuration import InMemoryConfiguration
 
 
@@ -24,11 +24,8 @@ class TestGithubPrsClient:
             ) as mocked_store,
             patch("requests.get") as mock_get,
         ):
-
-            # Stub the read_file_if_exists method
             mock_read.return_value = None
 
-            # Stub the requests.get method
             mock_response = MagicMock()
             mock_response.json.return_value = [
                 {"created_at": "2023-01-01T00:00:00Z"},
@@ -43,6 +40,36 @@ class TestGithubPrsClient:
             mock_read.assert_called_once_with("prs.json")
             mock_get.assert_called_once_with(
                 f"https://api.github.com/repos/{self.configuration.github_repository}/pulls?state=all&per_page=100&sort=created&direction=desc",  # noqa
+                headers=self.headers,
+            )
+            mocked_store.assert_called_once()
+
+    def test_fetch_prs_with_filters(self):
+        with (
+            patch(
+                "infrastructure.base_repository.BaseRepository.read_file_if_exists"
+            ) as mock_read,
+            patch(
+                "infrastructure.base_repository.BaseRepository.store_file"
+            ) as mocked_store,
+            patch("requests.get") as mock_get,
+        ):
+            mock_read.return_value = None
+
+            mock_response = MagicMock()
+            mock_response.json.return_value = [
+                {"created_at": "2023-01-01T00:00:00Z"},
+                {"created_at": "2023-02-01T00:00:00Z"},
+            ]
+            mock_response.links = {}
+            mock_response.status_code = 200
+            mock_get.return_value = mock_response
+
+            self.github_client.fetch_prs(raw_filters="state=open")
+
+            mock_read.assert_called_once_with("prs.json")
+            mock_get.assert_called_once_with(
+                f"https://api.github.com/repos/{self.configuration.github_repository}/pulls?state=open&per_page=100&sort=created&direction=desc",  # noqa
                 headers=self.headers,
             )
             mocked_store.assert_called_once()

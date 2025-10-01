@@ -1,6 +1,7 @@
 # GitHub CLI Commands for Analysis
 
-This document provides a guide for developers to run GitHub-related analyses using the CLI commands available in the `software-metrics-machine` project. Each command is categorized by its purpose and functionality.
+This document provides a guide for developers to run GitHub-related analyses using the CLI commands available in the
+`software-metrics-machine` project. Each command is categorized by its purpose and functionality.
 
 ## Pull Requests
 
@@ -14,6 +15,8 @@ This document provides a guide for developers to run GitHub-related analyses usi
 |----------------|-------------------------------------|--------------------------|
 | Start date     | Fetches PRs created after a date.   | `--start-date=2025-01-01`|
 | End date       | Fetches PRs created before a date.  | `--end-date=2025-12-31`  |
+| Filters       | Allows to pass in filters directly to the [GitHub API](https://docs.github.com/en/rest/pulls/pulls#list-pull-requests)  | `--raw-filters=state=open`  |
+| Force       | By default a file is stored with the rerieved data to avoid refetching it again. However, using this parameter bypass this cache. | `--force=true`  |
 
 Filtering the data fetch from PRs by date is done logically while fetching the data, this is not a feature that GitHub
 API provides.
@@ -31,6 +34,7 @@ API provides.
 | End date       | Fetches PRs created before a date.  | `--end-date=2025-12-31`     |
 | Limit          | If the list is too big --top will show only the top x results from the list.  | `--top=10`     |
 | File           | The name of the file to store the generated chart  | `--out-file=my_chart.png` or   `--out-file=subfolder/my_chart.png`   |
+| Step           | Step defines the pace in which the data is fetched. It helps to mitigate the rate limits in the GitHub API | `--step-by=day.png` |
 
 ### View PRs by Author
 
@@ -57,6 +61,12 @@ API provides.
 ```bash
 ./run-cli.sh workflows fetch
 ```
+
+| Option         | Description                          | Example                  |
+|----------------|--------------------------------------|--------------------------|
+| Start date     | Fetches PRs created after a date.   | `--start-date=2025-01-01`     |
+| End date       | Fetches PRs created before a date.  | `--end-date=2025-12-31`     |
+| Step           | Step defines the pace in which the data is fetched. It helps to mitigate the rate limits in the GitHub API | `--step-by=day.png` |
 
 ### Fetch Jobs
 

@@ -23,6 +23,23 @@ class TestCliCommands:
         assert 0 == result.exit_code
         assert "Show this message and exit" in result.output
 
+    def test_can_run_fetch_with_raw_filters_for_api(self, cli):
+        result = cli.invoke(
+            main,
+            [
+                "prs",
+                "fetch",
+                "--start-date",
+                "2023-01-01",
+                "--end-date",
+                "2023-01-02",
+                "--raw-filters",
+                "status=all",
+                "--help",
+            ],
+        )
+        assert "Filters to apply to the GitHub API request" in result.output
+
     def test_fetch_prs_between_dates(self, cli, tmp_path):
         path_string = str(tmp_path)
         configuration = InMemoryConfiguration(path_string)
@@ -90,6 +107,39 @@ class TestCliCommands:
             )
             mock_get.assert_called_once()
             assert f"Data written to {str(tmp_path)}" in result.output
+
+    def test_fetch_defaults_to_1_month_when_no_date_is_provided(self, cli, tmp_path):
+        path_string = str(tmp_path)
+        os.environ["SMM_STORE_DATA_AT"] = path_string
+        configuration = InMemoryConfiguration(path_string)
+        ConfigurationFileSystemHandler(path_string).store_file(
+            "smm_config.json", configuration
+        )
+
+        with patch("requests.get") as mock_get:
+            fetch_prs_fake_response = [
+                {
+                    "created_at": "2011-01-26T19:01:12Z",
+                    "closed_at": "2011-01-26T19:01:12Z",
+                }
+            ]
+
+            mock_get.return_value.json.return_value = fetch_prs_fake_response
+            mock_get.return_value.status_code = 200
+
+            result = cli.invoke(
+                main,
+                [
+                    "prs",
+                    "fetch",
+                ],
+            )
+
+            assert (
+                "No start_date or end_date provided. Defaulting to the last 1 month(s)."
+                in result.output
+            )
+            mock_get.assert_called_once()
 
     def test_with_stored_data_plot_prs_by_author(self, cli, tmp_path):
         path_string = str(tmp_path)
