@@ -214,25 +214,29 @@ class TestCliCommands:
         assert 0 == result.exit_code
         assert "Loaded 2 PRs" in result.output
 
-    def test_with_stored_data__summary(self, cli, tmp_path):
+    @pytest.mark.parametrize(
+        "prs",
+        [
+            [
+                {
+                    "created_at": "2011-01-26T19:01:12Z",
+                    "closed_at": "2011-01-26T19:01:12Z",
+                },
+                {
+                    "created_at": "2011-01-26T19:01:12Z",
+                    "closed_at": "2011-01-26T19:01:12Z",
+                },
+            ],
+            [],
+        ],
+    )
+    def test_with_stored_data_summary(self, cli, tmp_path, prs):
         path_string = str(tmp_path)
         os.environ["SMM_STORE_DATA_AT"] = path_string
         ConfigurationFileSystemHandler(path_string).store_file(
             "smm_config.json", InMemoryConfiguration(path_string)
         )
-        pull_requests_data = [
-            {
-                "created_at": "2011-01-26T19:01:12Z",
-                "closed_at": "2011-01-26T19:01:12Z",
-            },
-            {
-                "created_at": "2011-01-26T19:01:12Z",
-                "closed_at": "2011-01-26T19:01:12Z",
-            },
-        ]
-        FileHandlerForTesting(path_string).store_json_file(
-            "prs.json", pull_requests_data
-        )
+        FileHandlerForTesting(path_string).store_json_file("prs.json", prs)
 
         result = cli.invoke(
             main,
@@ -250,7 +254,7 @@ class TestCliCommands:
             ],
         )
         assert 0 == result.exit_code
-        assert "Loaded 2 PRs" in result.output
+        assert f"Loaded {len(prs)} PRs" in result.output
 
     def test_with_stored_data_plot_average_prs_open_by(self, cli, tmp_path):
         path_string = str(tmp_path)
