@@ -1,5 +1,8 @@
 import click
-from infrastructure.configuration.configuration import Configuration
+from infrastructure.configuration.configuration_builder import (
+    ConfigurationBuilder,
+    Driver,
+)
 from providers.github.workflows.repository_workflows import LoadWorkflows
 from providers.github.workflows.assessment.view_summary import WorkflowRunSummary
 
@@ -19,7 +22,9 @@ from providers.github.workflows.assessment.view_summary import WorkflowRunSummar
 )
 def summary(max_workflows, output):
     lw = WorkflowRunSummary(
-        repository=LoadWorkflows(configuration=Configuration().build())
+        repository=LoadWorkflows(
+            configuration=ConfigurationBuilder(driver=Driver.JSON).build()
+        )
     )
     lw.print_summary(max_workflows=max_workflows, output_format=output)
 

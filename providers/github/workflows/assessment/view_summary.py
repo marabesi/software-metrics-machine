@@ -87,6 +87,12 @@ class WorkflowRunSummary:
         return summary
 
     def __print_run(self, first: dict, last: dict) -> None:
+        if (first.get("created_at") is None) or (
+            last.get("created_at") is None or first.get("updated_at") is None
+        ):
+            print("No valid run data available to display first and last runs.")
+            return
+
         print("")
         print("First run:")
         created_at = first.get("created_at")
