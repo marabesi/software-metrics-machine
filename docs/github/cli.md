@@ -34,7 +34,7 @@ API provides.
 | End date       | Fetches PRs created before a date.  | `--end-date=2025-12-31`     |
 | Limit          | If the list is too big --top will show only the top x results from the list.  | `--top=10`     |
 | File           | The name of the file to store the generated chart  | `--out-file=my_chart.png` or   `--out-file=subfolder/my_chart.png`   |
-| Step           | Step defines the pace in which the data is fetched. It helps to mitigate the rate limits in the GitHub API | `--step-by=day.png` |
+| Step           | Step defines the pace in which the data is fetched. It helps to mitigate the rate limits in the GitHub API | `--step-by=day` |
 
 ### View PRs by Author
 
@@ -66,7 +66,7 @@ API provides.
 |----------------|--------------------------------------|--------------------------|
 | Start date     | Fetches PRs created after a date.   | `--start-date=2025-01-01`     |
 | End date       | Fetches PRs created before a date.  | `--end-date=2025-12-31`     |
-| Step           | Step defines the pace in which the data is fetched. It helps to mitigate the rate limits in the GitHub API | `--step-by=day.png` |
+| Step           | Step defines the pace in which the data is fetched. It helps to mitigate the rate limits in the GitHub API | `--step-by=day` |
 
 ### Fetch Jobs
 
