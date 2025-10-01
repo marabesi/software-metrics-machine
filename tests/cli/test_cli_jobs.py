@@ -133,3 +133,42 @@ class TestJobsCliCommands:
             "No runs to fetch jobs for in the date range 2023-01-01 to 2023-01-31"
             in result.output
         )
+
+    @pytest.mark.parametrize(
+        "jobs",
+        [
+            [
+                {
+                    "id": "1",
+                    "run_id": "1",
+                    "steps": [],
+                },
+            ],
+        ],
+    )
+    def test_with_stored_data_summary(self, cli, tmp_path, jobs):
+        path_string = str(tmp_path)
+        os.environ["SMM_STORE_DATA_AT"] = path_string
+        ConfigurationFileSystemHandler(path_string).store_file(
+            "smm_config.json", InMemoryConfiguration(path_string)
+        )
+        single_run = [
+            {
+                "id": 1,
+                "path": "/workflows/build.yml",
+                "status": "success",
+                "created_at": "2023-10-01T12:00:00Z",
+            },
+        ]
+        FileHandlerForTesting(path_string).store_json_file("workflows.json", single_run)
+        FileHandlerForTesting(path_string).store_json_file("jobs.json", jobs)
+
+        result = cli.invoke(
+            main,
+            [
+                "pipelines",
+                "jobs-summary",
+            ],
+        )
+        assert 0 == result.exit_code
+        assert "Jobs summary" in result.output

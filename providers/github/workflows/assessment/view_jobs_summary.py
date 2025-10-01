@@ -1,7 +1,13 @@
 from collections import Counter
 from typing import List
+from infrastructure.configuration.configuration_builder import (
+    ConfigurationBuilder,
+    Driver,
+)
 from providers.github.workflows.repository_workflows import LoadWorkflows
 from infrastructure.date_and_time import datetime_to_local
+
+lw = LoadWorkflows(configuration=ConfigurationBuilder(driver=Driver.JSON).build())
 
 
 def summarize_jobs(jobs: List[dict]) -> dict:
@@ -30,7 +36,6 @@ def summarize_jobs(jobs: List[dict]) -> dict:
     summary["conclusions"] = dict(concl_counter)
 
     # build a mapping from run_id -> workflow name by loading runs if available
-    lw = LoadWorkflows()
     runs = lw.runs() or []
     run_id_to_name = {r.get("id"): r.get("name") for r in runs if r.get("id")}
 
@@ -90,7 +95,6 @@ def print_job(first, last) -> None:
 
 
 def print_summary(max_jobs: int = 10) -> None:
-    lw = LoadWorkflows()
     summary = summarize_jobs(lw.jobs())
     if summary.get("total_jobs", 0) == 0:
         print("No job executions available.")
