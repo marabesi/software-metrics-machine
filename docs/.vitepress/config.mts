@@ -27,6 +27,15 @@ export default defineConfig({
   base: '/software-metrics-machine/',
   head,
   themeConfig: {
+    returnToTopLabel: 'Back to top',
+    editLink: {
+      pattern: 'https://github.com/marabesi/software-metrics-machine/edit/main/docs/:path',
+      text: 'Edit this page on GitHub'
+    },
+    footer: {
+      message: 'Released under the MIT License.',
+      copyright: 'Copyright © 2025-present Matheus Marabesi marabesi.com'
+    },
     // https://vitepress.dev/reference/default-theme-config
     nav: [
       { text: 'Home', link: '/' },
@@ -45,6 +54,8 @@ export default defineConfig({
         items: [
           { text: 'GitHub', link: '/github', items: [
             { text: 'CLI', link: '/github/cli' },
+            { text: 'Pull requests', link: '/github/cli-prs' },
+            { text: 'Workflows', link: '/github/cli-workflows' },
           ]},
           { text: 'Codemaat', link: '/codemaat', items: [
             { text: 'CLI', link: '/codemaat/cli' },

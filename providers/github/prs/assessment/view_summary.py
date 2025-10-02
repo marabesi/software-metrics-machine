@@ -21,6 +21,10 @@ class PrViewSummary:
             {"start_date": self.start_date, "end_date": self.end_date}
         )
 
+        if len(self.prs) == 0:
+            print("No PRs to summarize")
+            return None
+
         summary = self.__summarize_prs()
 
         if self.csv:
@@ -46,7 +50,6 @@ class PrViewSummary:
         summary = {}
         total = len(self.prs)
         summary["total_prs"] = total
-
         if total == 0:
             summary.update(
                 {
@@ -62,7 +65,6 @@ class PrViewSummary:
             )
             return summary
 
-        # first and last based on the loaded order
         first = self.prs[0]
         last = self.prs[-1]
         summary["first_pr"] = first

@@ -256,6 +256,25 @@ class TestCliCommands:
         assert 0 == result.exit_code
         assert f"Loaded {len(prs)} PRs" in result.output
 
+    def test_with_empty_data_summary(self, cli, tmp_path):
+        path_string = str(tmp_path)
+        os.environ["SMM_STORE_DATA_AT"] = path_string
+        ConfigurationFileSystemHandler(path_string).store_file(
+            "smm_config.json", InMemoryConfiguration(path_string)
+        )
+        FileHandlerForTesting(path_string).store_json_file("prs.json", [])
+
+        result = cli.invoke(
+            main,
+            [
+                "prs",
+                "summary",
+            ],
+        )
+
+        assert "No PRs to summarize" in result.output
+        assert 0 == result.exit_code
+
     def test_with_stored_data_plot_average_prs_open_by(self, cli, tmp_path):
         path_string = str(tmp_path)
         os.environ["SMM_STORE_DATA_AT"] = path_string
