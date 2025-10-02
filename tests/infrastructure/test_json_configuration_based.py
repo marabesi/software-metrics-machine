@@ -27,6 +27,7 @@ class TestJsonConfigurationBased:
             git_repository_location="/my/repo",
             deployment_frequency_target_pipeline="my_pipeline",
             deployment_frequency_target_job="my_job",
+            main_branch="main",
         )
         file = "my_conf.json"
         configuration_file_system_handler.store_file(file, configuration)
@@ -39,3 +40,4 @@ class TestJsonConfigurationBased:
         assert read_configuration.git_repository_location == "/my/repo"
         assert read_configuration.deployment_frequency_target_pipeline == "my_pipeline"
         assert read_configuration.deployment_frequency_target_job == "my_job"
+        assert read_configuration.main_branch == "main"

@@ -8,6 +8,7 @@ class Configuration:
         git_repository_location=None,
         deployment_frequency_target_pipeline=None,
         deployment_frequency_target_job=None,
+        main_branch=None,
     ):
         self.git_provider = git_provider
         self.github_token = github_token
@@ -16,6 +17,7 @@ class Configuration:
         self.git_repository_location = git_repository_location
         self.deployment_frequency_target_pipeline = deployment_frequency_target_pipeline
         self.deployment_frequency_target_job = deployment_frequency_target_job
+        self.main_branch = main_branch
 
         print("git_repository_location", self.git_repository_location)
         print(

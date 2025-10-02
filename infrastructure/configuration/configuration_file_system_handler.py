@@ -22,6 +22,7 @@ class ConfigurationFileSystemHandler:
                 "deployment_frequency_target_pipeline"
             ),
             deployment_frequency_target_job=data.get("deployment_frequency_target_job"),
+            main_branch=data.get("main_branch"),
         )
 
     def store_file(self, file: str, data: Configuration) -> bool:

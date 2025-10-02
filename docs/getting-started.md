@@ -152,12 +152,13 @@ The configuration file `smm_config.json` supports the following options:
 
 | Key                     |  Section      |  Description                                                            | Required | Default Value        |
 |-------------------------| -------       | ------------------------------------------------------------------------|----------|----------------------|
-| Providers               |               |                                                                         |          |                      |
+| **PROVIDERS**           |               |                                                                         |          |                      |
 | git_provider            |  Provider     |  The git provider to use (github, gitlab, etc)                          | Yes      | github               |
-| [github_token](./github.md#generating-a-token)          |  Provider     |  The personal access token for GitHub                                   | Yes      |                      |
-| Repository              |               |                                                                         |          |                      |
+| [github_token](./github.md#generating-a-token)          |  Provider     |  The personal access token for GitHub   | Yes      |                      |
+| **REPOSITORY**          |               |                                                                         |          |                      |
 | github_repository       |  Repository   |  The GitHub repository in the format user/repo                          | Yes      |                      |
 | git_repository_location |  Repository   |  The local path to the git repository (for codemaat)                    | Yes      |                      |
-| Metrics                 |               |                                                                         |          |                      |
+| **METRICS**             |               |                                                                         |          |                      |
 | deployment_frequency_target_pipeline    |  Metrics     |  The personal access token for GitLab                    | No       |                      |
 | deployment_frequency_target_job         |  Metrics     |  The personal access token for GitLab                    | No       |                      |
+| main_branch             |  Metrics      |  The main branch repository, usually main by default                    | No       |                      |
