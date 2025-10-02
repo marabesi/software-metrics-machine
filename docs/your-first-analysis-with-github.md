@@ -55,6 +55,9 @@ following content:
 }
 ```
 
+> [!IMPORTANT]
+> Use a different folder than the cloned repository to store the data, to avoid any accidental deletion of data changes.
+
 Replace `your_github_token` with the token you generated, and `/path/to/cloned/vue` with the path where you cloned the
 repository. Next, set the `main_branch` to the main branch of the repository, which is `main` for the Vue.js repository
 at the time of writing. Next, we will fetch the data from GitHub.
@@ -62,6 +65,14 @@ at the time of writing. Next, we will fetch the data from GitHub.
 ## Fetching Data
 
 To fetch data from the GitHub repository, we will use the CLI commands provided by Software Metrics Machine.
+
+### Fetching source code codemaat
+
+To fetch the git history data using codemaat, run the following command:
+
+```bash
+
+```
 
 ### Fetch Pull Requests
 
