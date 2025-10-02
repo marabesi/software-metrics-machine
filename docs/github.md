@@ -39,13 +39,13 @@ To check if the token is working, you can set it as an environment variable in y
 request. Start running the following command:
 
 ```bash
-export SSM_GITHUB_TOKEN=ghp_123123123
+export SMM_GITHUB_TOKEN=ghp_123123123
 ```
 
 Once the variables have been set, test your connection with Github with the following command:
 
 ```bash
-curl -H "Authorization: token $SSM_GITHUB_TOKEN" https://api.github.com/user
+curl -H "Authorization: token $SMM_GITHUB_TOKEN" https://api.github.com/user
 ```
 
 A JSON response should be return with the user information, something similar to the following:
@@ -70,11 +70,13 @@ utilities to fetch data based on date time criteria as it is a standard to use i
 are optional. [See the CLI documentation for more details](./github/cli.md).
 
 > [!NOTE]
-> Fetching data may take a while depending on activity in the repository, by defalt it fetches
+> Fetching data may take a while depending on activity in the repository, by default it fetches
 > every pull request and every workflow run in the repository. To fine tune the fetching process, use the options
 > available in the [CLI documentation](./github/cli.md).
 
 ### Pull requests
+
+For options to fetch pull requests refer to the [CLI documentation](./github/cli-prs.md).
 
 ```bash
 ./run-cli.sh prs fetch
@@ -82,9 +84,21 @@ are optional. [See the CLI documentation for more details](./github/cli.md).
 
 ### Workflows (pipelines)
 
+For options to fetch workflows and jobs refer to the [CLI documentation](./github/cli-workflows.md).
+
 ```bash
 ./run-cli.sh pipelines fetch
 ```
+
+## Limitations
+
+### Requests
+
+GitHub however, has a limit on requests that can be done to collect data, which impacts the accessibility and the data
+analysis that Metrics Machine can do. For that end, the library has implemented a mechanism of pause and resume to start
+off where the last downloaded data has been stored, to avoid missing the data needed.
+
+<https://docs.github.com/en/rest/using-the-rest-api/rate-limits-for-the-rest-api?apiVersion=2022-11-28#primary-rate-limit-for-authenticated-users>
 
 ## Visualizing data
 

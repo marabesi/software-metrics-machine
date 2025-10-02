@@ -12,7 +12,7 @@ command, make sure to have them set as follows:
 
 ```bash
 export SSM_GITHUB_REPOSITORY=user/repo
-export SSM_GITHUB_TOKEN=ghp_123123123
+export SMM_GITHUB_TOKEN=ghp_123123123
 ```
 
 To persist those changes, use the bash profile or the zshrc, this way whenever you open a new terminal it will be already set.
@@ -22,7 +22,7 @@ To persist those changes, use the bash profile or the zshrc, this way whenever y
 Once the variables have been set, test your connection with Github with the following command:
 
 ```bash
-curl -H "Authorization: token $SSM_GITHUB_TOKEN" https://api.github.com/user
+curl -H "Authorization: token $SMM_GITHUB_TOKEN" https://api.github.com/user
 ```
 
 A JSON response should be return with the user information, something similar to the following:
