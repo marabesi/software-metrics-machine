@@ -51,6 +51,7 @@ module_groups = {
         "providers.github.workflows.cli.workflow_deployment_frequency",
     ],
     "codemaat": [
+        "providers.codemaat.cli.fetch_codemaat",
         "providers.codemaat.cli.code_churn",
         "providers.codemaat.cli.coupling",
         "providers.codemaat.cli.entity_churn",
