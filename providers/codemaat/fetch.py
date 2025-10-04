@@ -23,7 +23,7 @@ class FetchCodemaat:
             self.configuration.git_repository_location,
             self.configuration.store_data,
             start_date,
-            subfolder,
+            subfolder and subfolder or "",
             force and "true" or "false",
         ]
         result = Run().run_command(command, capture_output=True, text=True, check=True)

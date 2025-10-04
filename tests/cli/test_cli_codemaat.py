@@ -2,6 +2,8 @@ import os
 from subprocess import CompletedProcess
 from unittest.mock import patch
 
+import pytest
+
 from apps.cli.main import main
 
 from infrastructure.configuration.configuration_file_system_handler import (
@@ -12,6 +14,12 @@ from tests.in_memory_configuration import InMemoryConfiguration
 
 
 class TestCliCodemaatCommands:
+
+    @pytest.fixture(scope="function", autouse=True)
+    def reset_mock_run(self):
+        with patch("infrastructure.run.Run.run_command") as mock_run:
+            mock_run.reset_mock()
+            yield mock_run
 
     def test_has_fetch_command(self, cli, tmp_path):
         path_string = str(tmp_path)
@@ -52,7 +60,7 @@ class TestCliCodemaatCommands:
                 ],
             )
             run_command = mock_run.call_args[0][0]
-            assert run_command == [
+            assert [
                 "sh",
                 "providers/codemaat/fetch-codemaat.sh",
                 configuration.git_repository_location,
@@ -60,7 +68,44 @@ class TestCliCodemaatCommands:
                 "2025-01-01",
                 "",
                 "false",
-            ]
+            ] == run_command
+
+    def test_should_fetch_for_a_subfolder_in_repo(self, cli, tmp_path):
+        path_string = str(tmp_path)
+        os.environ["SMM_STORE_DATA_AT"] = path_string
+        configuration = InMemoryConfiguration(path_string)
+        ConfigurationFileSystemHandler(path_string).store_file(
+            "smm_config.json", configuration
+        )
+
+        with patch("infrastructure.run.Run.run_command") as mock_run:
+            mock_run.return_value = CompletedProcess(
+                args="", returncode=0, stdout="total 0 .\nexample\n", stderr=""
+            )
+
+            cli.invoke(
+                main,
+                [
+                    "codemaat",
+                    "fetch",
+                    "--start-date",
+                    "2025-01-01",
+                    "--end-date",
+                    "2025-01-01",
+                    "--subfolder",
+                    "tests/",
+                ],
+            )
+            run_command = mock_run.call_args[0][0]
+            assert [
+                "sh",
+                "providers/codemaat/fetch-codemaat.sh",
+                configuration.git_repository_location,
+                configuration.store_data,
+                "2025-01-01",
+                "tests/",
+                "false",
+            ] == run_command
 
     def test_can_run_code_churn_without_data_available(self, cli, tmp_path):
         path_string = str(tmp_path)
