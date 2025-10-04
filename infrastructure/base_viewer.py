@@ -44,10 +44,12 @@ class MatplotViewer:
             return fig
         else:
             # return fig
-            return pn.pane.Matplotlib(
+            mpl_pane = pn.pane.Matplotlib(
                 fig, dpi=144, tight=True, format="svg", sizing_mode="stretch_width"
             )
-            plt.show()
+            plt.close(fig)
+            return mpl_pane
+            # plt.show()
 
     def __ensure_png(self, path: str) -> str:
         return path if path.lower().endswith(".png") else f"{path}.png"
