@@ -47,20 +47,32 @@ class ViewDeploymentFrequency(MatplotViewer):
             job_name=job_name, filters=filters
         )
 
+        daily_counts = aggregated["daily_counts"]
         weekly_counts = aggregated["weekly_counts"]
         monthly_counts = aggregated["monthly_counts"]
+        days = aggregated["days"]
         weeks = aggregated["weeks"]
         months = aggregated["months"]
 
-        fig, ax = plt.subplots(2, 1, figsize=super().get_fig_size())
+        fig, ax = plt.subplots(3, 1, figsize=super().get_fig_size())
 
-        ax[0].bar(weeks, weekly_counts, color="blue")
-        ax[0].set_title("Weekly Deployment Frequency")
+        # Plot daily counts
+        ax[0].bar(days, daily_counts, color="orange")
+        ax[0].set_title("Daily Deployment Frequency")
         ax[0].set_ylabel("Deployments")
         ax[0].tick_params(axis="x", rotation=45)
 
-        for i, count in enumerate(weekly_counts):
+        for i, count in enumerate(daily_counts):
             ax[0].text(i, count, str(count), ha="center", va="bottom")
+
+        # Plot weekly counts
+        ax[1].bar(weeks, weekly_counts, color="blue")
+        ax[1].set_title("Weekly Deployment Frequency")
+        ax[1].set_ylabel("Deployments")
+        ax[1].tick_params(axis="x", rotation=45)
+
+        for i, count in enumerate(weekly_counts):
+            ax[1].text(i, count, str(count), ha="center", va="bottom")
 
         week_dates = [datetime.strptime(week + "-1", "%Y-W%W-%w") for week in weeks]
         current_month = None
@@ -70,17 +82,18 @@ class ViewDeploymentFrequency(MatplotViewer):
                 current_month = week_date.month
 
             if week_date.month != current_month:
-                ax[0].axvline(x=i - 0.5, color="gray", linestyle="--", alpha=0.7)
+                ax[1].axvline(x=i - 0.5, color="gray", linestyle="--", alpha=0.7)
                 current_month = week_date.month
 
-        ax[1].bar(months, monthly_counts, color="green")
-        ax[1].set_title("Monthly Deployment Frequency")
-        ax[1].set_xlabel("Time")
-        ax[1].set_ylabel("Deployments")
-        ax[1].tick_params(axis="x", rotation=45)
+        # Plot monthly counts
+        ax[2].bar(months, monthly_counts, color="green")
+        ax[2].set_title("Monthly Deployment Frequency")
+        ax[2].set_xlabel("Time")
+        ax[2].set_ylabel("Deployments")
+        ax[2].tick_params(axis="x", rotation=45)
 
         for i, count in enumerate(monthly_counts):
-            ax[1].text(i, count, str(count), ha="center", va="bottom")
+            ax[2].text(i, count, str(count), ha="center", va="bottom")
 
         fig.tight_layout()
 
