@@ -155,6 +155,47 @@ class TestRepositoryWorkflows:
             assert "2023-10" in result["months"]
             assert "2023-W39" in result["weeks"]
 
+    def test_deployment_frequency_return_the_day_which_deployment_was_done(self):
+        single_deployment = as_json_string(
+            [
+                {
+                    "id": 1,
+                    "path": "/workflows/build.yml",
+                    "status": "success",
+                    "created_at": "2023-10-01T09:00:00Z",
+                },
+            ]
+        )
+
+        def mocked_read_file_if_exists(file):
+            if file == "workflows.json":
+                return single_deployment
+            elif file == "jobs.json":
+                return as_json_string(
+                    [
+                        {
+                            "id": 105,
+                            "run_id": 1,
+                            "name": "Deploy",
+                            "conclusion": "success",
+                            "started_at": "2023-10-01T09:05:00Z",
+                            "completed_at": "2023-10-01T09:10:00Z",
+                        },
+                    ]
+                )
+            return None
+
+        with patch(
+            "infrastructure.base_repository.BaseRepository.read_file_if_exists",
+            side_effect=mocked_read_file_if_exists,
+        ):
+            loader = LoadWorkflows(configuration=InMemoryConfiguration("."))
+
+            result = loader.get_deployment_frequency_for_job(
+                job_name="Deploy", filters=None
+            )
+            assert "2023-10-01" in result["days"]
+
     @pytest.mark.skip(reason="Not implemented yet")
     def test_should_calculate_all_weeks_between_two_dates_when_data_exists(self):
         pass

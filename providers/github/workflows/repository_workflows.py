@@ -98,25 +98,42 @@ class LoadWorkflows(BaseRepository):
                 if job.get("name") == job_name and job.get("conclusion") == "success":
                     created_at = job.get("completed_at")[:10]
                     created_at = datetime.fromisoformat(created_at + "T00:00:00+00:00")
+                    day_key = str(created_at.date())
                     week_key = f"{created_at.year}-W{created_at.isocalendar()[1]:02d}"
                     month_key = f"{created_at.year}-{created_at.month:02d}"
 
+                    if day_key not in deployments:
+                        deployments[day_key] = {"daily": 0}
                     if week_key not in deployments:
                         deployments[week_key] = {"weekly": 0}
                     if month_key not in deployments:
                         deployments[month_key] = {"weekly": 0, "monthly": 0}
 
+                    deployments[day_key]["daily"] += 1
                     deployments[week_key]["weekly"] += 1
                     deployments[month_key]["monthly"] += 1
 
+        days = sorted([key for key in deployments.keys() if key.count("-") == 2])
         weeks = sorted([key for key in deployments.keys() if "W" in key])
-        months = sorted([key for key in deployments.keys() if "W" not in key])
+        months = sorted(
+            [
+                key
+                for key in deployments.keys()
+                if "W" not in key and key.count("-") == 1
+            ]
+        )
+
+        daily_counts = [
+            deployments[day]["daily"] for day in days if "daily" in deployments[day]
+        ]
         weekly_counts = [deployments[week]["weekly"] for week in weeks]
         monthly_counts = [deployments[month]["monthly"] for month in months]
 
         return {
+            "days": days,
             "weeks": weeks,
             "months": months,
+            "daily_counts": daily_counts,
             "weekly_counts": weekly_counts,
             "monthly_counts": monthly_counts,
         }
