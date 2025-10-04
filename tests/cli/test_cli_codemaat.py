@@ -1,4 +1,6 @@
 import os
+from subprocess import CompletedProcess
+from unittest.mock import patch
 
 from apps.cli.main import main
 
@@ -24,6 +26,41 @@ class TestCliCodemaatCommands:
         )
         assert "Fetch historical data from a git repository" in result.output
         assert result.stderr == ""
+
+    def test_runs_fetch_for_a_repo(self, cli, tmp_path):
+        path_string = str(tmp_path)
+        os.environ["SMM_STORE_DATA_AT"] = path_string
+        configuration = InMemoryConfiguration(path_string)
+        ConfigurationFileSystemHandler(path_string).store_file(
+            "smm_config.json", configuration
+        )
+
+        with patch("infrastructure.run.Run.run_command") as mock_run:
+            mock_run.return_value = CompletedProcess(
+                args="", returncode=0, stdout="total 0 .\nexample\n", stderr=""
+            )
+
+            cli.invoke(
+                main,
+                [
+                    "codemaat",
+                    "fetch",
+                    "--start-date",
+                    "2025-01-01",
+                    "--end-date",
+                    "2025-01-01",
+                ],
+            )
+            run_command = mock_run.call_args[0][0]
+            assert run_command == [
+                "sh",
+                "providers/codemaat/fetch-codemaat.sh",
+                configuration.git_repository_location,
+                configuration.store_data,
+                "2025-01-01",
+                "",
+                "false",
+            ]
 
     def test_can_run_code_churn_without_data_available(self, cli, tmp_path):
         path_string = str(tmp_path)
