@@ -8,6 +8,15 @@ from tests.in_memory_configuration import InMemoryConfiguration
 
 
 class TestRepositoryWorkflows:
+
+    @pytest.fixture(scope="function", autouse=True)
+    def reset_mocks(self):
+        with patch(
+            "infrastructure.base_repository.BaseRepository.read_file_if_exists"
+        ) as mock_exists:
+            mock_exists.reset_mock()
+            yield mock_exists
+
     def test_get_unique_workflow_names(self):
         workflows_with_duplicates = as_json_string(
             [
