@@ -71,7 +71,7 @@ To fetch data from the GitHub repository, we will use the CLI commands provided 
 To fetch the git history data using codemaat, run the following command:
 
 ```bash
-
+./run-cli.sh codemaat fetch --start-date="2025-01-01" --end-date="2025-05-05"
 ```
 
 ### Fetch Pull Requests

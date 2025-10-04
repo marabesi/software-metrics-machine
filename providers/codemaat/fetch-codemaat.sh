@@ -1,38 +1,13 @@
 #!/bin/bash
 
-git_directory=$SSM_GIT_REPOSITORY_LOCATION
-store_data="$SMM_STORE_DATA_AT"
-
-# parse options: support --force; remaining args are start_date and optional sub_folder
-force=false
-POSITIONAL=()
-while [[ $# -gt 0 ]]; do
-  case "$1" in
-    --force)
-      force=true
-      shift
-      ;;
-    --)
-      shift
-      break
-      ;;
-    -*)
-      echo "Unknown option: $1"
-      exit 1
-      ;;
-    *)
-      POSITIONAL+=("$1")
-      shift
-      ;;
-  esac
-done
-set -- "${POSITIONAL[@]}"
-
-start_date=$1
-sub_folder=$2
+git_directory=$1
+store_data=$2
+start_date=$3
+sub_folder=$4
+force=$5
 
 if [ -z "$git_directory" ]; then
-  echo "❌ SSM_GIT_REPOSITORY_LOCATION is not set. Export SSM_GIT_REPOSITORY_LOCATION to point the git repository to be used."
+  echo "❌ SMM_GIT_REPOSITORY_LOCATION is not set. Export SMM_GIT_REPOSITORY_LOCATION to point the git repository to be used."
   exit 1
 fi
 
@@ -49,7 +24,6 @@ if [ ! -w "$store_data" ]; then
   echo "Directory $store_data is not writable. Check permissions."
   exit 1
 fi
-
 
 if [ -z "$start_date" ]; then
   echo "Run the script with a valid start date e.g., './fetch-codemaat.sh 2023-01-01'. This date will be used as a starting point for the git log extraction."
@@ -107,18 +81,14 @@ run_codemaat() {
 }
 
 run_codemaat age age.csv
-
 run_codemaat abs-churn abs-churn.csv
-
 run_codemaat author-churn author-churn.csv
-
 run_codemaat entity-ownership entity-ownership.csv
-
 run_codemaat entity-effort entity-effort.csv
-
 run_codemaat entity-churn entity-churn.csv
-
 run_codemaat coupling coupling.csv
 
 echo "..."
 echo "..."
+
+echo "Done"
