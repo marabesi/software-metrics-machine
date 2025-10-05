@@ -3,7 +3,7 @@ from unittest.mock import patch
 import pytest
 
 from providers.github.workflows.repository_workflows import LoadWorkflows
-from tests.builders import as_json_string
+from tests.builders import as_json_string, workflows_data
 from tests.in_memory_configuration import InMemoryConfiguration
 
 
@@ -36,90 +36,21 @@ class TestRepositoryWorkflows:
             result = loader.get_unique_workflow_names()
             assert len(result) == 3
 
-    def test_filter_runs_by_date_range(self):
-        workflow_list = as_json_string(
-            [
-                {
-                    "name": "Build Workflow",
-                    "id": 1,
-                    "created_at": "2023-10-01T09:00:00Z",
-                },
-                {
-                    "name": "Build Workflow",
-                    "id": 2,
-                    "created_at": "2023-11-01T09:00:00Z",
-                },
-            ]
-        )
-        with (
-            patch(
-                "infrastructure.base_repository.BaseRepository.read_file_if_exists",
-                return_value=workflow_list,
-            ),
-        ):
-            loader = LoadWorkflows(configuration=InMemoryConfiguration("."))
-            result = loader.runs({"start_date": "2023-10-01", "end_date": "2023-10-01"})
-            assert len(result) == 1
-
-    def test_filter_workflow_by_target_branch(self):
-        workflow_list = as_json_string(
-            [
-                {
-                    "name": "Build Workflow",
-                    "id": 1,
-                    "created_at": "2023-10-01T09:00:00Z",
-                    "head_branch": "main",
-                },
-                {
-                    "name": "Build Workflow",
-                    "id": 2,
-                    "created_at": "2023-11-01T09:00:00Z",
-                    "head_branch": "feature/new-feature",
-                },
-            ]
-        )
-        with (
-            patch(
-                "infrastructure.base_repository.BaseRepository.read_file_if_exists",
-                return_value=workflow_list,
-            ),
-        ):
-            loader = LoadWorkflows(configuration=InMemoryConfiguration("."))
-            result = loader.runs({"target_branch": "main"})
-            assert len(result) == 1
-
-    def test_filter_workflow_by_events(self):
-        workflow_list = as_json_string(
-            [
-                {
-                    "name": "Build Workflow",
-                    "id": 1,
-                    "created_at": "2023-10-01T09:00:00Z",
-                    "head_branch": "main",
-                    "event": "push",
-                },
-                {
-                    "name": "Build Workflow",
-                    "id": 2,
-                    "created_at": "2023-11-01T09:00:00Z",
-                    "head_branch": "feature/new-feature",
-                    "event": "pull_request",
-                },
-            ]
-        )
-        with (
-            patch(
-                "infrastructure.base_repository.BaseRepository.read_file_if_exists",
-                return_value=workflow_list,
-            ),
-        ):
-            loader = LoadWorkflows(configuration=InMemoryConfiguration("."))
-            result = loader.runs({"event": "push"})
-            assert len(result) == 1
-
     @pytest.mark.parametrize(
         "filters, expected",
         [
+            (
+                {"event": "push"},
+                {
+                    "count": 1,
+                },
+            ),
+            (
+                {"start_date": "2023-10-01", "end_date": "2023-10-01"},
+                {
+                    "count": 1,
+                },
+            ),
             (
                 {
                     "start_date": "2023-10-01",
@@ -130,27 +61,16 @@ class TestRepositoryWorkflows:
                     "count": 0,
                 },
             ),
+            (
+                {"target_branch": "main"},
+                {
+                    "count": 1,
+                },
+            ),
         ],
     )
     def test_filter_workflows_by(self, filters, expected):
-        workflow_list = as_json_string(
-            [
-                {
-                    "name": "Build Workflow",
-                    "id": 1,
-                    "created_at": "2023-10-01T09:00:00Z",
-                    "head_branch": "main",
-                    "event": "push",
-                },
-                {
-                    "name": "Build Workflow",
-                    "id": 2,
-                    "created_at": "2023-11-01T09:00:00Z",
-                    "head_branch": "feature/new-feature",
-                    "event": "pull_request",
-                },
-            ]
-        )
+        workflow_list = as_json_string(workflows_data())
         with (
             patch(
                 "infrastructure.base_repository.BaseRepository.read_file_if_exists",
