@@ -1,6 +1,5 @@
 import matplotlib.pyplot as plt
 from datetime import datetime
-from typing import List
 
 from infrastructure.base_viewer import MatplotViewer
 from providers.github.workflows.repository_workflows import LoadWorkflows
@@ -25,34 +24,27 @@ class ViewRunsDuration(MatplotViewer):
     def main(
         self,
         out_file: str | None = None,
-        workflow_path: List[str] | None = None,
+        workflow_path: str | None = None,
         start_date: str | None = None,
         end_date: str | None = None,
         max_runs: int = 50,
         metric: str = "avg",
         sort_by: str = "avg",
     ) -> None:
-        if start_date and end_date:
-            filters = {"start_date": start_date, "end_date": end_date}
-            runs = self.repository.runs(filters)
-        else:
-            runs = self.repository.runs()
+        filters = {
+            "start_date": start_date,
+            "end_date": end_date,
+            "workflow_path": workflow_path,
+        }
 
-        if workflow_path:
-            # normalize provided list of names
-            name_tokens = [n.strip().lower() for n in workflow_path if n]
-
-            def matches_any(name: str) -> bool:
-                nl = (name or "").lower()
-                return any(tok == nl for tok in name_tokens)
-
-            runs = [r for r in runs if matches_any(r.get("path") or "")]
+        runs = self.repository.runs(filters)
 
         print(f"Found {len(runs)} runs after filtering")
 
         groups = {}
         for r in runs:
             name = r.get("path") or "<unnamed>"
+            print(name)
             start = (
                 r.get("run_started_at") or r.get("created_at") or r.get("started_at")
             )

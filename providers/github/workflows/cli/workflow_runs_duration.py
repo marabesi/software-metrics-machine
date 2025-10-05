@@ -18,7 +18,6 @@ from providers.github.workflows.plots.view_runs_duration import ViewRunsDuration
 @click.option(
     "--workflow-path",
     "-w",
-    multiple=True,
     help="Workflow path (exact match, case-insensitive). Can be repeated or supply comma-separated values.",
 )
 @click.option(
