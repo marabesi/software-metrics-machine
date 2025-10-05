@@ -6,6 +6,7 @@ from apps.cli.main import main
 from infrastructure.configuration.configuration_file_system_handler import (
     ConfigurationFileSystemHandler,
 )
+from tests.builders import workflows_data
 from tests.file_handler_for_testing import FileHandlerForTesting
 from tests.in_memory_configuration import InMemoryConfiguration
 
@@ -21,42 +22,12 @@ class TestWorkflowsRunsByCliCommands:
         "workflow_runs, expected",
         [
             (
-                [
-                    {
-                        "id": 1,
-                        "path": "/workflows/build.yml",
-                        "status": "success",
-                        "created_at": "2023-10-01T12:00:00Z",
-                        "head_branch": "main",
-                    },
-                    {
-                        "id": 2,
-                        "path": "/workflows/build.yml",
-                        "status": "success",
-                        "created_at": "2023-10-01T12:00:00Z",
-                        "head_branch": "master",
-                    },
-                ],
+                workflows_data(),
                 {"target": "main", "count": 1},
             ),
             ([], {"target": "main", "count": 0}),
             (
-                [
-                    {
-                        "id": 1,
-                        "path": "/workflows/build.yml",
-                        "status": "success",
-                        "created_at": "2023-10-01T12:00:00Z",
-                        "head_branch": "main",
-                    },
-                    {
-                        "id": 2,
-                        "path": "/workflows/build.yml",
-                        "status": "success",
-                        "created_at": "2023-10-01T12:00:00Z",
-                        "head_branch": "master",
-                    },
-                ],
+                workflows_data(),
                 {"target": "main,master", "count": 1},  # ignores second after comma
             ),
         ],
@@ -93,28 +64,35 @@ class TestWorkflowsRunsByCliCommands:
 
         assert f"Found {expected_count} runs after filtering" in result.output
 
+    def test_should_filter_by_workflow_path(self, cli, tmp_path):
+        workflow_runs = workflows_data()
+        path_string = str(tmp_path)
+        os.environ["SMM_STORE_DATA_AT"] = path_string
+        configuration = InMemoryConfiguration(path_string)
+        ConfigurationFileSystemHandler(path_string).store_file(
+            "smm_config.json", configuration
+        )
+        FileHandlerForTesting(path_string).store_json_file(
+            "workflows.json", workflow_runs
+        )
+
+        result = cli.invoke(
+            main,
+            [
+                "pipelines",
+                "workflow-runs-by",
+                "--workflow-path",
+                "/workflows/tests.yml",
+            ],
+        )
+
+        assert "Found 1 runs after filtering" in result.output
+
     @pytest.mark.parametrize(
         "workflow_runs, expected",
         [
             (
-                [
-                    {
-                        "id": 1,
-                        "path": "/workflows/build.yml",
-                        "status": "success",
-                        "created_at": "2023-10-01T12:00:00Z",
-                        "head_branch": "main",
-                        "event": "push",
-                    },
-                    {
-                        "id": 2,
-                        "path": "/workflows/build.yml",
-                        "status": "success",
-                        "created_at": "2023-10-01T12:00:00Z",
-                        "head_branch": "master",
-                        "event": "pull_request",
-                    },
-                ],
+                workflows_data(),
                 {"event": "push", "count": 1},
             ),
             ([], {"event": "push", "count": 0}),
@@ -149,5 +127,44 @@ class TestWorkflowsRunsByCliCommands:
                 f"event={event}",
             ],
         )
+
+        assert f"Found {expected_count} runs after filtering" in result.output
+
+    @pytest.mark.parametrize(
+        "command, expected",
+        [
+            (
+                [
+                    "pipelines",
+                    "workflow-runs-by",
+                    "--start-date",
+                    "2023-10-01",
+                    "--end-date",
+                    "2023-10-01",
+                    "--raw-filters",
+                    "event=pull_request",
+                ],
+                {
+                    "count": 0,
+                },
+            ),
+        ],
+    )
+    def test_should_filter_by_multiple_parameters(
+        self, cli, tmp_path, command, expected
+    ):
+        expected_count = expected["count"]
+        workflow_runs = workflows_data()
+        path_string = str(tmp_path)
+        os.environ["SMM_STORE_DATA_AT"] = path_string
+        configuration = InMemoryConfiguration(path_string)
+        ConfigurationFileSystemHandler(path_string).store_file(
+            "smm_config.json", configuration
+        )
+        FileHandlerForTesting(path_string).store_json_file(
+            "workflows.json", workflow_runs
+        )
+
+        result = cli.invoke(main, command)
 
         assert f"Found {expected_count} runs after filtering" in result.output

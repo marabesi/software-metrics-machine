@@ -117,6 +117,50 @@ class TestRepositoryWorkflows:
             result = loader.runs({"event": "push"})
             assert len(result) == 1
 
+    @pytest.mark.parametrize(
+        "filters, expected",
+        [
+            (
+                {
+                    "start_date": "2023-10-01",
+                    "end_date": "2023-10-01",
+                    "event": "pull_request",
+                },
+                {
+                    "count": 0,
+                },
+            ),
+        ],
+    )
+    def test_filter_workflows_by(self, filters, expected):
+        workflow_list = as_json_string(
+            [
+                {
+                    "name": "Build Workflow",
+                    "id": 1,
+                    "created_at": "2023-10-01T09:00:00Z",
+                    "head_branch": "main",
+                    "event": "push",
+                },
+                {
+                    "name": "Build Workflow",
+                    "id": 2,
+                    "created_at": "2023-11-01T09:00:00Z",
+                    "head_branch": "feature/new-feature",
+                    "event": "pull_request",
+                },
+            ]
+        )
+        with (
+            patch(
+                "infrastructure.base_repository.BaseRepository.read_file_if_exists",
+                return_value=workflow_list,
+            ),
+        ):
+            loader = LoadWorkflows(configuration=InMemoryConfiguration("."))
+            result = loader.runs(filters=filters)
+            assert expected["count"] == len(result)
+
     def test_get_unique_workflow_paths(self):
         workflows_with_duplicated_paths = as_json_string(
             [

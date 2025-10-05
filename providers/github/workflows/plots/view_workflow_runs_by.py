@@ -23,23 +23,21 @@ class ViewWorkflowRunsBy(MatplotViewer):
         end_date: str | None = None,
     ) -> None:
         params = self.repository.parse_raw_filters(raw_filters)
+        event = params.get("event")
+        target_branch = params.get("target_branch")
 
-        if start_date and end_date:
-            filters = {"start_date": start_date, "end_date": end_date}
-            print(f"Applying date filter: {filters}")
-            runs = self.repository.runs(filters)
-        else:
-            runs = self.repository.runs()
+        filters = {
+            "start_date": start_date,
+            "end_date": end_date,
+            "event": event,
+            "target_branch": target_branch,
+        }
+
+        runs = self.repository.runs(filters)
 
         if workflow_path:
             wf_low = workflow_path.lower()
-            runs = [r for r in runs if (r.get("path") or "").lower().find(wf_low) != -1]
-
-        if event := params.get("event"):
-            runs = self.repository.runs({"event": event})
-
-        if target_vals := params.get("target_branch"):
-            runs = self.repository.runs({"target_branch": target_vals})
+            runs = [r for r in runs if (r.get("path") or "").lower() == wf_low]
 
         if include_defined_only:
 
