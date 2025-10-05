@@ -25,7 +25,6 @@ class ViewPrsByAuthor(MatplotViewer):
 
         if not prs:
             print("No PRs to plot")
-            return
 
         if labels:
             labels = [s.strip() for s in labels.split(",") if s.strip()]
@@ -36,8 +35,8 @@ class ViewPrsByAuthor(MatplotViewer):
         prs = self.top_authors(prs, top)
 
         if len(prs) == 0:
+            prs = [("No PRs to plot after filtering", 0)]
             print("No PRs to plot after filtering")
-            return
 
         authors, counts = zip(*prs)
         # horizontal bar chart with largest on top

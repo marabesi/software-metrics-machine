@@ -9,6 +9,8 @@ class Configuration:
         deployment_frequency_target_pipeline=None,
         deployment_frequency_target_job=None,
         main_branch=None,
+        dashboard_start_date=None,
+        dashboard_end_date=None,
     ):
         self.git_provider = git_provider
         self.github_token = github_token
@@ -18,6 +20,8 @@ class Configuration:
         self.deployment_frequency_target_pipeline = deployment_frequency_target_pipeline
         self.deployment_frequency_target_job = deployment_frequency_target_job
         self.main_branch = main_branch
+        self.dashboard_start_date = dashboard_start_date
+        self.dashboard_end_date = dashboard_end_date
 
         print("git_repository_location", self.git_repository_location)
         print(

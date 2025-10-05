@@ -47,11 +47,11 @@ def prs_section(date_range_picker, repository: LoadPrs, anonymize=False):
             authors=normalize_authors(author_select),
         )
 
-    def plot_workflow_runs_through_time(date_range_picker, author_select):
+    def plot_prs_through_time(date_range_picker, author_select):
         return ViewOpenPrsThroughTime(repository=repository).main(
             start_date=date_range_picker[0],
             end_date=date_range_picker[1],
-            title="Workflow Runs Through Time",
+            title="Open PRs Through Time",
             authors=normalize_authors(author_select),
         )
 
@@ -88,9 +88,7 @@ def prs_section(date_range_picker, repository: LoadPrs, anonymize=False):
             pn.Column(author_select, sizing_mode="stretch_width"),
             pn.Column(label_selector, sizing_mode="stretch_width"),
         ),
-        pn.Row(
-            pn.bind(plot_workflow_runs_through_time, date_range_picker, author_select)
-        ),
+        pn.Row(pn.bind(plot_prs_through_time, date_range_picker, author_select)),
         pn.Row(
             pn.Column(
                 "### Average PRs Open By",

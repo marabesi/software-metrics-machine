@@ -23,6 +23,8 @@ class ConfigurationFileSystemHandler:
             ),
             deployment_frequency_target_job=data.get("deployment_frequency_target_job"),
             main_branch=data.get("main_branch"),
+            dashboard_start_date=data.get("dashboard_start_date"),
+            dashboard_end_date=data.get("dashboard_end_date"),
         )
 
     def store_file(self, file: str, data: Configuration) -> bool:

@@ -1,4 +1,4 @@
-from datetime import date
+from datetime import date, datetime, timedelta
 import panel as pn
 from panel.template import MaterialTemplate
 
@@ -22,9 +22,16 @@ workflow_repository = LoadWorkflows(configuration=configuration)
 prs_repository = LoadPrs(configuration=configuration)
 codemaat_repository = CodemaatRepository(configuration=configuration)
 
+current_date = date.today()
+start_date = current_date - timedelta(days=6 * 30)  # Approximation of 6 months
+end_date = current_date
+
+if configuration.dashboard_start_date and configuration.dashboard_end_date:
+    start_date = datetime.strptime(configuration.dashboard_start_date, "%Y-%m-%d")
+    end_date = datetime.strptime(configuration.dashboard_end_date, "%Y-%m-%d")
 
 start_end_date_picker = pn.widgets.DateRangePicker(
-    name="Select Date Range", value=(date(2025, 8, 5), date(2025, 8, 15))
+    name="Select Date Range", value=(start_date, end_date)
 )
 anonymize = pn.widgets.Checkbox(name="Anonymize Data", value=False)
 

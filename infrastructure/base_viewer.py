@@ -45,7 +45,11 @@ class MatplotViewer:
         else:
             # return fig
             mpl_pane = pn.pane.Matplotlib(
-                fig, dpi=144, tight=True, format="svg", sizing_mode="stretch_width"
+                fig,
+                dpi=144,
+                tight=True,
+                format="svg",
+                sizing_mode="stretch_width",
             )
             plt.close(fig)
             return mpl_pane

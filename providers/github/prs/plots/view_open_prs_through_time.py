@@ -21,8 +21,8 @@ class ViewOpenPrsThroughTime(MatplotViewer):
         )
 
         if not prs:
-            print("No PRs to plot")
-            return
+            print("No PRs to plot for prs through time")
+            # return
 
         timeline = {}
 

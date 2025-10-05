@@ -28,6 +28,8 @@ class TestJsonConfigurationBased:
             deployment_frequency_target_pipeline="my_pipeline",
             deployment_frequency_target_job="my_job",
             main_branch="main",
+            dashboard_start_date="2023-01-01",
+            dashboard_end_date="2023-01-01",
         )
         file = "my_conf.json"
         configuration_file_system_handler.store_file(file, configuration)
@@ -41,3 +43,5 @@ class TestJsonConfigurationBased:
         assert read_configuration.deployment_frequency_target_pipeline == "my_pipeline"
         assert read_configuration.deployment_frequency_target_job == "my_job"
         assert read_configuration.main_branch == "main"
+        assert read_configuration.dashboard_start_date == "2023-01-01"
+        assert read_configuration.dashboard_end_date == "2023-01-01"
