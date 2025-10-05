@@ -42,8 +42,16 @@ workflow_selector = pn.widgets.Select(
     description="Select Workflow",
     options=workflow_names,
 )
+
+workflow_conclusions = workflow_repository.get_unique_workflow_conclusions()
+workflow_conclusions = pn.widgets.Select(
+    name="Select conclusion",
+    description="Select conclusion",
+    options=workflow_conclusions,
+)
 header_section = pn.Row(
-    pn.Column(start_end_date_picker, workflow_selector), sizing_mode="stretch_width"
+    pn.Column(start_end_date_picker, workflow_selector, workflow_conclusions),
+    sizing_mode="stretch_width",
 )
 header_section_prs = pn.Row()
 header_section_pipeline = pn.Row()
@@ -54,6 +62,7 @@ insights_section = insights_section(
 pipeline_section = pipeline_section(
     date_range_picker=start_end_date_picker,
     workflow_selector=workflow_selector,
+    workflow_conclusions=workflow_conclusions,
     repository=workflow_repository,
 )
 prs_section = prs_section(
@@ -76,7 +85,7 @@ tabs = pn.Tabs(
     ("Source code", source_code_section),
     ("Configuration", configuration_section),
     sizing_mode="stretch_width",
-    active=0,
+    active=1,
 )
 
 template.main.append(tabs)
@@ -85,12 +94,15 @@ template.main.append(tabs)
 def on_tab_change(event):
     if event.new == 1:
         workflow_selector.visible = True
+        workflow_conclusions.visible = True
     else:
         workflow_selector.visible = False
+        workflow_conclusions.visible = False
 
 
 tabs.param.watch(on_tab_change, "active")
 
 workflow_selector.visible = False
+workflow_conclusions.visible = False
 
 template.servable()

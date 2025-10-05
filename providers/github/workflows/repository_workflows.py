@@ -112,6 +112,15 @@ class LoadWorkflows(BaseRepository):
             filtered.append(job)
         return filtered
 
+    def get_unique_workflow_conclusions(self) -> List[str]:
+        """Return a list of unique workflow conclusions."""
+        conclusions = {
+            run.get("conclusion", "") for run in self.all_runs if "conclusion" in run
+        }
+        list_all = list(conclusions)
+        list_all.insert(0, "All")
+        return list_all
+
     def get_unique_workflow_names(self) -> List[str]:
         """Return a list of unique workflow names."""
         workflow_names = {run.get("name", "") for run in self.all_runs if "name" in run}

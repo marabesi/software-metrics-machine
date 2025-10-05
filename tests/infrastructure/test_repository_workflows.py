@@ -126,6 +126,45 @@ class TestRepositoryWorkflows:
             result = loader.get_unique_workflow_paths()
             assert len(result) == 4
 
+    def test_get_unique_conclusions(self):
+        workflows_with_duplicated_paths = as_json_string(
+            [
+                {"conclusion": "success", "path": "/workflows/build.yml", "id": 1},
+                {"conclusion": "in_progress", "path": "/workflows/test.yml", "id": 2},
+                {"conclusion": "in_progress", "path": "/workflows/deploy.yml", "id": 3},
+                {"conclusion": "in_progress", "path": "/workflows/build.yml", "id": 4},
+                {"conclusion": "in_progress", "path": "/workflows/build.yml", "id": 5},
+            ]
+        )
+        with (
+            patch(
+                "infrastructure.base_repository.BaseRepository.read_file_if_exists",
+                return_value=workflows_with_duplicated_paths,
+            ),
+        ):
+            loader = LoadWorkflows(configuration=InMemoryConfiguration("."))
+
+            result = loader.get_unique_workflow_conclusions()
+            assert len(result) == 3
+
+    def test_set_all_option_for_unique_conclusions(self):
+        workflows_with_duplicated_paths = as_json_string(
+            [
+                {"conclusion": "success", "path": "/workflows/build.yml", "id": 1},
+                {"conclusion": "in_progress", "path": "/workflows/test.yml", "id": 2},
+            ]
+        )
+        with (
+            patch(
+                "infrastructure.base_repository.BaseRepository.read_file_if_exists",
+                return_value=workflows_with_duplicated_paths,
+            ),
+        ):
+            loader = LoadWorkflows(configuration=InMemoryConfiguration("."))
+
+            result = loader.get_unique_workflow_conclusions()
+            assert result[0] == "All"
+
     def test_adds_all_option_by_default(self):
         empty_workflow_runs = as_json_string([])
         with (
