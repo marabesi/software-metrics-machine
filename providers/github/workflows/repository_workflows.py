@@ -228,6 +228,53 @@ class LoadWorkflows(BaseRepository):
             "monthly_avg": monthly_avg_values,
         }
 
+    def get_workflows_run_duration(self, filters=None):
+        runs = self.runs(filters)
+        groups = {}
+        for r in runs:
+            name = r.get("path") or "<unnamed>"
+
+            start = (
+                r.get("run_started_at") or r.get("created_at") or r.get("started_at")
+            )
+            end = r.get("updated_at")
+            sdt = self.__parse_dt(start)
+            edt = self.__parse_dt(end)
+            if not sdt:
+                continue
+            if edt:
+                dur = (edt - sdt).total_seconds()
+            else:
+                dur = None
+            groups.setdefault(name, []).append(dur)
+
+        if not groups:
+            print("No runs with start timestamps to aggregate")
+            return {"total": len(runs), "rows": []}
+
+        # compute aggregated metrics per group
+        rows = []  # (name, count, avg_min, total_min)
+        for name, durs in groups.items():
+            # consider only durations that are not None
+            valid = [d for d in durs if d is not None and d > 0]
+            count = len(durs)
+            total = sum(valid) if valid else 0.0
+            avg = (total / len(valid)) if valid else 0.0
+            rows.append((name, count, avg / 60.0, total / 60.0))
+
+        return {"total": len(runs), "rows": rows}
+
+    def __parse_dt(self, v: str):
+        if not v:
+            return None
+        try:
+            return datetime.fromisoformat(v.replace("Z", "+00:00"))
+        except Exception:
+            try:
+                return datetime.strptime(v, "%Y-%m-%dT%H:%M:%SZ")
+            except Exception:
+                return None
+
     def __load_jobs(self):
         contents = super().read_file_if_exists(self.jobs_file)
         if contents is None:

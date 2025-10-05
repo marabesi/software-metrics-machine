@@ -276,3 +276,41 @@ class TestRepositoryWorkflows:
             assert 0 == len(result["weeks"])
             assert 0 == len(result["weekly_counts"])
             assert 0 == len(result["monthly_counts"])
+
+    def test_compute_runs_duration(self):
+        single_run = as_json_string(
+            [
+                {
+                    "id": 1,
+                    "path": "/workflows/build.yml",
+                    "status": "success",
+                    "created_at": "2023-10-01T09:00:00Z",
+                    "updated_at": "2023-10-01T09:10:00Z",
+                },
+            ]
+        )
+
+        def mocked_read_file_if_exists(file):
+            if file == "workflows.json":
+                return single_run
+            return None
+
+        with patch(
+            "infrastructure.base_repository.BaseRepository.read_file_if_exists",
+            side_effect=mocked_read_file_if_exists,
+        ):
+            loader = LoadWorkflows(configuration=InMemoryConfiguration("."))
+
+            data = loader.get_workflows_run_duration()
+            result = data["rows"]
+
+            name = result[0][0]
+            count = result[0][1]
+            avg_min = result[0][2]
+            total_min = result[0][3]
+
+            assert 1 == len(result)
+            assert "/workflows/build.yml" == name
+            assert 1 == count
+            assert 10.0 == avg_min
+            assert 10.0 == total_min

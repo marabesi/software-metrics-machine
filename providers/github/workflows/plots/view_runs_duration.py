@@ -1,20 +1,7 @@
 import matplotlib.pyplot as plt
-from datetime import datetime
 
 from infrastructure.base_viewer import MatplotViewer
 from providers.github.workflows.repository_workflows import LoadWorkflows
-
-
-def _parse_dt(v: str):
-    if not v:
-        return None
-    try:
-        return datetime.fromisoformat(v.replace("Z", "+00:00"))
-    except Exception:
-        try:
-            return datetime.strptime(v, "%Y-%m-%dT%H:%M:%SZ")
-        except Exception:
-            return None
 
 
 class ViewRunsDuration(MatplotViewer):
@@ -37,42 +24,11 @@ class ViewRunsDuration(MatplotViewer):
             "workflow_path": workflow_path,
         }
 
-        runs = self.repository.runs(filters)
+        data = self.repository.get_workflows_run_duration(filters)
 
-        print(f"Found {len(runs)} runs after filtering")
+        print(f"Found {data["total"]} runs after filtering")
 
-        groups = {}
-        for r in runs:
-            name = r.get("path") or "<unnamed>"
-            print(name)
-            start = (
-                r.get("run_started_at") or r.get("created_at") or r.get("started_at")
-            )
-            end = r.get("updated_at") or r.get("completed_at") or r.get("ended_at")
-            sdt = _parse_dt(start)
-            edt = _parse_dt(end)
-            if not sdt:
-                continue
-            if edt:
-                dur = (edt - sdt).total_seconds()
-            else:
-                dur = None
-            groups.setdefault(name, []).append(dur)
-
-        if not groups:
-            print("No runs with start timestamps to aggregate")
-            return
-
-        # compute aggregated metrics per group
-        rows = []  # (name, count, avg_min, total_min)
-        for name, durs in groups.items():
-            # consider only durations that are not None
-            valid = [d for d in durs if d is not None and d > 0]
-            count = len(durs)
-            total = sum(valid) if valid else 0.0
-            avg = (total / len(valid)) if valid else 0.0
-            rows.append((name, count, avg / 60.0, total / 60.0))
-
+        rows = data["rows"]
         # choose sort key
         sort_key = {
             "avg": lambda r: r[2],
