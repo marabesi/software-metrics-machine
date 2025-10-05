@@ -55,6 +55,7 @@ def pipeline_section(date_range_picker, configuration: Configuration):
 
     def plot_workflow_run_by(date_range_picker, workflow_selector):
         return ViewWorkflowRunsBy(repository=repository).main(
+            aggregate_by="week",
             start_date=date_range_picker[0],
             end_date=date_range_picker[1],
             workflow_path=sanitize_workflow_path(workflow_selector),

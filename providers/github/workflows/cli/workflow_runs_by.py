@@ -63,6 +63,7 @@ def workflow_runs_by(
     return ViewWorkflowRunsBy(
         repository=LoadWorkflows(configuration=configuration)
     ).main(
+        aggregate_by=aggregate_by,
         out_file=out_file,
         workflow_path=workflow_path,
         start_date=start_date,

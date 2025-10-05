@@ -88,6 +88,52 @@ class TestWorkflowsRunsByCliCommands:
 
         assert "Found 1 runs after filtering" in result.output
 
+    def test_should_aggregate_data_by_week_by_default(self, cli, tmp_path):
+        workflow_runs = workflows_data()
+        path_string = str(tmp_path)
+        os.environ["SMM_STORE_DATA_AT"] = path_string
+        configuration = InMemoryConfiguration(path_string)
+        ConfigurationFileSystemHandler(path_string).store_file(
+            "smm_config.json", configuration
+        )
+        FileHandlerForTesting(path_string).store_json_file(
+            "workflows.json", workflow_runs
+        )
+
+        result = cli.invoke(
+            main,
+            [
+                "pipelines",
+                "workflow-runs-by",
+            ],
+        )
+
+        assert "Plotting data aggregated by week" in result.output
+
+    def test_should_aggregate_data_by_month(self, cli, tmp_path):
+        workflow_runs = workflows_data()
+        path_string = str(tmp_path)
+        os.environ["SMM_STORE_DATA_AT"] = path_string
+        configuration = InMemoryConfiguration(path_string)
+        ConfigurationFileSystemHandler(path_string).store_file(
+            "smm_config.json", configuration
+        )
+        FileHandlerForTesting(path_string).store_json_file(
+            "workflows.json", workflow_runs
+        )
+
+        result = cli.invoke(
+            main,
+            [
+                "pipelines",
+                "workflow-runs-by",
+                "--aggregate-by",
+                "month",
+            ],
+        )
+
+        assert "Plotting data aggregated by month" in result.output
+
     @pytest.mark.parametrize(
         "workflow_runs, expected",
         [

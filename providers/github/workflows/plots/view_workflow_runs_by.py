@@ -14,11 +14,11 @@ class ViewWorkflowRunsBy(MatplotViewer):
 
     def main(
         self,
+        aggregate_by: str,
         workflow_path: str | None = None,
         out_file: str | None = None,
         raw_filters: str | None = None,
         include_defined_only: bool = False,
-        aggregate_by: str = "week",
         start_date: str | None = None,
         end_date: str | None = None,
     ) -> None:
@@ -72,6 +72,8 @@ class ViewWorkflowRunsBy(MatplotViewer):
 
         periods = sorted(period_set)
         workflow_names = sorted(workflow_names)
+
+        print(f"Plotting data aggregated by {aggregate_by}")
 
         # build matrix of counts per workflow per period
         data_matrix = []
