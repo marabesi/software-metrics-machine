@@ -117,7 +117,7 @@ class TestWorkflowsCliCommands:
                         "head_branch": "master",
                     },
                 ],
-                {"target": "main,master", "count": 2},
+                {"target": "main,master", "count": 1},  # ignores second after comma
             ),
         ],
     )

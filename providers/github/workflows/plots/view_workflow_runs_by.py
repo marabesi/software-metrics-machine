@@ -25,6 +25,7 @@ class ViewWorkflowRunsBy(MatplotViewer):
         params = {}
 
         if raw_filters:
+            params = {}
             for f in raw_filters.split(","):
                 if "=" in f:
                     k, v = f.split("=", 1)
