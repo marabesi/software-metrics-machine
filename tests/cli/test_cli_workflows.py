@@ -77,29 +77,62 @@ class TestWorkflowsCliCommands:
             in result.output
         )
 
-    def test_should_filter_workflows_by_target_branch(self, cli, tmp_path):
+    @pytest.mark.parametrize(
+        "workflow_runs, expected",
+        [
+            (
+                [
+                    {
+                        "id": 1,
+                        "path": "/workflows/build.yml",
+                        "status": "success",
+                        "created_at": "2023-10-01T12:00:00Z",
+                        "head_branch": "main",
+                    },
+                    {
+                        "id": 2,
+                        "path": "/workflows/build.yml",
+                        "status": "success",
+                        "created_at": "2023-10-01T12:00:00Z",
+                        "head_branch": "master",
+                    },
+                ],
+                {"target": "main", "count": 1},
+            ),
+            ([], {"target": "main", "count": 0}),
+            (
+                [
+                    {
+                        "id": 1,
+                        "path": "/workflows/build.yml",
+                        "status": "success",
+                        "created_at": "2023-10-01T12:00:00Z",
+                        "head_branch": "main",
+                    },
+                    {
+                        "id": 2,
+                        "path": "/workflows/build.yml",
+                        "status": "success",
+                        "created_at": "2023-10-01T12:00:00Z",
+                        "head_branch": "master",
+                    },
+                ],
+                {"target": "main,master", "count": 2},
+            ),
+        ],
+    )
+    def test_should_filter_workflows_by_target_branch(
+        self, cli, tmp_path, workflow_runs, expected
+    ):
+        target = expected["target"]
+        expected_count = expected["count"]
+
         path_string = str(tmp_path)
         os.environ["SMM_STORE_DATA_AT"] = path_string
         configuration = InMemoryConfiguration(path_string)
         ConfigurationFileSystemHandler(path_string).store_file(
             "smm_config.json", configuration
         )
-        workflow_runs = [
-            {
-                "id": 1,
-                "path": "/workflows/build.yml",
-                "status": "success",
-                "created_at": "2023-10-01T12:00:00Z",
-                "head_branch": "main",
-            },
-            {
-                "id": 2,
-                "path": "/workflows/build.yml",
-                "status": "success",
-                "created_at": "2023-10-01T12:00:00Z",
-                "head_branch": "master",
-            },
-        ]
         FileHandlerForTesting(path_string).store_json_file(
             "workflows.json", workflow_runs
         )
@@ -114,11 +147,11 @@ class TestWorkflowsCliCommands:
                 "--end-date",
                 "2023-10-01",
                 "--raw-filters",
-                "target_branch=main",
+                f"target_branch={target}",
             ],
         )
 
-        assert "Found 1 runs after filtering" in result.output
+        assert f"Found {expected_count} runs after filtering" in result.output
 
     def test_deployment_frequency_by_job(self, cli, tmp_path):
         path_string = str(tmp_path)
