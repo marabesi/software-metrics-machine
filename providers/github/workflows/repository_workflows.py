@@ -75,6 +75,23 @@ class LoadWorkflows(BaseRepository):
         if workflow_path:
             runs = [r for r in runs if (r.get("path") or "").lower() == workflow_path]
 
+        include_defined_only = filters.get("include_defined_only")
+
+        if include_defined_only:
+
+            def is_defined_yaml(run_obj: dict) -> bool:
+                path = run_obj.get("path")
+
+                if isinstance(path, str) and (
+                    path.strip().lower().endswith(".yml")
+                    or path.strip().lower().endswith(".yaml")
+                ):
+                    return True
+                name = run_obj.get("path") or ""
+                return isinstance(name, str) and name.strip().lower().endswith(".yml")
+
+            runs = [r for r in runs if is_defined_yaml(r)]
+
         return runs
 
     def filter_by_job_name(

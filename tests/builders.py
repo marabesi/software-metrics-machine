@@ -24,4 +24,12 @@ def workflows_data():
             "head_branch": "master",
             "event": "pull_request",
         },
+        {
+            "id": 3,
+            "path": "dynamic/workflows/dependabot",
+            "status": "success",
+            "created_at": "2024-12-01T12:00:00Z",
+            "head_branch": "master",
+            "event": "dependabot",
+        },
     ]

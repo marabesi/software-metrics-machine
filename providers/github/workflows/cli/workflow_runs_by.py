@@ -68,6 +68,7 @@ def workflow_runs_by(
         start_date=start_date,
         end_date=end_date,
         raw_filters=raw_filters,
+        include_defined_only=include_defined_only,
     )
 
 

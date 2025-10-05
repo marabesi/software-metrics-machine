@@ -32,28 +32,10 @@ class ViewWorkflowRunsBy(MatplotViewer):
             "event": event,
             "target_branch": target_branch,
             "workflow_path": workflow_path,
+            "include_defined_only": include_defined_only,
         }
 
         runs = self.repository.runs(filters)
-
-        if include_defined_only:
-
-            def is_defined_yaml(run_obj: dict) -> bool:
-                path = (
-                    run_obj.get("path")
-                    or run_obj.get("workflow_path")
-                    or run_obj.get("file")
-                    or ""
-                )
-                if isinstance(path, str) and (
-                    path.strip().lower().endswith(".yml")
-                    or path.strip().lower().endswith(".yaml")
-                ):
-                    return True
-                name = run_obj.get("path") or ""
-                return isinstance(name, str) and name.strip().lower().endswith(".yml")
-
-            runs = [r for r in runs if is_defined_yaml(r)]
 
         print(f"Found {len(runs)} runs after filtering")
 

@@ -148,6 +148,20 @@ class TestWorkflowsRunsByCliCommands:
                     "count": 0,
                 },
             ),
+            (
+                [
+                    "pipelines",
+                    "workflow-runs-by",
+                    "--start-date",
+                    "2023-10-01",
+                    "--end-date",
+                    "2023-12-01",
+                    "--include-defined-only",
+                ],
+                {
+                    "count": 2,
+                },
+            ),
         ],
     )
     def test_should_filter_by_multiple_parameters(

@@ -73,6 +73,12 @@ class TestRepositoryWorkflows:
                     "count": 0,
                 },
             ),
+            (
+                {"include_defined_only": "true"},
+                {
+                    "count": 2,
+                },
+            ),
         ],
     )
     def test_filter_workflows_by(self, filters, expected):
