@@ -1,5 +1,4 @@
 import panel as pn
-import pandas as pd
 from providers.github.workflows.assessment.view_summary import WorkflowRunSummary
 from providers.github.workflows.plots.view_jobs_average_time_execution import (
     ViewJobsByStatus,
@@ -61,37 +60,6 @@ def pipeline_section(date_range_picker, workflow_selector, repository: LoadWorkf
 
         if summary["total_runs"] == 0:
             return pn.pane.Markdown("### No workflow runs available.")
-
-        summary_data = pd.DataFrame(
-            {
-                "Metric": [
-                    "Total Runs",
-                    "Completed Runs",
-                    "In-progress Runs",
-                    "Queued Runs",
-                    "Unique Workflows",
-                ],
-                "Value": [
-                    summary["total_runs"],
-                    summary["completed"],
-                    summary["in_progress"],
-                    summary["queued"],
-                    summary["unique_workflows"],
-                ],
-            }
-        )
-
-        summary_table = pn.widgets.Tabulator(
-            summary_data,
-            name="Workflow Summary",
-            layout="fit_data_fill",
-            show_index=False,
-        )
-
-        return pn.Column(
-            "### Workflow General Data Summary",
-            summary_table,
-        )
 
     return pn.Column(
         "## Pipeline Section",

@@ -35,7 +35,7 @@ def insights_section(repository: LoadWorkflows, date_range_picker):
             pn.indicators.Number(
                 value=42,
                 default_color="white",
-                name="Minutes to run until completion",
+                name="Your software takes this time to reach production",
                 format=f"{formatted_avg_min}min",
             ),
             styles={"background": "lightgray"},
