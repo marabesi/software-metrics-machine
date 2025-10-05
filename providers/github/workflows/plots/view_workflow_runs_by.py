@@ -42,14 +42,12 @@ class ViewWorkflowRunsBy(MatplotViewer):
             wf_low = workflow_path.lower()
             runs = [r for r in runs if (r.get("path") or "").lower().find(wf_low) != -1]
 
-        if event_vals := self.__split_and_normalize(params.get("event")):
-            allowed = set(event_vals)
-            runs = [r for r in runs if (r.get("event") or "").lower() in allowed]
+        if event := params.get("event"):
+            runs = self.repository.runs({"event": event})
 
         if target_vals := params.get("target_branch"):
             runs = self.repository.runs({"target_branch": target_vals})
 
-        # optional include-defined-only filter: keep only workflows whose defined file ends with .yml
         if include_defined_only:
 
             def is_defined_yaml(run_obj: dict) -> bool:

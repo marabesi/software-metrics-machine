@@ -67,6 +67,10 @@ class LoadWorkflows(BaseRepository):
 
             runs = [r for r in runs if branch_matches(r)]
 
+        event = filters.get("event")
+        if event:
+            runs = [r for r in runs if (r.get("event") or "") == event]
+
         return runs
 
     def filter_by_job_name(

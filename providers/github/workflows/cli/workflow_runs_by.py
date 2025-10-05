@@ -24,12 +24,6 @@ from providers.github.workflows.plots.view_workflow_runs_by import ViewWorkflowR
     help="Optional path to save the plot image",
 )
 @click.option(
-    "--event",
-    type=str,
-    default=None,
-    help="Filter runs by event (comma-separated e.g. push,pull_request)",
-)
-@click.option(
     "--include-defined-only",
     is_flag=True,
     help="If set, include only workflows that are defined as .yml or .yaml",
@@ -59,7 +53,6 @@ from providers.github.workflows.plots.view_workflow_runs_by import ViewWorkflowR
 def workflow_runs_by(
     workflow_path,
     out_file,
-    event,
     include_defined_only,
     aggregate_by,
     start_date,
