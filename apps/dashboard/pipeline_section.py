@@ -1,6 +1,5 @@
 import panel as pn
 import pandas as pd
-from infrastructure.configuration.configuration import Configuration
 from providers.github.workflows.assessment.view_summary import WorkflowRunSummary
 from providers.github.workflows.plots.view_jobs_average_time_execution import (
     ViewJobsByStatus,
@@ -17,16 +16,7 @@ from providers.github.workflows.repository_workflows import LoadWorkflows
 pn.extension("tabulator")
 
 
-def pipeline_section(date_range_picker, configuration: Configuration):
-    repository = LoadWorkflows(configuration=configuration)
-    workflow_names = repository.get_unique_workflow_paths()
-
-    workflow_selector = pn.widgets.Select(
-        name="Select Workflow",
-        description="Select Workflow",
-        options=workflow_names,
-    )
-
+def pipeline_section(date_range_picker, workflow_selector, repository: LoadWorkflows):
     def sanitize_workflow_path(selected_value):
         if selected_value == "All":
             return None
@@ -106,7 +96,7 @@ def pipeline_section(date_range_picker, configuration: Configuration):
     return pn.Column(
         "## Pipeline Section",
         pn.Row(pn.bind(plot_workflow_summary)),
-        pn.Row(pn.Column(workflow_selector, align="end")),
+        # pn.Row(pn.Column(workflow_selector, align="end")),
         pn.Row(pn.bind(plot_workflow_by_status, date_range_picker, workflow_selector)),
         pn.Row(pn.bind(plot_workflow_run_by, date_range_picker, workflow_selector)),
         pn.Row(
