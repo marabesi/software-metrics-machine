@@ -47,13 +47,27 @@ class LoadWorkflows(BaseRepository):
         if not filters:
             return self.all_runs
 
+        runs = self.all_runs
+
         start_date = filters.get("start_date")
         end_date = filters.get("end_date")
 
         if start_date and end_date:
-            return super().filter_by_date_range(self.all_runs, start_date, end_date)
+            runs = super().filter_by_date_range(runs, start_date, end_date)
 
-        return self.all_runs
+        target_branch = filters.get("target_branch")
+
+        if target_branch:
+
+            def branch_matches(obj):
+                val = obj.get("head_branch")
+                if target_branch == val:
+                    return True
+                return False
+
+            runs = [r for r in runs if branch_matches(r)]
+
+        return runs
 
     def filter_by_job_name(
         self, jobs: List[dict], job_name: Iterable[str]

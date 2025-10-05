@@ -16,12 +16,20 @@ class ViewWorkflowRunsBy(MatplotViewer):
         self,
         workflow_path: str | None = None,
         out_file: str | None = None,
-        raw_filters: dict = {},
+        raw_filters: str | None = None,
         include_defined_only: bool = False,
         aggregate_by: str = "week",
         start_date: str | None = None,
         end_date: str | None = None,
     ) -> None:
+        params = {}
+
+        if raw_filters:
+            for f in raw_filters.split(","):
+                if "=" in f:
+                    k, v = f.split("=", 1)
+                    params[k] = v
+
         if start_date and end_date:
             filters = {"start_date": start_date, "end_date": end_date}
             print(f"Applying date filter: {filters}")
@@ -29,34 +37,16 @@ class ViewWorkflowRunsBy(MatplotViewer):
         else:
             runs = self.repository.runs()
 
-        # optional filter by workflow name (case-insensitive substring)
         if workflow_path:
             wf_low = workflow_path.lower()
             runs = [r for r in runs if (r.get("path") or "").lower().find(wf_low) != -1]
 
-        # optional event filter
-        if event_vals := self.__split_and_normalize(raw_filters.get("event")):
+        if event_vals := self.__split_and_normalize(params.get("event")):
             allowed = set(event_vals)
             runs = [r for r in runs if (r.get("event") or "").lower() in allowed]
 
-        # optional target branch filter
-        if target_vals := self.__split_and_normalize(raw_filters.get("target_branch")):
-            allowed = set(target_vals)
-
-            def branch_matches(obj):
-                for key in (
-                    "head_branch",
-                    "head_ref",
-                    "ref",
-                    "base_ref",
-                    "base_branch",
-                ):
-                    val = obj.get(key) or ""
-                    if val and val.lower() in allowed:
-                        return True
-                return False
-
-            runs = [r for r in runs if branch_matches(r)]
+        if target_vals := params.get("target_branch"):
+            runs = self.repository.runs({"target_branch": target_vals})
 
         # optional include-defined-only filter: keep only workflows whose defined file ends with .yml
         if include_defined_only:

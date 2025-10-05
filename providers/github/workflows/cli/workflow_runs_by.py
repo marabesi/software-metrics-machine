@@ -1,5 +1,9 @@
 import click
 
+from infrastructure.configuration.configuration_builder import (
+    ConfigurationBuilder,
+    Driver,
+)
 from providers.github.workflows.repository_workflows import LoadWorkflows
 from providers.github.workflows.plots.view_workflow_runs_by import ViewWorkflowRunsBy
 
@@ -26,12 +30,6 @@ from providers.github.workflows.plots.view_workflow_runs_by import ViewWorkflowR
     help="Filter runs by event (comma-separated e.g. push,pull_request)",
 )
 @click.option(
-    "--target-branch",
-    type=str,
-    default=None,
-    help="Filter runs by target branch (comma-separated)",
-)
-@click.option(
     "--include-defined-only",
     is_flag=True,
     help="If set, include only workflows that are defined as .yml or .yaml",
@@ -52,22 +50,31 @@ from providers.github.workflows.plots.view_workflow_runs_by import ViewWorkflowR
     type=str,
     help="End date (inclusive) in YYYY-MM-DD",
 )
+@click.option(
+    "--raw-filters",
+    type=str,
+    default=None,
+    help="Comma-separated key=value pairs to filter runs (e.g., event=push,target_branch=main)",
+)
 def workflow_runs_by(
     workflow_path,
     out_file,
     event,
-    target_branch,
     include_defined_only,
     aggregate_by,
     start_date,
     end_date,
+    raw_filters,
 ):
-    # Filter runs by workflow path
-    return ViewWorkflowRunsBy(repository=LoadWorkflows()).main(
+    configuration = ConfigurationBuilder(driver=Driver.JSON).build()
+    return ViewWorkflowRunsBy(
+        repository=LoadWorkflows(configuration=configuration)
+    ).main(
         out_file=out_file,
         workflow_path=workflow_path,
         start_date=start_date,
         end_date=end_date,
+        raw_filters=raw_filters,
     )
 
 
