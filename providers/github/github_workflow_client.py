@@ -34,15 +34,9 @@ class GithubWorkflowClient:
             )
             return
 
-        params = {}
+        params = self.pr_repository.parse_raw_filters(raw_filters)
         if target_branch:
             params["branch"] = target_branch
-
-        if raw_filters:
-            for f in raw_filters.split(","):
-                if "=" in f:
-                    k, v = f.split("=", 1)
-                    params[k] = v
 
         runs = []
 
@@ -153,13 +147,7 @@ class GithubWorkflowClient:
             return
 
         run_counter = 0
-        params = {}
-
-        if raw_filters:
-            for f in raw_filters.split(","):
-                if "=" in f:
-                    k, v = f.split("=", 1)
-                    params[k] = v
+        params = self.pr_repository.parse_raw_filters(raw_filters)
 
         try:
             for run in all_runs:

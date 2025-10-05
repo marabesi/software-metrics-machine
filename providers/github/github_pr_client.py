@@ -30,12 +30,7 @@ class GithubPrsClient:
             print(f"PRs file already exists. Loading PRs from {pr_json_path}")
             return
 
-        params = {}
-        if raw_filters:
-            for f in raw_filters.split(","):
-                if "=" in f:
-                    k, v = f.split("=", 1)
-                    params[k] = v
+        params = self.pr_repository.parse_raw_filters(raw_filters)
 
         if not start_date or not end_date:
             print(

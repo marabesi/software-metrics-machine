@@ -22,14 +22,7 @@ class ViewWorkflowRunsBy(MatplotViewer):
         start_date: str | None = None,
         end_date: str | None = None,
     ) -> None:
-        params = {}
-
-        if raw_filters:
-            params = {}
-            for f in raw_filters.split(","):
-                if "=" in f:
-                    k, v = f.split("=", 1)
-                    params[k] = v
+        params = self.repository.parse_raw_filters(raw_filters)
 
         if start_date and end_date:
             filters = {"start_date": start_date, "end_date": end_date}
@@ -161,7 +154,6 @@ class ViewWorkflowRunsBy(MatplotViewer):
         )
         ax.legend(loc="upper left", bbox_to_anchor=(1, 1))
 
-        # draw separators where month changes
         months = [d.month for d in rep_dates]
         month_change_idxs = [
             i for i in range(1, len(months)) if months[i] != months[i - 1]
@@ -170,7 +162,6 @@ class ViewWorkflowRunsBy(MatplotViewer):
             xline = (x_vals[idx - 1] + x_vals[idx]) / 2.0
             ax.axvline(x=xline, color="0.7", linestyle="--", linewidth=0.8)
 
-        # tick labels
         tick_labels = []
         for p, d in zip(periods, rep_dates):
             if d:
@@ -188,10 +179,3 @@ class ViewWorkflowRunsBy(MatplotViewer):
         ax.set_xlim(min(x_vals) - 2, max(x_vals) + 2)
         fig.tight_layout()
         return super().output(plt, fig, out_file, repository=self.repository)
-
-    def __split_and_normalize(self, val: str):
-        if not val:
-            return None
-        if isinstance(val, (list, tuple)):
-            return [str(v).strip().lower() for v in val if v]
-        return [p.strip().lower() for p in str(val).split(",") if p.strip()]

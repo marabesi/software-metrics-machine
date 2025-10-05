@@ -61,6 +61,15 @@ class BaseRepository:
 
         return filtered
 
+    def parse_raw_filters(self, raw_filters: str | None = None) -> dict:
+        params = {}
+        if raw_filters:
+            for f in raw_filters.split(","):
+                if "=" in f:
+                    k, v = f.split("=", 1)
+                    params[k] = v
+        return params
+
     def __to_dt(self, v):
         if v is None:
             return None
