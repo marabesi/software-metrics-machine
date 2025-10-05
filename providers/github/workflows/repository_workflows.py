@@ -78,19 +78,15 @@ class LoadWorkflows(BaseRepository):
         include_defined_only = filters.get("include_defined_only")
 
         if include_defined_only:
+            runs = [r for r in runs if self.__is_defined_yaml(r)]
 
-            def is_defined_yaml(run_obj: dict) -> bool:
-                path = run_obj.get("path")
+        status = filters.get("status")
+        if status:
+            runs = [r for r in runs if r.get("status") == status]
 
-                if isinstance(path, str) and (
-                    path.strip().lower().endswith(".yml")
-                    or path.strip().lower().endswith(".yaml")
-                ):
-                    return True
-                name = run_obj.get("path") or ""
-                return isinstance(name, str) and name.strip().lower().endswith(".yml")
-
-            runs = [r for r in runs if is_defined_yaml(r)]
+        conclusion = filters.get("conclusion")
+        if conclusion:
+            runs = [r for r in runs if r.get("conclusion") == conclusion]
 
         return runs
 
@@ -297,3 +293,14 @@ class LoadWorkflows(BaseRepository):
 
         print("Jobs have been associated with their corresponding runs.")
         print("Load complete.")
+
+    def __is_defined_yaml(self, run_obj: dict) -> bool:
+        path = run_obj.get("path")
+
+        if isinstance(path, str) and (
+            path.strip().lower().endswith(".yml")
+            or path.strip().lower().endswith(".yaml")
+        ):
+            return True
+        name = run_obj.get("path") or ""
+        return isinstance(name, str) and name.strip().lower().endswith(".yml")

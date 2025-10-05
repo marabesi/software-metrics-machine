@@ -35,4 +35,22 @@ def workflows_data():
             "head_branch": "master",
             "event": "dependabot",
         },
+        {
+            "id": 4,
+            "path": "dynamic/workflows/dependabot",
+            "status": "completed",
+            "created_at": "2025-02-01T12:00:00Z",
+            "updated_at": "2025-02-01T13:00:00Z",
+            "head_branch": "master",
+            "event": "dependabot",
+        },
+        {
+            "id": 5,
+            "path": "dynamic/workflows/dependabot",
+            "conclusion": "success",
+            "created_at": "2025-06-01T12:00:00Z",
+            "updated_at": "2025-06-01T13:00:00Z",
+            "head_branch": "master",
+            "event": "dependabot",
+        },
     ]

@@ -21,6 +21,8 @@ def insights_section(repository: LoadWorkflows, date_range_picker):
             "start_date": date_range_picker[0],
             "end_date": date_range_picker[1],
             "workflow_path": repository.configuration.deployment_frequency_target_pipeline,
+            "status": "completed",
+            "conclusion": "success",
         }
         data = repository.get_workflows_run_duration(filters)
         result = data["rows"]

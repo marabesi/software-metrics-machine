@@ -79,6 +79,18 @@ class TestRepositoryWorkflows:
                     "count": 2,
                 },
             ),
+            (
+                {"status": "completed"},
+                {
+                    "count": 1,
+                },
+            ),
+            (
+                {"conclusion": "success"},
+                {
+                    "count": 1,
+                },
+            ),
         ],
     )
     def test_filter_workflows_by(self, filters, expected):
