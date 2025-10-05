@@ -96,7 +96,6 @@ def pipeline_section(date_range_picker, workflow_selector, repository: LoadWorkf
     return pn.Column(
         "## Pipeline Section",
         pn.Row(pn.bind(plot_workflow_summary)),
-        # pn.Row(pn.Column(workflow_selector, align="end")),
         pn.Row(pn.bind(plot_workflow_by_status, date_range_picker, workflow_selector)),
         pn.Row(pn.bind(plot_workflow_run_by, date_range_picker, workflow_selector)),
         pn.Row(

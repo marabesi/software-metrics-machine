@@ -1,5 +1,4 @@
 import panel as pn
-from infrastructure.configuration.configuration import Configuration
 from providers.github.prs.plots.view_average_of_prs_open_by import (
     ViewAverageOfPrsOpenBy,
 )
@@ -16,9 +15,7 @@ from providers.github.prs.prs_repository import LoadPrs
 pn.extension("tabulator")
 
 
-def prs_section(date_range_picker, configuration: Configuration, anonymize=False):
-    prs_repository = LoadPrs(configuration=configuration)
-
+def prs_section(date_range_picker, repository: LoadPrs, anonymize=False):
     def normalize_label(selected_labels):
         if len(selected_labels) == 0:
             return None
@@ -30,7 +27,7 @@ def prs_section(date_range_picker, configuration: Configuration, anonymize=False
         return ",".join(author_select)
 
     def plot_average_prs_open_by(date_range_picker, selected_labels, author_select):
-        return ViewAverageOfPrsOpenBy(repository=prs_repository).main(
+        return ViewAverageOfPrsOpenBy(repository=repository).main(
             start_date=date_range_picker[0],
             end_date=date_range_picker[1],
             labels=normalize_label(selected_labels),
@@ -41,7 +38,7 @@ def prs_section(date_range_picker, configuration: Configuration, anonymize=False
         date_range_picker, selected_labels, author_select
     ):
         return ViewAverageReviewTimeByAuthor(
-            repository=prs_repository
+            repository=repository
         ).plot_average_open_time(
             title="Average Review Time By Author",
             start_date=date_range_picker[0],
@@ -51,7 +48,7 @@ def prs_section(date_range_picker, configuration: Configuration, anonymize=False
         )
 
     def plot_workflow_runs_through_time(date_range_picker, author_select):
-        return ViewOpenPrsThroughTime(repository=prs_repository).main(
+        return ViewOpenPrsThroughTime(repository=repository).main(
             start_date=date_range_picker[0],
             end_date=date_range_picker[1],
             title="Workflow Runs Through Time",
@@ -59,16 +56,16 @@ def prs_section(date_range_picker, configuration: Configuration, anonymize=False
         )
 
     def plot_prs_by_author(date_range_picker, selected_labels):
-        return ViewPrsByAuthor(repository=prs_repository).plot_top_authors(
+        return ViewPrsByAuthor(repository=repository).plot_top_authors(
             title="PRs By Author",
             start_date=date_range_picker[0],
             end_date=date_range_picker[1],
             labels=normalize_label(selected_labels),
         )
 
-    unique_authors = prs_repository.get_unique_authors()
+    unique_authors = repository.get_unique_authors()
 
-    unique_labels = prs_repository.get_unique_labels()
+    unique_labels = repository.get_unique_labels()
     label_names = [label["label_name"] for label in unique_labels]
 
     author_select = pn.widgets.MultiChoice(

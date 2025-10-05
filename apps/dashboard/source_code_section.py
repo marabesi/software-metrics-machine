@@ -1,5 +1,4 @@
 import panel as pn
-from infrastructure.configuration.configuration import Configuration
 from providers.codemaat.plots.code_churn import CodeChurnViewer
 from providers.codemaat.plots.coupling import CouplingViewer
 from providers.codemaat.plots.entity_churn import EntityChurnViewer
@@ -10,9 +9,7 @@ from providers.codemaat.codemaat_repository import CodemaatRepository
 pn.extension("tabulator")
 
 
-def source_code_section(configuration: Configuration, start_end_date_picker):
-    repository = CodemaatRepository(configuration=configuration)
-
+def source_code_section(repository: CodemaatRepository, start_end_date_picker):
     ignore_pattern_files = pn.widgets.TextAreaInput(
         placeholder="Ignore file patterns (comma-separated) - e.g. *.json,**/**/*.png",
         rows=6,
