@@ -31,13 +31,10 @@ class ViewWorkflowRunsBy(MatplotViewer):
             "end_date": end_date,
             "event": event,
             "target_branch": target_branch,
+            "workflow_path": workflow_path,
         }
 
         runs = self.repository.runs(filters)
-
-        if workflow_path:
-            wf_low = workflow_path.lower()
-            runs = [r for r in runs if (r.get("path") or "").lower() == wf_low]
 
         if include_defined_only:
 

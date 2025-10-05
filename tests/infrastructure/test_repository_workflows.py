@@ -67,6 +67,12 @@ class TestRepositoryWorkflows:
                     "count": 1,
                 },
             ),
+            (
+                {"workflow_path": "non-existent.yml"},
+                {
+                    "count": 0,
+                },
+            ),
         ],
     )
     def test_filter_workflows_by(self, filters, expected):

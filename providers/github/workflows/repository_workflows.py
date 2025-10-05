@@ -71,6 +71,10 @@ class LoadWorkflows(BaseRepository):
         if event:
             runs = [r for r in runs if (r.get("event") or "") == event]
 
+        workflow_path = filters.get("workflow_path")
+        if workflow_path:
+            runs = [r for r in runs if (r.get("path") or "").lower() == workflow_path]
+
         return runs
 
     def filter_by_job_name(
