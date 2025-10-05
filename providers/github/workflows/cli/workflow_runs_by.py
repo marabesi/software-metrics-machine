@@ -26,7 +26,7 @@ from providers.github.workflows.plots.view_workflow_runs_by import ViewWorkflowR
 @click.option(
     "--include-defined-only",
     is_flag=True,
-    help="If set, include only workflows that are defined as .yml or .yaml",
+    help="If set, include only workflows that are defined as .yml or .yaml, excluding those that are automated by GitHub (e.g., dependabot).",  # noqa: E501
 )
 @click.option(
     "--aggregate-by",

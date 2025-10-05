@@ -57,7 +57,6 @@ class ViewWorkflowRunsBy(MatplotViewer):
 
         print(f"Found {len(runs)} runs after filtering")
 
-        # aggregate counts by (period_key, workflow_name)
         counts = defaultdict(lambda: defaultdict(int))
         period_set = set()
         workflow_names = set()
