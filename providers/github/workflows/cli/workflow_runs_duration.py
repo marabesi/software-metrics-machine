@@ -1,4 +1,8 @@
 import click
+from infrastructure.configuration.configuration_builder import (
+    ConfigurationBuilder,
+    Driver,
+)
 from providers.github.workflows.repository_workflows import LoadWorkflows
 from providers.github.workflows.plots.view_runs_duration import ViewRunsDuration
 
@@ -36,7 +40,8 @@ from providers.github.workflows.plots.view_runs_duration import ViewRunsDuration
     help="Maximum number of runs to include in the plot",
 )
 def workflows_run_duration(out_file, workflow_path, start_date, end_date, max_runs):
-    return ViewRunsDuration(repository=LoadWorkflows()).main(
+    configuration = ConfigurationBuilder(driver=Driver.JSON).build()
+    return ViewRunsDuration(repository=LoadWorkflows(configuration=configuration)).main(
         out_file=out_file,
         workflow_path=workflow_path,
         start_date=start_date,

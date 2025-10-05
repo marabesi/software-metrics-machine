@@ -48,7 +48,8 @@ class ViewRunsDuration(MatplotViewer):
 
             runs = [r for r in runs if matches_any(r.get("path") or "")]
 
-        # group durations by run name
+        print(f"Found {len(runs)} runs after filtering")
+
         groups = {}
         for r in runs:
             name = r.get("path") or "<unnamed>"
