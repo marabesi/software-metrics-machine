@@ -76,7 +76,7 @@ tabs = pn.Tabs(
     ("Source code", source_code_section),
     ("Configuration", configuration_section),
     sizing_mode="stretch_width",
-    active=3,
+    active=0,
 )
 
 template.main.append(tabs)
