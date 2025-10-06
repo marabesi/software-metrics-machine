@@ -182,6 +182,17 @@ class TestWorkflowsRunsByCliCommands:
                     "count": 2,
                 },
             ),
+            (
+                [
+                    "pipelines",
+                    "workflow-runs-by",
+                    "--raw-filters",
+                    "conclusion=action_required",
+                ],
+                {
+                    "count": 1,
+                },
+            ),
         ],
     )
     def test_should_filter_by_multiple_parameters(self, cli, command, expected):

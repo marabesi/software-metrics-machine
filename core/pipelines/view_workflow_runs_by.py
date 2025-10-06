@@ -25,6 +25,7 @@ class ViewWorkflowRunsBy(MatplotViewer):
         params = self.repository.parse_raw_filters(raw_filters)
         event = params.get("event")
         target_branch = params.get("target_branch")
+        conclusion = params.get("conclusion")
 
         filters = {
             "start_date": start_date,
@@ -33,6 +34,7 @@ class ViewWorkflowRunsBy(MatplotViewer):
             "target_branch": target_branch,
             "workflow_path": workflow_path,
             "include_defined_only": include_defined_only,
+            "conclusion": conclusion,
         }
 
         runs = self.repository.runs(filters)

@@ -50,7 +50,7 @@ class MatplotViewer:
                 fig,
                 dpi=144,
                 tight=True,
-                format="svg",
+                format="png",
                 sizing_mode="stretch_width",
             )
             plt.close(fig)

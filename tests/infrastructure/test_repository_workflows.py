@@ -91,6 +91,12 @@ class TestRepositoryWorkflows:
                     "count": 1,
                 },
             ),
+            (
+                {"conclusion": ""},
+                {
+                    "count": 5,
+                },
+            ),
         ],
     )
     def test_filter_workflows_by(self, filters, expected):

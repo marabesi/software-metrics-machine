@@ -60,6 +60,7 @@ def pipeline_section(
             aggregate_by="week",
             start_date=date_range_picker[0],
             end_date=date_range_picker[1],
+            raw_filters=f"conclusion={workflow_conclusions}",
             workflow_path=sanitize_workflow_path(workflow_selector),
         )
 
