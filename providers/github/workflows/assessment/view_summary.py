@@ -1,6 +1,6 @@
 from collections import Counter
 from typing import Dict, TypedDict
-from infrastructure.date_and_time import datetime_to_local
+from core.infrastructure.date_and_time import datetime_to_local
 from providers.github.workflows.repository_workflows import LoadWorkflows
 
 

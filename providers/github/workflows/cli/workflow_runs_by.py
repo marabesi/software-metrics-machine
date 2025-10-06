@@ -1,11 +1,11 @@
 import click
 
-from infrastructure.configuration.configuration_builder import (
+from core.infrastructure.configuration.configuration_builder import (
     ConfigurationBuilder,
     Driver,
 )
 from providers.github.workflows.repository_workflows import LoadWorkflows
-from providers.github.workflows.plots.view_workflow_runs_by import ViewWorkflowRunsBy
+from core.pipelines.view_workflow_runs_by import ViewWorkflowRunsBy
 
 
 @click.command()

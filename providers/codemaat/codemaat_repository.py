@@ -3,8 +3,8 @@ from pathlib import Path
 from pathlib import PurePosixPath
 from typing import List, Any
 
-from infrastructure.base_repository import BaseRepository
-from infrastructure.configuration.configuration import Configuration
+from core.infrastructure.base_repository import BaseRepository
+from core.infrastructure.configuration.configuration import Configuration
 
 
 class CodemaatRepository(BaseRepository):

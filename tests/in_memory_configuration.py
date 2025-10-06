@@ -1,4 +1,4 @@
-from infrastructure.configuration.configuration import Configuration
+from core.infrastructure.configuration.configuration import Configuration
 
 
 class InMemoryConfiguration(Configuration):

@@ -1,11 +1,11 @@
 import click
 
-from infrastructure.configuration.configuration_builder import (
+from core.infrastructure.configuration.configuration_builder import (
     ConfigurationBuilder,
     Driver,
 )
 from providers.github.prs.prs_repository import LoadPrs
-from providers.github.prs.plots.view_prs_by_author import ViewPrsByAuthor
+from core.prs.view_prs_by_author import ViewPrsByAuthor
 
 
 @click.command()

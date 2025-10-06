@@ -2,8 +2,8 @@ import os
 from typing import NamedTuple
 
 import pandas as pd
-from infrastructure.base_repository import BaseRepository
-from infrastructure.configuration.configuration import Configuration
+from core.infrastructure.base_repository import BaseRepository
+from core.infrastructure.configuration.configuration import Configuration
 from matplotlib.figure import Figure
 import panel as pn
 

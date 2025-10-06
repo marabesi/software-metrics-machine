@@ -1,7 +1,7 @@
 import click
 
 from providers.github.workflows.repository_workflows import LoadWorkflows
-from providers.github.workflows.plots.view_jobs_average_time_execution import (
+from core.pipelines.view_jobs_average_time_execution import (
     ViewJobsByStatus,
 )
 

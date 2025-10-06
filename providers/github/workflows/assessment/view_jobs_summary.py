@@ -1,11 +1,11 @@
 from collections import Counter
 from typing import List
-from infrastructure.configuration.configuration_builder import (
+from core.infrastructure.configuration.configuration_builder import (
     ConfigurationBuilder,
     Driver,
 )
 from providers.github.workflows.repository_workflows import LoadWorkflows
-from infrastructure.date_and_time import datetime_to_local
+from core.infrastructure.date_and_time import datetime_to_local
 
 lw = LoadWorkflows(configuration=ConfigurationBuilder(driver=Driver.JSON).build())
 

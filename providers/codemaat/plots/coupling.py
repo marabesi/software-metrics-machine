@@ -2,8 +2,8 @@ from matplotlib.figure import Figure
 import matplotlib.pyplot as plt
 import networkx as nx
 
-from infrastructure.base_viewer import MatplotViewer
-from infrastructure.viewable import Viewable
+from core.infrastructure.base_viewer import MatplotViewer
+from core.infrastructure.viewable import Viewable
 from providers.codemaat.codemaat_repository import CodemaatRepository
 
 

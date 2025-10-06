@@ -1,7 +1,7 @@
 import click
 
 from providers.github.workflows.repository_workflows import LoadWorkflows
-from providers.github.workflows.plots.view_jobs_by_status import ViewJobsByStatus
+from core.pipelines.view_jobs_by_status import ViewJobsByStatus
 
 
 @click.command()

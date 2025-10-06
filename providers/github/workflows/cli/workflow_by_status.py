@@ -1,7 +1,7 @@
 import click
 
 from providers.github.workflows.repository_workflows import LoadWorkflows
-from providers.github.workflows.plots.view_workflow_by_status import (
+from core.pipelines.view_workflow_by_status import (
     ViewWorkflowByStatus,
 )
 

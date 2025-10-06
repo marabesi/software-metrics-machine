@@ -1,7 +1,7 @@
 from datetime import datetime, timezone
 import pandas as pd
 import requests
-from infrastructure.configuration.configuration import Configuration
+from core.infrastructure.configuration.configuration import Configuration
 from providers.github.prs.prs_repository import LoadPrs
 
 

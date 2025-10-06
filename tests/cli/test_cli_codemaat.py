@@ -12,7 +12,7 @@ class TestCliCodemaatCommands:
 
     @pytest.fixture(scope="function", autouse=True)
     def reset_mock_run(self):
-        with patch("infrastructure.run.Run.run_command") as mock_run:
+        with patch("core.infrastructure.run.Run.run_command") as mock_run:
             mock_run.reset_mock()
             yield mock_run
 
@@ -26,7 +26,7 @@ class TestCliCodemaatCommands:
 
     def test_runs_fetch_for_a_repo(self, cli):
         configuration = cli.configuration
-        with patch("infrastructure.run.Run.run_command") as mock_run:
+        with patch("core.infrastructure.run.Run.run_command") as mock_run:
             mock_run.return_value = CompletedProcess(
                 args="", returncode=0, stdout="total 0 .\nexample\n", stderr=""
             )
@@ -55,7 +55,7 @@ class TestCliCodemaatCommands:
 
     def test_should_fetch_for_a_subfolder_in_repo(self, cli):
         configuration = cli.configuration
-        with patch("infrastructure.run.Run.run_command") as mock_run:
+        with patch("core.infrastructure.run.Run.run_command") as mock_run:
             mock_run.return_value = CompletedProcess(
                 args="", returncode=0, stdout="total 0 .\nexample\n", stderr=""
             )

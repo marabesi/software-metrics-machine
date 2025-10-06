@@ -1,6 +1,6 @@
 import click
 from providers.codemaat.fetch import FetchCodemaat
-from infrastructure.configuration.configuration_builder import (
+from core.infrastructure.configuration.configuration_builder import (
     ConfigurationBuilder,
     Driver,
 )

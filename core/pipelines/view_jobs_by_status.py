@@ -2,7 +2,7 @@ import matplotlib.pyplot as plt
 from collections import Counter, defaultdict
 from datetime import datetime
 
-from infrastructure.base_viewer import MatplotViewer
+from core.infrastructure.base_viewer import MatplotViewer
 from providers.github.workflows.repository_workflows import LoadWorkflows
 
 

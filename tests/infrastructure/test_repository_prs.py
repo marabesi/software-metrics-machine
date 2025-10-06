@@ -1,5 +1,5 @@
 import pytest
-from infrastructure.configuration.configuration_builder import (
+from core.infrastructure.configuration.configuration_builder import (
     ConfigurationBuilder,
     Driver,
 )
@@ -119,7 +119,7 @@ class TestRepositoryPrs:
             ]
         )
         with patch(
-            "infrastructure.base_repository.BaseRepository.read_file_if_exists",
+            "core.infrastructure.base_repository.BaseRepository.read_file_if_exists",
             return_value=prs_fetched,
         ):
             repository = LoadPrs(
@@ -148,7 +148,7 @@ class TestRepositoryPrs:
             ]
         )
         with patch(
-            "infrastructure.base_repository.BaseRepository.read_file_if_exists",
+            "core.infrastructure.base_repository.BaseRepository.read_file_if_exists",
             return_value=prs_fetched,
         ):
             repository = LoadPrs(

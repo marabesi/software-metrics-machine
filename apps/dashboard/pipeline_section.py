@@ -1,15 +1,15 @@
 import panel as pn
 from providers.github.workflows.assessment.view_summary import WorkflowRunSummary
-from providers.github.workflows.plots.view_jobs_average_time_execution import (
+from core.pipelines.view_jobs_average_time_execution import (
     ViewJobsByStatus,
 )
-from providers.github.workflows.plots.view_workflow_by_status import (
+from core.pipelines.view_workflow_by_status import (
     ViewWorkflowByStatus,
 )
-from providers.github.workflows.plots.view_runs_duration import (
+from core.pipelines.view_runs_duration import (
     ViewRunsDuration,
 )
-from providers.github.workflows.plots.view_workflow_runs_by import ViewWorkflowRunsBy
+from core.pipelines.view_workflow_runs_by import ViewWorkflowRunsBy
 from providers.github.workflows.repository_workflows import LoadWorkflows
 
 pn.extension("tabulator")

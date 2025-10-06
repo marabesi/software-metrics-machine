@@ -19,11 +19,11 @@ class TestGithubWorkflowsClient:
         with (
             patch("requests.get") as mock_get,
             patch(
-                "infrastructure.base_repository.BaseRepository.read_file_if_exists",
+                "core.infrastructure.base_repository.BaseRepository.read_file_if_exists",
                 return_value=None,
             ) as mock_read,
             patch(
-                "infrastructure.base_repository.BaseRepository.store_file"
+                "core.infrastructure.base_repository.BaseRepository.store_file"
             ) as mock_store,
         ):
             mock_response = MagicMock()
@@ -51,10 +51,10 @@ class TestGithubWorkflowsClient:
         with (
             patch("requests.get") as mock_get,
             patch(
-                "infrastructure.base_repository.BaseRepository.read_file_if_exists",
+                "core.infrastructure.base_repository.BaseRepository.read_file_if_exists",
                 return_value=None,
             ),
-            patch("infrastructure.base_repository.BaseRepository.store_file"),
+            patch("core.infrastructure.base_repository.BaseRepository.store_file"),
         ):
             mock_response = MagicMock()
             mock_response.json.return_value = {
@@ -103,10 +103,10 @@ class TestGithubWorkflowsClient:
         with (
             patch("requests.get") as mock_get,
             patch(
-                "infrastructure.base_repository.BaseRepository.read_file_if_exists",
+                "core.infrastructure.base_repository.BaseRepository.read_file_if_exists",
                 side_effect=side_effect_repository_read,
             ) as mock_read,
-            patch("infrastructure.base_repository.BaseRepository.store_file"),
+            patch("core.infrastructure.base_repository.BaseRepository.store_file"),
         ):
 
             mock_response = MagicMock()

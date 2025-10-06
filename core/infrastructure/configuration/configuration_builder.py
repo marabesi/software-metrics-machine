@@ -1,7 +1,7 @@
 import os
 from enum import Enum
-from infrastructure.configuration.configuration import Configuration
-from infrastructure.configuration.configuration_file_system_handler import (
+from core.infrastructure.configuration.configuration import Configuration
+from core.infrastructure.configuration.configuration_file_system_handler import (
     ConfigurationFileSystemHandler,
 )
 from tests.in_memory_configuration import InMemoryConfiguration

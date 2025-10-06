@@ -17,10 +17,10 @@ class TestGithubPrsClient:
     def test_fetch_prs(self):
         with (
             patch(
-                "infrastructure.base_repository.BaseRepository.read_file_if_exists"
+                "core.infrastructure.base_repository.BaseRepository.read_file_if_exists"
             ) as mock_read,
             patch(
-                "infrastructure.base_repository.BaseRepository.store_file"
+                "core.infrastructure.base_repository.BaseRepository.store_file"
             ) as mocked_store,
             patch("requests.get") as mock_get,
         ):
@@ -114,10 +114,10 @@ class TestGithubPrsClient:
     def test_fetch_prs_with_filters(self, filters, expected):
         with (
             patch(
-                "infrastructure.base_repository.BaseRepository.read_file_if_exists"
+                "core.infrastructure.base_repository.BaseRepository.read_file_if_exists"
             ) as mock_read,
             patch(
-                "infrastructure.base_repository.BaseRepository.store_file"
+                "core.infrastructure.base_repository.BaseRepository.store_file"
             ) as mocked_store,
             patch("requests.get") as mock_get,
         ):

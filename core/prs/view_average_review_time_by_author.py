@@ -1,6 +1,6 @@
 import matplotlib.pyplot as plt
 
-from infrastructure.base_viewer import MatplotViewer
+from core.infrastructure.base_viewer import MatplotViewer
 from providers.github.prs.prs_repository import LoadPrs
 from collections import defaultdict
 from typing import List, Tuple

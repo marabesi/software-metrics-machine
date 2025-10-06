@@ -7,7 +7,7 @@ from apps.dashboard.pipeline_section import pipeline_section
 from apps.dashboard.prs_section import prs_section
 from apps.dashboard.source_code_section import source_code_section
 from apps.dashboard.configuration_section import configuration_section
-from infrastructure.configuration.configuration_builder import (
+from core.infrastructure.configuration.configuration_builder import (
     ConfigurationBuilder,
     Driver,
 )

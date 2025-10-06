@@ -1,5 +1,5 @@
 import panel as pn
-from providers.github.workflows.plots.view_deployment_frequency import (
+from core.pipelines.view_deployment_frequency import (
     ViewDeploymentFrequency,
 )
 from providers.github.workflows.repository_workflows import LoadWorkflows

@@ -1,7 +1,7 @@
 import matplotlib.pyplot as plt
 
-from infrastructure.base_viewer import MatplotViewer
-from infrastructure.viewable import Viewable
+from core.infrastructure.base_viewer import MatplotViewer
+from core.infrastructure.viewable import Viewable
 from providers.codemaat.codemaat_repository import CodemaatRepository
 
 

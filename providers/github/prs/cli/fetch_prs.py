@@ -1,6 +1,6 @@
 import click
 from providers.github.github_pr_client import GithubPrsClient
-from infrastructure.configuration.configuration_builder import (
+from core.infrastructure.configuration.configuration_builder import (
     ConfigurationBuilder,
     Driver,
 )

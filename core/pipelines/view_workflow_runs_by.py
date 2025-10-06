@@ -3,7 +3,7 @@ import matplotlib.dates as mdates
 from collections import defaultdict
 from datetime import datetime
 
-from infrastructure.base_viewer import MatplotViewer
+from core.infrastructure.base_viewer import MatplotViewer
 from providers.github.workflows.repository_workflows import LoadWorkflows
 
 

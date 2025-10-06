@@ -1,6 +1,6 @@
 import json
-from infrastructure.configuration.configuration import Configuration
-from infrastructure.file_system_handler import FileSystemHandler
+from core.infrastructure.configuration.configuration import Configuration
+from core.infrastructure.file_system_handler import FileSystemHandler
 
 
 class ConfigurationFileSystemHandler:

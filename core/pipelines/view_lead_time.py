@@ -2,7 +2,7 @@ from datetime import datetime
 import matplotlib.pyplot as plt
 import pandas as pd
 
-from infrastructure.base_viewer import MatplotViewer, PlotResult
+from core.infrastructure.base_viewer import MatplotViewer, PlotResult
 from providers.github.workflows.repository_workflows import LoadWorkflows
 
 

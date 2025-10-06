@@ -1,8 +1,8 @@
 import json
 from typing import List, Iterable
 from datetime import datetime, timezone
-from infrastructure.base_repository import BaseRepository
-from infrastructure.configuration.configuration import Configuration
+from core.infrastructure.base_repository import BaseRepository
+from core.infrastructure.configuration.configuration import Configuration
 from providers.github.prs.types import LabelSummary
 
 
