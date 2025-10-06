@@ -5,7 +5,7 @@ from core.infrastructure.configuration.configuration import Configuration
 from core.infrastructure.file_system_handler import FileSystemHandler
 
 
-class BaseRepository:
+class FileSystemBaseRepository:
 
     def __init__(self, configuration: Configuration):
         self.default_dir = str(configuration.store_data)

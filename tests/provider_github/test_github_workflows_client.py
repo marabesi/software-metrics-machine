@@ -19,11 +19,11 @@ class TestGithubWorkflowsClient:
         with (
             patch("requests.get") as mock_get,
             patch(
-                "core.infrastructure.base_repository.BaseRepository.read_file_if_exists",
+                "core.infrastructure.file_system_base_repository.FileSystemBaseRepository.read_file_if_exists",
                 return_value=None,
             ) as mock_read,
             patch(
-                "core.infrastructure.base_repository.BaseRepository.store_file"
+                "core.infrastructure.file_system_base_repository.FileSystemBaseRepository.store_file"
             ) as mock_store,
         ):
             mock_response = MagicMock()
@@ -51,10 +51,12 @@ class TestGithubWorkflowsClient:
         with (
             patch("requests.get") as mock_get,
             patch(
-                "core.infrastructure.base_repository.BaseRepository.read_file_if_exists",
+                "core.infrastructure.file_system_base_repository.FileSystemBaseRepository.read_file_if_exists",
                 return_value=None,
             ),
-            patch("core.infrastructure.base_repository.BaseRepository.store_file"),
+            patch(
+                "core.infrastructure.file_system_base_repository.FileSystemBaseRepository.store_file"
+            ),
         ):
             mock_response = MagicMock()
             mock_response.json.return_value = {
@@ -103,10 +105,12 @@ class TestGithubWorkflowsClient:
         with (
             patch("requests.get") as mock_get,
             patch(
-                "core.infrastructure.base_repository.BaseRepository.read_file_if_exists",
+                "core.infrastructure.file_system_base_repository.FileSystemBaseRepository.read_file_if_exists",
                 side_effect=side_effect_repository_read,
             ) as mock_read,
-            patch("core.infrastructure.base_repository.BaseRepository.store_file"),
+            patch(
+                "core.infrastructure.file_system_base_repository.FileSystemBaseRepository.store_file"
+            ),
         ):
 
             mock_response = MagicMock()

@@ -3,11 +3,11 @@ import json
 from typing import List, Iterable
 
 import pandas as pd
-from core.infrastructure.base_repository import BaseRepository
+from core.infrastructure.file_system_base_repository import FileSystemBaseRepository
 from core.infrastructure.configuration.configuration import Configuration
 
 
-class LoadWorkflows(BaseRepository):
+class LoadWorkflows(FileSystemBaseRepository):
 
     def __init__(self, configuration: Configuration):
         super().__init__(configuration=configuration)

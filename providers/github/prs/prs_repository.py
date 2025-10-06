@@ -1,12 +1,12 @@
 import json
 from typing import List, Iterable
 from datetime import datetime, timezone
-from core.infrastructure.base_repository import BaseRepository
+from core.infrastructure.file_system_base_repository import FileSystemBaseRepository
 from core.infrastructure.configuration.configuration import Configuration
 from providers.github.prs.types import LabelSummary
 
 
-class LoadPrs(BaseRepository):
+class LoadPrs(FileSystemBaseRepository):
     def __init__(self, configuration: Configuration):
         super().__init__(configuration=configuration)
         self.file = "prs.json"

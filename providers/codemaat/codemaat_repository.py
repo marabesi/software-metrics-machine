@@ -3,11 +3,11 @@ from pathlib import Path
 from pathlib import PurePosixPath
 from typing import List, Any
 
-from core.infrastructure.base_repository import BaseRepository
+from core.infrastructure.file_system_base_repository import FileSystemBaseRepository
 from core.infrastructure.configuration.configuration import Configuration
 
 
-class CodemaatRepository(BaseRepository):
+class CodemaatRepository(FileSystemBaseRepository):
     def __init__(self, configuration: Configuration):
         self.configuration = configuration
         super().__init__(configuration=self.configuration)

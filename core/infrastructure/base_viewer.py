@@ -2,7 +2,7 @@ import os
 from typing import NamedTuple
 
 import pandas as pd
-from core.infrastructure.base_repository import BaseRepository
+from core.infrastructure.file_system_base_repository import FileSystemBaseRepository
 from core.infrastructure.configuration.configuration import Configuration
 from matplotlib.figure import Figure
 import panel as pn
@@ -18,7 +18,9 @@ class MatplotViewer:
     def get_fig_size(self):
         return (10, 4)
 
-    def output(self, plt, fig: Figure, out_file, repository: BaseRepository) -> Figure:
+    def output(
+        self, plt, fig: Figure, out_file, repository: FileSystemBaseRepository
+    ) -> Figure:
         if out_file:
             cfg: Configuration = repository.configuration
             # if out_file is an absolute path, respect it; otherwise join with configured store path

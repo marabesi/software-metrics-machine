@@ -12,7 +12,7 @@ class TestRepositoryWorkflows:
     @pytest.fixture(scope="function", autouse=True)
     def reset_mocks(self):
         with patch(
-            "core.infrastructure.base_repository.BaseRepository.read_file_if_exists"
+            "core.infrastructure.file_system_base_repository.FileSystemBaseRepository.read_file_if_exists"
         ) as mock_exists:
             mock_exists.reset_mock()
             yield mock_exists
@@ -28,7 +28,7 @@ class TestRepositoryWorkflows:
         )
         with (
             patch(
-                "core.infrastructure.base_repository.BaseRepository.read_file_if_exists",
+                "core.infrastructure.file_system_base_repository.FileSystemBaseRepository.read_file_if_exists",
                 return_value=workflows_with_duplicates,
             ),
         ):
@@ -97,7 +97,7 @@ class TestRepositoryWorkflows:
         workflow_list = as_json_string(workflows_data())
         with (
             patch(
-                "core.infrastructure.base_repository.BaseRepository.read_file_if_exists",
+                "core.infrastructure.file_system_base_repository.FileSystemBaseRepository.read_file_if_exists",
                 return_value=workflow_list,
             ),
         ):
@@ -117,7 +117,7 @@ class TestRepositoryWorkflows:
         )
         with (
             patch(
-                "core.infrastructure.base_repository.BaseRepository.read_file_if_exists",
+                "core.infrastructure.file_system_base_repository.FileSystemBaseRepository.read_file_if_exists",
                 return_value=workflows_with_duplicated_paths,
             ),
         ):
@@ -138,7 +138,7 @@ class TestRepositoryWorkflows:
         )
         with (
             patch(
-                "core.infrastructure.base_repository.BaseRepository.read_file_if_exists",
+                "core.infrastructure.file_system_base_repository.FileSystemBaseRepository.read_file_if_exists",
                 return_value=workflows_with_duplicated_paths,
             ),
         ):
@@ -156,7 +156,7 @@ class TestRepositoryWorkflows:
         )
         with (
             patch(
-                "core.infrastructure.base_repository.BaseRepository.read_file_if_exists",
+                "core.infrastructure.file_system_base_repository.FileSystemBaseRepository.read_file_if_exists",
                 return_value=workflows_with_duplicated_paths,
             ),
         ):
@@ -169,7 +169,7 @@ class TestRepositoryWorkflows:
         empty_workflow_runs = as_json_string([])
         with (
             patch(
-                "core.infrastructure.base_repository.BaseRepository.read_file_if_exists",
+                "core.infrastructure.file_system_base_repository.FileSystemBaseRepository.read_file_if_exists",
                 return_value=empty_workflow_runs,
             ),
         ):
@@ -182,7 +182,7 @@ class TestRepositoryWorkflows:
         empty_workflow_runs = as_json_string([])
         with (
             patch(
-                "core.infrastructure.base_repository.BaseRepository.read_file_if_exists",
+                "core.infrastructure.file_system_base_repository.FileSystemBaseRepository.read_file_if_exists",
                 return_value=empty_workflow_runs,
             ),
         ):
@@ -227,7 +227,7 @@ class TestRepositoryWorkflows:
             return None
 
         with patch(
-            "core.infrastructure.base_repository.BaseRepository.read_file_if_exists",
+            "core.infrastructure.file_system_base_repository.FileSystemBaseRepository.read_file_if_exists",
             side_effect=mocked_read_file_if_exists,
         ):
             loader = LoadWorkflows(configuration=InMemoryConfiguration("."))
@@ -269,7 +269,7 @@ class TestRepositoryWorkflows:
             return None
 
         with patch(
-            "core.infrastructure.base_repository.BaseRepository.read_file_if_exists",
+            "core.infrastructure.file_system_base_repository.FileSystemBaseRepository.read_file_if_exists",
             side_effect=mocked_read_file_if_exists,
         ):
             loader = LoadWorkflows(configuration=InMemoryConfiguration("."))
@@ -314,7 +314,7 @@ class TestRepositoryWorkflows:
             return None
 
         with patch(
-            "core.infrastructure.base_repository.BaseRepository.read_file_if_exists",
+            "core.infrastructure.file_system_base_repository.FileSystemBaseRepository.read_file_if_exists",
             side_effect=mocked_read_file_if_exists,
         ):
             loader = LoadWorkflows(configuration=InMemoryConfiguration("."))
@@ -347,7 +347,7 @@ class TestRepositoryWorkflows:
             return None
 
         with patch(
-            "core.infrastructure.base_repository.BaseRepository.read_file_if_exists",
+            "core.infrastructure.file_system_base_repository.FileSystemBaseRepository.read_file_if_exists",
             side_effect=mocked_read_file_if_exists,
         ):
             loader = LoadWorkflows(configuration=InMemoryConfiguration("."))

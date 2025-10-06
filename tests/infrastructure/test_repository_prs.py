@@ -119,7 +119,7 @@ class TestRepositoryPrs:
             ]
         )
         with patch(
-            "core.infrastructure.base_repository.BaseRepository.read_file_if_exists",
+            "core.infrastructure.file_system_base_repository.FileSystemBaseRepository.read_file_if_exists",
             return_value=prs_fetched,
         ):
             repository = LoadPrs(
@@ -148,7 +148,7 @@ class TestRepositoryPrs:
             ]
         )
         with patch(
-            "core.infrastructure.base_repository.BaseRepository.read_file_if_exists",
+            "core.infrastructure.file_system_base_repository.FileSystemBaseRepository.read_file_if_exists",
             return_value=prs_fetched,
         ):
             repository = LoadPrs(
