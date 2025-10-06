@@ -9,40 +9,32 @@ def configuration_section(configuration: Configuration):
 
     def form_section():
         """
-        Create a form section with two text fields and a save button.
+        Create a form section displaying all configuration values.
 
         :return: A Panel layout containing the form.
         """
-        text_field_1 = pn.widgets.TextInput(
-            name="Repository",
-            placeholder="",
-            value=configuration.github_repository,
-            disabled=True,
-        )
-        text_field_2 = pn.widgets.TextAreaInput(
-            name="Data stored at",
-            placeholder="",
-            value=configuration.store_data,
-            rows=6,
-            auto_grow=True,
-            disabled=True,
-            max_rows=10,
-        )
-        # save_button = pn.widgets.Button(name="Save", button_type="primary")
+        fields = []
 
-        # def save_action(event):
-        #     # Logic to save the input values
-        #     field_1_value = text_field_1.value
-        #     field_2_value = text_field_2.value
-        #     print(f"Saved values: Field 1 = {field_1_value}, Field 2 = {field_2_value}")
+        for key, value in configuration.__dict__.items():
+            if key == "github_token":
+                field = pn.widgets.PasswordInput(
+                    name="GitHub Token",
+                    placeholder="",
+                    value=value,
+                )
+                fields.append(field)
+                continue
+            field = pn.widgets.TextAreaInput(
+                name=key.replace("_", " ").capitalize(),
+                placeholder="",
+                value=str(value if value is not None else ""),
+                rows=2,
+                auto_grow=True,
+                max_rows=5,
+            )
+            fields.append(field)
 
-        # save_button.on_click(save_action)
-
-        return pn.Column(
-            text_field_1,
-            text_field_2,
-            # save_button,
-        )
+        return pn.Column(*fields)
 
     return pn.Column(
         "## Configuration section",
