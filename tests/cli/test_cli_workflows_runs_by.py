@@ -1,20 +1,14 @@
-import os
-
 import pytest
 from apps.cli.main import main
 
-from infrastructure.configuration.configuration_file_system_handler import (
-    ConfigurationFileSystemHandler,
-)
 from tests.builders import workflows_data
 from tests.file_handler_for_testing import FileHandlerForTesting
-from tests.in_memory_configuration import InMemoryConfiguration
 
 
 class TestWorkflowsRunsByCliCommands:
 
     def test_can_run_view_workflow_by(self, cli):
-        result = cli.invoke(main, ["pipelines", "workflow-runs-by", "--help"])
+        result = cli.runner.invoke(main, ["pipelines", "workflow-runs-by", "--help"])
         assert 0 == result.exit_code
         assert "Comma-separated key=value pairs to filter runs" in result.output
 
@@ -33,22 +27,17 @@ class TestWorkflowsRunsByCliCommands:
         ],
     )
     def test_should_filter_workflows_by_target_branch(
-        self, cli, tmp_path, workflow_runs, expected
+        self, cli, workflow_runs, expected
     ):
         target = expected["target"]
         expected_count = expected["count"]
 
-        path_string = str(tmp_path)
-        os.environ["SMM_STORE_DATA_AT"] = path_string
-        configuration = InMemoryConfiguration(path_string)
-        ConfigurationFileSystemHandler(path_string).store_file(
-            "smm_config.json", configuration
-        )
+        path_string = cli.data_stored_at
         FileHandlerForTesting(path_string).store_json_file(
             "workflows.json", workflow_runs
         )
 
-        result = cli.invoke(
+        result = cli.runner.invoke(
             main,
             [
                 "pipelines",
@@ -64,19 +53,15 @@ class TestWorkflowsRunsByCliCommands:
 
         assert f"Found {expected_count} runs after filtering" in result.output
 
-    def test_should_filter_by_workflow_path(self, cli, tmp_path):
+    def test_should_filter_by_workflow_path(self, cli):
         workflow_runs = workflows_data()
-        path_string = str(tmp_path)
-        os.environ["SMM_STORE_DATA_AT"] = path_string
-        configuration = InMemoryConfiguration(path_string)
-        ConfigurationFileSystemHandler(path_string).store_file(
-            "smm_config.json", configuration
-        )
+        path_string = cli.data_stored_at
+
         FileHandlerForTesting(path_string).store_json_file(
             "workflows.json", workflow_runs
         )
 
-        result = cli.invoke(
+        result = cli.runner.invoke(
             main,
             [
                 "pipelines",
@@ -88,19 +73,18 @@ class TestWorkflowsRunsByCliCommands:
 
         assert "Found 1 runs after filtering" in result.output
 
-    def test_should_aggregate_data_by_week_by_default(self, cli, tmp_path):
+    def test_should_aggregate_data_by_week_by_default(
+        self,
+        cli,
+    ):
         workflow_runs = workflows_data()
-        path_string = str(tmp_path)
-        os.environ["SMM_STORE_DATA_AT"] = path_string
-        configuration = InMemoryConfiguration(path_string)
-        ConfigurationFileSystemHandler(path_string).store_file(
-            "smm_config.json", configuration
-        )
+        path_string = cli.data_stored_at
+
         FileHandlerForTesting(path_string).store_json_file(
             "workflows.json", workflow_runs
         )
 
-        result = cli.invoke(
+        result = cli.runner.invoke(
             main,
             [
                 "pipelines",
@@ -110,19 +94,15 @@ class TestWorkflowsRunsByCliCommands:
 
         assert "Plotting data aggregated by week" in result.output
 
-    def test_should_aggregate_data_by_month(self, cli, tmp_path):
+    def test_should_aggregate_data_by_month(self, cli):
         workflow_runs = workflows_data()
-        path_string = str(tmp_path)
-        os.environ["SMM_STORE_DATA_AT"] = path_string
-        configuration = InMemoryConfiguration(path_string)
-        ConfigurationFileSystemHandler(path_string).store_file(
-            "smm_config.json", configuration
-        )
+        path_string = cli.data_stored_at
+
         FileHandlerForTesting(path_string).store_json_file(
             "workflows.json", workflow_runs
         )
 
-        result = cli.invoke(
+        result = cli.runner.invoke(
             main,
             [
                 "pipelines",
@@ -144,23 +124,17 @@ class TestWorkflowsRunsByCliCommands:
             ([], {"event": "push", "count": 0}),
         ],
     )
-    def test_should_filter_workflows_by_events(
-        self, cli, tmp_path, workflow_runs, expected
-    ):
+    def test_should_filter_workflows_by_events(self, cli, workflow_runs, expected):
         event = expected["event"]
         expected_count = expected["count"]
 
-        path_string = str(tmp_path)
-        os.environ["SMM_STORE_DATA_AT"] = path_string
-        configuration = InMemoryConfiguration(path_string)
-        ConfigurationFileSystemHandler(path_string).store_file(
-            "smm_config.json", configuration
-        )
+        path_string = cli.data_stored_at
+
         FileHandlerForTesting(path_string).store_json_file(
             "workflows.json", workflow_runs
         )
 
-        result = cli.invoke(
+        result = cli.runner.invoke(
             main,
             [
                 "pipelines",
@@ -210,21 +184,15 @@ class TestWorkflowsRunsByCliCommands:
             ),
         ],
     )
-    def test_should_filter_by_multiple_parameters(
-        self, cli, tmp_path, command, expected
-    ):
+    def test_should_filter_by_multiple_parameters(self, cli, command, expected):
         expected_count = expected["count"]
         workflow_runs = workflows_data()
-        path_string = str(tmp_path)
-        os.environ["SMM_STORE_DATA_AT"] = path_string
-        configuration = InMemoryConfiguration(path_string)
-        ConfigurationFileSystemHandler(path_string).store_file(
-            "smm_config.json", configuration
-        )
+        path_string = cli.data_stored_at
+
         FileHandlerForTesting(path_string).store_json_file(
             "workflows.json", workflow_runs
         )
 
-        result = cli.invoke(main, command)
+        result = cli.runner.invoke(main, command)
 
         assert f"Found {expected_count} runs after filtering" in result.output

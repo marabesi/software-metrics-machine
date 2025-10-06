@@ -1,28 +1,16 @@
-import os
 from apps.cli.main import main
-from infrastructure.configuration.configuration_file_system_handler import (
-    ConfigurationFileSystemHandler,
-)
-from tests.in_memory_configuration import InMemoryConfiguration
 
 
 class TestWorkflowsFetchCliCommands:
 
     def test_can_run_fetch_workflows_command(self, cli):
-        result = cli.invoke(main, ["pipelines", "fetch", "--help"])
+        result = cli.runner.invoke(main, ["pipelines", "fetch", "--help"])
         assert 0 == result.exit_code
         assert "Show this message and exit" in result.output
         assert "" == result.stderr
 
-    def test_should_fetch_workflow_data_between_dates_date_by_date(self, cli, tmp_path):
-        path_string = str(tmp_path)
-        os.environ["SMM_STORE_DATA_AT"] = path_string
-        configuration = InMemoryConfiguration(path_string)
-        ConfigurationFileSystemHandler(path_string).store_file(
-            "smm_config.json", configuration
-        )
-
-        result = cli.invoke(
+    def test_should_fetch_workflow_data_between_dates_date_by_date(self, cli):
+        result = cli.runner.invoke(
             main,
             [
                 "pipelines",
@@ -39,15 +27,9 @@ class TestWorkflowsFetchCliCommands:
 
         assert "Step by (e.g., day, month)" in result.output
 
-    def test_should_fetch_workflow_data_between_dates(self, cli, tmp_path):
-        path_string = str(tmp_path)
-        os.environ["SMM_STORE_DATA_AT"] = path_string
-        configuration = InMemoryConfiguration(path_string)
-        ConfigurationFileSystemHandler(path_string).store_file(
-            "smm_config.json", configuration
-        )
-
-        result = cli.invoke(
+    def test_should_fetch_workflow_data_between_dates(self, cli):
+        configuration = cli.configuration
+        result = cli.runner.invoke(
             main,
             [
                 "pipelines",

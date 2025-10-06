@@ -1,16 +1,11 @@
-import os
 from unittest.mock import patch
 
 import pytest
 from requests import Response
 from apps.cli.main import main
 
-from infrastructure.configuration.configuration_file_system_handler import (
-    ConfigurationFileSystemHandler,
-)
 from tests.builders import as_json_string
 from tests.file_handler_for_testing import FileHandlerForTesting
-from tests.in_memory_configuration import InMemoryConfiguration
 
 
 class TestJobsCliCommands:
@@ -22,17 +17,12 @@ class TestJobsCliCommands:
             yield mock_get
 
     def test_can_run_fetch_jobs_command(self, cli):
-        result = cli.invoke(main, ["pipelines", "fetch-jobs", "--help"])
+        result = cli.runner.invoke(main, ["pipelines", "fetch-jobs", "--help"])
         assert 0 == result.exit_code
         assert "Show this message and exit" in result.output
 
     def test_should_fetch_jobs_for_a_workflow(self, cli, tmp_path):
-        path_string = str(tmp_path)
-        os.environ["SMM_STORE_DATA_AT"] = path_string
-        ConfigurationFileSystemHandler(path_string).store_file(
-            "smm_config.json", InMemoryConfiguration(path_string)
-        )
-
+        path_string = cli.data_stored_at
         workflow_fetched = [
             {
                 "id": 1,
@@ -83,7 +73,7 @@ class TestJobsCliCommands:
 
             mock_get.return_value = response
 
-            result = cli.invoke(
+            result = cli.runner.invoke(
                 main,
                 [
                     "pipelines",
@@ -101,12 +91,7 @@ class TestJobsCliCommands:
     def test_not_fetch_when_workflow_falls_off_the_start_date_and_end_date(
         self, cli, tmp_path
     ):
-        path_string = str(tmp_path)
-        os.environ["SMM_STORE_DATA_AT"] = path_string
-        configuration = InMemoryConfiguration(path_string)
-        ConfigurationFileSystemHandler(path_string).store_file(
-            "smm_config.json", configuration
-        )
+        path_string = cli.data_stored_at
         single_run = [
             {
                 "id": 1,
@@ -117,7 +102,7 @@ class TestJobsCliCommands:
         ]
         FileHandlerForTesting(path_string).store_json_file("workflows.json", single_run)
 
-        result = cli.invoke(
+        result = cli.runner.invoke(
             main,
             [
                 "pipelines",
@@ -147,11 +132,7 @@ class TestJobsCliCommands:
         ],
     )
     def test_with_stored_data_summary(self, cli, tmp_path, jobs):
-        path_string = str(tmp_path)
-        os.environ["SMM_STORE_DATA_AT"] = path_string
-        ConfigurationFileSystemHandler(path_string).store_file(
-            "smm_config.json", InMemoryConfiguration(path_string)
-        )
+        path_string = cli.data_stored_at
         single_run = [
             {
                 "id": 1,
@@ -163,7 +144,7 @@ class TestJobsCliCommands:
         FileHandlerForTesting(path_string).store_json_file("workflows.json", single_run)
         FileHandlerForTesting(path_string).store_json_file("jobs.json", jobs)
 
-        result = cli.invoke(
+        result = cli.runner.invoke(
             main,
             [
                 "pipelines",
