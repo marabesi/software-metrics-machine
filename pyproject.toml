@@ -16,7 +16,8 @@ dependencies = [
     "fastapi[standard] (>=0.117.1,<0.118.0)",
     "ipywidgets (>=8.1.7,<9.0.0)",
     "langchain (>=0.3.27,<0.4.0)",
-    "langchain-community (>=0.3.31,<0.4.0)"
+    "langchain-community (>=0.3.31,<0.4.0)",
+    "ollama (>=0.6.0,<0.7.0)"
 ]
 
 [tool.poetry]
