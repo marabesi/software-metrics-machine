@@ -51,6 +51,18 @@ export default defineConfig({
         ]
       },
       {
+        text: 'Features',
+        items: [
+          { text: 'Dashboard', link: '/dashboard', items: [
+            { text: 'Insights', link: '/dashboard/insights' },
+            { text: 'Pipelines', link: '/dashboard/pipelines' },
+            { text: 'Pull requests', link: '/dashboard/prs' },
+            { text: 'Source code', link: '/dashboard/code' },
+            { text: 'Configuration', link: '/dashboard/configuration' },
+          ]},
+        ]
+      },
+      {
         text: 'Integrations',
         items: [
           { text: 'GitHub', link: '/github', items: [

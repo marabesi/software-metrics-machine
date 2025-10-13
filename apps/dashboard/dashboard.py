@@ -1,6 +1,6 @@
 from datetime import date, datetime, timedelta
 import panel as pn
-from panel.template import MaterialTemplate
+from panel.template import FastListTemplate
 
 from apps.dashboard.insights_section import insights_section
 from apps.dashboard.pipeline_section import pipeline_section
@@ -70,7 +70,7 @@ source_code_section = source_code_section(
 )
 configuration_section = configuration_section(configuration)
 
-template = MaterialTemplate(
+template = FastListTemplate(
     title=f"Software Metrics Machine - {configuration.github_repository}",
     sidebar=[header_section],
 )

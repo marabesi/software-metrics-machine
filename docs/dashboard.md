@@ -19,5 +19,10 @@ The dashboard provides the following features:
 - **Filtering and Sorting**: Easily filter and sort your data to find specific information.
 - **Export Options**: Export your data in CSV.
 
-### Pipeline Overview
+## Explore
 
+- [Insights](./dashboard/insights.md)
+- [Source Code](./dashboard/code.md)
+- [Pull Requests](./dashboard/prs.md)
+- [Pipelines](./dashboard/pipelines.md)
+- [Configuration](./dashboard/configuration.md)

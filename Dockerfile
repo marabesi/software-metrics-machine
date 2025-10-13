@@ -17,4 +17,4 @@ COPY . .
 
 EXPOSE 5006
 
-CMD ["poetry", "run", "panel", "serve", "apps/dashboard/main.py"]
+CMD ["poetry", "run", "panel", "serve", "apps/dashboard/dashboard.py"]

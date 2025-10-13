@@ -93,7 +93,7 @@ def prs_section(date_range_picker, repository: LoadPrs):
         "## PRs Section",
         pn.Row(
             pn.widgets.Tabulator(
-                df[["id", "title", "state", "created_at", "merged_at", "html_url"]],
+                df,
                 pagination="remote",
                 page_size=10,
                 header_filters=pr_filter_criteria,

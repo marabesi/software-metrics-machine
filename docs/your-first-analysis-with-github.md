@@ -107,5 +107,5 @@ Machine. To start the dashboard, run the following command:
 ./run-dashboard.sh
 ```
 
-This will start a local server, and you can access the dashboard by navigating to `http://localhost:5006` in your web
+This will start a local server, and you can access the dashboard by navigating to `http://localhost:5006/dashboard` in your web
 browser.
