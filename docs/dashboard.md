@@ -6,6 +6,8 @@ outline: deep
 
 This project includes a dashboard for visualizing and managing your data.
 
+![Dashboard Overview](/dashboard/dashboard.png)
+
 ## Accessing the Dashboard
 
 Once getting started steps have been followed and a provider has been used to fetch the data, the dashboard, is available
