@@ -1,3 +1,4 @@
+import pandas as pd
 import panel as pn
 from core.prs.view_average_of_prs_open_by import (
     ViewAverageOfPrsOpenBy,
@@ -15,7 +16,7 @@ from providers.github.prs.prs_repository import LoadPrs
 pn.extension("tabulator")
 
 
-def prs_section(date_range_picker, repository: LoadPrs, anonymize=False):
+def prs_section(date_range_picker, repository: LoadPrs):
     def normalize_label(selected_labels):
         if len(selected_labels) == 0:
             return None
@@ -64,8 +65,8 @@ def prs_section(date_range_picker, repository: LoadPrs, anonymize=False):
         )
 
     unique_authors = repository.get_unique_authors()
-
     unique_labels = repository.get_unique_labels()
+
     label_names = [label["label_name"] for label in unique_labels]
 
     author_select = pn.widgets.MultiChoice(
@@ -82,8 +83,23 @@ def prs_section(date_range_picker, repository: LoadPrs, anonymize=False):
         value=[],
     )
 
+    pr_filter_criteria = {
+        "html_url": {"type": "input", "func": "like", "placeholder": "Enter url"},
+        "title": {"type": "input", "func": "like", "placeholder": "Title"},
+        "state": {"type": "list", "func": "like", "placeholder": "Select state"},
+    }
+    df = pd.DataFrame(repository.all_prs)
     return pn.Column(
         "## PRs Section",
+        pn.Row(
+            pn.widgets.Tabulator(
+                df[["id", "title", "state", "created_at", "merged_at", "html_url"]],
+                pagination="remote",
+                page_size=10,
+                header_filters=pr_filter_criteria,
+                show_index=False,
+            )
+        ),
         pn.Row(
             pn.Column(author_select, sizing_mode="stretch_width"),
             pn.Column(label_selector, sizing_mode="stretch_width"),

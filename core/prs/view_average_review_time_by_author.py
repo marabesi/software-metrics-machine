@@ -29,13 +29,15 @@ class ViewAverageReviewTimeByAuthor(MatplotViewer):
         )
 
         if not pairs:
-            print("No merged PRs to plot")
+            print("No merged PRs to plot ", __file__)
 
         if labels:
             labels = [s.strip() for s in labels.split(",") if s.strip()]
             pairs = self.repository.filter_prs_by_labels(pairs, labels)
 
         pairs = self.__average_open_time_by_author(pairs, top)
+
+        print("found ", len(pairs), "    ", top)
 
         if len(pairs) == 0:
             pairs = [("No PRs to plot after filtering", 0)]
@@ -66,6 +68,7 @@ class ViewAverageReviewTimeByAuthor(MatplotViewer):
         """
         sums = defaultdict(float)
         counts = defaultdict(int)
+        print("Computing average open time for ", len(prs), " PRs")
         for pr in prs:
             merged = pr.get("merged_at")
             created = pr.get("created_at")
@@ -75,6 +78,12 @@ class ViewAverageReviewTimeByAuthor(MatplotViewer):
                 dt_created = datetime.fromisoformat(created.replace("Z", "+00:00"))
                 dt_merged = datetime.fromisoformat(merged.replace("Z", "+00:00"))
             except Exception:
+                print(
+                    "Failed to parse dates for PR: ",
+                    pr.get("html_url"),
+                    created,
+                    merged,
+                )
                 continue
             delta_days = (dt_merged - dt_created).total_seconds() / 86400.0
             user = pr.get("user") or {}
@@ -88,6 +97,5 @@ class ViewAverageReviewTimeByAuthor(MatplotViewer):
         for login, total in sums.items():
             averages.append((login, total / counts[login]))
 
-        # sort by average descending (longest open first)
         averages.sort(key=lambda x: x[1], reverse=True)
         return averages[:top]

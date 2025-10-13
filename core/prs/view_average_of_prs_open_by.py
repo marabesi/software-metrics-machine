@@ -16,7 +16,7 @@ class ViewAverageOfPrsOpenBy(MatplotViewer):
         author: str | None = None,
         authors: str | None = None,
         labels: str | None = None,
-        aggregate_by: str = "month",
+        aggregate_by: str = "week",
         start_date: str | None = None,
         end_date: str | None = None,
     ):

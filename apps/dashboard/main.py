@@ -33,7 +33,6 @@ if configuration.dashboard_start_date and configuration.dashboard_end_date:
 start_end_date_picker = pn.widgets.DateRangePicker(
     name="Select Date Range", value=(start_date, end_date)
 )
-anonymize = pn.widgets.Checkbox(name="Anonymize Data", value=False)
 
 workflow_names = workflow_repository.get_unique_workflow_paths()
 
@@ -65,9 +64,7 @@ pipeline_section = pipeline_section(
     workflow_conclusions=workflow_conclusions,
     repository=workflow_repository,
 )
-prs_section = prs_section(
-    start_end_date_picker, repository=prs_repository, anonymize=anonymize
-)
+prs_section = prs_section(start_end_date_picker, repository=prs_repository)
 source_code_section = source_code_section(
     repository=codemaat_repository, start_end_date_picker=start_end_date_picker
 )
@@ -85,7 +82,7 @@ tabs = pn.Tabs(
     ("Source code", source_code_section),
     ("Configuration", configuration_section),
     sizing_mode="stretch_width",
-    active=1,
+    active=2,
 )
 
 template.main.append(tabs)
