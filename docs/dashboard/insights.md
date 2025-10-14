@@ -8,4 +8,3 @@ The insights section of the dashboard provides a comprehensive overview of key m
 It includes visualizations such as the time that it takes to land code in production. It plots in months, weeks and days.
 
 ![Insights Overview](/dashboard/insights-deployment-frequency.png)
-
