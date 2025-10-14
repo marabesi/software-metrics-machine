@@ -10,11 +10,12 @@ Software Metrics Machine (SSM) is a comprehensive tool designed to provide actio
 
 Story points have long been used as a measure of progress in Agile software development. However, they often fail to capture the complexities of real-world software projects. Story points:
 
-- Are subjective and vary between teams and individuals.
+- Are subjective, vary between teams and individuals and is used as a management to always [wanting more](https://ronjeffries.com/articles/019-01ff/story-points/Index.html).
 - Do not account for team dynamics, waiting times, or code quality.
 - Provide limited insights into technical debt, code churn, or pipeline health.
 
-These limitations can lead to misaligned priorities, inefficiencies, and a lack of actionable feedback for improving team performance.
+These limitations can lead to misaligned priorities, inefficiencies, and a lack of actionable feedback for improving
+team performance.
 
 ## How SSM Solves This Problem
 
@@ -34,26 +35,10 @@ By focusing on these metrics, SSM enables teams to:
 
 To accomplish SSM mission, this project is built based on a provider model, where each provider is responsible to extract
 data from a specific source. This is because depending on the desired metric, it might come from a difference source. For
-example, there are metrics extractd about coupling that are from the git log. Other metrics such as pipeline execution
-and pull request open days average comes from GitHub API (or other providers).
+example, there are metrics extractd about coupling that are from the git log.
 
-#### Codemaat
-
-[Git](./codemaat.md) is the only common provider, as it is used to extract code churn and hotspots. Which
-means, it can be used regardless of the vendor. The following metrics are supported:
-
-- Code churn
-- Hotspots
-- Age of code
-- Authors per file
-
-#### Github
-
-If your are using [GitHub/Github actions](./github.md), the following metrics are supported:
-
-- Pull requests open days average
-- Pipeline success rate
-- Pipeline average time to complete
+Other metrics such as pipeline execution and pull request open days average comes from GitHub API (or other providers).
+Visit [supported providers](./supported-providers.md) for a full list of the metrics generated based on them.
 
 ## Why Join the SSM Project?
 
