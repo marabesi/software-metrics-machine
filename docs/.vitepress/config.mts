@@ -45,7 +45,8 @@ export default defineConfig({
       {
         text: 'Introduction',
         items: [
-          { text: 'What is SMM', link: '/what-is-smm' },
+          { text: 'What is SMM', link: '/what-is-smm', items: [] },
+          { text: 'Privacy first', link: '/privacy-first' },
           { text: 'Supported providers', link: '/supported-providers' },
           { text: 'Getting started', link: '/getting-started' },
           { text: 'Your first analysis', link: '/your-first-analysis-with-github' },

@@ -24,4 +24,4 @@ features:
     details: GitHub, GitLab, Bitbucket
   - title: One image is worth a thousand words 📊
     details: Visualize your data with interactive charts and graphs that make it easy to understand complex metrics at a glance.
-    link: ./dashboard-overview.md
+    link: ./dashboard.md
