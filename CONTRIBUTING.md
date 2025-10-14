@@ -2,6 +2,15 @@
 
 We welcome contributions from the community to enhance the Software Metrics Machine project. Whether you're fixing bugs, adding new features, or improving documentation, your input is valuable to us. Please follow the guidelines below to ensure a smooth contribution process.
 
+## Technical Requirements
+
+- Python
+- Panel
+- Pandas
+- Pytest
+- Docker
+- Other dependencies as listed in [pyproject.toml](./pyproject.toml)
+
 ## Getting Started
 
 1. **Fork the Repository**: Start by forking the Software Metrics Machine repository on GitHub to your own account.
@@ -38,18 +47,15 @@ git push origin feature/your-feature-name
 
 - **Code Style**: Follow the existing code style and conventions used in the project. This includes naming conventions, indentation, and documentation.
 - **Testing**: Ensure that your changes are covered by tests. Run existing tests to verify that nothing is broken.
+  - You can run tests using:
+  
+  ```bash
+  sh run-tests.sh
+  ```
+
 - **Documentation**: Update the documentation as needed to reflect your changes.
 - **Review Process**: Be prepared to engage in the code review process. Respond to feedback and make necessary adjustments to your pull request.  
 - **License**: By contributing to this project, you agree that your contributions will be licensed under the same license as the project.
-
-## Technical Requirements
-
-- Python
-- Panel
-- Pandas
-- Pytest
-- Docker
-- Other dependencies as listed in [pyproject.toml](./pyproject.toml)
 
 ## Resources
 
