@@ -15,6 +15,8 @@ drill down into the data that matters most for your team. This enables you to mo
 
 ## Open PRs Through Time
 
+![Pull requests timeline](/dashboard/prs/prs_timeline.png)
+
 ### Type of Chart
 
 Bar chart (daily breakdown, with separate bars for opened and closed PRs).
@@ -37,6 +39,8 @@ For example, if September 25th shows many opened PRs but none closed, it could s
 
 ## Average PR Open Days by Time Period
 
+![Pull requests open by on average](/dashboard/prs/open_prs_average.png)
+
 ### Type of Chart
 
 Line chart (trend of average days PRs remain open, aggregated by week or month).
@@ -57,6 +61,8 @@ if the average drops from 5 to 2 days over several weeks, your review process is
 3. Aggregation smooths out daily fluctuations, showing long-term trends.
 
 ## Average Review Time By Author
+
+![Pull requests open by author](/dashboard/prs/prs_open_by_author.png)
 
 ### Type of Chart
 
