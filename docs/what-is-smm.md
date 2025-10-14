@@ -25,6 +25,15 @@ SSM addresses these challenges by offering a data-driven approach to software me
 - **Pull Request Metrics**: Provides insights into the average time PRs remain open, helping teams identify bottlenecks and improve collaboration.
 - **Git History Metrics**: Analyzes code churn, hotspots, and change frequency to highlight areas of technical debt and opportunities for improvement.
 
+The process is:
+
+```mermaid
+flowchart TD
+    A[Fetch Data] --> B[Process Data]
+    B --> C[Plot Data with Dashboard]
+    B --> D[Plot Data with CLI]
+```
+
 By focusing on these metrics, SSM enables teams to:
 
 - Make informed decisions based on real data rather than subjective estimates.

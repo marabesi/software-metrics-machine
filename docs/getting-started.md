@@ -66,11 +66,14 @@ poetry install --no-root
 ## Define where to store the data
 
 This project uses a folder to store the data fetched from the different providers, set the env variable `SMM_STORE_DATA_AT`
-to point to the desired location. Use absolute path.
+to point to the desired location. Use absolute paths.
 
 ```bash
 export SMM_STORE_DATA_AT=/path/to/data/folder
 ```
+
+Ensure the folder exists and use a different folder than the cloned repository to avoid any accidental deletion or data
+changes. For example:
 
 ## Create the configuration file
 
@@ -85,7 +88,9 @@ in the folder pointed to store the data, create a configuration file named `smm_
 }
 ```
 
-A table wih the full configuration options is available at [Configuration options](getting-started.md#configuration-options).
+This configuration is the central point to configure the project and give it default values. Replace `your_github_token` with
+the token you generated, and `/your/local/repo` with the path where you cloned the repository. A table wih the full
+configuration options is available at [Configuration options](getting-started.md#configuration-options).
 
 ### Checkpoint store data
 
