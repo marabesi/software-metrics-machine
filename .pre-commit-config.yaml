@@ -1,4 +1,5 @@
 fail_fast: true
+exclude: ^docs/
 repos:
   - repo: local
     hooks:
@@ -16,4 +17,4 @@ repos:
         name: pytest
         entry: ./run-tests.sh
         language: system
-        types: [bash] 
+        types: [bash]

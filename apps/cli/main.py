@@ -58,6 +58,9 @@ module_groups = {
         "providers.codemaat.cli.entity_effort",
         "providers.codemaat.cli.entity_ownership",
     ],
+    "pydriller": [
+        "providers.pydriller.cli.change_set",
+    ],
 }
 
 add_commands_from_groups(module_groups)
