@@ -1,4 +1,6 @@
 import { defineConfig, HeadConfig } from 'vitepress'
+import { withMermaid } from 'vitepress-plugin-mermaid';
+
 const head: HeadConfig[] = [];
 // @ts-ignore
 const { NODE_ENV } = process.env;
@@ -21,71 +23,82 @@ if (NODE_ENV === 'production') {
 }
 
 // https://vitepress.dev/reference/site-config
-export default defineConfig({
-  title: "Software metrics machine",
-  description: "Stop pointing, start measuring",
-  base: '/software-metrics-machine/',
-  head,
-  themeConfig: {
-    returnToTopLabel: 'Back to top',
-    editLink: {
-      pattern: 'https://github.com/marabesi/software-metrics-machine/edit/main/docs/:path',
-      text: 'Edit this page on GitHub'
+export default withMermaid(
+  defineConfig({
+    sitemap: {
+      hostname: 'https://marabesi.com/software-metrics-machine'
     },
-    footer: {
-      message: 'Released under the MIT License.',
-      copyright: 'Copyright © 2025-present Matheus Marabesi marabesi.com'
-    },
-    // https://vitepress.dev/reference/default-theme-config
-    nav: [
-      { text: 'Home', link: '/' },
-    ],
+    title: "Software metrics machine",
+    description: "Stop pointing, start measuring",
+    base: '/software-metrics-machine/',
+    head,
+    themeConfig: {
+      returnToTopLabel: 'Back to top',
+      editLink: {
+        pattern: 'https://github.com/marabesi/software-metrics-machine/edit/main/docs/:path',
+        text: 'Edit this page on GitHub'
+      },
+      footer: {
+        message: 'Released under the MIT License.',
+        copyright: 'Copyright © 2025-present Matheus Marabesi marabesi.com'
+      },
+      // https://vitepress.dev/reference/default-theme-config
+      nav: [
+        { text: 'Home', link: '/' },
+      ],
 
-    sidebar: [
-      {
-        text: 'Introduction',
-        items: [
-          { text: 'What is SMM', link: '/what-is-smm', items: [] },
-          { text: 'Privacy first', link: '/privacy-first' },
-          { text: 'Supported providers', link: '/supported-providers' },
-          { text: 'Getting started', link: '/getting-started' },
-          { text: 'Your first analysis', link: '/your-first-analysis-with-github' },
-        ]
-      },
-      {
-        text: 'Features',
-        items: [
-          { text: 'Dashboard', link: '/dashboard', items: [
-            { text: 'Insights', link: '/dashboard/insights' },
-            { text: 'Pipelines', link: '/dashboard/pipelines' },
-            { text: 'Pull requests', link: '/dashboard/prs' },
-            { text: 'Source code', link: '/dashboard/code' },
-            { text: 'Configuration', link: '/dashboard/configuration' },
-          ]},
-        ]
-      },
-      {
-        text: 'Integrations',
-        items: [
-          { text: 'GitHub', link: '/github', items: [
-            { text: 'CLI', link: '/github/cli' },
-            { text: 'Pull requests', link: '/github/cli-prs' },
-            { text: 'Workflows', link: '/github/cli-workflows' },
-          ]},
-          { text: 'Codemaat', link: '/codemaat', items: [
-            { text: 'CLI', link: '/codemaat/cli' },
-          ]},
-          // { text: 'GitLab', link: '/gitlab' }
-        ]
+      sidebar: [
+        {
+          text: 'Introduction',
+          items: [
+            { text: 'What is SMM', link: '/what-is-smm', items: [] },
+            { text: 'Privacy first', link: '/privacy-first' },
+            { text: 'Supported providers', link: '/supported-providers' },
+            { text: 'Getting started', link: '/getting-started' },
+            { text: 'Your first analysis', link: '/your-first-analysis-with-github' },
+          ]
+        },
+        {
+          text: 'Features',
+          items: [
+            {
+              text: 'Dashboard', link: '/dashboard', items: [
+                { text: 'Insights', link: '/dashboard/insights' },
+                { text: 'Pipelines', link: '/dashboard/pipelines' },
+                { text: 'Pull requests', link: '/dashboard/prs' },
+                { text: 'Source code', link: '/dashboard/code' },
+                { text: 'Configuration', link: '/dashboard/configuration' },
+              ]
+            },
+          ]
+        },
+        {
+          text: 'Integrations',
+          items: [
+            {
+              text: 'GitHub', link: '/github', items: [
+                { text: 'CLI', link: '/github/cli' },
+                { text: 'Pull requests', link: '/github/cli-prs' },
+                { text: 'Workflows', link: '/github/cli-workflows' },
+              ]
+            },
+            {
+              text: 'Codemaat', link: '/codemaat', items: [
+                { text: 'CLI', link: '/codemaat/cli' },
+              ]
+            },
+            // { text: 'GitLab', link: '/gitlab' }
+          ]
+        }
+      ],
+
+      socialLinks: [
+        { icon: 'github', link: 'https://github.com/marabesi/software-metrics-machine' }
+      ],
+
+      search: {
+        provider: 'local'
       }
-    ],
-
-    socialLinks: [
-      { icon: 'github', link: 'https://github.com/marabesi/software-metrics-machine' }
-    ],
-
-    search: {
-      provider: 'local'
     }
-  }
-})
+  })
+)
