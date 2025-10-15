@@ -1,7 +1,9 @@
 import matplotlib.pyplot as plt
 from datetime import datetime
 
-from core.infrastructure.base_viewer import MatplotViewer
+import pandas as pd
+
+from core.infrastructure.base_viewer import MatplotViewer, PlotResult
 from core.pipelines.aggregates.deployment_frequency import DeploymentFrequency
 from providers.github.workflows.repository_workflows import LoadWorkflows
 
@@ -17,7 +19,7 @@ class ViewDeploymentFrequency(MatplotViewer):
         out_file: str | None = None,
         start_date: str | None = None,
         end_date: str | None = None,
-    ) -> None:
+    ) -> PlotResult:
         aggregated = DeploymentFrequency(repository=self.repository).execute(
             workflow_path=workflow_path,
             job_name=job_name,
@@ -74,4 +76,7 @@ class ViewDeploymentFrequency(MatplotViewer):
 
         fig.tight_layout()
 
-        return super().output(plt, fig, out_file, repository=self.repository)
+        return PlotResult(
+            super().output(plt, fig, out_file, repository=self.repository),
+            pd.DataFrame(aggregated),
+        )
