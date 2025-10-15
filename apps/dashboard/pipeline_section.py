@@ -1,3 +1,4 @@
+import pandas as pd
 import panel as pn
 from core.pipelines.view_jobs_top_failed import ViewJobsTopFailed
 from providers.github.workflows.assessment.view_summary import WorkflowRunSummary
@@ -83,7 +84,7 @@ def pipeline_section(
             .matplotlib
         )
 
-    return pn.Column(
+    views = pn.Column(
         "## Pipeline Section",
         "Explore your CI/CD pipeline metrics and gain insights into workflow performance and job execution times.",
         pn.Row(pn.bind(plot_workflow_summary, workflow_conclusions)),
@@ -126,4 +127,36 @@ def pipeline_section(
                 date_range_picker,
             )
         ),
+    )
+
+    pr_filter_criteria = {
+        "html_url": {"type": "input", "func": "like", "placeholder": "Enter url"},
+        "title": {"type": "input", "func": "like", "placeholder": "Title"},
+        "state": {"type": "list", "func": "like", "placeholder": "Select state"},
+    }
+    df = pd.DataFrame(repository.all_runs)
+    table = pn.widgets.Tabulator(
+        df,
+        pagination="remote",
+        page_size=10,
+        header_filters=pr_filter_criteria,
+        show_index=False,
+    )
+    filename, button = table.download_menu(
+        text_kwargs={"name": "", "value": "pipelines.csv"},
+        button_kwargs={"name": "Download table"},
+    )
+    data = pn.Column(
+        "## Data Section",
+        "Explore your PR data with advanced filtering options and download capabilities.",
+        pn.FlexBox(filename, button, align_items="center"),
+        pn.Row(table),
+        sizing_mode="stretch_width",
+    )
+
+    return pn.Tabs(
+        ("Insights", views),
+        ("Data", data),
+        sizing_mode="stretch_width",
+        active=0,
     )
