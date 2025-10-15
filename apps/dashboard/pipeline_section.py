@@ -85,6 +85,7 @@ def pipeline_section(
 
     return pn.Column(
         "## Pipeline Section",
+        "Explore your CI/CD pipeline metrics and gain insights into workflow performance and job execution times.",
         pn.Row(pn.bind(plot_workflow_summary, workflow_conclusions)),
         pn.Row(
             pn.bind(
@@ -110,6 +111,7 @@ def pipeline_section(
                 workflow_conclusions,
             )
         ),
+        pn.Row("## Jobs"),
         pn.Row(
             pn.bind(
                 plot_view_jobs_by_execution_time,
