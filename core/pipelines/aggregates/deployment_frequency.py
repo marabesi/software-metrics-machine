@@ -1,0 +1,26 @@
+from providers.github.workflows.repository_workflows import LoadWorkflows
+
+
+class DeploymentFrequency:
+    def __init__(self, repository: LoadWorkflows):
+        self.repository = repository
+
+    def execute(
+        self,
+        workflow_path: str,
+        job_name: str,
+        start_date: str | None = None,
+        end_date: str | None = None,
+    ) -> None:
+        filters = {
+            "start_date": start_date,
+            "end_date": end_date,
+            "path": workflow_path,
+        }
+        runs = self.repository.runs(filters)
+
+        print(f"Filtered to {len(runs)} runs after applying workflow path filter")
+
+        return self.repository.get_deployment_frequency_for_job(
+            job_name=job_name, filters=filters
+        )

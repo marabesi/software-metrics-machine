@@ -2,6 +2,7 @@ import matplotlib.pyplot as plt
 from datetime import datetime
 
 from core.infrastructure.base_viewer import MatplotViewer
+from core.pipelines.aggregates.deployment_frequency import DeploymentFrequency
 from providers.github.workflows.repository_workflows import LoadWorkflows
 
 
@@ -17,17 +18,11 @@ class ViewDeploymentFrequency(MatplotViewer):
         start_date: str | None = None,
         end_date: str | None = None,
     ) -> None:
-        filters = {
-            "start_date": start_date,
-            "end_date": end_date,
-            "path": workflow_path,
-        }
-        runs = self.repository.runs(filters)
-
-        print(f"Filtered to {len(runs)} runs after applying workflow path filter")
-
-        aggregated = self.repository.get_deployment_frequency_for_job(
-            job_name=job_name, filters=filters
+        aggregated = DeploymentFrequency(repository=self.repository).execute(
+            workflow_path=workflow_path,
+            job_name=job_name,
+            start_date=start_date,
+            end_date=end_date,
         )
 
         daily_counts = aggregated["daily_counts"]
@@ -68,7 +63,6 @@ class ViewDeploymentFrequency(MatplotViewer):
                 ax[1].axvline(x=i - 0.5, color="gray", linestyle="--", alpha=0.7)
                 current_month = week_date.month
 
-        # Plot monthly counts
         ax[2].bar(months, monthly_counts, color="green")
         ax[2].set_title("Monthly Deployment Frequency")
         ax[2].set_xlabel("Time")
