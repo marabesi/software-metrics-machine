@@ -17,29 +17,12 @@ class ViewDeploymentFrequency(MatplotViewer):
         start_date: str | None = None,
         end_date: str | None = None,
     ) -> None:
-        """
-        Plot deployment frequency based on the given workflow file and job name.
-
-        :param workflow_path: Path to the workflow file.
-        :param job_name: Name of the job to track deployments.
-        :param out_file: File to save the chart.
-        :param start_date: Start date for filtering runs.
-        :param end_date: End date for filtering runs.
-        """
-
-        filters = None
-
-        if start_date and end_date:
-            filters = {"start_date": start_date, "end_date": end_date}
-            runs = self.repository.runs(filters)
-        else:
-            runs = self.repository.runs()
-
-        if workflow_path:
-            name_low = workflow_path.lower()
-            runs = [
-                r for r in runs if (r.get("path") or "").lower().find(name_low) != -1
-            ]
+        filters = {
+            "start_date": start_date,
+            "end_date": end_date,
+            "path": workflow_path,
+        }
+        runs = self.repository.runs(filters)
 
         print(f"Filtered to {len(runs)} runs after applying workflow path filter")
 

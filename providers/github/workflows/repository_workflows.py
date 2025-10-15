@@ -88,6 +88,10 @@ class LoadWorkflows(FileSystemBaseRepository):
         if conclusion:
             runs = [r for r in runs if r.get("conclusion") == conclusion]
 
+        path = filters.get("path")
+        if path:
+            runs = [r for r in runs if r.get("path") == path]
+
         return runs
 
     def filter_by_job_name(

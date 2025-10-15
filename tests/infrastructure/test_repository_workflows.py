@@ -97,6 +97,12 @@ class TestRepositoryWorkflows:
                     "count": 5,
                 },
             ),
+            (
+                {"path": "/workflows/tests.yml"},
+                {
+                    "count": 1,
+                },
+            ),
         ],
     )
     def test_filter_workflows_by(self, filters, expected):
