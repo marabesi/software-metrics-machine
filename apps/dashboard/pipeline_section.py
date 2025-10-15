@@ -1,5 +1,6 @@
 import pandas as pd
 import panel as pn
+from apps.dashboard.components.tabulator import tabulator
 from core.pipelines.view_jobs_top_failed import ViewJobsTopFailed
 from providers.github.workflows.assessment.view_summary import WorkflowRunSummary
 from core.pipelines.view_jobs_average_time_execution import (
@@ -129,29 +130,16 @@ def pipeline_section(
         ),
     )
 
-    pr_filter_criteria = {
+    pipelines_filter_criteria = {
         "html_url": {"type": "input", "func": "like", "placeholder": "Enter url"},
         "title": {"type": "input", "func": "like", "placeholder": "Title"},
         "state": {"type": "list", "func": "like", "placeholder": "Select state"},
     }
     df = pd.DataFrame(repository.all_runs)
-    table = pn.widgets.Tabulator(
-        df,
-        pagination="remote",
-        page_size=10,
-        header_filters=pr_filter_criteria,
-        show_index=False,
-    )
-    filename, button = table.download_menu(
-        text_kwargs={"name": "", "value": "pipelines.csv"},
-        button_kwargs={"name": "Download table"},
-    )
     data = pn.Column(
         "## Data Section",
-        "Explore your PR data with advanced filtering options and download capabilities.",
-        pn.FlexBox(filename, button, align_items="center"),
-        pn.Row(table),
-        sizing_mode="stretch_width",
+        "Explore your Pipeline data with advanced filtering options and download capabilities.",
+        tabulator(df, pipelines_filter_criteria, "pipelines"),
     )
 
     return pn.Tabs(
