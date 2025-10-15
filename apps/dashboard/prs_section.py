@@ -83,23 +83,8 @@ def prs_section(date_range_picker, repository: LoadPrs):
         value=[],
     )
 
-    pr_filter_criteria = {
-        "html_url": {"type": "input", "func": "like", "placeholder": "Enter url"},
-        "title": {"type": "input", "func": "like", "placeholder": "Title"},
-        "state": {"type": "list", "func": "like", "placeholder": "Select state"},
-    }
-    df = pd.DataFrame(repository.all_prs)
-    return pn.Column(
+    views = pn.Column(
         "## PRs Section",
-        pn.Row(
-            pn.widgets.Tabulator(
-                df,
-                pagination="remote",
-                page_size=10,
-                header_filters=pr_filter_criteria,
-                show_index=False,
-            )
-        ),
         pn.Row(
             pn.Column(author_select, sizing_mode="stretch_width"),
             pn.Column(label_selector, sizing_mode="stretch_width"),
@@ -136,4 +121,37 @@ def prs_section(date_range_picker, repository: LoadPrs):
             ),
             sizing_mode="stretch_width",
         ),
+    )
+
+    pr_filter_criteria = {
+        "html_url": {"type": "input", "func": "like", "placeholder": "Enter url"},
+        "title": {"type": "input", "func": "like", "placeholder": "Title"},
+        "state": {"type": "list", "func": "like", "placeholder": "Select state"},
+    }
+    df = pd.DataFrame(repository.all_prs)
+    table = pn.widgets.Tabulator(
+        df,
+        pagination="remote",
+        page_size=10,
+        header_filters=pr_filter_criteria,
+        show_index=False,
+    )
+    filename, button = table.download_menu(
+        text_kwargs={"name": "", "value": "prs.csv"},
+        button_kwargs={"name": "Download table"},
+    )
+
+    data = pn.Column(
+        "## Data Section",
+        "Explore your PR data with advanced filtering options and download capabilities.",
+        pn.FlexBox(filename, button, align_items="center"),
+        pn.Row(table),
+        sizing_mode="stretch_width",
+    )
+
+    return pn.Tabs(
+        ("Insights", views),
+        ("Data", data),
+        sizing_mode="stretch_width",
+        active=0,
     )
