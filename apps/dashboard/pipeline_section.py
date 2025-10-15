@@ -1,4 +1,5 @@
 import panel as pn
+from core.pipelines.view_jobs_top_failed import ViewJobsTopFailed
 from providers.github.workflows.assessment.view_summary import WorkflowRunSummary
 from core.pipelines.view_jobs_average_time_execution import (
     ViewJobsByStatus,
@@ -57,7 +58,7 @@ def pipeline_section(
         date_range_picker, workflow_selector, workflow_conclusions
     ):
         return ViewWorkflowRunsBy(repository=repository).main(
-            aggregate_by="week",
+            aggregate_by="month",
             start_date=date_range_picker[0],
             end_date=date_range_picker[1],
             raw_filters=f"conclusion={workflow_conclusions}",
@@ -74,6 +75,11 @@ def pipeline_section(
 
         if summary["total_runs"] == 0:
             return pn.pane.Markdown("### No workflow runs available.")
+
+    def plot_failed_jobs(date_range_picker):
+        return ViewJobsTopFailed(repository=repository).main(
+            start_date=date_range_picker[0], end_date=date_range_picker[1]
+        )
 
     return pn.Column(
         "## Pipeline Section",
@@ -108,6 +114,12 @@ def pipeline_section(
                 date_range_picker,
                 workflow_selector,
                 workflow_conclusions,
+            )
+        ),
+        pn.Row(
+            pn.bind(
+                plot_failed_jobs,
+                date_range_picker,
             )
         ),
     )
