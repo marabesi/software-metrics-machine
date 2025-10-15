@@ -71,7 +71,7 @@ source_code_section = source_code_section(
 configuration_section = configuration_section(configuration)
 
 template = FastListTemplate(
-    title=f"Software Metrics Machine - {configuration.github_repository}",
+    title=f"{configuration.github_repository}",
     sidebar=[header_section],
 )
 

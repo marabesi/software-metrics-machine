@@ -1,10 +1,9 @@
-import matplotlib.pyplot as plt
 from collections import defaultdict
 import pandas as pd
 
 import holoviews as hv
 
-from core.infrastructure.base_viewer import MatplotViewer
+from core.infrastructure.base_viewer import MatplotViewer, PlotResult
 from providers.github.workflows.repository_workflows import LoadWorkflows
 
 hv.extension("bokeh")
@@ -61,7 +60,5 @@ class ViewJobsTopFailed(MatplotViewer):
 
         if out_file:
             hv.save(bars, out_file)
-        else:
-            return bars
 
-        return super().output(plt, bars, out_file, repository=self.repository)
+        return PlotResult(bars, pd.DataFrame(data))

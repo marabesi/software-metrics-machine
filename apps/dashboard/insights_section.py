@@ -9,11 +9,15 @@ pn.extension("tabulator")
 
 def insights_section(repository: LoadWorkflows, date_range_picker):
     def plot_deployment_frequency(date_range_picker):
-        return ViewDeploymentFrequency(repository=repository).plot(
-            workflow_path=repository.configuration.deployment_frequency_target_pipeline,
-            job_name=repository.configuration.deployment_frequency_target_job,
-            start_date=date_range_picker[0],
-            end_date=date_range_picker[1],
+        return (
+            ViewDeploymentFrequency(repository=repository)
+            .plot(
+                workflow_path=repository.configuration.deployment_frequency_target_pipeline,
+                job_name=repository.configuration.deployment_frequency_target_job,
+                start_date=date_range_picker[0],
+                end_date=date_range_picker[1],
+            )
+            .matplotlib
         )
 
     def workflow_run_duration(date_range_picker):

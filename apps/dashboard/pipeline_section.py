@@ -77,8 +77,10 @@ def pipeline_section(
             return pn.pane.Markdown("### No workflow runs available.")
 
     def plot_failed_jobs(date_range_picker):
-        return ViewJobsTopFailed(repository=repository).main(
-            start_date=date_range_picker[0], end_date=date_range_picker[1]
+        return (
+            ViewJobsTopFailed(repository=repository)
+            .main(start_date=date_range_picker[0], end_date=date_range_picker[1])
+            .matplotlib
         )
 
     return pn.Column(
