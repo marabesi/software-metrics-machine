@@ -34,14 +34,21 @@ class LoadWorkflows(FileSystemBaseRepository):
         self.__load_jobs()
 
     def jobs(self, filters=None):
+        runs = self.all_jobs
         if not filters:
-            return self.all_jobs
+            return runs
 
         start_date = filters.get("start_date")
         end_date = filters.get("end_date")
 
         if start_date and end_date:
-            return super().filter_by_date_range(self.all_jobs, start_date, end_date)
+            runs = super().filter_by_date_range(self.all_jobs, start_date, end_date)
+
+        name = filters.get("name")
+        if name:
+            runs = [job for job in self.all_jobs if (job.get("name") or "") == name]
+
+        return runs
 
     def runs(self, filters=None):
         if not filters:

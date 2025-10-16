@@ -117,6 +117,69 @@ class TestRepositoryWorkflows:
             result = loader.runs(filters=filters)
             assert expected["count"] == len(result)
 
+    @pytest.mark.parametrize(
+        "filters, expected",
+        [
+            (
+                {"name": "Deploy"},
+                {
+                    "count": 1,
+                },
+            ),
+            (
+                {"name": "Banana"},
+                {
+                    "count": 0,
+                },
+            ),
+            (
+                {
+                    "name": "Deploy",
+                    "start_date": "2023-10-01",
+                    "end_date": "2023-10-01",
+                },
+                {
+                    "count": 1,
+                },
+            ),
+        ],
+    )
+    def test_filter_jobs_by(self, filters, expected):
+        def mocked_read_file_if_exists(file):
+            if file == "workflows.json":
+                return as_json_string(workflows_data())
+            elif file == "jobs.json":
+                return as_json_string(
+                    [
+                        {
+                            "id": 105,
+                            "run_id": 1,
+                            "name": "Deploy",
+                            "conclusion": "success",
+                            "started_at": "2023-10-01T09:05:00Z",
+                            "completed_at": "2023-10-01T09:10:00Z",
+                        },
+                        {
+                            "id": 107,
+                            "run_id": 1,
+                            "name": "Build",
+                            "conclusion": "failed",
+                            "started_at": "2023-01-01T09:05:00Z",
+                            "completed_at": "2023-01-01T09:10:00Z",
+                        },
+                    ]
+                )
+            return None
+
+        with patch(
+            "core.infrastructure.file_system_base_repository.FileSystemBaseRepository.read_file_if_exists",
+            side_effect=mocked_read_file_if_exists,
+        ):
+            loader = LoadWorkflows(configuration=InMemoryConfiguration("."))
+            result = loader.jobs(filters=filters)
+
+            assert expected["count"] == len(result)
+
     def test_get_unique_workflow_paths(self):
         workflows_with_duplicated_paths = as_json_string(
             [
