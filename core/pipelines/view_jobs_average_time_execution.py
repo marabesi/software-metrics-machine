@@ -29,6 +29,7 @@ class ViewJobsByStatus(MatplotViewer):
         start_date: str | None = None,
         end_date: str | None = None,
         force_all_jobs: bool = False,
+        jobs_selector: str | None = None,
     ) -> None:
         """Compute average job execution time (completed_at - started_at) grouped by job name and plot top-N.
 

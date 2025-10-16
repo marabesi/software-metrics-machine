@@ -22,6 +22,7 @@ def pipeline_section(
     date_range_picker,
     workflow_selector,
     workflow_conclusions,
+    jobs_selector,
     repository: LoadWorkflows,
 ):
     def sanitize_workflow_path(selected_value):
@@ -39,12 +40,13 @@ def pipeline_section(
         )
 
     def plot_view_jobs_by_execution_time(
-        date_range_picker, workflow_selector, workflow_conclusions
+        date_range_picker, workflow_selector, workflow_conclusions, jobs_selector
     ):
         return ViewJobsByStatus(repository=repository).main(
             start_date=date_range_picker[0],
             end_date=date_range_picker[1],
             workflow_path=sanitize_workflow_path(workflow_selector),
+            jobs_selector=jobs_selector,
         )
 
     def plot_workflow_run_duration(
@@ -78,10 +80,14 @@ def pipeline_section(
         if summary["total_runs"] == 0:
             return pn.pane.Markdown("### No workflow runs available.")
 
-    def plot_failed_jobs(date_range_picker):
+    def plot_failed_jobs(date_range_picker, jobs_selector):
         return (
             ViewJobsTopFailed(repository=repository)
-            .main(start_date=date_range_picker[0], end_date=date_range_picker[1])
+            .main(
+                start_date=date_range_picker[0],
+                end_date=date_range_picker[1],
+                jobs_selector=jobs_selector,
+            )
             .matplotlib
         )
 
@@ -114,20 +120,17 @@ def pipeline_section(
             )
         ),
         pn.Row("## Jobs"),
+        pn.Row(jobs_selector),
         pn.Row(
             pn.bind(
                 plot_view_jobs_by_execution_time,
                 date_range_picker,
                 workflow_selector,
                 workflow_conclusions,
+                jobs_selector,
             )
         ),
-        pn.Row(
-            pn.bind(
-                plot_failed_jobs,
-                date_range_picker,
-            )
-        ),
+        pn.Row(pn.bind(plot_failed_jobs, date_range_picker, jobs_selector)),
     )
 
     pipelines_filter_criteria = {

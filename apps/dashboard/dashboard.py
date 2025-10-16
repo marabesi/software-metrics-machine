@@ -37,9 +37,17 @@ start_end_date_picker = pn.widgets.DateRangePicker(
 workflow_names = workflow_repository.get_unique_workflow_paths()
 
 workflow_selector = pn.widgets.Select(
-    name="Select Workflow",
-    description="Select Workflow",
+    name="Select pipeline",
+    description="Select pipeline",
     options=workflow_names,
+)
+
+job_names = workflow_repository.get_unique_jobs_name()
+
+jobs_selector = pn.widgets.Select(
+    name="Select job",
+    description="Select job",
+    options=job_names,
 )
 
 workflow_conclusions = workflow_repository.get_unique_workflow_conclusions()
@@ -61,6 +69,7 @@ insights_section = insights_section(
 pipeline_section = pipeline_section(
     date_range_picker=start_end_date_picker,
     workflow_selector=workflow_selector,
+    jobs_selector=jobs_selector,
     workflow_conclusions=workflow_conclusions,
     repository=workflow_repository,
 )

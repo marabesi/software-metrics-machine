@@ -19,6 +19,7 @@ class ViewJobsTopFailed(MatplotViewer):
         start_date: str | None = None,
         end_date: str | None = None,
         raw_filters: dict = {},
+        jobs_selector: str | None = None,
     ) -> None:
         if start_date and end_date:
             filters = {"start_date": start_date, "end_date": end_date}
