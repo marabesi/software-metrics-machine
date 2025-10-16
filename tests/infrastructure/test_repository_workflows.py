@@ -169,7 +169,7 @@ class TestRepositoryWorkflows:
                         },
                     ]
                 )
-            return None
+            raise FileNotFoundError(f"File {file} not found")
 
         with patch(
             "core.infrastructure.file_system_base_repository.FileSystemBaseRepository.read_file_if_exists",
@@ -200,6 +200,35 @@ class TestRepositoryWorkflows:
 
             result = loader.get_unique_workflow_paths()
             assert len(result) == 4
+
+    def test_get_unique_jobs_name(self):
+        jobs_with_duplicated_paths = [
+            {
+                "name": "Deploy",
+            },
+            {
+                "name": "Deploy",
+            },
+            {
+                "name": "Build",
+            },
+        ]
+
+        def mocked_read_file_if_exists(file):
+            if file == "workflows.json":
+                return as_json_string(workflows_data())
+            elif file == "jobs.json":
+                return as_json_string(jobs_with_duplicated_paths)
+            raise FileNotFoundError(f"File {file} not found")
+
+        with patch(
+            "core.infrastructure.file_system_base_repository.FileSystemBaseRepository.read_file_if_exists",
+            side_effect=mocked_read_file_if_exists,
+        ):
+            loader = LoadWorkflows(configuration=InMemoryConfiguration("."))
+
+            result = loader.get_unique_jobs_name()
+            assert len(result) == 3
 
     def test_get_unique_conclusions(self):
         workflows_with_duplicated_paths = as_json_string(

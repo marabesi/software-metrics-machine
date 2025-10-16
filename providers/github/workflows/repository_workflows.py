@@ -143,6 +143,12 @@ class LoadWorkflows(FileSystemBaseRepository):
         listWithPaths.insert(0, "All")
         return listWithPaths
 
+    def get_unique_jobs_name(self) -> List[str]:
+        job_names = {job.get("name", "") for job in self.all_jobs if "name" in job}
+        list_all = list(job_names)
+        list_all.insert(0, "All")
+        return list_all
+
     def get_deployment_frequency_for_job(self, job_name: str, filters=None):
         deployments = {}
         runs = self.runs(filters)
