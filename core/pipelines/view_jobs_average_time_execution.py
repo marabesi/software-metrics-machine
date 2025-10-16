@@ -31,16 +31,19 @@ class ViewJobsByAverageTimeExecution(MatplotViewer):
         start_date: str | None = None,
         end_date: str | None = None,
         force_all_jobs: bool = False,
-        jobs_selector: str | None = None,
+        job_name: str | None = None,
     ) -> PlotResult:
         """Compute average job execution time (completed_at - started_at) grouped by job name and plot top-N.
 
         Averages are shown in minutes.
         """
         filters = {"start_date": start_date, "end_date": end_date}
-        print(f"Applying date filter: {filters}")
+        print(f"Applying pipeline filter: {filters}")
         runs = self.repository.runs(filters=filters)
-        jobs = self.repository.jobs(filters=filters)
+        job_filters = {**filters, "name": job_name}
+        print(f"Applying jobs filter: {job_filters}")
+        jobs = self.repository.jobs(filters=job_filters)
+
         # optional filter by workflow name (case-insensitive substring match)
         if workflow_path:
             wf_low = workflow_path.lower()

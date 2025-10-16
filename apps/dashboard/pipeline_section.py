@@ -25,7 +25,7 @@ def pipeline_section(
     jobs_selector,
     repository: LoadWorkflows,
 ):
-    def sanitize_workflow_path(selected_value):
+    def sanitize_all_argument(selected_value):
         if selected_value == "All":
             return None
         return selected_value
@@ -36,7 +36,7 @@ def pipeline_section(
         return ViewWorkflowByStatus(repository=repository).main(
             start_date=date_range_picker[0],
             end_date=date_range_picker[1],
-            workflow_path=sanitize_workflow_path(workflow_selector),
+            workflow_path=sanitize_all_argument(workflow_selector),
         )
 
     def plot_view_jobs_by_execution_time(
@@ -47,8 +47,8 @@ def pipeline_section(
             .main(
                 start_date=date_range_picker[0],
                 end_date=date_range_picker[1],
-                workflow_path=sanitize_workflow_path(workflow_selector),
-                jobs_selector=jobs_selector,
+                workflow_path=sanitize_all_argument(workflow_selector),
+                job_name=sanitize_all_argument(jobs_selector),
             )
             .matplotlib
         )
@@ -59,7 +59,7 @@ def pipeline_section(
         return ViewRunsDuration(repository=repository).main(
             start_date=date_range_picker[0],
             end_date=date_range_picker[1],
-            workflow_path=sanitize_workflow_path(workflow_selector),
+            workflow_path=sanitize_all_argument(workflow_selector),
         )
 
     def plot_workflow_run_by(
@@ -70,7 +70,7 @@ def pipeline_section(
             start_date=date_range_picker[0],
             end_date=date_range_picker[1],
             raw_filters=f"conclusion={workflow_conclusions}",
-            workflow_path=sanitize_workflow_path(workflow_selector),
+            workflow_path=sanitize_all_argument(workflow_selector),
         )
 
     def plot_workflow_summary(workflow_conclusions):

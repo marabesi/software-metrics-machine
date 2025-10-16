@@ -1,5 +1,9 @@
 import click
 
+from core.infrastructure.configuration.configuration_builder import (
+    ConfigurationBuilder,
+    Driver,
+)
 from providers.github.workflows.repository_workflows import LoadWorkflows
 from core.pipelines.view_jobs_average_time_execution import (
     ViewJobsByAverageTimeExecution,
@@ -62,6 +66,11 @@ from core.pipelines.view_jobs_average_time_execution import (
     default=False,
     help="Include setup jobs used by GitHub actions, such as 'Set up job' or 'Checkout code'",
 )
+@click.option(
+    "--job-name",
+    default=None,
+    help="Filter jobs by job name",
+)
 def jobs_by_execution_time(
     workflow_path,
     out_file,
@@ -72,8 +81,12 @@ def jobs_by_execution_time(
     start_date,
     end_date,
     force_all_jobs,
+    job_name,
 ):
-    return ViewJobsByAverageTimeExecution(repository=LoadWorkflows()).main(
+    configuration = ConfigurationBuilder(driver=Driver.JSON).build()
+    return ViewJobsByAverageTimeExecution(
+        repository=LoadWorkflows(configuration=configuration)
+    ).main(
         workflow_path=workflow_path,
         out_file=out_file,
         _cli_filters={"event": event, "target_branch": target_branch},
@@ -82,6 +95,7 @@ def jobs_by_execution_time(
         start_date=start_date,
         end_date=end_date,
         force_all_jobs=force_all_jobs,
+        job_name=job_name,
     )
 
 
