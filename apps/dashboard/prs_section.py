@@ -1,5 +1,6 @@
 import pandas as pd
 import panel as pn
+from apps.dashboard.components.tabulator import TabulatorComponent
 from core.prs.view_average_of_prs_open_by import (
     ViewAverageOfPrsOpenBy,
 )
@@ -128,23 +129,15 @@ def prs_section(date_range_picker, repository: LoadPrs):
         "title": {"type": "input", "func": "like", "placeholder": "Title"},
         "state": {"type": "list", "func": "like", "placeholder": "Select state"},
     }
-    df = pd.DataFrame(repository.all_prs)
-    table = pn.widgets.Tabulator(
-        df,
-        pagination="remote",
-        page_size=10,
+    table = TabulatorComponent(
+        df=pd.DataFrame(repository.all_prs),
         header_filters=pr_filter_criteria,
-        show_index=False,
-    )
-    filename, button = table.download_menu(
-        text_kwargs={"name": "", "value": "prs.csv"},
-        button_kwargs={"name": "Download table"},
+        filename="prs",
     )
 
     data = pn.Column(
         "## Data Section",
         "Explore your PR data with advanced filtering options and download capabilities.",
-        pn.FlexBox(filename, button, align_items="center"),
         pn.Row(table),
         sizing_mode="stretch_width",
     )

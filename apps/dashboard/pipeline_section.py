@@ -1,6 +1,6 @@
 import pandas as pd
 import panel as pn
-from apps.dashboard.components.tabulator import tabulator
+from apps.dashboard.components.tabulator import TabulatorComponent
 from core.pipelines.view_jobs_top_failed import ViewJobsTopFailed
 from providers.github.workflows.assessment.view_summary import WorkflowRunSummary
 from core.pipelines.view_jobs_average_time_execution import (
@@ -139,7 +139,7 @@ def pipeline_section(
     data = pn.Column(
         "## Data Section",
         "Explore your Pipeline data with advanced filtering options and download capabilities.",
-        tabulator(df, pipelines_filter_criteria, "pipelines"),
+        TabulatorComponent(df, pipelines_filter_criteria, "pipelines"),
     )
 
     return pn.Tabs(

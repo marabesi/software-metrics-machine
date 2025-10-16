@@ -1,7 +1,7 @@
 import panel as pn
 
 
-def tabulator(
+def TabulatorComponent(
     df: pn.pane.DataFrame,
     header_filters,
     filename,
