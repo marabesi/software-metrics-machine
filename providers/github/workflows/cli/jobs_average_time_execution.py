@@ -2,7 +2,7 @@ import click
 
 from providers.github.workflows.repository_workflows import LoadWorkflows
 from core.pipelines.view_jobs_average_time_execution import (
-    ViewJobsByStatus,
+    ViewJobsByAverageTimeExecution,
 )
 
 
@@ -73,7 +73,7 @@ def jobs_by_execution_time(
     end_date,
     force_all_jobs,
 ):
-    return ViewJobsByStatus(repository=LoadWorkflows()).main(
+    return ViewJobsByAverageTimeExecution(repository=LoadWorkflows()).main(
         workflow_path=workflow_path,
         out_file=out_file,
         _cli_filters={"event": event, "target_branch": target_branch},

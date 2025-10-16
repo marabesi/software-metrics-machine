@@ -88,9 +88,7 @@ class TestJobsCliCommands:
             )
             assert f" → Jobs written to {str(tmp_path)}" in result.output
 
-    def test_not_fetch_when_workflow_falls_off_the_start_date_and_end_date(
-        self, cli, tmp_path
-    ):
+    def test_not_fetch_when_workflow_falls_off_the_start_date_and_end_date(self, cli):
         path_string = cli.data_stored_at
         single_run = [
             {
@@ -131,7 +129,7 @@ class TestJobsCliCommands:
             ],
         ],
     )
-    def test_with_stored_data_summary(self, cli, tmp_path, jobs):
+    def test_with_stored_data_summary(self, cli, jobs):
         path_string = cli.data_stored_at
         single_run = [
             {
@@ -153,3 +151,46 @@ class TestJobsCliCommands:
         )
         assert 0 == result.exit_code
         assert "Jobs summary" in result.output
+
+    def test_plot_jobs_by_status(self, cli):
+        path_string = cli.data_stored_at
+        single_run = [
+            {
+                "id": 1,
+                "path": "/workflows/build.yml",
+                "status": "success",
+                "created_at": "2023-10-01T12:00:00Z",
+            },
+        ]
+        jobs = [
+            {
+                "id": 105,
+                "run_id": 1,
+                "name": "Deploy",
+                "conclusion": "success",
+                "started_at": "2023-10-01T09:05:00Z",
+                "completed_at": "2023-10-01T09:10:00Z",
+            },
+            {
+                "id": 106,
+                "run_id": 1,
+                "name": "Build",
+                "conclusion": "success",
+                "started_at": "2023-10-01T09:05:00Z",
+                "completed_at": "2023-10-01T09:10:00Z",
+            },
+        ]
+        FileHandlerForTesting(path_string).store_json_file("workflows.json", single_run)
+        FileHandlerForTesting(path_string).store_json_file("jobs.json", jobs)
+
+        result = cli.runner.invoke(
+            main,
+            [
+                "pipelines",
+                "jobs-by-status",
+                "--job-name",
+                "Deploy",
+            ],
+        )
+        assert 0 == result.exit_code
+        assert "Found 1 workflow runs and 1 jobs after filtering" in result.output

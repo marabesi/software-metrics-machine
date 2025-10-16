@@ -4,7 +4,7 @@ from apps.dashboard.components.tabulator import TabulatorComponent
 from core.pipelines.view_jobs_top_failed import ViewJobsTopFailed
 from providers.github.workflows.assessment.view_summary import WorkflowRunSummary
 from core.pipelines.view_jobs_average_time_execution import (
-    ViewJobsByStatus,
+    ViewJobsByAverageTimeExecution,
 )
 from core.pipelines.view_workflow_by_status import (
     ViewWorkflowByStatus,
@@ -42,11 +42,15 @@ def pipeline_section(
     def plot_view_jobs_by_execution_time(
         date_range_picker, workflow_selector, workflow_conclusions, jobs_selector
     ):
-        return ViewJobsByStatus(repository=repository).main(
-            start_date=date_range_picker[0],
-            end_date=date_range_picker[1],
-            workflow_path=sanitize_workflow_path(workflow_selector),
-            jobs_selector=jobs_selector,
+        return (
+            ViewJobsByAverageTimeExecution(repository=repository)
+            .main(
+                start_date=date_range_picker[0],
+                end_date=date_range_picker[1],
+                workflow_path=sanitize_workflow_path(workflow_selector),
+                jobs_selector=jobs_selector,
+            )
+            .matplotlib
         )
 
     def plot_workflow_run_duration(

@@ -2,11 +2,13 @@ import matplotlib.pyplot as plt
 from collections import defaultdict
 from datetime import datetime
 
-from core.infrastructure.base_viewer import MatplotViewer
+import pandas as pd
+
+from core.infrastructure.base_viewer import MatplotViewer, PlotResult
 from providers.github.workflows.repository_workflows import LoadWorkflows
 
 
-class ViewJobsByStatus(MatplotViewer):
+class ViewJobsByAverageTimeExecution(MatplotViewer):
 
     def __init__(self, repository: LoadWorkflows):
         self.repository = repository
@@ -30,19 +32,15 @@ class ViewJobsByStatus(MatplotViewer):
         end_date: str | None = None,
         force_all_jobs: bool = False,
         jobs_selector: str | None = None,
-    ) -> None:
+    ) -> PlotResult:
         """Compute average job execution time (completed_at - started_at) grouped by job name and plot top-N.
 
         Averages are shown in minutes.
         """
-        if start_date and end_date:
-            filters = {"start_date": start_date, "end_date": end_date}
-            print(f"Applying date filter: {filters}")
-            runs = self.repository.runs(filters=filters)
-            jobs = self.repository.jobs(filters=filters)
-        else:
-            runs = self.repository.runs()
-            jobs = self.repository.jobs()
+        filters = {"start_date": start_date, "end_date": end_date}
+        print(f"Applying date filter: {filters}")
+        runs = self.repository.runs(filters=filters)
+        jobs = self.repository.jobs(filters=filters)
         # optional filter by workflow name (case-insensitive substring match)
         if workflow_path:
             wf_low = workflow_path.lower()
@@ -119,7 +117,7 @@ class ViewJobsByStatus(MatplotViewer):
             plot_ax.axis("off")
             fig.tight_layout()
             super().output(plt, fig, out_file, repository=self.repository)
-            return
+            return PlotResult(matplotlib=fig, data=pd.DataFrame(averages))
 
         names, mins = zip(*averages)
 
@@ -165,4 +163,8 @@ class ViewJobsByStatus(MatplotViewer):
             pass
 
         fig.tight_layout()
-        return super().output(plt, fig, out_file, repository=self.repository)
+
+        return PlotResult(
+            matplotlib=super().output(plt, fig, out_file, repository=self.repository),
+            data=pd.DataFrame(averages),
+        )

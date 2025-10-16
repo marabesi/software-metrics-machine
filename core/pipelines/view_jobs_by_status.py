@@ -128,14 +128,10 @@ class ViewJobsByStatus(MatplotViewer):
         end_date: str | None = None,
         force_all_jobs: bool = False,
     ) -> None:
-        if start_date and end_date:
-            filters = {"start_date": start_date, "end_date": end_date}
-            print(f"Applying date filter: {filters}")
-            runs = self.repository.runs(filters=filters)
-            jobs = self.repository.jobs(filters=filters)
-        else:
-            runs = self.repository.runs()
-            jobs = self.repository.jobs()
+        filters = {"start_date": start_date, "end_date": end_date}
+        print(f"Applying date filter: {filters}")
+        runs = self.repository.runs(filters=filters)
+        jobs = self.repository.jobs(filters={**filters, "name": job_name})
 
         # optional filter by workflow name (case-insensitive substring match)
         if workflow_path:

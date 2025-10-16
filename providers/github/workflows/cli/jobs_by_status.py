@@ -1,5 +1,9 @@
 import click
 
+from core.infrastructure.configuration.configuration_builder import (
+    ConfigurationBuilder,
+    Driver,
+)
 from providers.github.workflows.repository_workflows import LoadWorkflows
 from core.pipelines.view_jobs_by_status import ViewJobsByStatus
 
@@ -80,7 +84,11 @@ def jobs_by_status(
     _cli_filters["event"] = event
     _cli_filters["target_branch"] = target_branch
 
-    return ViewJobsByStatus(repository=LoadWorkflows()).main(
+    return ViewJobsByStatus(
+        repository=LoadWorkflows(
+            configuration=ConfigurationBuilder(driver=Driver.JSON).build()
+        )
+    ).main(
         job_name=job_name,
         workflow_path=workflow_path,
         out_file=out_file,
