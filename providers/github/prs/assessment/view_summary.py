@@ -2,7 +2,7 @@ import json
 import csv
 
 from providers.github.prs.prs_repository import LoadPrs
-from providers.github.prs.types import SummaryResult
+from core.prs.types import SummaryResult
 
 
 class PrViewSummary:
