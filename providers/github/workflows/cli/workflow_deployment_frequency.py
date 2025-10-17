@@ -7,7 +7,7 @@ from core.infrastructure.configuration.configuration_builder import (
 from core.pipelines.view_deployment_frequency import (
     ViewDeploymentFrequency,
 )
-from providers.github.workflows.repository_workflows import LoadWorkflows
+from core.pipelines.repository_workflows import LoadWorkflows
 
 
 @click.command()

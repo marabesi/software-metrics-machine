@@ -1,4 +1,4 @@
-from providers.github.workflows.repository_workflows import LoadWorkflows
+from core.pipelines.repository_workflows import LoadWorkflows
 
 
 class DeploymentFrequency:
