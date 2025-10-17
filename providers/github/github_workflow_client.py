@@ -3,7 +3,7 @@ import requests
 import json
 from providers.github.workflows.repository_workflows import LoadWorkflows
 from core.infrastructure.configuration.configuration import Configuration
-from providers.github.prs.prs_repository import LoadPrs
+from core.prs.prs_repository import LoadPrs
 
 
 class GithubWorkflowClient:

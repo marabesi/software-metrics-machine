@@ -4,7 +4,7 @@ from core.infrastructure.configuration.configuration_builder import (
     ConfigurationBuilder,
     Driver,
 )
-from providers.github.prs.prs_repository import LoadPrs
+from core.prs.prs_repository import LoadPrs
 from core.prs.view_average_of_prs_open_by import (
     ViewAverageOfPrsOpenBy,
 )

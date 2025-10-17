@@ -3,27 +3,27 @@ from typing import List, Iterable
 from datetime import datetime, timezone
 from core.infrastructure.file_system_base_repository import FileSystemBaseRepository
 from core.infrastructure.configuration.configuration import Configuration
-from core.prs.pr_types import LabelSummary
+from core.prs.pr_types import LabelSummary, PRDetails
 
 
 class LoadPrs(FileSystemBaseRepository):
     def __init__(self, configuration: Configuration):
         super().__init__(configuration=configuration)
         self.file = "prs.json"
-        self.all_prs = []
-        self.all_prs = self.__load()
+        self.all_prs: List[PRDetails] = []
+        self.all_prs: List[PRDetails] = self.__load()
 
-    def merged(self):
+    def merged(self) -> List[PRDetails]:
         return [pr for pr in self.all_prs if pr.get("merged_at") is not None]
 
-    def closed(self):
+    def closed(self) -> List[PRDetails]:
         return [
             pr
             for pr in self.all_prs
             if pr.get("closed_at") is not None and pr.get("merged_at") is None
         ]
 
-    def __pr_open_days(self, pr):
+    def __pr_open_days(self, pr) -> int:
         """Return how many days the PR was open until merged."""
         created = datetime.fromisoformat(pr["created_at"].replace("Z", "+00:00"))
         # closed_at may be null for open PRs
@@ -38,7 +38,7 @@ class LoadPrs(FileSystemBaseRepository):
 
     def average_by_month(
         self, author: str | None = None, labels: str | None = None, prs=[]
-    ):
+    ) -> tuple[List[str], List[float]]:
         """Calculate average open days grouped by month.
 
         labels are comma-separated string.
@@ -68,7 +68,7 @@ class LoadPrs(FileSystemBaseRepository):
 
     def average_by_week(
         self, author: str | None = None, labels: str | None = None, prs=[]
-    ):
+    ) -> tuple[List[str], List[float]]:
         """Calculate average open days grouped by ISO week (YYYY-Www).
 
         labels may be None, or a comma-separated string.
@@ -101,12 +101,12 @@ class LoadPrs(FileSystemBaseRepository):
         return weeks, avg_by_week
 
     def filter_prs_by_labels(
-        self, prs: List[dict], labels: Iterable[str]
-    ) -> List[dict]:
+        self, prs: List[PRDetails], labels: Iterable[str]
+    ) -> List[PRDetails]:
         labels_set = {label.lower() for label in (labels or [])}
         if not labels_set:
             return prs
-        filtered: List[dict] = []
+        filtered: List[PRDetails] = []
         for pr in prs:
             pr_labels = pr.get("labels") or []
             names = {
@@ -183,7 +183,7 @@ class LoadPrs(FileSystemBaseRepository):
 
         return labels_list
 
-    def __load(self):
+    def __load(self) -> List[PRDetails]:
         all_prs = []
         print("Loading PRs")
         contents = super().read_file_if_exists(self.file)

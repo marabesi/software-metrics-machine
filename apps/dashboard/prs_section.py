@@ -12,7 +12,7 @@ from core.prs.view_prs_by_author import (
     ViewPrsByAuthor,
 )
 
-from providers.github.prs.prs_repository import LoadPrs
+from core.prs.prs_repository import LoadPrs
 
 pn.extension("tabulator")
 

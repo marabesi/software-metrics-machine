@@ -2,7 +2,7 @@ from collections import Counter
 import matplotlib.pyplot as plt
 
 from core.infrastructure.base_viewer import MatplotViewer
-from providers.github.prs.prs_repository import LoadPrs
+from core.prs.prs_repository import LoadPrs
 from typing import List, Tuple
 
 
@@ -39,7 +39,6 @@ class ViewPrsByAuthor(MatplotViewer):
             print("No PRs to plot after filtering")
 
         authors, counts = zip(*prs)
-        # horizontal bar chart with largest on top
         fig, ax = plt.subplots(figsize=super().get_fig_size())
 
         y_pos = range(len(authors))[::-1]

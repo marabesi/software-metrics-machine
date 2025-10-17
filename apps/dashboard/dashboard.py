@@ -12,7 +12,7 @@ from core.infrastructure.configuration.configuration_builder import (
     Driver,
 )
 from providers.codemaat.codemaat_repository import CodemaatRepository
-from providers.github.prs.prs_repository import LoadPrs
+from core.prs.prs_repository import LoadPrs
 from providers.github.workflows.repository_workflows import LoadWorkflows
 
 pn.extension("tabulator")

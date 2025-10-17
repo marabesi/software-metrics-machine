@@ -1,7 +1,7 @@
 import matplotlib.pyplot as plt
 
 from core.infrastructure.base_viewer import MatplotViewer
-from providers.github.prs.prs_repository import LoadPrs
+from core.prs.prs_repository import LoadPrs
 
 
 class ViewOpenPrsThroughTime(MatplotViewer):

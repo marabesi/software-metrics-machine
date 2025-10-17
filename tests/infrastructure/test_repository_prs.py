@@ -3,7 +3,7 @@ from core.infrastructure.configuration.configuration_builder import (
     ConfigurationBuilder,
     Driver,
 )
-from providers.github.prs.prs_repository import LoadPrs
+from core.prs.prs_repository import LoadPrs
 from unittest.mock import patch
 
 from tests.builders import as_json_string
@@ -27,7 +27,7 @@ class TestRepositoryPrs:
         ]
 
         with patch(
-            "providers.github.prs.prs_repository.LoadPrs.read_file_if_exists",
+            "core.prs.prs_repository.LoadPrs.read_file_if_exists",
             return_value=mocked_prs_data,
         ):
             repository = LoadPrs(

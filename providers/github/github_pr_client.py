@@ -2,7 +2,7 @@ from datetime import datetime, timezone
 import pandas as pd
 import requests
 from core.infrastructure.configuration.configuration import Configuration
-from providers.github.prs.prs_repository import LoadPrs
+from core.prs.prs_repository import LoadPrs
 
 
 class GithubPrsClient:

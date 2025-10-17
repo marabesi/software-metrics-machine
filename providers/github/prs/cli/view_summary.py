@@ -5,7 +5,7 @@ from core.infrastructure.configuration.configuration_builder import (
     Driver,
 )
 from providers.github.prs.assessment.view_summary import PrViewSummary
-from providers.github.prs.prs_repository import LoadPrs
+from core.prs.prs_repository import LoadPrs
 
 
 @click.command()

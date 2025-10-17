@@ -1,7 +1,7 @@
 import json
 import csv
 
-from providers.github.prs.prs_repository import LoadPrs
+from core.prs.prs_repository import LoadPrs
 from core.prs.pr_types import SummaryResult
 
 
