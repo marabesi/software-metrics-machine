@@ -3,7 +3,7 @@ from typing import List, Iterable
 from datetime import datetime, timezone
 from core.infrastructure.file_system_base_repository import FileSystemBaseRepository
 from core.infrastructure.configuration.configuration import Configuration
-from core.prs.types import LabelSummary
+from core.prs.pr_types import LabelSummary
 
 
 class LoadPrs(FileSystemBaseRepository):

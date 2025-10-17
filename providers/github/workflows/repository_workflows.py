@@ -5,6 +5,7 @@ from typing import List, Iterable
 import pandas as pd
 from core.infrastructure.file_system_base_repository import FileSystemBaseRepository
 from core.infrastructure.configuration.configuration import Configuration
+from core.pipelines.pipelines_types import PipelineJob, PipelineRun
 
 
 class LoadWorkflows(FileSystemBaseRepository):
@@ -13,8 +14,8 @@ class LoadWorkflows(FileSystemBaseRepository):
         super().__init__(configuration=configuration)
         self.pipeline_file = "workflows.json"
         self.jobs_file = "jobs.json"
-        self.all_runs = []
-        self.all_jobs = []
+        self.all_runs: List[PipelineRun] = []
+        self.all_jobs: List[PipelineJob] = []
 
         print("Loading runs")
 
@@ -33,7 +34,7 @@ class LoadWorkflows(FileSystemBaseRepository):
 
         self.__load_jobs()
 
-    def jobs(self, filters=None):
+    def jobs(self, filters=None) -> List[PipelineJob]:
         runs = self.all_jobs
         if not filters:
             return runs
@@ -50,7 +51,7 @@ class LoadWorkflows(FileSystemBaseRepository):
 
         return runs
 
-    def runs(self, filters=None):
+    def runs(self, filters=None) -> List[PipelineRun]:
         if not filters:
             return self.all_runs
 
@@ -102,8 +103,8 @@ class LoadWorkflows(FileSystemBaseRepository):
         return runs
 
     def filter_by_job_name(
-        self, jobs: List[dict], job_name: Iterable[str]
-    ) -> List[dict]:
+        self, jobs: List[PipelineJob], job_name: Iterable[str]
+    ) -> List[PipelineJob]:
         """Return jobs excluding any whose name matches one of the provided job_name values.
 
         Matching is case-insensitive and uses substring matching: if any provided token
