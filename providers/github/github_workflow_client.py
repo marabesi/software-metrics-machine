@@ -1,7 +1,7 @@
 import os
 import requests
 import json
-from core.pipelines.pipelines_repository import LoadWorkflows
+from core.pipelines.pipelines_repository import PipelinesRepository
 from core.infrastructure.configuration.configuration import Configuration
 from core.prs.prs_repository import PrsRepository
 
@@ -25,7 +25,7 @@ class GithubWorkflowClient:
         raw_filters=None,
         step_by: str | None = None,
     ):
-        workflow_repository = LoadWorkflows(configuration=self.configuration)
+        workflow_repository = PipelinesRepository(configuration=self.configuration)
         runs_json_path = "workflows.json"
         contents = workflow_repository.read_file_if_exists(runs_json_path)
         if contents is not None:
@@ -104,7 +104,11 @@ class GithubWorkflowClient:
         return runs
 
     def fetch_jobs_for_workflows(
-        self, workflows: LoadWorkflows, start_date=None, end_date=None, raw_filters=None
+        self,
+        workflows: PipelinesRepository,
+        start_date=None,
+        end_date=None,
+        raw_filters=None,
     ):
         # Make progress resumable by storing a small progress file and writing jobs incrementally.
         jobs_json_path = workflows.default_path_for("jobs.json")

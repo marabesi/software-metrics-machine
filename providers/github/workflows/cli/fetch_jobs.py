@@ -4,14 +4,14 @@ from core.infrastructure.configuration.configuration_builder import (
     Driver,
 )
 from providers.github.github_workflow_client import GithubWorkflowClient
-from core.pipelines.pipelines_repository import LoadWorkflows
+from core.pipelines.pipelines_repository import PipelinesRepository
 
 
 def fetch_all_job_runs(start_date, end_date, raw_filters):
     configuration = ConfigurationBuilder(driver=Driver.CLI).build()
     client = GithubWorkflowClient(configuration=configuration)
     client.fetch_jobs_for_workflows(
-        LoadWorkflows(configuration=configuration),
+        PipelinesRepository(configuration=configuration),
         start_date=start_date,
         end_date=end_date,
         raw_filters=raw_filters,

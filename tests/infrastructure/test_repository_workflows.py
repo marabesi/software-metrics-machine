@@ -2,7 +2,7 @@ from unittest.mock import patch
 
 import pytest
 
-from core.pipelines.pipelines_repository import LoadWorkflows
+from core.pipelines.pipelines_repository import PipelinesRepository
 from tests.builders import as_json_string, workflows_data
 from tests.in_memory_configuration import InMemoryConfiguration
 
@@ -32,7 +32,7 @@ class TestRepositoryWorkflows:
                 return_value=workflows_with_duplicates,
             ),
         ):
-            loader = LoadWorkflows(configuration=InMemoryConfiguration("."))
+            loader = PipelinesRepository(configuration=InMemoryConfiguration("."))
             result = loader.get_unique_workflow_names()
             assert len(result) == 3
 
@@ -113,7 +113,7 @@ class TestRepositoryWorkflows:
                 return_value=workflow_list,
             ),
         ):
-            loader = LoadWorkflows(configuration=InMemoryConfiguration("."))
+            loader = PipelinesRepository(configuration=InMemoryConfiguration("."))
             result = loader.runs(filters=filters)
             assert expected["count"] == len(result)
 
@@ -175,7 +175,7 @@ class TestRepositoryWorkflows:
             "core.infrastructure.file_system_base_repository.FileSystemBaseRepository.read_file_if_exists",
             side_effect=mocked_read_file_if_exists,
         ):
-            loader = LoadWorkflows(configuration=InMemoryConfiguration("."))
+            loader = PipelinesRepository(configuration=InMemoryConfiguration("."))
             result = loader.jobs(filters=filters)
 
             assert expected["count"] == len(result)
@@ -196,7 +196,7 @@ class TestRepositoryWorkflows:
                 return_value=workflows_with_duplicated_paths,
             ),
         ):
-            loader = LoadWorkflows(configuration=InMemoryConfiguration("."))
+            loader = PipelinesRepository(configuration=InMemoryConfiguration("."))
 
             result = loader.get_unique_workflow_paths()
             assert len(result) == 4
@@ -225,7 +225,7 @@ class TestRepositoryWorkflows:
             "core.infrastructure.file_system_base_repository.FileSystemBaseRepository.read_file_if_exists",
             side_effect=mocked_read_file_if_exists,
         ):
-            loader = LoadWorkflows(configuration=InMemoryConfiguration("."))
+            loader = PipelinesRepository(configuration=InMemoryConfiguration("."))
 
             result = loader.get_unique_jobs_name()
             assert len(result) == 3
@@ -246,7 +246,7 @@ class TestRepositoryWorkflows:
                 return_value=workflows_with_duplicated_paths,
             ),
         ):
-            loader = LoadWorkflows(configuration=InMemoryConfiguration("."))
+            loader = PipelinesRepository(configuration=InMemoryConfiguration("."))
 
             result = loader.get_unique_workflow_conclusions()
             assert len(result) == 3
@@ -264,7 +264,7 @@ class TestRepositoryWorkflows:
                 return_value=workflows_with_duplicated_paths,
             ),
         ):
-            loader = LoadWorkflows(configuration=InMemoryConfiguration("."))
+            loader = PipelinesRepository(configuration=InMemoryConfiguration("."))
 
             result = loader.get_unique_workflow_conclusions()
             assert result[0] == "All"
@@ -277,7 +277,7 @@ class TestRepositoryWorkflows:
                 return_value=empty_workflow_runs,
             ),
         ):
-            loader = LoadWorkflows(configuration=InMemoryConfiguration("."))
+            loader = PipelinesRepository(configuration=InMemoryConfiguration("."))
 
             result = loader.get_unique_workflow_paths()
             assert result[0] == "All"
@@ -290,7 +290,7 @@ class TestRepositoryWorkflows:
                 return_value=empty_workflow_runs,
             ),
         ):
-            loader = LoadWorkflows(configuration=InMemoryConfiguration("."))
+            loader = PipelinesRepository(configuration=InMemoryConfiguration("."))
 
             result = loader.get_deployment_frequency_for_job(
                 job_name="Deploy", filters=None
@@ -334,7 +334,7 @@ class TestRepositoryWorkflows:
             "core.infrastructure.file_system_base_repository.FileSystemBaseRepository.read_file_if_exists",
             side_effect=mocked_read_file_if_exists,
         ):
-            loader = LoadWorkflows(configuration=InMemoryConfiguration("."))
+            loader = PipelinesRepository(configuration=InMemoryConfiguration("."))
 
             result = loader.get_deployment_frequency_for_job(
                 job_name="Deploy", filters=None
@@ -376,7 +376,7 @@ class TestRepositoryWorkflows:
             "core.infrastructure.file_system_base_repository.FileSystemBaseRepository.read_file_if_exists",
             side_effect=mocked_read_file_if_exists,
         ):
-            loader = LoadWorkflows(configuration=InMemoryConfiguration("."))
+            loader = PipelinesRepository(configuration=InMemoryConfiguration("."))
 
             result = loader.get_deployment_frequency_for_job(
                 job_name="Deploy", filters=None
@@ -421,7 +421,7 @@ class TestRepositoryWorkflows:
             "core.infrastructure.file_system_base_repository.FileSystemBaseRepository.read_file_if_exists",
             side_effect=mocked_read_file_if_exists,
         ):
-            loader = LoadWorkflows(configuration=InMemoryConfiguration("."))
+            loader = PipelinesRepository(configuration=InMemoryConfiguration("."))
 
             result = loader.get_deployment_frequency_for_job(
                 job_name="Deploy", filters=None
@@ -454,7 +454,7 @@ class TestRepositoryWorkflows:
             "core.infrastructure.file_system_base_repository.FileSystemBaseRepository.read_file_if_exists",
             side_effect=mocked_read_file_if_exists,
         ):
-            loader = LoadWorkflows(configuration=InMemoryConfiguration("."))
+            loader = PipelinesRepository(configuration=InMemoryConfiguration("."))
 
             data = loader.get_workflows_run_duration()
             result = data["rows"]

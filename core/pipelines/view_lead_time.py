@@ -3,11 +3,11 @@ import matplotlib.pyplot as plt
 import pandas as pd
 
 from core.infrastructure.base_viewer import MatplotViewer, PlotResult
-from core.pipelines.pipelines_repository import LoadWorkflows
+from core.pipelines.pipelines_repository import PipelinesRepository
 
 
 class ViewLeadTime(MatplotViewer):
-    def __init__(self, repository: LoadWorkflows):
+    def __init__(self, repository: PipelinesRepository):
         self.repository = repository
 
     def plot(

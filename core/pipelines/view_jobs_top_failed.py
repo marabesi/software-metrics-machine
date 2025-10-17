@@ -4,13 +4,13 @@ import pandas as pd
 import holoviews as hv
 
 from core.infrastructure.base_viewer import MatplotViewer, PlotResult
-from core.pipelines.pipelines_repository import LoadWorkflows
+from core.pipelines.pipelines_repository import PipelinesRepository
 
 hv.extension("bokeh")
 
 
 class ViewJobsTopFailed(MatplotViewer):
-    def __init__(self, repository: LoadWorkflows):
+    def __init__(self, repository: PipelinesRepository):
         self.repository = repository
 
     def main(

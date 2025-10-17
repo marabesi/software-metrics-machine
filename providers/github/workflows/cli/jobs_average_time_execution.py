@@ -4,7 +4,7 @@ from core.infrastructure.configuration.configuration_builder import (
     ConfigurationBuilder,
     Driver,
 )
-from core.pipelines.pipelines_repository import LoadWorkflows
+from core.pipelines.pipelines_repository import PipelinesRepository
 from core.pipelines.view_jobs_average_time_execution import (
     ViewJobsByAverageTimeExecution,
 )
@@ -85,7 +85,7 @@ def jobs_by_execution_time(
 ):
     configuration = ConfigurationBuilder(driver=Driver.JSON).build()
     return ViewJobsByAverageTimeExecution(
-        repository=LoadWorkflows(configuration=configuration)
+        repository=PipelinesRepository(configuration=configuration)
     ).main(
         workflow_path=workflow_path,
         out_file=out_file,

@@ -4,7 +4,7 @@ from core.infrastructure.configuration.configuration_builder import (
     ConfigurationBuilder,
     Driver,
 )
-from core.pipelines.pipelines_repository import LoadWorkflows
+from core.pipelines.pipelines_repository import PipelinesRepository
 from core.pipelines.view_workflow_runs_by import ViewWorkflowRunsBy
 
 
@@ -61,7 +61,7 @@ def workflow_runs_by(
 ):
     configuration = ConfigurationBuilder(driver=Driver.JSON).build()
     return ViewWorkflowRunsBy(
-        repository=LoadWorkflows(configuration=configuration)
+        repository=PipelinesRepository(configuration=configuration)
     ).main(
         aggregate_by=aggregate_by,
         out_file=out_file,

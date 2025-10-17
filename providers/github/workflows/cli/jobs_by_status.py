@@ -4,7 +4,7 @@ from core.infrastructure.configuration.configuration_builder import (
     ConfigurationBuilder,
     Driver,
 )
-from core.pipelines.pipelines_repository import LoadWorkflows
+from core.pipelines.pipelines_repository import PipelinesRepository
 from core.pipelines.view_jobs_by_status import ViewJobsByStatus
 
 
@@ -85,7 +85,7 @@ def jobs_by_status(
     _cli_filters["target_branch"] = target_branch
 
     return ViewJobsByStatus(
-        repository=LoadWorkflows(
+        repository=PipelinesRepository(
             configuration=ConfigurationBuilder(driver=Driver.JSON).build()
         )
     ).main(

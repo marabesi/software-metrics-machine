@@ -3,12 +3,12 @@ from collections import Counter, defaultdict
 from datetime import datetime
 
 from core.infrastructure.base_viewer import MatplotViewer
-from core.pipelines.pipelines_repository import LoadWorkflows
+from core.pipelines.pipelines_repository import PipelinesRepository
 
 
 class ViewJobsByStatus(MatplotViewer):
 
-    def __init__(self, repository: LoadWorkflows):
+    def __init__(self, repository: PipelinesRepository):
         self.repository = repository
 
     def _split_and_normalize(self, val: str):

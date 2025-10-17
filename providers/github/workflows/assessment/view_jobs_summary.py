@@ -4,10 +4,10 @@ from core.infrastructure.configuration.configuration_builder import (
     ConfigurationBuilder,
     Driver,
 )
-from core.pipelines.pipelines_repository import LoadWorkflows
+from core.pipelines.pipelines_repository import PipelinesRepository
 from core.infrastructure.date_and_time import datetime_to_local
 
-lw = LoadWorkflows(configuration=ConfigurationBuilder(driver=Driver.JSON).build())
+lw = PipelinesRepository(configuration=ConfigurationBuilder(driver=Driver.JSON).build())
 
 
 def summarize_jobs(jobs: List[dict]) -> dict:

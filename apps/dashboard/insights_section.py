@@ -2,12 +2,12 @@ import panel as pn
 from core.pipelines.view_deployment_frequency import (
     ViewDeploymentFrequency,
 )
-from core.pipelines.pipelines_repository import LoadWorkflows
+from core.pipelines.pipelines_repository import PipelinesRepository
 
 pn.extension("tabulator")
 
 
-def insights_section(repository: LoadWorkflows, date_range_picker):
+def insights_section(repository: PipelinesRepository, date_range_picker):
     def plot_deployment_frequency(date_range_picker):
         return (
             ViewDeploymentFrequency(repository=repository)

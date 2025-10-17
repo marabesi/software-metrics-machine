@@ -1,7 +1,7 @@
 from collections import Counter
 from typing import Dict, TypedDict
 from core.infrastructure.date_and_time import datetime_to_local
-from core.pipelines.pipelines_repository import LoadWorkflows
+from core.pipelines.pipelines_repository import PipelinesRepository
 
 
 class WorkflowRunDetails(TypedDict):
@@ -21,7 +21,7 @@ class WorkflowRunSummaryStructure(TypedDict):
 
 
 class WorkflowRunSummary:
-    def __init__(self, repository: LoadWorkflows):
+    def __init__(self, repository: PipelinesRepository):
         self.runs = repository.runs()
 
     def __compute_summary(self) -> WorkflowRunSummaryStructure:

@@ -13,7 +13,7 @@ from core.pipelines.view_runs_duration import (
     ViewRunsDuration,
 )
 from core.pipelines.view_workflow_runs_by import ViewWorkflowRunsBy
-from core.pipelines.pipelines_repository import LoadWorkflows
+from core.pipelines.pipelines_repository import PipelinesRepository
 
 pn.extension("tabulator")
 
@@ -23,7 +23,7 @@ def pipeline_section(
     workflow_selector,
     workflow_conclusions,
     jobs_selector,
-    repository: LoadWorkflows,
+    repository: PipelinesRepository,
 ):
     def sanitize_all_argument(selected_value):
         if selected_value == "All":

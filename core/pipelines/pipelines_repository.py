@@ -8,7 +8,7 @@ from core.infrastructure.configuration.configuration import Configuration
 from core.pipelines.pipelines_types import PipelineJob, PipelineRun
 
 
-class LoadWorkflows(FileSystemBaseRepository):
+class PipelinesRepository(FileSystemBaseRepository):
 
     def __init__(self, configuration: Configuration):
         super().__init__(configuration=configuration)

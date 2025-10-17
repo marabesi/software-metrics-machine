@@ -1,8 +1,8 @@
-from core.pipelines.pipelines_repository import LoadWorkflows
+from core.pipelines.pipelines_repository import PipelinesRepository
 
 
 class DeploymentFrequency:
-    def __init__(self, repository: LoadWorkflows):
+    def __init__(self, repository: PipelinesRepository):
         self.repository = repository
 
     def execute(

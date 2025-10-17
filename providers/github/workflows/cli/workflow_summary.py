@@ -3,7 +3,7 @@ from core.infrastructure.configuration.configuration_builder import (
     ConfigurationBuilder,
     Driver,
 )
-from core.pipelines.pipelines_repository import LoadWorkflows
+from core.pipelines.pipelines_repository import PipelinesRepository
 from providers.github.workflows.assessment.view_summary import WorkflowRunSummary
 
 
@@ -22,7 +22,7 @@ from providers.github.workflows.assessment.view_summary import WorkflowRunSummar
 )
 def summary(max_workflows, output):
     lw = WorkflowRunSummary(
-        repository=LoadWorkflows(
+        repository=PipelinesRepository(
             configuration=ConfigurationBuilder(driver=Driver.JSON).build()
         )
     )

@@ -1,7 +1,7 @@
 import pytest
 from unittest.mock import call, patch, MagicMock
 from providers.github.github_workflow_client import GithubWorkflowClient
-from core.pipelines.pipelines_repository import LoadWorkflows
+from core.pipelines.pipelines_repository import PipelinesRepository
 from tests.in_memory_configuration import InMemoryConfiguration
 
 
@@ -123,7 +123,7 @@ class TestGithubWorkflowsClient:
             mock_get.return_value = mock_response
 
             self.github_client.fetch_jobs_for_workflows(
-                LoadWorkflows(self.configuration),
+                PipelinesRepository(self.configuration),
                 start_date="2025-01-01",
                 end_date="2025-12-31",
             )

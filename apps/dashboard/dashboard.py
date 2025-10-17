@@ -13,12 +13,12 @@ from core.infrastructure.configuration.configuration_builder import (
 )
 from providers.codemaat.codemaat_repository import CodemaatRepository
 from core.prs.prs_repository import PrsRepository
-from core.pipelines.pipelines_repository import LoadWorkflows
+from core.pipelines.pipelines_repository import PipelinesRepository
 
 pn.extension("tabulator")
 
 configuration = ConfigurationBuilder(Driver.JSON).build()
-workflow_repository = LoadWorkflows(configuration=configuration)
+workflow_repository = PipelinesRepository(configuration=configuration)
 prs_repository = PrsRepository(configuration=configuration)
 codemaat_repository = CodemaatRepository(configuration=configuration)
 

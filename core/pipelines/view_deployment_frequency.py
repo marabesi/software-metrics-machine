@@ -5,11 +5,11 @@ import pandas as pd
 
 from core.infrastructure.base_viewer import MatplotViewer, PlotResult
 from core.pipelines.aggregates.deployment_frequency import DeploymentFrequency
-from core.pipelines.pipelines_repository import LoadWorkflows
+from core.pipelines.pipelines_repository import PipelinesRepository
 
 
 class ViewDeploymentFrequency(MatplotViewer):
-    def __init__(self, repository: LoadWorkflows):
+    def __init__(self, repository: PipelinesRepository):
         self.repository = repository
 
     def plot(
