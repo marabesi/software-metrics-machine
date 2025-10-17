@@ -3,7 +3,7 @@ import requests
 import json
 from providers.github.workflows.repository_workflows import LoadWorkflows
 from core.infrastructure.configuration.configuration import Configuration
-from core.prs.prs_repository import LoadPrs
+from core.prs.prs_repository import PrsRepository
 
 
 class GithubWorkflowClient:
@@ -14,7 +14,7 @@ class GithubWorkflowClient:
             "Accept": "application/vnd.github+json",
         }
         self.repository_slug = configuration.github_repository
-        self.pr_repository = LoadPrs(configuration=configuration)
+        self.pr_repository = PrsRepository(configuration=configuration)
         self.configuration = configuration
 
     def fetch_workflows(

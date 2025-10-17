@@ -3,7 +3,7 @@ from core.infrastructure.configuration.configuration_builder import (
     ConfigurationBuilder,
     Driver,
 )
-from core.prs.prs_repository import LoadPrs
+from core.prs.prs_repository import PrsRepository
 from unittest.mock import patch
 
 from tests.builders import as_json_string
@@ -12,7 +12,7 @@ from tests.builders import as_json_string
 class TestRepositoryPrs:
     @pytest.fixture(scope="function", autouse=True)
     def setup(self):
-        self.repository = LoadPrs(
+        self.repository = PrsRepository(
             configuration=ConfigurationBuilder(driver=Driver.IN_MEMORY).build()
         )
 
@@ -27,10 +27,10 @@ class TestRepositoryPrs:
         ]
 
         with patch(
-            "core.prs.prs_repository.LoadPrs.read_file_if_exists",
+            "core.prs.prs_repository.PrsRepository.read_file_if_exists",
             return_value=mocked_prs_data,
         ):
-            repository = LoadPrs(
+            repository = PrsRepository(
                 configuration=ConfigurationBuilder(driver=Driver.IN_MEMORY).build()
             )
             all_prs = repository.read_file_if_exists("prs.json")
@@ -122,7 +122,7 @@ class TestRepositoryPrs:
             "core.infrastructure.file_system_base_repository.FileSystemBaseRepository.read_file_if_exists",
             return_value=prs_fetched,
         ):
-            repository = LoadPrs(
+            repository = PrsRepository(
                 configuration=ConfigurationBuilder(driver=Driver.IN_MEMORY).build()
             )
             filters = {"start_date": "2025-09-01", "end_date": "2025-09-15"}
@@ -151,7 +151,7 @@ class TestRepositoryPrs:
             "core.infrastructure.file_system_base_repository.FileSystemBaseRepository.read_file_if_exists",
             return_value=prs_fetched,
         ):
-            repository = LoadPrs(
+            repository = PrsRepository(
                 configuration=ConfigurationBuilder(driver=Driver.IN_MEMORY).build()
             )
 

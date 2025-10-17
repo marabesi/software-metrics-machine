@@ -5,7 +5,7 @@ from core.infrastructure.configuration.configuration_builder import (
     Driver,
 )
 from providers.github.prs.assessment.view_summary import PrViewSummary
-from core.prs.prs_repository import LoadPrs
+from core.prs.prs_repository import PrsRepository
 
 
 @click.command()
@@ -35,7 +35,7 @@ from core.prs.prs_repository import LoadPrs
 )
 def summary(csv, start_date, end_date, output):
     return PrViewSummary(
-        repository=LoadPrs(
+        repository=PrsRepository(
             configuration=ConfigurationBuilder(driver=Driver.CLI).build()
         )
     ).main(csv=csv, start_date=start_date, end_date=end_date, output_format=output)

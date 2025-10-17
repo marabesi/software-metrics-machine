@@ -1,7 +1,7 @@
 import matplotlib.pyplot as plt
 
 from core.infrastructure.base_viewer import MatplotViewer
-from core.prs.prs_repository import LoadPrs
+from core.prs.prs_repository import PrsRepository
 from collections import defaultdict
 from typing import List, Tuple
 from datetime import datetime
@@ -9,7 +9,7 @@ from datetime import datetime
 
 class ViewAverageReviewTimeByAuthor(MatplotViewer):
 
-    def __init__(self, repository: LoadPrs):
+    def __init__(self, repository: PrsRepository):
         self.repository = repository
 
     def plot_average_open_time(

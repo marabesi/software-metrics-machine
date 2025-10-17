@@ -4,7 +4,7 @@ from core.infrastructure.configuration.configuration_builder import (
     ConfigurationBuilder,
     Driver,
 )
-from core.prs.prs_repository import LoadPrs
+from core.prs.prs_repository import PrsRepository
 from core.prs.view_average_of_prs_open_by import (
     ViewAverageOfPrsOpenBy,
 )
@@ -54,7 +54,7 @@ from core.prs.view_average_of_prs_open_by import (
 def average_open_by(out_file, author, labels, aggregate_by, start_date, end_date):
     """Plot average PR open."""
     ViewAverageOfPrsOpenBy(
-        repository=LoadPrs(
+        repository=PrsRepository(
             configuration=ConfigurationBuilder(driver=Driver.CLI).build()
         )
     ).main(

@@ -2,7 +2,7 @@ from datetime import datetime, timezone
 import pandas as pd
 import requests
 from core.infrastructure.configuration.configuration import Configuration
-from core.prs.prs_repository import LoadPrs
+from core.prs.prs_repository import PrsRepository
 
 
 class GithubPrsClient:
@@ -13,7 +13,7 @@ class GithubPrsClient:
             "Accept": "application/vnd.github+json",
         }
         self.repository_slug = configuration.github_repository
-        self.pr_repository = LoadPrs(configuration=configuration)
+        self.pr_repository = PrsRepository(configuration=configuration)
         self.configuration = configuration
 
     def fetch_prs(

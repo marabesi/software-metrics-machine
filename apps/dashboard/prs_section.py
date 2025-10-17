@@ -12,12 +12,12 @@ from core.prs.view_prs_by_author import (
     ViewPrsByAuthor,
 )
 
-from core.prs.prs_repository import LoadPrs
+from core.prs.prs_repository import PrsRepository
 
 pn.extension("tabulator")
 
 
-def prs_section(date_range_picker, repository: LoadPrs):
+def prs_section(date_range_picker, repository: PrsRepository):
     def normalize_label(selected_labels):
         if len(selected_labels) == 0:
             return None

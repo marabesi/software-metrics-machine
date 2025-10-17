@@ -6,7 +6,7 @@ from core.infrastructure.configuration.configuration import Configuration
 from core.prs.pr_types import LabelSummary, PRDetails
 
 
-class LoadPrs(FileSystemBaseRepository):
+class PrsRepository(FileSystemBaseRepository):
     def __init__(self, configuration: Configuration):
         super().__init__(configuration=configuration)
         self.file = "prs.json"
@@ -137,7 +137,7 @@ class LoadPrs(FileSystemBaseRepository):
         authors = {pr.get("user", {}).get("login", "") for pr in self.all_prs}
         return sorted(author for author in authors if author)
 
-    def prs_with_filters(self, filters=None):
+    def prs_with_filters(self, filters=None) -> List[PRDetails]:
         if not filters:
             return self.all_prs
 

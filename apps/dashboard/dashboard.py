@@ -12,14 +12,14 @@ from core.infrastructure.configuration.configuration_builder import (
     Driver,
 )
 from providers.codemaat.codemaat_repository import CodemaatRepository
-from core.prs.prs_repository import LoadPrs
+from core.prs.prs_repository import PrsRepository
 from providers.github.workflows.repository_workflows import LoadWorkflows
 
 pn.extension("tabulator")
 
 configuration = ConfigurationBuilder(Driver.JSON).build()
 workflow_repository = LoadWorkflows(configuration=configuration)
-prs_repository = LoadPrs(configuration=configuration)
+prs_repository = PrsRepository(configuration=configuration)
 codemaat_repository = CodemaatRepository(configuration=configuration)
 
 current_date = date.today()

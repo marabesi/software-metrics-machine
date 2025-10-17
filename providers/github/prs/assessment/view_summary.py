@@ -1,12 +1,12 @@
 import json
 import csv
 
-from core.prs.prs_repository import LoadPrs
+from core.prs.prs_repository import PrsRepository
 from core.prs.pr_types import SummaryResult
 
 
 class PrViewSummary:
-    def __init__(self, repository: LoadPrs):
+    def __init__(self, repository: PrsRepository):
         self.repository = repository
         self.prs = repository.all_prs
 

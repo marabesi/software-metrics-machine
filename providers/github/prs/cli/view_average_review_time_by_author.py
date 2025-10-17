@@ -4,7 +4,7 @@ from core.infrastructure.configuration.configuration_builder import (
     ConfigurationBuilder,
     Driver,
 )
-from core.prs.prs_repository import LoadPrs
+from core.prs.prs_repository import PrsRepository
 from core.prs.view_average_review_time_by_author import (
     ViewAverageReviewTimeByAuthor,
 )
@@ -47,7 +47,7 @@ def review_time_by_author(top, labels, out_file, start_date, end_date):
     """Plot average PR open time by author."""
 
     return ViewAverageReviewTimeByAuthor(
-        repository=LoadPrs(
+        repository=PrsRepository(
             configuration=ConfigurationBuilder(driver=Driver.CLI).build()
         )
     ).plot_average_open_time(

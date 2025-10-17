@@ -4,7 +4,7 @@ from core.infrastructure.configuration.configuration_builder import (
     ConfigurationBuilder,
     Driver,
 )
-from core.prs.prs_repository import LoadPrs
+from core.prs.prs_repository import PrsRepository
 from core.prs.view_prs_by_author import ViewPrsByAuthor
 
 
@@ -43,7 +43,7 @@ from core.prs.view_prs_by_author import ViewPrsByAuthor
 )
 def by_author(top, labels, out_file, start_date, end_date):
     return ViewPrsByAuthor(
-        repository=LoadPrs(
+        repository=PrsRepository(
             configuration=ConfigurationBuilder(driver=Driver.CLI).build()
         )
     ).plot_top_authors(
