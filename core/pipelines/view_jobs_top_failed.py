@@ -4,7 +4,7 @@ import pandas as pd
 import holoviews as hv
 
 from core.infrastructure.base_viewer import MatplotViewer, PlotResult
-from core.pipelines.repository_workflows import LoadWorkflows
+from core.pipelines.pipelines_repository import LoadWorkflows
 
 hv.extension("bokeh")
 

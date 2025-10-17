@@ -1,7 +1,7 @@
 from collections import Counter
 from typing import Dict, TypedDict
 from core.infrastructure.date_and_time import datetime_to_local
-from core.pipelines.repository_workflows import LoadWorkflows
+from core.pipelines.pipelines_repository import LoadWorkflows
 
 
 class WorkflowRunDetails(TypedDict):

@@ -1,7 +1,7 @@
-"""Typed definitions for GitHub workflow runs and jobs used by repository_workflows.py
+"""Typed definitions for GitHub workflow runs and jobs used by pipelines_repository.py
 
 This module declares TypedDicts that document the fields accessed across
-`providers/github/workflows/repository_workflows.py` and related viewers.
+`providers/github/workflows/pipelines_repository.py` and related viewers.
 
 Two primary types are provided:
 - PipelineRun: represents a workflow run (often called "run" or "workflow")

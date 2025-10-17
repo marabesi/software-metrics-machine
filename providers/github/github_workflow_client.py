@@ -1,7 +1,7 @@
 import os
 import requests
 import json
-from core.pipelines.repository_workflows import LoadWorkflows
+from core.pipelines.pipelines_repository import LoadWorkflows
 from core.infrastructure.configuration.configuration import Configuration
 from core.prs.prs_repository import PrsRepository
 

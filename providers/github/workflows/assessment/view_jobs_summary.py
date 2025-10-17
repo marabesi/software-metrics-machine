@@ -4,7 +4,7 @@ from core.infrastructure.configuration.configuration_builder import (
     ConfigurationBuilder,
     Driver,
 )
-from core.pipelines.repository_workflows import LoadWorkflows
+from core.pipelines.pipelines_repository import LoadWorkflows
 from core.infrastructure.date_and_time import datetime_to_local
 
 lw = LoadWorkflows(configuration=ConfigurationBuilder(driver=Driver.JSON).build())

@@ -3,7 +3,7 @@ from core.infrastructure.configuration.configuration_builder import (
     ConfigurationBuilder,
     Driver,
 )
-from core.pipelines.repository_workflows import LoadWorkflows
+from core.pipelines.pipelines_repository import LoadWorkflows
 from providers.github.workflows.assessment.view_summary import WorkflowRunSummary
 
 

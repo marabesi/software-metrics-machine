@@ -2,7 +2,7 @@ import panel as pn
 from core.pipelines.view_deployment_frequency import (
     ViewDeploymentFrequency,
 )
-from core.pipelines.repository_workflows import LoadWorkflows
+from core.pipelines.pipelines_repository import LoadWorkflows
 
 pn.extension("tabulator")
 

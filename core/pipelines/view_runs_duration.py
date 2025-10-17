@@ -1,7 +1,7 @@
 import matplotlib.pyplot as plt
 
 from core.infrastructure.base_viewer import MatplotViewer
-from core.pipelines.repository_workflows import LoadWorkflows
+from core.pipelines.pipelines_repository import LoadWorkflows
 
 
 class ViewRunsDuration(MatplotViewer):

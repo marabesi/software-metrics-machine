@@ -4,7 +4,7 @@ from core.infrastructure.configuration.configuration_builder import (
     ConfigurationBuilder,
     Driver,
 )
-from core.pipelines.repository_workflows import LoadWorkflows
+from core.pipelines.pipelines_repository import LoadWorkflows
 from core.pipelines.view_jobs_by_status import ViewJobsByStatus
 
 

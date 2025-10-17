@@ -1,6 +1,6 @@
 import click
 
-from core.pipelines.repository_workflows import LoadWorkflows
+from core.pipelines.pipelines_repository import LoadWorkflows
 from core.pipelines.view_workflow_by_status import (
     ViewWorkflowByStatus,
 )

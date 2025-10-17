@@ -2,7 +2,7 @@ import matplotlib.pyplot as plt
 from collections import Counter
 
 from core.infrastructure.base_viewer import MatplotViewer
-from core.pipelines.repository_workflows import LoadWorkflows
+from core.pipelines.pipelines_repository import LoadWorkflows
 
 
 class ViewWorkflowByStatus(MatplotViewer):

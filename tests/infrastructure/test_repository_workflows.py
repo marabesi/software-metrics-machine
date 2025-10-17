@@ -2,7 +2,7 @@ from unittest.mock import patch
 
 import pytest
 
-from core.pipelines.repository_workflows import LoadWorkflows
+from core.pipelines.pipelines_repository import LoadWorkflows
 from tests.builders import as_json_string, workflows_data
 from tests.in_memory_configuration import InMemoryConfiguration
 

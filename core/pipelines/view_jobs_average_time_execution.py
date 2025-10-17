@@ -5,7 +5,7 @@ from datetime import datetime
 import pandas as pd
 
 from core.infrastructure.base_viewer import MatplotViewer, PlotResult
-from core.pipelines.repository_workflows import LoadWorkflows
+from core.pipelines.pipelines_repository import LoadWorkflows
 
 
 class ViewJobsByAverageTimeExecution(MatplotViewer):
