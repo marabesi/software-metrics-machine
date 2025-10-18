@@ -1,8 +1,8 @@
 #!/bin/bash
 
 repo_url="https://github.com/ollama/ollama.git"
-clone_dir="$(pwd)/acceptance/target"
-analysis_dir="$(pwd)/acceptance/analysis"
+clone_dir="$(pwd)/e2e/target"
+analysis_dir="$(pwd)/e2e/analysis"
 export SMM_STORE_DATA_AT="$analysis_dir"
 
 function set_up() {

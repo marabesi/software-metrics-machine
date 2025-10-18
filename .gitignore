@@ -224,5 +224,6 @@ node_modules/
 **/.vitepress/cache
 tmp_test/
 
-acceptance/target_repo
-acceptance/analysis
+tests/e2e/target_repo
+tests/e2e/analysis
+tests/e2e/target

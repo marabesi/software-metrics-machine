@@ -16,7 +16,7 @@ class TestJobsCliCommands:
             mock_get.reset_mock()
             yield mock_get
 
-    def test_can_run_fetch_jobs_command(self, cli):
+    def test_can_run_fetch_jobs_command(self, cli, tmp_path):
         result = cli.runner.invoke(main, ["pipelines", "fetch-jobs", "--help"])
         assert 0 == result.exit_code
         assert "Show this message and exit" in result.output

@@ -133,4 +133,4 @@ jobs:
           echo "PYTHONPATH=$(pwd)" >> $GITHUB_ENV
 
       - name: "Run test"
-        run: "./lib/bashunit acceptance"
+        run: "./lib/bashunit tests/e2e"

@@ -11,6 +11,8 @@ class ConfigurationFileSystemHandler:
 
     def read_file_if_exists(self, filename: str) -> Configuration:
         contents = self.file_system_handler.read_file_if_exists(filename)
+        if contents is None:
+            raise FileNotFoundError(f"{filename} not found")
         data = json.loads(contents)
         return Configuration(
             git_provider=data.get("git_provider"),
