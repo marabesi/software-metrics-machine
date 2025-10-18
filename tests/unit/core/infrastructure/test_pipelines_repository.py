@@ -7,7 +7,7 @@ from tests.builders import as_json_string, workflows_data
 from tests.in_memory_configuration import InMemoryConfiguration
 
 
-class TestRepositoryWorkflows:
+class TestPipelinesRepository:
 
     @pytest.fixture(scope="function", autouse=True)
     def reset_mocks(self):
@@ -251,6 +251,30 @@ class TestRepositoryWorkflows:
             result = loader.get_unique_workflow_conclusions()
             assert len(result) == 3
 
+    def test_get_unique_conclusions_ordered_by_asc(self):
+        workflows_with_duplicated_paths = as_json_string(
+            [
+                {"conclusion": "success", "path": "/workflows/build.yml", "id": 1},
+                {"conclusion": "in_progress", "path": "/workflows/test.yml", "id": 2},
+                {"conclusion": "in_progress", "path": "/workflows/deploy.yml", "id": 3},
+                {"conclusion": "in_progress", "path": "/workflows/build.yml", "id": 4},
+                {"conclusion": "in_progress", "path": "/workflows/build.yml", "id": 5},
+            ]
+        )
+        with (
+            patch(
+                "core.infrastructure.file_system_base_repository.FileSystemBaseRepository.read_file_if_exists",
+                return_value=workflows_with_duplicated_paths,
+            ),
+        ):
+            loader = PipelinesRepository(configuration=InMemoryConfiguration("."))
+
+            result = loader.get_unique_workflow_conclusions()
+
+            assert result[0] == "All"
+            assert result[1] == "in_progress"
+            assert result[2] == "success"
+
     def test_set_all_option_for_unique_conclusions(self):
         workflows_with_duplicated_paths = as_json_string(
             [
@@ -469,3 +493,41 @@ class TestRepositoryWorkflows:
             assert 1 == count
             assert 10.0 == avg_min
             assert 10.0 == total_min
+
+    @pytest.mark.skip(reason="Not implemented yet")
+    def test_computes_the_pipeline_that_failes_the_most(self):
+        single_run = as_json_string(
+            [
+                {
+                    "id": 1,
+                    "path": "/workflows/build.yml",
+                    "status": "success",
+                    "created_at": "2023-10-01T09:00:00Z",
+                    "updated_at": "2023-10-01T09:10:00Z",
+                },
+                {
+                    "id": 1,
+                    "path": "/workflows/build.yml",
+                    "status": "failure",
+                    "created_at": "2023-10-01T09:00:00Z",
+                    "updated_at": "2023-10-01T09:10:00Z",
+                },
+            ]
+        )
+
+        def mocked_read_file_if_exists(file):
+            if file == "workflows.json":
+                return single_run
+            return None
+
+        with patch(
+            "core.infrastructure.file_system_base_repository.FileSystemBaseRepository.read_file_if_exists",
+            side_effect=mocked_read_file_if_exists,
+        ):
+            loader = PipelinesRepository(configuration=InMemoryConfiguration("."))
+
+            data = loader.get_pipeline_fails_the_most(
+                {"start_date": "2023-01-01", "end_date": "2023-12-31"}
+            )
+
+            assert "/workflow/build.yml" == data.pipeline_name
