@@ -12,7 +12,7 @@ from core.pipelines.plots.view_pipeline_by_status import (
 from core.pipelines.plots.view_pipeline_execution_duration import (
     ViewPipelineExecutionRunsDuration,
 )
-from core.pipelines.plots.view_workflow_runs_by import ViewWorkflowRunsBy
+from core.pipelines.plots.view_workflow_runs_by_week_or_month import ViewWorkflowRunsBy
 from core.pipelines.pipelines_repository import PipelinesRepository
 
 pn.extension("tabulator")
