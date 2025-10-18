@@ -53,7 +53,7 @@ jobs_selector = pn.widgets.Select(
 workflow_conclusions = workflow_repository.get_unique_workflow_conclusions()
 workflow_conclusions = pn.widgets.Select(
     name="Select conclusion",
-    description="Select conclusion",
+    description="Select pipeline conclusion",
     options=workflow_conclusions,
 )
 header_section = pn.Row(

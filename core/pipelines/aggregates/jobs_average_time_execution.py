@@ -8,7 +8,7 @@ from core.pipelines.pipelines_types import PipelineJob, PipelineRun
 
 
 @dataclasses.dataclass
-class Result:
+class JobsAverageTimeExecutionResult:
     runs: List[PipelineRun]
     jobs: List[PipelineJob]
     averages: List[float]
@@ -38,7 +38,7 @@ class JobsByAverageTimeExecution:
         end_date: str | None = None,
         force_all_jobs: bool = False,
         job_name: str | None = None,
-    ) -> Result:
+    ) -> JobsAverageTimeExecutionResult:
         """Compute average job execution time (completed_at - started_at) grouped by job name and plot top-N.
 
         Averages are shown in minutes.
@@ -119,4 +119,6 @@ class JobsByAverageTimeExecution:
         averages.sort(key=lambda x: x[1], reverse=True)
         averages = averages[:top]
 
-        return Result(runs=runs, jobs=jobs, averages=averages, counts=counts)
+        return JobsAverageTimeExecutionResult(
+            runs=runs, jobs=jobs, averages=averages, counts=counts
+        )

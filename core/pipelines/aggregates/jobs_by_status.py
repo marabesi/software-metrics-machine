@@ -8,7 +8,7 @@ from core.pipelines.pipelines_types import PipelineRun
 
 
 @dataclass
-class Results:
+class JobByStatusResult:
     status_counts: Counter
     dates: List[str]
     runs: List[PipelineRun]
@@ -219,7 +219,7 @@ class JobsByStatus:
                 jobs, job_name=job_name
             )
 
-        return Results(
+        return JobByStatusResult(
             status_counts,
             dates,
             runs,
