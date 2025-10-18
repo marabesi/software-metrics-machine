@@ -61,6 +61,7 @@ class ViewJobsByAverageTimeExecution(BaseViewer):
         bars = hv.Bars(data, "job_name", "value").opts(
             tools=super().get_tools(),
             color=super().get_color(),
+            line_color=None,
             height=super().get_chart_height(),
             xrotation=0,
             title=(
@@ -72,20 +73,7 @@ class ViewJobsByAverageTimeExecution(BaseViewer):
             ylabel="Average job duration (minutes)",
         )
 
-        labels_data = []
-        for i, d in enumerate(data):
-            # place label slightly to the right of the bar value
-            labels_data.append(
-                {
-                    "x": d["job_name"],
-                    "y": d["value"] + max(0.1, max(mins) * 0.01),
-                    "text": f"{d['value']:.2f}m ({d['count']})",
-                }
-            )
-
-        labels = hv.Labels(labels_data, ["x", "y"], "text").opts(
-            text_font_size=super().get_font_size()
-        )
+        labels = super().build_labels_above_bars(data, "job_name", "value")
 
         chart = bars * labels
 

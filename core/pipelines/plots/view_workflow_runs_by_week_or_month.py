@@ -60,7 +60,7 @@ class ViewWorkflowRunsByWeekOrMonth(BaseViewer):
             )
             return PlotResult(placeholder, df)
 
-        # build stacked data for HoloViews using numeric x-axis (Idx)
+        # build stacked data for HoloViews using numeric x-axis (Time)
         data = []
         for j, period in enumerate(periods):
             for i, name in enumerate(workflow_names):
@@ -90,9 +90,10 @@ class ViewWorkflowRunsByWeekOrMonth(BaseViewer):
 
         xticks = [(i, periods[i]) for i in range(0, len(periods), max(1, tick_step))]
 
-        bars = hv.Bars(data, ["Idx", "Workflow"], "Runs").opts(
+        bars = hv.Bars(data, ["Time", "Workflow"], "Runs").opts(
             stacked=True,
             height=super().get_chart_height(),
+            line_color=None,
             title=(
                 f"Workflow runs per {'week' if aggregate_by == 'week' else 'month'} by workflow name ({total_runs} in total)"  # noqa: E501
             ),

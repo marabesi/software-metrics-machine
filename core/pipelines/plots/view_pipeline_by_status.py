@@ -40,6 +40,7 @@ class ViewPipelineByStatus(BaseViewer):
         bars = hv.Bars(data, "Status", "Count").opts(
             tools=super().get_tools(),
             color=super().get_color(),
+            line_color=None,
             height=super().get_chart_height(),
             title=title,
             xlabel="Status",
@@ -47,14 +48,7 @@ class ViewPipelineByStatus(BaseViewer):
             xrotation=45,
         )
 
-        labels_data = []
-        for d in data:
-            labels_data.append(
-                {"x": d["Status"], "y": d["Count"], "text": str(d["Count"])}
-            )
-        labels = hv.Labels(labels_data, ["x", "y"], "text").opts(
-            text_font_size=super().get_font_size()
-        )
+        labels = super().build_labels_above_bars(data, "Status", "Count")
 
         chart = bars * labels
 

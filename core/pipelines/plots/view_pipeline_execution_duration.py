@@ -45,6 +45,7 @@ class ViewPipelineExecutionRunsDuration(BaseViewer):
         bars = hv.Bars(data, "name", "value").opts(
             tools=super().get_tools(),
             color=super().get_color(),
+            line_color=None,
             height=super().get_chart_height(),
             xrotation=45,
             title=f"Runs aggregated by name - {title_metric} ({len(rows)} items)",
@@ -52,15 +53,7 @@ class ViewPipelineExecutionRunsDuration(BaseViewer):
             ylabel=ylabel,
         )
 
-        labels_data = []
-        for i, d in enumerate(data):
-            labels_data.append(
-                {"x": d["name"], "y": d["value"] + 2, "text": f"{d['value']:.1f}"}
-            )
-
-        labels = hv.Labels(labels_data, ["x", "y"], "text").opts(
-            text_font_size=super().get_font_size()
-        )
+        labels = super().build_labels_above_bars(data, "name", "value")
 
         chart = bars * labels
 

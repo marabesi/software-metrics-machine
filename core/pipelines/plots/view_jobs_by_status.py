@@ -48,6 +48,7 @@ class ViewJobsByStatus(BaseViewer):
         status_bars = hv.Bars(status_data, "Status", "Count").opts(
             tools=super().get_tools(),
             color=super().get_color(),
+            line_color=None,
             height=super().get_chart_height(),
             title=(
                 f"Status of Workflows - {total_runs} runs"

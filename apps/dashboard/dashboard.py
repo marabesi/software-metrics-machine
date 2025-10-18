@@ -82,6 +82,7 @@ configuration_section = configuration_section(configuration)
 template = FastListTemplate(
     title=f"{configuration.github_repository}",
     sidebar=[header_section],
+    accent_base_color=configuration.dashboard_color,
 )
 
 tabs = pn.Tabs(
@@ -91,14 +92,21 @@ tabs = pn.Tabs(
     ("Source code", source_code_section),
     ("Configuration", configuration_section),
     sizing_mode="stretch_width",
-    active=2,
+    active=1,
 )
 
 template.main.append(tabs)
 
 
 def on_tab_change(event):
-    if event.new == 1:
+    active_tab(event.new)
+
+
+tabs.param.watch(on_tab_change, "active")
+
+
+def active_tab(current_tab: int):
+    if current_tab == 1:
         workflow_selector.visible = True
         workflow_conclusions.visible = True
     else:
@@ -106,9 +114,6 @@ def on_tab_change(event):
         workflow_conclusions.visible = False
 
 
-tabs.param.watch(on_tab_change, "active")
-
-workflow_selector.visible = False
-workflow_conclusions.visible = False
+active_tab(tabs.active)
 
 template.servable()
