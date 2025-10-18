@@ -7,20 +7,22 @@ from providers.codemaat.codemaat_repository import CodemaatRepository
 
 
 class EntityEffortViewer(BaseViewer, Viewable):
+    def __init__(self, repository: CodemaatRepository):
+        self.repository = repository
+
     def render(
         self,
-        repo: CodemaatRepository,
         top_n: int | None = 30,
         ignore_files: str | None = None,
         out_file: str | None = None,
     ) -> None:
-        df = repo.get_entity_effort()
+        df = self.repository.get_entity_effort()
 
         if df.empty:
             print("No entity effort data available to plot")
             return None
 
-        df = repo.apply_ignore_file_patterns(df, ignore_files)
+        df = self.repository.apply_ignore_file_patterns(df, ignore_files)
 
         # Aggregate total effort per entity (using total-revs)
         effort_per_entity = df.groupby("entity")["total-revs"].max().sort_values()
@@ -41,7 +43,7 @@ class EntityEffortViewer(BaseViewer, Viewable):
         )
         plt.tight_layout()
 
-        return super().output(plt, fig, out_file=out_file, repository=repo)
+        return super().output(plt, fig, out_file=out_file, repository=self.repository)
 
     def render_treemap(
         self,

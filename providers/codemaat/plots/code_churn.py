@@ -6,14 +6,19 @@ from providers.codemaat.codemaat_repository import CodemaatRepository
 
 
 class CodeChurnViewer(BaseViewer, Viewable):
+
+    def __init__(self, repository: CodemaatRepository):
+        self.repository = repository
+
     def render(
         self,
-        repository: CodemaatRepository,
         out_file: str | None = None,
         start_date: str | None = None,
         end_date: str | None = None,
     ) -> None:
-        df = repository.get_code_churn({"start_date": start_date, "end_date": end_date})
+        df = self.repository.get_code_churn(
+            {"start_date": start_date, "end_date": end_date}
+        )
 
         if df.empty:
             print("No code churn data available to plot")
@@ -37,4 +42,4 @@ class CodeChurnViewer(BaseViewer, Viewable):
         ax.legend()
         plt.xticks(rotation=45, ha="right")
 
-        return super().output(plt, fig, out_file=out_file, repository=repository)
+        return super().output(plt, fig, out_file=out_file, repository=self.repository)

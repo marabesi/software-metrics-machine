@@ -48,7 +48,7 @@ class ViewJobsByAverageTimeExecution(BaseViewer):
             print("No job durations found after filtering")
             # create a small hv.Text chart to show the message
             empty = hv.Text(0, 0, "No job durations found").opts(
-                width=super().get_chart_with(), height=super().get_chart_height()
+                height=super().get_chart_height()
             )
             return PlotResult(matplotlib=empty, data=pd.DataFrame(averages))
 

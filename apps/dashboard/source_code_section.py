@@ -53,27 +53,24 @@ def source_code_section(repository: CodemaatRepository, start_end_date_picker):
     pre_selected_values.param.watch(update_ignore_pattern, "value")
 
     def plot_code_churn(date_range_picker):
-        return CodeChurnViewer().render(
-            repository=repository,
+        return CodeChurnViewer(repository=repository).render(
             start_date=date_range_picker[0],
             end_date=date_range_picker[1],
         )
 
     def plot_entity_churn(ignore_pattern, top):
-        return EntityChurnViewer().render(
-            repo=repository, ignore_files=ignore_pattern, top_n=int(top)
+        return EntityChurnViewer(repository=repository).render(
+            ignore_files=ignore_pattern, top_n=int(top)
         )
 
     def plot_entity_effort(ignore_pattern, top):
-        return EntityEffortViewer().render_treemap(
+        return EntityEffortViewer(repository=repository).render_treemap(
             top_n=int(top),
-            repo=repository,
             ignore_files=ignore_pattern,
         )
 
     def plot_entity_ownership(ignore_pattern, authors, top):
-        return EntityOnershipViewer().render(
-            repo=repository,
+        return EntityOnershipViewer(repository=repository).render(
             ignore_files=ignore_pattern,
             authors=",".join(authors),
             top_n=int(top),
@@ -81,7 +78,7 @@ def source_code_section(repository: CodemaatRepository, start_end_date_picker):
 
     # Refactor plot_code_coupling to include zoom and pan controls using Panel sliders
     def plot_code_coupling_with_controls():
-        coupling_viewer = CouplingViewer()
+        coupling_viewer = CouplingViewer(repository=repository)
 
         # Create sliders for zoom and pan
         # zoom_slider = pn.widgets.FloatSlider(
@@ -113,7 +110,7 @@ def source_code_section(repository: CodemaatRepository, start_end_date_picker):
         # )
 
         # return pn.Column(zoom_slider, x_pan_slider, y_pan_slider, interactive_plot)
-        return pn.Column(coupling_viewer.render(repo=repository))
+        return pn.Column(coupling_viewer.render())
 
     return pn.Column(
         "## Source code Section",

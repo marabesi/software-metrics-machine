@@ -6,16 +6,19 @@ from providers.codemaat.codemaat_repository import CodemaatRepository
 
 
 class EntityChurnViewer(BaseViewer, Viewable):
+
+    def __init__(self, repository: CodemaatRepository):
+        self.repository = repository
+
     def render(
         self,
-        repo: CodemaatRepository,
         top_n: int = 30,
         ignore_files: str | None = None,
         out_file: str | None = None,
         start_date: str | None = None,
         end_date: str | None = None,
     ) -> None:
-        df = repo.get_entity_churn()
+        df = self.repository.get_entity_churn()
 
         if df.empty:
             print("No entity churn data available to plot")
@@ -33,7 +36,7 @@ class EntityChurnViewer(BaseViewer, Viewable):
         if top_n and top_n > 0:
             df = df.sort_values(by="total_churn", ascending=False).head(top_n)
 
-        df = repo.apply_ignore_file_patterns(df, ignore_files)
+        df = self.repository.apply_ignore_file_patterns(df, ignore_files)
 
         dates = df["entity"]
         added = df["added"]
@@ -50,4 +53,4 @@ class EntityChurnViewer(BaseViewer, Viewable):
         plt.xticks(rotation=45, ha="right")
         plt.tight_layout()
 
-        return super().output(plt, fig, out_file=out_file, repository=repo)
+        return super().output(plt, fig, out_file=out_file, repository=self.repository)

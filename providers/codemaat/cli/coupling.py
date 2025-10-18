@@ -18,10 +18,11 @@ from providers.codemaat.plots.coupling import CouplingViewer
 )
 def coupling(out_file):
     """Plot coupling graph."""
-    return CouplingViewer().render(
-        repo=CodemaatRepository(
+    return CouplingViewer(
+        repository=CodemaatRepository(
             configuration=ConfigurationBuilder(Driver.JSON).build()
-        ),
+        )
+    ).render(
         out_file=out_file,
     )
 

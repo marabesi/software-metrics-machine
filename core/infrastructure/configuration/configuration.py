@@ -11,6 +11,7 @@ class Configuration:
         main_branch=None,
         dashboard_start_date=None,
         dashboard_end_date=None,
+        dashboard_color=None,
     ):
         self.git_provider = git_provider
         self.github_token = github_token
@@ -22,6 +23,7 @@ class Configuration:
         self.main_branch = main_branch
         self.dashboard_start_date = dashboard_start_date
         self.dashboard_end_date = dashboard_end_date
+        self.dashboard_color = dashboard_color
 
         print("git_repository_location", self.git_repository_location)
         print(
@@ -40,3 +42,5 @@ class Configuration:
                 raise ValueError(
                     "❌ You must provide github_repository (e.g. octocat/Hello-World)"
                 )
+        if not self.dashboard_color:
+            self.dashboard_color = "#4c78a8"

@@ -36,12 +36,11 @@ from providers.codemaat.plots.entity_ownership import EntityOnershipViewer
 )
 def entity_ownership(out_file, top, ignore_files, authors):
     """Plot entity (File) ownership."""
-    viewer = EntityOnershipViewer()
     df_repo = CodemaatRepository(
         configuration=ConfigurationBuilder(Driver.JSON).build()
     )
+    viewer = EntityOnershipViewer(repository=df_repo)
     viewer.render(
-        df_repo,
         top_n=top,
         ignore_files=ignore_files,
         out_file=out_file,

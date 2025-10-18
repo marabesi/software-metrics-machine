@@ -71,7 +71,6 @@ class ViewJobsByStatus(BaseViewer):
 
         timeline_bars = hv.Bars(timeline_data, ["Period", "Conclusion"], "Runs").opts(
             stacked=True,
-            width=super().get_chart_with(),
             height=super().get_chart_height(),
             xrotation=45,
             title=(

@@ -120,7 +120,7 @@ def pipeline_section(
 
     views = pn.Column(
         "## Pipeline Section",
-        "Explore your CI/CD pipeline metrics and gain insights into workflow performance and job execution times.",
+        "Explore your [CI/CD](https://marabesi.com/software-engineering/ci-vs-cde-vs-cd.html?utm_source=metrics-machine&utm_medium=dashboard&utm_campaign=metrics&utm_id=metrics) pipeline metrics and gain insights into workflow performance and job execution times.",  # noqa
         pn.Row(
             pn.panel(
                 pn.bind(

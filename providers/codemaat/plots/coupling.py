@@ -8,10 +8,11 @@ from providers.codemaat.codemaat_repository import CodemaatRepository
 
 
 class CouplingViewer(BaseViewer, Viewable):
-    def render(
-        self, repo: CodemaatRepository, out_file: str | None = None, top_n: int = 2
-    ) -> Figure:
-        df = repo.get_coupling()
+    def __init__(self, repository: CodemaatRepository):
+        self.repository = repository
+
+    def render(self, out_file: str | None = None, top_n: int = 2) -> Figure:
+        df = self.repository.get_coupling()
         if df.empty:
             print("No coupling data available to plot")
             return None
@@ -49,4 +50,4 @@ class CouplingViewer(BaseViewer, Viewable):
         )
         plt.title(f"Top {top_n} Code Coupling Network (Edge Color by Weight)")
 
-        return super().output(plt, fig, out_file=out_file, repository=repo)
+        return super().output(plt, fig, out_file=out_file, repository=self.repository)

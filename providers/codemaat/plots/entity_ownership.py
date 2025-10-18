@@ -7,14 +7,17 @@ from providers.codemaat.codemaat_repository import CodemaatRepository
 
 
 class EntityOnershipViewer(BaseViewer, Viewable):
+    def __init__(self, repository: CodemaatRepository):
+        self.repository = repository
+
     def render(
         self,
-        repo: CodemaatRepository,
         top_n: int = 30,
         ignore_files: str | None = None,
         out_file: str | None = None,
         authors: str | None = None,
     ) -> None:
+        repo = self.repository
         df = repo.get_entity_ownership(authors.split(",") if authors else [])
 
         if df.empty:

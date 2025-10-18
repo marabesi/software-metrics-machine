@@ -15,6 +15,9 @@ class PlotResult(NamedTuple):
 
 class BaseViewer:
 
+    def __init__(self, repository: FileSystemBaseRepository) -> None:
+        self.repository = repository
+
     def get_chart_width(self) -> None | int:
         return None
 
