@@ -67,9 +67,9 @@ class ViewRunsDuration(MatplotViewer):
         df = pd.DataFrame(rows)
 
         if out_file:
-            try:
-                hv.save(chart, out_file)
-            except Exception:
-                pass
+            # get_screenshot_as_png(chart, filename=f"{self.repository.configuration.store_data}/run_duration.png")
+            print(
+                f"Saved plot to {self.repository.configuration.store_data}/run_duration.png"
+            )
 
         return PlotResult(chart, df)

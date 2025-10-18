@@ -1,8 +1,8 @@
 import click
 
 from core.pipelines.pipelines_repository import PipelinesRepository
-from core.pipelines.plots.view_workflow_by_status import (
-    ViewWorkflowByStatus,
+from core.pipelines.plots.view_pipeline_by_status import (
+    ViewPipelineByStatus,
 )
 
 
@@ -32,7 +32,7 @@ from core.pipelines.plots.view_workflow_by_status import (
     help="End date (inclusive) in YYYY-MM-DD",
 )
 def workflow_by_status(out_file, workflow_path, start_date, end_date):
-    return ViewWorkflowByStatus(repository=PipelinesRepository()).main(
+    return ViewPipelineByStatus(repository=PipelinesRepository()).main(
         out_file=out_file,
         workflow_path=workflow_path,
         start_date=start_date,

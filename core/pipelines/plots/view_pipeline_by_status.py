@@ -5,7 +5,7 @@ from core.infrastructure.base_viewer import MatplotViewer
 from core.pipelines.pipelines_repository import PipelinesRepository
 
 
-class ViewWorkflowByStatus(MatplotViewer):
+class ViewPipelineByStatus(MatplotViewer):
     def __init__(self, repository: PipelinesRepository):
         self.repository = repository
 

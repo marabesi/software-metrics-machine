@@ -54,7 +54,7 @@ class TestWorkflowsRunsDurationCliCommands:
 
         assert f"Found {expected_count} runs after filtering" in result.output
 
-    def test_should_store_plot_in_the_given_directory(self, cli):
+    def test_should_store_pipeline_run_duration_plot_in_the_given_directory(self, cli):
         path_string = cli.data_stored_at
         FileHandlerForTesting(path_string).store_json_file(
             "workflows.json", workflows_data()

@@ -7,8 +7,8 @@ from providers.github.workflows.assessment.view_summary import WorkflowRunSummar
 from core.pipelines.plots.view_jobs_average_time_execution import (
     ViewJobsByAverageTimeExecution,
 )
-from core.pipelines.plots.view_workflow_by_status import (
-    ViewWorkflowByStatus,
+from core.pipelines.plots.view_pipeline_by_status import (
+    ViewPipelineByStatus,
 )
 from core.pipelines.plots.view_runs_duration import (
     ViewRunsDuration,
@@ -34,7 +34,7 @@ def pipeline_section(
     def plot_workflow_by_status(
         date_range_picker, workflow_selector, workflow_conclusions
     ):
-        return ViewWorkflowByStatus(repository=repository).main(
+        return ViewPipelineByStatus(repository=repository).main(
             start_date=date_range_picker[0],
             end_date=date_range_picker[1],
             workflow_path=sanitize_all_argument(workflow_selector),
