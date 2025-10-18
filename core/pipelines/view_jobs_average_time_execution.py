@@ -1,10 +1,11 @@
 import matplotlib.pyplot as plt
-from collections import defaultdict
-from datetime import datetime
 
 import pandas as pd
 
 from core.infrastructure.base_viewer import MatplotViewer, PlotResult
+from core.pipelines.aggregates.jobs_average_time_execution import (
+    JobsByAverageTimeExecution,
+)
 from core.pipelines.pipelines_repository import PipelinesRepository
 
 
@@ -12,14 +13,6 @@ class ViewJobsByAverageTimeExecution(MatplotViewer):
 
     def __init__(self, repository: PipelinesRepository):
         self.repository = repository
-
-    def _split_and_normalize(self, val: str):
-        """Turn a comma-separated string into a list of lowercase trimmed values, or return None."""
-        if not val:
-            return None
-        if isinstance(val, (list, tuple)):
-            return [str(v).strip().lower() for v in val if v]
-        return [p.strip().lower() for p in str(val).split(",") if p.strip()]
 
     def main(
         self,
@@ -33,85 +26,20 @@ class ViewJobsByAverageTimeExecution(MatplotViewer):
         force_all_jobs: bool = False,
         job_name: str | None = None,
     ) -> PlotResult:
-        """Compute average job execution time (completed_at - started_at) grouped by job name and plot top-N.
-
-        Averages are shown in minutes.
-        """
-        filters = {"start_date": start_date, "end_date": end_date}
-        print(f"Applying pipeline filter: {filters}")
-        runs = self.repository.runs(filters=filters)
-        job_filters = {**filters, "name": job_name}
-        print(f"Applying jobs filter: {job_filters}")
-        jobs = self.repository.jobs(filters=job_filters)
-
-        # optional filter by workflow name (case-insensitive substring match)
-        if workflow_path:
-            wf_low = workflow_path.lower()
-            runs = [r for r in runs if (r.get("path") or "").lower().find(wf_low) != -1]
-
-        # optional filter by event (e.g. push, pull_request) - accepts comma-separated or single value
-        if event_vals := self._split_and_normalize(_cli_filters.get("event")):
-            allowed = set(event_vals)
-            runs = [r for r in runs if (r.get("event") or "").lower() in allowed]
-
-        if not force_all_jobs:
-            # restrict jobs to only those belonging to the selected runs
-            run_ids = {r.get("id") for r in runs if r.get("id") is not None}
-            jobs = [j for j in jobs if j.get("run_id") in run_ids]
-
-        # optional filter by target branch (accepts comma-separated values)
-        if target_vals := self._split_and_normalize(_cli_filters.get("target_branch")):
-            allowed = set(target_vals)
-
-            def branch_matches(obj):
-                for key in (
-                    "head_branch",
-                    "head_ref",
-                    "ref",
-                    "base_ref",
-                    "base_branch",
-                ):
-                    val = obj.get(key) or ""
-                    if val and val.lower() in allowed:
-                        return True
-                return False
-
-            runs = [r for r in runs if branch_matches(r)]
-            jobs = [j for j in jobs if branch_matches(j)]
-
-        if exclude_jobs:
-            exclude = [s.strip() for s in exclude_jobs.split(",") if s.strip()]
-            jobs = self.repository.filter_by_job_name(jobs, exclude)
-
-        print(f"Found {len(runs)} workflow runs and {len(jobs)} jobs after filtering")
-
-        # aggregate durations by job name
-        sums = defaultdict(float)
-        counts = defaultdict(int)
-        for job in jobs:
-            name = (job.get("name") or "").strip() or "<unnamed>"
-            started = job.get("started_at") or job.get("created_at")
-            completed = job.get("completed_at")
-            if not started or not completed:
-                continue
-            try:
-                dt_start = datetime.fromisoformat(started.replace("Z", "+00:00"))
-                dt_end = datetime.fromisoformat(completed.replace("Z", "+00:00"))
-            except Exception:
-                continue
-            secs = (dt_end - dt_start).total_seconds()
-            if secs < 0:
-                # ignore negative durations
-                continue
-            sums[name] += secs
-            counts[name] += 1
-
-        averages = [
-            (name, (sums[name] / counts[name]) / 60.0) for name in counts.keys()
-        ]  # minutes
-        # sort by average descending (longest first)
-        averages.sort(key=lambda x: x[1], reverse=True)
-        averages = averages[:top]
+        result = JobsByAverageTimeExecution(repository=self.repository).main(
+            workflow_path=workflow_path,
+            _cli_filters=_cli_filters,
+            top=top,
+            exclude_jobs=exclude_jobs,
+            start_date=start_date,
+            end_date=end_date,
+            force_all_jobs=force_all_jobs,
+            job_name=job_name,
+        )
+        averages = result.averages
+        runs = result.runs
+        jobs = result.jobs
+        counts = result.counts
 
         if not averages:
             print("No job durations found after filtering")
