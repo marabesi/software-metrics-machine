@@ -38,7 +38,6 @@ class ViewPipelineExecutionRunsDuration(BaseViewer):
         ylabel = result.ylabel
         title_metric = result.title_metric
         rows = result.rows
-
         data = []
         for name, val, cnt in zip(names, values, counts):
             data.append({"name": name, "value": val, "count": cnt})
@@ -50,7 +49,7 @@ class ViewPipelineExecutionRunsDuration(BaseViewer):
             height=500,
             xrotation=45,
             title=f"Runs aggregated by name - {title_metric} ({len(rows)} items)",
-            xlabel="",
+            xlabel="Pipeline",
             ylabel=ylabel,
         )
 

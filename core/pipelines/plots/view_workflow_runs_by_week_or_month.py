@@ -65,7 +65,9 @@ class ViewWorkflowRunsByWeekOrMonth(BaseViewer):
                     val = data_matrix[i][j]
                 except Exception:
                     val = 0
-                data.append({"Idx": j, "Period": period, "Workflow": name, "Runs": val})
+                data.append(
+                    {"Time": j, "Period": period, "Workflow": name, "Runs": val}
+                )
 
         # guard: if all Runs are zero, avoid stacked bars with empty stacks
         total_runs = sum(d["Runs"] for d in data)

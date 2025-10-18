@@ -52,9 +52,9 @@ class ViewJobsByAverageTimeExecution(BaseViewer):
 
         data = []
         for name, val in zip(names, mins):
-            data.append({"name": name, "value": val, "count": counts.get(name, 0)})
+            data.append({"job_name": name, "value": val, "count": counts.get(name, 0)})
 
-        bars = hv.Bars(data, "name", "value").opts(
+        bars = hv.Bars(data, "job_name", "value").opts(
             tools=["hover"],
             color="#4c78a8",
             width=900,
@@ -74,7 +74,7 @@ class ViewJobsByAverageTimeExecution(BaseViewer):
             # place label slightly to the right of the bar value
             labels_data.append(
                 {
-                    "x": d["name"],
+                    "x": d["job_name"],
                     "y": d["value"] + max(0.1, max(mins) * 0.01),
                     "text": f"{d['value']:.2f}m ({d['count']})",
                 }
