@@ -1,12 +1,13 @@
-import matplotlib.pyplot as plt
-
 import pandas as pd
+import holoviews as hv
 
 from core.infrastructure.base_viewer import MatplotViewer, PlotResult
 from core.pipelines.aggregates.jobs_average_time_execution import (
     JobsByAverageTimeExecution,
 )
 from core.pipelines.pipelines_repository import PipelinesRepository
+
+hv.extension("bokeh")
 
 
 class ViewJobsByAverageTimeExecution(MatplotViewer):
@@ -43,59 +44,49 @@ class ViewJobsByAverageTimeExecution(MatplotViewer):
 
         if not averages:
             print("No job durations found after filtering")
-            fig, plot_ax = plt.subplots(1, 1, figsize=super().get_fig_size())
-            plot_ax.text(0.5, 0.5, "No job durations found", ha="center", va="center")
-            plot_ax.axis("off")
-            fig.tight_layout()
-            super().output(plt, fig, out_file, repository=self.repository)
-            return PlotResult(matplotlib=fig, data=pd.DataFrame(averages))
+            # create a small hv.Text chart to show the message
+            empty = hv.Text(0, 0, "No job durations found").opts(width=600, height=200)
+            return PlotResult(matplotlib=empty, data=pd.DataFrame(averages))
 
         names, mins = zip(*averages)
 
-        fig, plot_ax = plt.subplots(1, 1, figsize=super().get_fig_size())
+        data = []
+        for name, val in zip(names, mins):
+            data.append({"name": name, "value": val, "count": counts.get(name, 0)})
 
-        y_pos = list(range(len(names)))[::-1]
-        plot_ax.barh(y_pos, mins, color="#4c78a8")
-        plot_ax.set_yticks(y_pos)
-        plot_ax.set_yticklabels(names)
-        plot_ax.set_xlabel("Average job duration (minutes)")
-        plot_ax.set_title(
-            f"Top {len(names)} jobs by average duration for {len(runs)} runs - {len(jobs)} jobs"
+        bars = hv.Bars(data, "name", "value").opts(
+            tools=["hover"],
+            color="#4c78a8",
+            width=900,
+            height=500,
+            xrotation=0,
+            title=(
+                f"Top {len(names)} jobs by average duration for {len(runs)} runs - {len(jobs)} jobs"
+                if not workflow_path
+                else f"Top {len(names)} jobs by average duration for '{workflow_path}' - {len(runs)} runs - {len(jobs)} jobs"  # noqa: E501
+            ),
+            xlabel="",
+            ylabel="Average job duration (minutes)",
         )
-        if workflow_path:
-            plot_ax.set_title(
-                f"Top {len(names)} jobs by average duration for '{workflow_path}' - {len(runs)} runs - {len(jobs)} jobs"
+
+        labels_data = []
+        for i, d in enumerate(data):
+            # place label slightly to the right of the bar value
+            labels_data.append(
+                {
+                    "x": d["name"],
+                    "y": d["value"] + max(0.1, max(mins) * 0.01),
+                    "text": f"{d['value']:.2f}m ({d['count']})",
+                }
             )
 
-        counts_for_names = [counts.get(n, 0) for n in names]
-        for i, v in enumerate(mins):
-            cnt = counts_for_names[i]
-            plot_ax.text(
-                v + max(0.1, max(mins) * 0.01),
-                y_pos[i],
-                f"{v:.2f}m ({cnt})",
-                va="center",
-            )
+        labels = hv.Labels(labels_data, ["x", "y"], "text").opts(text_font_size="8pt")
 
-        # show the sum of the averages (minutes) prominently on the plot
-        try:
-            total_avg = sum(mins)
-            plot_ax.text(
-                0.99,
-                0.99,
-                f"Sum of averages: {total_avg:.2f} min",
-                transform=plot_ax.transAxes,
-                ha="right",
-                va="top",
-                fontsize=9,
-                bbox=dict(facecolor="white", alpha=0.6, edgecolor="none"),
-            )
-        except Exception:
-            pass
+        chart = bars * labels
 
-        fig.tight_layout()
+        df = pd.DataFrame(averages)
 
-        return PlotResult(
-            matplotlib=super().output(plt, fig, out_file, repository=self.repository),
-            data=pd.DataFrame(averages),
-        )
+        if out_file:
+            hv.save(chart, out_file)
+
+        return PlotResult(chart, df)

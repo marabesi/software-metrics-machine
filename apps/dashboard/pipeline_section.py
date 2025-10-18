@@ -3,7 +3,6 @@ import panel as pn
 from apps.dashboard.components.tabulator import TabulatorComponent
 from core.pipelines.plots.view_jobs_by_status import ViewJobsByStatus
 from core.pipelines.plots.view_jobs_top_failed import ViewJobsTopFailed
-from providers.github.workflows.assessment.view_summary import WorkflowRunSummary
 from core.pipelines.plots.view_jobs_average_time_execution import (
     ViewJobsByAverageTimeExecution,
 )
@@ -82,17 +81,6 @@ def pipeline_section(
             workflow_path=sanitize_all_argument(workflow_selector),
         )
 
-    def plot_workflow_summary(workflow_conclusions):
-        """
-        Generate a styled summary table for the Panel app.
-
-        :return: A Panel object displaying the workflow summary as a table.
-        """
-        summary = WorkflowRunSummary(repository=repository).print_summary()
-
-        if summary["total_runs"] == 0:
-            return pn.pane.Markdown("### No workflow runs available.")
-
     def plot_jobs_by_status(date_range_picker, workflow_selector, jobs_selector):
         if jobs_selector == "All":
             return pn.pane.Markdown("")
@@ -121,7 +109,6 @@ def pipeline_section(
     views = pn.Column(
         "## Pipeline Section",
         "Explore your CI/CD pipeline metrics and gain insights into workflow performance and job execution times.",
-        pn.Row(pn.bind(plot_workflow_summary, workflow_conclusions)),
         pn.Row(
             pn.bind(
                 plot_workflow_by_status,
