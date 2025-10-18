@@ -85,7 +85,7 @@ def prs_section(date_range_picker, repository: PrsRepository):
     )
 
     views = pn.Column(
-        "## PRs Section",
+        "## Pull requests",
         pn.Row(
             pn.Column(author_select, sizing_mode="stretch_width"),
             pn.Column(label_selector, sizing_mode="stretch_width"),

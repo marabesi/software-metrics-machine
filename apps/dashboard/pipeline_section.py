@@ -17,11 +17,10 @@ from core.pipelines.plots.view_workflow_runs_by_week_or_month import (
 )
 from core.pipelines.pipelines_repository import PipelinesRepository
 
-# include tabulator extension and add a small raw CSS class for 90% width container
 pn.extension(
     "tabulator",
     raw_css=[
-        ".smm-90-width { width: 90%; margin-left: auto; margin-right: auto; }",
+        ".smm-90-width { margin-top: 15px }",
     ],
 )
 
@@ -119,7 +118,7 @@ def pipeline_section(
         )
 
     views = pn.Column(
-        "## Pipeline Section",
+        "## Pipeline",
         "Explore your [CI/CD](https://marabesi.com/software-engineering/ci-vs-cde-vs-cd.html?utm_source=metrics-machine&utm_medium=dashboard&utm_campaign=metrics&utm_id=metrics) pipeline metrics and gain insights into workflow performance and job execution times.",  # noqa
         pn.Row(
             pn.panel(
@@ -205,7 +204,7 @@ def pipeline_section(
     df_pipelines = pd.DataFrame(repository.all_runs)
     df_jobs = pd.DataFrame(repository.all_jobs)
     data = pn.Column(
-        "## Data Section",
+        "## Explore your raw data",
         "Explore your Pipeline data with advanced filtering options and download capabilities.",
         pn.Row("### Pipeline"),
         pn.panel(
