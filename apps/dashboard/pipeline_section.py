@@ -202,12 +202,19 @@ def pipeline_section(
         "title": {"type": "input", "func": "like", "placeholder": "Title"},
         "state": {"type": "list", "func": "like", "placeholder": "Select state"},
     }
-    df = pd.DataFrame(repository.all_runs)
+    df_pipelines = pd.DataFrame(repository.all_runs)
+    df_jobs = pd.DataFrame(repository.all_jobs)
     data = pn.Column(
         "## Data Section",
         "Explore your Pipeline data with advanced filtering options and download capabilities.",
+        pn.Row("### Pipeline"),
         pn.panel(
-            TabulatorComponent(df, pipelines_filter_criteria, "pipelines"),
+            TabulatorComponent(df_pipelines, pipelines_filter_criteria, "pipelines"),
+            sizing_mode="stretch_width",
+        ),
+        pn.Row("### Jobs"),
+        pn.panel(
+            TabulatorComponent(df_jobs, pipelines_filter_criteria, "jobs"),
             sizing_mode="stretch_width",
         ),
         sizing_mode="stretch_width",
