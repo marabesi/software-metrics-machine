@@ -1,13 +1,14 @@
 import matplotlib.pyplot as plt
 import matplotlib.dates as mdates
-from collections import defaultdict
-from datetime import datetime
 
 from core.infrastructure.base_viewer import BaseViewer
+from core.pipelines.aggregates.pipeline_workflow_runs_by_week_or_month import (
+    PipelineWorkflowRunsByWekOrMonth,
+)
 from core.pipelines.pipelines_repository import PipelinesRepository
 
 
-class ViewWorkflowRunsBy(BaseViewer):
+class ViewWorkflowRunsByWeekOrMonth(BaseViewer):
 
     def __init__(self, repository: PipelinesRepository):
         self.repository = repository
@@ -22,81 +23,20 @@ class ViewWorkflowRunsBy(BaseViewer):
         start_date: str | None = None,
         end_date: str | None = None,
     ) -> None:
-        params = self.repository.parse_raw_filters(raw_filters)
-        event = params.get("event")
-        target_branch = params.get("target_branch")
-        conclusion = params.get("conclusion")
+        result = PipelineWorkflowRunsByWekOrMonth(repository=self.repository).main(
+            aggregate_by=aggregate_by,
+            workflow_path=workflow_path,
+            raw_filters=raw_filters,
+            include_defined_only=include_defined_only,
+            start_date=start_date,
+            end_date=end_date,
+        )
 
-        filters = {
-            "start_date": start_date,
-            "end_date": end_date,
-            "event": event,
-            "target_branch": target_branch,
-            "workflow_path": workflow_path,
-            "include_defined_only": include_defined_only,
-            "conclusion": conclusion,
-        }
-
-        runs = self.repository.runs(filters)
-
-        print(f"Found {len(runs)} runs after filtering")
-
-        counts = defaultdict(lambda: defaultdict(int))
-        period_set = set()
-        workflow_names = set()
-
-        for r in runs:
-            name = (r.get("path") or "<unnamed>").strip()
-            created = r.get("created_at") or r.get("run_started_at") or r.get("created")
-            if not created:
-                continue
-            try:
-                dt = datetime.fromisoformat(created.replace("Z", "+00:00"))
-            except Exception:
-                try:
-                    dt = datetime.strptime(created, "%Y-%m-%dT%H:%M:%SZ")
-                except Exception:
-                    continue
-
-            if aggregate_by == "week":
-                iso_year, iso_week, _ = dt.isocalendar()
-                key = f"{iso_year}-{iso_week:02d}"
-            else:
-                key = dt.strftime("%Y-%m")
-
-            counts[key][name] += 1
-            period_set.add(key)
-            workflow_names.add(name)
-
-        if not period_set:
-            print("No data to plot")
-            return
-
-        periods = sorted(period_set)
-        workflow_names = sorted(workflow_names)
-
-        print(f"Plotting data aggregated by {aggregate_by}")
-
-        # build matrix of counts per workflow per period
-        data_matrix = []
-        for name in workflow_names:
-            row = [counts[p].get(name, 0) for p in periods]
-            data_matrix.append(row)
-
-        # representative datetime for each period
-        rep_dates = []
-        for p in periods:
-            try:
-                y_str, part_str = p.split("-")
-                y = int(y_str)
-                part = int(part_str)
-                if aggregate_by == "week":
-                    rep = datetime.fromisocalendar(y, part, 1)
-                else:
-                    rep = datetime(y, part, 1)
-            except Exception:
-                rep = None
-            rep_dates.append(rep)
+        rep_dates = result.rep_dates
+        periods = result.periods
+        workflow_names = result.workflow_names
+        data_matrix = result.data_matrix
+        runs = result.runs
 
         x_vals = mdates.date2num(rep_dates)
 
@@ -152,10 +92,10 @@ class ViewWorkflowRunsBy(BaseViewer):
                 tick_labels.append(f"{p}\n{month}")
             else:
                 tick_labels.append(month)
-
-        ax.set_xticks(x_vals)
-        ax.set_xticklabels(tick_labels)
-        plt.xticks(rotation=45)
-        ax.set_xlim(min(x_vals) - 2, max(x_vals) + 2)
+        if len(x_vals) != 0:
+            ax.set_xticks(x_vals)
+            ax.set_xticklabels(tick_labels)
+            plt.xticks(rotation=45)
+            ax.set_xlim(min(x_vals) - 2, max(x_vals) + 2)
         fig.tight_layout()
         return super().output(plt, fig, out_file, repository=self.repository)

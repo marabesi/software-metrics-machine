@@ -12,7 +12,9 @@ from core.pipelines.plots.view_pipeline_by_status import (
 from core.pipelines.plots.view_pipeline_execution_duration import (
     ViewPipelineExecutionRunsDuration,
 )
-from core.pipelines.plots.view_workflow_runs_by_week_or_month import ViewWorkflowRunsBy
+from core.pipelines.plots.view_workflow_runs_by_week_or_month import (
+    ViewWorkflowRunsByWeekOrMonth,
+)
 from core.pipelines.pipelines_repository import PipelinesRepository
 
 pn.extension("tabulator")
@@ -73,7 +75,7 @@ def pipeline_section(
     def plot_workflow_run_by(
         date_range_picker, workflow_selector, workflow_conclusions
     ):
-        return ViewWorkflowRunsBy(repository=repository).main(
+        return ViewWorkflowRunsByWeekOrMonth(repository=repository).main(
             aggregate_by="month",
             start_date=date_range_picker[0],
             end_date=date_range_picker[1],
