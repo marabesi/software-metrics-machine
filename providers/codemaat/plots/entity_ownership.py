@@ -1,12 +1,12 @@
 import matplotlib.pyplot as plt
 import pandas as pd
 
-from core.infrastructure.base_viewer import MatplotViewer
+from core.infrastructure.base_viewer import BaseViewer
 from core.infrastructure.viewable import Viewable
 from providers.codemaat.codemaat_repository import CodemaatRepository
 
 
-class EntityOnershipViewer(MatplotViewer, Viewable):
+class EntityOnershipViewer(BaseViewer, Viewable):
     def render(
         self,
         repo: CodemaatRepository,

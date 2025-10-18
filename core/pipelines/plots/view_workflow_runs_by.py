@@ -3,11 +3,11 @@ import matplotlib.dates as mdates
 from collections import defaultdict
 from datetime import datetime
 
-from core.infrastructure.base_viewer import MatplotViewer
+from core.infrastructure.base_viewer import BaseViewer
 from core.pipelines.pipelines_repository import PipelinesRepository
 
 
-class ViewWorkflowRunsBy(MatplotViewer):
+class ViewWorkflowRunsBy(BaseViewer):
 
     def __init__(self, repository: PipelinesRepository):
         self.repository = repository

@@ -1,13 +1,13 @@
 import matplotlib.pyplot as plt
 
-from core.infrastructure.base_viewer import MatplotViewer
+from core.infrastructure.base_viewer import BaseViewer
 from core.prs.prs_repository import PrsRepository
 from collections import defaultdict
 from typing import List, Tuple
 from datetime import datetime
 
 
-class ViewAverageReviewTimeByAuthor(MatplotViewer):
+class ViewAverageReviewTimeByAuthor(BaseViewer):
 
     def __init__(self, repository: PrsRepository):
         self.repository = repository

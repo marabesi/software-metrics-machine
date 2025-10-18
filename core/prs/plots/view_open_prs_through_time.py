@@ -1,10 +1,10 @@
 import matplotlib.pyplot as plt
 
-from core.infrastructure.base_viewer import MatplotViewer
+from core.infrastructure.base_viewer import BaseViewer
 from core.prs.prs_repository import PrsRepository
 
 
-class ViewOpenPrsThroughTime(MatplotViewer):
+class ViewOpenPrsThroughTime(BaseViewer):
     def __init__(self, repository: PrsRepository):
         self.repository = repository
 

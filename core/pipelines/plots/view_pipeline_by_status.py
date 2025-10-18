@@ -2,14 +2,14 @@ import pandas as pd
 import holoviews as hv
 
 
-from core.infrastructure.base_viewer import MatplotViewer, PlotResult
+from core.infrastructure.base_viewer import BaseViewer, PlotResult
 from core.pipelines.aggregates.pipeline_by_status import PipelineByStatus
 from core.pipelines.pipelines_repository import PipelinesRepository
 
 hv.extension("bokeh")
 
 
-class ViewPipelineByStatus(MatplotViewer):
+class ViewPipelineByStatus(BaseViewer):
     def __init__(self, repository: PipelinesRepository):
         self.repository = repository
 

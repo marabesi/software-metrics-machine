@@ -1,12 +1,12 @@
 import matplotlib.pyplot as plt
 import squarify
 
-from core.infrastructure.base_viewer import MatplotViewer
+from core.infrastructure.base_viewer import BaseViewer
 from core.infrastructure.viewable import Viewable
 from providers.codemaat.codemaat_repository import CodemaatRepository
 
 
-class EntityEffortViewer(MatplotViewer, Viewable):
+class EntityEffortViewer(BaseViewer, Viewable):
     def render(
         self,
         repo: CodemaatRepository,

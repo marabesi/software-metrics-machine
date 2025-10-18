@@ -2,11 +2,11 @@ from datetime import datetime
 import matplotlib.pyplot as plt
 import pandas as pd
 
-from core.infrastructure.base_viewer import MatplotViewer, PlotResult
+from core.infrastructure.base_viewer import BaseViewer, PlotResult
 from core.pipelines.pipelines_repository import PipelinesRepository
 
 
-class ViewLeadTime(MatplotViewer):
+class ViewLeadTime(BaseViewer):
     def __init__(self, repository: PipelinesRepository):
         self.repository = repository
 

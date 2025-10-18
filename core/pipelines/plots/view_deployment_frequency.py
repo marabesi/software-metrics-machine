@@ -3,12 +3,12 @@ from datetime import datetime
 
 import pandas as pd
 
-from core.infrastructure.base_viewer import MatplotViewer, PlotResult
+from core.infrastructure.base_viewer import BaseViewer, PlotResult
 from core.pipelines.aggregates.deployment_frequency import DeploymentFrequency
 from core.pipelines.pipelines_repository import PipelinesRepository
 
 
-class ViewDeploymentFrequency(MatplotViewer):
+class ViewDeploymentFrequency(BaseViewer):
     def __init__(self, repository: PipelinesRepository):
         self.repository = repository
 

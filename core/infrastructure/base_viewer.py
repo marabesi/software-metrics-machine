@@ -13,7 +13,7 @@ class PlotResult(NamedTuple):
     data: pd.DataFrame
 
 
-class MatplotViewer:
+class BaseViewer:
 
     def get_fig_size(self):
         return (10, 4)

@@ -1,6 +1,6 @@
 from dataclasses import dataclass
 from typing import List
-from core.infrastructure.base_viewer import MatplotViewer
+from core.infrastructure.base_viewer import BaseViewer
 from core.pipelines.pipelines_repository import PipelinesRepository
 
 
@@ -14,7 +14,7 @@ class PipelineExecutionDurationResult:
     rows: List[List]
 
 
-class PipelineExecutionDuration(MatplotViewer):
+class PipelineExecutionDuration(BaseViewer):
     def __init__(self, repository: PipelinesRepository):
         self.repository = repository
 

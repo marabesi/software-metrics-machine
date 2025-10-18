@@ -1,11 +1,11 @@
 import matplotlib.pyplot as plt
 
-from core.infrastructure.base_viewer import MatplotViewer
+from core.infrastructure.base_viewer import BaseViewer
 from core.infrastructure.viewable import Viewable
 from providers.codemaat.codemaat_repository import CodemaatRepository
 
 
-class CodeChurnViewer(MatplotViewer, Viewable):
+class CodeChurnViewer(BaseViewer, Viewable):
     def render(
         self,
         repository: CodemaatRepository,

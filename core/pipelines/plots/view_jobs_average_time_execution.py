@@ -1,7 +1,7 @@
 import pandas as pd
 import holoviews as hv
 
-from core.infrastructure.base_viewer import MatplotViewer, PlotResult
+from core.infrastructure.base_viewer import BaseViewer, PlotResult
 from core.pipelines.aggregates.jobs_average_time_execution import (
     JobsByAverageTimeExecution,
 )
@@ -10,7 +10,7 @@ from core.pipelines.pipelines_repository import PipelinesRepository
 hv.extension("bokeh")
 
 
-class ViewJobsByAverageTimeExecution(MatplotViewer):
+class ViewJobsByAverageTimeExecution(BaseViewer):
 
     def __init__(self, repository: PipelinesRepository):
         self.repository = repository
