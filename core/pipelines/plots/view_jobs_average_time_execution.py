@@ -50,7 +50,7 @@ class ViewJobsByAverageTimeExecution(BaseViewer):
             empty = hv.Text(0, 0, "No job durations found").opts(
                 height=super().get_chart_height()
             )
-            return PlotResult(matplotlib=empty, data=pd.DataFrame(averages))
+            return PlotResult(plot=empty, data=pd.DataFrame(averages))
 
         names, mins = zip(*averages)
 

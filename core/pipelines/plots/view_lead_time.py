@@ -68,4 +68,4 @@ class ViewLeadTime(BaseViewer):
         plt.tight_layout()
 
         fig = super().output(plt, fig, out_file, repository=self.repository)
-        return PlotResult(matplotlib=fig, data=df).matplotlib
+        return PlotResult(plot=fig, data=df).plot

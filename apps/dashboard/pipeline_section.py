@@ -47,7 +47,7 @@ def pipeline_section(
                 end_date=date_range_picker[1],
                 workflow_path=sanitize_all_argument(workflow_selector),
             )
-            .matplotlib
+            .plot
         )
 
     def plot_view_jobs_by_execution_time(
@@ -61,7 +61,7 @@ def pipeline_section(
                 workflow_path=sanitize_all_argument(workflow_selector),
                 job_name=sanitize_all_argument(jobs_selector),
             )
-            .matplotlib
+            .plot
         )
 
     def plot_workflow_run_duration(
@@ -74,7 +74,7 @@ def pipeline_section(
                 end_date=date_range_picker[1],
                 workflow_path=sanitize_all_argument(workflow_selector),
             )
-            .matplotlib
+            .plot
         )
 
     def plot_workflow_run_by(
@@ -89,7 +89,7 @@ def pipeline_section(
                 raw_filters=f"conclusion={workflow_conclusions}",
                 workflow_path=sanitize_all_argument(workflow_selector),
             )
-            .matplotlib
+            .plot
         )
 
     def plot_jobs_by_status(date_range_picker, workflow_selector, jobs_selector):
@@ -103,7 +103,7 @@ def pipeline_section(
                 job_name=sanitize_all_argument(jobs_selector),
                 workflow_path=sanitize_all_argument(workflow_selector),
             )
-            .matplotlib
+            .plot
         )
 
     def plot_failed_jobs(date_range_picker, jobs_selector):
@@ -114,7 +114,7 @@ def pipeline_section(
                 end_date=date_range_picker[1],
                 jobs_selector=jobs_selector,
             )
-            .matplotlib
+            .plot
         )
 
     views = pn.Column(

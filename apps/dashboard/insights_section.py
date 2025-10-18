@@ -17,7 +17,7 @@ def insights_section(repository: PipelinesRepository, date_range_picker):
                 start_date=date_range_picker[0],
                 end_date=date_range_picker[1],
             )
-            .matplotlib
+            .plot
         )
 
     def workflow_run_duration(date_range_picker):

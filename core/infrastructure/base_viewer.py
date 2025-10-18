@@ -10,7 +10,7 @@ import holoviews as hv
 
 
 class PlotResult(NamedTuple):
-    matplotlib: Figure
+    plot: Figure
     data: pd.DataFrame
 
 
