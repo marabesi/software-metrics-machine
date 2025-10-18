@@ -5,7 +5,7 @@ from core.infrastructure.configuration.configuration_builder import (
     Driver,
 )
 from core.prs.prs_repository import PrsRepository
-from core.prs.view_prs_by_author import ViewPrsByAuthor
+from core.prs.plots.view_prs_by_author import ViewPrsByAuthor
 
 
 @click.command()

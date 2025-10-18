@@ -1,18 +1,18 @@
 import pandas as pd
 import panel as pn
 from apps.dashboard.components.tabulator import TabulatorComponent
-from core.pipelines.view_jobs_top_failed import ViewJobsTopFailed
+from core.pipelines.plots.view_jobs_top_failed import ViewJobsTopFailed
 from providers.github.workflows.assessment.view_summary import WorkflowRunSummary
-from core.pipelines.view_jobs_average_time_execution import (
+from core.pipelines.plots.view_jobs_average_time_execution import (
     ViewJobsByAverageTimeExecution,
 )
-from core.pipelines.view_workflow_by_status import (
+from core.pipelines.plots.view_workflow_by_status import (
     ViewWorkflowByStatus,
 )
-from core.pipelines.view_runs_duration import (
+from core.pipelines.plots.view_runs_duration import (
     ViewRunsDuration,
 )
-from core.pipelines.view_workflow_runs_by import ViewWorkflowRunsBy
+from core.pipelines.plots.view_workflow_runs_by import ViewWorkflowRunsBy
 from core.pipelines.pipelines_repository import PipelinesRepository
 
 pn.extension("tabulator")

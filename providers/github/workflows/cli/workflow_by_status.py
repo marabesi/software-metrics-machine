@@ -1,7 +1,7 @@
 import click
 
 from core.pipelines.pipelines_repository import PipelinesRepository
-from core.pipelines.view_workflow_by_status import (
+from core.pipelines.plots.view_workflow_by_status import (
     ViewWorkflowByStatus,
 )
 

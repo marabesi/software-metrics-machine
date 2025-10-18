@@ -4,7 +4,7 @@ from core.infrastructure.configuration.configuration_builder import (
     Driver,
 )
 from core.pipelines.pipelines_repository import PipelinesRepository
-from core.pipelines.view_runs_duration import ViewRunsDuration
+from core.pipelines.plots.view_runs_duration import ViewRunsDuration
 
 
 @click.command()

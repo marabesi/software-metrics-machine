@@ -1,5 +1,5 @@
 import panel as pn
-from core.pipelines.view_deployment_frequency import (
+from core.pipelines.plots.view_deployment_frequency import (
     ViewDeploymentFrequency,
 )
 from core.pipelines.pipelines_repository import PipelinesRepository

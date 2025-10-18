@@ -5,7 +5,7 @@ from core.infrastructure.configuration.configuration_builder import (
     Driver,
 )
 from core.prs.prs_repository import PrsRepository
-from core.prs.view_average_of_prs_open_by import (
+from core.prs.plots.view_average_of_prs_open_by import (
     ViewAverageOfPrsOpenBy,
 )
 
