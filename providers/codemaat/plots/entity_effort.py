@@ -47,11 +47,11 @@ class EntityEffortViewer(BaseViewer, Viewable):
 
     def render_treemap(
         self,
-        repo: CodemaatRepository,
         top_n: int | None = 30,
         ignore_files: str | None = None,
         out_file: str | None = None,
     ) -> None:
+        repo = self.repository
         df = repo.get_entity_effort()
 
         if df.empty:
