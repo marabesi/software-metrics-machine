@@ -57,10 +57,14 @@ def pipeline_section(
     def plot_workflow_run_duration(
         date_range_picker, workflow_selector, workflow_conclusions
     ):
-        return ViewRunsDuration(repository=repository).main(
-            start_date=date_range_picker[0],
-            end_date=date_range_picker[1],
-            workflow_path=sanitize_all_argument(workflow_selector),
+        return (
+            ViewRunsDuration(repository=repository)
+            .main(
+                start_date=date_range_picker[0],
+                end_date=date_range_picker[1],
+                workflow_path=sanitize_all_argument(workflow_selector),
+            )
+            .matplotlib
         )
 
     def plot_workflow_run_by(

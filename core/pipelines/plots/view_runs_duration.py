@@ -1,7 +1,13 @@
-import matplotlib.pyplot as plt
+import pandas as pd
+import holoviews as hv
 
-from core.infrastructure.base_viewer import MatplotViewer
+from core.infrastructure.base_viewer import MatplotViewer, PlotResult
+from core.pipelines.aggregates.pipeline_execution_duration import (
+    PipelineExecutionDuration,
+)
 from core.pipelines.pipelines_repository import PipelinesRepository
+
+hv.extension("bokeh")
 
 
 class ViewRunsDuration(MatplotViewer):
@@ -17,77 +23,53 @@ class ViewRunsDuration(MatplotViewer):
         max_runs: int = 50,
         metric: str = "avg",
         sort_by: str = "avg",
-    ) -> None:
-        filters = {
-            "start_date": start_date,
-            "end_date": end_date,
-            "workflow_path": workflow_path,
-        }
+    ) -> PlotResult:
+        result = PipelineExecutionDuration(repository=self.repository).main(
+            workflow_path=workflow_path,
+            start_date=start_date,
+            end_date=end_date,
+            max_runs=max_runs,
+            metric=metric,
+            sort_by=sort_by,
+        )
+        names = result.names
+        values = result.values
+        counts = result.counts
+        ylabel = result.ylabel
+        title_metric = result.title_metric
+        rows = result.rows
 
-        data = self.repository.get_workflows_run_duration(filters)
+        data = []
+        for name, val, cnt in zip(names, values, counts):
+            data.append({"name": name, "value": val, "count": cnt})
 
-        print(f"Found {data["total"]} runs after filtering")
+        bars = hv.Bars(data, "name", "value").opts(
+            tools=["hover"],
+            color="skyblue",
+            width=900,
+            height=500,
+            xrotation=45,
+            title=f"Runs aggregated by name - {title_metric} ({len(rows)} items)",
+            xlabel="",
+            ylabel=ylabel,
+        )
 
-        rows = data["rows"]
-        # choose sort key
-        sort_key = {
-            "avg": lambda r: r[2],
-            "sum": lambda r: r[3],
-            "count": lambda r: r[1],
-        }.get(sort_by, lambda r: r[2])
-
-        rows.sort(key=sort_key, reverse=True)
-        rows = rows[:max_runs]
-
-        names = [r[0] for r in rows]
-        counts = [r[1] for r in rows]
-        avgs = [r[2] for r in rows]
-        sums = [r[3] for r in rows]
-
-        # pick metric to plot
-        if metric == "sum":
-            values = sums
-            ylabel = "Total minutes"
-            title_metric = "Total"
-        elif metric == "count":
-            values = counts
-            ylabel = "Count"
-            title_metric = "Count"
-        else:
-            values = avgs
-            ylabel = "Average minutes"
-            title_metric = "Average"
-
-        fig, ax = plt.subplots(figsize=super().get_fig_size())
-        x = list(range(len(names)))
-        bars = ax.bar(x, values, color="tab:blue")
-
-        # annotate bars with counts and exact values
-        for i, bar in enumerate(bars):
-            v = values[i]
-            cnt = counts[i]
-            ax.text(
-                bar.get_x() + bar.get_width() / 2,
-                v + max(0.1, max(values) * 0.01),
-                f"{v:.1f}",
-                ha="center",
-                va="bottom",
-                fontsize=8,
-            )
-            ax.text(
-                bar.get_x() + bar.get_width() / 2,
-                max(0.01, v * 0.02),
-                f"n={cnt}",
-                ha="center",
-                va="bottom",
-                fontsize=7,
-                color="white",
+        labels_data = []
+        for i, d in enumerate(data):
+            labels_data.append(
+                {"x": d["name"], "y": d["value"] + 2, "text": f"{d['value']:.1f}"}
             )
 
-        ax.set_xticks(x)
-        ax.set_xticklabels(names, rotation=45, ha="right")
-        ax.set_ylabel(ylabel)
-        ax.set_title(f"Runs aggregated by name - {title_metric} ({len(rows)} items)")
-        fig.tight_layout()
+        labels = hv.Labels(labels_data, ["x", "y"], "text").opts(text_font_size="8pt")
 
-        return super().output(plt, fig, out_file, repository=self.repository)
+        chart = bars * labels
+
+        df = pd.DataFrame(rows)
+
+        if out_file:
+            try:
+                hv.save(chart, out_file)
+            except Exception:
+                pass
+
+        return PlotResult(chart, df)
