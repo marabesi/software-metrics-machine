@@ -75,12 +75,16 @@ def pipeline_section(
     def plot_workflow_run_by(
         date_range_picker, workflow_selector, workflow_conclusions
     ):
-        return ViewWorkflowRunsByWeekOrMonth(repository=repository).main(
-            aggregate_by="month",
-            start_date=date_range_picker[0],
-            end_date=date_range_picker[1],
-            raw_filters=f"conclusion={workflow_conclusions}",
-            workflow_path=sanitize_all_argument(workflow_selector),
+        return (
+            ViewWorkflowRunsByWeekOrMonth(repository=repository)
+            .main(
+                aggregate_by="week",
+                start_date=date_range_picker[0],
+                end_date=date_range_picker[1],
+                raw_filters=f"conclusion={workflow_conclusions}",
+                workflow_path=sanitize_all_argument(workflow_selector),
+            )
+            .matplotlib
         )
 
     def plot_jobs_by_status(date_range_picker, workflow_selector, jobs_selector):
