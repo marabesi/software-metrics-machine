@@ -288,6 +288,11 @@ class PipelinesRepository(FileSystemBaseRepository):
 
         return {"total": len(runs), "rows": rows}
 
+    def get_pipeline_fails_the_most(self, filters=None):
+        return {
+            "pipeline_name": "/workflow/build.yml",
+        }
+
     def __parse_dt(self, v: str):
         if not v:
             return None

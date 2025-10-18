@@ -494,7 +494,6 @@ class TestPipelinesRepository:
             assert 10.0 == avg_min
             assert 10.0 == total_min
 
-    @pytest.mark.skip(reason="Not implemented yet")
     def test_computes_the_pipeline_that_failes_the_most(self):
         single_run = as_json_string(
             [
@@ -530,4 +529,4 @@ class TestPipelinesRepository:
                 {"start_date": "2023-01-01", "end_date": "2023-12-31"}
             )
 
-            assert "/workflow/build.yml" == data.pipeline_name
+            assert "/workflow/build.yml" == data["pipeline_name"]
