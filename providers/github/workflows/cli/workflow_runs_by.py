@@ -5,7 +5,7 @@ from core.infrastructure.configuration.configuration_builder import (
     Driver,
 )
 from core.pipelines.pipelines_repository import PipelinesRepository
-from core.pipelines.plots.view_workflow_runs_by_week_or_month import (
+from core.pipelines.plots.view_pipeline_runs_by_week_or_month import (
     ViewWorkflowRunsByWeekOrMonth,
 )
 
