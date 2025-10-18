@@ -34,10 +34,14 @@ def pipeline_section(
     def plot_workflow_by_status(
         date_range_picker, workflow_selector, workflow_conclusions
     ):
-        return ViewPipelineByStatus(repository=repository).main(
-            start_date=date_range_picker[0],
-            end_date=date_range_picker[1],
-            workflow_path=sanitize_all_argument(workflow_selector),
+        return (
+            ViewPipelineByStatus(repository=repository)
+            .main(
+                start_date=date_range_picker[0],
+                end_date=date_range_picker[1],
+                workflow_path=sanitize_all_argument(workflow_selector),
+            )
+            .matplotlib
         )
 
     def plot_view_jobs_by_execution_time(

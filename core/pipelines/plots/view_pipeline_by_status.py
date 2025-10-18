@@ -1,8 +1,12 @@
-import matplotlib.pyplot as plt
-from collections import Counter
+import pandas as pd
+import holoviews as hv
 
-from core.infrastructure.base_viewer import MatplotViewer
+
+from core.infrastructure.base_viewer import MatplotViewer, PlotResult
+from core.pipelines.aggregates.pipeline_by_status import PipelineByStatus
 from core.pipelines.pipelines_repository import PipelinesRepository
+
+hv.extension("bokeh")
 
 
 class ViewPipelineByStatus(MatplotViewer):
@@ -15,45 +19,47 @@ class ViewPipelineByStatus(MatplotViewer):
         workflow_path: str | None = None,
         start_date: str | None = None,
         end_date: str | None = None,
-    ) -> None:
-        if start_date and end_date:
-            filters = {"start_date": start_date, "end_date": end_date}
-            runs = self.repository.runs(filters)
-        else:
-            runs = self.repository.runs()
-
-        if workflow_path:
-            name_low = workflow_path.lower()
-            runs = [
-                r for r in runs if (r.get("path") or "").lower().find(name_low) != -1
-            ]
-
-        status_counts = Counter(run.get("conclusion") or "undefined" for run in runs)
-
-        print(f"Total workflow runs after filters: {len(runs)}")
-
-        fig, ax = plt.subplots(figsize=super().get_fig_size())
-        bars = ax.bar(
-            list(status_counts.keys()), list(status_counts.values()), color="skyblue"
+    ) -> PlotResult:
+        result = PipelineByStatus(repository=self.repository).main(
+            workflow_path=workflow_path,
+            start_date=start_date,
+            end_date=end_date,
         )
-        ax.set_title("Status of Pipeline Runs")
+        status_counts = result.status_counts
+        runs = result.runs
+
+        data = [{"Status": k, "Count": v} for k, v in status_counts.items()]
+
+        title = "Status of Pipeline Runs"
         if workflow_path:
-            ax.set_title(
-                f"Status of Pipeline Runs for '{workflow_path}' - Total {len(runs)}"
-            )
-        ax.set_xlabel("Status")
-        ax.set_ylabel("Count")
-        for bar in bars:
-            height = bar.get_height()
-            ax.annotate(
-                f"{int(height)}",
-                xy=(bar.get_x() + bar.get_width() / 2, height),
-                xytext=(0, 0.2),
-                textcoords="offset points",
-                ha="center",
-                va="bottom",
-            )
+            title = f"Status of Pipeline Runs for '{workflow_path}' - Total {len(runs)}"
 
-        fig.tight_layout()
+        bars = hv.Bars(data, "Status", "Count").opts(
+            color="skyblue",
+            width=700,
+            height=400,
+            title=title,
+            xlabel="Status",
+            ylabel="Count",
+            xrotation=45,
+            tools=["hover"],
+        )
 
-        return super().output(plt, fig, out_file, repository=self.repository)
+        labels_data = []
+        for d in data:
+            labels_data.append(
+                {"x": d["Status"], "y": d["Count"], "text": str(d["Count"])}
+            )
+        labels = hv.Labels(labels_data, ["x", "y"], "text").opts(text_font_size="8pt")
+
+        chart = bars * labels
+
+        df = pd.DataFrame(runs)
+
+        if out_file:
+            try:
+                hv.save(chart, out_file)
+            except Exception:
+                pass
+
+        return PlotResult(chart, df)
