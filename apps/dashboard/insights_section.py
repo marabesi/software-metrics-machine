@@ -38,11 +38,9 @@ def insights_section(repository: PipelinesRepository, date_range_picker):
         return pn.Card(
             pn.indicators.Number(
                 value=42,
-                default_color="white",
                 name="Your software takes this time to reach production",
                 format=f"{formatted_avg_min}min",
             ),
-            styles={"background": "lightgray"},
             hide_header=True,
             width=250,
         )

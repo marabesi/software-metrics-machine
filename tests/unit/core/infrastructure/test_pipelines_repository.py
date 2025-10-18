@@ -505,7 +505,7 @@ class TestPipelinesRepository:
                     "updated_at": "2023-10-01T09:10:00Z",
                 },
                 {
-                    "id": 1,
+                    "id": 2,
                     "path": "/workflows/build.yml",
                     "status": "failure",
                     "created_at": "2023-10-01T09:00:00Z",
