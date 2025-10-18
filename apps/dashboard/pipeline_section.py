@@ -9,8 +9,8 @@ from core.pipelines.plots.view_jobs_average_time_execution import (
 from core.pipelines.plots.view_pipeline_by_status import (
     ViewPipelineByStatus,
 )
-from core.pipelines.plots.view_runs_duration import (
-    ViewRunsDuration,
+from core.pipelines.plots.view_pipeline_execution_duration import (
+    ViewPipelineExecutionRunsDuration,
 )
 from core.pipelines.plots.view_workflow_runs_by import ViewWorkflowRunsBy
 from core.pipelines.pipelines_repository import PipelinesRepository
@@ -61,7 +61,7 @@ def pipeline_section(
         date_range_picker, workflow_selector, workflow_conclusions
     ):
         return (
-            ViewRunsDuration(repository=repository)
+            ViewPipelineExecutionRunsDuration(repository=repository)
             .main(
                 start_date=date_range_picker[0],
                 end_date=date_range_picker[1],

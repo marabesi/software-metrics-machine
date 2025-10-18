@@ -10,7 +10,7 @@ from core.pipelines.pipelines_repository import PipelinesRepository
 hv.extension("bokeh")
 
 
-class ViewRunsDuration(BaseViewer):
+class ViewPipelineExecutionRunsDuration(BaseViewer):
     def __init__(self, repository: PipelinesRepository):
         self.repository = repository
 
