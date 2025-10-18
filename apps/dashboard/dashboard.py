@@ -51,10 +51,16 @@ jobs_selector = pn.widgets.Select(
 )
 
 workflow_conclusions = workflow_repository.get_unique_workflow_conclusions()
+selected_conclusion = None
+if len(workflow_conclusions) > 0:
+    last = len(workflow_conclusions) - 1
+    selected_conclusion = workflow_conclusions[last]
+
 workflow_conclusions = pn.widgets.Select(
     name="Select pipeline conclusion",
     description="Select pipeline conclusion",
     options=workflow_conclusions,
+    value=selected_conclusion,
 )
 header_section = pn.Row(
     pn.Column(start_end_date_picker, workflow_selector, workflow_conclusions),
