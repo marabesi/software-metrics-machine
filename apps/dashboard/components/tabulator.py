@@ -5,22 +5,22 @@ def TabulatorComponent(
     df: pn.pane.DataFrame,
     header_filters,
     filename,
-) -> pn.widgets.Tabulator:
+) -> pn.layout.Column:
     table = pn.widgets.Tabulator(
         df,
         pagination="remote",
-        page_size=10,
+        page_size=20,
         header_filters=header_filters,
         show_index=False,
-        width=900,
+        sizing_mode="stretch_width",
     )
-    filename, button = table.download_menu(
+    filename_input, button = table.download_menu(
         text_kwargs={"name": "", "value": f"{filename}.csv"},
         button_kwargs={"name": "Download table"},
     )
     data = pn.Column(
-        pn.FlexBox(filename, button, align_items="center"),
-        pn.Row(table),
+        pn.FlexBox(filename_input, button, align_items="center"),
+        pn.Row(table, sizing_mode="stretch_width"),
         sizing_mode="stretch_width",
     )
     return data

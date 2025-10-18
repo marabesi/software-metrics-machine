@@ -187,14 +187,14 @@ def pipeline_section(
             ),
             sizing_mode="stretch_width",
         ),
-        pn.Row(
-            pn.panel(
-                pn.bind(plot_failed_jobs, date_range_picker, jobs_selector),
-                sizing_mode="stretch_width",
-            ),
-            sizing_mode="stretch_width",
-        ),
-        sizing_mode="stretch_width",
+        # pn.Row(
+        #     pn.panel(
+        #         pn.bind(plot_failed_jobs, date_range_picker, jobs_selector),
+        #         sizing_mode="stretch_width",
+        #     ),
+        #     sizing_mode="stretch_width",
+        # ),
+        # sizing_mode="stretch_width",
     )
 
     pipelines_filter_criteria = {

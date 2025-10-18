@@ -86,7 +86,7 @@ source_code_section = source_code_section(
 configuration_section = configuration_section(configuration)
 
 template = FastListTemplate(
-    title=f"{configuration.github_repository}",
+    title=f"{configuration.github_repository} - {configuration.git_provider.title()}",
     sidebar=[header_section],
     accent_base_color=configuration.dashboard_color,
 )

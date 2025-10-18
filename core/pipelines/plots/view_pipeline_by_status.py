@@ -31,7 +31,8 @@ class ViewPipelineByStatus(BaseViewer):
 
         data = [{"Status": k, "Count": v} for k, v in status_counts.items()]
 
-        title = "Status of Pipeline Runs"
+        title = f"Status of Pipeline Runs - ({total_runs} in total)"
+
         if workflow_path:
             title = (
                 f"Status of Pipeline Runs for '{workflow_path}' - Total {total_runs}"

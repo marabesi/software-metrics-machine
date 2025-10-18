@@ -29,7 +29,7 @@ class BaseViewer:
         return (10, 4)
 
     def get_tools(self) -> List[str]:
-        return []
+        return ["hover"]
 
     def get_color(self) -> str:
         return self.repository.configuration.dashboard_color
