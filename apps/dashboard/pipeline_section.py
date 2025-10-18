@@ -1,6 +1,7 @@
 import pandas as pd
 import panel as pn
 from apps.dashboard.components.tabulator import TabulatorComponent
+from core.pipelines.plots.view_jobs_by_status import ViewJobsByStatus
 from core.pipelines.plots.view_jobs_top_failed import ViewJobsTopFailed
 from providers.github.workflows.assessment.view_summary import WorkflowRunSummary
 from core.pipelines.plots.view_jobs_average_time_execution import (
@@ -84,6 +85,20 @@ def pipeline_section(
         if summary["total_runs"] == 0:
             return pn.pane.Markdown("### No workflow runs available.")
 
+    def plot_jobs_by_status(date_range_picker, workflow_selector, jobs_selector):
+        if jobs_selector == "All":
+            return pn.pane.Markdown("")
+        return (
+            ViewJobsByStatus(repository=repository)
+            .main(
+                start_date=date_range_picker[0],
+                end_date=date_range_picker[1],
+                job_name=sanitize_all_argument(jobs_selector),
+                workflow_path=sanitize_all_argument(workflow_selector),
+            )
+            .matplotlib
+        )
+
     def plot_failed_jobs(date_range_picker, jobs_selector):
         return (
             ViewJobsTopFailed(repository=repository)
@@ -131,6 +146,14 @@ def pipeline_section(
                 date_range_picker,
                 workflow_selector,
                 workflow_conclusions,
+                jobs_selector,
+            )
+        ),
+        pn.Row(
+            pn.bind(
+                plot_jobs_by_status,
+                date_range_picker,
+                workflow_selector,
                 jobs_selector,
             )
         ),
