@@ -40,12 +40,14 @@ class ViewWorkflowRunsByWeekOrMonth(BaseViewer):
         workflow_names = result.workflow_names
         data_matrix = result.data_matrix
         runs = result.runs
+        total_runs = len(runs)
         df = pd.DataFrame(runs)
 
         # handle empty or inconsistent data to avoid HoloViews stack error
         if not periods or not workflow_names:
             placeholder = hv.Text(0.5, 0.5, "No data to display").opts(
-                height=200, width=400, text_font_size="14pt"
+                height=super().get_chart_height(),
+                text_font_size=super().get_font_size(),
             )
             return PlotResult(placeholder, df)
 
@@ -53,7 +55,8 @@ class ViewWorkflowRunsByWeekOrMonth(BaseViewer):
         if not data_matrix or not any(any(row) for row in data_matrix):
             # all zeros or empty
             placeholder = hv.Text(0.5, 0.5, "No data to display").opts(
-                height=200, width=400, text_font_size="14pt"
+                height=super().get_chart_height(),
+                text_font_size=super().get_font_size(),
             )
             return PlotResult(placeholder, df)
 
@@ -73,7 +76,8 @@ class ViewWorkflowRunsByWeekOrMonth(BaseViewer):
         total_runs = sum(d["Runs"] for d in data)
         if total_runs == 0:
             placeholder = hv.Text(0.5, 0.5, "No runs in selected range").opts(
-                height=200, width=400, text_font_size="14pt"
+                height=super().get_chart_height(),
+                text_font_size=super().get_font_size(),
             )
             return PlotResult(placeholder, df)
 
@@ -88,12 +92,11 @@ class ViewWorkflowRunsByWeekOrMonth(BaseViewer):
 
         bars = hv.Bars(data, ["Idx", "Workflow"], "Runs").opts(
             stacked=True,
-            width=1000,
-            height=400,
+            height=super().get_chart_height(),
             title=(
-                f"Workflow runs per {'week' if aggregate_by == 'week' else 'month'} by workflow name ({len(runs)} in total)"  # noqa: E501
+                f"Workflow runs per {'week' if aggregate_by == 'week' else 'month'} by workflow name ({total_runs} in total)"  # noqa: E501
             ),
-            tools=["hover"],
+            tools=super().get_tools(),
             xticks=xticks,
         )
 

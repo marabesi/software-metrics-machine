@@ -41,11 +41,15 @@ class ViewJobsByAverageTimeExecution(BaseViewer):
         runs = result.runs
         jobs = result.jobs
         counts = result.counts
+        total_runs = len(runs)
+        total_jobs = len(jobs)
 
         if not averages:
             print("No job durations found after filtering")
             # create a small hv.Text chart to show the message
-            empty = hv.Text(0, 0, "No job durations found").opts(width=600, height=200)
+            empty = hv.Text(0, 0, "No job durations found").opts(
+                width=super().get_chart_with(), height=super().get_chart_height()
+            )
             return PlotResult(matplotlib=empty, data=pd.DataFrame(averages))
 
         names, mins = zip(*averages)
@@ -55,15 +59,14 @@ class ViewJobsByAverageTimeExecution(BaseViewer):
             data.append({"job_name": name, "value": val, "count": counts.get(name, 0)})
 
         bars = hv.Bars(data, "job_name", "value").opts(
-            tools=["hover"],
-            color="#4c78a8",
-            width=900,
-            height=500,
+            tools=super().get_tools(),
+            color=super().get_color(),
+            height=super().get_chart_height(),
             xrotation=0,
             title=(
-                f"Top {len(names)} jobs by average duration for {len(runs)} runs - {len(jobs)} jobs"
+                f"Top {len(names)} jobs by average duration for {total_runs} runs - {total_jobs} jobs"
                 if not workflow_path
-                else f"Top {len(names)} jobs by average duration for '{workflow_path}' - {len(runs)} runs - {len(jobs)} jobs"  # noqa: E501
+                else f"Top {len(names)} jobs by average duration for '{workflow_path}' - {total_runs} runs - {total_jobs} jobs"  # noqa: E501
             ),
             xlabel="",
             ylabel="Average job duration (minutes)",
@@ -80,7 +83,9 @@ class ViewJobsByAverageTimeExecution(BaseViewer):
                 }
             )
 
-        labels = hv.Labels(labels_data, ["x", "y"], "text").opts(text_font_size="8pt")
+        labels = hv.Labels(labels_data, ["x", "y"], "text").opts(
+            text_font_size=super().get_font_size()
+        )
 
         chart = bars * labels
 

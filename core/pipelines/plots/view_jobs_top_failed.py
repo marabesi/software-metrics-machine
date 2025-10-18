@@ -21,11 +21,8 @@ class ViewJobsTopFailed(BaseViewer):
         raw_filters: dict = {},
         jobs_selector: str | None = None,
     ) -> PlotResult:
-        if start_date and end_date:
-            filters = {"start_date": start_date, "end_date": end_date}
-            jobs = self.repository.jobs(filters=filters)
-        else:
-            jobs = self.repository.jobs()
+        filters = {"start_date": start_date, "end_date": end_date}
+        jobs = self.repository.jobs(filters=filters)
 
         failures_by_date_job = defaultdict(int)
         for j in jobs:

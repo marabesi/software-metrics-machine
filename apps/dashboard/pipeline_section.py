@@ -17,7 +17,13 @@ from core.pipelines.plots.view_workflow_runs_by_week_or_month import (
 )
 from core.pipelines.pipelines_repository import PipelinesRepository
 
-pn.extension("tabulator")
+# include tabulator extension and add a small raw CSS class for 90% width container
+pn.extension(
+    "tabulator",
+    raw_css=[
+        ".smm-90-width { width: 90%; margin-left: auto; margin-right: auto; }",
+    ],
+)
 
 
 def pipeline_section(
@@ -116,49 +122,79 @@ def pipeline_section(
         "## Pipeline Section",
         "Explore your CI/CD pipeline metrics and gain insights into workflow performance and job execution times.",
         pn.Row(
-            pn.bind(
-                plot_workflow_by_status,
-                date_range_picker,
-                workflow_selector,
-                workflow_conclusions,
-            )
+            pn.panel(
+                pn.bind(
+                    plot_workflow_by_status,
+                    date_range_picker,
+                    workflow_selector,
+                    workflow_conclusions,
+                ),
+                sizing_mode="stretch_width",
+            ),
+            sizing_mode="stretch_width",
         ),
         pn.Row(
-            pn.bind(
-                plot_workflow_run_by,
-                date_range_picker,
-                workflow_selector,
-                workflow_conclusions,
-            )
+            pn.panel(
+                pn.bind(
+                    plot_workflow_run_by,
+                    date_range_picker,
+                    workflow_selector,
+                    workflow_conclusions,
+                ),
+                sizing_mode="stretch_width",
+            ),
+            sizing_mode="stretch_width",
         ),
         pn.Row(
-            pn.bind(
-                plot_workflow_run_duration,
-                date_range_picker,
-                workflow_selector,
-                workflow_conclusions,
-            )
+            pn.panel(
+                pn.bind(
+                    plot_workflow_run_duration,
+                    date_range_picker,
+                    workflow_selector,
+                    workflow_conclusions,
+                ),
+                sizing_mode="stretch_width",
+            ),
+            sizing_mode="stretch_width",
         ),
-        pn.Row("## Jobs"),
-        pn.Row(jobs_selector),
+        pn.Row("## Jobs", sizing_mode="stretch_width"),
         pn.Row(
-            pn.bind(
-                plot_view_jobs_by_execution_time,
-                date_range_picker,
-                workflow_selector,
-                workflow_conclusions,
-                jobs_selector,
-            )
+            pn.panel(jobs_selector, sizing_mode="stretch_width"),
+            sizing_mode="stretch_width",
         ),
         pn.Row(
-            pn.bind(
-                plot_jobs_by_status,
-                date_range_picker,
-                workflow_selector,
-                jobs_selector,
-            )
+            pn.panel(
+                pn.bind(
+                    plot_view_jobs_by_execution_time,
+                    date_range_picker,
+                    workflow_selector,
+                    workflow_conclusions,
+                    jobs_selector,
+                ),
+                sizing_mode="stretch_width",
+            ),
+            sizing_mode="stretch_width",
         ),
-        pn.Row(pn.bind(plot_failed_jobs, date_range_picker, jobs_selector)),
+        pn.Row(
+            pn.panel(
+                pn.bind(
+                    plot_jobs_by_status,
+                    date_range_picker,
+                    workflow_selector,
+                    jobs_selector,
+                ),
+                sizing_mode="stretch_width",
+            ),
+            sizing_mode="stretch_width",
+        ),
+        pn.Row(
+            pn.panel(
+                pn.bind(plot_failed_jobs, date_range_picker, jobs_selector),
+                sizing_mode="stretch_width",
+            ),
+            sizing_mode="stretch_width",
+        ),
+        sizing_mode="stretch_width",
     )
 
     pipelines_filter_criteria = {
@@ -170,12 +206,17 @@ def pipeline_section(
     data = pn.Column(
         "## Data Section",
         "Explore your Pipeline data with advanced filtering options and download capabilities.",
-        TabulatorComponent(df, pipelines_filter_criteria, "pipelines"),
+        pn.panel(
+            TabulatorComponent(df, pipelines_filter_criteria, "pipelines"),
+            sizing_mode="stretch_width",
+        ),
+        sizing_mode="stretch_width",
     )
 
     return pn.Tabs(
         ("Insights", views),
         ("Data", data),
         sizing_mode="stretch_width",
+        css_classes=["smm-90-width"],
         active=0,
     )

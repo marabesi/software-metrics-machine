@@ -1,5 +1,5 @@
 import os
-from typing import NamedTuple
+from typing import List, NamedTuple
 
 import pandas as pd
 from core.infrastructure.file_system_base_repository import FileSystemBaseRepository
@@ -15,8 +15,23 @@ class PlotResult(NamedTuple):
 
 class BaseViewer:
 
+    def get_chart_width(self) -> None | int:
+        return None
+
+    def get_chart_height(self):
+        return 500
+
     def get_fig_size(self):
         return (10, 4)
+
+    def get_tools(self) -> List[str]:
+        return []
+
+    def get_color(self) -> str:
+        return "#4c78a8"
+
+    def get_font_size(self) -> str:
+        return "8pt"
 
     def output(
         self, plt, fig: Figure, out_file, repository: FileSystemBaseRepository

@@ -42,21 +42,21 @@ class ViewJobsByStatus(BaseViewer):
         matrix = aggregate.matrix
         display_job_name = aggregate.display_job_name
         display_workflow_name = aggregate.display_pipeline_name
+        total_runs = len(runs)
 
         status_data = [{"Status": k, "Count": v} for k, v in status_counts.items()]
         status_bars = hv.Bars(status_data, "Status", "Count").opts(
-            color="skyblue",
-            width=350,
-            height=350,
+            tools=super().get_tools(),
+            color=super().get_color(),
+            height=super().get_chart_height(),
             title=(
-                f"Status of Workflows - {len(runs)} runs"
+                f"Status of Workflows - {total_runs} runs"
                 if not workflow_path
-                else f"Status of Workflows ({workflow_path}) - {len(runs)} runs"
+                else f"Status of Workflows ({workflow_path}) - {total_runs} runs"
             ),
             xlabel="Status",
             ylabel="Count",
             xrotation=45,
-            tools=["hover"],
         )
 
         timeline_data = []
@@ -71,16 +71,15 @@ class ViewJobsByStatus(BaseViewer):
 
         timeline_bars = hv.Bars(timeline_data, ["Period", "Conclusion"], "Runs").opts(
             stacked=True,
-            width=900,
-            height=400,
+            width=super().get_chart_with(),
+            height=super().get_chart_height(),
             xrotation=45,
             title=(
                 f'Executions of job "{display_job_name}" in workflow "{display_workflow_name}" by {'week' if aggregate_by_week else 'day'} (stacked by conclusion)'  # noqa: E501
             ),
-            tools=["hover"],
+            tools=super().get_tools(),
         )
 
-        # layout
         if with_pipeline:
             layout = (status_bars + timeline_bars).cols(2)
             chart = layout

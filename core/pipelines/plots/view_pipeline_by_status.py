@@ -27,22 +27,24 @@ class ViewPipelineByStatus(BaseViewer):
         )
         status_counts = result.status_counts
         runs = result.runs
+        total_runs = len(runs)
 
         data = [{"Status": k, "Count": v} for k, v in status_counts.items()]
 
         title = "Status of Pipeline Runs"
         if workflow_path:
-            title = f"Status of Pipeline Runs for '{workflow_path}' - Total {len(runs)}"
+            title = (
+                f"Status of Pipeline Runs for '{workflow_path}' - Total {total_runs}"
+            )
 
         bars = hv.Bars(data, "Status", "Count").opts(
-            color="skyblue",
-            width=700,
-            height=400,
+            tools=super().get_tools(),
+            color=super().get_color(),
+            height=super().get_chart_height(),
             title=title,
             xlabel="Status",
             ylabel="Count",
             xrotation=45,
-            tools=["hover"],
         )
 
         labels_data = []
@@ -50,7 +52,9 @@ class ViewPipelineByStatus(BaseViewer):
             labels_data.append(
                 {"x": d["Status"], "y": d["Count"], "text": str(d["Count"])}
             )
-        labels = hv.Labels(labels_data, ["x", "y"], "text").opts(text_font_size="8pt")
+        labels = hv.Labels(labels_data, ["x", "y"], "text").opts(
+            text_font_size=super().get_font_size()
+        )
 
         chart = bars * labels
 
