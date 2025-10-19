@@ -494,29 +494,98 @@ class TestPipelinesRepository:
             assert 10.0 == avg_min
             assert 10.0 == total_min
 
-    def test_computes_the_pipeline_that_failes_the_most(self):
-        single_run = as_json_string(
-            [
+    @pytest.mark.parametrize(
+        "pipeline_runs, expected",
+        [
+            (
                 {
-                    "id": 1,
-                    "path": "/workflows/build.yml",
-                    "status": "success",
-                    "created_at": "2023-10-01T09:00:00Z",
-                    "updated_at": "2023-10-01T09:10:00Z",
+                    "pipelines": [
+                        {
+                            "id": 1,
+                            "path": "/workflows/build.yml",
+                            "conclusion": "success",
+                            "created_at": "2023-10-01T09:00:00Z",
+                            "updated_at": "2023-10-01T09:10:00Z",
+                        },
+                        {
+                            "id": 2,
+                            "path": "/workflows/test.yml",
+                            "conclusion": "failure",
+                            "created_at": "2023-10-01T09:00:00Z",
+                            "updated_at": "2023-10-01T09:10:00Z",
+                        },
+                    ]
                 },
+                [{"pipeline_name": "/workflows/test.yml", "failed": 1}],
+            ),
+            (
                 {
-                    "id": 2,
-                    "path": "/workflows/build.yml",
-                    "status": "failure",
-                    "created_at": "2023-10-01T09:00:00Z",
-                    "updated_at": "2023-10-01T09:10:00Z",
+                    "pipelines": [
+                        {
+                            "id": 1,
+                            "path": "/workflows/ci.yml",
+                            "conclusion": "failure",
+                            "created_at": "2023-10-01T09:00:00Z",
+                            "updated_at": "2023-10-01T09:10:00Z",
+                        },
+                        {
+                            "id": 2,
+                            "path": "/workflows/ci.yml",
+                            "conclusion": "failure",
+                            "created_at": "2023-10-01T09:00:00Z",
+                            "updated_at": "2023-10-01T09:10:00Z",
+                        },
+                    ]
                 },
-            ]
-        )
+                [{"pipeline_name": "/workflows/ci.yml", "failed": 2}],
+            ),
+            ({"pipelines": []}, []),
+            (
+                {
+                    "pipelines": [
+                        {
+                            "id": 1,
+                            "path": "/workflows/ci.yml",
+                            "conclusion": "failure",
+                            "created_at": "2023-10-01T09:00:00Z",
+                            "updated_at": "2023-10-01T09:10:00Z",
+                        },
+                        {
+                            "id": 2,
+                            "path": "/workflows/ci.yml",
+                            "conclusion": "failure",
+                            "created_at": "2023-10-01T09:00:00Z",
+                            "updated_at": "2023-10-01T09:10:00Z",
+                        },
+                        {
+                            "id": 3,
+                            "path": "/workflows/e2e.yml",
+                            "conclusion": "failure",
+                            "created_at": "2023-10-01T09:00:00Z",
+                            "updated_at": "2023-10-01T09:10:00Z",
+                        },
+                        {
+                            "id": 4,
+                            "path": "/workflows/e2e.yml",
+                            "conclusion": "failure",
+                            "created_at": "2023-10-01T09:00:00Z",
+                            "updated_at": "2023-10-01T09:10:00Z",
+                        },
+                    ]
+                },
+                [
+                    {"pipeline_name": "/workflows/e2e.yml", "failed": 2},
+                    {"pipeline_name": "/workflows/ci.yml", "failed": 2},
+                ],
+            ),
+        ],
+    )
+    def test_computes_the_pipeline_that_failes_the_most(self, pipeline_runs, expected):
+        pipeline_runs = as_json_string(pipeline_runs["pipelines"])
 
         def mocked_read_file_if_exists(file):
             if file == "workflows.json":
-                return single_run
+                return pipeline_runs
             return None
 
         with patch(
@@ -529,4 +598,4 @@ class TestPipelinesRepository:
                 {"start_date": "2023-01-01", "end_date": "2023-12-31"}
             )
 
-            assert "/workflow/build.yml" == data["pipeline_name"]
+            assert expected == data

@@ -289,9 +289,25 @@ class PipelinesRepository(FileSystemBaseRepository):
         return {"total": len(runs), "rows": rows}
 
     def get_pipeline_fails_the_most(self, filters=None):
-        return {
-            "pipeline_name": "/workflow/build.yml",
-        }
+        runs = self.runs(filters)
+
+        fail_counts = {}
+        for run in runs:
+            conclusion = run.get("conclusion")
+            if conclusion == "failure":
+                path = run.get("path")
+                fail_counts[path] = fail_counts.get(path, 0) + 1
+
+        sorted_by_key_desc = dict(sorted(fail_counts.items(), reverse=True))
+
+        list_of_fails = []
+
+        for fail_path in sorted_by_key_desc:
+            list_of_fails.append(
+                {"pipeline_name": fail_path, "failed": fail_counts.get(fail_path)}
+            )
+
+        return list_of_fails
 
     def __parse_dt(self, v: str):
         if not v:
