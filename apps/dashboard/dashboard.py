@@ -87,8 +87,8 @@ configuration_section = configuration_section(configuration)
 
 template = FastListTemplate(
     title=f"{configuration.github_repository} - {configuration.git_provider.title()}",
-    sidebar=[header_section],
-    accent_base_color=configuration.dashboard_color,
+    right_sidebar=[header_section],
+    accent=configuration.dashboard_color,
 )
 
 tabs = pn.Tabs(
