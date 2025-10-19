@@ -192,23 +192,75 @@ def pipeline_section(
             ),
             sizing_mode="stretch_width",
         ),
-        # pn.Row(
-        #     pn.panel(
-        #         pn.bind(plot_failed_jobs, date_range_picker, jobs_selector),
-        #         sizing_mode="stretch_width",
-        #     ),
-        #     sizing_mode="stretch_width",
-        # ),
-        # sizing_mode="stretch_width",
     )
 
     pipelines_filter_criteria = {
+        "id": {"type": "input", "func": "like", "placeholder": "id"},
+        "path": {"type": "input", "func": "like", "placeholder": ""},
+        "name": {"type": "list", "func": "like", "placeholder": ""},
+        "status": {"type": "list", "func": "like", "placeholder": "Select state"},
+        "conclusion": {
+            "type": "list",
+            "func": "like",
+            "placeholder": "Select conclusion",
+        },
         "html_url": {"type": "input", "func": "like", "placeholder": "Enter url"},
-        "title": {"type": "input", "func": "like", "placeholder": "Title"},
-        "state": {"type": "list", "func": "like", "placeholder": "Select state"},
+        "head_branch": {"type": "input", "func": "like", "placeholder": ""},
+        "event": {"type": "list", "func": "like", "placeholder": "event"},
     }
-    df_pipelines = pd.DataFrame(repository.all_runs)
-    df_jobs = pd.DataFrame(repository.all_jobs)
+
+    pick_pipeline = [
+        "id",
+        "path",
+        "name",
+        "status",
+        "conclusion",
+        "created_at",
+        "updated_at",
+        "html_url",
+        "head_branch",
+        "event",
+    ]
+    pipeline_rows = [
+        {k: run.get(k) for k in pick_pipeline} for run in repository.all_runs
+    ]
+    df_pipelines = pd.DataFrame(pipeline_rows)
+
+    pick_jobs = [
+        "id",
+        "run_id",
+        "name",
+        "status",
+        "conclusion",
+        "created_at",
+        "updated_at",
+        "html_url",
+        "head_branch",
+        "labels",
+        "runner_group_name",
+        "run_attempt",
+    ]
+    jobs_rows = [{k: run.get(k) for k in pick_jobs} for run in repository.all_jobs]
+    jobs_filter_criteria = {
+        "id": {"type": "input", "func": "like", "placeholder": "id"},
+        "run_id": {"type": "input", "func": "like", "placeholder": ""},
+        "workflow_name": {"type": "input", "func": "like", "placeholder": ""},
+        "head_branch": {"type": "input", "func": "like", "placeholder": ""},
+        "head_sha": {"type": "input", "func": "like", "placeholder": ""},
+        "run_attempt": {"type": "list", "func": "like", "placeholder": ""},
+        "html_url": {"type": "input", "func": "like", "placeholder": "Enter url"},
+        "status": {"type": "list", "func": "like", "placeholder": "Select state"},
+        "conclusion": {
+            "type": "list",
+            "func": "like",
+            "placeholder": "Select conclusion",
+        },
+        "name": {"type": "list", "func": "like", "placeholder": "event"},
+        "labels": {"type": "list", "func": "like", "placeholder": "event"},
+        "runner_group_name": {"type": "list", "func": "like", "placeholder": "event"},
+    }
+    df_jobs = pd.DataFrame(jobs_rows)
+
     data = pn.Column(
         "## Explore your raw data",
         "Explore your Pipeline data with advanced filtering options and download capabilities.",
@@ -219,7 +271,7 @@ def pipeline_section(
         ),
         pn.Row("### Jobs"),
         pn.panel(
-            TabulatorComponent(df_jobs, pipelines_filter_criteria, "jobs"),
+            TabulatorComponent(df_jobs, jobs_filter_criteria, "jobs"),
             sizing_mode="stretch_width",
         ),
         sizing_mode="stretch_width",
