@@ -1,4 +1,8 @@
+from unittest.mock import patch
 from core.pipelines.aggregates.pipeline_summary import PipelineRunSummary
+from core.pipelines.pipelines_repository import PipelinesRepository
+from tests.builders import as_json_string
+from tests.in_memory_configuration import InMemoryConfiguration
 
 
 class FakeRepo:
@@ -7,6 +11,9 @@ class FakeRepo:
 
     def runs(self):
         return self._runs
+
+    def get_pipeline_fails_the_most(self):
+        return [{}]
 
 
 def make_run(
@@ -115,3 +122,61 @@ class TestPipelineRunSummary:
         ps = PipelineRunSummary(repository=repo)
         s = ps.compute_summary()
         assert s["unique_workflows"] == 2
+
+    def test_plot_most_failed_run_empty(self):
+        single_run = as_json_string(
+            [
+                {
+                    "id": 1,
+                    "path": "/workflows/build.yml",
+                    "conclusion": "success",
+                    "created_at": "2023-10-01T09:00:00Z",
+                    "updated_at": "2023-10-01T09:10:00Z",
+                },
+            ]
+        )
+
+        def mocked_read_file_if_exists(file):
+            if file == "workflows.json":
+                return single_run
+            return None
+
+        with patch(
+            "core.infrastructure.file_system_base_repository.FileSystemBaseRepository.read_file_if_exists",
+            side_effect=mocked_read_file_if_exists,
+        ):
+            loader = PipelinesRepository(configuration=InMemoryConfiguration("."))
+            ps = PipelineRunSummary(repository=loader)
+
+            s = ps.compute_summary()
+
+            assert s["most_failed"] == "N/A"
+
+    def test_plot_most_failed_run_with_computed_value(self):
+        single_run = as_json_string(
+            [
+                {
+                    "id": 1,
+                    "path": "/workflows/build.yml",
+                    "conclusion": "failure",
+                    "created_at": "2023-10-01T09:00:00Z",
+                    "updated_at": "2023-10-01T09:10:00Z",
+                },
+            ]
+        )
+
+        def mocked_read_file_if_exists(file):
+            if file == "workflows.json":
+                return single_run
+            return None
+
+        with patch(
+            "core.infrastructure.file_system_base_repository.FileSystemBaseRepository.read_file_if_exists",
+            side_effect=mocked_read_file_if_exists,
+        ):
+            loader = PipelinesRepository(configuration=InMemoryConfiguration("."))
+
+            ps = PipelineRunSummary(repository=loader)
+            s = ps.compute_summary()
+
+            assert 1 == s["most_failed"]

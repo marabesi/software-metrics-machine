@@ -23,7 +23,7 @@ class TestWorkflowsSummaryCliCommands:
                 {
                     "id": 1,
                     "path": "/workflows/build.yml",
-                    "status": "success",
+                    "conclusion": "success",
                     "created_at": "2023-10-01T12:00:00Z",
                 },
             ],
@@ -42,4 +42,5 @@ class TestWorkflowsSummaryCliCommands:
             ],
         )
         assert "Total runs: 1" in result.output
+        assert "Most failed run: N/A" in result.output
         assert "1  <unnamed>  (/workflows/build.yml)" in result.output

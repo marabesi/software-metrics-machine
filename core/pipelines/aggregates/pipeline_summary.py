@@ -22,6 +22,7 @@ class PipelineRunSummaryStructure(TypedDict):
 
 class PipelineRunSummary:
     def __init__(self, repository: PipelinesRepository):
+        self.repository = repository
         self.runs = repository.runs()
 
     def compute_summary(self) -> PipelineRunSummaryStructure:
@@ -42,6 +43,7 @@ class PipelineRunSummary:
             "runs_by_workflow": {},
             "first_run": None,
             "last_run": None,
+            "most_failed": "N/A",
         }
 
         if summary["total_runs"] == 0:
@@ -81,5 +83,9 @@ class PipelineRunSummary:
         summary["runs_by_workflow"] = {
             k: {"count": v, "path": name_paths.get(k)} for k, v in name_counts.items()
         }
+
+        most_failed_runs = self.repository.get_pipeline_fails_the_most()
+        if len(most_failed_runs) > 0:
+            summary["most_failed"] = len(most_failed_runs)
 
         return summary

@@ -55,6 +55,7 @@ class WorkflowRunSummary:
                 print(f"  Completed runs: {summary['completed']}")
                 print(f"  In-progress runs: {summary['in_progress']}")
                 print(f"  Queued runs: {summary['queued']}")
+                print(f"  Most failed run: {summary['most_failed']}")
 
                 # print runs aggregated by workflow name (sorted by count desc)
                 runs_by_wf = summary["runs_by_workflow"]
