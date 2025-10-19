@@ -44,3 +44,34 @@ class TestWorkflowsSummaryCliCommands:
         assert "Total runs: 1" in result.output
         assert "Most failed run: N/A" in result.output
         assert "1  <unnamed>  (/workflows/build.yml)" in result.output
+
+    @pytest.mark.parametrize(
+        "workflows",
+        [
+            [
+                {
+                    "id": 1,
+                    "path": "/workflows/build.yml",
+                    "conclusion": "success",
+                    "created_at": "2023-10-01T12:00:00Z",
+                },
+            ],
+        ],
+    )
+    def test_show_filter_summary_runs(self, cli, workflows):
+        path_string = cli.data_stored_at
+
+        FileHandlerForTesting(path_string).store_json_file("workflows.json", workflows)
+
+        result = cli.runner.invoke(
+            main,
+            [
+                "pipelines",
+                "summary",
+                "--start-date",
+                "2021-10-01",
+                "--end-date",
+                "2021-01-02",
+            ],
+        )
+        assert "No workflow runs available" in result.output

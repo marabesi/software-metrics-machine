@@ -5,17 +5,6 @@ from tests.builders import as_json_string
 from tests.in_memory_configuration import InMemoryConfiguration
 
 
-class FakeRepo:
-    def __init__(self, runs):
-        self._runs = runs
-
-    def runs(self):
-        return self._runs
-
-    def get_pipeline_fails_the_most(self):
-        return [{}]
-
-
 def make_run(
     id=1,
     name=None,
@@ -46,14 +35,23 @@ def make_run(
 class TestPipelineRunSummary:
 
     def test_empty_runs_summary(self):
-        repo = FakeRepo([])
-        ps = PipelineRunSummary(repository=repo)
+        def mocked_read_file_if_exists(file):
+            if file == "workflows.json":
+                return as_json_string([])
+            return None
 
-        s = ps.compute_summary()
-        assert s["total_runs"] == 0
-        assert s["first_run"] is None
-        assert s["last_run"] is None
-        assert s["runs_by_workflow"] == {}
+        with patch(
+            "core.infrastructure.file_system_base_repository.FileSystemBaseRepository.read_file_if_exists",
+            side_effect=mocked_read_file_if_exists,
+        ):
+            loader = PipelinesRepository(configuration=InMemoryConfiguration("."))
+            ps = PipelineRunSummary(repository=loader)
+
+            s = ps.compute_summary()
+            assert s["total_runs"] == 0
+            assert s["first_run"] is None
+            assert s["last_run"] is None
+            assert s["runs_by_workflow"] == {}
 
     def test_summary_basic_counts_and_first_last(self):
         single_run = as_json_string(

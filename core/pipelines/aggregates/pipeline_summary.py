@@ -23,9 +23,14 @@ class PipelineRunSummaryStructure(TypedDict):
 class PipelineRunSummary:
     def __init__(self, repository: PipelinesRepository):
         self.repository = repository
-        self.runs = repository.runs()
 
-    def compute_summary(self) -> PipelineRunSummaryStructure:
+    def compute_summary(
+        self, start_date: str | None = None, end_date: str | None = None
+    ) -> PipelineRunSummaryStructure:
+        self.runs = self.repository.runs(
+            {"start_date": start_date, "end_date": end_date}
+        )
+
         """
         Compute the summary of workflow runs.
 

@@ -24,7 +24,13 @@ class WorkflowRunSummary:
     def __init__(self, repository: PipelinesRepository):
         self.summary = PipelineRunSummary(repository=repository)
 
-    def print_summary(self, max_workflows: int = 10, output_format: str = None):
+    def print_summary(
+        self,
+        max_workflows: int = 10,
+        start_date: str | None = None,
+        end_date: str | None = None,
+        output_format: str = None,
+    ):
         """
         Print or return the summary of workflow runs.
 
@@ -32,7 +38,7 @@ class WorkflowRunSummary:
         :param output_format: Specifies the output format. Accepts 'text' or 'json'.
                               If not provided, returns the summary structure.
         """
-        summary = self.summary.compute_summary()
+        summary = self.summary.compute_summary(start_date=start_date, end_date=end_date)
 
         if output_format:
             if output_format not in ["text", "json"]:
