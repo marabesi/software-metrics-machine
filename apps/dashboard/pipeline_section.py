@@ -1,8 +1,8 @@
 import pandas as pd
 import panel as pn
 from apps.dashboard.components.tabulator import TabulatorComponent
+from core.pipelines.aggregates.pipeline_summary import PipelineRunSummary
 from core.pipelines.plots.view_jobs_by_status import ViewJobsByStatus
-from core.pipelines.plots.view_jobs_top_failed import ViewJobsTopFailed
 from core.pipelines.plots.view_jobs_average_time_execution import (
     ViewJobsByAverageTimeExecution,
 )
@@ -106,19 +106,25 @@ def pipeline_section(
             .plot
         )
 
-    def plot_failed_jobs(date_range_picker, jobs_selector):
-        return (
-            ViewJobsTopFailed(repository=repository)
-            .main(
-                start_date=date_range_picker[0],
-                end_date=date_range_picker[1],
-                jobs_selector=jobs_selector,
-            )
-            .plot
+    def plot_failed_pipelines(date_range_picker):
+        summary = PipelineRunSummary(repository=repository).compute_summary()
+        most_failed = summary.get("most_failed", "N/A")
+        return pn.widgets.StaticText(
+            name="Most failed pipeline", value=f"{most_failed}"
         )
 
     views = pn.Column(
         "## Pipeline",
+        pn.Row(
+            pn.panel(
+                pn.bind(plot_failed_pipelines, date_range_picker),
+                sizing_mode="stretch_width",
+            ),
+            sizing_mode="stretch_width",
+        ),
+        pn.Row(),
+        pn.Row(),
+        pn.Row(),
         "Explore your [CI/CD](https://marabesi.com/software-engineering/ci-vs-cde-vs-cd.html?utm_source=metrics-machine&utm_medium=dashboard&utm_campaign=metrics&utm_id=metrics) pipeline metrics and gain insights into workflow performance and job execution times.",  # noqa
         pn.Row(
             pn.panel(

@@ -56,36 +56,48 @@ class TestPipelineRunSummary:
         assert s["runs_by_workflow"] == {}
 
     def test_summary_basic_counts_and_first_last(self):
-        runs = [
-            make_run(
-                id=1,
-                name="a",
-                path="/a.yml",
-                status="completed",
-                created_at="2023-01-01T00:00:00Z",
-                updated_at="2023-01-01T01:00:00Z",
-            ),
-            make_run(
-                id=2,
-                name="b",
-                path="/b.yml",
-                status="in_progress",
-                created_at="2023-01-02T00:00:00Z",
-                updated_at="2023-01-02T01:00:00Z",
-            ),
-            make_run(
-                id=3,
-                name="a",
-                path="/a.yml",
-                status="queued",
-                created_at="2023-01-03T00:00:00Z",
-                updated_at="2023-01-03T01:00:00Z",
-            ),
-        ]
-        repo = FakeRepo(runs)
-        ps = PipelineRunSummary(repository=repo)
+        single_run = as_json_string(
+            [
+                {
+                    "id": 1,
+                    "name": "a",
+                    "path": "/a.yml",
+                    "status": "completed",
+                    "created_at": "2023-01-01T00:00:00Z",
+                    "updated_at": "2023-01-01T01:00:00Z",
+                },
+                {
+                    "id": 2,
+                    "name": "b",
+                    "path": "/b.yml",
+                    "status": "in_progress",
+                    "created_at": "2023-01-02T00:00:00Z",
+                    "updated_at": "2023-01-02T01:00:00Z",
+                },
+                {
+                    "id": 3,
+                    "name": "a",
+                    "path": "/a.yml",
+                    "status": "queued",
+                    "created_at": "2023-01-03T00:00:00Z",
+                    "updated_at": "2023-01-03T01:00:00Z",
+                },
+            ]
+        )
 
-        s = ps.compute_summary()
+        def mocked_read_file_if_exists(file):
+            if file == "workflows.json":
+                return single_run
+            return None
+
+        with patch(
+            "core.infrastructure.file_system_base_repository.FileSystemBaseRepository.read_file_if_exists",
+            side_effect=mocked_read_file_if_exists,
+        ):
+            loader = PipelinesRepository(configuration=InMemoryConfiguration("."))
+            ps = PipelineRunSummary(repository=loader)
+
+            s = ps.compute_summary()
         assert s["total_runs"] == 3
         assert s["completed"] == 1
         assert s["in_progress"] == 1
@@ -98,30 +110,65 @@ class TestPipelineRunSummary:
         assert s["runs_by_workflow"]["b"]["count"] == 1
 
     def test_unnamed_runs_and_path_selection(self):
-        runs = [
-            make_run(id=1, name=None, path=None, status="completed"),
-            make_run(id=2, name=None, path="/x.yml", status="completed"),
-        ]
-        repo = FakeRepo(runs)
-        ps = PipelineRunSummary(repository=repo)
-        s = ps.compute_summary()
+        single_run = as_json_string(
+            [
+                {
+                    "id": 1,
+                    "conclusion": "success",
+                    "created_at": "2023-01-01T00:00:00Z",
+                    "updated_at": "2023-01-01T01:00:00Z",
+                },
+                {
+                    "id": 2,
+                    "path": "/x.yml",
+                    "conclusion": "success",
+                    "created_at": "2023-01-02T00:00:00Z",
+                    "updated_at": "2023-01-02T01:00:00Z",
+                },
+            ]
+        )
 
-        # unnamed runs become '<unnamed>' key
-        assert "<unnamed>" in s["runs_by_workflow"]
-        assert s["runs_by_workflow"]["<unnamed>"]["count"] == 2
-        # path should prefer explicit path when available
-        assert s["runs_by_workflow"]["<unnamed>"]["path"] in ("/x.yml", "<no path>")
+        def mocked_read_file_if_exists(file):
+            if file == "workflows.json":
+                return single_run
+            return None
+
+        with patch(
+            "core.infrastructure.file_system_base_repository.FileSystemBaseRepository.read_file_if_exists",
+            side_effect=mocked_read_file_if_exists,
+        ):
+            loader = PipelinesRepository(configuration=InMemoryConfiguration("."))
+            ps = PipelineRunSummary(repository=loader)
+            s = ps.compute_summary()
+
+            # unnamed runs become '<unnamed>' key
+            assert "<unnamed>" in s["runs_by_workflow"]
+            assert s["runs_by_workflow"]["<unnamed>"]["count"] == 2
+            # path should prefer explicit path when available
+            assert s["runs_by_workflow"]["<unnamed>"]["path"] in ("/x.yml", "<no path>")
 
     def test_unique_workflows_count(self):
-        runs = [
-            make_run(id=1, name="x"),
-            make_run(id=2, name="y"),
-            make_run(id=3, name="x"),
-        ]
-        repo = FakeRepo(runs)
-        ps = PipelineRunSummary(repository=repo)
-        s = ps.compute_summary()
-        assert s["unique_workflows"] == 2
+        single_run = as_json_string(
+            [
+                {"id": 1, "name": "x"},
+                {"id": 2, "name": "y"},
+                {"id": 3, "name": "x"},
+            ]
+        )
+
+        def mocked_read_file_if_exists(file):
+            if file == "workflows.json":
+                return single_run
+            return None
+
+        with patch(
+            "core.infrastructure.file_system_base_repository.FileSystemBaseRepository.read_file_if_exists",
+            side_effect=mocked_read_file_if_exists,
+        ):
+            loader = PipelinesRepository(configuration=InMemoryConfiguration("."))
+            ps = PipelineRunSummary(repository=loader)
+            s = ps.compute_summary()
+            assert s["unique_workflows"] == 2
 
     def test_plot_most_failed_run_empty(self):
         single_run = as_json_string(
@@ -179,4 +226,4 @@ class TestPipelineRunSummary:
             ps = PipelineRunSummary(repository=loader)
             s = ps.compute_summary()
 
-            assert 1 == s["most_failed"]
+            assert "/workflows/build.yml (1)" == s["most_failed"]

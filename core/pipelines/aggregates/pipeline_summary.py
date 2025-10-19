@@ -86,6 +86,8 @@ class PipelineRunSummary:
 
         most_failed_runs = self.repository.get_pipeline_fails_the_most()
         if len(most_failed_runs) > 0:
-            summary["most_failed"] = len(most_failed_runs)
+            most_failed = most_failed_runs[0]["pipeline_name"]
+            count = most_failed_runs[0]["failed"]
+            summary["most_failed"] = f"{most_failed} ({count})"
 
         return summary
