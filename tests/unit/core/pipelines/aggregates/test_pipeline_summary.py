@@ -5,33 +5,6 @@ from tests.builders import as_json_string
 from tests.in_memory_configuration import InMemoryConfiguration
 
 
-def make_run(
-    id=1,
-    name=None,
-    path=None,
-    status=None,
-    conclusion=None,
-    created_at=None,
-    updated_at=None,
-):
-    r = {}
-    if id is not None:
-        r["id"] = id
-    if name is not None:
-        r["name"] = name
-    if path is not None:
-        r["path"] = path
-    if status is not None:
-        r["status"] = status
-    if conclusion is not None:
-        r["conclusion"] = conclusion
-    if created_at is not None:
-        r["created_at"] = created_at
-    if updated_at is not None:
-        r["updated_at"] = updated_at
-    return r
-
-
 class TestPipelineRunSummary:
 
     def test_empty_runs_summary(self):

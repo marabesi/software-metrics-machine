@@ -7,6 +7,38 @@ from apps.cli.main import main
 from tests.builders import as_json_string
 from tests.file_handler_for_testing import FileHandlerForTesting
 
+jobs_fixed = [
+    {
+        "id": "1",
+        "run_id": "1",
+        "workflow_name": "Node CI",
+        "head_branch": "main",
+        "run_url": "https://api.github.com/repos/marabesi/json-tool/actions/runs/17364448040",
+        "run_attempt": 1,
+        "node_id": "CR_kwDOF2CqAc8AAAALeduliQ",
+        "head_sha": "d5fe25480e3f21d1fcb1eb34e523382d478ed950",
+        "url": "https://api.github.com/repos/marabesi/json-tool/actions/jobs/49289078153",
+        "html_url": "https://github.com/marabesi/json-tool/actions/runs/17364448040/job/49289078153",
+        "status": "completed",
+        "conclusion": "success",
+        "created_at": "2025-09-01T00:37:44Z",
+        "started_at": "2025-09-01T00:37:46Z",
+        "completed_at": "2025-09-01T00:38:14Z",
+        "name": "build",
+        "steps": [
+            {
+                "number": 1,
+                "name": "Set up job",
+                "status": "completed",
+                "conclusion": "success",
+                "created_at": "2025-09-01T00:37:47Z",
+                "started_at": "2025-09-01T00:37:47Z",
+                "completed_at": "2025-09-01T00:37:48Z",
+            },
+        ],
+    },
+]
+
 
 class TestJobsCliCommands:
 
@@ -124,6 +156,9 @@ class TestJobsCliCommands:
                 {
                     "id": "1",
                     "run_id": "1",
+                    "started_at": "2023-10-01T09:05:00Z",
+                    "created_at": "2023-10-01T09:05:00Z",
+                    "completed_at": "2023-10-01T09:10:00Z",
                     "steps": [],
                 },
             ],
@@ -151,6 +186,56 @@ class TestJobsCliCommands:
         )
         assert 0 == result.exit_code
         assert "Jobs summary" in result.output
+
+    @pytest.mark.parametrize(
+        "jobs_for_test, command, expected",
+        [
+            (
+                jobs_fixed,
+                [
+                    "pipelines",
+                    "jobs-summary",
+                    "--start-date",
+                    "2021-09-01",
+                    "--end-date",
+                    "2026-09-01",
+                ],
+                "Unique job names: 1",
+            ),
+            (
+                jobs_fixed,
+                [
+                    "pipelines",
+                    "jobs-summary",
+                    "--start-date",
+                    "2021-09-01",
+                    "--end-date",
+                    "2021-09-01",
+                ],
+                "No job executions available.",
+            ),
+        ],
+    )
+    def test_jobs_summary_with_data_available(
+        self, cli, jobs_for_test, command, expected
+    ):
+        path_string = cli.data_stored_at
+        single_run = [
+            {
+                "id": 1,
+                "name": "Deploy",
+                "path": "/workflows/build.yml",
+                "status": "success",
+                "created_at": "2025-09-01T00:33:00Z",
+                "conclusion": "success",
+            },
+        ]
+        FileHandlerForTesting(path_string).store_json_file("workflows.json", single_run)
+        FileHandlerForTesting(path_string).store_json_file("jobs.json", jobs_for_test)
+
+        result = cli.runner.invoke(main, command)
+
+        assert expected in result.output
 
     def test_plot_jobs_by_status(self, cli):
         path_string = cli.data_stored_at
