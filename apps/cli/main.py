@@ -61,6 +61,9 @@ module_groups = {
     "pydriller": [
         "providers.pydriller.cli.change_set",
     ],
+    "tools": [
+        "providers.tools.cli.json_file_merger",
+    ],
 }
 
 add_commands_from_groups(module_groups)
