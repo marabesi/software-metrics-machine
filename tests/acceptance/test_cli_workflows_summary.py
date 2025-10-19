@@ -6,6 +6,16 @@ from tests.file_handler_for_testing import FileHandlerForTesting
 
 class TestWorkflowsSummaryCliCommands:
 
+    def test_summary_workflows_is_defined(self, cli):
+        result = cli.runner.invoke(
+            main,
+            [
+                "pipelines",
+                "summary",
+            ],
+        )
+        assert 0 == result.exit_code
+
     @pytest.mark.parametrize(
         "workflows",
         [
@@ -17,7 +27,6 @@ class TestWorkflowsSummaryCliCommands:
                     "created_at": "2023-10-01T12:00:00Z",
                 },
             ],
-            [],
         ],
     )
     def test_summary_workflows(self, cli, workflows):
@@ -32,4 +41,5 @@ class TestWorkflowsSummaryCliCommands:
                 "summary",
             ],
         )
-        assert 0 == result.exit_code
+        assert "Total runs: 1" in result.output
+        assert "1  <unnamed>  (/workflows/build.yml)" in result.output
