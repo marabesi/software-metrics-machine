@@ -1,7 +1,7 @@
 import pytest
 from apps.cli.main import main
 
-from tests.builders import workflows_data
+from tests.builders import github_workflows_data
 from tests.file_handler_for_testing import FileHandlerForTesting
 
 
@@ -13,7 +13,7 @@ class TestWorkflowsRunsByStatusCliCommands:
         assert "Show this message and exit" in result.output
 
     def test_should_filter_by_workflow_path(self, cli):
-        workflow_runs = workflows_data()
+        workflow_runs = github_workflows_data()
         path_string = cli.data_stored_at
 
         FileHandlerForTesting(path_string).store_json_file(
@@ -52,7 +52,7 @@ class TestWorkflowsRunsByStatusCliCommands:
     )
     def test_should_filter_by_multiple_parameters(self, cli, command, expected):
         expected_count = expected["count"]
-        workflow_runs = workflows_data()
+        workflow_runs = github_workflows_data()
         path_string = cli.data_stored_at
 
         FileHandlerForTesting(path_string).store_json_file(

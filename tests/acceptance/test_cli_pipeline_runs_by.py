@@ -1,7 +1,7 @@
 import pytest
 from apps.cli.main import main
 
-from tests.builders import workflows_data
+from tests.builders import github_workflows_data
 from tests.file_handler_for_testing import FileHandlerForTesting
 
 
@@ -16,12 +16,12 @@ class TestWorkflowsRunsByCliCommands:
         "workflow_runs, expected",
         [
             (
-                workflows_data(),
+                github_workflows_data(),
                 {"target": "main", "count": 1},
             ),
             ([], {"target": "main", "count": 0}),
             (
-                workflows_data(),
+                github_workflows_data(),
                 {"target": "main,master", "count": 1},  # ignores second after comma
             ),
         ],
@@ -54,7 +54,7 @@ class TestWorkflowsRunsByCliCommands:
         assert f"Found {expected_count} runs after filtering" in result.output
 
     def test_should_filter_by_workflow_path(self, cli):
-        workflow_runs = workflows_data()
+        workflow_runs = github_workflows_data()
         path_string = cli.data_stored_at
 
         FileHandlerForTesting(path_string).store_json_file(
@@ -77,7 +77,7 @@ class TestWorkflowsRunsByCliCommands:
         self,
         cli,
     ):
-        workflow_runs = workflows_data()
+        workflow_runs = github_workflows_data()
         path_string = cli.data_stored_at
 
         FileHandlerForTesting(path_string).store_json_file(
@@ -95,7 +95,7 @@ class TestWorkflowsRunsByCliCommands:
         assert "Plotting data aggregated by week" in result.output
 
     def test_should_aggregate_data_by_month(self, cli):
-        workflow_runs = workflows_data()
+        workflow_runs = github_workflows_data()
         path_string = cli.data_stored_at
 
         FileHandlerForTesting(path_string).store_json_file(
@@ -118,7 +118,7 @@ class TestWorkflowsRunsByCliCommands:
         "workflow_runs, expected",
         [
             (
-                workflows_data(),
+                github_workflows_data(),
                 {"event": "push", "count": 1},
             ),
             ([], {"event": "push", "count": 0}),
@@ -197,7 +197,7 @@ class TestWorkflowsRunsByCliCommands:
     )
     def test_should_filter_by_multiple_parameters(self, cli, command, expected):
         expected_count = expected["count"]
-        workflow_runs = workflows_data()
+        workflow_runs = github_workflows_data()
         path_string = cli.data_stored_at
 
         FileHandlerForTesting(path_string).store_json_file(

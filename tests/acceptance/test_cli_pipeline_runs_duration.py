@@ -1,7 +1,7 @@
 import pytest
 from apps.cli.main import main
 
-from tests.builders import workflows_data
+from tests.builders import github_workflows_data
 from tests.file_handler_for_testing import FileHandlerForTesting
 
 
@@ -11,7 +11,7 @@ class TestWorkflowsRunsDurationCliCommands:
         "workflow_runs, expected",
         [
             (
-                workflows_data(),
+                github_workflows_data(),
                 {
                     "command": [
                         "pipelines",
@@ -25,7 +25,7 @@ class TestWorkflowsRunsDurationCliCommands:
                 },
             ),
             (
-                workflows_data(),
+                github_workflows_data(),
                 {
                     "command": [
                         "pipelines",
@@ -57,7 +57,7 @@ class TestWorkflowsRunsDurationCliCommands:
     def test_should_store_pipeline_run_duration_plot_in_the_given_directory(self, cli):
         path_string = cli.data_stored_at
         FileHandlerForTesting(path_string).store_json_file(
-            "workflows.json", workflows_data()
+            "workflows.json", github_workflows_data()
         )
 
         result = cli.runner.invoke(

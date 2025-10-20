@@ -7,7 +7,7 @@ def as_json_string(object: Any) -> str:
     return json.dumps(object, indent=2)
 
 
-def workflows_data():
+def github_workflows_data():
     return [
         {
             "id": 1,

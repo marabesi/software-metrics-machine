@@ -3,7 +3,7 @@ from unittest.mock import patch
 import pytest
 
 from core.pipelines.pipelines_repository import PipelinesRepository
-from tests.builders import as_json_string, workflows_data
+from tests.builders import as_json_string, github_workflows_data
 from tests.in_memory_configuration import InMemoryConfiguration
 
 
@@ -106,7 +106,7 @@ class TestPipelinesRepository:
         ],
     )
     def test_filter_workflows_by(self, filters, expected):
-        workflow_list = as_json_string(workflows_data())
+        workflow_list = as_json_string(github_workflows_data())
         with (
             patch(
                 "core.infrastructure.file_system_base_repository.FileSystemBaseRepository.read_file_if_exists",
@@ -147,7 +147,7 @@ class TestPipelinesRepository:
     def test_filter_jobs_by(self, filters, expected):
         def mocked_read_file_if_exists(file):
             if file == "workflows.json":
-                return as_json_string(workflows_data())
+                return as_json_string(github_workflows_data())
             elif file == "jobs.json":
                 return as_json_string(
                     [
@@ -216,7 +216,7 @@ class TestPipelinesRepository:
 
         def mocked_read_file_if_exists(file):
             if file == "workflows.json":
-                return as_json_string(workflows_data())
+                return as_json_string(github_workflows_data())
             elif file == "jobs.json":
                 return as_json_string(jobs_with_duplicated_paths)
             raise FileNotFoundError(f"File {file} not found")

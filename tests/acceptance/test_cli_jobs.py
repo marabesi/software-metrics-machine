@@ -7,7 +7,7 @@ from apps.cli.main import main
 from tests.builders import as_json_string
 from tests.file_handler_for_testing import FileHandlerForTesting
 
-jobs_fixed = [
+job_with_single_step_completed_successfully = [
     {
         "id": "1",
         "run_id": "1",
@@ -40,6 +40,17 @@ jobs_fixed = [
 ]
 
 
+def single_run_successfully():
+    return [
+        {
+            "id": 1,
+            "path": "/workflows/build.yml",
+            "status": "success",
+            "created_at": "2023-10-01T12:00:00Z",
+        }
+    ]
+
+
 class TestJobsCliCommands:
 
     @pytest.fixture(scope="class", autouse=True)
@@ -48,24 +59,16 @@ class TestJobsCliCommands:
             mock_get.reset_mock()
             yield mock_get
 
-    def test_can_run_fetch_jobs_command(self, cli, tmp_path):
+    def test_can_run_fetch_jobs_command(self, cli):
         result = cli.runner.invoke(main, ["pipelines", "fetch-jobs", "--help"])
         assert 0 == result.exit_code
         assert "Show this message and exit" in result.output
 
     def test_should_fetch_jobs_for_a_workflow(self, cli, tmp_path):
         path_string = cli.data_stored_at
-        workflow_fetched = [
-            {
-                "id": 1,
-                "path": "/workflows/build.yml",
-                "status": "success",
-                "created_at": "2023-10-01T12:00:00Z",
-            },
-        ]
 
         FileHandlerForTesting(path_string).store_json_file(
-            "workflows.json", workflow_fetched
+            "workflows.json", single_run_successfully()
         )
 
         with patch("requests.get") as mock_get:
@@ -122,15 +125,9 @@ class TestJobsCliCommands:
 
     def test_not_fetch_when_workflow_falls_off_the_start_date_and_end_date(self, cli):
         path_string = cli.data_stored_at
-        single_run = [
-            {
-                "id": 1,
-                "path": "/workflows/build.yml",
-                "status": "success",
-                "created_at": "2023-10-01T12:00:00Z",
-            },
-        ]
-        FileHandlerForTesting(path_string).store_json_file("workflows.json", single_run)
+        FileHandlerForTesting(path_string).store_json_file(
+            "workflows.json", single_run_successfully()
+        )
 
         result = cli.runner.invoke(
             main,
@@ -149,6 +146,53 @@ class TestJobsCliCommands:
             in result.output
         )
 
+    def test_fetch_jobs_based_on_raw_filters(self, cli):
+        path_string = cli.data_stored_at
+        single_run = [
+            {
+                "id": 1,
+                "path": "/workflows/build.yml",
+                "status": "success",
+                "created_at": "2023-01-01T12:00:00Z",
+            },
+        ]
+        FileHandlerForTesting(path_string).store_json_file("workflows.json", single_run)
+
+        with patch("requests.get") as mock_get:
+            fetch_jobs_fake_response = {
+                "total_count": 0,
+                "jobs": [],
+            }
+            response = Response()
+            response._content = bytes(as_json_string(fetch_jobs_fake_response), "utf-8")
+            response.status_code = 200
+
+            mock_get.return_value = response
+
+            cli.runner.invoke(
+                main,
+                [
+                    "pipelines",
+                    "fetch-jobs",
+                    "--start-date",
+                    "2023-01-01",
+                    "--end-date",
+                    "2023-01-31",
+                    "--raw-filters",
+                    "owner=random",
+                ],
+            )
+
+            mock_get.assert_called_once()
+            mock_get.assert_called_with(
+                "https://api.github.com/repos/fake/repo/actions/runs/1/jobs?per_page=100",
+                headers={
+                    "Authorization": "token fake_token",
+                    "Accept": "application/vnd.github+json",
+                },
+                params={"owner": "random"},
+            )
+
     @pytest.mark.parametrize(
         "jobs",
         [
@@ -166,15 +210,9 @@ class TestJobsCliCommands:
     )
     def test_with_stored_data_summary(self, cli, jobs):
         path_string = cli.data_stored_at
-        single_run = [
-            {
-                "id": 1,
-                "path": "/workflows/build.yml",
-                "status": "success",
-                "created_at": "2023-10-01T12:00:00Z",
-            },
-        ]
-        FileHandlerForTesting(path_string).store_json_file("workflows.json", single_run)
+        FileHandlerForTesting(path_string).store_json_file(
+            "workflows.json", single_run_successfully()
+        )
         FileHandlerForTesting(path_string).store_json_file("jobs.json", jobs)
 
         result = cli.runner.invoke(
@@ -191,7 +229,7 @@ class TestJobsCliCommands:
         "jobs_for_test, command, expected",
         [
             (
-                jobs_fixed,
+                job_with_single_step_completed_successfully,
                 [
                     "pipelines",
                     "jobs-summary",
@@ -203,7 +241,7 @@ class TestJobsCliCommands:
                 "Unique job names: 1",
             ),
             (
-                jobs_fixed,
+                job_with_single_step_completed_successfully,
                 [
                     "pipelines",
                     "jobs-summary",
@@ -239,14 +277,6 @@ class TestJobsCliCommands:
 
     def test_plot_jobs_by_status(self, cli):
         path_string = cli.data_stored_at
-        single_run = [
-            {
-                "id": 1,
-                "path": "/workflows/build.yml",
-                "status": "success",
-                "created_at": "2023-10-01T12:00:00Z",
-            },
-        ]
         jobs = [
             {
                 "id": 105,
@@ -265,7 +295,9 @@ class TestJobsCliCommands:
                 "completed_at": "2023-10-01T09:10:00Z",
             },
         ]
-        FileHandlerForTesting(path_string).store_json_file("workflows.json", single_run)
+        FileHandlerForTesting(path_string).store_json_file(
+            "workflows.json", single_run_successfully()
+        )
         FileHandlerForTesting(path_string).store_json_file("jobs.json", jobs)
 
         result = cli.runner.invoke(
@@ -282,14 +314,6 @@ class TestJobsCliCommands:
 
     def test_plot_jobs_by_average_execution_time(self, cli):
         path_string = cli.data_stored_at
-        single_run = [
-            {
-                "id": 1,
-                "path": "/workflows/build.yml",
-                "status": "success",
-                "created_at": "2023-10-01T12:00:00Z",
-            },
-        ]
         jobs = [
             {
                 "id": 105,
@@ -308,7 +332,9 @@ class TestJobsCliCommands:
                 "completed_at": "2023-10-01T09:10:00Z",
             },
         ]
-        FileHandlerForTesting(path_string).store_json_file("workflows.json", single_run)
+        FileHandlerForTesting(path_string).store_json_file(
+            "workflows.json", single_run_successfully()
+        )
         FileHandlerForTesting(path_string).store_json_file("jobs.json", jobs)
 
         result = cli.runner.invoke(
