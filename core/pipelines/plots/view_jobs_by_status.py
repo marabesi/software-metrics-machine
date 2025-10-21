@@ -2,6 +2,7 @@ import pandas as pd
 import holoviews as hv
 
 from core.infrastructure.base_viewer import BaseViewer, PlotResult
+from core.infrastructure.barchart_stacked import build_barchart
 from core.pipelines.aggregates.jobs_by_status import JobsByStatus
 from core.pipelines.pipelines_repository import PipelinesRepository
 
@@ -45,19 +46,21 @@ class ViewJobsByStatus(BaseViewer):
         total_runs = len(runs)
 
         status_data = [{"Status": k, "Count": v} for k, v in status_counts.items()]
-        status_bars = hv.Bars(status_data, "Status", "Count").opts(
-            tools=super().get_tools(),
-            color=super().get_color(),
-            line_color=None,
+        status_bars = build_barchart(
+            status_data,
+            x="Status",
+            y="Count",
+            stacked=False,
             height=super().get_chart_height(),
             title=(
                 f"Status of Workflows - {total_runs} runs"
                 if not workflow_path
                 else f"Status of Workflows ({workflow_path}) - {total_runs} runs"
             ),
-            xlabel="Status",
-            ylabel="Count",
             xrotation=45,
+            label_generator=super().build_labels_above_bars,
+            tools=super().get_tools(),
+            color=super().get_color(),
         )
 
         timeline_data = []
@@ -70,13 +73,18 @@ class ViewJobsByStatus(BaseViewer):
                     {"Period": period, "Conclusion": conc, "Runs": runs_count}
                 )
 
-        timeline_bars = hv.Bars(timeline_data, ["Period", "Conclusion"], "Runs").opts(
+        timeline_bars = build_barchart(
+            timeline_data,
+            x="Period",
+            y="Runs",
+            group="Conclusion",
             stacked=True,
             height=super().get_chart_height(),
             xrotation=45,
             title=(
-                f'Executions of job "{display_job_name}" in workflow "{display_workflow_name}" by {'week' if aggregate_by_week else 'day'} (stacked by conclusion)'  # noqa: E501
+                f'Executions of job "{display_job_name}" in workflow "{display_workflow_name}" by {'week' if aggregate_by_week else 'day'} (stacked by conclusion)'  # noqa
             ),
+            label_generator=None,
             tools=super().get_tools(),
         )
 

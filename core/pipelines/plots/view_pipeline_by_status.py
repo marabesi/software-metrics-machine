@@ -3,6 +3,7 @@ import holoviews as hv
 
 
 from core.infrastructure.base_viewer import BaseViewer, PlotResult
+from core.infrastructure.barchart_stacked import build_barchart
 from core.pipelines.aggregates.pipeline_by_status import PipelineByStatus
 from core.pipelines.pipelines_repository import PipelinesRepository
 
@@ -38,20 +39,19 @@ class ViewPipelineByStatus(BaseViewer):
                 f"Status of Pipeline Runs for '{workflow_path}' - Total {total_runs}"
             )
 
-        bars = hv.Bars(data, "Status", "Count").opts(
-            tools=super().get_tools(),
-            color=super().get_color(),
-            line_color=None,
+        chart = build_barchart(
+            data,
+            x="Status",
+            y="Count",
+            stacked=False,
             height=super().get_chart_height(),
             title=title,
-            xlabel="Status",
-            ylabel="Count",
             xrotation=45,
+            label_generator=super().build_labels_above_bars,
+            out_file=None,
+            tools=super().get_tools(),
+            color=super().get_color(),
         )
-
-        labels = super().build_labels_above_bars(data, "Status", "Count")
-
-        chart = bars * labels
 
         df = pd.DataFrame(runs)
 

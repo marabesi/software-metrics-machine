@@ -3,6 +3,7 @@ import holoviews as hv
 
 
 from core.infrastructure.base_viewer import BaseViewer, PlotResult
+from core.infrastructure.barchart_stacked import build_barchart
 from core.pipelines.aggregates.pipeline_workflow_runs_by_week_or_month import (
     PipelineWorkflowRunsByWekOrMonth,
 )
@@ -90,19 +91,28 @@ class ViewWorkflowRunsByWeekOrMonth(BaseViewer):
 
         xticks = [(i, periods[i]) for i in range(0, len(periods), max(1, tick_step))]
 
-        bars = hv.Bars(data, ["Time", "Workflow"], "Runs").opts(
+        # use the shared barchart builder for stacked bars
+        title = f"Workflow runs per {'week' if aggregate_by == 'week' else 'month'} by workflow name ({total_runs} in total)"  # noqa
+        plot = build_barchart(
+            data,
+            x="Time",
+            y="Runs",
+            group="Workflow",
             stacked=True,
             height=super().get_chart_height(),
-            line_color=None,
-            title=(
-                f"Workflow runs per {'week' if aggregate_by == 'week' else 'month'} by workflow name ({total_runs} in total)"  # noqa: E501
-            ),
+            title=title,
+            xrotation=45,
+            label_generator=None,
+            out_file=None,
             tools=super().get_tools(),
-            xticks=xticks,
         )
 
-        # If weekly aggregation, add vertical lines where the month changes between consecutive rep_dates
-        plot = bars
+        # apply xticks and other display options
+        try:
+            plot = plot.opts(xticks=xticks, line_color=None, tools=super().get_tools())
+        except Exception:
+            # some hv types may not accept those opts directly; ignore if not applicable
+            pass
         if aggregate_by == "week" and rep_dates and len(rep_dates) > 1:
             month_boundaries = []
             last_month = rep_dates[0].month

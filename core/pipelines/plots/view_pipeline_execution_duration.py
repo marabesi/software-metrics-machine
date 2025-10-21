@@ -2,6 +2,7 @@ import pandas as pd
 import holoviews as hv
 
 from core.infrastructure.base_viewer import BaseViewer, PlotResult
+from core.infrastructure.barchart_stacked import build_barchart
 from core.pipelines.aggregates.pipeline_execution_duration import (
     PipelineExecutionDuration,
 )
@@ -35,27 +36,26 @@ class ViewPipelineExecutionRunsDuration(BaseViewer):
         names = result.names
         values = result.values
         counts = result.counts
-        ylabel = result.ylabel
+        # ylabel = result.ylabel
         title_metric = result.title_metric
         rows = result.rows
         data = []
         for name, val, cnt in zip(names, values, counts):
             data.append({"name": name, "value": val, "count": cnt})
 
-        bars = hv.Bars(data, "name", "value").opts(
+        chart = build_barchart(
+            data,
+            x="name",
+            y="value",
+            stacked=False,
+            height=super().get_chart_height(),
+            title=f"Runs aggregated by name - {title_metric} ({len(rows)} items)",
+            xrotation=45,
+            label_generator=super().build_labels_above_bars,
+            out_file=None,
             tools=super().get_tools(),
             color=super().get_color(),
-            line_color=None,
-            height=super().get_chart_height(),
-            xrotation=45,
-            title=f"Runs aggregated by name - {title_metric} ({len(rows)} items)",
-            xlabel="Pipeline",
-            ylabel=ylabel,
         )
-
-        labels = super().build_labels_above_bars(data, "name", "value")
-
-        chart = bars * labels
 
         df = pd.DataFrame(rows)
 

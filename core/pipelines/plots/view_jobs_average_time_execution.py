@@ -2,6 +2,7 @@ import pandas as pd
 import holoviews as hv
 
 from core.infrastructure.base_viewer import BaseViewer, PlotResult
+from core.infrastructure.barchart_stacked import build_barchart
 from core.pipelines.aggregates.jobs_average_time_execution import (
     JobsByAverageTimeExecution,
 )
@@ -58,28 +59,27 @@ class ViewJobsByAverageTimeExecution(BaseViewer):
         for name, val in zip(names, mins):
             data.append({"job_name": name, "value": val, "count": counts.get(name, 0)})
 
-        bars = hv.Bars(data, "job_name", "value").opts(
-            tools=super().get_tools(),
-            color=super().get_color(),
-            line_color=None,
-            height=super().get_chart_height(),
-            xrotation=0,
-            title=(
-                f"Top {len(names)} jobs by average duration for {total_runs} runs - {total_jobs} jobs"
-                if not workflow_path
-                else f"Top {len(names)} jobs by average duration for '{workflow_path}' - {total_runs} runs - {total_jobs} jobs"  # noqa: E501
-            ),
-            xlabel="",
-            ylabel="Average job duration (minutes)",
+        title = (
+            f"Top {len(names)} jobs by average duration for {total_runs} runs - {total_jobs} jobs"
+            if not workflow_path
+            else f"Top {len(names)} jobs by average duration for '{workflow_path}' - {total_runs} runs - {total_jobs} jobs"  # noqa
         )
 
-        labels = super().build_labels_above_bars(data, "job_name", "value")
-
-        chart = bars * labels
+        # build the barchart using the shared helper; use the BaseViewer label generator
+        chart = build_barchart(
+            data,
+            x="job_name",
+            y="value",
+            stacked=False,
+            height=super().get_chart_height(),
+            title=title,
+            xrotation=0,
+            label_generator=super().build_labels_above_bars,
+            out_file=out_file,
+            tools=super().get_tools(),
+            color=super().get_color(),
+        )
 
         df = pd.DataFrame(averages)
-
-        if out_file:
-            hv.save(chart, out_file)
 
         return PlotResult(chart, df)
