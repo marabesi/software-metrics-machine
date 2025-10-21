@@ -129,7 +129,7 @@ class PipelinesRepository(FileSystemBaseRepository):
         conclusions = {
             run.get("conclusion", "") for run in self.all_runs if "conclusion" in run
         }
-        list_all = list(conclusions)
+        list_all = list(filter(None, list(conclusions)))
         list_all.sort()
         list_all.insert(0, "All")
         return list_all

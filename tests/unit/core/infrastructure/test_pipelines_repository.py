@@ -251,6 +251,24 @@ class TestPipelinesRepository:
             result = loader.get_unique_workflow_conclusions()
             assert len(result) == 3
 
+    def test_get_unique_conclusions_ignores_empty(self):
+        workflows_with_duplicated_paths = as_json_string(
+            [
+                {"conclusion": "success", "path": "/workflows/build.yml", "id": 1},
+                {"conclusion": None, "path": "/workflows/deploy.yml", "id": 3},
+            ]
+        )
+        with (
+            patch(
+                "core.infrastructure.file_system_base_repository.FileSystemBaseRepository.read_file_if_exists",
+                return_value=workflows_with_duplicated_paths,
+            ),
+        ):
+            loader = PipelinesRepository(configuration=InMemoryConfiguration("."))
+
+            result = loader.get_unique_workflow_conclusions()
+            assert len(result) == 2
+
     def test_get_unique_conclusions_ordered_by_asc(self):
         workflows_with_duplicated_paths = as_json_string(
             [

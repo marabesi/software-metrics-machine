@@ -1,6 +1,8 @@
-import matplotlib.pyplot as plt
+import pandas as pd
+import holoviews as hv
 
-from core.infrastructure.base_viewer import BaseViewer
+from core.infrastructure.base_viewer import BaseViewer, PlotResult
+from core.infrastructure.barchart_stacked import build_barchart
 from core.prs.prs_repository import PrsRepository
 
 
@@ -22,9 +24,13 @@ class ViewOpenPrsThroughTime(BaseViewer):
 
         if not prs:
             print("No PRs to plot for prs through time")
-            # return
+            # return an empty hv.Text so callers can render the message
+            empty = hv.Text(0, 0, "No PRs to plot for prs through time").opts(
+                height=super().get_chart_height()
+            )
+            return PlotResult(plot=empty, data=pd.DataFrame())
 
-        timeline = {}
+        timeline: dict[str, dict] = {}
 
         for pr in prs:
             created_at = pr.get("created_at")[:10]  # Extract date only
@@ -42,25 +48,28 @@ class ViewOpenPrsThroughTime(BaseViewer):
                 timeline[closed_date]["closed"] += 1
 
         dates = sorted(timeline.keys())
-        opened = [timeline[date]["opened"] for date in dates]
-        closed = [timeline[date]["closed"] for date in dates]
 
-        fig, ax = plt.subplots(figsize=super().get_fig_size())
+        rows = []
+        for d in dates:
+            rows.append({"date": d, "kind": "Opened", "count": timeline[d]["opened"]})
+            rows.append({"date": d, "kind": "Closed", "count": timeline[d]["closed"]})
 
-        ax.bar(dates, opened, label="Opened", color="blue")
-        for i, count in enumerate(opened):
-            ax.text(i, count, str(count), ha="center", va="bottom")
+        # build a stacked barchart grouped by 'kind'
+        chart = build_barchart(
+            rows,
+            x="date",
+            y="count",
+            group="kind",
+            stacked=True,
+            height=super().get_chart_height(),
+            title=title,
+            xrotation=45,
+            label_generator=super().build_labels_above_bars,
+            out_file=out_file,
+            tools=super().get_tools(),
+            color=super().get_color(),
+        )
 
-        ax.bar(dates, closed, label="Closed", color="red", bottom=opened)
-        for i, count in enumerate(closed):
-            ax.text(i, opened[i] + count, str(count), ha="center", va="bottom")
+        df = pd.DataFrame(rows)
 
-        ax.set_xlabel("Date")
-        ax.set_ylabel("Number of PRs")
-        ax.set_title(title)
-        ax.legend()
-        plt.xticks(rotation=45, ha="right")
-
-        fig.tight_layout()
-
-        return super().output(plt, fig, out_file, repository=self.repository)
+        return PlotResult(plot=chart, data=df)
