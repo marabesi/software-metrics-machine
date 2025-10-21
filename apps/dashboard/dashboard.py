@@ -17,6 +17,13 @@ from core.pipelines.pipelines_repository import PipelinesRepository
 
 pn.extension("tabulator")
 
+
+def sanitize_all_argument(selected_value):
+    if selected_value == "All":
+        return None
+    return selected_value
+
+
 configuration = ConfigurationBuilder(Driver.JSON).build()
 workflow_repository = PipelinesRepository(configuration=configuration)
 prs_repository = PrsRepository(configuration=configuration)
@@ -50,7 +57,9 @@ jobs_selector = pn.widgets.Select(
     options=job_names,
 )
 
-workflow_conclusions = workflow_repository.get_unique_workflow_conclusions()
+workflow_conclusions = workflow_repository.get_unique_workflow_conclusions(
+    {"path": sanitize_all_argument(workflow_selector)}
+)
 selected_conclusion = None
 if len(workflow_conclusions) > 0:
     last = len(workflow_conclusions) - 1

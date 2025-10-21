@@ -124,11 +124,10 @@ class PipelinesRepository(FileSystemBaseRepository):
             filtered.append(job)
         return filtered
 
-    def get_unique_workflow_conclusions(self) -> List[str]:
+    def get_unique_workflow_conclusions(self, filters=None) -> List[str]:
         """Return a list of unique workflow conclusions."""
-        conclusions = {
-            run.get("conclusion", "") for run in self.all_runs if "conclusion" in run
-        }
+        runs = self.runs(filters)
+        conclusions = {run.get("conclusion", "") for run in runs if "conclusion" in run}
         list_all = list(filter(None, list(conclusions)))
         list_all.sort()
         list_all.insert(0, "All")
