@@ -50,11 +50,15 @@ def prs_section(date_range_picker, repository: PrsRepository):
         )
 
     def plot_prs_through_time(date_range_picker, author_select):
-        return ViewOpenPrsThroughTime(repository=repository).main(
-            start_date=date_range_picker[0],
-            end_date=date_range_picker[1],
-            title="Open PRs Through Time",
-            authors=normalize_authors(author_select),
+        return (
+            ViewOpenPrsThroughTime(repository=repository)
+            .main(
+                start_date=date_range_picker[0],
+                end_date=date_range_picker[1],
+                title="Open PRs Through Time",
+                authors=normalize_authors(author_select),
+            )
+            .plot
         )
 
     def plot_prs_by_author(date_range_picker, selected_labels):
@@ -90,35 +94,53 @@ def prs_section(date_range_picker, repository: PrsRepository):
             pn.Column(author_select, sizing_mode="stretch_width"),
             pn.Column(label_selector, sizing_mode="stretch_width"),
         ),
-        pn.Row(pn.bind(plot_prs_through_time, date_range_picker, author_select)),
+        pn.Row(
+            pn.panel(
+                pn.bind(plot_prs_through_time, date_range_picker, author_select),
+                sizing_mode="stretch_width",
+            ),
+            sizing_mode="stretch_width",
+        ),
         pn.Row(
             pn.Column(
                 "### Average PRs Open By",
-                pn.bind(
-                    plot_average_prs_open_by,
-                    date_range_picker,
-                    label_selector,
-                    author_select,
+                pn.panel(
+                    pn.bind(
+                        plot_average_prs_open_by,
+                        date_range_picker,
+                        label_selector,
+                        author_select,
+                    ),
+                    sizing_mode="stretch_width",
                 ),
+                sizing_mode="stretch_width",
             ),
             sizing_mode="stretch_width",
         ),
         pn.Row(
             pn.Column(
                 "### Average Review Time By Author",
-                pn.bind(
-                    plot_average_review_time_by_author,
-                    date_range_picker,
-                    label_selector,
-                    author_select,
+                pn.panel(
+                    pn.bind(
+                        plot_average_review_time_by_author,
+                        date_range_picker,
+                        label_selector,
+                        author_select,
+                    ),
+                    sizing_mode="stretch_width",
                 ),
+                sizing_mode="stretch_width",
             ),
             sizing_mode="stretch_width",
         ),
         pn.Row(
             pn.Column(
                 "### PRs By Author",
-                pn.bind(plot_prs_by_author, date_range_picker, label_selector),
+                pn.panel(
+                    pn.bind(plot_prs_by_author, date_range_picker, label_selector),
+                    sizing_mode="stretch_width",
+                ),
+                sizing_mode="stretch_width",
             ),
             sizing_mode="stretch_width",
         ),

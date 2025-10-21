@@ -17,7 +17,7 @@ class ViewOpenPrsThroughTime(BaseViewer):
         start_date: str | None = None,
         end_date: str | None = None,
         authors: str | None = None,
-    ) -> None:
+    ) -> PlotResult:
         prs = self.repository.prs_with_filters(
             {"start_date": start_date, "end_date": end_date, "authors": authors}
         )
