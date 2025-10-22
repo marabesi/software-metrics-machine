@@ -1,7 +1,8 @@
 from collections import Counter
-import matplotlib.pyplot as plt
+import pandas as pd
 
-from core.infrastructure.base_viewer import BaseViewer
+from core.infrastructure.base_viewer import BaseViewer, PlotResult
+from core.infrastructure.barchart_stacked import build_barchart
 from core.prs.prs_repository import PrsRepository
 from typing import List, Tuple
 
@@ -18,7 +19,7 @@ class ViewPrsByAuthor(BaseViewer):
         out_file: str | None = None,
         start_date: str | None = None,
         end_date: str | None = None,
-    ) -> None:
+    ) -> PlotResult:
         prs = self.repository.prs_with_filters(
             {"start_date": start_date, "end_date": end_date}
         )
@@ -32,28 +33,38 @@ class ViewPrsByAuthor(BaseViewer):
 
         print(f"Loaded {len(prs)} PRs after filtering")
 
-        prs = self.top_authors(prs, top)
+        top_authors = self.top_authors(prs, top)
 
-        if len(prs) == 0:
-            prs = [("No PRs to plot after filtering", 0)]
+        if len(top_authors) == 0:
+            top_authors = [("No PRs to plot after filtering", 0)]
             print("No PRs to plot after filtering")
 
-        authors, counts = zip(*prs)
-        fig, ax = plt.subplots(figsize=super().get_fig_size())
+        authors, counts = zip(*top_authors)
 
-        y_pos = range(len(authors))[::-1]
-        ax.barh(y_pos, counts, color="#4c78a8")
-        ax.set_yticks(y_pos)
-        ax.set_yticklabels(authors)
-        ax.set_xlabel("Number of PRs")
-        ax.set_title(title)
+        data = []
+        for name, cnt in zip(authors, counts):
+            data.append({"author": name, "count": cnt})
 
-        for i, v in enumerate(counts):
-            ax.text(v + max(1, max(counts) * 0.01), y_pos[i], str(v), va="center")
+        chart = build_barchart(
+            data,
+            x="author",
+            y="count",
+            stacked=False,
+            height=super().get_chart_height(),
+            title=title,
+            xrotation=0,
+            label_generator=super().build_labels_above_bars,
+            out_file=out_file,
+            tools=super().get_tools(),
+            color=super().get_color(),
+        )
 
-        fig.tight_layout()
-
-        return super().output(plt, fig, out_file, repository=self.repository)
+        df = (
+            pd.DataFrame(top_authors, columns=["author", "count"])
+            if top_authors
+            else pd.DataFrame()
+        )
+        return PlotResult(plot=chart, data=df)
 
     def top_authors(self, prs: List[dict], top: int) -> List[Tuple[str, int]]:
         counts = Counter()

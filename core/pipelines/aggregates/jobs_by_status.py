@@ -41,7 +41,7 @@ class JobsByStatus:
         per_day = defaultdict(Counter)
         for j in jobs:
             name = (j.get("name") or "").strip()
-            if name.lower() != job_name.lower():
+            if name.lower() != job_name:
                 continue
             created = j.get("created_at") or j.get("started_at")
             if created:
@@ -90,7 +90,7 @@ class JobsByStatus:
         per_week = defaultdict(Counter)
         for j in jobs:
             name = (j.get("name") or "").strip()
-            if name.lower() != job_name.lower():
+            if name.lower() != job_name:
                 continue
             created = j.get("created_at") or j.get("started_at")
             if created:

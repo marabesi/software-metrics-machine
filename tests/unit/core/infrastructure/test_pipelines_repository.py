@@ -201,7 +201,7 @@ class TestPipelinesRepository:
             result = loader.get_unique_workflow_paths()
             assert len(result) == 4
 
-    def test_get_unique_jobsV_name(self):
+    def test_get_unique_jobs_name(self):
         jobs_with_duplicated_paths = [
             {
                 "name": "Deploy",
@@ -229,6 +229,42 @@ class TestPipelinesRepository:
 
             result = loader.get_unique_jobs_name()
             assert len(result) == 3
+
+    def test_get_unique_jobs_name_filtered_by_pipeline(self):
+        pipelines = github_workflows_data()
+        jobs_with_duplicated_paths = [
+            {
+                "id": 1,
+                "run_id": pipelines[0]["id"],
+                "name": "Build",
+            },
+            {
+                "id": 2,
+                "run_id": pipelines[1]["id"],
+                "name": "Deploy",
+            },
+        ]
+
+        def mocked_read_file_if_exists(file):
+            if file == "workflows.json":
+                return as_json_string(pipelines)
+            elif file == "jobs.json":
+                return as_json_string(jobs_with_duplicated_paths)
+            raise FileNotFoundError(f"File {file} not found")
+
+        with patch(
+            "core.infrastructure.file_system_base_repository.FileSystemBaseRepository.read_file_if_exists",
+            side_effect=mocked_read_file_if_exists,
+        ):
+            loader = PipelinesRepository(configuration=InMemoryConfiguration("."))
+
+            filter_by = pipelines[0]["path"]
+            filters = {"path": filter_by}
+
+            result = loader.get_unique_jobs_name(filters=filters)
+
+            assert len(result) == 2
+            assert "Build" == result[1]
 
     def test_get_unique_pipelines_conclusions(self):
         workflows_with_duplicated_paths = as_json_string(

@@ -49,6 +49,10 @@ class PipelinesRepository(FileSystemBaseRepository):
         if name:
             runs = [job for job in self.all_jobs if (job.get("name") or "") == name]
 
+        run_id = filters.get("run_id")
+        if run_id:
+            runs = [job for job in runs if job.get("run_id") == run_id]
+
         return runs
 
     def runs(self, filters=None) -> List[PipelineRun]:
@@ -144,8 +148,22 @@ class PipelinesRepository(FileSystemBaseRepository):
         listWithPaths.insert(0, "All")
         return listWithPaths
 
-    def get_unique_jobs_name(self) -> List[str]:
-        job_names = {job.get("name", "") for job in self.all_jobs if "name" in job}
+    def get_unique_jobs_name(self, filters=None) -> List[str]:
+        jobs = []
+        if filters:
+            runs = self.runs()
+            id = None
+
+            for run in runs:
+                if run["path"] == filters.get("path"):
+                    id = run.get("id", None)
+                    break
+
+            jobs = self.jobs({"run_id": id})
+        else:
+            jobs = self.jobs()
+
+        job_names = {job.get("name", "") for job in jobs if "name" in job}
         list_all = list(job_names)
         list_all.insert(0, "All")
         return list_all

@@ -17,7 +17,9 @@ from core.prs.prs_repository import PrsRepository
 pn.extension("tabulator")
 
 
-def prs_section(date_range_picker, repository: PrsRepository):
+def prs_section(
+    date_range_picker, author_select, label_selector, repository: PrsRepository
+):
     def normalize_label(selected_labels):
         if len(selected_labels) == 0:
             return None
@@ -29,24 +31,30 @@ def prs_section(date_range_picker, repository: PrsRepository):
         return ",".join(author_select)
 
     def plot_average_prs_open_by(date_range_picker, selected_labels, author_select):
-        return ViewAverageOfPrsOpenBy(repository=repository).main(
-            start_date=date_range_picker[0],
-            end_date=date_range_picker[1],
-            labels=normalize_label(selected_labels),
-            authors=normalize_authors(author_select),
+        return (
+            ViewAverageOfPrsOpenBy(repository=repository)
+            .main(
+                start_date=date_range_picker[0],
+                end_date=date_range_picker[1],
+                labels=normalize_label(selected_labels),
+                authors=normalize_authors(author_select),
+            )
+            .plot
         )
 
     def plot_average_review_time_by_author(
         date_range_picker, selected_labels, author_select
     ):
-        return ViewAverageReviewTimeByAuthor(
-            repository=repository
-        ).plot_average_open_time(
-            title="Average Review Time By Author",
-            start_date=date_range_picker[0],
-            end_date=date_range_picker[1],
-            labels=normalize_label(selected_labels),
-            authors=normalize_authors(author_select),
+        return (
+            ViewAverageReviewTimeByAuthor(repository=repository)
+            .plot_average_open_time(
+                title="Average Review Time By Author",
+                start_date=date_range_picker[0],
+                end_date=date_range_picker[1],
+                labels=normalize_label(selected_labels),
+                authors=normalize_authors(author_select),
+            )
+            .plot
         )
 
     def plot_prs_through_time(date_range_picker, author_select):
@@ -62,38 +70,19 @@ def prs_section(date_range_picker, repository: PrsRepository):
         )
 
     def plot_prs_by_author(date_range_picker, selected_labels):
-        return ViewPrsByAuthor(repository=repository).plot_top_authors(
-            title="PRs By Author",
-            start_date=date_range_picker[0],
-            end_date=date_range_picker[1],
-            labels=normalize_label(selected_labels),
+        return (
+            ViewPrsByAuthor(repository=repository)
+            .plot_top_authors(
+                title="PRs By Author",
+                start_date=date_range_picker[0],
+                end_date=date_range_picker[1],
+                labels=normalize_label(selected_labels),
+            )
+            .plot
         )
-
-    unique_authors = repository.get_unique_authors()
-    unique_labels = repository.get_unique_labels()
-
-    label_names = [label["label_name"] for label in unique_labels]
-
-    author_select = pn.widgets.MultiChoice(
-        name="Select Authors",
-        options=unique_authors,
-        placeholder="Select authors to filter, by the default all are included",
-        value=[],
-    )
-
-    label_selector = pn.widgets.MultiChoice(
-        name="Select Labels",
-        options=label_names,
-        placeholder="Select labels to filter, by the default all are included",
-        value=[],
-    )
 
     views = pn.Column(
         "## Pull requests",
-        pn.Row(
-            pn.Column(author_select, sizing_mode="stretch_width"),
-            pn.Column(label_selector, sizing_mode="stretch_width"),
-        ),
         pn.Row(
             pn.panel(
                 pn.bind(plot_prs_through_time, date_range_picker, author_select),

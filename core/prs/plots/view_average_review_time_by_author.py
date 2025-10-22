@@ -1,6 +1,7 @@
-import matplotlib.pyplot as plt
+import pandas as pd
 
-from core.infrastructure.base_viewer import BaseViewer
+from core.infrastructure.base_viewer import BaseViewer, PlotResult
+from core.infrastructure.barchart_stacked import build_barchart
 from core.prs.prs_repository import PrsRepository
 from collections import defaultdict
 from typing import List, Tuple
@@ -21,7 +22,7 @@ class ViewAverageReviewTimeByAuthor(BaseViewer):
         start_date: str | None = None,
         end_date: str | None = None,
         authors: str | None = None,
-    ) -> None:
+    ) -> PlotResult:
         """pairs: list of (author, avg_days)"""
 
         pairs = self.repository.prs_with_filters(
@@ -44,20 +45,33 @@ class ViewAverageReviewTimeByAuthor(BaseViewer):
             print("No PRs to plot after filtering")
 
         authors, avgs = zip(*pairs)
-        # horizontal bar chart with largest on top
-        fig, ax = plt.subplots(figsize=(super().get_fig_size()))
-        y_pos = range(len(authors))[::-1]
-        ax.barh(y_pos, avgs, color="#4c78a8")
-        ax.set_yticks(y_pos)
-        ax.set_yticklabels(authors)
-        ax.set_xlabel("Average days PR open before merged")
-        ax.set_title(title)
 
-        for i, v in enumerate(avgs):
-            ax.text(v + max(0.1, max(avgs) * 0.01), y_pos[i], f"{v:.2f}", va="center")
+        data = []
+        for name, val in zip(authors, avgs):
+            data.append({"author": name, "avg_days": val})
 
-        fig.tight_layout()
-        return super().output(plt, fig, out_file, repository=self.repository)
+        title = title or "Average Review Time By Author"
+
+        chart = build_barchart(
+            data,
+            x="author",
+            y="avg_days",
+            stacked=False,
+            height=super().get_chart_height(),
+            title=title,
+            xrotation=0,
+            label_generator=super().build_labels_above_bars,
+            out_file=out_file,
+            tools=super().get_tools(),
+            color=super().get_color(),
+        )
+
+        df = (
+            pd.DataFrame(pairs, columns=["author", "avg_days"])
+            if pairs
+            else pd.DataFrame()
+        )
+        return PlotResult(plot=chart, data=df)
 
     def __average_open_time_by_author(
         self, prs: List[dict], top: int

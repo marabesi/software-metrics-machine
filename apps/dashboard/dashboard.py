@@ -49,7 +49,9 @@ workflow_selector = pn.widgets.Select(
     options=workflow_names,
 )
 
-job_names = workflow_repository.get_unique_jobs_name()
+job_names = workflow_repository.get_unique_jobs_name(
+    {"path": sanitize_all_argument(workflow_selector.value)}
+)
 
 jobs_selector = pn.widgets.Select(
     name="Select job",
@@ -58,7 +60,7 @@ jobs_selector = pn.widgets.Select(
 )
 
 workflow_conclusions = workflow_repository.get_unique_workflow_conclusions(
-    {"path": sanitize_all_argument(workflow_selector)}
+    {"path": sanitize_all_argument(workflow_selector.value)}
 )
 selected_conclusion = None
 if len(workflow_conclusions) > 0:
@@ -71,10 +73,7 @@ workflow_conclusions = pn.widgets.Select(
     options=workflow_conclusions,
     value=selected_conclusion,
 )
-header_section = pn.Row(
-    pn.Column(start_end_date_picker, workflow_selector, workflow_conclusions),
-    sizing_mode="stretch_width",
-)
+
 header_section_prs = pn.Row()
 header_section_pipeline = pn.Row()
 
@@ -88,16 +87,32 @@ pipeline_section = pipeline_section(
     workflow_conclusions=workflow_conclusions,
     repository=workflow_repository,
 )
-prs_section = prs_section(start_end_date_picker, repository=prs_repository)
 source_code_section = source_code_section(
     repository=codemaat_repository, start_end_date_picker=start_end_date_picker
 )
 configuration_section = configuration_section(configuration)
 
-template = FastListTemplate(
-    title=f"{configuration.github_repository} - {configuration.git_provider.title()}",
-    right_sidebar=[header_section],
-    accent=configuration.dashboard_color,
+unique_authors = prs_repository.get_unique_authors()
+unique_labels = prs_repository.get_unique_labels()
+
+label_names = [label["label_name"] for label in unique_labels]
+
+author_select = pn.widgets.MultiChoice(
+    name="Select Authors",
+    options=unique_authors,
+    placeholder="Select authors to filter, by the default all are included",
+    value=[],
+)
+
+label_selector = pn.widgets.MultiChoice(
+    name="Select Labels",
+    options=label_names,
+    placeholder="Select labels to filter, by the default all are included",
+    value=[],
+)
+
+prs_section = prs_section(
+    start_end_date_picker, author_select, label_selector, repository=prs_repository
 )
 
 tabs = pn.Tabs(
@@ -108,6 +123,24 @@ tabs = pn.Tabs(
     ("Configuration", configuration_section),
     sizing_mode="stretch_width",
     active=1,
+)
+
+header_section = pn.Column(
+    pn.Column(
+        pn.Row(
+            pn.Column(start_end_date_picker, workflow_selector, workflow_conclusions),
+        )
+    ),
+    pn.Row(
+        pn.Column(author_select, label_selector),
+    ),
+    sizing_mode="stretch_width",
+)
+
+template = FastListTemplate(
+    title=f"{configuration.github_repository} - {configuration.git_provider.title()}",
+    right_sidebar=[header_section],
+    accent=configuration.dashboard_color,
 )
 
 template.main.append(tabs)

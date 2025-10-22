@@ -1,9 +1,12 @@
-import matplotlib.pyplot as plt
-import matplotlib.dates as mdates
+import pandas as pd
 from datetime import datetime, date, timedelta
 
-from core.infrastructure.base_viewer import BaseViewer
+from core.infrastructure.base_viewer import BaseViewer, PlotResult
 from core.prs.prs_repository import PrsRepository
+from core.infrastructure.barchart_with_lines import build_barchart_with_lines
+import holoviews as hv
+
+hv.extension("bokeh")
 
 
 class ViewAverageOfPrsOpenBy(BaseViewer):
@@ -19,7 +22,7 @@ class ViewAverageOfPrsOpenBy(BaseViewer):
         aggregate_by: str = "week",
         start_date: str | None = None,
         end_date: str | None = None,
-    ):
+    ) -> PlotResult:
         prs = self.repository.all_prs
 
         prs = self.repository.prs_with_filters(
@@ -52,98 +55,66 @@ class ViewAverageOfPrsOpenBy(BaseViewer):
                         continue
 
             title = "Average PR Open Days by Week"
-            xlabel = "Week"
+            # xlabel = "Week"
         else:
             x_vals, y_vals = self.repository.average_by_month(
                 author=author, labels=labels, prs=prs
             )
             title = "Average PR Open Days by Month"
-            xlabel = "Month"
+            # xlabel = "Month"
 
-        fig, ax = plt.subplots(figsize=super().get_fig_size())
+        # prepare x/y
         if aggregate_by == "week":
-            # plot using datetime x values
-            ax.plot(week_dates, y_vals, marker="o", color="tab:blue")
-            for i, avg in enumerate(y_vals):
-                if i < len(week_dates):
-                    ax.annotate(
-                        f"{avg:.1f}",
-                        (week_dates[i], avg),
-                        textcoords="offset points",
-                        xytext=(0, 5),
-                        ha="center",
-                    )
-
-            # draw month boundary lines and label months
-            if week_dates:
-                start = week_dates[0].date().replace(day=1)
-                end_dt = week_dates[-1].date()
-
-                # build list of month starts from start to end
-                month_starts = []
+            x = [pd.to_datetime(dt) for dt in week_dates]
+            # compute month_starts for vlines and month labels
+            start = x[0].date().replace(day=1) if x else None
+            end_dt = x[-1].date() if x else None
+            month_starts = []
+            if start and end_dt:
                 cur = start
                 while cur <= end_dt:
                     month_starts.append(cur)
-                    # advance one month
                     if cur.month == 12:
                         cur = date(cur.year + 1, 1, 1)
                     else:
                         cur = date(cur.year, cur.month + 1, 1)
-
-                # plot vertical lines at each month start
-                ylim = ax.get_ylim()
-                for ms in month_starts:
-                    ax.axvline(
-                        datetime(ms.year, ms.month, ms.day),
-                        color="#CCCCCC",
-                        linestyle="--",
-                        linewidth=0.7,
-                    )
-
-                # place month labels centered between month starts
-                for i in range(len(month_starts)):
-                    ms = month_starts[i]
-                    if i + 1 < len(month_starts):
-                        nxt = month_starts[i + 1]
-                    else:
-                        nxt = end_dt + timedelta(days=1)
-                    mid = (
-                        datetime.combine(ms, datetime.min.time())
-                        + (
-                            datetime.combine(nxt, datetime.min.time())
-                            - datetime.combine(ms, datetime.min.time())
-                        )
-                        / 2
-                    )
-                    ax.text(
-                        mid,
-                        ylim[1] * 0.98,
-                        ms.strftime("%b %Y"),
-                        ha="center",
-                        va="top",
-                        fontsize=8,
-                        bbox=dict(facecolor="white", alpha=0.7, edgecolor="none"),
-                    )
-
-            # use a date formatter for x axis
-            ax.xaxis.set_major_locator(mdates.WeekdayLocator(byweekday=mdates.MO))
-            ax.xaxis.set_major_formatter(mdates.DateFormatter("%Y-%m-%d"))
-            fig.autofmt_xdate()
-
-        else:
-            ax.plot(x_vals, y_vals, marker="o", color="tab:blue")
-            for i, avg in enumerate(y_vals):
-                ax.annotate(
-                    f"{avg:.1f}",
-                    (x_vals[i], avg),
-                    textcoords="offset points",
-                    xytext=(0, 5),
-                    ha="center",
+            vlines = [datetime(ms.year, ms.month, ms.day) for ms in month_starts]
+            extra_labels = []
+            ylim_top = max(y_vals) if y_vals else 1
+            for i in range(len(month_starts)):
+                ms = month_starts[i]
+                if i + 1 < len(month_starts):
+                    nxt = month_starts[i + 1]
+                else:
+                    nxt = end_dt + timedelta(days=1)
+                mid = (
+                    pd.to_datetime(ms) + (pd.to_datetime(nxt) - pd.to_datetime(ms)) / 2
                 )
-        ax.set_title(title)
-        ax.set_xlabel(xlabel)
-        ax.set_ylabel("Average Days Open")
-        plt.xticks(rotation=45)
-        fig.tight_layout()
+                extra_labels.append(
+                    {"x": mid, "y": ylim_top * 0.98, "text": ms.strftime("%b %Y")}
+                )
+        else:
+            x = [pd.to_datetime(v) for v in x_vals]
+            vlines = None
+            extra_labels = None
 
-        return super().output(plt, fig, out_file, repository=self.repository)
+        y = y_vals
+
+        data = [{"x": xi, "y": yi} for xi, yi in zip(x, y)]
+
+        chart = build_barchart_with_lines(
+            data,
+            x="x",
+            y="y",
+            title=title,
+            height=super().get_chart_height(),
+            xrotation=45,
+            label_generator=super().build_labels_above_bars,
+            vlines=vlines,
+            extra_labels=extra_labels,
+            out_file=out_file,
+            tools=super().get_tools(),
+        )
+
+        df = pd.DataFrame({"x": x, "y": y})
+        return PlotResult(plot=chart, data=df)
