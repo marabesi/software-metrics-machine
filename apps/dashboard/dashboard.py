@@ -47,6 +47,7 @@ workflow_selector = pn.widgets.Select(
     name="Select pipeline",
     description="Select pipeline",
     options=workflow_names,
+    value=configuration.deployment_frequency_target_pipeline,
 )
 
 
@@ -74,8 +75,9 @@ def _update_jobs_selector_for_workflow(path):
     options = workflow_repository.get_unique_jobs_name(
         {"path": sanitize_all_argument(path)}
     )
-    # keep the first option as default if available
-    default = options[0] if options and len(options) > 0 else None
+
+    # keep the last option as default if available
+    default = options[len(options) - 1] if options and len(options) > 0 else None
     jobs_selector.options = options
     # only override value if current value is None or not in new options
     if jobs_selector.value is None or jobs_selector.value not in options:
