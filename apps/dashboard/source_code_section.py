@@ -72,17 +72,25 @@ def source_code_section(repository: CodemaatRepository, start_end_date_picker):
         return pn.panel(chart, sizing_mode="stretch_width")
 
     def plot_entity_effort(ignore_pattern, top):
-        chart = EntityEffortViewer(repository=repository).render_treemap(
-            top_n=int(top),
-            ignore_files=ignore_pattern,
+        chart = (
+            EntityEffortViewer(repository=repository)
+            .render_treemap(
+                top_n=int(top),
+                ignore_files=ignore_pattern,
+            )
+            .plot
         )
         return pn.panel(chart, sizing_mode="stretch_width")
 
     def plot_entity_ownership(ignore_pattern, authors, top):
-        chart = EntityOnershipViewer(repository=repository).render(
-            ignore_files=ignore_pattern,
-            authors=",".join(authors),
-            top_n=int(top),
+        chart = (
+            EntityOnershipViewer(repository=repository)
+            .render(
+                ignore_files=ignore_pattern,
+                authors=",".join(authors),
+                top_n=int(top),
+            )
+            .plot
         )
         return pn.panel(chart, sizing_mode="stretch_width")
 
@@ -124,6 +132,7 @@ def source_code_section(repository: CodemaatRepository, start_end_date_picker):
 
     return pn.Column(
         "## Source code Section",
+        pn.layout.Divider(),
         pn.Row(
             pn.Column(
                 "## Code Churn",

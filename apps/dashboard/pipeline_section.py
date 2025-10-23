@@ -113,9 +113,10 @@ def pipeline_section(
 
     views = pn.Column(
         "## Pipeline",
+        pn.layout.Divider(),
         pn.Row(
             pn.panel(
-                pn.bind(plot_failed_pipelines, date_range_picker),
+                pn.bind(plot_failed_pipelines, date_range_picker.param.value),
                 sizing_mode="stretch_width",
             ),
             sizing_mode="stretch_width",
@@ -128,9 +129,9 @@ def pipeline_section(
             pn.panel(
                 pn.bind(
                     plot_workflow_by_status,
-                    date_range_picker,
-                    workflow_selector,
-                    workflow_conclusions,
+                    date_range_picker.param.value,
+                    workflow_selector.param.value,
+                    workflow_conclusions.param.value,
                 ),
                 sizing_mode="stretch_width",
             ),
@@ -140,9 +141,9 @@ def pipeline_section(
             pn.panel(
                 pn.bind(
                     plot_workflow_run_by,
-                    date_range_picker,
-                    workflow_selector,
-                    workflow_conclusions,
+                    date_range_picker.param.value,
+                    workflow_selector.param.value,
+                    workflow_conclusions.param.value,
                 ),
                 sizing_mode="stretch_width",
             ),
@@ -152,9 +153,9 @@ def pipeline_section(
             pn.panel(
                 pn.bind(
                     plot_workflow_run_duration,
-                    date_range_picker,
-                    workflow_selector,
-                    workflow_conclusions,
+                    date_range_picker.param.value,
+                    workflow_selector.param.value,
+                    workflow_conclusions.param.value,
                 ),
                 sizing_mode="stretch_width",
             ),

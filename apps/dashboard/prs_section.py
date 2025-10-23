@@ -83,9 +83,14 @@ def prs_section(
 
     views = pn.Column(
         "## Pull requests",
+        pn.layout.Divider(),
         pn.Row(
             pn.panel(
-                pn.bind(plot_prs_through_time, date_range_picker, author_select),
+                pn.bind(
+                    plot_prs_through_time,
+                    date_range_picker.param.value,
+                    author_select.param.value,
+                ),
                 sizing_mode="stretch_width",
             ),
             sizing_mode="stretch_width",
@@ -96,9 +101,9 @@ def prs_section(
                 pn.panel(
                     pn.bind(
                         plot_average_prs_open_by,
-                        date_range_picker,
-                        label_selector,
-                        author_select,
+                        date_range_picker.param.value,
+                        label_selector.param.value,
+                        author_select.param.value,
                     ),
                     sizing_mode="stretch_width",
                 ),
@@ -112,9 +117,9 @@ def prs_section(
                 pn.panel(
                     pn.bind(
                         plot_average_review_time_by_author,
-                        date_range_picker,
-                        label_selector,
-                        author_select,
+                        date_range_picker.param.value,
+                        label_selector.param.value,
+                        author_select.param.value,
                     ),
                     sizing_mode="stretch_width",
                 ),
@@ -126,7 +131,11 @@ def prs_section(
             pn.Column(
                 "### PRs By Author",
                 pn.panel(
-                    pn.bind(plot_prs_by_author, date_range_picker, label_selector),
+                    pn.bind(
+                        plot_prs_by_author,
+                        date_range_picker.param.value,
+                        label_selector.param.value,
+                    ),
                     sizing_mode="stretch_width",
                 ),
                 sizing_mode="stretch_width",

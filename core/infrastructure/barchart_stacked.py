@@ -37,6 +37,20 @@ def build_barchart(
         # return an empty placeholder so callers can safely render
         return hv.Text(0.5, 0.5, "No data available")
 
+    # Hook to remove borders around bars by modifying the underlying Bokeh glyphs
+    def _remove_bar_borders(plot, element):
+        try:
+            renderers = getattr(plot.state, "renderers", [])
+            for r in renderers:
+                glyph = getattr(r, "glyph", None)
+                if glyph is not None:
+                    # bokeh glyphs use line_color for borders
+                    if hasattr(glyph, "line_color"):
+                        glyph.line_color = None
+        except Exception:
+            # don't fail plotting if hook can't run
+            pass
+
     if group and stacked:
         bars = hv.Bars(df, [x, group], y).opts(
             stacked=True,
@@ -44,12 +58,14 @@ def build_barchart(
             height=height or 400,
             xrotation=xrotation,
             title=title or "",
+            hooks=[_remove_bar_borders],
         )
     else:
         bars = hv.Bars(df, x, y).opts(
             height=height or 400,
             xrotation=xrotation,
             title=title or "",
+            hooks=[_remove_bar_borders],
         )
 
     labels = None

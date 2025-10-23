@@ -28,7 +28,8 @@ class CodeChurnViewer(BaseViewer, Viewable):
         if df is None or df.empty:
             print("No code churn data available to plot")
             # Return an informative placeholder (build_barchart will also handle empty data)
-            return hv.Text(0.5, 0.5, "No code churn data available")
+            plot = hv.Text(0.5, 0.5, "No code churn data available")
+            return PlotResult(plot=plot, data=pd.DataFrame([]))
 
         if "date" not in df:
             df["date"] = []

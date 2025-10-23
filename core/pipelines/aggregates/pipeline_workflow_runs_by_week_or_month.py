@@ -1,8 +1,8 @@
 from collections import defaultdict
 from dataclasses import dataclass
 from datetime import datetime
+from typing import List
 
-from git import List
 
 from core.infrastructure.base_viewer import BaseViewer
 from core.pipelines.pipelines_repository import PipelinesRepository

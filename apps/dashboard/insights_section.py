@@ -47,16 +47,16 @@ def insights_section(repository: PipelinesRepository, date_range_picker):
 
     return pn.Column(
         "# Insight section",
+        pn.layout.Divider(),
         pn.Row(
-            pn.Column("## Pipeline"),
-        ),
-        pn.Row(
-            pn.Column(pn.bind(workflow_run_duration, date_range_picker)),
+            pn.Column(pn.bind(workflow_run_duration, date_range_picker.param.value)),
         ),
         pn.Row(
             pn.Column("## Deployment Frequency"),
         ),
         pn.Row(
-            pn.Column(pn.bind(plot_deployment_frequency, date_range_picker)),
+            pn.Column(
+                pn.bind(plot_deployment_frequency, date_range_picker.param.value)
+            ),
         ),
     )

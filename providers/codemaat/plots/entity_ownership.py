@@ -1,9 +1,12 @@
-import matplotlib.pyplot as plt
 import pandas as pd
+import holoviews as hv
 
-from core.infrastructure.base_viewer import BaseViewer
+from core.infrastructure.base_viewer import BaseViewer, PlotResult
 from core.infrastructure.viewable import Viewable
+from core.infrastructure.barchart_stacked import build_barchart
 from providers.codemaat.codemaat_repository import CodemaatRepository
+
+hv.extension("bokeh")
 
 
 class EntityOnershipViewer(BaseViewer, Viewable):
@@ -16,18 +19,17 @@ class EntityOnershipViewer(BaseViewer, Viewable):
         ignore_files: str | None = None,
         out_file: str | None = None,
         authors: str | None = None,
-    ) -> None:
+    ) -> PlotResult:
         repo = self.repository
         df = repo.get_entity_ownership(authors.split(",") if authors else [])
 
-        if df.empty:
-            # Create an empty DataFrame with expected columns
-            df = pd.DataFrame(columns=["entity", "author", "added", "deleted"])
-            print("No entity ownership data available to plot")
+        if df is None or df.empty:
+            return PlotResult(
+                plot=hv.Text(0.5, 0.5, "No entity ownership data available"),
+                data=pd.DataFrame(),
+            )
 
         df = repo.apply_ignore_file_patterns(df, ignore_files)
-
-        print(f"Found {len(df)} row for entity ownership")
 
         ownership = (
             df.groupby(["entity", "author"])[["added", "deleted"]].sum().reset_index()
@@ -43,40 +45,68 @@ class EntityOnershipViewer(BaseViewer, Viewable):
         )
         ownership = ownership[ownership["entity"].isin(top_entities)]
 
-        pivot = ownership.pivot(
-            index="entity", columns="author", values="added"
-        ).fillna(0)
-        pivot_deleted = ownership.pivot(
-            index="entity", columns="author", values="deleted"
-        ).fillna(0)
-
-        fig, ax = plt.subplots(figsize=super().get_fig_size())
-        bottom = None
-        for author in pivot.columns:
-            ax.bar(pivot.index, pivot[author], label=f"{author} added", bottom=bottom)
-            if bottom is None:
-                bottom = pivot[author]
-            else:
-                bottom += pivot[author]
-
-        bottom_deleted = None
-        for author in pivot_deleted.columns:
-            ax.bar(
-                pivot_deleted.index,
-                pivot_deleted[author],
-                label=f"{author} deleted",
-                bottom=bottom_deleted,
-                alpha=0.5,
+        # Prepare data for build_barchart: one dataset for "added" and one for "deleted"
+        data_added = []
+        data_deleted = []
+        for _, row in ownership.iterrows():
+            data_added.append(
+                {
+                    "entity": row["entity"],
+                    "author": row["author"],
+                    "value": row.get("added", 0),
+                }
             )
-            if bottom_deleted is None:
-                bottom_deleted = pivot_deleted[author]
-            else:
-                bottom_deleted += pivot_deleted[author]
+            data_deleted.append(
+                {
+                    "entity": row["entity"],
+                    "author": row["author"],
+                    "value": row.get("deleted", 0),
+                }
+            )
 
-        ax.set_xlabel("Entity")
-        ax.set_ylabel("Lines Changed")
-        ax.set_title("Entity Ownership: Lines Added and Deleted per Author")
-        plt.xticks(rotation=45, ha="right")
-        ax.legend(loc="upper right", bbox_to_anchor=(1.2, 1))
-        plt.tight_layout()
-        return super().output(plt, fig, out_file=out_file, repository=repo)
+        # Build stacked bars for added (stacked by author)
+        bars_added = build_barchart(
+            data_added,
+            x="entity",
+            y="value",
+            group="author",
+            stacked=True,
+            height=super().get_chart_height(),
+            title="Entity Ownership: Lines Added per Author",
+            xrotation=45,
+            label_generator=super().build_labels_above_bars,
+            out_file=out_file,
+            tools=super().get_tools(),
+            color=super().get_color(),
+        )
+
+        # Build stacked bars for deleted and overlay with transparency
+        bars_deleted = build_barchart(
+            data_deleted,
+            x="entity",
+            y="value",
+            group="author",
+            stacked=True,
+            height=super().get_chart_height(),
+            title="",
+            xrotation=45,
+            label_generator=None,
+            out_file=None,
+            tools=super().get_tools(),
+            color=super().get_color(),
+        )
+
+        # Apply a lower alpha to deleted bars so they visually overlay
+        try:
+            bars_deleted = bars_deleted.opts(alpha=0.5)
+        except Exception:
+            pass
+
+        chart = bars_added * bars_deleted
+
+        try:
+            chart = chart.opts(sizing_mode="stretch_width")
+        except Exception:
+            pass
+
+        return PlotResult(plot=chart, data=ownership)

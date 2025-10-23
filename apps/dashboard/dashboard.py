@@ -15,7 +15,23 @@ from providers.codemaat.codemaat_repository import CodemaatRepository
 from core.prs.prs_repository import PrsRepository
 from core.pipelines.pipelines_repository import PipelinesRepository
 
-pn.extension("tabulator")
+pn.extension("tabulator", "notifications")
+
+# Disable automatic Holoviews axis-linking preprocessor to avoid dtype comparison
+# errors when plots with incompatible axis dtypes (e.g., datetime vs numeric)
+# are rendered/updated together. This prevents Panel's link_axes hook from
+# running during layout preprocessing and avoids ufunc dtype promotion errors.
+try:
+    import panel.pane.holoviews as _ph
+
+    _ph.Viewable._preprocessing_hooks = [
+        h
+        for h in _ph.Viewable._preprocessing_hooks
+        if getattr(h, "__name__", "") != "link_axes"
+    ]
+except Exception:
+    # best-effort; if this fails we continue without disabling the hook
+    print("Warning: could not disable Holoviews axis-linking preprocessing hook")
 
 
 def sanitize_all_argument(selected_value):
@@ -150,6 +166,7 @@ tabs = pn.Tabs(
     ("Source code", source_code_section),
     ("Configuration", configuration_section),
     sizing_mode="stretch_width",
+    dynamic=False,
     active=1,
 )
 
@@ -173,6 +190,7 @@ template = FastListTemplate(
     title=f"{configuration.github_repository} - {configuration.git_provider.title()}",
     right_sidebar=[header_section],
     accent=configuration.dashboard_color,
+    collapsed_right_sidebar=False,
 )
 
 template.main.append(tabs)
