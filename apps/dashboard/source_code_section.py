@@ -53,28 +53,36 @@ def source_code_section(repository: CodemaatRepository, start_end_date_picker):
     pre_selected_values.param.watch(update_ignore_pattern, "value")
 
     def plot_code_churn(date_range_picker):
-        return CodeChurnViewer(repository=repository).render(
-            start_date=date_range_picker[0],
-            end_date=date_range_picker[1],
+        chart = (
+            CodeChurnViewer(repository=repository)
+            .render(
+                start_date=date_range_picker[0],
+                end_date=date_range_picker[1],
+            )
+            .plot
         )
+        return pn.panel(chart, sizing_mode="stretch_width")
 
     def plot_entity_churn(ignore_pattern, top):
-        return EntityChurnViewer(repository=repository).render(
+        chart = EntityChurnViewer(repository=repository).render(
             ignore_files=ignore_pattern, top_n=int(top)
         )
+        return pn.panel(chart, sizing_mode="stretch_width")
 
     def plot_entity_effort(ignore_pattern, top):
-        return EntityEffortViewer(repository=repository).render_treemap(
+        chart = EntityEffortViewer(repository=repository).render_treemap(
             top_n=int(top),
             ignore_files=ignore_pattern,
         )
+        return pn.panel(chart, sizing_mode="stretch_width")
 
     def plot_entity_ownership(ignore_pattern, authors, top):
-        return EntityOnershipViewer(repository=repository).render(
+        chart = EntityOnershipViewer(repository=repository).render(
             ignore_files=ignore_pattern,
             authors=",".join(authors),
             top_n=int(top),
         )
+        return pn.panel(chart, sizing_mode="stretch_width")
 
     # Refactor plot_code_coupling to include zoom and pan controls using Panel sliders
     def plot_code_coupling_with_controls():
@@ -117,7 +125,7 @@ def source_code_section(repository: CodemaatRepository, start_end_date_picker):
         pn.Row(
             pn.Column(
                 "## Code Churn",
-                pn.bind(plot_code_churn, start_end_date_picker),
+                pn.bind(plot_code_churn, start_end_date_picker.param.value),
             ),
             sizing_mode="stretch_width",
         ),
@@ -130,14 +138,22 @@ def source_code_section(repository: CodemaatRepository, start_end_date_picker):
         pn.Row(
             pn.Column(
                 "## Entity Churn",
-                pn.bind(plot_entity_churn, ignore_pattern_files, top_entries),
+                pn.bind(
+                    plot_entity_churn,
+                    ignore_pattern_files.param.value,
+                    top_entries.param.value,
+                ),
             ),
             sizing_mode="stretch_width",
         ),
         pn.Row(
             pn.Column(
                 "## Entity Effort",
-                pn.bind(plot_entity_effort, ignore_pattern_files, top_entries),
+                pn.bind(
+                    plot_entity_effort,
+                    ignore_pattern_files.param.value,
+                    top_entries.param.value,
+                ),
             ),
             sizing_mode="stretch_width",
         ),
@@ -147,9 +163,9 @@ def source_code_section(repository: CodemaatRepository, start_end_date_picker):
                 "## Entity Ownership",
                 pn.bind(
                     plot_entity_ownership,
-                    ignore_pattern_files,
-                    author_select,
-                    top_entries,
+                    ignore_pattern_files.param.value,
+                    author_select.param.value,
+                    top_entries.param.value,
                 ),
             ),
             sizing_mode="stretch_width",

@@ -1,8 +1,12 @@
-import matplotlib.pyplot as plt
+import holoviews as hv
+import pandas as pd
 
-from core.infrastructure.base_viewer import BaseViewer
+from core.infrastructure.base_viewer import BaseViewer, PlotResult
 from core.infrastructure.viewable import Viewable
+from core.infrastructure.barchart_stacked import build_barchart
 from providers.codemaat.codemaat_repository import CodemaatRepository
+
+hv.extension("bokeh")
 
 
 class CodeChurnViewer(BaseViewer, Viewable):
@@ -15,31 +19,51 @@ class CodeChurnViewer(BaseViewer, Viewable):
         out_file: str | None = None,
         start_date: str | None = None,
         end_date: str | None = None,
-    ) -> None:
+    ):  # returns a Holoviews element or Pane
         df = self.repository.get_code_churn(
             {"start_date": start_date, "end_date": end_date}
         )
 
-        if df.empty:
+        # Normalize dataframe columns
+        if df is None or df.empty:
             print("No code churn data available to plot")
+            # Return an informative placeholder (build_barchart will also handle empty data)
+            return hv.Text(0.5, 0.5, "No code churn data available")
 
-        if "date" not in df or "added" not in df or "deleted" not in df:
+        if "date" not in df:
             df["date"] = []
-            df["added"] = []
-            df["deleted"] = []
+        if "added" not in df:
+            df["added"] = 0
+        if "deleted" not in df:
+            df["deleted"] = 0
 
-        dates = df["date"]
-        added = df["added"]
-        deleted = df["deleted"]
+        # Prepare data for a stacked bar chart: one row per (date, type)
+        data = []
+        for _, row in df.iterrows():
+            data.append(
+                {"date": row.get("date"), "type": "Added", "value": row.get("added", 0)}
+            )
+            data.append(
+                {
+                    "date": row.get("date"),
+                    "type": "Deleted",
+                    "value": row.get("deleted", 0),
+                }
+            )
 
-        fig, ax = plt.subplots(figsize=super().get_fig_size())
-        ax.bar(dates, added, label="Added", color="tab:blue")
-        ax.bar(dates, deleted, bottom=added, label="Deleted", color="tab:red")
+        chart = build_barchart(
+            data,
+            x="date",
+            y="value",
+            group="type",
+            stacked=True,
+            height=super().get_chart_height(),
+            title="Code Churn: Lines Added and Deleted per Date",
+            xrotation=45,
+            label_generator=super().build_labels_above_bars,
+            out_file=out_file,
+            tools=super().get_tools(),
+            color=super().get_color(),
+        )
 
-        ax.set_xlabel("Date")
-        ax.set_ylabel("Lines of Code")
-        ax.set_title("Code Churn: Lines Added and Deleted per Date")
-        ax.legend()
-        plt.xticks(rotation=45, ha="right")
-
-        return super().output(plt, fig, out_file=out_file, repository=self.repository)
+        return PlotResult(plot=chart, data=pd.DataFrame(data))
