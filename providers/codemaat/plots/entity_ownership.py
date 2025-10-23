@@ -24,6 +24,8 @@ class EntityOnershipViewer(BaseViewer, Viewable):
         df = repo.get_entity_ownership(authors.split(",") if authors else [])
 
         if df is None or df.empty:
+            print("Found 0 row for entity ownership")
+            print("No entity ownership data available to plot")
             return PlotResult(
                 plot=hv.Text(0.5, 0.5, "No entity ownership data available"),
                 data=pd.DataFrame(),
@@ -34,7 +36,6 @@ class EntityOnershipViewer(BaseViewer, Viewable):
         ownership = (
             df.groupby(["entity", "author"])[["added", "deleted"]].sum().reset_index()
         )
-
         ownership["total"] = ownership["added"] + ownership["deleted"]
         top_entities = (
             ownership.groupby("entity")["total"]

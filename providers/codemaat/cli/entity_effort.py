@@ -33,7 +33,7 @@ def entity_effort(out_file, top, ignore_files):
         configuration=ConfigurationBuilder(Driver.JSON).build()
     )
     viewer = EntityEffortViewer(repository=df_repo)
-    viewer.render(top_n=top, ignore_files=ignore_files, out_file=out_file)
+    viewer.render_treemap(top_n=top, ignore_files=ignore_files, out_file=out_file)
 
 
 command = entity_effort

@@ -42,6 +42,7 @@ class CodemaatRepository(FileSystemBaseRepository):
     def get_entity_effort(self):
         file_path = Path(f"{self.configuration.store_data}/entity-effort.csv")
         if not file_path.exists():
+            print("No entity effort data available to plot")
             return pd.DataFrame()
         return pd.read_csv(file_path)
 
@@ -50,6 +51,7 @@ class CodemaatRepository(FileSystemBaseRepository):
         if not file_path.exists():
             return pd.DataFrame()
         data = pd.read_csv(file_path)
+        print(f"Found {len(data)} row for entity ownership")
         return data[data["author"].isin(authors)] if authors else data
 
     def get_entity_ownership_unique_authors(self):

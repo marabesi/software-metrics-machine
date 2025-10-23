@@ -59,6 +59,7 @@ def build_barchart(
             xrotation=xrotation,
             title=title or "",
             hooks=[_remove_bar_borders],
+            tools=tools,
         )
     else:
         bars = hv.Bars(df, x, y).opts(
@@ -66,6 +67,8 @@ def build_barchart(
             xrotation=xrotation,
             title=title or "",
             hooks=[_remove_bar_borders],
+            tools=tools,
+            color=color,
         )
 
     labels = None

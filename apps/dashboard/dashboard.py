@@ -159,15 +159,59 @@ prs_section = prs_section(
     start_end_date_picker, author_select, label_selector, repository=prs_repository
 )
 
+# Build tabs dynamically from a declarative structure so it's easy to control
+# which header widgets are visible per tab. Each entry contains the tab
+# title, the panel content, and a list of header widget names that should be
+# visible when that tab is active.
+TAB_DEFINITIONS = [
+    {
+        "title": "Insights",
+        "view": insights_section,
+        "show": ["start_end_date_picker"],
+    },
+    {
+        "title": "Pipeline",
+        "view": pipeline_section,
+        "show": [
+            "start_end_date_picker",
+            "workflow_selector",
+            "workflow_conclusions",
+            "jobs_selector",
+        ],
+    },
+    {
+        "title": "Pull requests",
+        "view": prs_section,
+        "show": ["start_end_date_picker", "author_select", "label_selector"],
+    },
+    {
+        "title": "Source code",
+        "view": source_code_section,
+        "show": ["start_end_date_picker"],
+    },
+    {
+        "title": "Configuration",
+        "view": configuration_section,
+        "show": [],
+    },
+]
+
+# Helper map of widget name -> widget instance used by the visibility controller
+_HEADER_WIDGETS = {
+    "start_end_date_picker": start_end_date_picker,
+    "workflow_selector": workflow_selector,
+    "workflow_conclusions": workflow_conclusions,
+    "jobs_selector": jobs_selector,
+    "author_select": author_select,
+    "label_selector": label_selector,
+}
+
+# Build the Tabs from definitions (keeps ordering)
 tabs = pn.Tabs(
-    ("Insights", insights_section),
-    ("Pipeline", pipeline_section),
-    ("Pull requests", prs_section),
-    ("Source code", source_code_section),
-    ("Configuration", configuration_section),
+    *[(t["title"], t["view"]) for t in TAB_DEFINITIONS],
     sizing_mode="stretch_width",
     dynamic=False,
-    active=1,
+    active=3,
 )
 
 header_section = pn.Column(
@@ -197,21 +241,26 @@ template.main.append(tabs)
 
 
 def on_tab_change(event):
-    active_tab(event.new)
+    # event.new is the index of the active tab
+    idx = int(event.new)
+    try:
+        cfg = TAB_DEFINITIONS[idx]
+    except Exception:
+        cfg = {"show": []}
+
+    # show/hide header widgets according to the active tab's `show` list
+    visible_set = set(cfg.get("show", []))
+    for name, widget in _HEADER_WIDGETS.items():
+        try:
+            widget.visible = name in visible_set
+        except Exception:
+            # ignore widgets that may not support visible
+            pass
 
 
 tabs.param.watch(on_tab_change, "active")
 
-
-def active_tab(current_tab: int):
-    if current_tab == 1:
-        workflow_selector.visible = True
-        workflow_conclusions.visible = True
-    else:
-        workflow_selector.visible = False
-        workflow_conclusions.visible = False
-
-
-active_tab(tabs.active)
+# initialize visibility for the current active tab
+on_tab_change(type("E", (), {"new": tabs.active}))
 
 template.servable()
