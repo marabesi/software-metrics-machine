@@ -3,7 +3,7 @@ import holoviews as hv
 
 
 from core.infrastructure.base_viewer import BaseViewer, PlotResult
-from core.infrastructure.barchart_stacked import build_barchart
+from apps.dashboard.components.barchart_stacked import build_barchart
 from core.pipelines.aggregates.pipeline_by_status import PipelineByStatus
 from core.pipelines.pipelines_repository import PipelinesRepository
 

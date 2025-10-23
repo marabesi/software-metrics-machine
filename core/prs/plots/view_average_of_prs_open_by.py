@@ -3,7 +3,7 @@ from datetime import datetime, date, timedelta
 
 from core.infrastructure.base_viewer import BaseViewer, PlotResult
 from core.prs.prs_repository import PrsRepository
-from core.infrastructure.barchart_with_lines import build_barchart_with_lines
+from apps.dashboard.components.barchart_with_lines import build_barchart_with_lines
 import holoviews as hv
 
 hv.extension("bokeh")

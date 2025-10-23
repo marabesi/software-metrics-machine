@@ -2,7 +2,7 @@ from collections import Counter
 import pandas as pd
 
 from core.infrastructure.base_viewer import BaseViewer, PlotResult
-from core.infrastructure.barchart_stacked import build_barchart
+from apps.dashboard.components.barchart_stacked import build_barchart
 from core.prs.prs_repository import PrsRepository
 from typing import List, Tuple
 
