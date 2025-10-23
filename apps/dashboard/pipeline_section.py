@@ -93,8 +93,6 @@ def pipeline_section(
         )
 
     def plot_jobs_by_status(date_range_picker, workflow_selector, jobs_selector):
-        if jobs_selector == "All":
-            return pn.pane.Markdown("")
         return (
             ViewJobsByStatus(repository=repository)
             .main(
@@ -164,17 +162,13 @@ def pipeline_section(
         ),
         pn.Row("## Jobs", sizing_mode="stretch_width"),
         pn.Row(
-            pn.panel(jobs_selector, sizing_mode="stretch_width"),
-            sizing_mode="stretch_width",
-        ),
-        pn.Row(
             pn.panel(
                 pn.bind(
                     plot_view_jobs_by_execution_time,
-                    date_range_picker,
-                    workflow_selector,
-                    workflow_conclusions,
-                    jobs_selector,
+                    date_range_picker.param.value,
+                    workflow_selector.param.value,
+                    workflow_conclusions.param.value,
+                    jobs_selector.param.value,
                 ),
                 sizing_mode="stretch_width",
             ),
@@ -184,9 +178,9 @@ def pipeline_section(
             pn.panel(
                 pn.bind(
                     plot_jobs_by_status,
-                    date_range_picker,
-                    workflow_selector,
-                    jobs_selector,
+                    date_range_picker.param.value,
+                    workflow_selector.param.value,
+                    jobs_selector.param.value,
                 ),
                 sizing_mode="stretch_width",
             ),

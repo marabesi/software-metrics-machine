@@ -49,14 +49,45 @@ workflow_selector = pn.widgets.Select(
     options=workflow_names,
 )
 
-job_names = workflow_repository.get_unique_jobs_name(
-    {"path": sanitize_all_argument(workflow_selector.value)}
-)
+
+def jobs_selector_alone(select):
+    job_names = workflow_repository.get_unique_jobs_name(
+        {"path": sanitize_all_argument(select)}
+    )
+
+    return pn.widgets.Select(
+        name="Select job",
+        description="Select job",
+        options=job_names,
+    )
+
 
 jobs_selector = pn.widgets.Select(
     name="Select job",
     description="Select job",
-    options=job_names,
+    options=[],
+    value=None,
+)
+
+
+def _update_jobs_selector_for_workflow(path):
+    options = workflow_repository.get_unique_jobs_name(
+        {"path": sanitize_all_argument(path)}
+    )
+    # keep the first option as default if available
+    default = options[0] if options and len(options) > 0 else None
+    jobs_selector.options = options
+    # only override value if current value is None or not in new options
+    if jobs_selector.value is None or jobs_selector.value not in options:
+        jobs_selector.value = default
+
+
+# Initialize jobs_selector from current workflow_selector value
+_update_jobs_selector_for_workflow(workflow_selector.value)
+
+# Watch workflow_selector changes to update jobs options/value
+workflow_selector.param.watch(
+    lambda ev: _update_jobs_selector_for_workflow(ev.new), "value"
 )
 
 workflow_conclusions = workflow_repository.get_unique_workflow_conclusions(
@@ -130,6 +161,10 @@ header_section = pn.Column(
         pn.Row(
             pn.Column(start_end_date_picker, workflow_selector, workflow_conclusions),
         )
+    ),
+    pn.Row(
+        pn.panel(jobs_selector, sizing_mode="stretch_width"),
+        sizing_mode="stretch_width",
     ),
     pn.Row(
         pn.Column(author_select, label_selector),

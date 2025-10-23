@@ -150,16 +150,17 @@ class PipelinesRepository(FileSystemBaseRepository):
 
     def get_unique_jobs_name(self, filters=None) -> List[str]:
         jobs = []
-        if filters:
+        if filters and filters.get("path"):
             runs = self.runs()
-            id = None
+            ids = []
 
             for run in runs:
                 if run["path"] == filters.get("path"):
-                    id = run.get("id", None)
-                    break
+                    ids.append(run.get("id", None))
 
-            jobs = self.jobs({"run_id": id})
+            jobs = []
+            for id in ids:
+                jobs += self.jobs({"run_id": id})
         else:
             jobs = self.jobs()
 
