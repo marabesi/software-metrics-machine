@@ -43,29 +43,24 @@ start_end_date_picker = pn.widgets.DateRangePicker(
 
 workflow_names = workflow_repository.get_unique_workflow_paths()
 
-workflow_selector = pn.widgets.Select(
+workflow_selector = pn.widgets.AutocompleteInput(
     name="Select pipeline",
     description="Select pipeline",
+    search_strategy="includes",
+    restrict=False,
+    case_sensitive=False,
+    min_characters=0,
     options=workflow_names,
     value=configuration.deployment_frequency_target_pipeline,
 )
 
-
-def jobs_selector_alone(select):
-    job_names = workflow_repository.get_unique_jobs_name(
-        {"path": sanitize_all_argument(select)}
-    )
-
-    return pn.widgets.Select(
-        name="Select job",
-        description="Select job",
-        options=job_names,
-    )
-
-
-jobs_selector = pn.widgets.Select(
+jobs_selector = pn.widgets.AutocompleteInput(
     name="Select job",
     description="Select job",
+    search_strategy="includes",
+    restrict=False,
+    case_sensitive=False,
+    min_characters=0,
     options=[],
     value=None,
 )
