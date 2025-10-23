@@ -131,9 +131,6 @@ pipeline_section = pipeline_section(
     workflow_conclusions=workflow_conclusions,
     repository=workflow_repository,
 )
-source_code_section = source_code_section(
-    repository=codemaat_repository, start_end_date_picker=start_end_date_picker
-)
 configuration_section = configuration_section(configuration)
 
 unique_authors = prs_repository.get_unique_authors()
@@ -155,8 +152,55 @@ label_selector = pn.widgets.MultiChoice(
     value=[],
 )
 
+ignore_pattern_files = pn.widgets.TextAreaInput(
+    placeholder="Ignore file patterns (comma-separated) - e.g. *.json,**/**/*.png",
+    rows=6,
+    auto_grow=True,
+    max_rows=10,
+)
+
+author_select_source_code = pn.widgets.MultiChoice(
+    name="Select Authors",
+    placeholder="Select authors to filter, by the default all are included",
+    options=codemaat_repository.get_entity_ownership_unique_authors(),
+    value=[],
+)
+
+pre_selected_values = pn.widgets.Select(
+    name="Ignore patterns",
+    options={
+        "None": "",
+        "Js/Ts projects": "*.json,**/**/*.png,*.snap,*.yml,*.yaml,*.md",
+        "Python and Markdown": "*.py,*.md",
+        "All Text Files": "*.txt,*.log",
+    },
+    value="",
+)
+
+top_entries = pn.widgets.Select(
+    name="Limit to top N entries",
+    options={
+        "10": "10",
+        "20": "20",
+        "50": "50",
+        "100": "100",
+        "1000": "1000",
+    },
+    value="10",
+)
+
+
 prs_section = prs_section(
     start_end_date_picker, author_select, label_selector, repository=prs_repository
+)
+
+source_code_section = source_code_section(
+    repository=codemaat_repository,
+    start_end_date_picker=start_end_date_picker,
+    ignore_pattern_files=ignore_pattern_files,
+    author_select_source_code=author_select_source_code,
+    pre_selected_values=pre_selected_values,
+    top_entries=top_entries,
 )
 
 # Build tabs dynamically from a declarative structure so it's easy to control
@@ -187,7 +231,13 @@ TAB_DEFINITIONS = [
     {
         "title": "Source code",
         "view": source_code_section,
-        "show": ["start_end_date_picker"],
+        "show": [
+            "start_end_date_picker",
+            "ignore_pattern_files",
+            "author_select_source_code",
+            "pre_selected_values",
+            "top_entries",
+        ],
     },
     {
         "title": "Configuration",
@@ -203,7 +253,11 @@ _HEADER_WIDGETS = {
     "workflow_conclusions": workflow_conclusions,
     "jobs_selector": jobs_selector,
     "author_select": author_select,
+    "author_select_source_code": author_select_source_code,
     "label_selector": label_selector,
+    "ignore_pattern_files": ignore_pattern_files,
+    "pre_selected_values": pre_selected_values,
+    "top_entries": top_entries,
 }
 
 # Build the Tabs from definitions (keeps ordering)
@@ -225,7 +279,14 @@ header_section = pn.Column(
         sizing_mode="stretch_width",
     ),
     pn.Row(
-        pn.Column(author_select, label_selector),
+        pn.Column(
+            author_select,
+            label_selector,
+            pre_selected_values,
+            ignore_pattern_files,
+            author_select_source_code,
+            top_entries,
+        ),
     ),
     sizing_mode="stretch_width",
 )

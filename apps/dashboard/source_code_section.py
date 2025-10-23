@@ -9,44 +9,14 @@ from providers.codemaat.codemaat_repository import CodemaatRepository
 pn.extension("tabulator")
 
 
-def source_code_section(repository: CodemaatRepository, start_end_date_picker):
-    ignore_pattern_files = pn.widgets.TextAreaInput(
-        placeholder="Ignore file patterns (comma-separated) - e.g. *.json,**/**/*.png",
-        rows=6,
-        auto_grow=True,
-        max_rows=10,
-    )
-
-    author_select = pn.widgets.MultiChoice(
-        name="Select Authors",
-        placeholder="Select authors to filter, by the default all are included",
-        options=repository.get_entity_ownership_unique_authors(),
-        value=[],
-    )
-
-    pre_selected_values = pn.widgets.Select(
-        name="Ignore patterns",
-        options={
-            "None": "",
-            "Js/Ts projects": "*.json,**/**/*.png,*.snap,*.yml,*.yaml,*.md",
-            "Python and Markdown": "*.py,*.md",
-            "All Text Files": "*.txt,*.log",
-        },
-        value="",
-    )
-
-    top_entries = pn.widgets.Select(
-        name="Limit to top N entries",
-        options={
-            "10": "10",
-            "20": "20",
-            "50": "50",
-            "100": "100",
-            "1000": "1000",
-        },
-        value="10",
-    )
-
+def source_code_section(
+    repository: CodemaatRepository,
+    start_end_date_picker,
+    ignore_pattern_files,
+    author_select_source_code,
+    pre_selected_values,
+    top_entries,
+):
     def update_ignore_pattern(event):
         ignore_pattern_files.value = event.new
 
@@ -141,12 +111,6 @@ def source_code_section(repository: CodemaatRepository, start_end_date_picker):
             sizing_mode="stretch_width",
         ),
         pn.Row(
-            ignore_pattern_files,
-            pre_selected_values,
-            top_entries,
-            sizing_mode="stretch_width",
-        ),
-        pn.Row(
             pn.Column(
                 "## Entity Churn",
                 pn.bind(
@@ -168,14 +132,13 @@ def source_code_section(repository: CodemaatRepository, start_end_date_picker):
             ),
             sizing_mode="stretch_width",
         ),
-        pn.Row(author_select, sizing_mode="stretch_width"),
         pn.Row(
             pn.Column(
                 "## Entity Ownership",
                 pn.bind(
                     plot_entity_ownership,
                     ignore_pattern_files.param.value,
-                    author_select.param.value,
+                    author_select_source_code.param.value,
                     top_entries.param.value,
                 ),
             ),
