@@ -72,9 +72,9 @@ def build_barchart(
         )
 
     labels = None
-    if label_generator is not None:
-        # label_generator should accept (data_list, x_key, y_key) and return hv.Labels
-        labels = label_generator(df.to_dict(orient="records"), x, y)
+    # if label_generator is not None:
+    #     # label_generator should accept (data_list, x_key, y_key) and return hv.Labels
+    #     labels = label_generator(df.to_dict(orient="records"), x, y)
 
     chart = bars * labels if labels is not None else bars
 
