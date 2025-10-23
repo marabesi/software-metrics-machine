@@ -1,7 +1,10 @@
-import matplotlib.pyplot as plt
 from datetime import datetime
 
 import pandas as pd
+from bokeh.plotting import figure
+from bokeh.models import ColumnDataSource, LabelSet, Span
+from bokeh.layouts import column
+import panel as pn
 
 from core.infrastructure.base_viewer import BaseViewer, PlotResult
 from core.pipelines.aggregates.deployment_frequency import DeploymentFrequency
@@ -34,49 +37,67 @@ class ViewDeploymentFrequency(BaseViewer):
         weeks = aggregated["weeks"]
         months = aggregated["months"]
 
-        fig, ax = plt.subplots(3, 1, figsize=super().get_fig_size())
+        # Helper to create a bar figure
+        def _make_bar_fig(x, counts, title, color):
+            src = ColumnDataSource(dict(x=list(range(len(x))), label=x, count=counts))
+            p = figure(
+                title=title,
+                x_range=(-0.5, max(0, len(x) - 0.5)),
+                tools="hover,pan,wheel_zoom,reset,save",
+                sizing_mode="stretch_width",
+                height=int(self.get_chart_height() / 3),
+            )
+            p.vbar(x="x", top="count", width=0.9, fill_color=color, source=src)
+            labels = LabelSet(
+                x="x",
+                y="count",
+                text="count",
+                source=src,
+                text_align="center",
+                text_baseline="bottom",
+                text_font_size=self.get_font_size(),
+            )
+            p.add_layout(labels)
+            # set categorical tick labels via major_label_overrides if provided
+            p.xaxis.major_label_overrides = {i: str(v) for i, v in enumerate(x)}
+            p.xaxis.major_label_orientation = 0.785  # 45 degrees
+            p.yaxis.axis_label = "Deployments"
+            return p
 
-        # Plot daily counts
-        ax[0].bar(days, daily_counts, color="orange")
-        ax[0].set_title("Daily Deployment Frequency")
-        ax[0].set_ylabel("Deployments")
-        ax[0].tick_params(axis="x", rotation=45)
-
-        for i, count in enumerate(daily_counts):
-            ax[0].text(i, count, str(count), ha="center", va="bottom")
-
-        # Plot weekly counts
-        ax[1].bar(weeks, weekly_counts, color="blue")
-        ax[1].set_title("Weekly Deployment Frequency")
-        ax[1].set_ylabel("Deployments")
-        ax[1].tick_params(axis="x", rotation=45)
-
-        for i, count in enumerate(weekly_counts):
-            ax[1].text(i, count, str(count), ha="center", va="bottom")
-
-        week_dates = [datetime.strptime(week + "-1", "%Y-W%W-%w") for week in weeks]
-        current_month = None
-
-        for i, week_date in enumerate(week_dates):
-            if current_month is None:
-                current_month = week_date.month
-
-            if week_date.month != current_month:
-                ax[1].axvline(x=i - 0.5, color="gray", linestyle="--", alpha=0.7)
-                current_month = week_date.month
-
-        ax[2].bar(months, monthly_counts, color="green")
-        ax[2].set_title("Monthly Deployment Frequency")
-        ax[2].set_xlabel("Time")
-        ax[2].set_ylabel("Deployments")
-        ax[2].tick_params(axis="x", rotation=45)
-
-        for i, count in enumerate(monthly_counts):
-            ax[2].text(i, count, str(count), ha="center", va="bottom")
-
-        fig.tight_layout()
-
-        return PlotResult(
-            super().output(plt, fig, out_file, repository=self.repository),
-            pd.DataFrame(aggregated),
+        daily_fig = _make_bar_fig(
+            days, daily_counts, "Daily Deployment Frequency", "orange"
         )
+        weekly_fig = _make_bar_fig(
+            weeks, weekly_counts, "Weekly Deployment Frequency", "blue"
+        )
+        monthly_fig = _make_bar_fig(
+            months, monthly_counts, "Monthly Deployment Frequency", "green"
+        )
+
+        # Add vertical separators on weekly plot where month changes
+        try:
+            week_dates = [datetime.strptime(week + "-1", "%Y-W%W-%w") for week in weeks]
+            current_month = None
+            for i, week_date in enumerate(week_dates):
+                if current_month is None:
+                    current_month = week_date.month
+                if week_date.month != current_month:
+                    sep = Span(
+                        location=i - 0.5,
+                        dimension="height",
+                        line_color="gray",
+                        line_dash="dashed",
+                        line_alpha=0.7,
+                    )
+                    weekly_fig.add_layout(sep)
+                    current_month = week_date.month
+        except Exception:
+            # if parsing fails, skip separators
+            pass
+
+        layout = column(daily_fig, weekly_fig, monthly_fig, sizing_mode="stretch_width")
+
+        # Wrap layout in a Panel Bokeh pane so callers expecting a pane get a renderable object
+        pane = pn.pane.Bokeh(layout)
+
+        return PlotResult(plot=pane, data=pd.DataFrame(aggregated))
