@@ -64,8 +64,10 @@ def source_code_section(repository: CodemaatRepository, start_end_date_picker):
         return pn.panel(chart, sizing_mode="stretch_width")
 
     def plot_entity_churn(ignore_pattern, top):
-        chart = EntityChurnViewer(repository=repository).render(
-            ignore_files=ignore_pattern, top_n=int(top)
+        chart = (
+            EntityChurnViewer(repository=repository)
+            .render(ignore_files=ignore_pattern, top_n=int(top))
+            .plot
         )
         return pn.panel(chart, sizing_mode="stretch_width")
 

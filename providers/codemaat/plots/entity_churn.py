@@ -1,8 +1,12 @@
-import matplotlib.pyplot as plt
+import holoviews as hv
+import pandas as pd
 
-from core.infrastructure.base_viewer import BaseViewer
+from core.infrastructure.base_viewer import BaseViewer, PlotResult
 from core.infrastructure.viewable import Viewable
+from core.infrastructure.barchart_stacked import build_barchart
 from providers.codemaat.codemaat_repository import CodemaatRepository
+
+hv.extension("bokeh")
 
 
 class EntityChurnViewer(BaseViewer, Viewable):
@@ -17,40 +21,73 @@ class EntityChurnViewer(BaseViewer, Viewable):
         out_file: str | None = None,
         start_date: str | None = None,
         end_date: str | None = None,
-    ) -> None:
+    ) -> PlotResult:
         df = self.repository.get_entity_churn()
 
-        if df.empty:
+        if df is None or df.empty:
             print("No entity churn data available to plot")
-            return None
+            return PlotResult(
+                plot=hv.Text(0.5, 0.5, "No entity churn data available"),
+                data=pd.DataFrame(),
+            )
 
         # default ordering: by total churn (added + deleted) descending
         df["total_churn"] = df.get("added", 0) + df.get("deleted", 0)
 
         # apply top-N filter if provided on the viewer instance
-        if top_n:
-            try:
-                top_n = int(top_n)
-            except Exception:
-                top_n = None
-        if top_n and top_n > 0:
-            df = df.sort_values(by="total_churn", ascending=False).head(top_n)
+        try:
+            top_n_int = int(top_n) if top_n is not None else None
+        except Exception:
+            top_n_int = None
+        if top_n_int and top_n_int > 0:
+            df = df.sort_values(by="total_churn", ascending=False).head(top_n_int)
 
         df = self.repository.apply_ignore_file_patterns(df, ignore_files)
 
-        dates = df["entity"]
-        added = df["added"]
-        deleted = df["deleted"]
+        # Ensure columns exist
+        if "entity" not in df:
+            df["entity"] = []
+        if "added" not in df:
+            df["added"] = 0
+        if "deleted" not in df:
+            df["deleted"] = 0
 
-        fig, ax = plt.subplots(figsize=super().get_fig_size())
-        ax.bar(dates, added, label="Added", color="tab:blue")
-        ax.bar(dates, deleted, bottom=added, label="Deleted", color="tab:red")
+        # Prepare data for stacked bars
+        data = []
+        for _, row in df.iterrows():
+            data.append(
+                {
+                    "entity": row.get("entity"),
+                    "type": "Added",
+                    "value": row.get("added", 0),
+                }
+            )
+            data.append(
+                {
+                    "entity": row.get("entity"),
+                    "type": "Deleted",
+                    "value": row.get("deleted", 0),
+                }
+            )
 
-        ax.set_xlabel("Entity (File)")
-        ax.set_ylabel("Lines of Code")
-        ax.set_title("Code Entity Churn: Lines Added and Deleted")
-        ax.legend()
-        plt.xticks(rotation=45, ha="right")
-        plt.tight_layout()
+        chart = build_barchart(
+            data,
+            x="entity",
+            y="value",
+            group="type",
+            stacked=True,
+            height=super().get_chart_height(),
+            title="Code Entity Churn: Lines Added and Deleted",
+            xrotation=45,
+            label_generator=super().build_labels_above_bars,
+            out_file=out_file,
+            tools=super().get_tools(),
+            color=super().get_color(),
+        )
 
-        return super().output(plt, fig, out_file=out_file, repository=self.repository)
+        try:
+            chart = chart.opts(sizing_mode="stretch_width")
+        except Exception:
+            pass
+
+        return PlotResult(plot=chart, data=df)
