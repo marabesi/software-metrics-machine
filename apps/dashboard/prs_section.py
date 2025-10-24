@@ -63,7 +63,7 @@ def prs_section(
             .main(
                 start_date=date_range_picker[0],
                 end_date=date_range_picker[1],
-                title="Open PRs Through Time",
+                title="",
                 authors=normalize_authors(author_select),
             )
             .plot
@@ -85,11 +85,15 @@ def prs_section(
         "## Pull requests",
         pn.layout.Divider(),
         pn.Row(
-            pn.panel(
-                pn.bind(
-                    plot_prs_through_time,
-                    date_range_picker.param.value,
-                    author_select.param.value,
+            pn.Column(
+                "### Open PRs Through Time",
+                pn.panel(
+                    pn.bind(
+                        plot_prs_through_time,
+                        date_range_picker.param.value,
+                        author_select.param.value,
+                    ),
+                    sizing_mode="stretch_width",
                 ),
                 sizing_mode="stretch_width",
             ),
