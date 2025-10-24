@@ -34,8 +34,13 @@ class CouplingViewer(BaseViewer, Viewable):
             layout[node] = (x, y)
         return layout
 
-    def render(self, out_file: str | None = None, top_n: int = 20) -> PlotResult:
-        df = self.repository.get_coupling()
+    def render(
+        self,
+        ignore_files: str | None = None,
+        out_file: str | None = None,
+        top_n: int = 20,
+    ) -> PlotResult:
+        df = self.repository.get_coupling(ignore_files=ignore_files)
         if df is None or df.empty:
             print("No coupling data available to plot")
             return PlotResult(plot=None, data=pd.DataFrame())

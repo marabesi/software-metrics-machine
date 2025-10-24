@@ -27,10 +27,15 @@ class CodemaatRepository(FileSystemBaseRepository):
                 data = data[(data["date"] >= sd) & (data["date"] <= ed)]
         return data
 
-    def get_coupling(self):
+    def get_coupling(self, ignore_files: str | None = None):
         file_path = Path(f"{self.configuration.store_data}/coupling.csv")
         if not file_path.exists():
             return pd.DataFrame()
+        if ignore_files:
+            data = pd.read_csv(file_path)
+            data = self.apply_ignore_file_patterns(data, ignore_files)
+            print(f"Filtered coupling data count: {len(data.values.tolist())}")
+            return data
         return pd.read_csv(file_path)
 
     def get_entity_churn(self):
@@ -89,5 +94,6 @@ class CodemaatRepository(FileSystemBaseRepository):
             # filter out matching rows
             mask = df["entity"].apply(lambda x: not matches_any_pattern(str(x)))
             df = df[mask]
+            print(f"Applied ignore file patterns: {pats}, remaining rows: {len(df)}")
             return df
         return df

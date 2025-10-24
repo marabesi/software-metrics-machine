@@ -145,6 +145,20 @@ class TestCliCodemaatCommands:
         )
         assert "No coupling data available to plot" in result.output
 
+    def test_can_run_coupling_with_ignored_files(self, cli):
+        path_string = cli.data_stored_at
+
+        csv_data = """entity,coupled,degree,average-revs
+another.txt,another.txt,10,2,
+file.ts,file.ts,10,2
+"""
+        FileHandlerForTesting(path_string).store_file("coupling.csv", csv_data)
+        result = cli.runner.invoke(
+            main,
+            ["codemaat", "coupling", "--ignore-files", "*.txt"],
+        )
+        assert "Filtered coupling data count: 1" in result.output
+
     def test_can_run_entity_churn_without_data_available(self, cli):
         result = cli.runner.invoke(
             main,
@@ -166,9 +180,7 @@ class TestCliCodemaatCommands:
         )
         assert "No entity ownership data available to plot" in result.output
 
-    def test_list_the_number_of_revision_found_for_entity_ownership(
-        self, cli, tmp_path
-    ):
+    def test_list_the_number_of_revision_found_for_entity_ownership(self, cli):
         path_string = cli.data_stored_at
         csv_data = """entity,author,added,deleted
 file.txt,John,10,2"""
