@@ -36,11 +36,14 @@ def build_barchart_with_lines(
     if x in df.columns:
         df[x] = pd.to_datetime(df[x])
 
-    curve = hv.Curve(df, x, y).opts(
-        title=title or "", height=height or 400, xrotation=xrotation
-    )
+    opts_kwargs = dict(title=title or "", height=height or 400, xrotation=xrotation)
+    if tools:
+        # pass tools (e.g. ['hover']) through to the hv elements so they get wired to Bokeh
+        opts_kwargs["tools"] = tools
+
+    curve = hv.Curve(df, x, y).opts(**opts_kwargs)
     # hv.Points expects two kdims for 2D points: pass them as a list
-    points = hv.Points(df, [x, y])
+    points = hv.Points(df, [x, y]).opts(**({"tools": tools} if tools else {}))
 
     labels = None
     if label_generator is not None:
@@ -64,6 +67,14 @@ def build_barchart_with_lines(
     if extra_labels:
         extra_hv = hv.Labels(extra_labels, [x, "y"], "text").opts(text_font_size="8pt")
         overlay = overlay * extra_hv
+
+    # ensure tools applied to the overall overlay as well
+    if tools:
+        try:
+            overlay = overlay.opts(tools=tools)
+        except Exception:
+            # some overlays/elements may not accept tools; ignore safe-fail
+            pass
 
     if out_file:
         try:

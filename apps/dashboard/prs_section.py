@@ -83,6 +83,7 @@ def prs_section(
 
     views = pn.Column(
         "## Pull requests",
+        "A pull request is a request to merge a set of proposed changes into a codebase. It's the most common way developers propose, review, and discuss code before it becomes part of the main project.",  # noqa: E501
         pn.layout.Divider(),
         pn.Row(
             pn.Column(
