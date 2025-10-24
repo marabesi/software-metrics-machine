@@ -1,6 +1,7 @@
 import os
 import requests
 import json
+from datetime import datetime, timedelta
 from core.pipelines.pipelines_repository import PipelinesRepository
 from core.infrastructure.configuration.configuration import Configuration
 from core.prs.prs_repository import PrsRepository
@@ -41,8 +42,6 @@ class GithubWorkflowClient:
         runs = []
 
         if step_by == "day" and start_date and end_date:
-            from datetime import datetime, timedelta
-
             current_date = datetime.strptime(start_date, "%Y-%m-%d")
             end_date_obj = datetime.strptime(end_date, "%Y-%m-%d")
 
@@ -72,6 +71,46 @@ class GithubWorkflowClient:
                     print(f"  → link: {link}")
                     url = link["url"] if link else None
                 current_date += timedelta(days=1)
+        elif step_by == "hour" and start_date and end_date:
+            current_date = datetime.strptime(start_date, "%Y-%m-%d")
+            end_date_obj = datetime.strptime(end_date, "%Y-%m-%d") + timedelta(
+                hours=23, minutes=59
+            )
+
+            while current_date <= end_date_obj:
+                hour_str_start = current_date.strftime("%Y-%m-%dT%H:00:00")
+                hour_str_end = (current_date + timedelta(hours=1)).strftime(
+                    "%Y-%m-%dT%H:00:00"
+                )
+                params["created"] = f"{hour_str_start}..{hour_str_end}"
+                print(
+                    f"Fetching workflow runs for {self.repository_slug} on {hour_str_start} to {hour_str_end}"  # noqa
+                )
+
+                url = f"https://api.github.com/repos/{self.repository_slug}/actions/runs?per_page=100"
+                while url:
+                    print(f"  → fetching {url} with params: {str(params)}")
+                    r = requests.get(
+                        url,
+                        headers=self.HEADERS,
+                        params={**params} if params else None,
+                    )
+                    r.raise_for_status()
+                    data = r.json()
+                    total = data.get("total_count", 0)
+                    print(f"    → Response says it has {total} runs")
+                    for run in data.get("workflow_runs", []):
+                        runs.append(run)
+
+                    print(f"    → Fetched total of {len(runs)} runs out of {total}")
+
+                    if int(total) == len(runs):
+                        break
+
+                    link = r.links.get("next")
+                    print(f"  → link: {link}")
+                    url = link["url"] if link else None
+                current_date += timedelta(hours=1)
         else:
             if start_date and end_date:
                 params["created"] = f"{start_date}..{end_date}"

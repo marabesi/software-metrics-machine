@@ -28,7 +28,7 @@ from providers.github.github_workflow_client import GithubWorkflowClient
         "for possible filters."
     ),
 )
-@click.option("--step-by", type=str, help="Step by (e.g., day, month)")
+@click.option("--step-by", type=str, help="Step by (e.g., hour, day, month)")
 def fetch(target_branch, start_date, end_date, raw_filters, step_by):
     client = GithubWorkflowClient(
         configuration=ConfigurationBuilder(driver=Driver.CLI).build()

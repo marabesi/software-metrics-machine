@@ -1,4 +1,8 @@
+from unittest.mock import patch
+
+from requests import Response
 from apps.cli.main import main
+from tests.builders import as_json_string
 
 
 class TestWorkflowsFetchCliCommands:
@@ -25,7 +29,7 @@ class TestWorkflowsFetchCliCommands:
             ],
         )
 
-        assert "Step by (e.g., day, month)" in result.output
+        assert "Step by (e.g., hour, day, month)" in result.output
 
     def test_should_fetch_workflow_data_between_dates(self, cli):
         configuration = cli.configuration
@@ -49,3 +53,81 @@ class TestWorkflowsFetchCliCommands:
             "fetching https://api.github.com/repos/fake/repo/actions/runs?per_page=100 with params: {'created': '2023-01-01..2023-01-31'}"  # noqa
             in result.output
         )
+
+    def test_should_fetch_with_raw_filters(self, cli):
+        with patch("requests.get") as mock_get:
+            fetch_workflows_fake_response = {
+                "links": {},
+                "total_count": 1,
+                "workflow_runs": [
+                    {
+                        "created_at": "2023-01-01T00:01:12Z",
+                    }
+                ],
+            }
+
+            response = Response()
+            response._content = bytes(
+                as_json_string(fetch_workflows_fake_response), "utf-8"
+            )
+            response.status_code = 200
+            mock_get.return_value = response
+
+            result = cli.runner.invoke(
+                main,
+                [
+                    "pipelines",
+                    "fetch",
+                    "--start-date",
+                    "2023-01-01",
+                    "--end-date",
+                    "2023-01-01",
+                    "--raw-filters",
+                    "event=push",
+                ],
+            )
+
+            assert 0 == result.exit_code
+            assert (
+                "fetching https://api.github.com/repos/fake/repo/actions/runs?per_page=100 with params: {'event': 'push', 'created': '2023-01-01..2023-01-01'}"  # noqa
+                in result.output
+            )
+
+    def test_should_fetch_with_by_hour(self, cli):
+        with patch("requests.get") as mock_get:
+            fetch_workflows_fake_response = {
+                "links": {},
+                "total_count": 1,
+                "workflow_runs": [
+                    {
+                        "created_at": "2023-01-01T00:01:12Z",
+                    }
+                ],
+            }
+
+            response = Response()
+            response._content = bytes(
+                as_json_string(fetch_workflows_fake_response), "utf-8"
+            )
+            response.status_code = 200
+            mock_get.return_value = response
+
+            result = cli.runner.invoke(
+                main,
+                [
+                    "pipelines",
+                    "fetch",
+                    "--start-date",
+                    "2023-01-01",
+                    "--end-date",
+                    "2023-01-01",
+                    "--step-by",
+                    "hour",
+                ],
+            )
+
+            assert 0 == result.exit_code
+            assert (
+                "fetching https://api.github.com/repos/fake/repo/actions/runs?per_page=100 with params: {'created': '2023-01-01T00:00:00..2023-01-01T01:00:00'}"  # noqa
+                in result.output
+            )

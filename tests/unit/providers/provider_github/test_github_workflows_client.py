@@ -47,7 +47,49 @@ class TestGithubWorkflowsClient:
             )
             mock_store.assert_called_once_with("workflows.json", [])
 
-    def test_fetch_workflows_by_step(self):
+    def test_fetch_workflows_by_hour_step(self):
+        with (
+            patch("requests.get") as mock_get,
+            patch(
+                "core.infrastructure.file_system_base_repository.FileSystemBaseRepository.read_file_if_exists",
+                return_value=None,
+            ),
+            patch(
+                "core.infrastructure.file_system_base_repository.FileSystemBaseRepository.store_file"
+            ),
+        ):
+            mock_response = MagicMock()
+            mock_response.json.return_value = {
+                "total_count": 1,
+                "workflow_runs": [{"id": 1, "created_at": "2025-06-15T12:00:00Z"}],
+            }
+            mock_response.links = {}
+            mock_response.status_code = 200
+            mock_get.return_value = mock_response
+
+            self.github_client.fetch_workflows(
+                target_branch="main",
+                start_date="2025-01-01",
+                end_date="2025-01-01",
+                step_by="hour",
+            )
+
+            expected_calls = [
+                call(
+                    f"https://api.github.com/repos/{self.configuration.github_repository}/actions/runs?per_page=100",
+                    headers={
+                        "Authorization": "token fake_token",
+                        "Accept": "application/vnd.github+json",
+                    },
+                    params={
+                        "branch": "main",
+                        "created": "2025-01-01T00:00:00..2025-01-01T01:00:00",
+                    },
+                ),
+            ]
+        mock_get.assert_has_calls(expected_calls, False)
+
+    def test_fetch_workflows_by_day_step(self):
         with (
             patch("requests.get") as mock_get,
             patch(
