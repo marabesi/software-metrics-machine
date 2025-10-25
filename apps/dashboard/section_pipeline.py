@@ -1,6 +1,9 @@
 import pandas as pd
 import panel as pn
-from apps.dashboard.components.aggregate_by_select import aggregate_by_select
+from apps.dashboard.components.aggregate_by_select import (
+    aggregate_by_metric_select,
+    aggregate_by_select,
+)
 from apps.dashboard.components.tabulator import TabulatorComponent
 from core.pipelines.plots.view_jobs_by_status import ViewJobsByStatus
 from core.pipelines.plots.view_jobs_average_time_execution import (
@@ -66,7 +69,11 @@ def pipeline_section(
         )
 
     def plot_workflow_run_duration(
-        date_range_picker, workflow_selector, workflow_status, workflow_conclusions
+        date_range_picker,
+        workflow_selector,
+        workflow_status,
+        workflow_conclusions,
+        aggregate_metric,
     ):
         return (
             ViewPipelineExecutionRunsDuration(repository=repository)
@@ -75,6 +82,7 @@ def pipeline_section(
                 end_date=date_range_picker[1],
                 workflow_path=sanitize_all_argument(workflow_selector),
                 raw_filters=f"conclusion={workflow_conclusions},status={workflow_status}",
+                metric=aggregate_metric,
             )
             .plot
         )
@@ -111,6 +119,7 @@ def pipeline_section(
         )
 
     aggregate_by = aggregate_by_select()
+    aggregate_metric_select = aggregate_by_metric_select()
 
     views = pn.Column(
         "## Pipeline",
@@ -207,6 +216,7 @@ def pipeline_section(
                     </details>
                     """
                 ),
+                aggregate_metric_select,
                 pn.panel(
                     pn.bind(
                         plot_workflow_run_duration,
@@ -214,6 +224,7 @@ def pipeline_section(
                         workflow_selector.param.value,
                         workflow_status.param.value,
                         workflow_conclusions.param.value,
+                        aggregate_metric_select.param.value,
                     ),
                     sizing_mode="stretch_width",
                 ),
