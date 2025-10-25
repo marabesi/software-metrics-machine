@@ -57,7 +57,7 @@ class TestCodemaatRepository:
 
                 assert 0 == len(df["date"])
 
-    def test_long_file_names_should_short_to_10_chars_entity_churn(self):
+    def test_long_file_names_should_short_to_12_chars_entity_churn(self):
         with patch("pathlib.Path.exists", return_value=True):
             mock_df = pd.DataFrame(
                 {
@@ -162,6 +162,27 @@ class TestCodemaatRepository:
                 df = repository.get_entity_ownership(["Author2"])
 
                 assert 1 == len(df)
+
+    def test_long_file_names_should_short_to_12_chars_entity_ownership(self):
+        with patch("pathlib.Path.exists", return_value=True):
+            mock_df = pd.DataFrame(
+                {
+                    "entity": ["src/components/my-file.tsx", "file2.txt", "file3.txt"],
+                    "author": ["Author1", "Author1", "Author2"],
+                    "added": [10, 11, 12],
+                    "deleted": [2, 3, 4],
+                }
+            )
+
+            with patch("pandas.read_csv", return_value=mock_df):
+                repository = CodemaatRepository(
+                    configuration=InMemoryConfiguration(store_data=".")
+                )
+                df = repository.get_entity_ownership()
+
+                assert "/my-file.tsx" == df.iloc[0]["short_entity"]
+                assert "file2.txt" == df.iloc[1]["short_entity"]
+                assert "file3.txt" == df.iloc[2]["short_entity"]
 
     def test_should_return_all_items_when_empty_authors_is_given(self):
         with patch("pathlib.Path.exists", return_value=True):

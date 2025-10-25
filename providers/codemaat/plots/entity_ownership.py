@@ -19,6 +19,7 @@ class EntityOnershipViewer(BaseViewer, Viewable):
         ignore_files: str | None = None,
         out_file: str | None = None,
         authors: str | None = None,
+        type: str | None = "added",
     ) -> PlotResult:
         repo = self.repository
         df = repo.get_entity_ownership(authors.split(",") if authors else [])
@@ -34,7 +35,9 @@ class EntityOnershipViewer(BaseViewer, Viewable):
         df = repo.apply_ignore_file_patterns(df, ignore_files)
 
         ownership = (
-            df.groupby(["entity", "author"])[["added", "deleted"]].sum().reset_index()
+            df.groupby(["entity", "short_entity", "author"])[["added", "deleted"]]
+            .sum()
+            .reset_index()
         )
         ownership["total"] = ownership["added"] + ownership["deleted"]
         top_entities = (
@@ -53,6 +56,7 @@ class EntityOnershipViewer(BaseViewer, Viewable):
             data_added.append(
                 {
                     "entity": row["entity"],
+                    "short_entity": row.get("short_entity"),
                     "author": row["author"],
                     "value": row.get("added", 0),
                 }
@@ -60,6 +64,7 @@ class EntityOnershipViewer(BaseViewer, Viewable):
             data_deleted.append(
                 {
                     "entity": row["entity"],
+                    "short_entity": row.get("short_entity"),
                     "author": row["author"],
                     "value": row.get("deleted", 0),
                 }
@@ -68,7 +73,7 @@ class EntityOnershipViewer(BaseViewer, Viewable):
         # Build stacked bars for added (stacked by author)
         bars_added = build_barchart(
             data_added,
-            x="entity",
+            x="short_entity",
             y="value",
             group="author",
             stacked=True,
@@ -84,7 +89,7 @@ class EntityOnershipViewer(BaseViewer, Viewable):
         # Build stacked bars for deleted and overlay with transparency
         bars_deleted = build_barchart(
             data_deleted,
-            x="entity",
+            x="short_entity",
             y="value",
             group="author",
             stacked=True,
@@ -97,13 +102,12 @@ class EntityOnershipViewer(BaseViewer, Viewable):
             color=super().get_color(),
         )
 
-        # Apply a lower alpha to deleted bars so they visually overlay
-        try:
-            bars_deleted = bars_deleted.opts(alpha=0.5)
-        except Exception:
-            pass
+        bars_deleted = bars_deleted.opts(alpha=0.5)
 
-        chart = bars_added * bars_deleted
+        if type == "added":
+            chart = bars_added
+        elif type == "deleted":
+            chart = bars_deleted
 
         try:
             chart = chart.opts(sizing_mode="stretch_width")

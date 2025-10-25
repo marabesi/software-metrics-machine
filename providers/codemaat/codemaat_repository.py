@@ -45,14 +45,8 @@ class CodemaatRepository(FileSystemBaseRepository):
 
         data = pd.read_csv(file_path)
         if "entity" in data.columns:
+            data["short_entity"] = data["entity"].apply(self.__short_ent)
 
-            def _short_ent(val: str) -> str:
-                if val is None:
-                    return val
-                s = str(val)
-                return s[-12:] if len(s) > 12 else s
-
-            data["short_entity"] = data["entity"].apply(_short_ent)
         return data
 
     def get_entity_effort(self):
@@ -67,6 +61,10 @@ class CodemaatRepository(FileSystemBaseRepository):
         if not file_path.exists():
             return pd.DataFrame()
         data = pd.read_csv(file_path)
+
+        if "entity" in data.columns:
+            data["short_entity"] = data["entity"].apply(self.__short_ent)
+
         print(f"Found {len(data)} row for entity ownership")
         return data[data["author"].isin(authors)] if authors else data
 
@@ -108,3 +106,9 @@ class CodemaatRepository(FileSystemBaseRepository):
             print(f"Applied ignore file patterns: {pats}, remaining rows: {len(df)}")
             return df
         return df
+
+    def __short_ent(self, val: str) -> str:
+        if val is None:
+            return val
+        s = str(val)
+        return s[-12:] if len(s) > 12 else s
