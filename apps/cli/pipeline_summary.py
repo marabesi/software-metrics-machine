@@ -4,7 +4,7 @@ from core.infrastructure.configuration.configuration_builder import (
     Driver,
 )
 from core.pipelines.pipelines_repository import PipelinesRepository
-from core.pipelines.plots.view_summary import WorkflowRunSummary
+from core.pipelines.plots.view_pipeline_summary import WorkflowRunSummary
 
 
 @click.command()
