@@ -80,10 +80,6 @@ def jobs_by_status(
     end_date,
     force_all_jobs,
 ):
-    _cli_filters: dict = {}
-    _cli_filters["event"] = event
-    _cli_filters["target_branch"] = target_branch
-
     return ViewJobsByStatus(
         repository=PipelinesRepository(
             configuration=ConfigurationBuilder(driver=Driver.JSON).build()
@@ -94,7 +90,7 @@ def jobs_by_status(
         out_file=out_file,
         with_pipeline=with_pipeline,
         aggregate_by_week=aggregate_by_week,
-        raw_filters=_cli_filters,
+        raw_filters=f"event={event},target_branch={target_branch}",
         start_date=start_date,
         end_date=end_date,
         force_all_jobs=force_all_jobs,

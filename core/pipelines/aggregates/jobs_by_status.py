@@ -23,14 +23,6 @@ class JobsByStatus:
     def __init__(self, repository: PipelinesRepository):
         self.repository = repository
 
-    def __split_and_normalize(self, val: str):
-        """Turn a comma-separated string into a list of lowercase trimmed values, or return None."""
-        if not val:
-            return None
-        if isinstance(val, (list, tuple)):
-            return [str(v).strip().lower() for v in val if v]
-        return [p.strip().lower() for p in str(val).split(",") if p.strip()]
-
     def __count_delivery_by_day(self, jobs, job_name: str):
         """Return (dates, conclusions, matrix) grouping delivery job executions by day and conclusion.
 
@@ -133,12 +125,16 @@ class JobsByStatus:
         job_name: str,
         workflow_path: str | None = None,
         aggregate_by_week: bool = False,
-        raw_filters: dict = {},
+        raw_filters: str | None = None,
         start_date: str | None = None,
         end_date: str | None = None,
         force_all_jobs: bool = False,
     ) -> None:
-        filters = {"start_date": start_date, "end_date": end_date}
+        filters = {
+            "start_date": start_date,
+            "end_date": end_date,
+            **self.repository.parse_raw_filters(raw_filters),
+        }
         print(f"Applying date filter: {filters}")
         runs = self.repository.runs(filters=filters)
         jobs = self.repository.jobs(filters={**filters, "name": job_name})
@@ -147,11 +143,6 @@ class JobsByStatus:
         if workflow_path:
             wf_low = workflow_path.lower()
             runs = [r for r in runs if (r.get("path") or "").lower().find(wf_low) != -1]
-
-        # optional filter by event (e.g. push, pull_request) - accepts comma-separated or single value
-        if event_vals := self.__split_and_normalize(raw_filters.get("event")):
-            allowed = set(event_vals)
-            runs = [r for r in runs if (r.get("event") or "").lower() in allowed]
 
         if not force_all_jobs:
             # restrict jobs to only those belonging to the selected runs
@@ -184,27 +175,6 @@ class JobsByStatus:
                     break
         if not display_workflow_name:
             display_workflow_name = "<any>"
-
-        # optional filter by target branch (accepts comma-separated values)
-        if target_vals := self.__split_and_normalize(raw_filters.get("target_branch")):
-            allowed = set(target_vals)
-
-            def branch_matches(obj):
-                # check common fields that may carry branch name
-                for key in (
-                    "head_branch",
-                    "head_ref",
-                    "ref",
-                    "base_ref",
-                    "base_branch",
-                ):
-                    val = obj.get(key) or ""
-                    if val and val.lower() in allowed:
-                        return True
-                return False
-
-            runs = [r for r in runs if branch_matches(r)]
-            jobs = [j for j in jobs if branch_matches(j)]
 
         # left: workflow conclusions (existing)
         status_counts = Counter(run.get("conclusion") or "undefined" for run in runs)

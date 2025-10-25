@@ -19,7 +19,7 @@ class CodeChurnViewer(BaseViewer, Viewable):
         out_file: str | None = None,
         start_date: str | None = None,
         end_date: str | None = None,
-    ):  # returns a Holoviews element or Pane
+    ) -> PlotResult:
         df = self.repository.get_code_churn(
             {"start_date": start_date, "end_date": end_date}
         )

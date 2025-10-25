@@ -21,7 +21,7 @@ class ViewJobsByStatus(BaseViewer):
         out_file: str | None = None,
         with_pipeline: bool = False,
         aggregate_by_week: bool = False,
-        raw_filters: dict = {},
+        raw_filters: str | None = None,
         start_date: str | None = None,
         end_date: str | None = None,
         force_all_jobs: bool = False,
