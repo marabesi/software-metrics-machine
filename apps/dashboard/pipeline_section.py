@@ -19,9 +19,6 @@ from core.pipelines.pipelines_repository import PipelinesRepository
 
 pn.extension(
     "tabulator",
-    raw_css=[
-        ".smm-90-width { margin-top: 15px }",
-    ],
 )
 
 
@@ -299,6 +296,5 @@ def pipeline_section(
         ("Insights", views),
         ("Data", data),
         sizing_mode="stretch_width",
-        css_classes=["smm-90-width"],
         active=0,
     )

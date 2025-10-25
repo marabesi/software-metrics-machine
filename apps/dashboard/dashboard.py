@@ -1,10 +1,12 @@
+import panel.pane.holoviews as _ph
 from datetime import date, datetime, timedelta
 import panel as pn
+import param
 from panel.template import FastListTemplate
 
 from apps.dashboard.insights_section import insights_section
 from apps.dashboard.pipeline_section import pipeline_section
-from apps.dashboard.prs_section import prs_section
+from apps.dashboard.prs_section import prs_section as tab_pr_section
 from apps.dashboard.source_code_section import source_code_section
 from apps.dashboard.configuration_section import configuration_section
 from core.infrastructure.configuration.configuration_builder import (
@@ -15,15 +17,33 @@ from providers.codemaat.codemaat_repository import CodemaatRepository
 from core.prs.prs_repository import PrsRepository
 from core.pipelines.pipelines_repository import PipelinesRepository
 
-pn.extension("tabulator", "notifications")
+pn.extension(
+    "tabulator",
+    "notifications",
+    raw_css=[
+        ".smm-margin-top { margin-top: 15px }",
+    ],
+)
+
+
+class Settings(param.Parameterized):
+    params_in_query = pn.state.location.query_params
+    tab = param.Integer(default=0, bounds=(0, 4))
+    focused = param.Integer(default=0, bounds=(0, 1))
+
+    if "tab" in params_in_query:
+        tab = param.Integer(default=params_in_query["tab"], bounds=(0, 4))
+    if "focused" in params_in_query:
+        focused = param.Integer(default=params_in_query["focused"], bounds=(0, 4))
+
+
+settings = Settings()
 
 # Disable automatic Holoviews axis-linking preprocessor to avoid dtype comparison
 # errors when plots with incompatible axis dtypes (e.g., datetime vs numeric)
 # are rendered/updated together. This prevents Panel's link_axes hook from
 # running during layout preprocessing and avoids ufunc dtype promotion errors.
 try:
-    import panel.pane.holoviews as _ph
-
     _ph.Viewable._preprocessing_hooks = [
         h
         for h in _ph.Viewable._preprocessing_hooks
@@ -190,10 +210,14 @@ top_entries = pn.widgets.Select(
 )
 
 
-prs_section = prs_section(
+def wrap_tabs(tabs: pn.Tabs):
+    tabs.css_classes = ["smm-margin-top"]
+    return tabs
+
+
+prs_section = tab_pr_section(
     start_end_date_picker, author_select, label_selector, repository=prs_repository
 )
-
 source_code_section = source_code_section(
     repository=codemaat_repository,
     start_end_date_picker=start_end_date_picker,
@@ -210,12 +234,12 @@ source_code_section = source_code_section(
 TAB_DEFINITIONS = [
     {
         "title": "Insights",
-        "view": insights_section,
+        "view": wrap_tabs(insights_section),
         "show": ["start_end_date_picker"],
     },
     {
         "title": "Pipeline",
-        "view": pipeline_section,
+        "view": wrap_tabs(pipeline_section),
         "show": [
             "start_end_date_picker",
             "workflow_selector",
@@ -225,12 +249,12 @@ TAB_DEFINITIONS = [
     },
     {
         "title": "Pull requests",
-        "view": prs_section,
+        "view": wrap_tabs(prs_section),
         "show": ["start_end_date_picker", "author_select", "label_selector"],
     },
     {
         "title": "Source code",
-        "view": source_code_section,
+        "view": wrap_tabs(source_code_section),
         "show": [
             "start_end_date_picker",
             "ignore_pattern_files",
@@ -241,7 +265,7 @@ TAB_DEFINITIONS = [
     },
     {
         "title": "Configuration",
-        "view": configuration_section,
+        "view": wrap_tabs(configuration_section),
         "show": [],
     },
 ]
@@ -265,7 +289,7 @@ tabs = pn.Tabs(
     *[(t["title"], t["view"]) for t in TAB_DEFINITIONS],
     sizing_mode="stretch_width",
     dynamic=False,
-    active=1,
+    active=settings.tab,
 )
 
 header_section = pn.Column(
@@ -305,6 +329,8 @@ def on_tab_change(event):
     # event.new is the index of the active tab
     idx = int(event.new)
     try:
+        settings.tab = idx
+        pn.state.location.sync(settings)
         cfg = TAB_DEFINITIONS[idx]
     except Exception:
         cfg = {"show": []}
@@ -312,11 +338,7 @@ def on_tab_change(event):
     # show/hide header widgets according to the active tab's `show` list
     visible_set = set(cfg.get("show", []))
     for name, widget in _HEADER_WIDGETS.items():
-        try:
-            widget.visible = name in visible_set
-        except Exception:
-            # ignore widgets that may not support visible
-            pass
+        widget.visible = name in visible_set
 
 
 tabs.param.watch(on_tab_change, "active")
@@ -324,4 +346,5 @@ tabs.param.watch(on_tab_change, "active")
 # initialize visibility for the current active tab
 on_tab_change(type("E", (), {"new": tabs.active}))
 
+pn.Param(settings)
 template.servable()
