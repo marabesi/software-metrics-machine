@@ -25,6 +25,7 @@ pn.extension(
 def pipeline_section(
     date_range_picker,
     workflow_selector,
+    workflow_status,
     workflow_conclusions,
     jobs_selector,
     repository: PipelinesRepository,
@@ -34,9 +35,7 @@ def pipeline_section(
             return None
         return selected_value
 
-    def plot_workflow_by_status(
-        date_range_picker, workflow_selector, workflow_conclusions
-    ):
+    def plot_workflow_by_status(date_range_picker, workflow_selector):
         return (
             ViewPipelineByStatus(repository=repository)
             .main(
@@ -48,7 +47,11 @@ def pipeline_section(
         )
 
     def plot_view_jobs_by_execution_time(
-        date_range_picker, workflow_selector, workflow_conclusions, jobs_selector
+        date_range_picker,
+        workflow_selector,
+        workflow_status,
+        workflow_conclusions,
+        jobs_selector,
     ):
         return (
             ViewJobsByAverageTimeExecution(repository=repository)
@@ -57,12 +60,13 @@ def pipeline_section(
                 end_date=date_range_picker[1],
                 workflow_path=sanitize_all_argument(workflow_selector),
                 job_name=sanitize_all_argument(jobs_selector),
+                raw_filters=f"conclusion={workflow_conclusions},status={workflow_status}",
             )
             .plot
         )
 
     def plot_workflow_run_duration(
-        date_range_picker, workflow_selector, workflow_conclusions
+        date_range_picker, workflow_selector, workflow_status, workflow_conclusions
     ):
         return (
             ViewPipelineExecutionRunsDuration(repository=repository)
@@ -70,12 +74,17 @@ def pipeline_section(
                 start_date=date_range_picker[0],
                 end_date=date_range_picker[1],
                 workflow_path=sanitize_all_argument(workflow_selector),
+                raw_filters=f"conclusion={workflow_conclusions},status={workflow_status}",
             )
             .plot
         )
 
     def plot_workflow_run_by(
-        date_range_picker, workflow_selector, workflow_conclusions, aggregate_by
+        date_range_picker,
+        workflow_selector,
+        workflow_status,
+        workflow_conclusions,
+        aggregate_by,
     ):
         return (
             ViewWorkflowRunsByWeekOrMonth(repository=repository)
@@ -83,7 +92,7 @@ def pipeline_section(
                 aggregate_by=aggregate_by,
                 start_date=date_range_picker[0],
                 end_date=date_range_picker[1],
-                raw_filters=f"conclusion={workflow_conclusions}",
+                raw_filters=f"conclusion={workflow_conclusions},status={workflow_status}",
                 workflow_path=sanitize_all_argument(workflow_selector),
             )
             .plot
@@ -140,7 +149,6 @@ def pipeline_section(
                         plot_workflow_by_status,
                         date_range_picker.param.value,
                         workflow_selector.param.value,
-                        workflow_conclusions.param.value,
                     ),
                     sizing_mode="stretch_width",
                 ),
@@ -171,6 +179,7 @@ def pipeline_section(
                         plot_workflow_run_by,
                         date_range_picker.param.value,
                         workflow_selector.param.value,
+                        workflow_status.param.value,
                         workflow_conclusions.param.value,
                         aggregate_by=aggregate_by.param.value,
                     ),
@@ -203,6 +212,7 @@ def pipeline_section(
                         plot_workflow_run_duration,
                         date_range_picker.param.value,
                         workflow_selector.param.value,
+                        workflow_status.param.value,
                         workflow_conclusions.param.value,
                     ),
                     sizing_mode="stretch_width",
@@ -227,6 +237,7 @@ def pipeline_section(
                         plot_view_jobs_by_execution_time,
                         date_range_picker.param.value,
                         workflow_selector.param.value,
+                        workflow_status.param.value,
                         workflow_conclusions.param.value,
                         jobs_selector.param.value,
                     ),

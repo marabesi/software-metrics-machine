@@ -24,6 +24,7 @@ class ViewPipelineExecutionRunsDuration(BaseViewer):
         max_runs: int = 50,
         metric: str = "avg",
         sort_by: str = "avg",
+        raw_filters: str | None = None,
     ) -> PlotResult:
         result = PipelineExecutionDuration(repository=self.repository).main(
             workflow_path=workflow_path,
@@ -32,6 +33,7 @@ class ViewPipelineExecutionRunsDuration(BaseViewer):
             max_runs=max_runs,
             metric=metric,
             sort_by=sort_by,
+            raw_filters=raw_filters,
         )
         names = result.names
         values = result.values

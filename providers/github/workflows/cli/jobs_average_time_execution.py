@@ -89,7 +89,7 @@ def jobs_by_execution_time(
     ).main(
         workflow_path=workflow_path,
         out_file=out_file,
-        _cli_filters={"event": event, "target_branch": target_branch},
+        raw_filters=f"event={event},target_branch={target_branch}",
         top=top,
         exclude_jobs=exclude_jobs,
         start_date=start_date,

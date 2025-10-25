@@ -71,3 +71,47 @@ class TestWorkflowsRunsDurationCliCommands:
         )
 
         assert f"Saved plot to {path_string}/run_duration.png" in result.output
+
+    @pytest.mark.parametrize(
+        "workflow_runs, expected",
+        [
+            (
+                github_workflows_data(),
+                {
+                    "command": [
+                        "pipelines",
+                        "workflows-run-duration",
+                        "--raw-filters",
+                        "status=completed",
+                    ],
+                    "count": 1,
+                },
+            ),
+            (
+                github_workflows_data(),
+                {
+                    "command": [
+                        "pipelines",
+                        "workflows-run-duration",
+                        "--raw-filters",
+                        "conclusion=success",
+                    ],
+                    "count": 1,
+                },
+            ),
+        ],
+    )
+    def test_should_filter_by_raw_filters(self, cli, workflow_runs, expected):
+        expected_count = expected["count"]
+        command = expected["command"]
+        path_string = cli.data_stored_at
+        FileHandlerForTesting(path_string).store_json_file(
+            "workflows.json", workflow_runs
+        )
+
+        result = cli.runner.invoke(
+            main,
+            command,
+        )
+
+        assert f"Found {expected_count} runs after filtering" in result.output

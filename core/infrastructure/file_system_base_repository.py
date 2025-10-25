@@ -67,6 +67,8 @@ class FileSystemBaseRepository:
             for f in raw_filters.split(","):
                 if "=" in f:
                     k, v = f.split("=", 1)
+                    if v == "None":
+                        v = None
                     params[k] = v
         return params
 

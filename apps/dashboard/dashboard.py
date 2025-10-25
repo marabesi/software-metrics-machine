@@ -127,6 +127,21 @@ workflow_conclusions = pn.widgets.Select(
     value=selected_conclusion,
 )
 
+workflow_status = workflow_repository.get_unique_workflow_status(
+    {"path": sanitize_all_argument(workflow_selector.value)}
+)
+selected_status = None
+if len(workflow_status) > 0:
+    last = len(workflow_status) - 1
+    selected_status = workflow_status[last]
+
+workflow_status_select = pn.widgets.Select(
+    name="Select pipeline status",
+    description="Select pipeline status",
+    options=workflow_status,
+    value=selected_status,
+)
+
 header_section_prs = pn.Row()
 header_section_pipeline = pn.Row()
 
@@ -137,6 +152,7 @@ pipeline_section = pipeline_section(
     date_range_picker=start_end_date_picker,
     workflow_selector=workflow_selector,
     jobs_selector=jobs_selector,
+    workflow_status=workflow_status_select,
     workflow_conclusions=workflow_conclusions,
     repository=workflow_repository,
 )
@@ -232,6 +248,7 @@ TAB_DEFINITIONS = [
         "show": [
             "start_end_date_picker",
             "workflow_selector",
+            "workflow_status_select",
             "workflow_conclusions",
             "jobs_selector",
         ],
@@ -264,6 +281,7 @@ _HEADER_WIDGETS = {
     "start_end_date_picker": start_end_date_picker,
     "workflow_selector": workflow_selector,
     "workflow_conclusions": workflow_conclusions,
+    "workflow_status_select": workflow_status_select,
     "jobs_selector": jobs_selector,
     "author_select": author_select,
     "author_select_source_code": author_select_source_code,
@@ -284,7 +302,12 @@ tabs = pn.Tabs(
 header_section = pn.Column(
     pn.Column(
         pn.Row(
-            pn.Column(start_end_date_picker, workflow_selector, workflow_conclusions),
+            pn.Column(
+                start_end_date_picker,
+                workflow_selector,
+                workflow_status_select,
+                workflow_conclusions,
+            ),
         )
     ),
     pn.Row(

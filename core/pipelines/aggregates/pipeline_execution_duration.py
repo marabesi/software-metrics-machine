@@ -26,6 +26,7 @@ class PipelineExecutionDuration(BaseViewer):
         max_runs: int = 50,
         metric: str = "avg",
         sort_by: str = "avg",
+        raw_filters: str | None = None,
     ) -> None:
         filters = {
             "start_date": start_date,
@@ -33,12 +34,15 @@ class PipelineExecutionDuration(BaseViewer):
             "workflow_path": workflow_path,
         }
 
+        if raw_filters:
+            filters = {**filters, **self.repository.parse_raw_filters(raw_filters)}
+
         data = self.repository.get_workflows_run_duration(filters)
 
         print(f"Found {data["total"]} runs after filtering")
 
         rows = data["rows"]
-        # choose sort key
+
         sort_key = {
             "avg": lambda r: r[2],
             "sum": lambda r: r[3],

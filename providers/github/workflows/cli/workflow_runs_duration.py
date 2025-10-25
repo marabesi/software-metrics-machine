@@ -40,7 +40,17 @@ from core.pipelines.plots.view_pipeline_execution_duration import (
     default=100,
     help="Maximum number of runs to include in the plot",
 )
-def workflows_run_duration(out_file, workflow_path, start_date, end_date, max_runs):
+@click.option(
+    "--raw-filters",
+    type=str,
+    help=(
+        "Filters to apply to the dataset, in the form key=value,key2=value2."
+        "For possible filters, see https://docs.github.com/en/rest/actions/workflow-runs?apiVersion=2022-11-28#list-workflow-runs-for-a-repository"  # noqa
+    ),
+)
+def workflows_run_duration(
+    out_file, workflow_path, start_date, end_date, max_runs, raw_filters
+):
     configuration = ConfigurationBuilder(driver=Driver.JSON).build()
     return ViewPipelineExecutionRunsDuration(
         repository=PipelinesRepository(configuration=configuration)
@@ -49,6 +59,7 @@ def workflows_run_duration(out_file, workflow_path, start_date, end_date, max_ru
         workflow_path=workflow_path,
         start_date=start_date,
         end_date=end_date,
+        raw_filters=raw_filters,
     )
 
 

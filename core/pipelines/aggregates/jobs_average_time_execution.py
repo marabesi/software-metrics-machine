@@ -31,7 +31,7 @@ class JobsByAverageTimeExecution:
     def main(
         self,
         workflow_path: str | None = None,
-        _cli_filters: dict = {},
+        raw_filters: str | None = None,
         top: int = 20,
         exclude_jobs: str = None,
         start_date: str | None = None,
@@ -55,8 +55,9 @@ class JobsByAverageTimeExecution:
             wf_low = workflow_path.lower()
             runs = [r for r in runs if (r.get("path") or "").lower().find(wf_low) != -1]
 
+        raw_filters = self.repository.parse_raw_filters(raw_filters)
         # optional filter by event (e.g. push, pull_request) - accepts comma-separated or single value
-        if event_vals := self.__split_and_normalize(_cli_filters.get("event")):
+        if event_vals := raw_filters.get("event"):
             allowed = set(event_vals)
             runs = [r for r in runs if (r.get("event") or "").lower() in allowed]
 
@@ -66,7 +67,7 @@ class JobsByAverageTimeExecution:
             jobs = [j for j in jobs if j.get("run_id") in run_ids]
 
         # optional filter by target branch (accepts comma-separated values)
-        if target_vals := self.__split_and_normalize(_cli_filters.get("target_branch")):
+        if target_vals := raw_filters.get("target_branch"):
             allowed = set(target_vals)
 
             def branch_matches(obj):

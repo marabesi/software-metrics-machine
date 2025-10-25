@@ -20,7 +20,7 @@ class ViewJobsByAverageTimeExecution(BaseViewer):
         self,
         workflow_path: str | None = None,
         out_file: str | None = None,
-        _cli_filters: dict = {},
+        raw_filters: str | None = None,
         top: int = 20,
         exclude_jobs: str = None,
         start_date: str | None = None,
@@ -30,7 +30,7 @@ class ViewJobsByAverageTimeExecution(BaseViewer):
     ) -> PlotResult:
         result = JobsByAverageTimeExecution(repository=self.repository).main(
             workflow_path=workflow_path,
-            _cli_filters=_cli_filters,
+            raw_filters=raw_filters,
             top=top,
             exclude_jobs=exclude_jobs,
             start_date=start_date,
@@ -47,7 +47,6 @@ class ViewJobsByAverageTimeExecution(BaseViewer):
 
         if not averages:
             print("No job durations found after filtering")
-            # create a small hv.Text chart to show the message
             empty = hv.Text(0, 0, "No job durations found").opts(
                 height=super().get_chart_height()
             )
@@ -65,7 +64,6 @@ class ViewJobsByAverageTimeExecution(BaseViewer):
             else f"Top {len(names)} jobs by average duration for '{workflow_path}' - {total_runs} runs - {total_jobs} jobs"  # noqa
         )
 
-        # build the barchart using the shared helper; use the BaseViewer label generator
         chart = build_barchart(
             data,
             x="job_name",
