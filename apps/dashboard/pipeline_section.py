@@ -113,25 +113,29 @@ def pipeline_section(
 
     views = pn.Column(
         "## Pipeline",
+        pn.pane.HTML(
+            """
+            Explore your
+            <a target="_blank" href="https://marabesi.com/software-engineering/ci-vs-cde-vs-cd.html?
+            utm_source=metrics-machine&utm_medium=dashboard&utm_campaign=metrics&utm_id=metrics">CI/CD</a>
+            pipeline metrics and gain insights into workflow performance and job execution times, gain insights into
+            workflow performance and job execution times, find bottlenecks, and optimize your CI/CD processes. A
+            pipeline is a set of automated processes that allow software development teams to compile, build, and deploy
+            their code to production environments efficiently and reliably.
+            """
+        ),
         pn.layout.Divider(),
         pn.Row(
-            pn.panel(
-                pn.bind(plot_failed_pipelines, date_range_picker.param.value),
-                sizing_mode="stretch_width",
-            ),
-            sizing_mode="stretch_width",
-        ),
-        pn.Row(),
-        pn.Row(),
-        pn.Row(),
-        "Explore your [CI/CD](https://marabesi.com/software-engineering/ci-vs-cde-vs-cd.html?utm_source=metrics-machine&utm_medium=dashboard&utm_campaign=metrics&utm_id=metrics) pipeline metrics and gain insights into workflow performance and job execution times.",  # noqa
-        pn.Row(
-            pn.panel(
-                pn.bind(
-                    plot_workflow_by_status,
-                    date_range_picker.param.value,
-                    workflow_selector.param.value,
-                    workflow_conclusions.param.value,
+            pn.Column(
+                "### Distribution of pipelines by status",
+                pn.panel(
+                    pn.bind(
+                        plot_workflow_by_status,
+                        date_range_picker.param.value,
+                        workflow_selector.param.value,
+                        workflow_conclusions.param.value,
+                    ),
+                    sizing_mode="stretch_width",
                 ),
                 sizing_mode="stretch_width",
             ),

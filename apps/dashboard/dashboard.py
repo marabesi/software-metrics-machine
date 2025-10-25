@@ -265,7 +265,7 @@ tabs = pn.Tabs(
     *[(t["title"], t["view"]) for t in TAB_DEFINITIONS],
     sizing_mode="stretch_width",
     dynamic=False,
-    active=3,
+    active=1,
 )
 
 header_section = pn.Column(

@@ -1,4 +1,5 @@
 import panel as pn
+from core.pipelines.aggregates.pipeline_summary import PipelineRunSummary
 from core.pipelines.plots.view_deployment_frequency import (
     ViewDeploymentFrequency,
 )
@@ -45,8 +46,25 @@ def insights_section(repository: PipelinesRepository, date_range_picker):
             width=250,
         )
 
+    def plot_failed_pipelines(date_range_picker):
+        summary = PipelineRunSummary(repository=repository).compute_summary()
+        most_failed = summary.get("most_failed", "N/A")
+        return pn.widgets.StaticText(
+            name="Most failed pipeline", value=f"{most_failed}"
+        )
+
     return pn.Column(
         "# Insight section",
+        pn.Row(
+            pn.Column(
+                pn.panel(
+                    pn.bind(plot_failed_pipelines, date_range_picker.param.value),
+                    sizing_mode="stretch_width",
+                ),
+                sizing_mode="stretch_width",
+            ),
+            sizing_mode="stretch_width",
+        ),
         pn.layout.Divider(),
         pn.Row(
             pn.Column(pn.bind(workflow_run_duration, date_range_picker.param.value)),
