@@ -4,7 +4,7 @@ from core.infrastructure.configuration.configuration_builder import (
     ConfigurationBuilder,
     Driver,
 )
-from providers.github.prs.assessment.view_summary import PrViewSummary
+from core.prs.plots.view_summary import PrViewSummary
 from core.prs.prs_repository import PrsRepository
 
 

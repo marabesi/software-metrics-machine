@@ -4,7 +4,7 @@ from core.infrastructure.configuration.configuration_builder import (
     Driver,
 )
 from core.pipelines.pipelines_repository import PipelinesRepository
-from providers.github.workflows.assessment.view_jobs_summary import ViewJobsSummary
+from core.pipelines.plots.view_jobs_summary import ViewJobsSummary
 
 
 @click.command()
