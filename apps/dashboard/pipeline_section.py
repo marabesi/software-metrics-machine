@@ -128,6 +128,21 @@ def pipeline_section(
         pn.Row(
             pn.Column(
                 "### Distribution of pipelines by status",
+                pn.pane.HTML(
+                    """
+                    <details style="cursor: pointer;">
+                    <summary>
+                        Pipelines execution have a status and a conclusion attached to it.
+                    </summary>
+                    <div>
+                        <br />
+                        The status indicates the current state of the pipeline, such as 'in_progress', 'completed', or
+                        'queued'. The conclusion provides more specific information about the outcome of the pipeline,
+                        such as 'success', 'failure', 'cancelled', or 'timed_out'.
+                    </div>
+                    </details>
+                    """
+                ),
                 pn.panel(
                     pn.bind(
                         plot_workflow_by_status,
@@ -142,12 +157,16 @@ def pipeline_section(
             sizing_mode="stretch_width",
         ),
         pn.Row(
-            pn.panel(
-                pn.bind(
-                    plot_workflow_run_by,
-                    date_range_picker.param.value,
-                    workflow_selector.param.value,
-                    workflow_conclusions.param.value,
+            pn.Column(
+                "### Distribution of pipelines aggregated by time",
+                pn.panel(
+                    pn.bind(
+                        plot_workflow_run_by,
+                        date_range_picker.param.value,
+                        workflow_selector.param.value,
+                        workflow_conclusions.param.value,
+                    ),
+                    sizing_mode="stretch_width",
                 ),
                 sizing_mode="stretch_width",
             ),
