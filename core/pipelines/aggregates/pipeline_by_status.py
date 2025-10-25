@@ -29,7 +29,7 @@ class PipelineByStatus:
         }
         runs = self.repository.runs(filters)
 
-        status_counts = Counter(run.get("conclusion") or "undefined" for run in runs)
+        status_counts = Counter(run.get("status") or "undefined" for run in runs)
 
         print(f"Total workflow runs after filters: {len(runs)}")
         return PipelineByStatusResult(

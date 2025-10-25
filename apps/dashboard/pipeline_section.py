@@ -1,7 +1,7 @@
 import pandas as pd
 import panel as pn
+from apps.dashboard.components.aggregate_by_select import aggregate_by_select
 from apps.dashboard.components.tabulator import TabulatorComponent
-from core.pipelines.aggregates.pipeline_summary import PipelineRunSummary
 from core.pipelines.plots.view_jobs_by_status import ViewJobsByStatus
 from core.pipelines.plots.view_jobs_average_time_execution import (
     ViewJobsByAverageTimeExecution,
@@ -75,12 +75,12 @@ def pipeline_section(
         )
 
     def plot_workflow_run_by(
-        date_range_picker, workflow_selector, workflow_conclusions
+        date_range_picker, workflow_selector, workflow_conclusions, aggregate_by
     ):
         return (
             ViewWorkflowRunsByWeekOrMonth(repository=repository)
             .main(
-                aggregate_by="week",
+                aggregate_by=aggregate_by,
                 start_date=date_range_picker[0],
                 end_date=date_range_picker[1],
                 raw_filters=f"conclusion={workflow_conclusions}",
@@ -101,12 +101,7 @@ def pipeline_section(
             .plot
         )
 
-    def plot_failed_pipelines(date_range_picker):
-        summary = PipelineRunSummary(repository=repository).compute_summary()
-        most_failed = summary.get("most_failed", "N/A")
-        return pn.widgets.StaticText(
-            name="Most failed pipeline", value=f"{most_failed}"
-        )
+    aggregate_by = aggregate_by_select()
 
     views = pn.Column(
         "## Pipeline",
@@ -155,10 +150,57 @@ def pipeline_section(
         ),
         pn.Row(
             pn.Column(
-                "### Distribution of pipelines aggregated by time",
+                "### Distribution of pipelines execution aggregated by time",
+                pn.pane.HTML(
+                    """
+                    <details style="cursor: pointer;">
+                    <summary>
+                        Pipeline are executed many times a day, week, or month depending on the development activity.
+                    </summary>
+                    <div>
+                        <br />
+                        This view helps you understand the frequency and patterns of pipeline executions over time,
+                        allowing you to identify trends, spikes, or periods of low activity.
+                    </div>
+                    </details>
+                    """
+                ),
+                aggregate_by,
                 pn.panel(
                     pn.bind(
                         plot_workflow_run_by,
+                        date_range_picker.param.value,
+                        workflow_selector.param.value,
+                        workflow_conclusions.param.value,
+                        aggregate_by=aggregate_by.param.value,
+                    ),
+                    sizing_mode="stretch_width",
+                ),
+                sizing_mode="stretch_width",
+            ),
+            sizing_mode="stretch_width",
+        ),
+        pn.Row(
+            pn.Column(
+                "### Distribution of pipelines by run duration",
+                pn.pane.HTML(
+                    """
+                    <details style="cursor: pointer;">
+                    <summary>
+                        The time taken for a pipeline to complete its execution can vary based on several factors,
+                        including the complexity of the tasks involved, the number of jobs, and the resources allocated.
+                    </summary>
+                    <div>
+                        <br />
+                        This view provides insights into the performance and efficiency of your pipelines, helping you
+                        identify potential bottlenecks and areas for optimization.
+                    </div>
+                    </details>
+                    """
+                ),
+                pn.panel(
+                    pn.bind(
+                        plot_workflow_run_duration,
                         date_range_picker.param.value,
                         workflow_selector.param.value,
                         workflow_conclusions.param.value,
@@ -169,39 +211,42 @@ def pipeline_section(
             ),
             sizing_mode="stretch_width",
         ),
-        pn.Row(
-            pn.panel(
-                pn.bind(
-                    plot_workflow_run_duration,
-                    date_range_picker.param.value,
-                    workflow_selector.param.value,
-                    workflow_conclusions.param.value,
-                ),
-                sizing_mode="stretch_width",
-            ),
-            sizing_mode="stretch_width",
-        ),
         pn.Row("## Jobs", sizing_mode="stretch_width"),
+        pn.pane.HTML(
+            """
+            Jobs are individual tasks or steps within a pipeline that perform specific actions, such as building code,
+            running tests, or deploying applications. Each job has its own status and conclusion, similar to pipelines.
+            Monitoring job execution times helps identify bottlenecks and optimize the overall pipeline performance.
+            """
+        ),
         pn.Row(
-            pn.panel(
-                pn.bind(
-                    plot_view_jobs_by_execution_time,
-                    date_range_picker.param.value,
-                    workflow_selector.param.value,
-                    workflow_conclusions.param.value,
-                    jobs_selector.param.value,
+            pn.Column(
+                "### Distribution of jobs by execution time",
+                pn.panel(
+                    pn.bind(
+                        plot_view_jobs_by_execution_time,
+                        date_range_picker.param.value,
+                        workflow_selector.param.value,
+                        workflow_conclusions.param.value,
+                        jobs_selector.param.value,
+                    ),
+                    sizing_mode="stretch_width",
                 ),
                 sizing_mode="stretch_width",
             ),
             sizing_mode="stretch_width",
         ),
         pn.Row(
-            pn.panel(
-                pn.bind(
-                    plot_jobs_by_status,
-                    date_range_picker.param.value,
-                    workflow_selector.param.value,
-                    jobs_selector.param.value,
+            pn.Column(
+                "### Distribution of jobs execution by status",
+                pn.panel(
+                    pn.bind(
+                        plot_jobs_by_status,
+                        date_range_picker.param.value,
+                        workflow_selector.param.value,
+                        jobs_selector.param.value,
+                    ),
+                    sizing_mode="stretch_width",
                 ),
                 sizing_mode="stretch_width",
             ),

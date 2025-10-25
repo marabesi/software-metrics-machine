@@ -13,6 +13,11 @@ def TabulatorComponent(
         header_filters=header_filters,
         show_index=False,
         sizing_mode="stretch_width",
+        # configuration={
+        #     "initialHeaderFilter": [
+        #         {"field":"path", "value": ".github/workflows/ci.yml"}
+        #     ]
+        # }
     )
     filename_input, button = table.download_menu(
         text_kwargs={"name": "", "value": f"{filename}.csv"},
