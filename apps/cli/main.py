@@ -52,11 +52,11 @@ module_groups = {
     ],
     "codemaat": [
         "providers.codemaat.cli.fetch_codemaat",
-        "providers.codemaat.cli.code_churn",
-        "providers.codemaat.cli.coupling",
-        "providers.codemaat.cli.entity_churn",
-        "providers.codemaat.cli.entity_effort",
-        "providers.codemaat.cli.entity_ownership",
+        "apps.cli.source_code_code_churn",
+        "apps.cli.source_code_coupling",
+        "apps.cli.source_code_entity_churn",
+        "apps.cli.source_code_entity_effort",
+        "apps.cli.source_code_entity_ownership",
     ],
     "pydriller": [
         "providers.pydriller.cli.change_set",
