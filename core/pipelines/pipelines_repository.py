@@ -137,6 +137,15 @@ class PipelinesRepository(FileSystemBaseRepository):
         list_all.insert(0, "All")
         return list_all
 
+    def get_unique_workflow_status(self, filters=None) -> List[str]:
+        """Return a list of unique workflow status."""
+        runs = self.runs(filters)
+        conclusions = {run.get("status", "") for run in runs if "status" in run}
+        list_all = list(filter(None, list(conclusions)))
+        list_all.sort()
+        list_all.insert(0, "All")
+        return list_all
+
     def get_unique_workflow_names(self) -> List[str]:
         """Return a list of unique workflow names."""
         workflow_names = {run.get("name", "") for run in self.all_runs if "name" in run}

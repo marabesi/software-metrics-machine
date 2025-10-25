@@ -372,6 +372,39 @@ class TestPipelinesRepository:
             assert len(result) == 2
             assert result[1] == "in_progress"
 
+    def test_set_all_option_for_unique_pipeline_status(self):
+        workflows_with_duplicated_paths = as_json_string([])
+        with (
+            patch(
+                "core.infrastructure.file_system_base_repository.FileSystemBaseRepository.read_file_if_exists",
+                return_value=workflows_with_duplicated_paths,
+            ),
+        ):
+            loader = PipelinesRepository(configuration=InMemoryConfiguration("."))
+
+            result = loader.get_unique_workflow_status()
+            assert result[0] == "All"
+
+    def test_get_unique_pipeline_status(self):
+        workflows_with_duplicated_paths = as_json_string(
+            [
+                {"status": "completed", "path": "/workflows/build.yml", "id": 1},
+                {"status": "in_progress", "path": "/workflows/test.yml", "id": 2},
+            ]
+        )
+        with (
+            patch(
+                "core.infrastructure.file_system_base_repository.FileSystemBaseRepository.read_file_if_exists",
+                return_value=workflows_with_duplicated_paths,
+            ),
+        ):
+            loader = PipelinesRepository(configuration=InMemoryConfiguration("."))
+
+            result = loader.get_unique_workflow_status()
+
+            assert result[1] == "completed"
+            assert result[2] == "in_progress"
+
     def test_adds_all_option_by_default(self):
         empty_workflow_runs = as_json_string([])
         with (
