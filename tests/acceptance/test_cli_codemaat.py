@@ -149,8 +149,8 @@ class TestCliCodemaatCommands:
         path_string = cli.data_stored_at
 
         csv_data = """entity,coupled,degree,average-revs
-another.txt,another.txt,10,2,
-file.ts,file.ts,10,2
+another.txt,aaaa.mp3,10,2
+file.ts,brum.ts,10,2
 """
         FileHandlerForTesting(path_string).store_file("coupling.csv", csv_data)
         result = cli.runner.invoke(

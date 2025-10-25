@@ -65,9 +65,11 @@ def source_code_section(
         return pn.panel(chart, sizing_mode="stretch_width")
 
     # Refactor plot_code_coupling to include zoom and pan controls using Panel sliders
-    def plot_code_coupling_with_controls(top):
+    def plot_code_coupling_with_controls(ignore_pattern_files, top):
         coupling_viewer = CouplingViewer(repository=repository)
-        return pn.Column(coupling_viewer.render(top_n=int(top)).plot)
+        return pn.Column(
+            coupling_viewer.render(top=int(top), ignore_files=ignore_pattern_files).plot
+        )
 
     return pn.Column(
         "## Source code Section",
@@ -116,6 +118,7 @@ def source_code_section(
         pn.Row(
             pn.bind(
                 plot_code_coupling_with_controls,
+                ignore_pattern_files.param.value,
                 top_entries.param.value,
             )
         ),

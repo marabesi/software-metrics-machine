@@ -32,8 +32,8 @@ class CodemaatRepository(FileSystemBaseRepository):
         if not file_path.exists():
             return pd.DataFrame()
         if ignore_files:
-            data = pd.read_csv(file_path)
-            data = self.apply_ignore_file_patterns(data, ignore_files)
+            df = pd.read_csv(file_path)
+            data = self.apply_ignore_file_patterns(df, ignore_files)
             print(f"Filtered coupling data count: {len(data.values.tolist())}")
             return data
         return pd.read_csv(file_path)

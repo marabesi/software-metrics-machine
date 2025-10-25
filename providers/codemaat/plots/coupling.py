@@ -21,24 +21,11 @@ class CouplingViewer(BaseViewer, Viewable):
     def __init__(self, repository: CodemaatRepository):
         self.repository = repository
 
-    def _circular_layout(
-        self, nodes: List[str], radius: float = 1.0
-    ) -> Dict[str, tuple]:
-        """Assign nodes to equally spaced points on a circle."""
-        layout: Dict[str, tuple] = {}
-        n = len(nodes)
-        for i, node in enumerate(nodes):
-            angle = 2 * math.pi * i / max(n, 1)
-            x = radius * math.cos(angle)
-            y = radius * math.sin(angle)
-            layout[node] = (x, y)
-        return layout
-
     def render(
         self,
         ignore_files: str | None = None,
+        top: int = 20,
         out_file: str | None = None,
-        top_n: int = 20,
     ) -> PlotResult:
         df = self.repository.get_coupling(ignore_files=ignore_files)
         if df is None or df.empty:
@@ -47,7 +34,7 @@ class CouplingViewer(BaseViewer, Viewable):
 
         # select top N by degree to keep diagram readable
         try:
-            top_df = df.nlargest(top_n, "degree")
+            top_df = df.nlargest(top, "degree")
         except Exception:
             top_df = df
 
@@ -58,7 +45,7 @@ class CouplingViewer(BaseViewer, Viewable):
         if not unique_nodes:
             return PlotResult(plot=None, data=top_df)
 
-        layout = self._circular_layout(unique_nodes, radius=1.0)
+        layout = self.__circular_layout(unique_nodes, radius=1.0)
 
         # Convert edges into multi-line segments (chords)
         xs: List[List[float]] = []
@@ -126,8 +113,8 @@ class CouplingViewer(BaseViewer, Viewable):
         )
 
         p = figure(
-            title=f"Top {top_n} Code Coupling Chord Diagram",
-            tools="pan,wheel_zoom,reset,save",
+            title=f"Top {top} Code Coupling Chord Diagram",
+            tools="pan,wheel_zoom,reset,save,fullscreen",
             x_axis_type=None,
             y_axis_type=None,
             match_aspect=True,
@@ -147,7 +134,7 @@ class CouplingViewer(BaseViewer, Viewable):
         )
 
         # Draw nodes; capture renderer for node hover/select
-        node_renderer = p.circle(
+        node_renderer = p.scatter(
             x="x",
             y="y",
             size=14,
@@ -194,3 +181,16 @@ class CouplingViewer(BaseViewer, Viewable):
         edge_renderer.selection_glyph = MultiLine(line_color="edge_color", line_width=6)
 
         return PlotResult(plot=p, data=top_df)
+
+    def __circular_layout(
+        self, nodes: List[str], radius: float = 1.0
+    ) -> Dict[str, tuple]:
+        """Assign nodes to equally spaced points on a circle."""
+        layout: Dict[str, tuple] = {}
+        n = len(nodes)
+        for i, node in enumerate(nodes):
+            angle = 2 * math.pi * i / max(n, 1)
+            x = radius * math.cos(angle)
+            y = radius * math.sin(angle)
+            layout[node] = (x, y)
+        return layout
