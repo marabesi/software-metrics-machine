@@ -42,7 +42,18 @@ class CodemaatRepository(FileSystemBaseRepository):
         file_path = Path(f"{self.configuration.store_data}/entity-churn.csv")
         if not file_path.exists():
             return pd.DataFrame()
-        return pd.read_csv(file_path)
+
+        data = pd.read_csv(file_path)
+        if "entity" in data.columns:
+
+            def _short_ent(val: str) -> str:
+                if val is None:
+                    return val
+                s = str(val)
+                return s[-12:] if len(s) > 12 else s
+
+            data["short_entity"] = data["entity"].apply(_short_ent)
+        return data
 
     def get_entity_effort(self):
         file_path = Path(f"{self.configuration.store_data}/entity-effort.csv")

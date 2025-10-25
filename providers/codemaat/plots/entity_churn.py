@@ -47,6 +47,8 @@ class EntityChurnViewer(BaseViewer, Viewable):
         # Ensure columns exist
         if "entity" not in df:
             df["entity"] = []
+        if "short_entity" not in df:
+            df["short_entity"] = []
         if "added" not in df:
             df["added"] = 0
         if "deleted" not in df:
@@ -58,6 +60,7 @@ class EntityChurnViewer(BaseViewer, Viewable):
             data.append(
                 {
                     "entity": row.get("entity"),
+                    "short_entity": row.get("short_entity"),
                     "type": "Added",
                     "value": row.get("added", 0),
                 }
@@ -65,6 +68,7 @@ class EntityChurnViewer(BaseViewer, Viewable):
             data.append(
                 {
                     "entity": row.get("entity"),
+                    "short_entity": row.get("short_entity"),
                     "type": "Deleted",
                     "value": row.get("deleted", 0),
                 }
@@ -72,7 +76,7 @@ class EntityChurnViewer(BaseViewer, Viewable):
 
         chart = build_barchart(
             data,
-            x="entity",
+            x="short_entity",
             y="value",
             group="type",
             stacked=True,
