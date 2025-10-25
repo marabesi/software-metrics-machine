@@ -38,10 +38,9 @@ class CouplingViewer(BaseViewer, Viewable):
         except Exception:
             top_df = df
 
-        # Build node list and mapping
-        unique_nodes = pd.unique(
-            top_df["entity"].tolist() + top_df["coupled"].tolist()
-        ).tolist()
+        # Build node list and mapping (use concat + unique to avoid pd.unique(list) FutureWarning)
+        combined = pd.concat([top_df["entity"], top_df["coupled"]], ignore_index=True)
+        unique_nodes = combined.dropna().unique().tolist()
         if not unique_nodes:
             return PlotResult(plot=None, data=top_df)
 

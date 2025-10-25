@@ -85,9 +85,4 @@ class EntityChurnViewer(BaseViewer, Viewable):
             color=super().get_color(),
         )
 
-        try:
-            chart = chart.opts(sizing_mode="stretch_width")
-        except Exception:
-            pass
-
         return PlotResult(plot=chart, data=df)
