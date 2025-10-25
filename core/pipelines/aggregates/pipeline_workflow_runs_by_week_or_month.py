@@ -34,6 +34,7 @@ class PipelineWorkflowRunsByWekOrMonth(BaseViewer):
     ) -> PipelineWorkflowRunsByWeekOrMonthResult:
         params = self.repository.parse_raw_filters(raw_filters)
         event = params.get("event")
+        status = params.get("status")
         target_branch = params.get("target_branch")
         conclusion = params.get("conclusion")
 
@@ -45,6 +46,7 @@ class PipelineWorkflowRunsByWekOrMonth(BaseViewer):
             "workflow_path": workflow_path,
             "include_defined_only": include_defined_only,
             "conclusion": conclusion,
+            "status": status,
         }
 
         runs = self.repository.runs(filters)

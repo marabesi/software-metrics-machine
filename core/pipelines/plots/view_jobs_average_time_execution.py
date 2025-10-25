@@ -27,6 +27,7 @@ class ViewJobsByAverageTimeExecution(BaseViewer):
         end_date: str | None = None,
         force_all_jobs: bool = False,
         job_name: str | None = None,
+        pipeline_raw_filters: str | None = None,
     ) -> PlotResult:
         result = JobsByAverageTimeExecution(repository=self.repository).main(
             workflow_path=workflow_path,
@@ -37,6 +38,7 @@ class ViewJobsByAverageTimeExecution(BaseViewer):
             end_date=end_date,
             force_all_jobs=force_all_jobs,
             job_name=job_name,
+            pipeline_raw_filters=pipeline_raw_filters,
         )
         averages = result.averages
         runs = result.runs

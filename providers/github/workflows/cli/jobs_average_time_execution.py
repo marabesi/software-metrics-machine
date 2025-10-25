@@ -71,6 +71,12 @@ from core.pipelines.plots.view_jobs_average_time_execution import (
     default=None,
     help="Filter jobs by job name",
 )
+@click.option(
+    "--pipeline-raw-filters",
+    type=str,
+    default=None,
+    help="Comma-separated key=value pairs to filter runs (e.g., event=push,target_branch=main)",
+)
 def jobs_by_execution_time(
     workflow_path,
     out_file,
@@ -82,6 +88,7 @@ def jobs_by_execution_time(
     end_date,
     force_all_jobs,
     job_name,
+    pipeline_raw_filters,
 ):
     configuration = ConfigurationBuilder(driver=Driver.JSON).build()
     return ViewJobsByAverageTimeExecution(
@@ -96,6 +103,7 @@ def jobs_by_execution_time(
         end_date=end_date,
         force_all_jobs=force_all_jobs,
         job_name=job_name,
+        pipeline_raw_filters=pipeline_raw_filters,
     )
 
 

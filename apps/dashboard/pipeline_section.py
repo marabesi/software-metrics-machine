@@ -60,7 +60,7 @@ def pipeline_section(
                 end_date=date_range_picker[1],
                 workflow_path=sanitize_all_argument(workflow_selector),
                 job_name=sanitize_all_argument(jobs_selector),
-                raw_filters=f"conclusion={workflow_conclusions},status={workflow_status}",
+                pipeline_raw_filters=f"conclusion={workflow_conclusions},status={workflow_status}",
             )
             .plot
         )

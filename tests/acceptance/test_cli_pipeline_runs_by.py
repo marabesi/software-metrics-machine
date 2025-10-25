@@ -119,9 +119,13 @@ class TestWorkflowsRunsByCliCommands:
         [
             (
                 github_workflows_data(),
-                {"event": "push", "count": 1},
+                {"event": "event=push", "count": 1},
             ),
-            ([], {"event": "push", "count": 0}),
+            ([], {"event": "event=push", "count": 0}),
+            (
+                github_workflows_data(),
+                {"event": "status=completed", "count": 1},
+            ),
         ],
     )
     def test_should_filter_workflows_by_events(self, cli, workflow_runs, expected):
@@ -140,11 +144,11 @@ class TestWorkflowsRunsByCliCommands:
                 "pipelines",
                 "workflow-runs-by",
                 "--start-date",
-                "2023-10-01",
+                "2000-10-01",
                 "--end-date",
-                "2023-10-01",
+                "2200-10-01",
                 "--raw-filters",
-                f"event={event}",
+                event,
             ],
         )
 
