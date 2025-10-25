@@ -52,13 +52,14 @@ def source_code_section(
         )
         return pn.panel(chart, sizing_mode="stretch_width")
 
-    def plot_entity_ownership(ignore_pattern, authors, top):
+    def plot_entity_ownership(ignore_pattern, authors, top, type_churn):
         chart = (
             EntityOnershipViewer(repository=repository)
             .render(
                 ignore_files=ignore_pattern,
                 authors=",".join(authors),
                 top_n=int(top),
+                type_churn=type_churn,
             )
             .plot
         )
@@ -70,6 +71,13 @@ def source_code_section(
         return pn.Column(
             coupling_viewer.render(top=int(top), ignore_files=ignore_pattern_files).plot
         )
+
+    type_churn = pn.widgets.Select(
+        name="Select pipeline conclusion",
+        description="Select pipeline conclusion",
+        options=["added", "deleted"],
+        value="added",
+    )
 
     return pn.Column(
         "## Source code Section",
@@ -106,11 +114,13 @@ def source_code_section(
         pn.Row(
             pn.Column(
                 "## Entity Ownership",
+                type_churn,
                 pn.bind(
                     plot_entity_ownership,
                     ignore_pattern_files.param.value,
                     author_select_source_code.param.value,
                     top_entries.param.value,
+                    type_churn=type_churn.param.value,
                 ),
             ),
             sizing_mode="stretch_width",

@@ -19,7 +19,7 @@ class EntityOnershipViewer(BaseViewer, Viewable):
         ignore_files: str | None = None,
         out_file: str | None = None,
         authors: str | None = None,
-        type: str | None = "added",
+        type_churn: str | None = "added",
     ) -> PlotResult:
         repo = self.repository
         df = repo.get_entity_ownership(authors.split(",") if authors else [])
@@ -94,19 +94,17 @@ class EntityOnershipViewer(BaseViewer, Viewable):
             group="author",
             stacked=True,
             height=super().get_chart_height(),
-            title="",
+            title="Entity Ownership: Lines Deleted per Author",
             xrotation=45,
             label_generator=None,
-            out_file=None,
+            out_file=out_file,
             tools=super().get_tools(),
             color=super().get_color(),
         )
 
-        bars_deleted = bars_deleted.opts(alpha=0.5)
-
-        if type == "added":
+        if type_churn == "added":
             chart = bars_added
-        elif type == "deleted":
+        elif type_churn == "deleted":
             chart = bars_deleted
 
         try:
