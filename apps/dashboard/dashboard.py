@@ -1,9 +1,9 @@
 import panel.pane.holoviews as _ph
 from datetime import date, datetime, timedelta
 import panel as pn
-import param
 from panel.template import FastListTemplate
 
+from apps.dashboard.filter_state import FilterState
 from apps.dashboard.insights_section import insights_section
 from apps.dashboard.pipeline_section import pipeline_section
 from apps.dashboard.prs_section import prs_section as tab_pr_section
@@ -25,19 +25,8 @@ pn.extension(
     ],
 )
 
-
-class Settings(param.Parameterized):
-    params_in_query = pn.state.location.query_params
-    tab = param.Integer(default=0, bounds=(0, 4))
-    focused = param.Integer(default=0, bounds=(0, 1))
-
-    if "tab" in params_in_query:
-        tab = param.Integer(default=params_in_query["tab"], bounds=(0, 4))
-    if "focused" in params_in_query:
-        focused = param.Integer(default=params_in_query["focused"], bounds=(0, 4))
-
-
-settings = Settings()
+filter_state = FilterState()
+settings = filter_state.get_settings()
 
 # Disable automatic Holoviews axis-linking preprocessor to avoid dtype comparison
 # errors when plots with incompatible axis dtypes (e.g., datetime vs numeric)
@@ -328,9 +317,8 @@ template.main.append(tabs)
 def on_tab_change(event):
     # event.new is the index of the active tab
     idx = int(event.new)
+    filter_state.update_settings("tab", idx)
     try:
-        settings.tab = idx
-        pn.state.location.sync(settings)
         cfg = TAB_DEFINITIONS[idx]
     except Exception:
         cfg = {"show": []}
@@ -343,8 +331,9 @@ def on_tab_change(event):
 
 tabs.param.watch(on_tab_change, "active")
 
+pn.Param(settings)
+
 # initialize visibility for the current active tab
 on_tab_change(type("E", (), {"new": tabs.active}))
 
-pn.Param(settings)
 template.servable()
