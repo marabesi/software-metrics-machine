@@ -55,6 +55,13 @@ def insights_section(repository: PipelinesRepository, date_range_picker):
 
     return pn.Column(
         "# Insight section",
+        pn.pane.HTML(
+            """
+            This section provides insights into your pipeline executions, including deployment frequency and
+            average run durations. Use the date range picker above to filter the data displayed in the charts below.
+            """
+        ),
+        pn.layout.Divider(),
         pn.Row(
             pn.Column(
                 pn.panel(
@@ -70,11 +77,29 @@ def insights_section(repository: PipelinesRepository, date_range_picker):
             pn.Column(pn.bind(workflow_run_duration, date_range_picker.param.value)),
         ),
         pn.Row(
-            pn.Column("## Deployment Frequency"),
-        ),
-        pn.Row(
             pn.Column(
-                pn.bind(plot_deployment_frequency, date_range_picker.param.value)
+                "## Deployment Frequency",
+                pn.pane.HTML(
+                    """
+                <details style="cursor: pointer;">
+                <summary>
+                    Deployment frequency measures how often your team lands changes to production.
+                </summary>
+                <div>
+                    <br />
+                    A higher deployment frequency indicates a more agile and responsive development process, allowing
+                    for quicker delivery of features and bug fixes to end-users. It reflects the team's ability to
+                    continuously integrate and deploy code changes, which is a key aspect of modern DevOps practices.
+
+                    <a target="_blank" href="https://dora.dev/">DORA (DevOps Research and Assessment)</a> defines
+                    deployment frequency as one of the four key metrics for measuring software delivery performance.
+                    According to DORA, high-performing teams typically deploy code changes multiple times per day, while
+                    low-performing teams may deploy changes only once every few months.
+                </div>
+                </details>
+                    """
+                ),
+                pn.bind(plot_deployment_frequency, date_range_picker.param.value),
             ),
         ),
     )
