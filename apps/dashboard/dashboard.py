@@ -3,12 +3,12 @@ from datetime import date, datetime, timedelta
 import panel as pn
 from panel.template import FastListTemplate
 
-from apps.dashboard.filter_state import FilterState
+from apps.dashboard.components.filter_state import FilterState
 from apps.dashboard.section_insight import insights_section
 from apps.dashboard.section_pipeline import pipeline_section
 from apps.dashboard.section_pull_request import prs_section as tab_pr_section
 from apps.dashboard.section_source_code import source_code_section
-from apps.dashboard.configuration_section import configuration_section
+from apps.dashboard.section_configuration import configuration_section
 from core.infrastructure.configuration.configuration_builder import (
     ConfigurationBuilder,
     Driver,
