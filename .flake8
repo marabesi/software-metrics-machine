@@ -9,5 +9,6 @@ exclude = .git,
   .idea,
   *.sh
   ./docs/*
+  ./downloads/*
 max-line-length = 120
 max-complexity = 50
