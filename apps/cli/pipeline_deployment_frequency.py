@@ -1,13 +1,9 @@
 import click
 
-from core.infrastructure.configuration.configuration_builder import (
-    ConfigurationBuilder,
-    Driver,
-)
-from core.pipelines.plots.view_deployment_frequency import (
-    ViewDeploymentFrequency,
-)
-from core.pipelines.pipelines_repository import PipelinesRepository
+from core.infrastructure.configuration.configuration_builder import Driver
+from core.infrastructure.repository_factory import create_pipelines_repository
+from core.pipelines.plots.view_deployment_frequency import \
+    ViewDeploymentFrequency
 
 
 @click.command()
@@ -44,9 +40,7 @@ from core.pipelines.pipelines_repository import PipelinesRepository
 )
 def deployment_frequency(out_file, workflow_path, job_name, start_date, end_date):
     return ViewDeploymentFrequency(
-        repository=PipelinesRepository(
-            configuration=ConfigurationBuilder(driver=Driver.CLI).build()
-        )
+        repository=create_pipelines_repository(driver=Driver.CLI)
     ).plot(
         out_file=out_file,
         workflow_path=workflow_path,

@@ -1,13 +1,8 @@
 import click
 
-from core.infrastructure.configuration.configuration_builder import (
-    ConfigurationBuilder,
-    Driver,
-)
-from core.pipelines.pipelines_repository import PipelinesRepository
-from core.pipelines.plots.view_pipeline_runs_by_week_or_month import (
-    ViewWorkflowRunsByWeekOrMonth,
-)
+from core.infrastructure.repository_factory import create_pipelines_repository
+from core.pipelines.plots.view_pipeline_runs_by_week_or_month import \
+    ViewWorkflowRunsByWeekOrMonth
 
 
 @click.command()
@@ -61,10 +56,7 @@ def workflow_runs_by(
     end_date,
     raw_filters,
 ):
-    configuration = ConfigurationBuilder(driver=Driver.JSON).build()
-    return ViewWorkflowRunsByWeekOrMonth(
-        repository=PipelinesRepository(configuration=configuration)
-    ).main(
+    return ViewWorkflowRunsByWeekOrMonth(repository=create_pipelines_repository()).main(
         aggregate_by=aggregate_by,
         out_file=out_file,
         workflow_path=workflow_path,

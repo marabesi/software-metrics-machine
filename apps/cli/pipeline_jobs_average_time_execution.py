@@ -1,13 +1,8 @@
 import click
 
-from core.infrastructure.configuration.configuration_builder import (
-    ConfigurationBuilder,
-    Driver,
-)
-from core.pipelines.pipelines_repository import PipelinesRepository
-from core.pipelines.plots.view_jobs_average_time_execution import (
-    ViewJobsByAverageTimeExecution,
-)
+from core.infrastructure.repository_factory import create_pipelines_repository
+from core.pipelines.plots.view_jobs_average_time_execution import \
+    ViewJobsByAverageTimeExecution
 
 
 @click.command()
@@ -90,9 +85,8 @@ def jobs_by_execution_time(
     job_name,
     pipeline_raw_filters,
 ):
-    configuration = ConfigurationBuilder(driver=Driver.JSON).build()
     return ViewJobsByAverageTimeExecution(
-        repository=PipelinesRepository(configuration=configuration)
+        repository=create_pipelines_repository()
     ).main(
         workflow_path=workflow_path,
         out_file=out_file,

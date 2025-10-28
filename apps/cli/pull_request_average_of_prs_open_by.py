@@ -1,13 +1,7 @@
 import click
 
-from core.infrastructure.configuration.configuration_builder import (
-    ConfigurationBuilder,
-    Driver,
-)
-from core.prs.prs_repository import PrsRepository
-from core.prs.plots.view_average_of_prs_open_by import (
-    ViewAverageOfPrsOpenBy,
-)
+from core.infrastructure.repository_factory import create_prs_repository
+from core.prs.plots.view_average_of_prs_open_by import ViewAverageOfPrsOpenBy
 
 
 @click.command()
@@ -53,11 +47,7 @@ from core.prs.plots.view_average_of_prs_open_by import (
 )
 def average_open_by(out_file, author, labels, aggregate_by, start_date, end_date):
     """Plot average PR open."""
-    ViewAverageOfPrsOpenBy(
-        repository=PrsRepository(
-            configuration=ConfigurationBuilder(driver=Driver.CLI).build()
-        )
-    ).main(
+    ViewAverageOfPrsOpenBy(repository=create_prs_repository()).main(
         out_file=out_file,
         author=author,
         labels=labels,

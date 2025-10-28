@@ -1,11 +1,7 @@
 import click
 
-from core.infrastructure.configuration.configuration_builder import (
-    ConfigurationBuilder,
-    Driver,
-)
+from core.infrastructure.repository_factory import create_prs_repository
 from core.prs.plots.view_summary import PrViewSummary
-from core.prs.prs_repository import PrsRepository
 
 
 @click.command()
@@ -34,11 +30,9 @@ from core.prs.prs_repository import PrsRepository
     help="Either 'text' or 'json' to specify the output format",
 )
 def summary(csv, start_date, end_date, output):
-    return PrViewSummary(
-        repository=PrsRepository(
-            configuration=ConfigurationBuilder(driver=Driver.CLI).build()
-        )
-    ).main(csv=csv, start_date=start_date, end_date=end_date, output_format=output)
+    return PrViewSummary(repository=create_prs_repository()).main(
+        csv=csv, start_date=start_date, end_date=end_date, output_format=output
+    )
 
 
 command = summary

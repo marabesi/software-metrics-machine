@@ -1,10 +1,6 @@
 import click
 
-from core.infrastructure.configuration.configuration_builder import (
-    ConfigurationBuilder,
-    Driver,
-)
-from providers.codemaat.codemaat_repository import CodemaatRepository
+from core.infrastructure.repository_factory import create_codemaat_repository
 from providers.codemaat.plots.coupling import CouplingViewer
 
 
@@ -24,11 +20,7 @@ from providers.codemaat.plots.coupling import CouplingViewer
 )
 def coupling(ignore_files, out_file):
     """Plot coupling graph."""
-    return CouplingViewer(
-        repository=CodemaatRepository(
-            configuration=ConfigurationBuilder(Driver.JSON).build()
-        )
-    ).render(
+    return CouplingViewer(repository=create_codemaat_repository()).render(
         out_file=out_file,
         ignore_files=ignore_files,
     )

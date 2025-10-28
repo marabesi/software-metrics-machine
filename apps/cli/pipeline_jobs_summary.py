@@ -1,9 +1,7 @@
 import click
-from core.infrastructure.configuration.configuration_builder import (
-    ConfigurationBuilder,
-    Driver,
-)
-from core.pipelines.pipelines_repository import PipelinesRepository
+
+from core.infrastructure.configuration.configuration_builder import Driver
+from core.infrastructure.repository_factory import create_pipelines_repository
 from core.pipelines.plots.view_jobs_summary import ViewJobsSummary
 
 
@@ -29,8 +27,7 @@ from core.pipelines.plots.view_jobs_summary import ViewJobsSummary
     help="End date (inclusive) in YYYY-MM-DD",
 )
 def jobs_summary(max_jobs, start_date, end_date):
-    configuration = ConfigurationBuilder(driver=Driver.CLI).build()
-    repository = PipelinesRepository(configuration=configuration)
+    repository = create_pipelines_repository(driver=Driver.CLI)
     summary = ViewJobsSummary(repository=repository)
     summary.print_summary(max_jobs=max_jobs, start_date=start_date, end_date=end_date)
 

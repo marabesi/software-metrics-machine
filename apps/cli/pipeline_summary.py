@@ -1,9 +1,6 @@
 import click
-from core.infrastructure.configuration.configuration_builder import (
-    ConfigurationBuilder,
-    Driver,
-)
-from core.pipelines.pipelines_repository import PipelinesRepository
+
+from core.infrastructure.repository_factory import create_pipelines_repository
 from core.pipelines.plots.view_pipeline_summary import WorkflowRunSummary
 
 
@@ -35,11 +32,7 @@ from core.pipelines.plots.view_pipeline_summary import WorkflowRunSummary
     help="Either 'text' or 'json' to specify the output format",
 )
 def summary(max_workflows, start_date, end_date, output):
-    lw = WorkflowRunSummary(
-        repository=PipelinesRepository(
-            configuration=ConfigurationBuilder(driver=Driver.JSON).build()
-        )
-    )
+    lw = WorkflowRunSummary(repository=create_pipelines_repository())
     lw.print_summary(
         max_workflows=max_workflows,
         start_date=start_date,

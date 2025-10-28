@@ -1,12 +1,8 @@
 import click
-from core.infrastructure.configuration.configuration_builder import (
-    ConfigurationBuilder,
-    Driver,
-)
-from core.pipelines.pipelines_repository import PipelinesRepository
-from core.pipelines.plots.view_pipeline_execution_duration import (
-    ViewPipelineExecutionRunsDuration,
-)
+
+from core.infrastructure.repository_factory import create_pipelines_repository
+from core.pipelines.plots.view_pipeline_execution_duration import \
+    ViewPipelineExecutionRunsDuration
 
 
 @click.command()
@@ -51,9 +47,8 @@ from core.pipelines.plots.view_pipeline_execution_duration import (
 def workflows_run_duration(
     out_file, workflow_path, start_date, end_date, max_runs, raw_filters
 ):
-    configuration = ConfigurationBuilder(driver=Driver.JSON).build()
     return ViewPipelineExecutionRunsDuration(
-        repository=PipelinesRepository(configuration=configuration)
+        repository=create_pipelines_repository()
     ).main(
         out_file=out_file,
         workflow_path=workflow_path,
