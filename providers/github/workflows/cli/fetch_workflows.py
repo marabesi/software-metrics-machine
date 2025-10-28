@@ -1,8 +1,6 @@
 import click
-from core.infrastructure.configuration.configuration_builder import (
-    ConfigurationBuilder,
-    Driver,
-)
+
+from core.infrastructure.repository_factory import create_configuration
 from providers.github.github_workflow_client import GithubWorkflowClient
 
 
@@ -30,9 +28,7 @@ from providers.github.github_workflow_client import GithubWorkflowClient
 )
 @click.option("--step-by", type=str, help="Step by (e.g., hour, day, month)")
 def fetch(target_branch, start_date, end_date, raw_filters, step_by):
-    client = GithubWorkflowClient(
-        configuration=ConfigurationBuilder(driver=Driver.CLI).build()
-    )
+    client = GithubWorkflowClient(configuration=create_configuration())
     client.fetch_workflows(
         target_branch=target_branch,
         start_date=start_date,

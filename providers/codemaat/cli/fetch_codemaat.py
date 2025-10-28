@@ -1,9 +1,7 @@
 import click
+
+from core.infrastructure.repository_factory import create_configuration
 from providers.codemaat.fetch import FetchCodemaat
-from core.infrastructure.configuration.configuration_builder import (
-    ConfigurationBuilder,
-    Driver,
-)
 
 
 @click.command(name="fetch", help="Fetch historical data from a git repository")
@@ -26,9 +24,7 @@ from core.infrastructure.configuration.configuration_builder import (
     help="Subfolder within the git repository to analyze",
 )
 def execute_codemaat(start_date, end_date, subfolder):
-    client = FetchCodemaat(
-        configuration=ConfigurationBuilder(driver=Driver.CLI).build()
-    )
+    client = FetchCodemaat(configuration=create_configuration())
     client.execute_codemaat(
         start_date=start_date, end_date=end_date, subfolder=subfolder
     )
