@@ -11,12 +11,10 @@ from apps.dashboard.section_pipeline import pipeline_section
 from apps.dashboard.section_pull_request import prs_section as tab_pr_section
 from apps.dashboard.section_source_code import source_code_section
 from core.infrastructure.configuration.configuration_builder import Driver
-from core.infrastructure.repository_factory import (
-    create_codemaat_repository,
-    create_configuration,
-    create_pipelines_repository,
-    create_prs_repository,
-)
+from core.infrastructure.repository_factory import create_configuration
+from core.pipelines.pipelines_repository import PipelinesRepository
+from core.prs.prs_repository import PrsRepository
+from providers.codemaat.codemaat_repository import CodemaatRepository
 
 pn.extension(
     "tabulator",
@@ -51,9 +49,9 @@ def sanitize_all_argument(selected_value):
 
 
 configuration = create_configuration(Driver.JSON)
-workflow_repository = create_pipelines_repository(Driver.JSON)
-prs_repository = create_prs_repository(Driver.JSON)
-codemaat_repository = create_codemaat_repository(Driver.JSON)
+workflow_repository = PipelinesRepository(configuration=configuration)
+prs_repository = PrsRepository(configuration=configuration)
+codemaat_repository = CodemaatRepository(configuration=configuration)
 
 current_date = date.today()
 start_date = current_date - timedelta(days=6 * 30)  # Approximation of 6 months
