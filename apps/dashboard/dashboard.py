@@ -1,21 +1,22 @@
-import panel.pane.holoviews as _ph
 from datetime import date, datetime, timedelta
+
 import panel as pn
+import panel.pane.holoviews as _ph
 from panel.template import FastListTemplate
 
 from apps.dashboard.components.filter_state import FilterState
+from apps.dashboard.section_configuration import configuration_section
 from apps.dashboard.section_insight import insights_section
 from apps.dashboard.section_pipeline import pipeline_section
 from apps.dashboard.section_pull_request import prs_section as tab_pr_section
 from apps.dashboard.section_source_code import source_code_section
-from apps.dashboard.section_configuration import configuration_section
-from core.infrastructure.configuration.configuration_builder import (
-    ConfigurationBuilder,
-    Driver,
+from core.infrastructure.configuration.configuration_builder import Driver
+from core.infrastructure.repository_factory import (
+    create_codemaat_repository,
+    create_configuration,
+    create_pipelines_repository,
+    create_prs_repository,
 )
-from providers.codemaat.codemaat_repository import CodemaatRepository
-from core.prs.prs_repository import PrsRepository
-from core.pipelines.pipelines_repository import PipelinesRepository
 
 pn.extension(
     "tabulator",
@@ -49,10 +50,10 @@ def sanitize_all_argument(selected_value):
     return selected_value
 
 
-configuration = ConfigurationBuilder(Driver.JSON).build()
-workflow_repository = PipelinesRepository(configuration=configuration)
-prs_repository = PrsRepository(configuration=configuration)
-codemaat_repository = CodemaatRepository(configuration=configuration)
+configuration = create_configuration(Driver.JSON)
+workflow_repository = create_pipelines_repository(Driver.JSON)
+prs_repository = create_prs_repository(Driver.JSON)
+codemaat_repository = create_codemaat_repository(Driver.JSON)
 
 current_date = date.today()
 start_date = current_date - timedelta(days=6 * 30)  # Approximation of 6 months
