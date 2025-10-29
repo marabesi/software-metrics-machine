@@ -1,13 +1,7 @@
 import click
 
-from core.infrastructure.configuration.configuration_builder import (
-    ConfigurationBuilder,
-    Driver,
-)
-from core.pipelines.pipelines_repository import PipelinesRepository
-from core.pipelines.plots.view_pipeline_by_status import (
-    ViewPipelineByStatus,
-)
+from core.infrastructure.repository_factory import create_pipelines_repository
+from core.pipelines.plots.view_pipeline_by_status import ViewPipelineByStatus
 
 
 @click.command()
@@ -36,11 +30,7 @@ from core.pipelines.plots.view_pipeline_by_status import (
     help="End date (inclusive) in YYYY-MM-DD",
 )
 def workflow_by_status(out_file, workflow_path, start_date, end_date):
-    return ViewPipelineByStatus(
-        repository=PipelinesRepository(
-            configuration=ConfigurationBuilder(driver=Driver.JSON).build()
-        )
-    ).main(
+    return ViewPipelineByStatus(repository=create_pipelines_repository()).main(
         out_file=out_file,
         workflow_path=workflow_path,
         start_date=start_date,

@@ -1,13 +1,8 @@
 import click
 
-from core.infrastructure.configuration.configuration_builder import (
-    ConfigurationBuilder,
-    Driver,
-)
-from core.prs.prs_repository import PrsRepository
-from core.prs.plots.view_average_review_time_by_author import (
-    ViewAverageReviewTimeByAuthor,
-)
+from core.infrastructure.repository_factory import create_prs_repository
+from core.prs.plots.view_average_review_time_by_author import \
+    ViewAverageReviewTimeByAuthor
 
 
 @click.command()
@@ -47,9 +42,7 @@ def review_time_by_author(top, labels, out_file, start_date, end_date):
     """Plot average PR open time by author."""
 
     return ViewAverageReviewTimeByAuthor(
-        repository=PrsRepository(
-            configuration=ConfigurationBuilder(driver=Driver.CLI).build()
-        )
+        repository=create_prs_repository()
     ).plot_average_open_time(
         title=f"Top {top} PR authors by avg open time",
         top=top,

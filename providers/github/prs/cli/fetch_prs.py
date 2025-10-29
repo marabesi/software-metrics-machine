@@ -1,9 +1,7 @@
 import click
+
+from core.infrastructure.repository_factory import create_configuration
 from providers.github.github_pr_client import GithubPrsClient
-from core.infrastructure.configuration.configuration_builder import (
-    ConfigurationBuilder,
-    Driver,
-)
 
 
 @click.command(name="fetch", help="Fetch pull requests from GitHub")
@@ -36,9 +34,7 @@ from core.infrastructure.configuration.configuration_builder import (
     "for possible filters.",
 )
 def execute(months=1, force=None, start_date=None, end_date=None, raw_filters=None):
-    client = GithubPrsClient(
-        configuration=ConfigurationBuilder(driver=Driver.CLI).build()
-    )
+    client = GithubPrsClient(configuration=create_configuration())
     client.fetch_prs(
         months=months,
         force=force,

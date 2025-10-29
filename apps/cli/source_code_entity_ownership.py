@@ -1,10 +1,6 @@
 import click
 
-from core.infrastructure.configuration.configuration_builder import (
-    ConfigurationBuilder,
-    Driver,
-)
-from providers.codemaat.codemaat_repository import CodemaatRepository
+from core.infrastructure.repository_factory import create_codemaat_repository
 from providers.codemaat.plots.entity_ownership import EntityOnershipViewer
 
 
@@ -36,9 +32,7 @@ from providers.codemaat.plots.entity_ownership import EntityOnershipViewer
 )
 def entity_ownership(out_file, top, ignore_files, authors):
     """Plot entity (File) ownership."""
-    df_repo = CodemaatRepository(
-        configuration=ConfigurationBuilder(Driver.JSON).build()
-    )
+    df_repo = create_codemaat_repository()
     viewer = EntityOnershipViewer(repository=df_repo)
     viewer.render(
         top_n=top,

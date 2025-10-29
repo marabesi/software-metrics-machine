@@ -1,10 +1,6 @@
 import click
 
-from core.infrastructure.configuration.configuration_builder import (
-    ConfigurationBuilder,
-    Driver,
-)
-from core.pipelines.pipelines_repository import PipelinesRepository
+from core.infrastructure.repository_factory import create_pipelines_repository
 from core.pipelines.plots.view_jobs_by_status import ViewJobsByStatus
 
 
@@ -80,11 +76,7 @@ def jobs_by_status(
     end_date,
     force_all_jobs,
 ):
-    return ViewJobsByStatus(
-        repository=PipelinesRepository(
-            configuration=ConfigurationBuilder(driver=Driver.JSON).build()
-        )
-    ).main(
+    return ViewJobsByStatus(repository=create_pipelines_repository()).main(
         job_name=job_name,
         workflow_path=workflow_path,
         out_file=out_file,

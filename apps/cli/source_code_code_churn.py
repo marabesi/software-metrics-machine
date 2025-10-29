@@ -1,11 +1,7 @@
 import click
 
-from core.infrastructure.configuration.configuration_builder import (
-    ConfigurationBuilder,
-    Driver,
-)
+from core.infrastructure.repository_factory import create_codemaat_repository
 from providers.codemaat.plots.code_churn import CodeChurnViewer
-from providers.codemaat.codemaat_repository import CodemaatRepository
 
 
 @click.command()
@@ -30,11 +26,7 @@ from providers.codemaat.codemaat_repository import CodemaatRepository
 )
 def code_churn(out_file, start_date, end_date):
     """Plot the code churn rate over time."""
-    return CodeChurnViewer(
-        repository=CodemaatRepository(
-            configuration=ConfigurationBuilder(Driver.JSON).build()
-        )
-    ).render(
+    return CodeChurnViewer(repository=create_codemaat_repository()).render(
         out_file=out_file,
         start_date=start_date,
         end_date=end_date,

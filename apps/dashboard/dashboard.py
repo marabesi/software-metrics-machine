@@ -1,21 +1,20 @@
-import panel.pane.holoviews as _ph
 from datetime import date, datetime, timedelta
+
 import panel as pn
+import panel.pane.holoviews as _ph
 from panel.template import FastListTemplate
 
 from apps.dashboard.components.filter_state import FilterState
+from apps.dashboard.section_configuration import configuration_section
 from apps.dashboard.section_insight import insights_section
 from apps.dashboard.section_pipeline import pipeline_section
 from apps.dashboard.section_pull_request import prs_section as tab_pr_section
 from apps.dashboard.section_source_code import source_code_section
-from apps.dashboard.section_configuration import configuration_section
-from core.infrastructure.configuration.configuration_builder import (
-    ConfigurationBuilder,
-    Driver,
-)
-from providers.codemaat.codemaat_repository import CodemaatRepository
-from core.prs.prs_repository import PrsRepository
+from core.infrastructure.configuration.configuration_builder import Driver
+from core.infrastructure.repository_factory import create_configuration
 from core.pipelines.pipelines_repository import PipelinesRepository
+from core.prs.prs_repository import PrsRepository
+from providers.codemaat.codemaat_repository import CodemaatRepository
 
 pn.extension(
     "tabulator",
@@ -49,7 +48,7 @@ def sanitize_all_argument(selected_value):
     return selected_value
 
 
-configuration = ConfigurationBuilder(Driver.JSON).build()
+configuration = create_configuration(Driver.JSON)
 workflow_repository = PipelinesRepository(configuration=configuration)
 prs_repository = PrsRepository(configuration=configuration)
 codemaat_repository = CodemaatRepository(configuration=configuration)
