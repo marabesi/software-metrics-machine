@@ -142,8 +142,10 @@ Options:
 
 Commands:
   codemaat
+  pipelines
   prs
-  workflows
+  pydriller
+  tools
 ```
 
 ## Ready to go

@@ -29,13 +29,23 @@ If your are using [GitHub/Github actions](./github.md), the following metrics ar
 
 ### Codemaat
 
-[Git](./codemaat.md) is the only common provider, as it is used to extract code churn and hotspots. Which
-means, it can be used regardless of the vendor. The following metrics are supported:
+[Codemaat](./codemaat.md) analyzes Git history to extract code evolution metrics. It can be used regardless of the source control provider. The following metrics are supported:
 
 - Code churn
 - Hotspots
 - Age of code
 - Authors per file
+- Coupling
+- Entity effort
+- Entity ownership
+
+### PyDriller
+
+[PyDriller](./pydriller.md) is a Python framework for analyzing Git repositories. It provides process metrics from commit history:
+
+- Change set analysis
+- Commit patterns
+- File commit frequency
 
 ### SonarQube
 

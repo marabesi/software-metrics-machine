@@ -82,9 +82,9 @@ For options to fetch pull requests refer to the [CLI documentation](./github/cli
 ./run-cli.sh prs fetch
 ```
 
-### Workflows (pipelines)
+### Pipelines (workflows)
 
-For options to fetch workflows and jobs refer to the [CLI documentation](./github/cli-workflows.md).
+For options to fetch pipelines and jobs refer to the [CLI documentation](./github/cli-pipelines.md).
 
 ```bash
 ./run-cli.sh pipelines fetch
