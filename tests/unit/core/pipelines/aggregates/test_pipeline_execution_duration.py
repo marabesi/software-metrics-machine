@@ -1,5 +1,7 @@
 from unittest.mock import patch, MagicMock
-from core.pipelines.aggregates.pipeline_execution_duration import PipelineExecutionDuration
+from core.pipelines.aggregates.pipeline_execution_duration import (
+    PipelineExecutionDuration,
+)
 from core.pipelines.pipelines_repository import PipelinesRepository
 from tests.builders import as_json_string
 from tests.in_memory_configuration import InMemoryConfiguration
@@ -22,13 +24,12 @@ class TestPipelineExecutionDuration:
             side_effect=mocked_read_file_if_exists,
         ):
             repository = PipelinesRepository(configuration=InMemoryConfiguration("."))
-            
+
             # Mock the get_workflows_run_duration method
-            repository.get_workflows_run_duration = MagicMock(return_value={
-                "total": 0,
-                "rows": []
-            })
-            
+            repository.get_workflows_run_duration = MagicMock(
+                return_value={"total": 0, "rows": []}
+            )
+
             pipeline_duration = PipelineExecutionDuration(repository=repository)
             result = pipeline_duration.main()
 
@@ -53,18 +54,20 @@ class TestPipelineExecutionDuration:
             side_effect=mocked_read_file_if_exists,
         ):
             repository = PipelinesRepository(configuration=InMemoryConfiguration("."))
-            
+
             # Mock the get_workflows_run_duration method
             # rows format: [name, count, avg, sum]
-            repository.get_workflows_run_duration = MagicMock(return_value={
-                "total": 3,
-                "rows": [
-                    ["CI Pipeline", 5, 10.5, 52.5],
-                    ["Build Pipeline", 3, 15.0, 45.0],
-                    ["Deploy Pipeline", 2, 8.0, 16.0],
-                ]
-            })
-            
+            repository.get_workflows_run_duration = MagicMock(
+                return_value={
+                    "total": 3,
+                    "rows": [
+                        ["CI Pipeline", 5, 10.5, 52.5],
+                        ["Build Pipeline", 3, 15.0, 45.0],
+                        ["Deploy Pipeline", 2, 8.0, 16.0],
+                    ],
+                }
+            )
+
             pipeline_duration = PipelineExecutionDuration(repository=repository)
             result = pipeline_duration.main(metric="avg", sort_by="avg")
 
@@ -102,16 +105,18 @@ class TestPipelineExecutionDuration:
             side_effect=mocked_read_file_if_exists,
         ):
             repository = PipelinesRepository(configuration=InMemoryConfiguration("."))
-            
+
             # Mock the get_workflows_run_duration method
-            repository.get_workflows_run_duration = MagicMock(return_value={
-                "total": 2,
-                "rows": [
-                    ["CI Pipeline", 5, 10.0, 50.0],
-                    ["Build Pipeline", 3, 20.0, 60.0],
-                ]
-            })
-            
+            repository.get_workflows_run_duration = MagicMock(
+                return_value={
+                    "total": 2,
+                    "rows": [
+                        ["CI Pipeline", 5, 10.0, 50.0],
+                        ["Build Pipeline", 3, 20.0, 60.0],
+                    ],
+                }
+            )
+
             pipeline_duration = PipelineExecutionDuration(repository=repository)
             result = pipeline_duration.main(metric="sum", sort_by="sum")
 
@@ -138,16 +143,18 @@ class TestPipelineExecutionDuration:
             side_effect=mocked_read_file_if_exists,
         ):
             repository = PipelinesRepository(configuration=InMemoryConfiguration("."))
-            
+
             # Mock the get_workflows_run_duration method
-            repository.get_workflows_run_duration = MagicMock(return_value={
-                "total": 2,
-                "rows": [
-                    ["CI Pipeline", 10, 5.0, 50.0],
-                    ["Build Pipeline", 3, 20.0, 60.0],
-                ]
-            })
-            
+            repository.get_workflows_run_duration = MagicMock(
+                return_value={
+                    "total": 2,
+                    "rows": [
+                        ["CI Pipeline", 10, 5.0, 50.0],
+                        ["Build Pipeline", 3, 20.0, 60.0],
+                    ],
+                }
+            )
+
             pipeline_duration = PipelineExecutionDuration(repository=repository)
             result = pipeline_duration.main(metric="count", sort_by="count")
 
@@ -174,19 +181,21 @@ class TestPipelineExecutionDuration:
             side_effect=mocked_read_file_if_exists,
         ):
             repository = PipelinesRepository(configuration=InMemoryConfiguration("."))
-            
+
             # Mock the get_workflows_run_duration method with 5 rows
-            repository.get_workflows_run_duration = MagicMock(return_value={
-                "total": 5,
-                "rows": [
-                    ["Pipeline A", 1, 10.0, 10.0],
-                    ["Pipeline B", 1, 20.0, 20.0],
-                    ["Pipeline C", 1, 30.0, 30.0],
-                    ["Pipeline D", 1, 40.0, 40.0],
-                    ["Pipeline E", 1, 50.0, 50.0],
-                ]
-            })
-            
+            repository.get_workflows_run_duration = MagicMock(
+                return_value={
+                    "total": 5,
+                    "rows": [
+                        ["Pipeline A", 1, 10.0, 10.0],
+                        ["Pipeline B", 1, 20.0, 20.0],
+                        ["Pipeline C", 1, 30.0, 30.0],
+                        ["Pipeline D", 1, 40.0, 40.0],
+                        ["Pipeline E", 1, 50.0, 50.0],
+                    ],
+                }
+            )
+
             pipeline_duration = PipelineExecutionDuration(repository=repository)
             result = pipeline_duration.main(max_runs=3, sort_by="avg")
 

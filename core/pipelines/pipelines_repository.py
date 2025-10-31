@@ -5,7 +5,7 @@ from typing import List, Iterable
 import pandas as pd
 from core.infrastructure.file_system_base_repository import FileSystemBaseRepository
 from core.infrastructure.configuration.configuration import Configuration
-from core.pipelines.pipelines_types import PipelineJob, PipelineRun
+from core.pipelines.pipelines_types import DeploymentFrequency, PipelineJob, PipelineRun
 
 
 class PipelinesRepository(FileSystemBaseRepository):
@@ -178,7 +178,9 @@ class PipelinesRepository(FileSystemBaseRepository):
         list_all.insert(0, "All")
         return list_all
 
-    def get_deployment_frequency_for_job(self, job_name: str, filters=None):
+    def get_deployment_frequency_for_job(
+        self, job_name: str, filters=None
+    ) -> DeploymentFrequency:
         deployments = {}
         runs = self.runs(filters)
 

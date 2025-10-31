@@ -1,5 +1,7 @@
 from unittest.mock import patch
-from core.pipelines.aggregates.jobs_average_time_execution import JobsByAverageTimeExecution
+from core.pipelines.aggregates.jobs_average_time_execution import (
+    JobsByAverageTimeExecution,
+)
 from core.pipelines.pipelines_repository import PipelinesRepository
 from tests.builders import as_json_string
 from tests.in_memory_configuration import InMemoryConfiguration
@@ -26,7 +28,6 @@ class TestJobsByAverageTimeExecution:
 
             result = jobs_avg.main()
 
-            # Verify empty result structure
             assert result.runs == []
             assert result.jobs == []
             assert result.averages == []
@@ -37,38 +38,42 @@ class TestJobsByAverageTimeExecution:
 
         def mocked_read_file_if_exists(file):
             if file == "workflows.json":
-                return as_json_string([
-                    {
-                        "id": 1,
-                        "name": "CI",
-                        "path": "/workflows/ci.yml",
-                        "created_at": "2023-01-01T10:00:00Z",
-                    },
-                ])
+                return as_json_string(
+                    [
+                        {
+                            "id": 1,
+                            "name": "CI",
+                            "path": "/workflows/ci.yml",
+                            "created_at": "2023-01-01T10:00:00Z",
+                        },
+                    ]
+                )
             if file == "jobs.json":
-                return as_json_string([
-                    {
-                        "id": 101,
-                        "name": "test",
-                        "run_id": 1,
-                        "started_at": "2023-01-01T10:00:00Z",
-                        "completed_at": "2023-01-01T10:05:00Z",  # 5 minutes
-                    },
-                    {
-                        "id": 102,
-                        "name": "test",
-                        "run_id": 1,
-                        "started_at": "2023-01-01T10:10:00Z",
-                        "completed_at": "2023-01-01T10:25:00Z",  # 15 minutes
-                    },
-                    {
-                        "id": 103,
-                        "name": "build",
-                        "run_id": 1,
-                        "started_at": "2023-01-01T10:00:00Z",
-                        "completed_at": "2023-01-01T10:10:00Z",  # 10 minutes
-                    },
-                ])
+                return as_json_string(
+                    [
+                        {
+                            "id": 101,
+                            "name": "test",
+                            "run_id": 1,
+                            "started_at": "2023-01-01T10:00:00Z",
+                            "completed_at": "2023-01-01T10:05:00Z",  # 5 minutes
+                        },
+                        {
+                            "id": 102,
+                            "name": "test",
+                            "run_id": 1,
+                            "started_at": "2023-01-01T10:10:00Z",
+                            "completed_at": "2023-01-01T10:25:00Z",  # 15 minutes
+                        },
+                        {
+                            "id": 103,
+                            "name": "build",
+                            "run_id": 1,
+                            "started_at": "2023-01-01T10:00:00Z",
+                            "completed_at": "2023-01-01T10:10:00Z",  # 10 minutes
+                        },
+                    ]
+                )
             return None
 
         with patch(
@@ -80,27 +85,20 @@ class TestJobsByAverageTimeExecution:
 
             result = jobs_avg.main(top=10)
 
-            # Verify counts for each job name
             assert result.counts["test"] == 2
             assert result.counts["build"] == 1
 
-            # Verify averages are computed correctly
-            # test: (5 + 15) / 2 = 10 minutes
-            # build: 10 / 1 = 10 minutes
             assert len(result.averages) == 2
-            
-            # Averages should be sorted by duration descending (longest first)
+
             job_names = [avg[0] for avg in result.averages]
             job_avgs = [avg[1] for avg in result.averages]
-            
+
             assert "test" in job_names
             assert "build" in job_names
-            
-            # Find indices
+
             test_idx = job_names.index("test")
             build_idx = job_names.index("build")
-            
-            # Verify average values (in minutes)
+
             assert abs(job_avgs[test_idx] - 10.0) < 0.01
             assert abs(job_avgs[build_idx] - 10.0) < 0.01
 
@@ -109,37 +107,41 @@ class TestJobsByAverageTimeExecution:
 
         def mocked_read_file_if_exists(file):
             if file == "workflows.json":
-                return as_json_string([
-                    {
-                        "id": 1,
-                        "name": "CI",
-                        "created_at": "2023-01-01T10:00:00Z",
-                    },
-                ])
+                return as_json_string(
+                    [
+                        {
+                            "id": 1,
+                            "name": "CI",
+                            "created_at": "2023-01-01T10:00:00Z",
+                        },
+                    ]
+                )
             if file == "jobs.json":
-                return as_json_string([
-                    {
-                        "id": 101,
-                        "name": "test",
-                        "run_id": 1,
-                        # Missing started_at
-                        "completed_at": "2023-01-01T10:05:00Z",
-                    },
-                    {
-                        "id": 102,
-                        "name": "build",
-                        "run_id": 1,
-                        "started_at": "2023-01-01T10:00:00Z",
-                        # Missing completed_at
-                    },
-                    {
-                        "id": 103,
-                        "name": "deploy",
-                        "run_id": 1,
-                        "started_at": "2023-01-01T10:00:00Z",
-                        "completed_at": "2023-01-01T10:02:00Z",  # 2 minutes
-                    },
-                ])
+                return as_json_string(
+                    [
+                        {
+                            "id": 101,
+                            "name": "test",
+                            "run_id": 1,
+                            # Missing started_at
+                            "completed_at": "2023-01-01T10:05:00Z",
+                        },
+                        {
+                            "id": 102,
+                            "name": "build",
+                            "run_id": 1,
+                            "started_at": "2023-01-01T10:00:00Z",
+                            # Missing completed_at
+                        },
+                        {
+                            "id": 103,
+                            "name": "deploy",
+                            "run_id": 1,
+                            "started_at": "2023-01-01T10:00:00Z",
+                            "completed_at": "2023-01-01T10:02:00Z",  # 2 minutes
+                        },
+                    ]
+                )
             return None
 
         with patch(
@@ -151,7 +153,6 @@ class TestJobsByAverageTimeExecution:
 
             result = jobs_avg.main()
 
-            # Only "deploy" should be included in the averages (has both timestamps)
             assert result.counts["deploy"] == 1
             assert len(result.averages) == 1
             assert result.averages[0][0] == "deploy"
@@ -164,29 +165,31 @@ class TestJobsByAverageTimeExecution:
             if file == "workflows.json":
                 return as_json_string([{"id": 1, "name": "CI"}])
             if file == "jobs.json":
-                return as_json_string([
-                    {
-                        "id": 101,
-                        "name": "job1",
-                        "run_id": 1,
-                        "started_at": "2023-01-01T10:00:00Z",
-                        "completed_at": "2023-01-01T10:10:00Z",
-                    },
-                    {
-                        "id": 102,
-                        "name": "job2",
-                        "run_id": 1,
-                        "started_at": "2023-01-01T10:00:00Z",
-                        "completed_at": "2023-01-01T10:20:00Z",
-                    },
-                    {
-                        "id": 103,
-                        "name": "job3",
-                        "run_id": 1,
-                        "started_at": "2023-01-01T10:00:00Z",
-                        "completed_at": "2023-01-01T10:30:00Z",
-                    },
-                ])
+                return as_json_string(
+                    [
+                        {
+                            "id": 101,
+                            "name": "job1",
+                            "run_id": 1,
+                            "started_at": "2023-01-01T10:00:00Z",
+                            "completed_at": "2023-01-01T10:10:00Z",
+                        },
+                        {
+                            "id": 102,
+                            "name": "job2",
+                            "run_id": 1,
+                            "started_at": "2023-01-01T10:00:00Z",
+                            "completed_at": "2023-01-01T10:20:00Z",
+                        },
+                        {
+                            "id": 103,
+                            "name": "job3",
+                            "run_id": 1,
+                            "started_at": "2023-01-01T10:00:00Z",
+                            "completed_at": "2023-01-01T10:30:00Z",
+                        },
+                    ]
+                )
             return None
 
         with patch(
@@ -198,7 +201,6 @@ class TestJobsByAverageTimeExecution:
 
             result = jobs_avg.main(top=2)
 
-            # Should only return top 2 jobs (longest duration first)
             assert len(result.averages) == 2
             assert result.averages[0][0] == "job3"  # 30 minutes
             assert result.averages[1][0] == "job2"  # 20 minutes

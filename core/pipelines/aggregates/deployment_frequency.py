@@ -1,4 +1,7 @@
 from core.pipelines.pipelines_repository import PipelinesRepository
+from core.pipelines.pipelines_types import (
+    DeploymentFrequency as DeploymentFrequencyType,
+)
 
 
 class DeploymentFrequency:
@@ -11,7 +14,18 @@ class DeploymentFrequency:
         job_name: str,
         start_date: str | None = None,
         end_date: str | None = None,
-    ) -> None:
+    ) -> DeploymentFrequencyType:
+        # If no workflow path or job name is provided, there's nothing to compute.
+        # Return an empty deployment-frequency-shaped result and avoid repository calls.
+        if not workflow_path or not job_name:
+            return {
+                "days": [],
+                "weeks": [],
+                "daily_counts": [],
+                "weekly_counts": [],
+                "monthly_counts": [],
+            }
+
         filters = {
             "start_date": start_date,
             "end_date": end_date,

@@ -73,3 +73,11 @@ class PipelineRun(TypedDict, total=False):
 
 
 Pipeline = PipelineRun
+
+
+class DeploymentFrequency(TypedDict):
+    days: List[str]
+    weeks: List[str]
+    daily_counts: List[str]
+    weekly_counts: List[str]
+    monthly_counts: List[str]
