@@ -41,7 +41,7 @@ function test_clone_and_fetch_codemaat_for_entire_repo() {
   local end_date="2023-12-31"
   local output
 
-  output=$(./run-cli.sh codemaat fetch --start-date "$start_date" --end-date "$end_date" 2>&1)
+  output=$(./run-cli.sh code fetch --start-date "$start_date" --end-date "$end_date" 2>&1)
 
   assert_contains "Running CodeMaat analyses... this may take a while depending on the size of the repository." "$output"
   assert_contains "Running age data extraction ..." "$output"
@@ -58,7 +58,7 @@ function test_clone_and_fetch_codemaat_for_entire_a_subfolder_in_the_repo() {
   local end_date="2023-12-31"
   local output
 
-  output=$(./run-cli.sh codemaat fetch --start-date "$start_date" --end-date "$end_date" --subfolder "api/" 2>&1)
+  output=$(./run-cli.sh code fetch --start-date "$start_date" --end-date "$end_date" --subfolder "api/" 2>&1)
 
   assert_contains "Running CodeMaat analyses... this may take a while depending on the size of the repository." "$output"
   assert_contains "Running age data extraction ..." "$output"
@@ -75,8 +75,8 @@ function test_skip_refetching_when_files_exists() {
   local end_date="2023-12-31"
   local output
 
-  output=$(./run-cli.sh codemaat fetch --start-date "$start_date" --end-date "$end_date" --subfolder "api/" 2>&1)
-  output=$(./run-cli.sh codemaat fetch --start-date "$start_date" --end-date "$end_date" --subfolder "api/" 2>&1)
+  output=$(./run-cli.sh code fetch --start-date "$start_date" --end-date "$end_date" --subfolder "api/" 2>&1)
+  output=$(./run-cli.sh code fetch --start-date "$start_date" --end-date "$end_date" --subfolder "api/" 2>&1)
 
   assert_contains "Running CodeMaat analyses... this may take a while depending on the size of the repository." "$output"
   assert_contains "Skipping age: output already exists at $analysis_dir/age.csv" "$output"

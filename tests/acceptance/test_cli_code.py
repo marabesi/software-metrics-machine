@@ -8,7 +8,7 @@ from apps.cli.main import main
 from tests.file_handler_for_testing import FileHandlerForTesting
 
 
-class TestCliCodemaatCommands:
+class TestCliCodeCommands:
 
     @pytest.fixture(scope="function", autouse=True)
     def reset_mock_run(self):
@@ -19,7 +19,7 @@ class TestCliCodemaatCommands:
     def test_has_fetch_command(self, cli):
         result = cli.runner.invoke(
             main,
-            ["codemaat", "fetch", "--help"],
+            ["code", "fetch", "--help"],
         )
         assert "Fetch historical data from a git repository" in result.output
         assert result.stderr == ""
@@ -34,7 +34,7 @@ class TestCliCodemaatCommands:
             cli.runner.invoke(
                 main,
                 [
-                    "codemaat",
+                    "code",
                     "fetch",
                     "--start-date",
                     "2025-01-01",
@@ -63,7 +63,7 @@ class TestCliCodemaatCommands:
             cli.runner.invoke(
                 main,
                 [
-                    "codemaat",
+                    "code",
                     "fetch",
                     "--start-date",
                     "2025-01-01",
@@ -88,7 +88,7 @@ class TestCliCodemaatCommands:
         result = cli.runner.invoke(
             main,
             [
-                "codemaat",
+                "code",
                 "code-churn",
                 "--out-file",
                 "code_churn.png",
@@ -112,7 +112,7 @@ class TestCliCodemaatCommands:
 
         result = cli.runner.invoke(
             main,
-            ["codemaat", "code-churn", "--out-file", "code_churn.png"],
+            ["code", "code-churn", "--out-file", "code_churn.png"],
         )
         assert f"Saved plot to {path_string}/code_churn.png" in result.output
 
@@ -126,7 +126,7 @@ class TestCliCodemaatCommands:
         result = cli.runner.invoke(
             main,
             [
-                "codemaat",
+                "code",
                 "code-churn",
                 "--start-date",
                 "2025-01-01",
@@ -141,7 +141,7 @@ class TestCliCodemaatCommands:
     def test_can_run_coupling_without_data_available(self, cli):
         result = cli.runner.invoke(
             main,
-            ["codemaat", "coupling", "--out-file", "coupling.png"],
+            ["code", "coupling", "--out-file", "coupling.png"],
         )
         assert "No coupling data available to plot" in result.output
 
@@ -155,28 +155,28 @@ file.ts,brum.ts,10,2
         FileHandlerForTesting(path_string).store_file("coupling.csv", csv_data)
         result = cli.runner.invoke(
             main,
-            ["codemaat", "coupling", "--ignore-files", "*.txt"],
+            ["code", "coupling", "--ignore-files", "*.txt"],
         )
         assert "Filtered coupling data count: 1" in result.output
 
     def test_can_run_entity_churn_without_data_available(self, cli):
         result = cli.runner.invoke(
             main,
-            ["codemaat", "entity-churn", "--out-file", "entity_churn.png"],
+            ["code", "entity-churn", "--out-file", "entity_churn.png"],
         )
         assert "No entity churn data available to plot" in result.output
 
     def test_can_run_entity_effort_without_data_available(self, cli):
         result = cli.runner.invoke(
             main,
-            ["codemaat", "entity-effort", "--out-file", "entity_effort.png"],
+            ["code", "entity-effort", "--out-file", "entity_effort.png"],
         )
         assert "No entity effort data available to plot" in result.output
 
     def test_can_run_entity_ownership_without_data_available(self, cli):
         result = cli.runner.invoke(
             main,
-            ["codemaat", "entity-ownership", "--out-file", "entity_ownership.png"],
+            ["code", "entity-ownership", "--out-file", "entity_ownership.png"],
         )
         assert "No entity ownership data available to plot" in result.output
 
@@ -188,7 +188,7 @@ file.txt,John,10,2"""
 
         result = cli.runner.invoke(
             main,
-            ["codemaat", "entity-ownership", "--out-file", "entity_ownership.png"],
+            ["code", "entity-ownership", "--out-file", "entity_ownership.png"],
         )
 
         assert "Found 1 row for entity ownership" in result.output
@@ -202,7 +202,7 @@ file.txt,John,10,2"""
         result = cli.runner.invoke(
             main,
             [
-                "codemaat",
+                "code",
                 "entity-ownership",
                 "--out-file",
                 "entity_ownership.png",

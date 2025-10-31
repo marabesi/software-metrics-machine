@@ -51,7 +51,7 @@ module_groups = {
         "apps.cli.pipeline_jobs_by_status",
         "apps.cli.pipeline_deployment_frequency",
     ],
-    "codemaat": [
+    "code": [
         "providers.codemaat.cli.fetch_codemaat",
         "apps.cli.source_code_code_churn",
         "apps.cli.source_code_coupling",
