@@ -1,4 +1,7 @@
 from core.pipelines.pipelines_repository import PipelinesRepository
+from core.pipelines.pipelines_types import (
+    DeploymentFrequency as DeploymentFrequencyType,
+)
 
 
 class DeploymentFrequency:
@@ -11,7 +14,7 @@ class DeploymentFrequency:
         job_name: str,
         start_date: str | None = None,
         end_date: str | None = None,
-    ) -> None:
+    ) -> DeploymentFrequencyType:
         filters = {
             "start_date": start_date,
             "end_date": end_date,
