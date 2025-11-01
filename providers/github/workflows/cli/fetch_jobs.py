@@ -19,7 +19,7 @@ def fetch_all_job_runs(start_date, end_date, raw_filters):
     )
 
 
-@click.command(name="jobs-fetch", help="Fetch job runs from GitHub Workflows")
+@click.command(name="jobs-fetch", help="Fetch job from pipelines")
 @click.option(
     "--start-date",
     type=str,
