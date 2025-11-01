@@ -31,6 +31,7 @@ def pipeline_section(
     workflow_status,
     workflow_conclusions,
     jobs_selector,
+    branch,
     repository: PipelinesRepository,
 ):
     def sanitize_all_argument(selected_value):
@@ -38,13 +39,14 @@ def pipeline_section(
             return None
         return selected_value
 
-    def plot_workflow_by_status(date_range_picker, workflow_selector):
+    def plot_workflow_by_status(date_range_picker, workflow_selector, branch):
         return (
             ViewPipelineByStatus(repository=repository)
             .main(
                 start_date=date_range_picker[0],
                 end_date=date_range_picker[1],
                 workflow_path=sanitize_all_argument(workflow_selector),
+                target_branch=sanitize_all_argument(branch),
             )
             .plot
         )
@@ -55,6 +57,7 @@ def pipeline_section(
         workflow_status,
         workflow_conclusions,
         jobs_selector,
+        branch,
     ):
         return (
             ViewJobsByAverageTimeExecution(repository=repository)
@@ -63,7 +66,7 @@ def pipeline_section(
                 end_date=date_range_picker[1],
                 workflow_path=sanitize_all_argument(workflow_selector),
                 job_name=sanitize_all_argument(jobs_selector),
-                pipeline_raw_filters=f"conclusion={workflow_conclusions},status={workflow_status}",
+                pipeline_raw_filters=f"conclusion={workflow_conclusions},status={workflow_status},target_branch={sanitize_all_argument(branch)}",  # noqa
             )
             .plot
         )
@@ -74,6 +77,7 @@ def pipeline_section(
         workflow_status,
         workflow_conclusions,
         aggregate_metric,
+        branch,
     ):
         return (
             ViewPipelineExecutionRunsDuration(repository=repository)
@@ -81,7 +85,7 @@ def pipeline_section(
                 start_date=date_range_picker[0],
                 end_date=date_range_picker[1],
                 workflow_path=sanitize_all_argument(workflow_selector),
-                raw_filters=f"conclusion={workflow_conclusions},status={workflow_status}",
+                raw_filters=f"conclusion={workflow_conclusions},status={workflow_status},target_branch={sanitize_all_argument(branch)}",  # noqa
                 metric=aggregate_metric,
             )
             .plot
@@ -93,6 +97,7 @@ def pipeline_section(
         workflow_status,
         workflow_conclusions,
         aggregate_by,
+        branch,
     ):
         return (
             ViewWorkflowRunsByWeekOrMonth(repository=repository)
@@ -100,13 +105,15 @@ def pipeline_section(
                 aggregate_by=aggregate_by,
                 start_date=date_range_picker[0],
                 end_date=date_range_picker[1],
-                raw_filters=f"conclusion={workflow_conclusions},status={workflow_status}",
+                raw_filters=f"conclusion={workflow_conclusions},status={workflow_status},target_branch={sanitize_all_argument(branch)}",  # noqa
                 workflow_path=sanitize_all_argument(workflow_selector),
             )
             .plot
         )
 
-    def plot_jobs_by_status(date_range_picker, workflow_selector, jobs_selector):
+    def plot_jobs_by_status(
+        date_range_picker, workflow_selector, jobs_selector, branch
+    ):
         return (
             ViewJobsByStatus(repository=repository)
             .main(
@@ -114,6 +121,7 @@ def pipeline_section(
                 end_date=date_range_picker[1],
                 job_name=sanitize_all_argument(jobs_selector),
                 workflow_path=sanitize_all_argument(workflow_selector),
+                raw_filters=f"target_branch={sanitize_all_argument(branch)}",
             )
             .plot
         )
@@ -158,6 +166,7 @@ def pipeline_section(
                         plot_workflow_by_status,
                         date_range_picker.param.value,
                         workflow_selector.param.value,
+                        branch.param.value,
                     ),
                     sizing_mode="stretch_width",
                 ),
@@ -190,7 +199,8 @@ def pipeline_section(
                         workflow_selector.param.value,
                         workflow_status.param.value,
                         workflow_conclusions.param.value,
-                        aggregate_by=aggregate_by.param.value,
+                        aggregate_by.param.value,
+                        branch.param.value,
                     ),
                     sizing_mode="stretch_width",
                 ),
@@ -225,6 +235,7 @@ def pipeline_section(
                         workflow_status.param.value,
                         workflow_conclusions.param.value,
                         aggregate_metric_select.param.value,
+                        branch.param.value,
                     ),
                     sizing_mode="stretch_width",
                 ),
@@ -251,6 +262,7 @@ def pipeline_section(
                         workflow_status.param.value,
                         workflow_conclusions.param.value,
                         jobs_selector.param.value,
+                        branch.param.value,
                     ),
                     sizing_mode="stretch_width",
                 ),
@@ -267,6 +279,7 @@ def pipeline_section(
                         date_range_picker.param.value,
                         workflow_selector.param.value,
                         jobs_selector.param.value,
+                        branch.param.value,
                     ),
                     sizing_mode="stretch_width",
                 ),

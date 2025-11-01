@@ -89,6 +89,12 @@ jobs_selector = pn.widgets.AutocompleteInput(
     value=None,
 )
 
+branch = pn.widgets.TextInput(
+    name="Branch",
+    placeholder="Filter runs by target branch (e.g., main)",
+    value="",
+)
+
 
 def _update_jobs_selector_for_workflow(path):
     options = workflow_repository.get_unique_jobs_name(
@@ -153,6 +159,7 @@ pipeline_section = pipeline_section(
     jobs_selector=jobs_selector,
     workflow_status=workflow_status_select,
     workflow_conclusions=workflow_conclusions,
+    branch=branch,
     repository=workflow_repository,
 )
 configuration_section = configuration_section(configuration)
@@ -258,6 +265,7 @@ TAB_DEFINITIONS = [
             "workflow_status_select",
             "workflow_conclusions",
             "jobs_selector",
+            "branch",
         ],
     },
     {
@@ -291,6 +299,7 @@ _HEADER_WIDGETS = {
     "workflow_conclusions": workflow_conclusions,
     "workflow_status_select": workflow_status_select,
     "jobs_selector": jobs_selector,
+    "branch": branch,
     "author_select": author_select,
     "author_select_source_code": author_select_source_code,
     "label_selector": label_selector,
@@ -316,12 +325,10 @@ header_section = pn.Column(
                 workflow_selector,
                 workflow_status_select,
                 workflow_conclusions,
+                jobs_selector,
+                branch,
             ),
         )
-    ),
-    pn.Row(
-        pn.panel(jobs_selector, sizing_mode="stretch_width"),
-        sizing_mode="stretch_width",
     ),
     pn.Row(
         pn.Column(

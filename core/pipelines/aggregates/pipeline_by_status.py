@@ -21,11 +21,13 @@ class PipelineByStatus:
         workflow_path: str | None = None,
         start_date: str | None = None,
         end_date: str | None = None,
+        target_branch: str | None = None,
     ) -> None:
         filters = {
             "start_date": start_date,
             "end_date": end_date,
             "path": workflow_path,
+            "target_branch": target_branch,
         }
         runs = self.repository.runs(filters)
 

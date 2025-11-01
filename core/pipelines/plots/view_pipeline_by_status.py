@@ -20,9 +20,11 @@ class ViewPipelineByStatus(BaseViewer):
         workflow_path: str | None = None,
         start_date: str | None = None,
         end_date: str | None = None,
+        target_branch: str | None = None,
     ) -> PlotResult:
         result = PipelineByStatus(repository=self.repository).main(
             workflow_path=workflow_path,
+            target_branch=target_branch,
             start_date=start_date,
             end_date=end_date,
         )
