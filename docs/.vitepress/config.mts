@@ -88,11 +88,6 @@ export default withMermaid(
               ]
             },
             {
-              text: 'PyDriller', link: '/pydriller', items: [
-                { text: 'CLI', link: '/pydriller/cli' },
-              ]
-            },
-            {
               text: 'Tools', link: '/tools', items: [
                 { text: 'CLI', link: '/tools/cli' },
               ]

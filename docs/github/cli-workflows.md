@@ -3,7 +3,7 @@
 ## Fetch Workflows
 
 ```bash
-../run-cli.sh pipelines fetch
+./run-cli.sh pipelines fetch
 ```
 
 | Option         | Description                          | Example                  |
@@ -15,53 +15,53 @@
 ## Fetch Jobs
 
 ```bash
-../run-cli.sh pipelines jobs-fetch
+./run-cli.sh pipelines jobs-fetch
 ```
 
 ### Jobs Average Time Execution
 
 ```bash
-../run-cli.sh pipelines jobs-by-execution-time
+./run-cli.sh pipelines jobs-by-execution-time
 ```
 
 ### Jobs by Status
 
 ```bash
-../run-cli.sh pipelines jobs-by-status
+./run-cli.sh pipelines jobs-by-status
 ```
 
 ### Jobs Summary
 
 ```bash
-../run-cli.sh pipelines jobs-summary
+./run-cli.sh pipelines jobs-summary
 ```
 
 ### Pipeline by Status
 
 ```bash
-../run-cli.sh pipelines pipeline-by-status
+./run-cli.sh pipelines pipeline-by-status
 ```
 
 ### Pipeline Deployment Frequency
 
 ```bash
-../run-cli.sh pipelines deployment-frequency
+./run-cli.sh pipelines deployment-frequency
 ```
 
 ### Pipeline Runs by Time
 
 ```bash
-../run-cli.sh pipelines runs-by
+./run-cli.sh pipelines runs-by
 ```
 
 ### Pipeline Runs Duration
 
 ```bash
-../run-cli.sh pipelines runs-duration
+./run-cli.sh pipelines runs-duration
 ```
 
 ### Pipeline Summary
 
 ```bash
-../run-cli.sh pipelines summary
+./run-cli.sh pipelines summary
 ```

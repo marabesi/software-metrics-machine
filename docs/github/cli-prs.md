@@ -8,7 +8,7 @@ This document provides a guide for developers to run GitHub-related analyses usi
 ### Fetch PRs
 
 ```bash
-../run-cli.sh prs fetch
+./run-cli.sh prs fetch
 ```
 
 | Option         | Description                         | Example                  |
@@ -26,7 +26,7 @@ API provides.
 Once data is fetched, you can run a summary of the data using the following command:
 
 ```bash
-../run-cli.sh prs summary
+./run-cli.sh prs summary
 ```
 
 It will print a summary of the PRs fetched, including:
@@ -44,7 +44,7 @@ It will print a summary of the PRs fetched, including:
 ### Average Review Time by Author
 
 ```bash
-../run-cli.sh prs review-time-by-author
+./run-cli.sh prs review-time-by-author
 ```
 
 | Option         | Description                          | Example                  |
@@ -59,11 +59,11 @@ It will print a summary of the PRs fetched, including:
 ### PRs by Author
 
 ```bash
-../run-cli.sh prs by-author
+./run-cli.sh prs by-author
 ```
 
 ### Average of PRs Open by Time
 
 ```bash
-../run-cli.sh prs average-open-by
+./run-cli.sh prs average-open-by
 ```
