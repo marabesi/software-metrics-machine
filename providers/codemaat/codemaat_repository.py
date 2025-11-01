@@ -65,12 +65,20 @@ class CodemaatRepository(FileSystemBaseRepository):
 
         return data
 
-    def get_entity_effort(self):
+    def get_entity_effort(self, filters: None = None):
         file_path = Path(f"{self.configuration.store_data}/entity-effort.csv")
         if not file_path.exists():
             print("No entity effort data available to plot")
             return pd.DataFrame()
-        return pd.read_csv(file_path)
+
+        data = pd.read_csv(file_path)
+        if filters and filters.get("include_only"):
+            include_patterns: List[str] = filters.get("include_only") or None
+            if include_patterns:
+                data = self.__apply_include_only_filter(
+                    data, include_patterns, column="entity"
+                )
+        return data
 
     def get_entity_ownership(self, authors: List[str] = []):
         file_path = Path(f"{self.configuration.store_data}/entity-ownership.csv")

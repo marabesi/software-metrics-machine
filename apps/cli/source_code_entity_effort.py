@@ -24,11 +24,22 @@ from providers.codemaat.plots.entity_effort import EntityEffortViewer
     default=None,
     help="Optional comma-separated glob patterns to ignore (e.g. '*.json,**/**/*.png')",
 )
-def entity_effort(out_file, top, ignore_files):
+@click.option(
+    "--include-only",
+    type=str,
+    default=None,
+    help="Optional comma-separated glob patterns to include only (e.g. '*.py,**/**/*.js')",
+)
+def entity_effort(out_file, top, ignore_files, include_only):
     """Plot entity (File) effort."""
     df_repo = create_codemaat_repository()
     viewer = EntityEffortViewer(repository=df_repo)
-    viewer.render_treemap(top_n=top, ignore_files=ignore_files, out_file=out_file)
+    viewer.render_treemap(
+        top_n=top,
+        ignore_files=ignore_files,
+        out_file=out_file,
+        include_only=include_only,
+    )
 
 
 command = entity_effort

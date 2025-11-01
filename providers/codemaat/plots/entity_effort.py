@@ -19,10 +19,11 @@ class EntityEffortViewer(BaseViewer):
         self,
         top_n: int | None = 30,
         ignore_files: str | None = None,
+        include_only: str | None = None,
         out_file: Optional[str] = None,
     ) -> PlotResult:
         repo = self.repository
-        df = repo.get_entity_effort()
+        df = repo.get_entity_effort(filters={"include_only": include_only})
 
         if df is None or df.empty:
             p = figure(width=400, height=150, toolbar_location=None)
