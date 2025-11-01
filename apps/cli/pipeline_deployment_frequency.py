@@ -2,11 +2,13 @@ import click
 
 from core.infrastructure.configuration.configuration_builder import Driver
 from core.infrastructure.repository_factory import create_pipelines_repository
-from core.pipelines.plots.view_deployment_frequency import \
-    ViewDeploymentFrequency
+from core.pipelines.plots.view_deployment_frequency import ViewDeploymentFrequency
 
 
-@click.command()
+@click.command(
+    name="deployment-frequency",
+    help="Plot pipeline deployment frequency by day, week, and month",
+)
 @click.option(
     "--out-file",
     "-o",
