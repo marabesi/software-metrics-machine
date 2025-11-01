@@ -4,7 +4,7 @@ from core.infrastructure.repository_factory import create_codemaat_repository
 from providers.codemaat.plots.entity_effort import EntityEffortViewer
 
 
-@click.command()
+@click.command(name="entity-effort", help="Plot entity effort graph")
 @click.option(
     "--out-file",
     "-o",

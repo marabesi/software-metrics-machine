@@ -4,7 +4,9 @@ from core.infrastructure.repository_factory import create_prs_repository
 from core.prs.plots.view_average_of_prs_open_by import ViewAverageOfPrsOpenBy
 
 
-@click.command()
+@click.command(
+    name="average-open-by", help="Plot average of PRs open by author or labels"
+)
 @click.option(
     "--out-file",
     "-o",

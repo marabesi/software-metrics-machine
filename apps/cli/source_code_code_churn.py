@@ -4,7 +4,7 @@ from core.infrastructure.repository_factory import create_codemaat_repository
 from providers.codemaat.plots.code_churn import CodeChurnViewer
 
 
-@click.command()
+@click.command(name="code-churn", help="Plot the code churn rate over time")
 @click.option(
     "--out-file",
     "-o",

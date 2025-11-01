@@ -4,7 +4,7 @@ from core.infrastructure.repository_factory import create_codemaat_repository
 from providers.codemaat.plots.entity_ownership import EntityOnershipViewer
 
 
-@click.command()
+@click.command(name="entity-ownership", help="Plot entity churn graph")
 @click.option(
     "--out-file",
     "-o",

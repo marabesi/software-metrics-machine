@@ -4,7 +4,7 @@ from core.infrastructure.repository_factory import create_prs_repository
 from core.prs.plots.view_summary import PrViewSummary
 
 
-@click.command()
+@click.command(name="summary", help="View data information for pull requests")
 @click.option(
     "--csv",
     type=str,

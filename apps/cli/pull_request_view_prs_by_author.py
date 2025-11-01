@@ -4,7 +4,7 @@ from core.infrastructure.repository_factory import create_prs_repository
 from core.prs.plots.view_prs_by_author import ViewPrsByAuthor
 
 
-@click.command()
+@click.command(name="by-author", help="Plot number of PRs by author")
 @click.option(
     "--top",
     type=int,

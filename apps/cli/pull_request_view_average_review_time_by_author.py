@@ -1,11 +1,14 @@
 import click
 
 from core.infrastructure.repository_factory import create_prs_repository
-from core.prs.plots.view_average_review_time_by_author import \
-    ViewAverageReviewTimeByAuthor
+from core.prs.plots.view_average_review_time_by_author import (
+    ViewAverageReviewTimeByAuthor,
+)
 
 
-@click.command()
+@click.command(
+    name="review-time-by-author", help="Plot average PR review time by author"
+)
 @click.option(
     "--top",
     type=int,
