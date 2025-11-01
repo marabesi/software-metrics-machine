@@ -1,7 +1,7 @@
 import pandas as pd
 from pathlib import Path
 from pathlib import PurePosixPath
-from typing import List, Any
+from typing import List
 
 from core.infrastructure.file_system_base_repository import FileSystemBaseRepository
 from core.infrastructure.configuration.configuration import Configuration
@@ -76,7 +76,7 @@ class CodemaatRepository(FileSystemBaseRepository):
 
     def apply_ignore_file_patterns(
         self, df: pd.DataFrame, ignore_files: str | None
-    ) -> Any:
+    ) -> pd.DataFrame:
         ignore_patterns: List[str] = ignore_files or []
         if ignore_patterns:
             # normalize patterns list (split by comma if necessary)
