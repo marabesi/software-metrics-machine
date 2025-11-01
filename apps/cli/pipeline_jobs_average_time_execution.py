@@ -1,11 +1,12 @@
 import click
 
 from core.infrastructure.repository_factory import create_pipelines_repository
-from core.pipelines.plots.view_jobs_average_time_execution import \
-    ViewJobsByAverageTimeExecution
+from core.pipelines.plots.view_jobs_average_time_execution import (
+    ViewJobsByAverageTimeExecution,
+)
 
 
-@click.command()
+@click.command(name="jobs-by-execution-time", help="Plot average job execution time")
 @click.option(
     "--workflow-path",
     "-w",
