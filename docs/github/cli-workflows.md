@@ -15,7 +15,7 @@
 ## Fetch Jobs
 
 ```bash
-./run-cli.sh workflows fetch-jobs
+./run-cli.sh workflows jobs-fetch
 ```
 
 ### Jobs Average Time Execution

@@ -60,7 +60,7 @@ class TestJobsCliCommands:
             yield mock_get
 
     def test_can_run_fetch_jobs_command(self, cli):
-        result = cli.runner.invoke(main, ["pipelines", "fetch-jobs", "--help"])
+        result = cli.runner.invoke(main, ["pipelines", "jobs-fetch", "--help"])
         assert 0 == result.exit_code
         assert "Show this message and exit" in result.output
 
@@ -112,7 +112,7 @@ class TestJobsCliCommands:
                 main,
                 [
                     "pipelines",
-                    "fetch-jobs",
+                    "jobs-fetch",
                 ],
             )
 
@@ -133,7 +133,7 @@ class TestJobsCliCommands:
             main,
             [
                 "pipelines",
-                "fetch-jobs",
+                "jobs-fetch",
                 "--start-date",
                 "2023-01-01",
                 "--end-date",
@@ -173,7 +173,7 @@ class TestJobsCliCommands:
                 main,
                 [
                     "pipelines",
-                    "fetch-jobs",
+                    "jobs-fetch",
                     "--start-date",
                     "2023-01-01",
                     "--end-date",

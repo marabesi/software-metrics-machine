@@ -2,7 +2,9 @@ import click
 
 from core.infrastructure.configuration.configuration_builder import Driver
 from core.infrastructure.repository_factory import (
-    create_configuration, create_pipelines_repository)
+    create_configuration,
+    create_pipelines_repository,
+)
 from providers.github.github_workflow_client import GithubWorkflowClient
 
 
@@ -17,7 +19,7 @@ def fetch_all_job_runs(start_date, end_date, raw_filters):
     )
 
 
-@click.command()
+@click.command(name="jobs-fetch", help="Fetch job runs from GitHub Workflows")
 @click.option(
     "--start-date",
     type=str,

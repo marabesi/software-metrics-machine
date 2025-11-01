@@ -48,7 +48,7 @@ echo "$TEMPLATE" > "$analysis_dir/smm_config.json"
 ./run-cli.sh codemaat fetch --start-date "$start_date" --end-date "$end_date"
 ./run-cli.sh prs fetch --start-date "$start_date" --end-date "$end_date"
 ./run-cli.sh pipelines fetch --start-date "$start_date" --end-date "$end_date" --ste-by="day"
-./run-cli.sh pipelines fetch-jobs --start-date "$start_date" --end-date "$end_date"
+./run-cli.sh pipelines jobs-fetch --start-date "$start_date" --end-date "$end_date"
 
 ./run-cli.sh pipelines summary
 ./run-cli.sh prs summary
