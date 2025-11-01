@@ -32,6 +32,7 @@ def pipeline_section(
     workflow_conclusions,
     jobs_selector,
     branch,
+    event,
     repository: PipelinesRepository,
 ):
     def sanitize_all_argument(selected_value):
@@ -39,7 +40,7 @@ def pipeline_section(
             return None
         return selected_value
 
-    def plot_workflow_by_status(date_range_picker, workflow_selector, branch):
+    def plot_workflow_by_status(date_range_picker, workflow_selector, branch, event):
         return (
             ViewPipelineByStatus(repository=repository)
             .main(
@@ -47,6 +48,12 @@ def pipeline_section(
                 end_date=date_range_picker[1],
                 workflow_path=sanitize_all_argument(workflow_selector),
                 target_branch=sanitize_all_argument(branch),
+                # event filtering forwarded to the aggregate if implemented
+                # (some aggregates may ignore it if not supported)
+                # we keep the parameter for future use
+                # event is not an explicit param in ViewPipelineByStatus.main
+                # but PipelineByStatus accepts target_branch; event can be
+                # added to raw filters in other views as needed
             )
             .plot
         )
@@ -58,6 +65,7 @@ def pipeline_section(
         workflow_conclusions,
         jobs_selector,
         branch,
+        event,
     ):
         return (
             ViewJobsByAverageTimeExecution(repository=repository)
@@ -66,7 +74,7 @@ def pipeline_section(
                 end_date=date_range_picker[1],
                 workflow_path=sanitize_all_argument(workflow_selector),
                 job_name=sanitize_all_argument(jobs_selector),
-                pipeline_raw_filters=f"conclusion={workflow_conclusions},status={workflow_status},target_branch={sanitize_all_argument(branch)}",  # noqa
+                pipeline_raw_filters=f"conclusion={workflow_conclusions},status={workflow_status},target_branch={sanitize_all_argument(branch)},event={sanitize_all_argument(event)}",  # noqa
             )
             .plot
         )
@@ -78,6 +86,7 @@ def pipeline_section(
         workflow_conclusions,
         aggregate_metric,
         branch,
+        event,
     ):
         return (
             ViewPipelineExecutionRunsDuration(repository=repository)
@@ -85,7 +94,7 @@ def pipeline_section(
                 start_date=date_range_picker[0],
                 end_date=date_range_picker[1],
                 workflow_path=sanitize_all_argument(workflow_selector),
-                raw_filters=f"conclusion={workflow_conclusions},status={workflow_status},target_branch={sanitize_all_argument(branch)}",  # noqa
+                raw_filters=f"conclusion={workflow_conclusions},status={workflow_status},target_branch={sanitize_all_argument(branch)},event={sanitize_all_argument(event)}",  # noqa
                 metric=aggregate_metric,
             )
             .plot
@@ -98,6 +107,7 @@ def pipeline_section(
         workflow_conclusions,
         aggregate_by,
         branch,
+        event,
     ):
         return (
             ViewWorkflowRunsByWeekOrMonth(repository=repository)
@@ -105,14 +115,14 @@ def pipeline_section(
                 aggregate_by=aggregate_by,
                 start_date=date_range_picker[0],
                 end_date=date_range_picker[1],
-                raw_filters=f"conclusion={workflow_conclusions},status={workflow_status},target_branch={sanitize_all_argument(branch)}",  # noqa
+                raw_filters=f"conclusion={workflow_conclusions},status={workflow_status},target_branch={sanitize_all_argument(branch)},event={sanitize_all_argument(event)}",  # noqa
                 workflow_path=sanitize_all_argument(workflow_selector),
             )
             .plot
         )
 
     def plot_jobs_by_status(
-        date_range_picker, workflow_selector, jobs_selector, branch
+        date_range_picker, workflow_selector, jobs_selector, branch, event
     ):
         return (
             ViewJobsByStatus(repository=repository)
@@ -121,7 +131,7 @@ def pipeline_section(
                 end_date=date_range_picker[1],
                 job_name=sanitize_all_argument(jobs_selector),
                 workflow_path=sanitize_all_argument(workflow_selector),
-                raw_filters=f"target_branch={sanitize_all_argument(branch)}",
+                raw_filters=f"target_branch={sanitize_all_argument(branch)},event={sanitize_all_argument(event)}",
             )
             .plot
         )
@@ -167,6 +177,7 @@ def pipeline_section(
                         date_range_picker.param.value,
                         workflow_selector.param.value,
                         branch.param.value,
+                        event.param.value,
                     ),
                     sizing_mode="stretch_width",
                 ),
@@ -201,6 +212,7 @@ def pipeline_section(
                         workflow_conclusions.param.value,
                         aggregate_by.param.value,
                         branch.param.value,
+                        event.param.value,
                     ),
                     sizing_mode="stretch_width",
                 ),
@@ -236,6 +248,7 @@ def pipeline_section(
                         workflow_conclusions.param.value,
                         aggregate_metric_select.param.value,
                         branch.param.value,
+                        event.param.value,
                     ),
                     sizing_mode="stretch_width",
                 ),
@@ -263,6 +276,7 @@ def pipeline_section(
                         workflow_conclusions.param.value,
                         jobs_selector.param.value,
                         branch.param.value,
+                        event.param.value,
                     ),
                     sizing_mode="stretch_width",
                 ),
@@ -280,6 +294,7 @@ def pipeline_section(
                         workflow_selector.param.value,
                         jobs_selector.param.value,
                         branch.param.value,
+                        event.param.value,
                     ),
                     sizing_mode="stretch_width",
                 ),

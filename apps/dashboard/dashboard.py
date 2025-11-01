@@ -95,6 +95,12 @@ branch = pn.widgets.TextInput(
     value="",
 )
 
+event = pn.widgets.TextInput(
+    name="Event",
+    placeholder="Filter runs by event (e.g., push)",
+    value="",
+)
+
 
 def _update_jobs_selector_for_workflow(path):
     options = workflow_repository.get_unique_jobs_name(
@@ -160,6 +166,7 @@ pipeline_section = pipeline_section(
     workflow_status=workflow_status_select,
     workflow_conclusions=workflow_conclusions,
     branch=branch,
+    event=event,
     repository=workflow_repository,
 )
 configuration_section = configuration_section(configuration)
@@ -266,6 +273,7 @@ TAB_DEFINITIONS = [
             "workflow_conclusions",
             "jobs_selector",
             "branch",
+            "event",
         ],
     },
     {
@@ -300,6 +308,7 @@ _HEADER_WIDGETS = {
     "workflow_status_select": workflow_status_select,
     "jobs_selector": jobs_selector,
     "branch": branch,
+    "event": event,
     "author_select": author_select,
     "author_select_source_code": author_select_source_code,
     "label_selector": label_selector,
@@ -327,6 +336,7 @@ header_section = pn.Column(
                 workflow_conclusions,
                 jobs_selector,
                 branch,
+                event,
             ),
         )
     ),
