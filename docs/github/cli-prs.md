@@ -16,7 +16,7 @@ This document provides a guide for developers to run GitHub-related analyses usi
 | Start date     | Fetches PRs created after a date.   | `--start-date=2025-01-01`|
 | End date       | Fetches PRs created before a date.  | `--end-date=2025-12-31`  |
 | Filters       | Allows to pass in filters directly to the [GitHub API](https://docs.github.com/en/rest/pulls/pulls#list-pull-requests)  | `--raw-filters=state=open`  |
-| Force       | By default a file is stored with the rerieved data to avoid refetching it again. However, using this parameter bypass this cache. | `--force=true`  |
+| Force       | By default a file is stored with the retrieved data to avoid refetching it again. However, using this parameter bypass this cache. | `--force=true`  |
 
 Filtering the data fetch from PRs by date is done logically while fetching the data, this is not a feature that GitHub
 API provides.
@@ -41,35 +41,29 @@ It will print a summary of the PRs fetched, including:
 - Unique Labels (unique_labels): The number of unique labels used across pull requests.
 - Labels (labels): A list of all unique labels used in pull requests.
 
-### View Average Review Time by Author
+### Average Review Time by Author
 
 ```bash
-./run-cli.sh prs view-average-review-time
+./run-cli.sh prs review-time-by-author
 ```
 
 | Option         | Description                          | Example                  |
 |----------------|--------------------------------------|--------------------------|
-| Labels         | Filters PRs by the labels attached to it.      | `--labels=my_label,anothe_label`       |
+| Labels         | Filters PRs by the labels attached to it.      | `--labels=my_label,another_label`       |
 | Start date     | Fetches PRs created after a date.   | `--start-date=2025-01-01`     |
 | End date       | Fetches PRs created before a date.  | `--end-date=2025-12-31`     |
 | Limit          | If the list is too big --top will show only the top x results from the list.  | `--top=10`     |
 | File           | The name of the file to store the generated chart  | `--out-file=my_chart.png` or   `--out-file=subfolder/my_chart.png`   |
 | Step           | Step defines the pace in which the data is fetched. It helps to mitigate the rate limits in the GitHub API | `--step-by=day` |
 
-### View PRs by Author
+### PRs by Author
 
 ```bash
-./run-cli.sh prs view-by-author
+./run-cli.sh prs by-author
 ```
 
-### View Summary
+### Average of PRs Open by Time
 
 ```bash
-./run-cli.sh prs view-summary
-```
-
-### View Average of PRs Open by Time
-
-```bash
-./run-cli.sh prs view-average-open-time
+./run-cli.sh prs average-open-by
 ```

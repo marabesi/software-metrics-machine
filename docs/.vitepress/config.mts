@@ -79,12 +79,17 @@ export default withMermaid(
               text: 'GitHub', link: '/github', items: [
                 { text: 'CLI', link: '/github/cli' },
                 { text: 'Pull requests', link: '/github/cli-prs' },
-                { text: 'Workflows', link: '/github/cli-workflows' },
+                { text: 'Pipelines', link: '/github/cli-workflows' },
               ]
             },
             {
               text: 'Codemaat', link: '/codemaat', items: [
                 { text: 'CLI', link: '/codemaat/cli' },
+              ]
+            },
+            {
+              text: 'Tools', link: '/tools', items: [
+                { text: 'CLI', link: '/tools/cli' },
               ]
             },
             // { text: 'GitLab', link: '/gitlab' }

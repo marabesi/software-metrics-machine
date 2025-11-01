@@ -27,7 +27,7 @@ git clone https://github.com/marabesi/software-metrics-machine.git
 
 ### Environment requirements
 
-* python 3.10+
+* python 3.13+
 * poetry installed --no-root
 * java (for running codemaat)
 
@@ -141,9 +141,11 @@ Options:
   --help  Show this message and exit.
 
 Commands:
-  codemaat
+  code
+  pipelines
   prs
-  workflows
+  pydriller
+  tools
 ```
 
 ## Ready to go
