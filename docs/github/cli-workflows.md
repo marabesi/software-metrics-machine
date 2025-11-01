@@ -1,67 +1,67 @@
-# GitHub CLI Commands for Pull Workflows
+# GitHub CLI Commands for Pipelines (Workflows)
 
 ## Fetch Workflows
 
 ```bash
-./run-cli.sh workflows fetch
+../run-cli.sh pipelines fetch
 ```
 
 | Option         | Description                          | Example                  |
 |----------------|--------------------------------------|--------------------------|
-| Start date     | Fetches PRs created after a date.   | `--start-date=2025-01-01`     |
-| End date       | Fetches PRs created before a date.  | `--end-date=2025-12-31`     |
+| Start date     | Fetches workflows created after a date.   | `--start-date=2025-01-01`     |
+| End date       | Fetches workflows created before a date.  | `--end-date=2025-12-31`     |
 | Step           | Step defines the pace in which the data is fetched. It helps to mitigate the rate limits in the GitHub API | `--step-by=day` |
 
 ## Fetch Jobs
 
 ```bash
-./run-cli.sh workflows jobs-fetch
+../run-cli.sh pipelines jobs-fetch
 ```
 
 ### Jobs Average Time Execution
 
 ```bash
-./run-cli.sh workflows jobs-average-time
+../run-cli.sh pipelines jobs-by-execution-time
 ```
 
 ### Jobs by Status
 
 ```bash
-./run-cli.sh workflows jobs-by-status
+../run-cli.sh pipelines jobs-by-status
 ```
 
 ### Jobs Summary
 
 ```bash
-./run-cli.sh workflows jobs-summary
+../run-cli.sh pipelines jobs-summary
 ```
 
-### Workflow by Status
+### Pipeline by Status
 
 ```bash
-./run-cli.sh workflows workflow-by-status
+../run-cli.sh pipelines pipeline-by-status
 ```
 
-### Workflow Deployment Frequency
+### Pipeline Deployment Frequency
 
 ```bash
-./run-cli.sh workflows deployment-frequency
+../run-cli.sh pipelines deployment-frequency
 ```
 
-### Workflow Runs by Time
+### Pipeline Runs by Time
 
 ```bash
-./run-cli.sh workflows runs-by-time
+../run-cli.sh pipelines runs-by
 ```
 
-### Workflow Runs Duration
+### Pipeline Runs Duration
 
 ```bash
-./run-cli.sh workflows runs-duration
+../run-cli.sh pipelines runs-duration
 ```
 
-### Workflow Summary
+### Pipeline Summary
 
 ```bash
-./run-cli.sh workflows summary
+../run-cli.sh pipelines summary
 ```
