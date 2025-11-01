@@ -21,11 +21,7 @@ def source_code_section(
     def update_ignore_pattern(event):
         ignore_pattern_files.value = event.new
 
-    def update_include_pattern(event):
-        include_pattern_files.value = event.new
-
     pre_selected_values.param.watch(update_ignore_pattern, "value")
-    pre_selected_values.param.watch(update_include_pattern, "value")
 
     def plot_code_churn(date_range_picker):
         chart = (
