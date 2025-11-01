@@ -1,5 +1,6 @@
 from unittest.mock import patch
 import pandas as pd
+import pytest
 from providers.codemaat.codemaat_repository import CodemaatRepository
 from tests.in_memory_configuration import InMemoryConfiguration
 
@@ -202,7 +203,20 @@ class TestCodemaatRepository:
 
                 assert 3 == len(df)
 
-    def test_should_filter_by_include_only_in_code_coupling(self):
+    @pytest.mark.parametrize(
+        "include_only,expected_count",
+        [
+            (None, 2),
+            ("**/*.tsx", 2),
+            ("src/components/**", 1),
+            ("**/my-file.tsx", 2),
+            ("**/*.js", 0),
+            ("src/**/*", 1),
+        ],
+    )
+    def test_should_filter_by_include_only_in_entity_churn(
+        self, include_only, expected_count
+    ):
         with patch("pathlib.Path.exists", return_value=True):
             mock_df = pd.DataFrame(
                 {
@@ -220,6 +234,6 @@ class TestCodemaatRepository:
                 repository = CodemaatRepository(
                     configuration=InMemoryConfiguration(store_data=".")
                 )
-                df = repository.get_coupling(filters={"include_only": "src/**/*"})
+                df = repository.get_coupling(filters={"include_only": include_only})
 
-                assert 1 == len(df)
+                assert expected_count == len(df)

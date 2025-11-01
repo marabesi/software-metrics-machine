@@ -34,36 +34,36 @@ def source_code_section(
         )
         return pn.panel(chart, sizing_mode="stretch_width")
 
-    def plot_entity_churn(ignore_pattern, top):
+    def plot_entity_churn(ignore_pattern, include_files, top):
         chart = (
             EntityChurnViewer(repository=repository)
             .render(
                 ignore_files=ignore_pattern,
                 top_n=int(top),
-                include_only=include_pattern_files.value,
+                include_only=include_files,
             )
             .plot
         )
         return pn.panel(chart, sizing_mode="stretch_width")
 
-    def plot_entity_effort(ignore_pattern, top):
+    def plot_entity_effort(ignore_pattern, include_files, top):
         chart = (
             EntityEffortViewer(repository=repository)
             .render_treemap(
                 top_n=int(top),
                 ignore_files=ignore_pattern,
-                include_only=include_pattern_files.value,
+                include_only=include_files,
             )
             .plot
         )
         return pn.panel(chart, sizing_mode="stretch_width")
 
-    def plot_entity_ownership(ignore_pattern, authors, top, type_churn):
+    def plot_entity_ownership(ignore_pattern, include_files, authors, top, type_churn):
         chart = (
             EntityOnershipViewer(repository=repository)
             .render(
                 ignore_files=ignore_pattern,
-                include_only=include_pattern_files.value,
+                include_only=include_files,
                 authors=",".join(authors),
                 top_n=int(top),
                 type_churn=type_churn,
@@ -73,13 +73,13 @@ def source_code_section(
         return pn.panel(chart, sizing_mode="stretch_width")
 
     # Refactor plot_code_coupling to include zoom and pan controls using Panel sliders
-    def plot_code_coupling_with_controls(ignore_pattern_files, top):
+    def plot_code_coupling_with_controls(ignore_pattern_files, include_files, top):
         coupling_viewer = CouplingViewer(repository=repository)
         return pn.Column(
             coupling_viewer.render(
                 top=int(top),
                 ignore_files=ignore_pattern_files,
-                include_only=include_pattern_files.value,
+                include_only=include_files,
             ).plot
         )
 
@@ -114,6 +114,7 @@ def source_code_section(
                 pn.bind(
                     plot_entity_churn,
                     ignore_pattern_files.param.value,
+                    include_pattern_files.param.value,
                     top_entries.param.value,
                 ),
             ),
@@ -125,6 +126,7 @@ def source_code_section(
                 pn.bind(
                     plot_entity_effort,
                     ignore_pattern_files.param.value,
+                    include_pattern_files.param.value,
                     top_entries.param.value,
                 ),
             ),
@@ -137,6 +139,7 @@ def source_code_section(
                 pn.bind(
                     plot_entity_ownership,
                     ignore_pattern_files.param.value,
+                    include_pattern_files.param.value,
                     author_select_source_code.param.value,
                     top_entries.param.value,
                     type_churn=type_churn.param.value,
@@ -148,6 +151,7 @@ def source_code_section(
             pn.bind(
                 plot_code_coupling_with_controls,
                 ignore_pattern_files.param.value,
+                include_pattern_files.param.value,
                 top_entries.param.value,
             )
         ),

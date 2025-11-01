@@ -47,7 +47,7 @@ class CodemaatRepository(FileSystemBaseRepository):
                 )
         return data
 
-    def get_entity_churn(self, filters: None = None):
+    def get_entity_churn(self, ignore_files: str | None = None, filters: None = None):
         file_path = Path(f"{self.configuration.store_data}/entity-churn.csv")
         if not file_path.exists():
             return pd.DataFrame()
@@ -55,6 +55,10 @@ class CodemaatRepository(FileSystemBaseRepository):
         data = pd.read_csv(file_path)
         if "entity" in data.columns:
             data["short_entity"] = data["entity"].apply(self.__short_ent)
+
+        if ignore_files:
+            data = self.apply_ignore_file_patterns(data, ignore_files)
+            print(f"Filtered get entity churn data count: {len(data.values.tolist())}")
 
         if filters and filters.get("include_only"):
             include_patterns: List[str] = filters.get("include_only") or None
@@ -154,6 +158,7 @@ class CodemaatRepository(FileSystemBaseRepository):
             p = PurePosixPath(fname)
             for pat in pats:
                 try:
+                    print(f"Matching {fname} against pattern {pat}", p.match(pat))
                     if p.match(pat):
                         return True
                 except Exception:
