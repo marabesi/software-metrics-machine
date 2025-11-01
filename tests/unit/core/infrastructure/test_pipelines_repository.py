@@ -372,6 +372,100 @@ class TestPipelinesRepository:
             assert len(result) == 2
             assert result[1] == "in_progress"
 
+    def test_get_unique_events(self):
+        pipeline_run_with_duplicated_events = as_json_string(
+            [
+                {
+                    "event": "push",
+                    "conclusion": "success",
+                    "path": "/workflows/build.yml",
+                    "id": 1,
+                },
+                {
+                    "event": "schedule",
+                    "conclusion": "in_progress",
+                    "path": "/workflows/test.yml",
+                    "id": 2,
+                },
+                {
+                    "event": "push",
+                    "conclusion": "in_progress",
+                    "path": "/workflows/deploy.yml",
+                    "id": 3,
+                },
+                {
+                    "event": "push",
+                    "conclusion": "in_progress",
+                    "path": "/workflows/build.yml",
+                    "id": 4,
+                },
+                {
+                    "event": "push",
+                    "conclusion": "in_progress",
+                    "path": "/workflows/build.yml",
+                    "id": 5,
+                },
+            ]
+        )
+        with (
+            patch(
+                "core.infrastructure.file_system_base_repository.FileSystemBaseRepository.read_file_if_exists",
+                return_value=pipeline_run_with_duplicated_events,
+            ),
+        ):
+            loader = PipelinesRepository(configuration=InMemoryConfiguration("."))
+
+            result = loader.get_unique_pipeline_trigger_events()
+
+            assert len(result) == 3
+
+    def test_get_unique_events_with_all_set(self):
+        pipeline_run_with_duplicated_events = as_json_string(
+            [
+                {
+                    "event": "push",
+                    "conclusion": "success",
+                    "path": "/workflows/build.yml",
+                    "id": 1,
+                },
+                {
+                    "event": "schedule",
+                    "conclusion": "in_progress",
+                    "path": "/workflows/test.yml",
+                    "id": 2,
+                },
+                {
+                    "event": "push",
+                    "conclusion": "in_progress",
+                    "path": "/workflows/deploy.yml",
+                    "id": 3,
+                },
+                {
+                    "event": "push",
+                    "conclusion": "in_progress",
+                    "path": "/workflows/build.yml",
+                    "id": 4,
+                },
+                {
+                    "event": "push",
+                    "conclusion": "in_progress",
+                    "path": "/workflows/build.yml",
+                    "id": 5,
+                },
+            ]
+        )
+        with (
+            patch(
+                "core.infrastructure.file_system_base_repository.FileSystemBaseRepository.read_file_if_exists",
+                return_value=pipeline_run_with_duplicated_events,
+            ),
+        ):
+            loader = PipelinesRepository(configuration=InMemoryConfiguration("."))
+
+            result = loader.get_unique_pipeline_trigger_events()
+
+            assert result[0] == "All"
+
     def test_set_all_option_for_unique_pipeline_status(self):
         workflows_with_duplicated_paths = as_json_string([])
         with (

@@ -338,6 +338,14 @@ class PipelinesRepository(FileSystemBaseRepository):
 
         return list_of_fails
 
+    def get_unique_pipeline_trigger_events(self, filters=None) -> List[str]:
+        runs = self.runs(filters)
+        events = {run.get("event", "") for run in runs if "event" in run}
+        list_all = list(filter(None, list(events)))
+        list_all.sort()
+        list_all.insert(0, "All")
+        return list_all
+
     def __parse_dt(self, v: str):
         if not v:
             return None
