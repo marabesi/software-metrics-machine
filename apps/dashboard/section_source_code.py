@@ -72,7 +72,6 @@ def source_code_section(
         )
         return pn.panel(chart, sizing_mode="stretch_width")
 
-    # Refactor plot_code_coupling to include zoom and pan controls using Panel sliders
     def plot_code_coupling_with_controls(ignore_pattern_files, include_files, top):
         coupling_viewer = CouplingViewer(repository=repository)
         return pn.Column(
@@ -103,14 +102,37 @@ def source_code_section(
         pn.layout.Divider(),
         pn.Row(
             pn.Column(
-                "## Code Churn",
+                "### Code Churn",
+                pn.pane.HTML(
+                    """
+                <details style="cursor: pointer;">
+                    <summary>
+                    This view visualizes code churn over time by showing lines of code added and deleted. Use the date
+                    range to filter the data.
+                    </summary>
+                    <div>
+                        <br />
+                        Code churn refers to the amount of code that has been added, modified, or deleted in a codebase
+                        over a
+                        specific period. It is a useful metric for understanding the level of activity and changes
+                        occurring in
+                        a software project. It helps with the following the questions:
+                        <ol>
+                            <li>What is the most active time of my repository?</li>
+                        </ol>
+
+                    </div>
+                </details>
+                    """,
+                    sizing_mode="stretch_width",
+                ),
                 pn.bind(plot_code_churn, start_end_date_picker.param.value),
             ),
             sizing_mode="stretch_width",
         ),
         pn.Row(
             pn.Column(
-                "## Entity Churn",
+                "### Entity Churn",
                 pn.bind(
                     plot_entity_churn,
                     ignore_pattern_files.param.value,
@@ -122,7 +144,7 @@ def source_code_section(
         ),
         pn.Row(
             pn.Column(
-                "## Entity Effort",
+                "### Entity Effort",
                 pn.bind(
                     plot_entity_effort,
                     ignore_pattern_files.param.value,
@@ -134,7 +156,7 @@ def source_code_section(
         ),
         pn.Row(
             pn.Column(
-                "## Entity Ownership",
+                "### Entity Ownership",
                 type_churn,
                 pn.bind(
                     plot_entity_ownership,
