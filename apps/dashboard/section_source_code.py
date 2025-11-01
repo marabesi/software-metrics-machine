@@ -96,6 +96,14 @@ def source_code_section(
 
     return pn.Column(
         "## Source code Section",
+        pn.pane.HTML(
+            """
+            This section provides insights into the source code evolution of the repository, including metrics such as
+            code churn, entity churn, entity effort, entity ownership, and code coupling. Use the controls below to
+            filter and customize the visualizations according to your analysis needs. This analysis is powered by
+            CodeMaat.
+            """
+        ),
         pn.layout.Divider(),
         pn.Row(
             pn.Column(

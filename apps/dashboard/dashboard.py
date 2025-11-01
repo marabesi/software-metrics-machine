@@ -95,10 +95,14 @@ branch = pn.widgets.TextInput(
     value="",
 )
 
-event = pn.widgets.TextInput(
+event = pn.widgets.AutocompleteInput(
     name="Event",
     placeholder="Filter runs by event (e.g., push)",
-    value="",
+    options=workflow_repository.get_unique_pipeline_trigger_events(),
+    search_strategy="includes",
+    restrict=False,
+    case_sensitive=False,
+    min_characters=0,
 )
 
 
