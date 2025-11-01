@@ -6,7 +6,7 @@ import pytest
 from apps.cli.main import main
 
 
-class TestCliCodeCommands:
+class TestCliCodeFetchCommands:
 
     @pytest.fixture(scope="function", autouse=True)
     def reset_mock_run(self):
