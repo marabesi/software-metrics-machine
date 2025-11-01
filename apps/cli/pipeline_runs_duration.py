@@ -1,11 +1,12 @@
 import click
 
 from core.infrastructure.repository_factory import create_pipelines_repository
-from core.pipelines.plots.view_pipeline_execution_duration import \
-    ViewPipelineExecutionRunsDuration
+from core.pipelines.plots.view_pipeline_execution_duration import (
+    ViewPipelineExecutionRunsDuration,
+)
 
 
-@click.command()
+@click.command(name="runs-duration", help="Plot pipeline runs duration")
 @click.option(
     "--out-file",
     "-o",

@@ -15,7 +15,7 @@ class TestWorkflowsRunsDurationCliCommands:
                 {
                     "command": [
                         "pipelines",
-                        "workflows-run-duration",
+                        "runs-duration",
                         "--start-date",
                         "2023-10-01",
                         "--end-date",
@@ -29,7 +29,7 @@ class TestWorkflowsRunsDurationCliCommands:
                 {
                     "command": [
                         "pipelines",
-                        "workflows-run-duration",
+                        "runs-duration",
                         "--workflow-path",
                         "/workflows/tests.yml",
                     ],
@@ -64,7 +64,7 @@ class TestWorkflowsRunsDurationCliCommands:
             main,
             [
                 "pipelines",
-                "workflows-run-duration",
+                "runs-duration",
                 "--out-file",
                 "run_duration.png",
             ],
@@ -80,7 +80,7 @@ class TestWorkflowsRunsDurationCliCommands:
                 {
                     "command": [
                         "pipelines",
-                        "workflows-run-duration",
+                        "runs-duration",
                         "--raw-filters",
                         "status=completed",
                     ],
@@ -92,7 +92,7 @@ class TestWorkflowsRunsDurationCliCommands:
                 {
                     "command": [
                         "pipelines",
-                        "workflows-run-duration",
+                        "runs-duration",
                         "--raw-filters",
                         "conclusion=success",
                     ],

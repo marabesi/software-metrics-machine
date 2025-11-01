@@ -6,7 +6,7 @@ from core.pipelines.plots.view_pipeline_runs_by_week_or_month import (
 )
 
 
-@click.command(name="pipeline-runs-by", help="Plot pipeline runs by week or month")
+@click.command(name="runs-by", help="Plot pipeline runs by week or month")
 @click.option(
     "--workflow-path",
     "-w",
