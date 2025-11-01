@@ -7,6 +7,17 @@ def as_json_string(object: Any) -> str:
     return json.dumps(object, indent=2)
 
 
+def single_deployment_frequency():
+    return [
+        {
+            "id": 1,
+            "path": "/workflows/build.yml",
+            "status": "success",
+            "created_at": "2023-10-01T12:00:00Z",
+        },
+    ]
+
+
 def github_workflows_data():
     return [
         {

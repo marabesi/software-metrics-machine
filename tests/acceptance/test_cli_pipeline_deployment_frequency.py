@@ -1,22 +1,15 @@
 from apps.cli.main import main
 
 from tests.file_handler_for_testing import FileHandlerForTesting
+from tests.builders import single_deployment_frequency
 
 
 class TestWorkflowsDeploymentFrequencyCliCommands:
 
     def test_deployment_frequency_by_job(self, cli):
         path_string = cli.data_stored_at
-        single_deployment_frequency = [
-            {
-                "id": 1,
-                "path": "/workflows/build.yml",
-                "status": "success",
-                "created_at": "2023-10-01T12:00:00Z",
-            },
-        ]
         FileHandlerForTesting(path_string).store_json_file(
-            "workflows.json", single_deployment_frequency
+            "workflows.json", single_deployment_frequency()
         )
 
         FileHandlerForTesting(path_string).store_json_file(
