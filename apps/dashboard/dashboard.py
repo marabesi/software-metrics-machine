@@ -183,6 +183,13 @@ ignore_pattern_files = pn.widgets.TextAreaInput(
     max_rows=10,
 )
 
+include_pattern_files = pn.widgets.TextAreaInput(
+    placeholder="Include-only file patterns (comma-separated) - e.g. src/**/*.py,**/*.ts",
+    rows=6,
+    auto_grow=True,
+    max_rows=10,
+)
+
 author_select_source_code = pn.widgets.MultiChoice(
     name="Select Authors",
     placeholder="Select authors to filter, by the default all are included",
@@ -226,6 +233,7 @@ source_code_section = source_code_section(
     repository=codemaat_repository,
     start_end_date_picker=start_end_date_picker,
     ignore_pattern_files=ignore_pattern_files,
+    include_pattern_files=include_pattern_files,
     author_select_source_code=author_select_source_code,
     pre_selected_values=pre_selected_values,
     top_entries=top_entries,
@@ -263,6 +271,7 @@ TAB_DEFINITIONS = [
         "show": [
             "start_end_date_picker",
             "ignore_pattern_files",
+            "include_pattern_files",
             "author_select_source_code",
             "pre_selected_values",
             "top_entries",
@@ -287,6 +296,7 @@ _HEADER_WIDGETS = {
     "label_selector": label_selector,
     "ignore_pattern_files": ignore_pattern_files,
     "pre_selected_values": pre_selected_values,
+    "include_pattern_files": include_pattern_files,
     "top_entries": top_entries,
 }
 
@@ -319,6 +329,7 @@ header_section = pn.Column(
             label_selector,
             pre_selected_values,
             ignore_pattern_files,
+            include_pattern_files,
             author_select_source_code,
             top_entries,
         ),

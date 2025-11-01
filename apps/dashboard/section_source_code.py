@@ -13,6 +13,7 @@ def source_code_section(
     repository: CodemaatRepository,
     start_end_date_picker,
     ignore_pattern_files,
+    include_pattern_files,
     author_select_source_code,
     pre_selected_values,
     top_entries,
@@ -20,7 +21,11 @@ def source_code_section(
     def update_ignore_pattern(event):
         ignore_pattern_files.value = event.new
 
+    def update_include_pattern(event):
+        include_pattern_files.value = event.new
+
     pre_selected_values.param.watch(update_ignore_pattern, "value")
+    pre_selected_values.param.watch(update_include_pattern, "value")
 
     def plot_code_churn(date_range_picker):
         chart = (
@@ -36,7 +41,11 @@ def source_code_section(
     def plot_entity_churn(ignore_pattern, top):
         chart = (
             EntityChurnViewer(repository=repository)
-            .render(ignore_files=ignore_pattern, top_n=int(top))
+            .render(
+                ignore_files=ignore_pattern,
+                top_n=int(top),
+                include_only=include_pattern_files.value,
+            )
             .plot
         )
         return pn.panel(chart, sizing_mode="stretch_width")
@@ -47,6 +56,7 @@ def source_code_section(
             .render_treemap(
                 top_n=int(top),
                 ignore_files=ignore_pattern,
+                include_only=include_pattern_files.value,
             )
             .plot
         )
@@ -57,6 +67,7 @@ def source_code_section(
             EntityOnershipViewer(repository=repository)
             .render(
                 ignore_files=ignore_pattern,
+                include_only=include_pattern_files.value,
                 authors=",".join(authors),
                 top_n=int(top),
                 type_churn=type_churn,
@@ -69,7 +80,11 @@ def source_code_section(
     def plot_code_coupling_with_controls(ignore_pattern_files, top):
         coupling_viewer = CouplingViewer(repository=repository)
         return pn.Column(
-            coupling_viewer.render(top=int(top), ignore_files=ignore_pattern_files).plot
+            coupling_viewer.render(
+                top=int(top),
+                ignore_files=ignore_pattern_files,
+                include_only=include_pattern_files.value,
+            ).plot
         )
 
     type_churn = pn.widgets.Select(
