@@ -8,7 +8,7 @@ from tests.file_handler_for_testing import FileHandlerForTesting
 class TestWorkflowsRunsByCliCommands:
 
     def test_can_run_view_workflow_by(self, cli):
-        result = cli.runner.invoke(main, ["pipelines", "workflow-runs-by", "--help"])
+        result = cli.runner.invoke(main, ["pipelines", "pipeline-runs-by", "--help"])
         assert 0 == result.exit_code
         assert "Comma-separated key=value pairs to filter runs" in result.output
 
@@ -41,7 +41,7 @@ class TestWorkflowsRunsByCliCommands:
             main,
             [
                 "pipelines",
-                "workflow-runs-by",
+                "pipeline-runs-by",
                 "--start-date",
                 "2023-10-01",
                 "--end-date",
@@ -65,7 +65,7 @@ class TestWorkflowsRunsByCliCommands:
             main,
             [
                 "pipelines",
-                "workflow-runs-by",
+                "pipeline-runs-by",
                 "--workflow-path",
                 "/workflows/tests.yml",
             ],
@@ -88,7 +88,7 @@ class TestWorkflowsRunsByCliCommands:
             main,
             [
                 "pipelines",
-                "workflow-runs-by",
+                "pipeline-runs-by",
             ],
         )
 
@@ -106,7 +106,7 @@ class TestWorkflowsRunsByCliCommands:
             main,
             [
                 "pipelines",
-                "workflow-runs-by",
+                "pipeline-runs-by",
                 "--aggregate-by",
                 "month",
             ],
@@ -142,7 +142,7 @@ class TestWorkflowsRunsByCliCommands:
             main,
             [
                 "pipelines",
-                "workflow-runs-by",
+                "pipeline-runs-by",
                 "--start-date",
                 "2000-10-01",
                 "--end-date",
@@ -160,7 +160,7 @@ class TestWorkflowsRunsByCliCommands:
             (
                 [
                     "pipelines",
-                    "workflow-runs-by",
+                    "pipeline-runs-by",
                     "--start-date",
                     "2023-10-01",
                     "--end-date",
@@ -175,7 +175,7 @@ class TestWorkflowsRunsByCliCommands:
             (
                 [
                     "pipelines",
-                    "workflow-runs-by",
+                    "pipeline-runs-by",
                     "--start-date",
                     "2023-10-01",
                     "--end-date",
@@ -189,7 +189,7 @@ class TestWorkflowsRunsByCliCommands:
             (
                 [
                     "pipelines",
-                    "workflow-runs-by",
+                    "pipeline-runs-by",
                     "--raw-filters",
                     "conclusion=action_required",
                 ],

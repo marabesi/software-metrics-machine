@@ -1,11 +1,12 @@
 import click
 
 from core.infrastructure.repository_factory import create_pipelines_repository
-from core.pipelines.plots.view_pipeline_runs_by_week_or_month import \
-    ViewWorkflowRunsByWeekOrMonth
+from core.pipelines.plots.view_pipeline_runs_by_week_or_month import (
+    ViewWorkflowRunsByWeekOrMonth,
+)
 
 
-@click.command()
+@click.command(name="pipeline-runs-by", help="Plot pipeline runs by week or month")
 @click.option(
     "--workflow-path",
     "-w",

@@ -5,7 +5,9 @@ from core.infrastructure.repository_factory import create_pipelines_repository
 from core.pipelines.plots.view_jobs_summary import ViewJobsSummary
 
 
-@click.command()
+@click.command(
+    name="jobs-summary", help="Print information about the data of pipeline jobs"
+)
 @click.option(
     "--max-jobs",
     type=int,
