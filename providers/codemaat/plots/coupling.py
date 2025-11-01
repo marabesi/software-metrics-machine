@@ -26,8 +26,10 @@ class CouplingViewer(BaseViewer, Viewable):
         ignore_files: str | None = None,
         top: int = 20,
         out_file: str | None = None,
+        include_only: str | None = None,
     ) -> PlotResult:
-        df = self.repository.get_coupling(ignore_files=ignore_files)
+        filters = {"include_only": include_only}
+        df = self.repository.get_coupling(ignore_files=ignore_files, filters=filters)
         if df is None or df.empty:
             print("No coupling data available to plot")
             return PlotResult(plot=None, data=pd.DataFrame())

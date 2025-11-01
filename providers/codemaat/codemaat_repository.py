@@ -27,16 +27,49 @@ class CodemaatRepository(FileSystemBaseRepository):
                 data = data[(data["date"] >= sd) & (data["date"] <= ed)]
         return data
 
-    def get_coupling(self, ignore_files: str | None = None):
+    def get_coupling(self, ignore_files: str | None = None, filters: None = None):
         file_path = Path(f"{self.configuration.store_data}/coupling.csv")
         if not file_path.exists():
             return pd.DataFrame()
+
+        data = pd.read_csv(file_path)
+
         if ignore_files:
-            df = pd.read_csv(file_path)
-            data = self.apply_ignore_file_patterns(df, ignore_files)
+            data = self.apply_ignore_file_patterns(data, ignore_files)
             print(f"Filtered coupling data count: {len(data.values.tolist())}")
-            return data
-        return pd.read_csv(file_path)
+
+        if filters and filters.get("include_only"):
+            include_patterns: List[str] = filters.get("include_only") or None
+            if include_patterns:
+                # normalize patterns list (split by comma if necessary)
+                if isinstance(include_patterns, str):
+                    pats = [p.strip() for p in include_patterns.split(",") if p.strip()]
+                else:
+                    pats = [p.strip() for p in include_patterns if p]
+
+                def matches_any_pattern(fname: str) -> bool:
+                    # use PurePosixPath.match to allow ** patterns; normalize to posix
+                    p = PurePosixPath(fname)
+                    for pat in pats:
+                        try:
+                            if p.match(pat):
+                                return True
+                        except Exception:
+                            # fallback to simple equality or fnmatch
+                            from fnmatch import fnmatch
+
+                            if fnmatch(fname, pat):
+                                return True
+                    return False
+
+                # filter to matching rows
+                mask = data["entity"].apply(lambda x: matches_any_pattern(str(x)))
+                data = data[mask]
+                print(
+                    f"Applied include only file patterns: {pats}, remaining rows: {len(data)}"
+                )
+
+        return data
 
     def get_entity_churn(self):
         file_path = Path(f"{self.configuration.store_data}/entity-churn.csv")

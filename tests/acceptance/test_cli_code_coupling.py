@@ -16,6 +16,16 @@ class TestCliCodeCouplingCommands:
             mock_run.reset_mock()
             yield mock_run
 
+    def test_defines_include_only_argument(self, cli):
+        path_string = cli.data_stored_at
+
+        FileHandlerForTesting(path_string).store_file("coupling.csv", "")
+        result = cli.runner.invoke(
+            main,
+            ["code", "coupling", "--help"],
+        )
+        assert "--include-only" in result.output
+
     def test_can_run_coupling_without_data_available(self, cli):
         result = cli.runner.invoke(
             main,
@@ -27,7 +37,7 @@ class TestCliCodeCouplingCommands:
         path_string = cli.data_stored_at
 
         csv_data = (
-            CSVBuilder()
+            CSVBuilder(headers=["entity", "coupled", "degree", "average-revs"])
             .extend_rows(
                 [
                     ["another.txt", "aaaa.mp3", 10, 2],
@@ -43,3 +53,26 @@ class TestCliCodeCouplingCommands:
             ["code", "coupling", "--ignore-files", "*.txt"],
         )
         assert "Filtered coupling data count: 1" in result.output
+
+    def test_includes_only_specified_paths_for_analysis(self, cli):
+        path_string = cli.data_stored_at
+
+        csv_data = (
+            CSVBuilder(headers=["entity", "coupled", "degree", "average-revs"])
+            .extend_rows(
+                [
+                    ["src/another.txt", "aaaa.mp3", 10, 2],
+                    ["application/file.ts", "brum.ts", 10, 2],
+                ]
+            )
+            .build()
+        )
+        FileHandlerForTesting(path_string).store_file("coupling.csv", csv_data)
+        result = cli.runner.invoke(
+            main,
+            ["code", "coupling", "--include-only", "src/**"],
+        )
+        assert (
+            "Applied include only file patterns: ['src/**'], remaining rows: 1"
+            in result.output
+        )

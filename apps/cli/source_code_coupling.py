@@ -18,11 +18,18 @@ from providers.codemaat.plots.coupling import CouplingViewer
     default=None,
     help="Optional path to save the plot image",
 )
-def coupling(ignore_files, out_file):
+@click.option(
+    "--include-only",
+    type=str,
+    default=None,
+    help="Optional comma-separated glob patterns to include only (e.g. '*.py,**/**/*.js')",
+)
+def coupling(ignore_files, out_file, include_only):
     """Plot coupling graph."""
     return CouplingViewer(repository=create_codemaat_repository()).render(
         out_file=out_file,
         ignore_files=ignore_files,
+        include_only=include_only,
     )
 
 

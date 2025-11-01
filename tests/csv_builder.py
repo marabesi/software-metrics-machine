@@ -15,9 +15,8 @@ class CSVBuilder:
         builder.write_to("/tmp/my.csv")
     """
 
-    headers: List[str] = field(
-        default_factory=lambda: ["entity", "coupled", "degree", "average-revs"]
-    )
+    # headers are required from the caller to make the builder flexible
+    headers: List[str]
     rows: List[List[str]] = field(default_factory=list)
 
     def add_row(self, row: Iterable) -> "CSVBuilder":
@@ -42,8 +41,12 @@ class CSVBuilder:
 
 
 def sample_csv_builder() -> CSVBuilder:
-    """Return a builder pre-populated with the repository's sample CSV content."""
-    b = CSVBuilder()
+    """Return a builder pre-populated with the repository's sample CSV content.
+
+    The headers are provided explicitly so callers see the requirement.
+    """
+    headers = ["entity", "coupled", "degree", "average-revs"]
+    b = CSVBuilder(headers=headers)
     b.extend_rows(
         [
             ["another.txt", "aaaa.mp3", 10, 2],

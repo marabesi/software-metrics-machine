@@ -201,3 +201,25 @@ class TestCodemaatRepository:
                 df = repository.get_entity_ownership([])
 
                 assert 3 == len(df)
+
+    def test_should_filter_by_include_only_in_code_coupling(self):
+        with patch("pathlib.Path.exists", return_value=True):
+            mock_df = pd.DataFrame(
+                {
+                    "entity": [
+                        "src/components/my-file.tsx",
+                        "application/components/my-file.tsx",
+                    ],
+                    "coupled": ["file2.txt", "file3.txt"],
+                    "degree": [10, 2],
+                    "average-revs": [2, 2],
+                }
+            )
+
+            with patch("pandas.read_csv", return_value=mock_df):
+                repository = CodemaatRepository(
+                    configuration=InMemoryConfiguration(store_data=".")
+                )
+                df = repository.get_coupling(filters={"include_only": "src/**/*"})
+
+                assert 1 == len(df)
