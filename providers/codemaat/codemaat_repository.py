@@ -80,7 +80,7 @@ class CodemaatRepository(FileSystemBaseRepository):
                 )
         return data
 
-    def get_entity_ownership(self, authors: List[str] = []):
+    def get_entity_ownership(self, authors: List[str] = [], filters: None = None):
         file_path = Path(f"{self.configuration.store_data}/entity-ownership.csv")
         if not file_path.exists():
             return pd.DataFrame()
@@ -90,6 +90,14 @@ class CodemaatRepository(FileSystemBaseRepository):
             data["short_entity"] = data["entity"].apply(self.__short_ent)
 
         print(f"Found {len(data)} row for entity ownership")
+
+        if filters and filters.get("include_only"):
+            include_patterns: List[str] = filters.get("include_only") or None
+            if include_patterns:
+                data = self.__apply_include_only_filter(
+                    data, include_patterns, column="entity"
+                )
+
         return data[data["author"].isin(authors)] if authors else data
 
     def get_entity_ownership_unique_authors(self):

@@ -30,7 +30,13 @@ from providers.codemaat.plots.entity_ownership import EntityOnershipViewer
     default=None,
     help="Optional comma-separated list of authors to filter by (e.g. 'Jane,John')",
 )
-def entity_ownership(out_file, top, ignore_files, authors):
+@click.option(
+    "--include-only",
+    type=str,
+    default=None,
+    help="Optional comma-separated glob patterns to include only (e.g. '*.py,**/**/*.js')",
+)
+def entity_ownership(out_file, top, ignore_files, authors, include_only):
     """Plot entity (File) ownership."""
     df_repo = create_codemaat_repository()
     viewer = EntityOnershipViewer(repository=df_repo)
@@ -39,6 +45,7 @@ def entity_ownership(out_file, top, ignore_files, authors):
         ignore_files=ignore_files,
         out_file=out_file,
         authors=authors,
+        include_only=include_only,
     )
 
 

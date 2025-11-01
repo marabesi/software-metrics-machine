@@ -20,9 +20,13 @@ class EntityOnershipViewer(BaseViewer, Viewable):
         out_file: str | None = None,
         authors: str | None = None,
         type_churn: str | None = "added",
+        include_only: str | None = None,
     ) -> PlotResult:
         repo = self.repository
-        df = repo.get_entity_ownership(authors.split(",") if authors else [])
+        df = repo.get_entity_ownership(
+            authors.split(",") if authors else [],
+            filters={"include_only": include_only},
+        )
 
         if df is None or df.empty:
             print("Found 0 row for entity ownership")
