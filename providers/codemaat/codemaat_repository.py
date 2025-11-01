@@ -42,36 +42,12 @@ class CodemaatRepository(FileSystemBaseRepository):
             include_patterns: List[str] = filters.get("include_only") or None
             if include_patterns:
                 # normalize patterns list (split by comma if necessary)
-                if isinstance(include_patterns, str):
-                    pats = [p.strip() for p in include_patterns.split(",") if p.strip()]
-                else:
-                    pats = [p.strip() for p in include_patterns if p]
-
-                def matches_any_pattern(fname: str) -> bool:
-                    # use PurePosixPath.match to allow ** patterns; normalize to posix
-                    p = PurePosixPath(fname)
-                    for pat in pats:
-                        try:
-                            if p.match(pat):
-                                return True
-                        except Exception:
-                            # fallback to simple equality or fnmatch
-                            from fnmatch import fnmatch
-
-                            if fnmatch(fname, pat):
-                                return True
-                    return False
-
-                # filter to matching rows
-                mask = data["entity"].apply(lambda x: matches_any_pattern(str(x)))
-                data = data[mask]
-                print(
-                    f"Applied include only file patterns: {pats}, remaining rows: {len(data)}"
+                data = self.__apply_include_only_filter(
+                    data, include_patterns, column="entity"
                 )
-
         return data
 
-    def get_entity_churn(self):
+    def get_entity_churn(self, filters: None = None):
         file_path = Path(f"{self.configuration.store_data}/entity-churn.csv")
         if not file_path.exists():
             return pd.DataFrame()
@@ -79,6 +55,13 @@ class CodemaatRepository(FileSystemBaseRepository):
         data = pd.read_csv(file_path)
         if "entity" in data.columns:
             data["short_entity"] = data["entity"].apply(self.__short_ent)
+
+        if filters and filters.get("include_only"):
+            include_patterns: List[str] = filters.get("include_only") or None
+            if include_patterns:
+                data = self.__apply_include_only_filter(
+                    data, include_patterns, column="entity"
+                )
 
         return data
 
@@ -145,3 +128,30 @@ class CodemaatRepository(FileSystemBaseRepository):
             return val
         s = str(val)
         return s[-12:] if len(s) > 12 else s
+
+    def __apply_include_only_filter(
+        self, data: pd.DataFrame, include_patterns: str, column: str
+    ):
+        pats = [p.strip() for p in include_patterns.split(",") if p.strip()]
+
+        def matches_any_pattern(fname: str) -> bool:
+            p = PurePosixPath(fname)
+            for pat in pats:
+                try:
+                    if p.match(pat):
+                        return True
+                except Exception:
+                    # fallback to simple equality or fnmatch
+                    from fnmatch import fnmatch
+
+                    if fnmatch(fname, pat):
+                        return True
+            return False
+
+        # filter to matching rows
+        mask = data[column].apply(lambda x: matches_any_pattern(str(x)))
+        data = data[mask]
+        print(
+            f"Applied include only file patterns: {pats}, remaining rows: {len(data)}"
+        )
+        return data

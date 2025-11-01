@@ -19,10 +19,11 @@ class EntityChurnViewer(BaseViewer, Viewable):
         top_n: int = 30,
         ignore_files: str | None = None,
         out_file: str | None = None,
+        include_only: str | None = None,
         start_date: str | None = None,
         end_date: str | None = None,
     ) -> PlotResult:
-        df = self.repository.get_entity_churn()
+        df = self.repository.get_entity_churn(filters={"include_only": include_only})
 
         if df is None or df.empty:
             print("No entity churn data available to plot")
