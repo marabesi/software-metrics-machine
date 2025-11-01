@@ -4,6 +4,7 @@ import pytest
 
 from apps.cli.main import main
 
+from tests.csv_builder import CSVBuilder
 from tests.file_handler_for_testing import FileHandlerForTesting
 
 
@@ -25,10 +26,17 @@ class TestCliCodeCouplingCommands:
     def test_can_run_coupling_with_ignored_files(self, cli):
         path_string = cli.data_stored_at
 
-        csv_data = """entity,coupled,degree,average-revs
-another.txt,aaaa.mp3,10,2
-file.ts,brum.ts,10,2
-"""
+        csv_data = (
+            CSVBuilder()
+            .extend_rows(
+                [
+                    ["another.txt", "aaaa.mp3", 10, 2],
+                    ["file.ts", "brum.ts", 10, 2],
+                ]
+            )
+            .build()
+        )
+
         FileHandlerForTesting(path_string).store_file("coupling.csv", csv_data)
         result = cli.runner.invoke(
             main,
