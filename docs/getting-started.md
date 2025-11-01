@@ -141,9 +141,11 @@ Options:
   --help  Show this message and exit.
 
 Commands:
-  codemaat
+  code
+  pipelines
   prs
-  workflows
+  pydriller
+  tools
 ```
 
 ## Ready to go
