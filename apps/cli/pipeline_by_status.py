@@ -4,7 +4,7 @@ from core.infrastructure.repository_factory import create_pipelines_repository
 from core.pipelines.plots.view_pipeline_by_status import ViewPipelineByStatus
 
 
-@click.command()
+@click.command(name="pipeline-by-status", help="Plot pipeline runs by their status")
 @click.option(
     "--out-file",
     "-o",
@@ -29,7 +29,7 @@ from core.pipelines.plots.view_pipeline_by_status import ViewPipelineByStatus
     type=str,
     help="End date (inclusive) in YYYY-MM-DD",
 )
-def workflow_by_status(out_file, workflow_path, start_date, end_date):
+def pipeline_by_status(out_file, workflow_path, start_date, end_date):
     return ViewPipelineByStatus(repository=create_pipelines_repository()).main(
         out_file=out_file,
         workflow_path=workflow_path,
@@ -38,4 +38,4 @@ def workflow_by_status(out_file, workflow_path, start_date, end_date):
     )
 
 
-command = workflow_by_status
+command = pipeline_by_status

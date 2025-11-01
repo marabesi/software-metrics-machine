@@ -5,10 +5,10 @@ from tests.builders import github_workflows_data
 from tests.file_handler_for_testing import FileHandlerForTesting
 
 
-class TestWorkflowsRunsByStatusCliCommands:
+class TestPipelineRunsByStatusCliCommands:
 
     def test_can_run_pipeline_by_status(self, cli):
-        result = cli.runner.invoke(main, ["pipelines", "workflow-by-status", "--help"])
+        result = cli.runner.invoke(main, ["pipelines", "pipeline-by-status", "--help"])
         assert 0 == result.exit_code
         assert "Show this message and exit" in result.output
 
@@ -24,7 +24,7 @@ class TestWorkflowsRunsByStatusCliCommands:
             main,
             [
                 "pipelines",
-                "workflow-by-status",
+                "pipeline-by-status",
                 "--workflow-path",
                 "/workflows/tests.yml",
             ],
@@ -38,7 +38,7 @@ class TestWorkflowsRunsByStatusCliCommands:
             (
                 [
                     "pipelines",
-                    "workflow-by-status",
+                    "pipeline-by-status",
                     "--start-date",
                     "2023-10-01",
                     "--end-date",
