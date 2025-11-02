@@ -13,26 +13,22 @@ class TestCliCodePairingIndexCommands:
         assert result.stderr == ""
 
     def test_calculates_the_number_of_used_commits(self, cli):
-        gitrepo = cli.configuration.git_repository_location
+        repository = cli.configuration.git_repository_location
 
-        re = subprocess.run(
-            ["mkdir", "-p", f"{gitrepo}"], capture_output=True, text=True
+        subprocess.run(["mkdir", "-p", f"{repository}"], capture_output=True, text=True)
+        subprocess.run(
+            ["git", "-C", repository, "init"], capture_output=True, text=True
         )
-        re = subprocess.run(
-            ["git", "-C", gitrepo, "init"], capture_output=True, text=True
-        )
-        re = subprocess.run(
-            ["git", "-C", gitrepo, "branch", "-m", "main"],
+        subprocess.run(
+            ["git", "-C", repository, "branch", "-m", "main"],
             capture_output=True,
             text=True,
         )
-        print(re.stderr, " aaaaaaa  ")
-        print(re.stdout, " aaaaaaa  ")
-        re = subprocess.run(
+        subprocess.run(
             [
                 "git",
                 "-C",
-                gitrepo,
+                repository,
                 "-c",
                 "commit.gpgsign=false",
                 "commit",
@@ -47,11 +43,7 @@ class TestCliCodePairingIndexCommands:
             capture_output=True,
             text=True,
         )
-        print(re.stderr, " bbbbbbb  ")
-        print(re.stdout, " bbbbbbb  ")
-        subprocess.run(["git", "-C", gitrepo, "log"], capture_output=True, text=True)
-        print(re.stderr, "  << >>> ")
-        print(re.stdout, "  << >>> ")
+        subprocess.run(["git", "-C", repository, "log"], capture_output=True, text=True)
 
         result = cli.runner.invoke(
             main,

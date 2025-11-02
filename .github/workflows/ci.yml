@@ -78,7 +78,7 @@ jobs:
       - name: Run pytest
         run: |
           git config --global user.email "you@example.com"
-          git config --global user.name "Your Name"
+          git config --global user.name "Pytest"
           poetry run pytest -vvv --cov=. --cov-report=xml
 
       - name: Save coverage report
