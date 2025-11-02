@@ -58,6 +58,7 @@ module_groups = {
         "apps.cli.source_code_entity_churn",
         "apps.cli.source_code_entity_effort",
         "apps.cli.source_code_entity_ownership",
+        "apps.cli.source_code_pairing_index",
     ],
     "pydriller": [
         "providers.pydriller.cli.change_set",
