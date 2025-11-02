@@ -22,7 +22,9 @@ class TestCliCodePairingIndexCommands:
         assert "Total commits analyzed: 1" in result.output
 
     def test_calculates_the_number_of_paired_commits(self, cli, git):
-        git.commit_two_authors()
+        git.commit().with_author("John Doe", "email@example.com").with_coauthor(
+            "Maria Doe", "maria@example.com"
+        ).execute()
 
         result = cli.runner.invoke(
             main,

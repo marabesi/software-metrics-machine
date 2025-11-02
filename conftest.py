@@ -42,46 +42,6 @@ class GitRepositoryResult:
     def __init__(self, cli):
         self.repository_path = cli.configuration.git_repository_location
 
-    def commit_single_author(self):
-        subprocess.run(
-            [
-                "git",
-                "-C",
-                self.repository_path,
-                "-c",
-                "commit.gpgsign=false",
-                "commit",
-                "--author",
-                "Author Name <email@example.com>",
-                "--allow-empty",
-                "-m",
-                "feat: building app",
-            ],
-            capture_output=True,
-            text=True,
-        )
-
-    def commit_two_authors(self):
-        subprocess.run(
-            [
-                "git",
-                "-C",
-                self.repository_path,
-                "-c",
-                "commit.gpgsign=false",
-                "commit",
-                "--author",
-                "Author Name <email@example.com>",
-                "--allow-empty",
-                "-m",
-                "feat: building app",
-                "-m",
-                "Co-authored-by: dependabot[bot] <49699333+dependabot[bot]@users.noreply.github.com>",
-            ],
-            capture_output=True,
-            text=True,
-        )
-
     def commit(self):
         """Return a small fluent helper to create commits with different authors."""
 
@@ -93,10 +53,15 @@ class GitRepositoryResult:
                 self._author_name = None
                 self._author_email = None
                 self._message = "feat: building app"
+                self.coauthors = []
 
             def with_author(self, name: str, email: str):
                 self._author_name = name
                 self._author_email = email
+                return self
+
+            def with_coauthor(self, name: str, email: str):
+                self.coauthors.append((name, email))
                 return self
 
             def with_message(self, message: str):
@@ -111,12 +76,16 @@ class GitRepositoryResult:
                     "-c",
                     "commit.gpgsign=false",
                     "commit",
+                    "--allow-empty",
                     "--author",
                     f"{self._author_name} <{self._author_email}>",
-                    "--allow-empty",
                     "-m",
                     self._message,
                 ]
+                if len(self.coauthors) > 0:
+                    cmd.append("-m")
+                    for coauthor in self.coauthors:
+                        cmd.append(f"Co-authored-by: {coauthor[0]} <{coauthor[1]}>")
 
                 subprocess.run(cmd, capture_output=True, text=True)
                 return self
