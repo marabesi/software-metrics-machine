@@ -8,5 +8,5 @@ class InMemoryConfiguration(Configuration):
             github_token="fake_token",
             github_repository="fake/repo",
             store_data=store_data,
-            git_repository_location=f"{store_data}/repo",
+            git_repository_location=f"{store_data}/acceptance_repo",
         )

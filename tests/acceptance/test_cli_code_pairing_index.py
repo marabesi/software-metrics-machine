@@ -14,7 +14,6 @@ class TestCliCodePairingIndexCommands:
 
     def test_calculates_the_number_of_used_commits(self, cli):
         gitrepo = cli.configuration.git_repository_location
-        print(f"Git repo location: {gitrepo}")
 
         subprocess.run(["mkdir", "-p", f"{gitrepo}"], capture_output=True, text=True)
         subprocess.run(["git", "-C", gitrepo, "init"], capture_output=True, text=True)

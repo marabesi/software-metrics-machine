@@ -76,7 +76,7 @@ jobs:
           chmod -R 755 "$(pwd)/tmp_test"
 
       - name: Run pytest
-        run: poetry run pytest --cov=. --cov-report=xml
+        run: poetry run pytest -vvv --cov=. --cov-report=xml
 
       - name: Save coverage report
         uses: actions/upload-artifact@v4
