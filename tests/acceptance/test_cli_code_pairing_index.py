@@ -19,16 +19,6 @@ class TestCliCodePairingIndexCommands:
             ["mkdir", "-p", f"{gitrepo}"], capture_output=True, text=True
         )
         re = subprocess.run(
-            ["git", "-C", gitrepo, "config", "user.email", "you@example.com"],
-            capture_output=True,
-            text=True,
-        )
-        re = subprocess.run(
-            ["git", "-C", gitrepo, "config", "user.name", "Your Name"],
-            capture_output=True,
-            text=True,
-        )
-        re = subprocess.run(
             ["git", "-C", gitrepo, "init"], capture_output=True, text=True
         )
         re = subprocess.run(
@@ -46,6 +36,8 @@ class TestCliCodePairingIndexCommands:
                 "-c",
                 "commit.gpgsign=false",
                 "commit",
+                "--author",
+                "Author Name <email@example.com>",
                 "--allow-empty",
                 "-m",
                 "feat: building app",
