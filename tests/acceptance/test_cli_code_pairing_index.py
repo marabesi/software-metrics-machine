@@ -15,14 +15,20 @@ class TestCliCodePairingIndexCommands:
     def test_calculates_the_number_of_used_commits(self, cli):
         gitrepo = cli.configuration.git_repository_location
 
-        subprocess.run(["mkdir", "-p", f"{gitrepo}"], capture_output=True, text=True)
-        subprocess.run(["git", "-C", gitrepo, "init"], capture_output=True, text=True)
-        subprocess.run(
+        re = subprocess.run(
+            ["mkdir", "-p", f"{gitrepo}"], capture_output=True, text=True
+        )
+        re = subprocess.run(
+            ["git", "-C", gitrepo, "init"], capture_output=True, text=True
+        )
+        re = subprocess.run(
             ["git", "-C", gitrepo, "branch", "-m", "main"],
             capture_output=True,
             text=True,
         )
-        subprocess.run(
+        print(re.stderr, " aaaaaaa  ")
+        print(re.stdout, " aaaaaaa  ")
+        re = subprocess.run(
             [
                 "git",
                 "-C",
@@ -39,7 +45,11 @@ class TestCliCodePairingIndexCommands:
             capture_output=True,
             text=True,
         )
+        print(re.stderr, " bbbbbbb  ")
+        print(re.stdout, " bbbbbbb  ")
         subprocess.run(["git", "-C", gitrepo, "log"], capture_output=True, text=True)
+        print(re.stderr, "  << >>> ")
+        print(re.stdout, "  << >>> ")
 
         result = cli.runner.invoke(
             main,
