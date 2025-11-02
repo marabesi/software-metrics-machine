@@ -1,6 +1,7 @@
 from dataclasses import dataclass
 import functools
 import os
+import subprocess
 import pytest
 import sys
 from click.testing import CliRunner
@@ -35,6 +36,65 @@ def cli_only():
     cli_runner = class_()
     with cli_runner.isolated_filesystem():
         yield cli_runner
+
+
+class GitRepositoryResult:
+    def __init__(self, cli):
+        self.repository_path = cli.configuration.git_repository_location
+
+    def commit_single_author(self):
+        subprocess.run(
+            [
+                "git",
+                "-C",
+                self.repository_path,
+                "-c",
+                "commit.gpgsign=false",
+                "commit",
+                "--author",
+                "Author Name <email@example.com>",
+                "--allow-empty",
+                "-m",
+                "feat: building app",
+            ],
+            capture_output=True,
+            text=True,
+        )
+
+    def commit_two_authors(self):
+        subprocess.run(
+            [
+                "git",
+                "-C",
+                self.repository_path,
+                "-c",
+                "commit.gpgsign=false",
+                "commit",
+                "--author",
+                "Author Name <email@example.com>",
+                "--allow-empty",
+                "-m",
+                "feat: building app",
+                "-m",
+                "Co-authored-by: dependabot[bot] <49699333+dependabot[bot]@users.noreply.github.com>",
+            ],
+            capture_output=True,
+            text=True,
+        )
+
+
+@pytest.fixture
+def git(cli):
+    repository = cli.configuration.git_repository_location
+
+    subprocess.run(["mkdir", "-p", f"{repository}"], capture_output=True, text=True)
+    subprocess.run(["git", "-C", repository, "init"], capture_output=True, text=True)
+    subprocess.run(
+        ["git", "-C", repository, "branch", "-m", "main"],
+        capture_output=True,
+        text=True,
+    )
+    yield GitRepositoryResult(cli)
 
 
 @dataclass

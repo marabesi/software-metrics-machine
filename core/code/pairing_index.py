@@ -24,6 +24,8 @@ class PairingIndex:
                 paired_commits=0,
             )
 
+        print(f"Total commits with co-authors: {paired_commits}")
+
         index = (paired_commits / list_of_commits) * 100
         pairing_index = float(f"{index:.2f}")
 
