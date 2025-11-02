@@ -5,6 +5,9 @@ from providers.codemaat.plots.entity_churn import EntityChurnViewer
 from providers.codemaat.plots.entity_effort import EntityEffortViewer
 from providers.codemaat.plots.entity_ownership import EntityOnershipViewer
 from providers.codemaat.codemaat_repository import CodemaatRepository
+from core.code.pairing_index import PairingIndex
+from providers.pydriller.commit_traverser import CommitTraverser
+import typing
 
 pn.extension("tabulator")
 
@@ -80,6 +83,69 @@ def source_code_section(
                 ignore_files=ignore_pattern_files,
                 include_only=include_files,
             ).plot
+        )
+
+    def render_pairing_index_card():
+        """Render a small card showing the pairing index and the last 20 commits.
+
+        The commit list prefers commits whose message contains the exact phrase
+        'implemented the feature in the cli' (case-insensitive). If none match,
+        the card falls back to the last 20 commits in the repository.
+        """
+        pi = PairingIndex(repository=repository)
+        result = pi.get_pairing_index()
+
+        # Attempt to read pairing index from either of the possible keys
+        pairing_val = None
+        if isinstance(result, dict):
+            pairing_val = (
+                result.get("pairing_index")
+                or result.get("pairing_index_percentage")
+                or result.get("pairing_index_percentage")
+            )
+
+        pairing_text = (
+            f"**Pairing index:** {pairing_val}%"
+            if pairing_val is not None
+            else "Pairing index: n/a"
+        )
+
+        # Get commit list from traverser
+        commits_data: typing.List[typing.Dict[str, str]] = []
+        try:
+            traverser = CommitTraverser(configuration=repository.configuration)
+            traverse_result = traverser.traverse_commits()
+            commits_iter = (
+                traverse_result.get("commits")
+                if isinstance(traverse_result, dict)
+                else traverse_result
+            )
+            commits_list = list(commits_iter)
+
+            # Filter by explicit phrase first
+            phrase = "implemented the feature in the cli"
+            filtered = [c for c in commits_list if phrase in ((c.msg or "").lower())]
+
+            source_list = filtered if filtered else commits_list[-20:]
+
+            # Prepare rows newest-first
+            for c in reversed(source_list[-20:]):
+                author = getattr(getattr(c, "author", None), "name", "") or ""
+                commits_data.append(
+                    {
+                        "author": author,
+                        "msg": c.msg or "",
+                        "hash": getattr(c, "hash", ""),
+                    }
+                )
+        except Exception:
+            # On errors, keep commits_data empty
+            commits_data = []
+
+        return pn.Column(
+            "### Pairing Index",
+            pn.pane.Markdown(pairing_text),
+            sizing_mode="stretch_width",
         )
 
     type_churn = pn.widgets.Select(
@@ -169,6 +235,7 @@ def source_code_section(
             ),
             sizing_mode="stretch_width",
         ),
+        pn.Row(pn.bind(render_pairing_index_card)),
         pn.Row(
             pn.bind(
                 plot_code_coupling_with_controls,
