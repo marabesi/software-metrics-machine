@@ -12,7 +12,7 @@ class TestCliCodePairingIndexCommands:
         assert result.stderr == ""
 
     def test_calculates_the_number_of_used_commits(self, cli, git):
-        git.commit_single_author()
+        git.commit().with_author("John Doe", "email@example.com").execute()
 
         result = cli.runner.invoke(
             main,

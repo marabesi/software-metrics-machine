@@ -82,6 +82,47 @@ class GitRepositoryResult:
             text=True,
         )
 
+    def commit(self):
+        """Return a small fluent helper to create commits with different authors."""
+
+        repo = self.repository_path
+
+        class CommitMaker:
+            def __init__(self, repo_path: str):
+                self.repo_path = repo_path
+                self._author_name = None
+                self._author_email = None
+                self._message = "feat: building app"
+
+            def with_author(self, name: str, email: str):
+                self._author_name = name
+                self._author_email = email
+                return self
+
+            def with_message(self, message: str):
+                self._message = message
+                return self
+
+            def execute(self):
+                cmd = [
+                    "git",
+                    "-C",
+                    self.repo_path,
+                    "-c",
+                    "commit.gpgsign=false",
+                    "commit",
+                    "--author",
+                    f"{self._author_name} <{self._author_email}>",
+                    "--allow-empty",
+                    "-m",
+                    self._message,
+                ]
+
+                subprocess.run(cmd, capture_output=True, text=True)
+                return self
+
+        return CommitMaker(repo)
+
 
 @pytest.fixture
 def git(cli):
