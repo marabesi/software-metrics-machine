@@ -1,7 +1,5 @@
-from unittest.mock import patch
 from apps.cli.main import main
-from core.code_types import TraverserResult
-from tests.commit_builder import CommitBuilder
+import subprocess
 
 
 class TestCliCodePairingIndexCommands:
@@ -15,21 +13,38 @@ class TestCliCodePairingIndexCommands:
         assert result.stderr == ""
 
     def test_calculates_the_number_of_used_commits(self, cli):
-        with patch(
-            "providers.pydriller.commit_traverser.CommitTraverser.traverse_commits"
-        ) as mock_run:
+        gitrepo = cli.configuration.git_repository_location
+        print(f"Git repo location: {gitrepo}")
 
-            list_of_commits = [
-                CommitBuilder().with_author("Alice").with_msg("Fix bug").build()
-            ]
+        subprocess.run(["mkdir", "-p", f"{gitrepo}"], capture_output=True, text=True)
+        subprocess.run(["git", "-C", gitrepo, "init"], capture_output=True, text=True)
+        subprocess.run(
+            ["git", "-C", gitrepo, "branch", "-m", "main"],
+            capture_output=True,
+            text=True,
+        )
+        subprocess.run(
+            [
+                "git",
+                "-C",
+                gitrepo,
+                "-c",
+                "commit.gpgsign=false",
+                "commit",
+                "--allow-empty",
+                "-m",
+                "feat: building app",
+                "-m",
+                "Co-authored-by: dependabot[bot] <49699333+dependabot[bot]@users.noreply.github.com>",
+            ],
+            capture_output=True,
+            text=True,
+        )
+        subprocess.run(["git", "-C", gitrepo, "log"], capture_output=True, text=True)
 
-            mock_run.return_value = TraverserResult(
-                total_analyzed_commits=1, commits=list_of_commits, paired_commits=0
-            )
+        result = cli.runner.invoke(
+            main,
+            ["code", "pairing-index"],
+        )
 
-            result = cli.runner.invoke(
-                main,
-                ["code", "pairing-index"],
-            )
-
-            assert "Total commits analyzed: 1" in result.output
+        assert "Total commits analyzed: 1" in result.output

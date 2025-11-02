@@ -90,6 +90,10 @@ class TestPairingIndex:
         "commits, expected",
         [
             (
+                [],
+                {"paired_commits": 0, "pairing_index": 0.0},
+            ),
+            (
                 [CommitBuilder().with_author("Alice").with_msg("Fix bug").build()],
                 {"paired_commits": 0, "pairing_index": 0.0},
             ),

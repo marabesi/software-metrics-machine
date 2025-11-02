@@ -11,10 +11,18 @@ class PairingIndex:
 
     def get_pairing_index(self) -> PairingIndexResult:
         traverse = self.traverser.traverse_commits()
-        list_of_commits = len(traverse["commits"])
+        total = traverse["total_analyzed_commits"]
+        list_of_commits = total
         paired_commits = traverse["paired_commits"]
 
         print(f"Total commits analyzed: {list_of_commits}")
+
+        if list_of_commits == 0:
+            return PairingIndexResult(
+                pairing_index=0.0,
+                total_analyzed_commits=list_of_commits,
+                paired_commits=0,
+            )
 
         index = (paired_commits / list_of_commits) * 100
         pairing_index = float(f"{index:.2f}")
