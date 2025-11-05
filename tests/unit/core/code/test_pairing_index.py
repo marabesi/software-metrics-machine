@@ -121,6 +121,15 @@ class TestPairingIndex:
                 ],
                 {"paired_commits": 1, "pairing_index": 100.0},
             ),
+            (
+                [
+                    CommitBuilder()
+                    .with_author("Maria")
+                    .with_date("2024-05-01 12:00:00 +0000")
+                    .build(),
+                ],
+                {"paired_commits": 0, "pairing_index": 0.0},
+            ),
         ],
     )
     def test_calculates_pairing_index(self, commits, expected):

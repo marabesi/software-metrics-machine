@@ -9,8 +9,12 @@ class PairingIndex:
         self.configuration: Configuration = repository.configuration
         self.traverser = CommitTraverser(configuration=self.configuration)
 
-    def get_pairing_index(self) -> PairingIndexResult:
-        traverse = self.traverser.traverse_commits()
+    def get_pairing_index(
+        self, start_date: str | None = None, end_date: str | None = None
+    ) -> PairingIndexResult:
+        traverse = self.traverser.traverse_commits(
+            start_date=start_date, end_date=end_date
+        )
         total = traverse["total_analyzed_commits"]
         list_of_commits = total
         paired_commits = traverse["paired_commits"]

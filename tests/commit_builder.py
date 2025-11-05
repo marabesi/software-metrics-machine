@@ -22,6 +22,7 @@ class CommitBuilder:
         self._author = author or "someone"
         self._msg = msg or "initial commit"
         self._hash = hash
+        self.date = None
 
     def with_author(self, author: str) -> "CommitBuilder":
         self._author = author
@@ -33,6 +34,10 @@ class CommitBuilder:
 
     def with_hash(self, hash_value: str) -> "CommitBuilder":
         self._hash = hash_value
+        return self
+
+    def with_date(self, date: str) -> "CommitBuilder":
+        self.date = date
         return self
 
     def _generate_hash(self) -> str:

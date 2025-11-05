@@ -85,7 +85,7 @@ def source_code_section(
             ).plot
         )
 
-    def render_pairing_index_card():
+    def render_pairing_index_card(date_range_picker):
         """Render a small card showing the pairing index and the last 20 commits.
 
         The commit list prefers commits whose message contains the exact phrase
@@ -93,7 +93,9 @@ def source_code_section(
         the card falls back to the last 20 commits in the repository.
         """
         pi = PairingIndex(repository=repository)
-        result = pi.get_pairing_index()
+        result = pi.get_pairing_index(
+            start_date=date_range_picker[0], end_date=date_range_picker[1]
+        )
 
         # Attempt to read pairing index from either of the possible keys
         pairing_val = None
@@ -235,7 +237,7 @@ def source_code_section(
             ),
             sizing_mode="stretch_width",
         ),
-        pn.Row(pn.bind(render_pairing_index_card)),
+        pn.Row(pn.bind(render_pairing_index_card, start_end_date_picker.param.value)),
         pn.Row(
             pn.bind(
                 plot_code_coupling_with_controls,

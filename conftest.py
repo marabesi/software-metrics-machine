@@ -54,6 +54,7 @@ class GitRepositoryResult:
                 self._author_email = None
                 self._message = "feat: building app"
                 self.coauthors = []
+                self.date = None
 
             def with_author(self, name: str, email: str):
                 self._author_name = name
@@ -62,6 +63,10 @@ class GitRepositoryResult:
 
             def with_coauthor(self, name: str, email: str):
                 self.coauthors.append((name, email))
+                return self
+
+            def with_date(self, date):
+                self.date = date
                 return self
 
             def with_message(self, message: str):
@@ -82,6 +87,8 @@ class GitRepositoryResult:
                     "-m",
                     self._message,
                 ]
+                if self.date:
+                    cmd.extend(["--date", self.date])
                 if len(self.coauthors) > 0:
                     cmd.append("-m")
                     for coauthor in self.coauthors:

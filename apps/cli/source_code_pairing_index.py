@@ -7,8 +7,22 @@ from core.infrastructure.repository_factory import create_codemaat_repository
 @click.command(
     name="pairing-index", help="Calculate pairing index for a git repository"
 )
-def pairing_index():
-    return PairingIndex(repository=create_codemaat_repository()).get_pairing_index()
+@click.option(
+    "--start-date",
+    type=str,
+    default=None,
+    help="Filter commits created on or after this date (ISO 8601)",
+)
+@click.option(
+    "--end-date",
+    type=str,
+    default=None,
+    help="Filter commits created on or before this date (ISO 8601)",
+)
+def pairing_index(start_date: str | None, end_date: str | None):
+    return PairingIndex(repository=create_codemaat_repository()).get_pairing_index(
+        start_date=start_date, end_date=end_date
+    )
 
 
 command = pairing_index

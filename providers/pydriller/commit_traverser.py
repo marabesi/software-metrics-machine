@@ -1,4 +1,5 @@
 import re
+import pandas as pd
 from pydriller import Repository
 from typing import Iterable, Optional, Tuple
 from core.code_types import TraverserResult
@@ -13,6 +14,8 @@ class CommitTraverser:
         self,
         selected_authors: Optional[Iterable[str]] = None,
         include_coauthors: bool = False,
+        start_date: Optional[str] = None,
+        end_date: Optional[str] = None,
     ) -> TraverserResult:
         """Analyzes a Git repository to calculate a "pairing index".
 
@@ -35,8 +38,16 @@ class CommitTraverser:
 
         print(f"Analyzing repository at: {repo_path}\n")
 
+        if start_date:
+            start_date = pd.to_datetime(f"{start_date} 00:00:00").to_pydatetime()
+
+        if end_date:
+            end_date = pd.to_datetime(f"{end_date} 00:00:00").to_pydatetime()
+
         # We traverse the commits in the repository
-        commits_from_repo = Repository(repo_path).traverse_commits()
+        commits_from_repo = Repository(
+            path_to_repo=repo_path, since=start_date, to=end_date
+        ).traverse_commits()
         for commit in commits_from_repo:
             # Determine whether this commit should be included based on selected_authors
             author_name = getattr(commit.author, "name", "") or ""

@@ -32,3 +32,31 @@ class TestCliCodePairingIndexCommands:
         )
 
         assert "Total commits with co-authors: 1" in result.output
+
+    def test_calculates_the_number_of_used_commits_contrainted_by_start_date(
+        self, cli, git
+    ):
+        git.commit().with_author("John Doe", "email@example.com").with_date(
+            "2025-11-05 10:00:00 +0000"
+        ).execute()
+
+        result = cli.runner.invoke(
+            main,
+            ["code", "pairing-index", "--start-date", "2026-01-01"],
+        )
+
+        assert "Total commits analyzed: 0" in result.output
+
+    def test_calculates_the_number_of_used_commits_contrainted_by_end_date(
+        self, cli, git
+    ):
+        git.commit().with_author("John Doe", "email@example.com").with_date(
+            "2025-11-05 10:00:00 +0000"
+        ).execute()
+
+        result = cli.runner.invoke(
+            main,
+            ["code", "pairing-index", "--end-date", "2024-01-01"],
+        )
+
+        assert "Total commits analyzed: 0" in result.output
