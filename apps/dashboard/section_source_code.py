@@ -21,6 +21,10 @@ def source_code_section(
     pre_selected_values,
     top_entries,
 ):
+    authors_text = pn.widgets.TextInput(
+        name="Authors filter", placeholder="comma-separated emails", value=""
+    )
+
     def update_ignore_pattern(event):
         ignore_pattern_files.value = event.new
 
@@ -85,7 +89,7 @@ def source_code_section(
             ).plot
         )
 
-    def render_pairing_index_card(date_range_picker):
+    def render_pairing_index_card(date_range_picker, authors: str | None = None):
         """Render a small card showing the pairing index and the last 20 commits.
 
         The commit list prefers commits whose message contains the exact phrase
@@ -94,7 +98,9 @@ def source_code_section(
         """
         pi = PairingIndex(repository=repository)
         result = pi.get_pairing_index(
-            start_date=date_range_picker[0], end_date=date_range_picker[1]
+            start_date=date_range_picker[0],
+            end_date=date_range_picker[1],
+            authors=authors,
         )
 
         # Attempt to read pairing index from either of the possible keys
@@ -145,7 +151,7 @@ def source_code_section(
             commits_data = []
 
         return pn.Column(
-            "### Pairing Index",
+            authors_text,
             pn.pane.Markdown(pairing_text),
             sizing_mode="stretch_width",
         )
@@ -237,7 +243,16 @@ def source_code_section(
             ),
             sizing_mode="stretch_width",
         ),
-        pn.Row(pn.bind(render_pairing_index_card, start_end_date_picker.param.value)),
+        pn.Row(
+            pn.Column(
+                "### Pairing Index",
+                pn.bind(
+                    render_pairing_index_card,
+                    start_end_date_picker.param.value,
+                    authors_text.param.value,
+                ),
+            ),
+        ),
         pn.Row(
             pn.bind(
                 plot_code_coupling_with_controls,
