@@ -1,4 +1,5 @@
 import holoviews as hv
+from bokeh.models import HoverTool
 import pandas as pd
 from typing import Callable, Iterable
 
@@ -53,65 +54,61 @@ def build_barchart(
 
     # Hook to ensure hover tooltips contain the data columns being plotted
     def _ensure_hover_tooltips(plot, element):
-        try:
-            state = getattr(plot, "state", None)
-            if state is None:
-                return
-            from bokeh.models import HoverTool
+        state = getattr(plot, "state", None)
+        if state is None:
+            return
 
-            # desired tooltips based on the dataframe and provided keys
-            desired = []
-            # show full entity if available
-            if "entity" in df.columns:
-                desired.append(("entity", "@entity"))
-            # always show the x field (could be 'short_entity')
-            if x:
-                desired.append((str(x), "@" + str(x)))
-            # include the grouping column when present
-            if group:
-                desired.append((str(group), "@" + str(group)))
-            # show the y field
-            if y:
-                desired.append((str(y), "@" + str(y)))
+        # desired tooltips based on the dataframe and provided keys
+        desired = []
+        # show full entity if available
+        if "entity" in df.columns:
+            desired.append(("entity", "@entity"))
+        # always show the x field (could be 'short_entity')
+        if x:
+            desired.append((str(x), "@" + str(x)))
+        # include the grouping column when present
+        if group:
+            desired.append((str(group), "@" + str(group)))
+        # show the y field
+        if y:
+            desired.append((str(y), "@" + str(y)))
 
-            # find existing HoverTool(s)
-            tools = getattr(state, "tools", []) or []
-            hover_tools = [t for t in tools if isinstance(t, HoverTool)]
+        # find existing HoverTool(s)
+        tools = getattr(state, "tools", []) or []
+        hover_tools = [t for t in tools if isinstance(t, HoverTool)]
 
-            if not hover_tools:
-                # create a new HoverTool with our desired tooltips
-                hover = HoverTool(tooltips=desired)
-                tools.append(hover)
-                return
+        if not hover_tools:
+            # create a new HoverTool with our desired tooltips
+            hover = HoverTool(tooltips=desired)
+            tools.append(hover)
+            return
 
-            # merge desired tooltips into the primary HoverTool, preserving existing extras
-            primary = hover_tools[0]
-            existing = getattr(primary, "tooltips", []) or []
-            # normalize existing into list of tuples
-            if isinstance(existing, dict):
-                existing_items = list(existing.items())
-            else:
-                existing_items = list(existing)
+        # merge desired tooltips into the primary HoverTool, preserving existing extras
+        primary = hover_tools[0]
+        existing = getattr(primary, "tooltips", []) or []
+        # normalize existing into list of tuples
+        if isinstance(existing, dict):
+            existing_items = list(existing.items())
+        else:
+            existing_items = list(existing)
 
-            merged = []
-            seen = set()
-            for k, v in desired:
-                ident = (str(k), str(v))
-                if ident in seen:
-                    continue
-                merged.append((k, v))
-                seen.add(ident)
+        merged = []
+        seen = set()
+        for k, v in desired:
+            ident = (str(k), str(v))
+            if ident in seen:
+                continue
+            merged.append((k, v))
+            seen.add(ident)
 
-            for k, v in existing_items:
-                ident = (str(k), str(v))
-                if ident in seen:
-                    continue
-                merged.append((k, v))
-                seen.add(ident)
+        for k, v in existing_items:
+            ident = (str(k), str(v))
+            if ident in seen:
+                continue
+            merged.append((k, v))
+            seen.add(ident)
 
-            primary.tooltips = merged
-        except Exception:
-            pass
+        primary.tooltips = merged
 
     if group and stacked:
         bars = hv.Bars(df, [x, group], y).opts(

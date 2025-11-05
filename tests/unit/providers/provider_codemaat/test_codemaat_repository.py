@@ -58,7 +58,7 @@ class TestCodemaatRepository:
 
                 assert 0 == len(df["date"])
 
-    def test_long_file_names_should_short_to_12_chars_entity_churn(self):
+    def test_long_file_names_should_short_to_20_chars_entity_churn(self):
         with patch("pathlib.Path.exists", return_value=True):
             mock_df = pd.DataFrame(
                 {
@@ -75,7 +75,7 @@ class TestCodemaatRepository:
                 )
                 df = repository.get_entity_churn()
 
-                assert "/my-file.tsx" == df.iloc[0]["short_entity"]
+                assert "mponents/my-file.tsx" == df.iloc[0]["short_entity"]
                 assert "file2.txt" == df.iloc[1]["short_entity"]
                 assert "file3.txt" == df.iloc[2]["short_entity"]
 
@@ -164,7 +164,7 @@ class TestCodemaatRepository:
 
                 assert 1 == len(df)
 
-    def test_long_file_names_should_short_to_12_chars_entity_ownership(self):
+    def test_long_file_names_should_short_to_20_chars_entity_ownership(self):
         with patch("pathlib.Path.exists", return_value=True):
             mock_df = pd.DataFrame(
                 {
@@ -181,7 +181,7 @@ class TestCodemaatRepository:
                 )
                 df = repository.get_entity_ownership()
 
-                assert "/my-file.tsx" == df.iloc[0]["short_entity"]
+                assert "mponents/my-file.tsx" == df.iloc[0]["short_entity"]
                 assert "file2.txt" == df.iloc[1]["short_entity"]
                 assert "file3.txt" == df.iloc[2]["short_entity"]
 

@@ -147,7 +147,7 @@ class CodemaatRepository(FileSystemBaseRepository):
         if val is None:
             return val
         s = str(val)
-        return s[-12:] if len(s) > 12 else s
+        return s[-20:] if len(s) > 20 else s
 
     def __apply_include_only_filter(
         self, data: pd.DataFrame, include_patterns: str, column: str
