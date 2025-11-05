@@ -60,3 +60,14 @@ class TestCliCodePairingIndexCommands:
         )
 
         assert "Total commits analyzed: 0" in result.output
+
+    def test_cli_filters_commits_by_author_flag(self, cli, git):
+        git.commit().with_author("John Doe", "john@example.com").execute()
+        git.commit().with_author("Alice", "alice@example.com").execute()
+
+        result = cli.runner.invoke(
+            main,
+            ["code", "pairing-index", "--authors", "john@example.com"],
+        )
+
+        assert "Total commits analyzed: 1" in result.output

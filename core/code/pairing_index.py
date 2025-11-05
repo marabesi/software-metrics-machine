@@ -1,3 +1,5 @@
+from typing import Iterable, Optional
+
 from core.code_types import PairingIndexResult
 from core.infrastructure.configuration.configuration import Configuration
 from providers.codemaat.codemaat_repository import CodemaatRepository
@@ -10,10 +12,28 @@ class PairingIndex:
         self.traverser = CommitTraverser(configuration=self.configuration)
 
     def get_pairing_index(
-        self, start_date: str | None = None, end_date: str | None = None
+        self,
+        selected_authors: Optional[Iterable[str]] = None,
+        start_date: str | None = None,
+        end_date: str | None = None,
+        authors: str | None = None,
     ) -> PairingIndexResult:
+        """Compute pairing index, optionally filtering commits to only those by
+        `selected_authors` (name or email, case-insensitive)."""
+
+        if authors:
+            parsed = [a.strip() for a in authors.split(",") if a.strip()]
+            if parsed:
+                if selected_authors:
+                    selected_authors = list(selected_authors) + parsed
+                else:
+                    selected_authors = parsed
+
+        if selected_authors:
+            print(f"Filtering commits to authors: {list(selected_authors)}")
+
         traverse = self.traverser.traverse_commits(
-            start_date=start_date, end_date=end_date
+            selected_authors=selected_authors, start_date=start_date, end_date=end_date
         )
         total = traverse["total_analyzed_commits"]
         list_of_commits = total

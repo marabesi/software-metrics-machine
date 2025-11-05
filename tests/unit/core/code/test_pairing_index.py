@@ -152,3 +152,25 @@ class TestPairingIndex:
             result = pairing_index.get_pairing_index()
 
             assert index == result["pairing_index"]
+
+    def test_respects_selected_authors_filter(self):
+        with patch(
+            "providers.pydriller.commit_traverser.CommitTraverser.traverse_commits"
+        ) as mock_run:
+            mock_run.return_value = TraverserResult(
+                total_analyzed_commits=2, commits=[], paired_commits=1
+            )
+
+            repository = CodemaatRepository(configuration=InMemoryConfiguration("."))
+            pairing_index = PairingIndex(repository=repository)
+
+            authors = ["alice@example.com", "bob"]
+            result = pairing_index.get_pairing_index(selected_authors=authors)
+
+            mock_run.assert_called_once()
+            called_kwargs = mock_run.call_args.kwargs
+            assert "selected_authors" in called_kwargs
+            assert list(called_kwargs["selected_authors"]) == authors
+
+            assert result["total_analyzed_commits"] == 2
+            assert result["paired_commits"] == 1
