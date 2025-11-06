@@ -1,7 +1,7 @@
 from fastapi import FastAPI
 from fastapi import Query
 from fastapi.responses import JSONResponse
-from typing import Optional, Any
+from typing import Optional
 
 from core.infrastructure.repository_factory import (
     create_codemaat_repository,
@@ -35,27 +35,6 @@ from core.prs.plots.view_summary import PrViewSummary
 app = FastAPI()
 
 
-def _coerce_result(res: Any) -> Any:
-    """Make a CLI result JSON-serializable where possible.
-
-    - dict/list/primitives are returned as-is
-    - objects with __dict__ are returned as dicts
-    - otherwise convert to str()
-    """
-    if res is None:
-        return None
-    if isinstance(res, (dict, list, str, int, float, bool)):
-        return res
-    try:
-        # try typical dataclass-like or typed dict conversion
-        return dict(res)
-    except Exception:
-        try:
-            return res.__dict__
-        except Exception:
-            return str(res)
-
-
 source_code_tags = ["Source code"]
 pipeline_tags = ["Pipeline"]
 pull_request_tags = ["Pull Requests"]
@@ -71,7 +50,7 @@ def pairing_index(
     result = pi.get_pairing_index(
         start_date=start_date, end_date=end_date, authors=authors
     )
-    return JSONResponse(content={"result": _coerce_result(result)})
+    return JSONResponse(content=result)
 
 
 @app.get("/code/entity-churn", tags=source_code_tags)
@@ -79,8 +58,15 @@ def entity_churn(
     start_date: Optional[str] = Query(None), end_date: Optional[str] = Query(None)
 ):
     viewer = EntityChurnViewer(repository=create_codemaat_repository())
-    viewer.render(out_file=None, top=None, ignore_files=None, include_only=None)
-    return JSONResponse(content={"result": "ok"})
+    result = viewer.render(
+        out_file=None,
+        top_n=None,
+        ignore_files=None,
+        include_only=None,
+        start_date=start_date,
+        end_date=end_date,
+    )
+    return JSONResponse(result.data.to_dict(orient="records"))
 
 
 @app.get("/code/code-churn", tags=source_code_tags)
@@ -90,7 +76,7 @@ def code_churn(
     result = CodeChurnViewer(repository=create_codemaat_repository()).render(
         out_file=None, start_date=start_date, end_date=end_date
     )
-    return JSONResponse(content={"result": _coerce_result(result)})
+    return JSONResponse(result.data.to_dict(orient="records"))
 
 
 @app.get("/code/coupling", tags=source_code_tags)
@@ -100,7 +86,7 @@ def code_coupling(
     result = CouplingViewer(repository=create_codemaat_repository()).render(
         out_file=None, ignore_files=None, include_only=None
     )
-    return JSONResponse(content={"result": _coerce_result(result)})
+    return JSONResponse(result.data.to_dict(orient="records"))
 
 
 @app.get("/code/entity-effort", tags=source_code_tags)
@@ -108,8 +94,10 @@ def entity_effort(
     start_date: Optional[str] = Query(None), end_date: Optional[str] = Query(None)
 ):
     viewer = EntityEffortViewer(repository=create_codemaat_repository())
-    viewer.render_treemap(top_n=30, ignore_files=None, out_file=None, include_only=None)
-    return JSONResponse(content={"result": "ok"})
+    result = viewer.render_treemap(
+        top_n=30, ignore_files=None, out_file=None, include_only=None
+    )
+    return JSONResponse(result.data.to_dict(orient="records"))
 
 
 @app.get("/code/entity-ownership", tags=source_code_tags)
@@ -117,10 +105,10 @@ def entity_ownership(
     start_date: Optional[str] = Query(None), end_date: Optional[str] = Query(None)
 ):
     viewer = EntityOnershipViewer(repository=create_codemaat_repository())
-    viewer.render(
+    result = viewer.render(
         top_n=None, ignore_files=None, out_file=None, authors=None, include_only=None
     )
-    return JSONResponse(content={"result": "ok"})
+    return JSONResponse(result.data.to_dict(orient="records"))
 
 
 @app.get("/pipelines/by-status", tags=pipeline_tags)
@@ -131,7 +119,7 @@ def pipelines_by_status(
     result = view.main(
         out_file=None, workflow_path=None, start_date=start_date, end_date=end_date
     )
-    return JSONResponse(content={"result": _coerce_result(result)})
+    return JSONResponse(result.data.to_dict(orient="records"))
 
 
 @app.get("/pipelines/jobs-by-status", tags=pipeline_tags)
@@ -150,7 +138,7 @@ def pipeline_jobs_by_status(
         end_date=end_date,
         force_all_jobs=False,
     )
-    return JSONResponse(content={"result": _coerce_result(result)})
+    return JSONResponse(result.data.to_dict(orient="records"))
 
 
 @app.get("/pipelines/summary", tags=pipeline_tags)
@@ -159,10 +147,10 @@ def pipeline_summary(
 ):
     view = WorkflowRunSummary(repository=create_pipelines_repository())
     # print_summary prints to stdout; call method and return ok
-    view.print_summary(
+    result = view.print_summary(
         max_workflows=10, start_date=start_date, end_date=end_date, output_format="json"
     )
-    return JSONResponse(content={"result": "ok"})
+    return JSONResponse(result.data.to_dict(orient="records"))
 
 
 @app.get("/pipelines/runs-duration", tags=pipeline_tags)
@@ -178,7 +166,7 @@ def pipeline_runs_duration(
         max_runs=100,
         raw_filters=None,
     )
-    return JSONResponse(content={"result": _coerce_result(result)})
+    return JSONResponse(result.data.to_dict(orient="records"))
 
 
 @app.get("/pipelines/deployment-frequency", tags=pipeline_tags)
@@ -193,7 +181,7 @@ def pipeline_deployment_frequency(
         start_date=start_date,
         end_date=end_date,
     )
-    return JSONResponse(content={"result": _coerce_result(result)})
+    return JSONResponse(result.data.to_dict(orient="records"))
 
 
 @app.get("/pipelines/runs-by", tags=pipeline_tags)
@@ -210,7 +198,7 @@ def pipeline_runs_by(
         raw_filters=None,
         include_defined_only=False,
     )
-    return JSONResponse(content={"result": _coerce_result(result)})
+    return JSONResponse(result.data.to_dict(orient="records"))
 
 
 @app.get("/pipelines/jobs-average-time", tags=pipeline_tags)
@@ -230,7 +218,7 @@ def pipeline_jobs_average_time(
         job_name=None,
         pipeline_raw_filters=None,
     )
-    return JSONResponse(content={"result": _coerce_result(result)})
+    return JSONResponse(content={"result": result})
 
 
 @app.get("/pull-requests/summary", tags=pull_request_tags)
@@ -241,4 +229,4 @@ def pull_request_summary(
     result = view.main(
         csv=None, start_date=start_date, end_date=end_date, output_format="json"
     )
-    return JSONResponse(content={"result": _coerce_result(result)})
+    return JSONResponse(content={"result": result})
