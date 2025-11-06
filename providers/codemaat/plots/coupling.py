@@ -13,6 +13,7 @@ from bokeh.models import (
 from bokeh.palettes import Viridis256, Category20_20
 
 from core.infrastructure.base_viewer import BaseViewer, PlotResult
+from core.infrastructure.logger import Logger
 from core.infrastructure.viewable import Viewable
 from providers.codemaat.codemaat_repository import CodemaatRepository
 
@@ -20,6 +21,7 @@ from providers.codemaat.codemaat_repository import CodemaatRepository
 class CouplingViewer(BaseViewer, Viewable):
     def __init__(self, repository: CodemaatRepository):
         self.repository = repository
+        self.logger = Logger(__name__).get_logger()
 
     def render(
         self,

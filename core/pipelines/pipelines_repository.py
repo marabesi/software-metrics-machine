@@ -5,6 +5,7 @@ from typing import List, Iterable
 import pandas as pd
 from core.infrastructure.file_system_base_repository import FileSystemBaseRepository
 from core.infrastructure.configuration.configuration import Configuration
+from core.infrastructure.logger import Logger
 from core.pipelines.pipelines_types import DeploymentFrequency, PipelineJob, PipelineRun
 
 
@@ -12,12 +13,13 @@ class PipelinesRepository(FileSystemBaseRepository):
 
     def __init__(self, configuration: Configuration):
         super().__init__(configuration=configuration)
+        self.logger = Logger(__name__).get_logger()
         self.pipeline_file = "workflows.json"
         self.jobs_file = "jobs.json"
         self.all_runs: List[PipelineRun] = []
         self.all_jobs: List[PipelineJob] = []
 
-        print("Loading runs")
+        self.logger.info("Loading runs")
 
         contents = super().read_file_if_exists(self.pipeline_file)
         if contents is None:
