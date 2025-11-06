@@ -56,7 +56,12 @@ def _coerce_result(res: Any) -> Any:
             return str(res)
 
 
-@app.get("/code/pairing-index")
+source_code_tags = ["Source code"]
+pipeline_tags = ["Pipeline"]
+pull_request_tags = ["Pull Requests"]
+
+
+@app.get("/code/pairing-index", tags=source_code_tags)
 def pairing_index(
     start_date: Optional[str] = Query(None),
     end_date: Optional[str] = Query(None),
@@ -69,7 +74,7 @@ def pairing_index(
     return JSONResponse(content={"result": _coerce_result(result)})
 
 
-@app.get("/code/entity-churn")
+@app.get("/code/entity-churn", tags=source_code_tags)
 def entity_churn(
     start_date: Optional[str] = Query(None), end_date: Optional[str] = Query(None)
 ):
@@ -78,7 +83,7 @@ def entity_churn(
     return JSONResponse(content={"result": "ok"})
 
 
-@app.get("/code/code-churn")
+@app.get("/code/code-churn", tags=source_code_tags)
 def code_churn(
     start_date: Optional[str] = Query(None), end_date: Optional[str] = Query(None)
 ):
@@ -88,7 +93,37 @@ def code_churn(
     return JSONResponse(content={"result": _coerce_result(result)})
 
 
-@app.get("/pipelines/by-status")
+@app.get("/code/coupling", tags=source_code_tags)
+def code_coupling(
+    start_date: Optional[str] = Query(None), end_date: Optional[str] = Query(None)
+):
+    result = CouplingViewer(repository=create_codemaat_repository()).render(
+        out_file=None, ignore_files=None, include_only=None
+    )
+    return JSONResponse(content={"result": _coerce_result(result)})
+
+
+@app.get("/code/entity-effort", tags=source_code_tags)
+def entity_effort(
+    start_date: Optional[str] = Query(None), end_date: Optional[str] = Query(None)
+):
+    viewer = EntityEffortViewer(repository=create_codemaat_repository())
+    viewer.render_treemap(top_n=30, ignore_files=None, out_file=None, include_only=None)
+    return JSONResponse(content={"result": "ok"})
+
+
+@app.get("/code/entity-ownership", tags=source_code_tags)
+def entity_ownership(
+    start_date: Optional[str] = Query(None), end_date: Optional[str] = Query(None)
+):
+    viewer = EntityOnershipViewer(repository=create_codemaat_repository())
+    viewer.render(
+        top_n=None, ignore_files=None, out_file=None, authors=None, include_only=None
+    )
+    return JSONResponse(content={"result": "ok"})
+
+
+@app.get("/pipelines/by-status", tags=pipeline_tags)
 def pipelines_by_status(
     start_date: Optional[str] = Query(None), end_date: Optional[str] = Query(None)
 ):
@@ -99,7 +134,7 @@ def pipelines_by_status(
     return JSONResponse(content={"result": _coerce_result(result)})
 
 
-@app.get("/pipelines/jobs-by-status")
+@app.get("/pipelines/jobs-by-status", tags=pipeline_tags)
 def pipeline_jobs_by_status(
     start_date: Optional[str] = Query(None), end_date: Optional[str] = Query(None)
 ):
@@ -118,18 +153,7 @@ def pipeline_jobs_by_status(
     return JSONResponse(content={"result": _coerce_result(result)})
 
 
-@app.get("/pull-requests/summary")
-def pull_request_summary(
-    start_date: Optional[str] = Query(None), end_date: Optional[str] = Query(None)
-):
-    view = PrViewSummary(repository=create_prs_repository())
-    result = view.main(
-        csv=None, start_date=start_date, end_date=end_date, output_format="json"
-    )
-    return JSONResponse(content={"result": _coerce_result(result)})
-
-
-@app.get("/pipelines/summary")
+@app.get("/pipelines/summary", tags=pipeline_tags)
 def pipeline_summary(
     start_date: Optional[str] = Query(None), end_date: Optional[str] = Query(None)
 ):
@@ -141,7 +165,7 @@ def pipeline_summary(
     return JSONResponse(content={"result": "ok"})
 
 
-@app.get("/pipelines/runs-duration")
+@app.get("/pipelines/runs-duration", tags=pipeline_tags)
 def pipeline_runs_duration(
     start_date: Optional[str] = Query(None), end_date: Optional[str] = Query(None)
 ):
@@ -157,7 +181,7 @@ def pipeline_runs_duration(
     return JSONResponse(content={"result": _coerce_result(result)})
 
 
-@app.get("/pipelines/deployment-frequency")
+@app.get("/pipelines/deployment-frequency", tags=pipeline_tags)
 def pipeline_deployment_frequency(
     start_date: Optional[str] = Query(None), end_date: Optional[str] = Query(None)
 ):
@@ -172,7 +196,7 @@ def pipeline_deployment_frequency(
     return JSONResponse(content={"result": _coerce_result(result)})
 
 
-@app.get("/pipelines/runs-by")
+@app.get("/pipelines/runs-by", tags=pipeline_tags)
 def pipeline_runs_by(
     start_date: Optional[str] = Query(None), end_date: Optional[str] = Query(None)
 ):
@@ -189,7 +213,7 @@ def pipeline_runs_by(
     return JSONResponse(content={"result": _coerce_result(result)})
 
 
-@app.get("/pipelines/jobs-average-time")
+@app.get("/pipelines/jobs-average-time", tags=pipeline_tags)
 def pipeline_jobs_average_time(
     start_date: Optional[str] = Query(None), end_date: Optional[str] = Query(None)
 ):
@@ -209,31 +233,12 @@ def pipeline_jobs_average_time(
     return JSONResponse(content={"result": _coerce_result(result)})
 
 
-@app.get("/code/coupling")
-def code_coupling(
+@app.get("/pull-requests/summary", tags=pull_request_tags)
+def pull_request_summary(
     start_date: Optional[str] = Query(None), end_date: Optional[str] = Query(None)
 ):
-    result = CouplingViewer(repository=create_codemaat_repository()).render(
-        out_file=None, ignore_files=None, include_only=None
+    view = PrViewSummary(repository=create_prs_repository())
+    result = view.main(
+        csv=None, start_date=start_date, end_date=end_date, output_format="json"
     )
     return JSONResponse(content={"result": _coerce_result(result)})
-
-
-@app.get("/code/entity-effort")
-def entity_effort(
-    start_date: Optional[str] = Query(None), end_date: Optional[str] = Query(None)
-):
-    viewer = EntityEffortViewer(repository=create_codemaat_repository())
-    viewer.render_treemap(top_n=30, ignore_files=None, out_file=None, include_only=None)
-    return JSONResponse(content={"result": "ok"})
-
-
-@app.get("/code/entity-ownership")
-def entity_ownership(
-    start_date: Optional[str] = Query(None), end_date: Optional[str] = Query(None)
-):
-    viewer = EntityOnershipViewer(repository=create_codemaat_repository())
-    viewer.render(
-        top_n=None, ignore_files=None, out_file=None, authors=None, include_only=None
-    )
-    return JSONResponse(content={"result": "ok"})
