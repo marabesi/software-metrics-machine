@@ -11,6 +11,7 @@ class Driver(Enum):
     CLI = "CLI"
     JSON = "JSON"
     IN_MEMORY = "IN_MEMORY"
+    HTTP = "HTTP"
 
 
 class ConfigurationBuilder:
@@ -41,3 +42,20 @@ class ConfigurationBuilder:
             return InMemoryConfiguration(".")
 
         raise ValueError("Invalid configuration")
+
+    def create_web_configuration(data):
+        return Configuration(
+            git_provider=data.get("git_provider"),
+            github_token=data.get("github_token"),
+            github_repository=data.get("github_repository"),
+            store_data=None,
+            git_repository_location=data.get("git_repository_location"),
+            deployment_frequency_target_pipeline=data.get(
+                "deployment_frequency_target_pipeline"
+            ),
+            deployment_frequency_target_job=data.get("deployment_frequency_target_job"),
+            main_branch=data.get("main_branch"),
+            dashboard_start_date=data.get("dashboard_start_date"),
+            dashboard_end_date=data.get("dashboard_end_date"),
+            dashboard_color=data.get("dashboard_color"),
+        )
