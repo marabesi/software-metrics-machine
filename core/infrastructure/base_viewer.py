@@ -23,7 +23,7 @@ class BaseViewer:
         return None
 
     def get_chart_height(self):
-        return 500
+        return 600
 
     def get_fig_size(self):
         return (10, 4)

@@ -56,9 +56,14 @@ class ViewJobsByAverageTimeExecution(BaseViewer):
 
         names, mins = zip(*averages)
 
+        x = "job_name"
+        y = "minutes"
+        count = "count"
+
         data = []
         for name, val in zip(names, mins):
-            data.append({"job_name": name, "value": val, "count": counts.get(name, 0)})
+            data_structure = {x: name, y: val, count: counts.get(name, 0)}
+            data.append(data_structure)
 
         title = (
             f"Top {len(names)} jobs by average duration for {total_runs} runs - {total_jobs} jobs"
@@ -68,8 +73,8 @@ class ViewJobsByAverageTimeExecution(BaseViewer):
 
         chart = build_barchart(
             data,
-            x="job_name",
-            y="value",
+            x=x,
+            y=y,
             stacked=False,
             height=super().get_chart_height(),
             title=title,
