@@ -31,6 +31,7 @@ class JobsByAverageTimeExecution:
         force_all_jobs: bool = False,
         job_name: str | None = None,
         pipeline_raw_filters: str | None = None,
+        metric: str = "avg",
     ) -> JobsAverageTimeExecutionResult:
         """Compute average job execution time (completed_at - started_at) grouped by job name and plot top-N.
 
@@ -52,7 +53,6 @@ class JobsByAverageTimeExecution:
         print(f"Applying jobs filter: {job_filters}")
         jobs = self.repository.jobs(filters=job_filters)
 
-        # optional filter by workflow name (case-insensitive substring match)
         if workflow_path:
             wf_low = workflow_path.lower()
             runs = [r for r in runs if (r.get("path") or "").lower().find(wf_low) != -1]

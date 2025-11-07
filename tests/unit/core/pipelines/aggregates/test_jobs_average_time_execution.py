@@ -102,7 +102,7 @@ class TestJobsByAverageTimeExecution:
             assert abs(job_avgs[test_idx] - 10.0) < 0.01
             assert abs(job_avgs[build_idx] - 10.0) < 0.01
 
-    def test_jobs_with_missing_timestamps(self):
+    def test_ignores_jobs_with_missing_timestamps(self):
         """Test main() with jobs missing started_at or completed_at fields."""
 
         def mocked_read_file_if_exists(file):
@@ -158,7 +158,7 @@ class TestJobsByAverageTimeExecution:
             assert result.averages[0][0] == "deploy"
             assert abs(result.averages[0][1] - 2.0) < 0.01
 
-    def test_top_limit_parameter(self):
+    def test_limits_return_to_top_limit_parameter(self):
         """Test main() with top parameter limiting results."""
 
         def mocked_read_file_if_exists(file):
