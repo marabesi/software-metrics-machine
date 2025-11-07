@@ -1,8 +1,7 @@
 import click
 
 from core.infrastructure.json_file_merger import JsonFileMerger
-from core.infrastructure.repository_factory import \
-    create_file_system_repository
+from core.infrastructure.repository_factory import create_file_system_repository
 
 
 @click.command(name="json-merger")

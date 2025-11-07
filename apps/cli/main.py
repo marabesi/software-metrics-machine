@@ -52,6 +52,7 @@ module_groups = {
         "apps.cli.pipeline_deployment_frequency",
     ],
     "code": [
+        "apps.cli.pydriller_change_set",
         "apps.cli.codemaat_fetch",
         "apps.cli.source_code_code_churn",
         "apps.cli.source_code_coupling",
@@ -60,11 +61,8 @@ module_groups = {
         "apps.cli.source_code_entity_ownership",
         "apps.cli.source_code_pairing_index",
     ],
-    "pydriller": [
-        "providers.pydriller.cli.change_set",
-    ],
     "tools": [
-        "providers.tools.cli.json_file_merger",
+        "apps.cli.tools_json_file_merger",
     ],
 }
 
