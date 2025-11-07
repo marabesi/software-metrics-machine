@@ -5,7 +5,7 @@ import click
 
 @click.group()
 def main():
-    click.echo("Welcome to the Unified CLI for generating charts and summaries.")
+    click.echo("Welcome to Software Metrics Machine CLI")
 
 
 def add_commands_from_groups(module_groups):
@@ -52,7 +52,7 @@ module_groups = {
         "apps.cli.pipeline_deployment_frequency",
     ],
     "code": [
-        "providers.codemaat.cli.fetch_codemaat",
+        "apps.cli.codemaat_fetch",
         "apps.cli.source_code_code_churn",
         "apps.cli.source_code_coupling",
         "apps.cli.source_code_entity_churn",
