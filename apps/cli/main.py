@@ -40,8 +40,8 @@ module_groups = {
         "apps.cli.pull_request_view_summary",
     ],
     "pipelines": [
-        "providers.github.workflows.cli.fetch_workflows",
-        "providers.github.workflows.cli.fetch_jobs",
+        "apps.cli.github_fetch_pipeline",
+        "apps.cli.github_fetch_jobs_pipeline",
         "apps.cli.pipeline_summary",
         "apps.cli.pipeline_by_status",
         "apps.cli.pipeline_runs_duration",
