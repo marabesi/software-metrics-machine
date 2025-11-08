@@ -52,9 +52,8 @@ jobs:
       - name: Install dependencies (poetry)
         run: poetry install --no-interaction --no-ansi --no-root
 
-      - name: Set PYTHONPATH
         run: |
-          echo "PYTHONPATH=$(pwd)" >> $GITHUB_ENV
+          echo "PYTHONPATH=$PYTHONPATH:${{ github.workspace }}" >> $GITHUB_ENV
           echo "SMM_STORE_DATA_AT=$(pwd)/tmp_test/github" >> $GITHUB_ENV
           mkdir -p "$(pwd)/tmp_test/github"
 
