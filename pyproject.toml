@@ -22,8 +22,13 @@ dependencies = [
     "holoviews (>=1.21.0,<2.0.0)"
 ]
 
+[project.scripts]
+smm = "apps.cli.main"
+
+packages = [{ include = "software_metrics_machine", from = "src" }]
+
 [tool.poetry]
-package-mode = false
+package-mode = true
 
 [build-system]
 requires = ["poetry-core>=2.0.0,<3.0.0"]
@@ -40,3 +45,6 @@ pydantic = "^2.11.9"
 pytest-cov = "^7.0.0"
 mypy = "^1.18.2"
 
+[project.urls]
+Homepage = "https://marabesi.github.io/software-metrics-machine"
+Issues = "https://github.com/marabesi/software-metrics-machine/issues"
