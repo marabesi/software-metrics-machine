@@ -1,0 +1,28 @@
+# Use the same Python major version as CI
+FROM python:3.13-slim
+
+ENV PYTHONPATH="/workspace/src:/workspace:${PYTHONPATH}"
+
+
+ENV DEBIAN_FRONTEND=noninteractive
+WORKDIR /workspace
+
+# Install minimal tools & pytest + test deps required to run pytest itself
+RUN apt-get update \
+ && apt-get install -y --no-install-recommends git ca-certificates \
+ && rm -rf /var/lib/apt/lists/*
+
+# Copy repository into the image (do NOT install the package)
+COPY . /workspace
+
+# Install pytest and a couple runtime test utilities; do NOT pip install the package
+RUN python -m pip install --upgrade pip \
+ && python -m pip install pytest click && \
+ pip install poetry
+
+RUN poetry install --no-root --no-interaction --no-ansi
+
+
+
+# Default command runs tests (this will fail with ModuleNotFoundError)
+CMD ["poetry", "run", "pytest", "-vvv"]
