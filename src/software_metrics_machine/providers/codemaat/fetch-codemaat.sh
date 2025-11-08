@@ -39,7 +39,7 @@ else
 fi
 
 git_log_file="logfile.log"
-codemaat="$current/providers/codemaat/tools/code-maat-1.0.4-standalone.jar"
+codemaat="$current/src/software_metrics_machine/providers/codemaat/tools/code-maat-1.0.4-standalone.jar"
 
 #clean up
 rm -rf $store_data/$git_log_file

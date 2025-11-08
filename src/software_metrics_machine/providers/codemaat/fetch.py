@@ -19,7 +19,7 @@ class FetchCodemaat:
     ) -> ExecutionResult:
         command = [
             "sh",
-            "src/providers/codemaat/fetch-codemaat.sh",
+            "src/software_metrics_machine/providers/codemaat/fetch-codemaat.sh",
             self.configuration.git_repository_location,
             self.configuration.store_data,
             start_date,
