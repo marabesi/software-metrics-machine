@@ -166,10 +166,8 @@ class TestJobsCliCommands:
     )
     def test_with_stored_data_summary(self, cli, jobs):
         path_string = cli.data_stored_at
-        FileHandlerForTesting(path_string).store_json_file(
-            "workflows.json", single_run()
-        )
-        FileHandlerForTesting(path_string).store_json_file("jobs.json", jobs)
+        FileHandlerForTesting(path_string).store_pipelines_with(single_run())
+        FileHandlerForTesting(path_string).store_jobs_with(jobs)
 
         result = cli.runner.invoke(
             main,
@@ -241,10 +239,8 @@ class TestJobsCliCommands:
                 "completed_at": "2023-10-01T09:10:00Z",
             },
         ]
-        FileHandlerForTesting(path_string).store_json_file(
-            "workflows.json", single_run()
-        )
-        FileHandlerForTesting(path_string).store_json_file("jobs.json", jobs)
+        FileHandlerForTesting(path_string).store_pipelines_with(single_run())
+        FileHandlerForTesting(path_string).store_jobs_with(jobs)
 
         result = cli.runner.invoke(
             main,
@@ -278,10 +274,8 @@ class TestJobsCliCommands:
                 "completed_at": "2023-10-01T09:10:00Z",
             },
         ]
-        FileHandlerForTesting(path_string).store_json_file(
-            "workflows.json", single_run()
-        )
-        FileHandlerForTesting(path_string).store_json_file("jobs.json", jobs)
+        FileHandlerForTesting(path_string).store_pipelines_with(single_run())
+        FileHandlerForTesting(path_string).store_jobs_with(jobs)
 
         result = cli.runner.invoke(
             main,
@@ -315,10 +309,8 @@ class TestJobsCliCommands:
                 "completed_at": "2023-10-01T09:10:00Z",
             },
         ]
-        FileHandlerForTesting(path_string).store_json_file(
-            "workflows.json", single_run()
-        )
-        FileHandlerForTesting(path_string).store_json_file("jobs.json", jobs)
+        FileHandlerForTesting(path_string).store_pipelines_with(single_run())
+        FileHandlerForTesting(path_string).store_jobs_with(jobs)
 
         result = cli.runner.invoke(
             main,

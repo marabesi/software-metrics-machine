@@ -8,8 +8,6 @@ from tests.in_memory_configuration import InMemoryConfiguration
 class TestDeploymentFrequency:
 
     def test_no_compute_without_workflow_and_job(self):
-        """If no workflow_path and no job_name are provided, do not compute deployment frequency."""
-
         def mocked_read_file_if_exists(file):
             if file == "workflows.json":
                 return as_json_string(github_workflows_data())

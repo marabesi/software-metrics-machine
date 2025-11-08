@@ -16,9 +16,7 @@ class TestPipelineRunsByStatusCliCommands:
         workflow_runs = github_workflows_data()
         path_string = cli.data_stored_at
 
-        FileHandlerForTesting(path_string).store_json_file(
-            "workflows.json", workflow_runs
-        )
+        FileHandlerForTesting(path_string).store_pipelines_with(workflow_runs)
 
         result = cli.runner.invoke(
             main,
@@ -55,9 +53,7 @@ class TestPipelineRunsByStatusCliCommands:
         workflow_runs = github_workflows_data()
         path_string = cli.data_stored_at
 
-        FileHandlerForTesting(path_string).store_json_file(
-            "workflows.json", workflow_runs
-        )
+        FileHandlerForTesting(path_string).store_pipelines_with(workflow_runs)
 
         result = cli.runner.invoke(main, command)
 
