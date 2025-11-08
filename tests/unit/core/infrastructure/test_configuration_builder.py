@@ -2,7 +2,7 @@ import os
 
 import pytest
 
-from src.core.infrastructure.configuration.configuration_builder import (
+from software_metrics_machine.core.infrastructure.configuration.configuration_builder import (
     ConfigurationBuilder,
     Driver,
 )

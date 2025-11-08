@@ -3,14 +3,16 @@ from unittest.mock import patch
 
 import pytest
 
-from src.apps.cli.main import main
+from software_metrics_machine.apps.cli import main
 
 
 class TestCliCodeFetchCommands:
 
     @pytest.fixture(scope="function", autouse=True)
     def reset_mock_run(self):
-        with patch("src.core.infrastructure.run.Run.run_command") as mock_run:
+        with patch(
+            "software_metrics_machine.core.infrastructure.run.Run.run_command"
+        ) as mock_run:
             mock_run.reset_mock()
             yield mock_run
 
@@ -24,7 +26,9 @@ class TestCliCodeFetchCommands:
 
     def test_runs_fetch_for_a_repo(self, cli):
         configuration = cli.configuration
-        with patch("src.core.infrastructure.run.Run.run_command") as mock_run:
+        with patch(
+            "software_metrics_machine.core.infrastructure.run.Run.run_command"
+        ) as mock_run:
             mock_run.return_value = CompletedProcess(
                 args="", returncode=0, stdout="total 0 .\nexample\n", stderr=""
             )
@@ -53,7 +57,9 @@ class TestCliCodeFetchCommands:
 
     def test_should_fetch_for_a_subfolder_in_repo(self, cli):
         configuration = cli.configuration
-        with patch("src.core.infrastructure.run.Run.run_command") as mock_run:
+        with patch(
+            "software_metrics_machine.core.infrastructure.run.Run.run_command"
+        ) as mock_run:
             mock_run.return_value = CompletedProcess(
                 args="", returncode=0, stdout="total 0 .\nexample\n", stderr=""
             )

@@ -1,4 +1,4 @@
-from src.apps.cli.main import main
+from software_metrics_machine.apps.cli import main
 
 
 class TestCliCodePairingIndexCommands:

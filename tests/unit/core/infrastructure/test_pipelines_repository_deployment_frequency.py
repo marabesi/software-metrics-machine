@@ -2,7 +2,9 @@ from unittest.mock import patch
 
 import pytest
 
-from src.core.pipelines.pipelines_repository import PipelinesRepository
+from software_metrics_machine.core.pipelines.pipelines_repository import (
+    PipelinesRepository,
+)
 from tests.builders import as_json_string
 from tests.in_memory_configuration import InMemoryConfiguration
 
@@ -32,7 +34,7 @@ class TestPipelinesRepositoryDeploymentFrequency:
     @pytest.fixture(scope="function", autouse=True)
     def reset_mocks(self):
         with patch(
-            "src.core.infrastructure.file_system_base_repository.FileSystemBaseRepository.read_file_if_exists"
+            "software_metrics_machine.core.infrastructure.file_system_base_repository.FileSystemBaseRepository.read_file_if_exists"
         ) as mock_exists:
             mock_exists.reset_mock()
             yield mock_exists
@@ -41,7 +43,7 @@ class TestPipelinesRepositoryDeploymentFrequency:
         empty_pipeline_runs = as_json_string([])
         with (
             patch(
-                "src.core.infrastructure.file_system_base_repository.FileSystemBaseRepository.read_file_if_exists",
+                "software_metrics_machine.core.infrastructure.file_system_base_repository.FileSystemBaseRepository.read_file_if_exists",
                 return_value=empty_pipeline_runs,
             ),
         ):
@@ -68,7 +70,7 @@ class TestPipelinesRepositoryDeploymentFrequency:
         ]
 
         with patch(
-            "src.core.infrastructure.file_system_base_repository.FileSystemBaseRepository.read_file_if_exists",
+            "software_metrics_machine.core.infrastructure.file_system_base_repository.FileSystemBaseRepository.read_file_if_exists",
             side_effect=lambda file: pipeline_run_completed_with_success(
                 file=file, jobs=jobs
             ),
@@ -112,7 +114,7 @@ class TestPipelinesRepositoryDeploymentFrequency:
             return None
 
         with patch(
-            "src.core.infrastructure.file_system_base_repository.FileSystemBaseRepository.read_file_if_exists",
+            "software_metrics_machine.core.infrastructure.file_system_base_repository.FileSystemBaseRepository.read_file_if_exists",
             side_effect=mocked_read_file_if_exists,
         ):
             loader = PipelinesRepository(configuration=InMemoryConfiguration("."))
@@ -157,7 +159,7 @@ class TestPipelinesRepositoryDeploymentFrequency:
             return None
 
         with patch(
-            "src.core.infrastructure.file_system_base_repository.FileSystemBaseRepository.read_file_if_exists",
+            "software_metrics_machine.core.infrastructure.file_system_base_repository.FileSystemBaseRepository.read_file_if_exists",
             side_effect=mocked_read_file_if_exists,
         ):
             loader = PipelinesRepository(configuration=InMemoryConfiguration("."))

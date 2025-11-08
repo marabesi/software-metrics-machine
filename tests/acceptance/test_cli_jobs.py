@@ -2,7 +2,7 @@ from unittest.mock import patch
 
 import pytest
 from requests import Response
-from src.apps.cli.main import main
+from software_metrics_machine.apps.cli import main
 
 from tests.builders import as_json_string, single_run
 from tests.github_workflow_response import (

@@ -1,5 +1,7 @@
-from src.core.infrastructure.configuration.configuration import Configuration
-from src.core.infrastructure.configuration.configuration_file_system_handler import (
+from software_metrics_machine.core.infrastructure.configuration.configuration import (
+    Configuration,
+)
+from software_metrics_machine.core.infrastructure.configuration.configuration_file_system_handler import (
     ConfigurationFileSystemHandler,
 )
 

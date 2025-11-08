@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from src.core.code_types import Commit as CommitTypedDict
+from software_metrics_machine.core.code_types import Commit as CommitTypedDict
 import hashlib
 import time
 

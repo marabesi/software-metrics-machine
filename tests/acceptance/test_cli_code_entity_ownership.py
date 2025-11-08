@@ -2,7 +2,7 @@ from unittest.mock import patch
 
 import pytest
 
-from src.apps.cli.main import main
+from software_metrics_machine.apps.cli import main
 
 from tests.csv_builder import CSVBuilder
 from tests.file_handler_for_testing import FileHandlerForTesting
@@ -12,7 +12,9 @@ class TestCliCodeEntityOwnershipCommands:
 
     @pytest.fixture(scope="function", autouse=True)
     def reset_mock_run(self):
-        with patch("src.core.infrastructure.run.Run.run_command") as mock_run:
+        with patch(
+            "software_metrics_machine.core.infrastructure.run.Run.run_command"
+        ) as mock_run:
             mock_run.reset_mock()
             yield mock_run
 

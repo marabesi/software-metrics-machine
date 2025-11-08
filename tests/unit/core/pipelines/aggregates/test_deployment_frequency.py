@@ -1,6 +1,10 @@
 from unittest.mock import patch, MagicMock
-from src.core.pipelines.aggregates.deployment_frequency import DeploymentFrequency
-from src.core.pipelines.pipelines_repository import PipelinesRepository
+from software_metrics_machine.core.pipelines.aggregates.deployment_frequency import (
+    DeploymentFrequency,
+)
+from software_metrics_machine.core.pipelines.pipelines_repository import (
+    PipelinesRepository,
+)
 from tests.builders import as_json_string, github_workflows_data
 from tests.in_memory_configuration import InMemoryConfiguration
 
@@ -34,7 +38,7 @@ class TestDeploymentFrequency:
                 )
 
         with patch(
-            "src.core.infrastructure.file_system_base_repository.FileSystemBaseRepository.read_file_if_exists",
+            "software_metrics_machine.core.infrastructure.file_system_base_repository.FileSystemBaseRepository.read_file_if_exists",
             side_effect=mocked_read_file_if_exists,
         ):
             repository = PipelinesRepository(configuration=InMemoryConfiguration("."))
@@ -77,7 +81,7 @@ class TestDeploymentFrequency:
                 )
 
         with patch(
-            "src.core.infrastructure.file_system_base_repository.FileSystemBaseRepository.read_file_if_exists",
+            "software_metrics_machine.core.infrastructure.file_system_base_repository.FileSystemBaseRepository.read_file_if_exists",
             side_effect=mocked_read_file_if_exists,
         ):
             configuration = InMemoryConfiguration(".")
@@ -104,7 +108,7 @@ class TestDeploymentFrequency:
             return None
 
         with patch(
-            "src.core.infrastructure.file_system_base_repository.FileSystemBaseRepository.read_file_if_exists",
+            "software_metrics_machine.core.infrastructure.file_system_base_repository.FileSystemBaseRepository.read_file_if_exists",
             side_effect=mocked_read_file_if_exists,
         ):
             repository = PipelinesRepository(configuration=InMemoryConfiguration("."))
@@ -161,7 +165,7 @@ class TestDeploymentFrequency:
             return None
 
         with patch(
-            "src.core.infrastructure.file_system_base_repository.FileSystemBaseRepository.read_file_if_exists",
+            "software_metrics_machine.core.infrastructure.file_system_base_repository.FileSystemBaseRepository.read_file_if_exists",
             side_effect=mocked_read_file_if_exists,
         ):
             repository = PipelinesRepository(configuration=InMemoryConfiguration("."))
@@ -213,7 +217,7 @@ class TestDeploymentFrequency:
             return None
 
         with patch(
-            "src.core.infrastructure.file_system_base_repository.FileSystemBaseRepository.read_file_if_exists",
+            "software_metrics_machine.core.infrastructure.file_system_base_repository.FileSystemBaseRepository.read_file_if_exists",
             side_effect=mocked_read_file_if_exists,
         ):
             repository = PipelinesRepository(configuration=InMemoryConfiguration("."))

@@ -1,7 +1,7 @@
 import pytest
 from subprocess import CompletedProcess, CalledProcessError
 from unittest.mock import patch
-from src.providers.codemaat.fetch import FetchCodemaat
+from software_metrics_machine.providers.codemaat.fetch import FetchCodemaat
 from tests.in_memory_configuration import InMemoryConfiguration
 
 
@@ -9,7 +9,7 @@ class TestFetchCodemaat:
 
     @pytest.fixture(scope="class", autouse=True)
     def reset_mock_run(self):
-        with patch("src.core.infrastructure.run") as mock_run:
+        with patch("software_metrics_machine.core.infrastructure.run") as mock_run:
             mock_run.reset_mock()
             yield mock_run
 
@@ -22,7 +22,9 @@ class TestFetchCodemaat:
         path_string = str(tmp_path)
         configuration = InMemoryConfiguration(store_data=path_string)
 
-        with patch("src.core.infrastructure.run.Run.run_command") as mock_run:
+        with patch(
+            "software_metrics_machine.core.infrastructure.run.Run.run_command"
+        ) as mock_run:
             mock_run.return_value = self.__mock_run_command_return_success()
 
             start_date = "2023-01-01"
@@ -37,7 +39,9 @@ class TestFetchCodemaat:
         path_string = str(tmp_path)
         configuration = InMemoryConfiguration(store_data=path_string)
 
-        with patch("src.core.infrastructure.run.Run.run_command") as mock_run:
+        with patch(
+            "software_metrics_machine.core.infrastructure.run.Run.run_command"
+        ) as mock_run:
             mock_run.return_value = self.__mock_run_command_return_success()
 
             start_date = "2023-01-01"
@@ -65,7 +69,9 @@ class TestFetchCodemaat:
     def test_invoke_codemaat_with_force(self, tmp_path):
         path_string = str(tmp_path)
         configuration = InMemoryConfiguration(store_data=path_string)
-        with patch("src.core.infrastructure.run.Run.run_command") as mock_run:
+        with patch(
+            "software_metrics_machine.core.infrastructure.run.Run.run_command"
+        ) as mock_run:
             mock_run.return_value = self.__mock_run_command_return_success()
 
             start_date = "2023-01-01"
@@ -94,7 +100,9 @@ class TestFetchCodemaat:
         path_string = str(tmp_path)
         configuration = InMemoryConfiguration(store_data=path_string)
 
-        with patch("src.core.infrastructure.run.Run.run_command") as mock_run:
+        with patch(
+            "software_metrics_machine.core.infrastructure.run.Run.run_command"
+        ) as mock_run:
             mock_run.return_value = self.__mock_run_command_return_success()
 
             start_date = "2023-01-01"
@@ -123,7 +131,9 @@ class TestFetchCodemaat:
         path_string = str(tmp_path)
         configuration = InMemoryConfiguration(store_data=path_string)
 
-        with patch("src.core.infrastructure.run.Run.run_command") as mock_run:
+        with patch(
+            "software_metrics_machine.core.infrastructure.run.Run.run_command"
+        ) as mock_run:
             mock_run.return_value = self.__mock_run_command_return_success()
 
             start_date = "2023-01-01"
@@ -143,7 +153,9 @@ class TestFetchCodemaat:
         path_string = str(tmp_path)
         configuration = InMemoryConfiguration(store_data=path_string)
 
-        with patch("src.core.infrastructure.run.Run.run_command") as mock_run:
+        with patch(
+            "software_metrics_machine.core.infrastructure.run.Run.run_command"
+        ) as mock_run:
             mock_run.side_effect = CalledProcessError(
                 returncode=1,
                 cmd="mocked command",

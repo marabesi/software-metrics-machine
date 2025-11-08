@@ -1,4 +1,6 @@
-from src.core.infrastructure.configuration.configuration import Configuration
+from software_metrics_machine.core.infrastructure.configuration.configuration import (
+    Configuration,
+)
 
 
 class InMemoryConfiguration(Configuration):

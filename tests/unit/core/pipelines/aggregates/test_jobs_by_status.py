@@ -1,6 +1,10 @@
 from unittest.mock import patch
-from src.core.pipelines.aggregates.jobs_by_status import JobsByStatus
-from src.core.pipelines.pipelines_repository import PipelinesRepository
+from software_metrics_machine.core.pipelines.aggregates.jobs_by_status import (
+    JobsByStatus,
+)
+from software_metrics_machine.core.pipelines.pipelines_repository import (
+    PipelinesRepository,
+)
 from tests.builders import as_json_string
 from tests.in_memory_configuration import InMemoryConfiguration
 
@@ -18,7 +22,7 @@ class TestJobsByStatus:
             return None
 
         with patch(
-            "src.core.infrastructure.file_system_base_repository.FileSystemBaseRepository.read_file_if_exists",
+            "software_metrics_machine.core.infrastructure.file_system_base_repository.FileSystemBaseRepository.read_file_if_exists",
             side_effect=mocked_read_file_if_exists,
         ):
             repository = PipelinesRepository(configuration=InMemoryConfiguration("."))
@@ -85,7 +89,7 @@ class TestJobsByStatus:
             return None
 
         with patch(
-            "src.core.infrastructure.file_system_base_repository.FileSystemBaseRepository.read_file_if_exists",
+            "software_metrics_machine.core.infrastructure.file_system_base_repository.FileSystemBaseRepository.read_file_if_exists",
             side_effect=mocked_read_file_if_exists,
         ):
             repository = PipelinesRepository(configuration=InMemoryConfiguration("."))
@@ -171,7 +175,7 @@ class TestJobsByStatus:
             return None
 
         with patch(
-            "src.core.infrastructure.file_system_base_repository.FileSystemBaseRepository.read_file_if_exists",
+            "software_metrics_machine.core.infrastructure.file_system_base_repository.FileSystemBaseRepository.read_file_if_exists",
             side_effect=mocked_read_file_if_exists,
         ):
             repository = PipelinesRepository(configuration=InMemoryConfiguration("."))

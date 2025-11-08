@@ -1,5 +1,5 @@
 import pytest
-from src.apps.cli.main import main
+from software_metrics_machine.apps.cli import main
 
 from tests.builders import github_workflows_data
 from tests.file_handler_for_testing import FileHandlerForTesting

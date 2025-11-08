@@ -11,5 +11,5 @@ exclude = .git,
   ./docs/*
   ./downloads/*
   ./target/*
-max-line-length = 120
+max-line-length = 150
 max-complexity = 50

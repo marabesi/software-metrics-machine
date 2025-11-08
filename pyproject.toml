@@ -22,12 +22,14 @@ dependencies = [
     "holoviews (>=1.21.0,<2.0.0)"
 ]
 
+[tool.poetry.scripts]
+smm = "software_metrics_machine.apps.cli:main"
+
 [project.scripts]
-smm = "apps.cli.main:main"
+smm = "software_metrics_machine.apps.cli:main"
 
 [tool.poetry]
 package-mode = true
-packages = [{ include = "*", from = "src" }]
 
 [build-system]
 requires = ["poetry-core>=2.0.0,<3.0.0"]

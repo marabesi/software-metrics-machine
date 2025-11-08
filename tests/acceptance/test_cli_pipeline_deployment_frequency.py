@@ -1,4 +1,4 @@
-from src.apps.cli.main import main
+from software_metrics_machine.apps.cli import main
 import pytest
 
 from tests.file_handler_for_testing import FileHandlerForTesting

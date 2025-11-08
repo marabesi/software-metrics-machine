@@ -1,6 +1,6 @@
 import pytest
 from unittest.mock import patch, MagicMock
-from src.providers.github.github_pr_client import GithubPrsClient
+from software_metrics_machine.providers.github.github_pr_client import GithubPrsClient
 from tests.in_memory_configuration import InMemoryConfiguration
 
 
@@ -17,10 +17,10 @@ class TestGithubPrsClient:
     def test_fetch_prs(self):
         with (
             patch(
-                "src.core.infrastructure.file_system_base_repository.FileSystemBaseRepository.read_file_if_exists"
+                "software_metrics_machine.core.infrastructure.file_system_base_repository.FileSystemBaseRepository.read_file_if_exists"
             ) as mock_read,
             patch(
-                "src.core.infrastructure.file_system_base_repository.FileSystemBaseRepository.store_file"
+                "software_metrics_machine.core.infrastructure.file_system_base_repository.FileSystemBaseRepository.store_file"
             ) as mocked_store,
             patch("requests.get") as mock_get,
         ):
@@ -114,10 +114,10 @@ class TestGithubPrsClient:
     def test_fetch_prs_with_filters(self, filters, expected):
         with (
             patch(
-                "src.core.infrastructure.file_system_base_repository.FileSystemBaseRepository.read_file_if_exists"
+                "software_metrics_machine.core.infrastructure.file_system_base_repository.FileSystemBaseRepository.read_file_if_exists"
             ) as mock_read,
             patch(
-                "src.core.infrastructure.file_system_base_repository.FileSystemBaseRepository.store_file"
+                "software_metrics_machine.core.infrastructure.file_system_base_repository.FileSystemBaseRepository.store_file"
             ) as mocked_store,
             patch("requests.get") as mock_get,
         ):

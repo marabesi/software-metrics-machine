@@ -1,7 +1,11 @@
 import pytest
 from unittest.mock import call, patch, MagicMock
-from src.providers.github.github_workflow_client import GithubWorkflowClient
-from src.core.pipelines.pipelines_repository import PipelinesRepository
+from software_metrics_machine.providers.github.github_workflow_client import (
+    GithubWorkflowClient,
+)
+from software_metrics_machine.core.pipelines.pipelines_repository import (
+    PipelinesRepository,
+)
 from tests.in_memory_configuration import InMemoryConfiguration
 
 
@@ -19,11 +23,11 @@ class TestGithubWorkflowsClient:
         with (
             patch("requests.get") as mock_get,
             patch(
-                "src.core.infrastructure.file_system_base_repository.FileSystemBaseRepository.read_file_if_exists",
+                "software_metrics_machine.core.infrastructure.file_system_base_repository.FileSystemBaseRepository.read_file_if_exists",
                 return_value=None,
             ) as mock_read,
             patch(
-                "src.core.infrastructure.file_system_base_repository.FileSystemBaseRepository.store_file"
+                "software_metrics_machine.core.infrastructure.file_system_base_repository.FileSystemBaseRepository.store_file"
             ) as mock_store,
         ):
             mock_response = MagicMock()
@@ -51,11 +55,11 @@ class TestGithubWorkflowsClient:
         with (
             patch("requests.get") as mock_get,
             patch(
-                "src.core.infrastructure.file_system_base_repository.FileSystemBaseRepository.read_file_if_exists",
+                "software_metrics_machine.core.infrastructure.file_system_base_repository.FileSystemBaseRepository.read_file_if_exists",
                 return_value=None,
             ),
             patch(
-                "src.core.infrastructure.file_system_base_repository.FileSystemBaseRepository.store_file"
+                "software_metrics_machine.core.infrastructure.file_system_base_repository.FileSystemBaseRepository.store_file"
             ),
         ):
             mock_response = MagicMock()
@@ -93,11 +97,11 @@ class TestGithubWorkflowsClient:
         with (
             patch("requests.get") as mock_get,
             patch(
-                "src.core.infrastructure.file_system_base_repository.FileSystemBaseRepository.read_file_if_exists",
+                "software_metrics_machine.core.infrastructure.file_system_base_repository.FileSystemBaseRepository.read_file_if_exists",  # noqa
                 return_value=None,
             ),
             patch(
-                "src.core.infrastructure.file_system_base_repository.FileSystemBaseRepository.store_file"
+                "software_metrics_machine.core.infrastructure.file_system_base_repository.FileSystemBaseRepository.store_file"  # noqa
             ),
         ):
             mock_response = MagicMock()
@@ -118,7 +122,7 @@ class TestGithubWorkflowsClient:
 
             expected_calls = [
                 call(
-                    f"https://api.github.com/repos/{self.configuration.github_repository}/actions/runs?per_page=100",
+                    f"https://api.github.com/repos/{self.configuration.github_repository}/actions/runs?per_page=100",  # noqa
                     headers={
                         "Authorization": "token fake_token",
                         "Accept": "application/vnd.github+json",
@@ -147,11 +151,11 @@ class TestGithubWorkflowsClient:
         with (
             patch("requests.get") as mock_get,
             patch(
-                "src.core.infrastructure.file_system_base_repository.FileSystemBaseRepository.read_file_if_exists",
+                "software_metrics_machine.core.infrastructure.file_system_base_repository.FileSystemBaseRepository.read_file_if_exists",  # noqa
                 side_effect=side_effect_repository_read,
             ) as mock_read,
             patch(
-                "src.core.infrastructure.file_system_base_repository.FileSystemBaseRepository.store_file"
+                "software_metrics_machine.core.infrastructure.file_system_base_repository.FileSystemBaseRepository.store_file"  # noqa
             ),
         ):
 
@@ -172,7 +176,7 @@ class TestGithubWorkflowsClient:
 
             mock_read.assert_called_with("jobs.json")
             mock_get.assert_called_once_with(
-                f"https://api.github.com/repos/{self.configuration.github_repository}/actions/runs/1/jobs?per_page=100",
+                f"https://api.github.com/repos/{self.configuration.github_repository}/actions/runs/1/jobs?per_page=100",  # noqa
                 headers=self.headers,
                 params=None,
             )
