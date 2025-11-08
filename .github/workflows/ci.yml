@@ -6,6 +6,9 @@ on:
     paths-ignore:
       - "docs/**"
 
+env:
+  PYTHON_VERSION: 3.13.7
+
 jobs:
   flake8:
     name: Flake8 (Poetry)
@@ -17,7 +20,7 @@ jobs:
       - name: Set up Python
         uses: actions/setup-python@v4
         with:
-          python-version: '3.13.7'
+          python-version: ${{ env.PYTHON_VERSION }}
 
       - name: Install Poetry
         run: |
@@ -42,7 +45,7 @@ jobs:
       - name: Set up Python
         uses: actions/setup-python@v4
         with:
-          python-version: '3.13.7'
+          python-version: ${{ env.PYTHON_VERSION }}
 
       - name: Install Poetry
         run: |
@@ -54,6 +57,7 @@ jobs:
 
       - name: Set PYTHONPATH
         run: |
+          echo "PYTHONPATH=$(pwd)" >> $GITHUB_ENV
           echo "SMM_STORE_DATA_AT=$(pwd)/tmp_test/github" >> $GITHUB_ENV
           mkdir -p "$(pwd)/tmp_test/github"
 
@@ -78,7 +82,7 @@ jobs:
         run: |
           git config --global user.email "you@example.com"
           git config --global user.name "Pytest"
-          PYTHONPATH=$(pwd):$PYTHONPATH poetry run pytest -vvv --cov=. --cov-report=xml
+          poetry run python -m pytest -vvv --cov=. --cov-report=xml
 
       - name: Save coverage report
         uses: actions/upload-artifact@v4
@@ -120,7 +124,7 @@ jobs:
       - name: Set up Python
         uses: actions/setup-python@v4
         with:
-          python-version: '3.13.7'
+          python-version: ${{ env.PYTHON_VERSION }}
 
       - name: Install Poetry
         run: |
