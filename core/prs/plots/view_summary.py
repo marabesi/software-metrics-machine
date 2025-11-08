@@ -45,6 +45,7 @@ class PrViewSummary:
             writer.writerow(["Metric", "Value"])
             for metric, value in summary.items():
                 writer.writerow([metric, value])
+        print(f"Successfully exported data to {self.csv}")
 
     def __summarize_prs(self):
         summary = {}

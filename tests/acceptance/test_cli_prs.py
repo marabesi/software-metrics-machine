@@ -218,6 +218,28 @@ class TestCliCommands:
         assert 0 == result.exit_code
         assert f"Loaded {len(prs)} PRs" in result.output
 
+    def test_exports_csv_data(self, cli):
+        path_string = cli.data_stored_at
+        FileHandlerForTesting(path_string).store_prs_with(
+            [
+                {
+                    "created_at": "2011-01-26T19:01:12Z",
+                    "closed_at": "2011-01-26T19:01:12Z",
+                },
+            ]
+        )
+
+        result = cli.runner.invoke(
+            main,
+            [
+                "prs",
+                "summary",
+                "--csv",
+                "data.csv",
+            ],
+        )
+        assert "Successfully exported data to data.csv" in result.output
+
     def test_with_empty_data_summary(self, cli):
         result = cli.runner.invoke(
             main,
