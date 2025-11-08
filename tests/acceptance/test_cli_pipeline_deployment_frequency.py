@@ -1,4 +1,5 @@
 from apps.cli.main import main
+import pytest
 
 from tests.file_handler_for_testing import FileHandlerForTesting
 from tests.builders import single_deployment_frequency
@@ -6,14 +7,14 @@ from tests.builders import single_deployment_frequency
 
 class TestWorkflowsDeploymentFrequencyCliCommands:
 
-    def test_deployment_frequency_by_job(self, cli):
+    @pytest.fixture(autouse=True)
+    def setup_data(self, cli):
         path_string = cli.data_stored_at
-        FileHandlerForTesting(path_string).store_json_file(
-            "workflows.json", single_deployment_frequency()
+        FileHandlerForTesting(path_string).store_pipelines_with(
+            single_deployment_frequency()
         )
 
-        FileHandlerForTesting(path_string).store_json_file(
-            "jobs.json",
+        FileHandlerForTesting(path_string).store_jobs_with(
             [
                 {
                     "id": 105,
@@ -26,6 +27,7 @@ class TestWorkflowsDeploymentFrequencyCliCommands:
             ],
         )
 
+    def test_deployment_frequency_executes_successfully(self, cli):
         result = cli.runner.invoke(
             main,
             [
@@ -38,4 +40,17 @@ class TestWorkflowsDeploymentFrequencyCliCommands:
             ],
         )
         assert 0 == result.exit_code
+
+    def test_deployment_frequency_loads_a_single_run(self, cli):
+        result = cli.runner.invoke(
+            main,
+            [
+                "pipelines",
+                "deployment-frequency",
+                "--job-name",
+                "Deploy",
+                "--out-file",
+                "deployment_frequency_out.png",
+            ],
+        )
         assert "Loaded 1 runs" in result.output

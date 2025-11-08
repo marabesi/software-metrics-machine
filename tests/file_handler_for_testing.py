@@ -2,11 +2,19 @@ from typing import Optional
 from pathlib import Path
 import json
 
+from tests.builders import as_json_string
+
 
 class FileHandlerForTesting:
 
     def __init__(self, path):
         self.default_dir = str(path)
+
+    def store_pipelines_with(self, data: str) -> bool:
+        return self.store_file("workflows.json", as_json_string(data))
+
+    def store_jobs_with(self, data: str) -> bool:
+        return self.store_file("jobs.json", as_json_string(data))
 
     def store_json_file(self, file: str, data: str) -> bool:
         final_path = self.default_dir + "/" + file
