@@ -141,6 +141,8 @@ jobs:
         run: "./lib/bashunit tests/e2e"
 
   delivery:
+    permissions:
+      id-token: write
     runs-on: ubuntu-latest
     needs: [ pytest, e2e ]
     if: github.ref == 'refs/heads/main' && contains(github.event.head_commit.message, 'tagged version')
