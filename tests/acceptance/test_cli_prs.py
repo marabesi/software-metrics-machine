@@ -132,9 +132,7 @@ class TestCliCommands:
                 "closed_at": "2011-01-26T19:01:12Z",
             },
         ]
-        FileHandlerForTesting(path_string).store_json_file(
-            "prs.json", pull_requests_data
-        )
+        FileHandlerForTesting(path_string).store_prs_with(pull_requests_data)
 
         result = cli.runner.invoke(
             main,
@@ -164,9 +162,7 @@ class TestCliCommands:
                 "closed_at": "2011-01-26T19:01:12Z",
             },
         ]
-        FileHandlerForTesting(path_string).store_json_file(
-            "prs.json", pull_requests_data
-        )
+        FileHandlerForTesting(path_string).store_prs_with(pull_requests_data)
 
         result = cli.runner.invoke(
             main,
@@ -202,7 +198,7 @@ class TestCliCommands:
     )
     def test_with_stored_data_summary(self, cli, prs):
         path_string = cli.data_stored_at
-        FileHandlerForTesting(path_string).store_json_file("prs.json", prs)
+        FileHandlerForTesting(path_string).store_prs_with(prs)
 
         result = cli.runner.invoke(
             main,
@@ -246,9 +242,7 @@ class TestCliCommands:
                 "closed_at": "2011-01-26T19:01:12Z",
             },
         ]
-        FileHandlerForTesting(path_string).store_json_file(
-            "prs.json", pull_requests_data
-        )
+        FileHandlerForTesting(path_string).store_prs_with(pull_requests_data)
 
         result = cli.runner.invoke(
             main,
