@@ -6,8 +6,8 @@ import pytest
 import sys
 from click.testing import CliRunner
 
-from core.infrastructure.configuration.configuration import Configuration
-from core.infrastructure.configuration.configuration_file_system_handler import (
+from src.core.infrastructure.configuration.configuration import Configuration
+from src.core.infrastructure.configuration.configuration_file_system_handler import (
     ConfigurationFileSystemHandler,
 )
 from tests.in_memory_configuration import InMemoryConfiguration

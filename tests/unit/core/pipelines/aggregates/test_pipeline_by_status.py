@@ -1,6 +1,6 @@
 from unittest.mock import patch
-from core.pipelines.aggregates.pipeline_by_status import PipelineByStatus
-from core.pipelines.pipelines_repository import PipelinesRepository
+from src.core.pipelines.aggregates.pipeline_by_status import PipelineByStatus
+from src.core.pipelines.pipelines_repository import PipelinesRepository
 from tests.builders import as_json_string
 from tests.in_memory_configuration import InMemoryConfiguration
 
@@ -18,7 +18,7 @@ class TestPipelineByStatus:
             return None
 
         with patch(
-            "core.infrastructure.file_system_base_repository.FileSystemBaseRepository.read_file_if_exists",
+            "src.core.infrastructure.file_system_base_repository.FileSystemBaseRepository.read_file_if_exists",
             side_effect=mocked_read_file_if_exists,
         ):
             repository = PipelinesRepository(configuration=InMemoryConfiguration("."))
@@ -35,42 +35,44 @@ class TestPipelineByStatus:
 
         def mocked_read_file_if_exists(file):
             if file == "workflows.json":
-                return as_json_string([
-                    {
-                        "id": 1,
-                        "name": "CI",
-                        "path": "/workflows/ci.yml",
-                        "status": "completed",
-                        "created_at": "2023-01-01T10:00:00Z",
-                    },
-                    {
-                        "id": 2,
-                        "name": "Build",
-                        "path": "/workflows/build.yml",
-                        "status": "completed",
-                        "created_at": "2023-01-02T10:00:00Z",
-                    },
-                    {
-                        "id": 3,
-                        "name": "Deploy",
-                        "path": "/workflows/deploy.yml",
-                        "status": "in_progress",
-                        "created_at": "2023-01-03T10:00:00Z",
-                    },
-                    {
-                        "id": 4,
-                        "name": "Test",
-                        "path": "/workflows/test.yml",
-                        "status": "queued",
-                        "created_at": "2023-01-04T10:00:00Z",
-                    },
-                ])
+                return as_json_string(
+                    [
+                        {
+                            "id": 1,
+                            "name": "CI",
+                            "path": "/workflows/ci.yml",
+                            "status": "completed",
+                            "created_at": "2023-01-01T10:00:00Z",
+                        },
+                        {
+                            "id": 2,
+                            "name": "Build",
+                            "path": "/workflows/build.yml",
+                            "status": "completed",
+                            "created_at": "2023-01-02T10:00:00Z",
+                        },
+                        {
+                            "id": 3,
+                            "name": "Deploy",
+                            "path": "/workflows/deploy.yml",
+                            "status": "in_progress",
+                            "created_at": "2023-01-03T10:00:00Z",
+                        },
+                        {
+                            "id": 4,
+                            "name": "Test",
+                            "path": "/workflows/test.yml",
+                            "status": "queued",
+                            "created_at": "2023-01-04T10:00:00Z",
+                        },
+                    ]
+                )
             if file == "jobs.json":
                 return as_json_string([])
             return None
 
         with patch(
-            "core.infrastructure.file_system_base_repository.FileSystemBaseRepository.read_file_if_exists",
+            "src.core.infrastructure.file_system_base_repository.FileSystemBaseRepository.read_file_if_exists",
             side_effect=mocked_read_file_if_exists,
         ):
             repository = PipelinesRepository(configuration=InMemoryConfiguration("."))
@@ -91,35 +93,37 @@ class TestPipelineByStatus:
 
         def mocked_read_file_if_exists(file):
             if file == "workflows.json":
-                return as_json_string([
-                    {
-                        "id": 1,
-                        "name": "CI",
-                        "path": "/workflows/ci.yml",
-                        "status": "completed",
-                        "created_at": "2023-01-01T10:00:00Z",
-                    },
-                    {
-                        "id": 2,
-                        "name": "Build",
-                        "path": "/workflows/build.yml",
-                        "status": "completed",
-                        "created_at": "2023-01-02T10:00:00Z",
-                    },
-                    {
-                        "id": 3,
-                        "name": "Deploy",
-                        "path": "/workflows/deploy.yml",
-                        "status": "in_progress",
-                        "created_at": "2023-01-03T10:00:00Z",
-                    },
-                ])
+                return as_json_string(
+                    [
+                        {
+                            "id": 1,
+                            "name": "CI",
+                            "path": "/workflows/ci.yml",
+                            "status": "completed",
+                            "created_at": "2023-01-01T10:00:00Z",
+                        },
+                        {
+                            "id": 2,
+                            "name": "Build",
+                            "path": "/workflows/build.yml",
+                            "status": "completed",
+                            "created_at": "2023-01-02T10:00:00Z",
+                        },
+                        {
+                            "id": 3,
+                            "name": "Deploy",
+                            "path": "/workflows/deploy.yml",
+                            "status": "in_progress",
+                            "created_at": "2023-01-03T10:00:00Z",
+                        },
+                    ]
+                )
             if file == "jobs.json":
                 return as_json_string([])
             return None
 
         with patch(
-            "core.infrastructure.file_system_base_repository.FileSystemBaseRepository.read_file_if_exists",
+            "src.core.infrastructure.file_system_base_repository.FileSystemBaseRepository.read_file_if_exists",
             side_effect=mocked_read_file_if_exists,
         ):
             repository = PipelinesRepository(configuration=InMemoryConfiguration("."))
@@ -138,28 +142,30 @@ class TestPipelineByStatus:
 
         def mocked_read_file_if_exists(file):
             if file == "workflows.json":
-                return as_json_string([
-                    {
-                        "id": 1,
-                        "name": "CI",
-                        "path": "/workflows/ci.yml",
-                        "created_at": "2023-01-01T10:00:00Z",
-                        # Missing status field
-                    },
-                    {
-                        "id": 2,
-                        "name": "Build",
-                        "path": "/workflows/build.yml",
-                        "status": "completed",
-                        "created_at": "2023-01-02T10:00:00Z",
-                    },
-                ])
+                return as_json_string(
+                    [
+                        {
+                            "id": 1,
+                            "name": "CI",
+                            "path": "/workflows/ci.yml",
+                            "created_at": "2023-01-01T10:00:00Z",
+                            # Missing status field
+                        },
+                        {
+                            "id": 2,
+                            "name": "Build",
+                            "path": "/workflows/build.yml",
+                            "status": "completed",
+                            "created_at": "2023-01-02T10:00:00Z",
+                        },
+                    ]
+                )
             if file == "jobs.json":
                 return as_json_string([])
             return None
 
         with patch(
-            "core.infrastructure.file_system_base_repository.FileSystemBaseRepository.read_file_if_exists",
+            "src.core.infrastructure.file_system_base_repository.FileSystemBaseRepository.read_file_if_exists",
             side_effect=mocked_read_file_if_exists,
         ):
             repository = PipelinesRepository(configuration=InMemoryConfiguration("."))

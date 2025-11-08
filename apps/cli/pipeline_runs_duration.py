@@ -1,7 +1,7 @@
 import click
 
-from core.infrastructure.repository_factory import create_pipelines_repository
-from core.pipelines.plots.view_pipeline_execution_duration import (
+from src.core.infrastructure.repository_factory import create_pipelines_repository
+from src.core.pipelines.plots.view_pipeline_execution_duration import (
     ViewPipelineExecutionRunsDuration,
 )
 

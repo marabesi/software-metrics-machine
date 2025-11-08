@@ -1,6 +1,6 @@
 import click
 
-from core.infrastructure.repository_factory import create_configuration
+from src.core.infrastructure.repository_factory import create_configuration
 from src.providers.codemaat.fetch import FetchCodemaat
 
 

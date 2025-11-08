@@ -1,7 +1,7 @@
 import click
 
-from core.infrastructure.repository_factory import create_prs_repository
-from core.prs.plots.view_prs_by_author import ViewPrsByAuthor
+from src.core.infrastructure.repository_factory import create_prs_repository
+from src.core.prs.plots.view_prs_by_author import ViewPrsByAuthor
 
 
 @click.command(name="by-author", help="Plot number of PRs by author")

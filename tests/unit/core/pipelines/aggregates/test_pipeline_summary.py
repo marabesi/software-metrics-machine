@@ -1,6 +1,6 @@
 from unittest.mock import patch
-from core.pipelines.aggregates.pipeline_summary import PipelineRunSummary
-from core.pipelines.pipelines_repository import PipelinesRepository
+from src.core.pipelines.aggregates.pipeline_summary import PipelineRunSummary
+from src.core.pipelines.pipelines_repository import PipelinesRepository
 from tests.builders import as_json_string
 from tests.in_memory_configuration import InMemoryConfiguration
 
@@ -14,7 +14,7 @@ class TestPipelineRunSummary:
             return None
 
         with patch(
-            "core.infrastructure.file_system_base_repository.FileSystemBaseRepository.read_file_if_exists",
+            "src.core.infrastructure.file_system_base_repository.FileSystemBaseRepository.read_file_if_exists",
             side_effect=mocked_read_file_if_exists,
         ):
             loader = PipelinesRepository(configuration=InMemoryConfiguration("."))
@@ -62,7 +62,7 @@ class TestPipelineRunSummary:
             return None
 
         with patch(
-            "core.infrastructure.file_system_base_repository.FileSystemBaseRepository.read_file_if_exists",
+            "src.core.infrastructure.file_system_base_repository.FileSystemBaseRepository.read_file_if_exists",
             side_effect=mocked_read_file_if_exists,
         ):
             loader = PipelinesRepository(configuration=InMemoryConfiguration("."))
@@ -105,7 +105,7 @@ class TestPipelineRunSummary:
             return None
 
         with patch(
-            "core.infrastructure.file_system_base_repository.FileSystemBaseRepository.read_file_if_exists",
+            "src.core.infrastructure.file_system_base_repository.FileSystemBaseRepository.read_file_if_exists",
             side_effect=mocked_read_file_if_exists,
         ):
             loader = PipelinesRepository(configuration=InMemoryConfiguration("."))
@@ -133,7 +133,7 @@ class TestPipelineRunSummary:
             return None
 
         with patch(
-            "core.infrastructure.file_system_base_repository.FileSystemBaseRepository.read_file_if_exists",
+            "src.core.infrastructure.file_system_base_repository.FileSystemBaseRepository.read_file_if_exists",
             side_effect=mocked_read_file_if_exists,
         ):
             loader = PipelinesRepository(configuration=InMemoryConfiguration("."))
@@ -160,7 +160,7 @@ class TestPipelineRunSummary:
             return None
 
         with patch(
-            "core.infrastructure.file_system_base_repository.FileSystemBaseRepository.read_file_if_exists",
+            "src.core.infrastructure.file_system_base_repository.FileSystemBaseRepository.read_file_if_exists",
             side_effect=mocked_read_file_if_exists,
         ):
             loader = PipelinesRepository(configuration=InMemoryConfiguration("."))
@@ -189,7 +189,7 @@ class TestPipelineRunSummary:
             return None
 
         with patch(
-            "core.infrastructure.file_system_base_repository.FileSystemBaseRepository.read_file_if_exists",
+            "src.core.infrastructure.file_system_base_repository.FileSystemBaseRepository.read_file_if_exists",
             side_effect=mocked_read_file_if_exists,
         ):
             loader = PipelinesRepository(configuration=InMemoryConfiguration("."))

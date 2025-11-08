@@ -1,18 +1,18 @@
 import pandas as pd
 import panel as pn
 from apps.dashboard.components.tabulator import TabulatorComponent
-from core.prs.plots.view_average_of_prs_open_by import (
+from src.core.prs.plots.view_average_of_prs_open_by import (
     ViewAverageOfPrsOpenBy,
 )
-from core.prs.plots.view_average_review_time_by_author import (
+from src.core.prs.plots.view_average_review_time_by_author import (
     ViewAverageReviewTimeByAuthor,
 )
-from core.prs.plots.view_open_prs_through_time import ViewOpenPrsThroughTime
-from core.prs.plots.view_prs_by_author import (
+from src.core.prs.plots.view_open_prs_through_time import ViewOpenPrsThroughTime
+from src.core.prs.plots.view_prs_by_author import (
     ViewPrsByAuthor,
 )
 
-from core.prs.prs_repository import PrsRepository
+from src.core.prs.prs_repository import PrsRepository
 
 pn.extension("tabulator")
 

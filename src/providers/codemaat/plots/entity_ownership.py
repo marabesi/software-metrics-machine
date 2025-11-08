@@ -1,8 +1,8 @@
 import pandas as pd
 import holoviews as hv
 
-from core.infrastructure.base_viewer import BaseViewer, PlotResult
-from core.infrastructure.viewable import Viewable
+from src.core.infrastructure.base_viewer import BaseViewer, PlotResult
+from src.core.infrastructure.viewable import Viewable
 from apps.dashboard.components.barchart_stacked import build_barchart
 from src.providers.codemaat.codemaat_repository import CodemaatRepository
 

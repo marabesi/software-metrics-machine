@@ -12,9 +12,9 @@ from bokeh.models import (
 )
 from bokeh.palettes import Viridis256, Category20_20
 
-from core.infrastructure.base_viewer import BaseViewer, PlotResult
-from core.infrastructure.logger import Logger
-from core.infrastructure.viewable import Viewable
+from src.core.infrastructure.base_viewer import BaseViewer, PlotResult
+from src.core.infrastructure.logger import Logger
+from src.core.infrastructure.viewable import Viewable
 from src.providers.codemaat.codemaat_repository import CodemaatRepository
 
 

@@ -3,34 +3,34 @@ from fastapi import Query
 from fastapi.responses import JSONResponse
 from typing import Optional
 
-from core.infrastructure.repository_factory import (
+from src.core.infrastructure.repository_factory import (
     create_codemaat_repository,
     create_pipelines_repository,
     create_prs_repository,
 )
 
-from core.code.pairing_index import PairingIndex
-from core.pipelines.plots.view_pipeline_summary import WorkflowRunSummary
+from src.core.code.pairing_index import PairingIndex
+from src.core.pipelines.plots.view_pipeline_summary import WorkflowRunSummary
 from src.providers.codemaat.plots.entity_churn import EntityChurnViewer
 from src.providers.codemaat.plots.code_churn import CodeChurnViewer
 from src.providers.codemaat.plots.coupling import CouplingViewer
 from src.providers.codemaat.plots.entity_effort import EntityEffortViewer
 from src.providers.codemaat.plots.entity_ownership import EntityOnershipViewer
 
-from core.pipelines.plots.view_pipeline_by_status import ViewPipelineByStatus
-from core.pipelines.plots.view_jobs_by_status import ViewJobsByStatus
-from core.pipelines.plots.view_pipeline_execution_duration import (
+from src.core.pipelines.plots.view_pipeline_by_status import ViewPipelineByStatus
+from src.core.pipelines.plots.view_jobs_by_status import ViewJobsByStatus
+from src.core.pipelines.plots.view_pipeline_execution_duration import (
     ViewPipelineExecutionRunsDuration,
 )
-from core.pipelines.plots.view_deployment_frequency import ViewDeploymentFrequency
-from core.pipelines.plots.view_pipeline_runs_by_week_or_month import (
+from src.core.pipelines.plots.view_deployment_frequency import ViewDeploymentFrequency
+from src.core.pipelines.plots.view_pipeline_runs_by_week_or_month import (
     ViewWorkflowRunsByWeekOrMonth,
 )
-from core.pipelines.plots.view_jobs_average_time_execution import (
+from src.core.pipelines.plots.view_jobs_average_time_execution import (
     ViewJobsByAverageTimeExecution,
 )
 
-from core.prs.plots.view_summary import PrViewSummary
+from src.core.prs.plots.view_summary import PrViewSummary
 
 app = FastAPI()
 

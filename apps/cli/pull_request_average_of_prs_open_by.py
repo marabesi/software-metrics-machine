@@ -1,7 +1,7 @@
 import click
 
-from core.infrastructure.repository_factory import create_prs_repository
-from core.prs.plots.view_average_of_prs_open_by import ViewAverageOfPrsOpenBy
+from src.core.infrastructure.repository_factory import create_prs_repository
+from src.core.prs.plots.view_average_of_prs_open_by import ViewAverageOfPrsOpenBy
 
 
 @click.command(

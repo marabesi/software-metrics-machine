@@ -1,6 +1,6 @@
 import click
 
-from core.infrastructure.configuration.configuration_builder import (
+from src.core.infrastructure.configuration.configuration_builder import (
     ConfigurationBuilder,
     Driver,
 )

@@ -1,6 +1,6 @@
 import click
 
-from core.infrastructure.repository_factory import create_codemaat_repository
+from src.core.infrastructure.repository_factory import create_codemaat_repository
 from src.providers.codemaat.plots.coupling import CouplingViewer
 
 

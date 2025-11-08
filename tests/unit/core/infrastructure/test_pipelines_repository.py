@@ -2,7 +2,7 @@ from unittest.mock import patch
 
 import pytest
 
-from core.pipelines.pipelines_repository import PipelinesRepository
+from src.core.pipelines.pipelines_repository import PipelinesRepository
 from tests.builders import as_json_string, github_workflows_data
 from tests.in_memory_configuration import InMemoryConfiguration
 
@@ -12,7 +12,7 @@ class TestPipelinesRepository:
     @pytest.fixture(scope="function", autouse=True)
     def reset_mocks(self):
         with patch(
-            "core.infrastructure.file_system_base_repository.FileSystemBaseRepository.read_file_if_exists"
+            "src.core.infrastructure.file_system_base_repository.FileSystemBaseRepository.read_file_if_exists"
         ) as mock_exists:
             mock_exists.reset_mock()
             yield mock_exists
@@ -28,7 +28,7 @@ class TestPipelinesRepository:
         )
         with (
             patch(
-                "core.infrastructure.file_system_base_repository.FileSystemBaseRepository.read_file_if_exists",
+                "src.core.infrastructure.file_system_base_repository.FileSystemBaseRepository.read_file_if_exists",
                 return_value=workflows_with_duplicates,
             ),
         ):
@@ -109,7 +109,7 @@ class TestPipelinesRepository:
         workflow_list = as_json_string(github_workflows_data())
         with (
             patch(
-                "core.infrastructure.file_system_base_repository.FileSystemBaseRepository.read_file_if_exists",
+                "src.core.infrastructure.file_system_base_repository.FileSystemBaseRepository.read_file_if_exists",
                 return_value=workflow_list,
             ),
         ):
@@ -172,7 +172,7 @@ class TestPipelinesRepository:
             raise FileNotFoundError(f"File {file} not found")
 
         with patch(
-            "core.infrastructure.file_system_base_repository.FileSystemBaseRepository.read_file_if_exists",
+            "src.core.infrastructure.file_system_base_repository.FileSystemBaseRepository.read_file_if_exists",
             side_effect=mocked_read_file_if_exists,
         ):
             loader = PipelinesRepository(configuration=InMemoryConfiguration("."))
@@ -192,7 +192,7 @@ class TestPipelinesRepository:
         )
         with (
             patch(
-                "core.infrastructure.file_system_base_repository.FileSystemBaseRepository.read_file_if_exists",
+                "src.core.infrastructure.file_system_base_repository.FileSystemBaseRepository.read_file_if_exists",
                 return_value=workflows_with_duplicated_paths,
             ),
         ):
@@ -222,7 +222,7 @@ class TestPipelinesRepository:
             raise FileNotFoundError(f"File {file} not found")
 
         with patch(
-            "core.infrastructure.file_system_base_repository.FileSystemBaseRepository.read_file_if_exists",
+            "src.core.infrastructure.file_system_base_repository.FileSystemBaseRepository.read_file_if_exists",
             side_effect=mocked_read_file_if_exists,
         ):
             loader = PipelinesRepository(configuration=InMemoryConfiguration("."))
@@ -253,7 +253,7 @@ class TestPipelinesRepository:
             raise FileNotFoundError(f"File {file} not found")
 
         with patch(
-            "core.infrastructure.file_system_base_repository.FileSystemBaseRepository.read_file_if_exists",
+            "src.core.infrastructure.file_system_base_repository.FileSystemBaseRepository.read_file_if_exists",
             side_effect=mocked_read_file_if_exists,
         ):
             loader = PipelinesRepository(configuration=InMemoryConfiguration("."))
@@ -278,7 +278,7 @@ class TestPipelinesRepository:
         )
         with (
             patch(
-                "core.infrastructure.file_system_base_repository.FileSystemBaseRepository.read_file_if_exists",
+                "src.core.infrastructure.file_system_base_repository.FileSystemBaseRepository.read_file_if_exists",
                 return_value=workflows_with_duplicated_paths,
             ),
         ):
@@ -296,7 +296,7 @@ class TestPipelinesRepository:
         )
         with (
             patch(
-                "core.infrastructure.file_system_base_repository.FileSystemBaseRepository.read_file_if_exists",
+                "src.core.infrastructure.file_system_base_repository.FileSystemBaseRepository.read_file_if_exists",
                 return_value=workflows_with_duplicated_paths,
             ),
         ):
@@ -317,7 +317,7 @@ class TestPipelinesRepository:
         )
         with (
             patch(
-                "core.infrastructure.file_system_base_repository.FileSystemBaseRepository.read_file_if_exists",
+                "src.core.infrastructure.file_system_base_repository.FileSystemBaseRepository.read_file_if_exists",
                 return_value=workflows_with_duplicated_paths,
             ),
         ):
@@ -338,7 +338,7 @@ class TestPipelinesRepository:
         )
         with (
             patch(
-                "core.infrastructure.file_system_base_repository.FileSystemBaseRepository.read_file_if_exists",
+                "src.core.infrastructure.file_system_base_repository.FileSystemBaseRepository.read_file_if_exists",
                 return_value=workflows_with_duplicated_paths,
             ),
         ):
@@ -359,7 +359,7 @@ class TestPipelinesRepository:
         )
         with (
             patch(
-                "core.infrastructure.file_system_base_repository.FileSystemBaseRepository.read_file_if_exists",
+                "src.core.infrastructure.file_system_base_repository.FileSystemBaseRepository.read_file_if_exists",
                 return_value=workflows_with_duplicated_paths,
             ),
         ):
@@ -409,7 +409,7 @@ class TestPipelinesRepository:
         )
         with (
             patch(
-                "core.infrastructure.file_system_base_repository.FileSystemBaseRepository.read_file_if_exists",
+                "src.core.infrastructure.file_system_base_repository.FileSystemBaseRepository.read_file_if_exists",
                 return_value=pipeline_run_with_duplicated_events,
             ),
         ):
@@ -456,7 +456,7 @@ class TestPipelinesRepository:
         )
         with (
             patch(
-                "core.infrastructure.file_system_base_repository.FileSystemBaseRepository.read_file_if_exists",
+                "src.core.infrastructure.file_system_base_repository.FileSystemBaseRepository.read_file_if_exists",
                 return_value=pipeline_run_with_duplicated_events,
             ),
         ):
@@ -470,7 +470,7 @@ class TestPipelinesRepository:
         workflows_with_duplicated_paths = as_json_string([])
         with (
             patch(
-                "core.infrastructure.file_system_base_repository.FileSystemBaseRepository.read_file_if_exists",
+                "src.core.infrastructure.file_system_base_repository.FileSystemBaseRepository.read_file_if_exists",
                 return_value=workflows_with_duplicated_paths,
             ),
         ):
@@ -488,7 +488,7 @@ class TestPipelinesRepository:
         )
         with (
             patch(
-                "core.infrastructure.file_system_base_repository.FileSystemBaseRepository.read_file_if_exists",
+                "src.core.infrastructure.file_system_base_repository.FileSystemBaseRepository.read_file_if_exists",
                 return_value=workflows_with_duplicated_paths,
             ),
         ):
@@ -503,7 +503,7 @@ class TestPipelinesRepository:
         empty_workflow_runs = as_json_string([])
         with (
             patch(
-                "core.infrastructure.file_system_base_repository.FileSystemBaseRepository.read_file_if_exists",
+                "src.core.infrastructure.file_system_base_repository.FileSystemBaseRepository.read_file_if_exists",
                 return_value=empty_workflow_runs,
             ),
         ):
@@ -531,7 +531,7 @@ class TestPipelinesRepository:
             return None
 
         with patch(
-            "core.infrastructure.file_system_base_repository.FileSystemBaseRepository.read_file_if_exists",
+            "src.core.infrastructure.file_system_base_repository.FileSystemBaseRepository.read_file_if_exists",
             side_effect=mocked_read_file_if_exists,
         ):
             loader = PipelinesRepository(configuration=InMemoryConfiguration("."))
@@ -645,7 +645,7 @@ class TestPipelinesRepository:
             return None
 
         with patch(
-            "core.infrastructure.file_system_base_repository.FileSystemBaseRepository.read_file_if_exists",
+            "src.core.infrastructure.file_system_base_repository.FileSystemBaseRepository.read_file_if_exists",
             side_effect=mocked_read_file_if_exists,
         ):
             loader = PipelinesRepository(configuration=InMemoryConfiguration("."))

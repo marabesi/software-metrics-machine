@@ -1,7 +1,7 @@
 import click
 
-from core.infrastructure.repository_factory import create_prs_repository
-from core.prs.plots.view_average_review_time_by_author import (
+from src.core.infrastructure.repository_factory import create_prs_repository
+from src.core.prs.plots.view_average_review_time_by_author import (
     ViewAverageReviewTimeByAuthor,
 )
 

@@ -1,7 +1,7 @@
 import pytest
 from unittest.mock import call, patch, MagicMock
 from src.providers.github.github_workflow_client import GithubWorkflowClient
-from core.pipelines.pipelines_repository import PipelinesRepository
+from src.core.pipelines.pipelines_repository import PipelinesRepository
 from tests.in_memory_configuration import InMemoryConfiguration
 
 
@@ -19,11 +19,11 @@ class TestGithubWorkflowsClient:
         with (
             patch("requests.get") as mock_get,
             patch(
-                "core.infrastructure.file_system_base_repository.FileSystemBaseRepository.read_file_if_exists",
+                "src.core.infrastructure.file_system_base_repository.FileSystemBaseRepository.read_file_if_exists",
                 return_value=None,
             ) as mock_read,
             patch(
-                "core.infrastructure.file_system_base_repository.FileSystemBaseRepository.store_file"
+                "src.core.infrastructure.file_system_base_repository.FileSystemBaseRepository.store_file"
             ) as mock_store,
         ):
             mock_response = MagicMock()
@@ -51,11 +51,11 @@ class TestGithubWorkflowsClient:
         with (
             patch("requests.get") as mock_get,
             patch(
-                "core.infrastructure.file_system_base_repository.FileSystemBaseRepository.read_file_if_exists",
+                "src.core.infrastructure.file_system_base_repository.FileSystemBaseRepository.read_file_if_exists",
                 return_value=None,
             ),
             patch(
-                "core.infrastructure.file_system_base_repository.FileSystemBaseRepository.store_file"
+                "src.core.infrastructure.file_system_base_repository.FileSystemBaseRepository.store_file"
             ),
         ):
             mock_response = MagicMock()
@@ -93,11 +93,11 @@ class TestGithubWorkflowsClient:
         with (
             patch("requests.get") as mock_get,
             patch(
-                "core.infrastructure.file_system_base_repository.FileSystemBaseRepository.read_file_if_exists",
+                "src.core.infrastructure.file_system_base_repository.FileSystemBaseRepository.read_file_if_exists",
                 return_value=None,
             ),
             patch(
-                "core.infrastructure.file_system_base_repository.FileSystemBaseRepository.store_file"
+                "src.core.infrastructure.file_system_base_repository.FileSystemBaseRepository.store_file"
             ),
         ):
             mock_response = MagicMock()
@@ -147,11 +147,11 @@ class TestGithubWorkflowsClient:
         with (
             patch("requests.get") as mock_get,
             patch(
-                "core.infrastructure.file_system_base_repository.FileSystemBaseRepository.read_file_if_exists",
+                "src.core.infrastructure.file_system_base_repository.FileSystemBaseRepository.read_file_if_exists",
                 side_effect=side_effect_repository_read,
             ) as mock_read,
             patch(
-                "core.infrastructure.file_system_base_repository.FileSystemBaseRepository.store_file"
+                "src.core.infrastructure.file_system_base_repository.FileSystemBaseRepository.store_file"
             ),
         ):
 

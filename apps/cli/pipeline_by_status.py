@@ -1,7 +1,7 @@
 import click
 
-from core.infrastructure.repository_factory import create_pipelines_repository
-from core.pipelines.plots.view_pipeline_by_status import ViewPipelineByStatus
+from src.core.infrastructure.repository_factory import create_pipelines_repository
+from src.core.pipelines.plots.view_pipeline_by_status import ViewPipelineByStatus
 
 
 @click.command(name="pipeline-by-status", help="Plot pipeline runs by their status")

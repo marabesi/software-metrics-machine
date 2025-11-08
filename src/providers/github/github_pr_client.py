@@ -1,8 +1,8 @@
 from datetime import datetime, timezone
 import pandas as pd
 import requests
-from core.infrastructure.configuration.configuration import Configuration
-from core.prs.prs_repository import PrsRepository
+from src.core.infrastructure.configuration.configuration import Configuration
+from src.core.prs.prs_repository import PrsRepository
 
 
 class GithubPrsClient:

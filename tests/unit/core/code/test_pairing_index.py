@@ -1,8 +1,8 @@
 from unittest.mock import patch
 
 import pytest
-from core.code.pairing_index import PairingIndex
-from core.code_types import TraverserResult
+from src.core.code.pairing_index import PairingIndex
+from src.core.code_types import TraverserResult
 from src.providers.codemaat.codemaat_repository import CodemaatRepository
 from tests.commit_builder import CommitBuilder
 from tests.in_memory_configuration import InMemoryConfiguration

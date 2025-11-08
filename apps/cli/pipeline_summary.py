@@ -1,7 +1,7 @@
 import click
 
-from core.infrastructure.repository_factory import create_pipelines_repository
-from core.pipelines.plots.view_pipeline_summary import WorkflowRunSummary
+from src.core.infrastructure.repository_factory import create_pipelines_repository
+from src.core.pipelines.plots.view_pipeline_summary import WorkflowRunSummary
 
 
 @click.command(name="summary", help="Display a summary of pipeline runs")

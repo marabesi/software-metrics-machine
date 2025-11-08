@@ -1,6 +1,6 @@
 from dataclasses import dataclass
-from core.infrastructure.configuration import configuration
-from core.infrastructure.run import Run
+from src.core.infrastructure.configuration import configuration
+from src.core.infrastructure.run import Run
 
 
 @dataclass

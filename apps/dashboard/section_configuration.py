@@ -1,6 +1,6 @@
 import panel as pn
 
-from core.infrastructure.configuration.configuration import Configuration
+from src.core.infrastructure.configuration.configuration import Configuration
 
 pn.extension("tabulator")
 

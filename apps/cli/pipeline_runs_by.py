@@ -1,7 +1,7 @@
 import click
 
-from core.infrastructure.repository_factory import create_pipelines_repository
-from core.pipelines.plots.view_pipeline_runs_by_week_or_month import (
+from src.core.infrastructure.repository_factory import create_pipelines_repository
+from src.core.pipelines.plots.view_pipeline_runs_by_week_or_month import (
     ViewWorkflowRunsByWeekOrMonth,
 )
 

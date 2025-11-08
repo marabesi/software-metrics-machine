@@ -1,7 +1,7 @@
 import click
 
-from core.code.pairing_index import PairingIndex
-from core.infrastructure.repository_factory import create_codemaat_repository
+from src.core.code.pairing_index import PairingIndex
+from src.core.infrastructure.repository_factory import create_codemaat_repository
 
 
 @click.command(

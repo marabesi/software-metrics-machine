@@ -5,7 +5,7 @@ from src.providers.codemaat.plots.entity_churn import EntityChurnViewer
 from src.providers.codemaat.plots.entity_effort import EntityEffortViewer
 from src.providers.codemaat.plots.entity_ownership import EntityOnershipViewer
 from src.providers.codemaat.codemaat_repository import CodemaatRepository
-from core.code.pairing_index import PairingIndex
+from src.core.code.pairing_index import PairingIndex
 from src.providers.pydriller.commit_traverser import CommitTraverser
 import typing
 

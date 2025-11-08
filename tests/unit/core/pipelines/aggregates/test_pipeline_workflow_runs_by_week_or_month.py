@@ -1,6 +1,8 @@
 from unittest.mock import patch
-from core.pipelines.aggregates.pipeline_workflow_runs_by_week_or_month import PipelineWorkflowRunsByWekOrMonth
-from core.pipelines.pipelines_repository import PipelinesRepository
+from src.core.pipelines.aggregates.pipeline_workflow_runs_by_week_or_month import (
+    PipelineWorkflowRunsByWekOrMonth,
+)
+from src.core.pipelines.pipelines_repository import PipelinesRepository
 from tests.builders import as_json_string
 from tests.in_memory_configuration import InMemoryConfiguration
 
@@ -18,7 +20,7 @@ class TestPipelineWorkflowRunsByWeekOrMonth:
             return None
 
         with patch(
-            "core.infrastructure.file_system_base_repository.FileSystemBaseRepository.read_file_if_exists",
+            "src.core.infrastructure.file_system_base_repository.FileSystemBaseRepository.read_file_if_exists",
             side_effect=mocked_read_file_if_exists,
         ):
             repository = PipelinesRepository(configuration=InMemoryConfiguration("."))
@@ -38,38 +40,40 @@ class TestPipelineWorkflowRunsByWeekOrMonth:
 
         def mocked_read_file_if_exists(file):
             if file == "workflows.json":
-                return as_json_string([
-                    {
-                        "id": 1,
-                        "name": "CI",
-                        "path": "/workflows/ci.yml",
-                        "created_at": "2023-01-02T10:00:00Z",  # Week 1
-                    },
-                    {
-                        "id": 2,
-                        "name": "CI",
-                        "path": "/workflows/ci.yml",
-                        "created_at": "2023-01-03T10:00:00Z",  # Week 1
-                    },
-                    {
-                        "id": 3,
-                        "name": "Build",
-                        "path": "/workflows/build.yml",
-                        "created_at": "2023-01-09T10:00:00Z",  # Week 2
-                    },
-                    {
-                        "id": 4,
-                        "name": "CI",
-                        "path": "/workflows/ci.yml",
-                        "created_at": "2023-01-10T10:00:00Z",  # Week 2
-                    },
-                ])
+                return as_json_string(
+                    [
+                        {
+                            "id": 1,
+                            "name": "CI",
+                            "path": "/workflows/ci.yml",
+                            "created_at": "2023-01-02T10:00:00Z",  # Week 1
+                        },
+                        {
+                            "id": 2,
+                            "name": "CI",
+                            "path": "/workflows/ci.yml",
+                            "created_at": "2023-01-03T10:00:00Z",  # Week 1
+                        },
+                        {
+                            "id": 3,
+                            "name": "Build",
+                            "path": "/workflows/build.yml",
+                            "created_at": "2023-01-09T10:00:00Z",  # Week 2
+                        },
+                        {
+                            "id": 4,
+                            "name": "CI",
+                            "path": "/workflows/ci.yml",
+                            "created_at": "2023-01-10T10:00:00Z",  # Week 2
+                        },
+                    ]
+                )
             if file == "jobs.json":
                 return as_json_string([])
             return None
 
         with patch(
-            "core.infrastructure.file_system_base_repository.FileSystemBaseRepository.read_file_if_exists",
+            "src.core.infrastructure.file_system_base_repository.FileSystemBaseRepository.read_file_if_exists",
             side_effect=mocked_read_file_if_exists,
         ):
             repository = PipelinesRepository(configuration=InMemoryConfiguration("."))
@@ -109,44 +113,46 @@ class TestPipelineWorkflowRunsByWeekOrMonth:
 
         def mocked_read_file_if_exists(file):
             if file == "workflows.json":
-                return as_json_string([
-                    {
-                        "id": 1,
-                        "name": "CI",
-                        "path": "/workflows/ci.yml",
-                        "created_at": "2023-01-15T10:00:00Z",
-                    },
-                    {
-                        "id": 2,
-                        "name": "CI",
-                        "path": "/workflows/ci.yml",
-                        "created_at": "2023-01-20T10:00:00Z",
-                    },
-                    {
-                        "id": 3,
-                        "name": "Build",
-                        "path": "/workflows/build.yml",
-                        "created_at": "2023-02-10T10:00:00Z",
-                    },
-                    {
-                        "id": 4,
-                        "name": "CI",
-                        "path": "/workflows/ci.yml",
-                        "created_at": "2023-02-15T10:00:00Z",
-                    },
-                    {
-                        "id": 5,
-                        "name": "Build",
-                        "path": "/workflows/build.yml",
-                        "created_at": "2023-02-20T10:00:00Z",
-                    },
-                ])
+                return as_json_string(
+                    [
+                        {
+                            "id": 1,
+                            "name": "CI",
+                            "path": "/workflows/ci.yml",
+                            "created_at": "2023-01-15T10:00:00Z",
+                        },
+                        {
+                            "id": 2,
+                            "name": "CI",
+                            "path": "/workflows/ci.yml",
+                            "created_at": "2023-01-20T10:00:00Z",
+                        },
+                        {
+                            "id": 3,
+                            "name": "Build",
+                            "path": "/workflows/build.yml",
+                            "created_at": "2023-02-10T10:00:00Z",
+                        },
+                        {
+                            "id": 4,
+                            "name": "CI",
+                            "path": "/workflows/ci.yml",
+                            "created_at": "2023-02-15T10:00:00Z",
+                        },
+                        {
+                            "id": 5,
+                            "name": "Build",
+                            "path": "/workflows/build.yml",
+                            "created_at": "2023-02-20T10:00:00Z",
+                        },
+                    ]
+                )
             if file == "jobs.json":
                 return as_json_string([])
             return None
 
         with patch(
-            "core.infrastructure.file_system_base_repository.FileSystemBaseRepository.read_file_if_exists",
+            "src.core.infrastructure.file_system_base_repository.FileSystemBaseRepository.read_file_if_exists",
             side_effect=mocked_read_file_if_exists,
         ):
             repository = PipelinesRepository(configuration=InMemoryConfiguration("."))
@@ -182,40 +188,42 @@ class TestPipelineWorkflowRunsByWeekOrMonth:
 
         def mocked_read_file_if_exists(file):
             if file == "workflows.json":
-                return as_json_string([
-                    {
-                        "id": 1,
-                        "name": "CI",
-                        "path": "/workflows/ci.yml",
-                        "event": "push",
-                        "status": "completed",
-                        "conclusion": "success",
-                        "created_at": "2023-01-15T10:00:00Z",
-                    },
-                    {
-                        "id": 2,
-                        "name": "CI",
-                        "path": "/workflows/ci.yml",
-                        "event": "pull_request",
-                        "status": "completed",
-                        "conclusion": "failure",
-                        "created_at": "2023-01-20T10:00:00Z",
-                    },
-                    {
-                        "id": 3,
-                        "name": "Build",
-                        "path": "/workflows/build.yml",
-                        "event": "push",
-                        "status": "in_progress",
-                        "created_at": "2023-02-10T10:00:00Z",
-                    },
-                ])
+                return as_json_string(
+                    [
+                        {
+                            "id": 1,
+                            "name": "CI",
+                            "path": "/workflows/ci.yml",
+                            "event": "push",
+                            "status": "completed",
+                            "conclusion": "success",
+                            "created_at": "2023-01-15T10:00:00Z",
+                        },
+                        {
+                            "id": 2,
+                            "name": "CI",
+                            "path": "/workflows/ci.yml",
+                            "event": "pull_request",
+                            "status": "completed",
+                            "conclusion": "failure",
+                            "created_at": "2023-01-20T10:00:00Z",
+                        },
+                        {
+                            "id": 3,
+                            "name": "Build",
+                            "path": "/workflows/build.yml",
+                            "event": "push",
+                            "status": "in_progress",
+                            "created_at": "2023-02-10T10:00:00Z",
+                        },
+                    ]
+                )
             if file == "jobs.json":
                 return as_json_string([])
             return None
 
         with patch(
-            "core.infrastructure.file_system_base_repository.FileSystemBaseRepository.read_file_if_exists",
+            "src.core.infrastructure.file_system_base_repository.FileSystemBaseRepository.read_file_if_exists",
             side_effect=mocked_read_file_if_exists,
         ):
             repository = PipelinesRepository(configuration=InMemoryConfiguration("."))
@@ -223,8 +231,7 @@ class TestPipelineWorkflowRunsByWeekOrMonth:
 
             # Test with raw_filters parameter
             result = workflow_runs.main(
-                aggregate_by="month",
-                raw_filters="event=push,status=completed"
+                aggregate_by="month", raw_filters="event=push,status=completed"
             )
 
             # With filters, only run id=1 should match (event=push, status=completed)
@@ -239,26 +246,28 @@ class TestPipelineWorkflowRunsByWeekOrMonth:
 
         def mocked_read_file_if_exists(file):
             if file == "workflows.json":
-                return as_json_string([
-                    {
-                        "id": 1,
-                        "name": "CI",
-                        # Missing path field
-                        "created_at": "2023-01-15T10:00:00Z",
-                    },
-                    {
-                        "id": 2,
-                        "name": "Build",
-                        "path": "/workflows/build.yml",
-                        "created_at": "2023-01-20T10:00:00Z",
-                    },
-                ])
+                return as_json_string(
+                    [
+                        {
+                            "id": 1,
+                            "name": "CI",
+                            # Missing path field
+                            "created_at": "2023-01-15T10:00:00Z",
+                        },
+                        {
+                            "id": 2,
+                            "name": "Build",
+                            "path": "/workflows/build.yml",
+                            "created_at": "2023-01-20T10:00:00Z",
+                        },
+                    ]
+                )
             if file == "jobs.json":
                 return as_json_string([])
             return None
 
         with patch(
-            "core.infrastructure.file_system_base_repository.FileSystemBaseRepository.read_file_if_exists",
+            "src.core.infrastructure.file_system_base_repository.FileSystemBaseRepository.read_file_if_exists",
             side_effect=mocked_read_file_if_exists,
         ):
             repository = PipelinesRepository(configuration=InMemoryConfiguration("."))

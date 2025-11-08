@@ -1,8 +1,8 @@
 import click
 
-from core.infrastructure.configuration.configuration_builder import Driver
-from core.infrastructure.repository_factory import create_pipelines_repository
-from core.pipelines.plots.view_jobs_summary import ViewJobsSummary
+from src.core.infrastructure.configuration.configuration_builder import Driver
+from src.core.infrastructure.repository_factory import create_pipelines_repository
+from src.core.pipelines.plots.view_jobs_summary import ViewJobsSummary
 
 
 @click.command(

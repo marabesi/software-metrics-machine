@@ -10,10 +10,10 @@ from apps.dashboard.section_insight import insights_section
 from apps.dashboard.section_pipeline import pipeline_section
 from apps.dashboard.section_pull_request import prs_section as tab_pr_section
 from apps.dashboard.section_source_code import source_code_section
-from core.infrastructure.configuration.configuration_builder import Driver
-from core.infrastructure.repository_factory import create_configuration
-from core.pipelines.pipelines_repository import PipelinesRepository
-from core.prs.prs_repository import PrsRepository
+from src.core.infrastructure.configuration.configuration_builder import Driver
+from src.core.infrastructure.repository_factory import create_configuration
+from src.core.pipelines.pipelines_repository import PipelinesRepository
+from src.core.prs.prs_repository import PrsRepository
 from src.providers.codemaat.codemaat_repository import CodemaatRepository
 
 pn.extension(

@@ -1,9 +1,9 @@
 import panel as pn
-from core.pipelines.aggregates.pipeline_summary import PipelineRunSummary
-from core.pipelines.plots.view_deployment_frequency import (
+from src.core.pipelines.aggregates.pipeline_summary import PipelineRunSummary
+from src.core.pipelines.plots.view_deployment_frequency import (
     ViewDeploymentFrequency,
 )
-from core.pipelines.pipelines_repository import PipelinesRepository
+from src.core.pipelines.pipelines_repository import PipelinesRepository
 
 pn.extension("tabulator")
 

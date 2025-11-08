@@ -1,7 +1,7 @@
 import click
 
-from core.infrastructure.repository_factory import create_pipelines_repository
-from core.pipelines.plots.view_jobs_by_status import ViewJobsByStatus
+from src.core.infrastructure.repository_factory import create_pipelines_repository
+from src.core.pipelines.plots.view_jobs_by_status import ViewJobsByStatus
 
 
 @click.command(name="jobs-by-status", help="Plot job executions by their status")

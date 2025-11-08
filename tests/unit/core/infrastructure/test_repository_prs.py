@@ -1,9 +1,9 @@
 import pytest
-from core.infrastructure.configuration.configuration_builder import (
+from src.core.infrastructure.configuration.configuration_builder import (
     ConfigurationBuilder,
     Driver,
 )
-from core.prs.prs_repository import PrsRepository
+from src.core.prs.prs_repository import PrsRepository
 from unittest.mock import patch
 
 from tests.builders import as_json_string
@@ -27,7 +27,7 @@ class TestRepositoryPrs:
         ]
 
         with patch(
-            "core.prs.prs_repository.PrsRepository.read_file_if_exists",
+            "src.core.prs.prs_repository.PrsRepository.read_file_if_exists",
             return_value=mocked_prs_data,
         ):
             repository = PrsRepository(
@@ -119,7 +119,7 @@ class TestRepositoryPrs:
             ]
         )
         with patch(
-            "core.infrastructure.file_system_base_repository.FileSystemBaseRepository.read_file_if_exists",
+            "src.core.infrastructure.file_system_base_repository.FileSystemBaseRepository.read_file_if_exists",
             return_value=prs_fetched,
         ):
             repository = PrsRepository(
@@ -148,7 +148,7 @@ class TestRepositoryPrs:
             ]
         )
         with patch(
-            "core.infrastructure.file_system_base_repository.FileSystemBaseRepository.read_file_if_exists",
+            "src.core.infrastructure.file_system_base_repository.FileSystemBaseRepository.read_file_if_exists",
             return_value=prs_fetched,
         ):
             repository = PrsRepository(

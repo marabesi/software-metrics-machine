@@ -7,7 +7,7 @@ from bokeh.models import ColumnDataSource, HoverTool
 from bokeh.transform import linear_cmap
 from bokeh.palettes import Viridis256
 
-from core.infrastructure.base_viewer import BaseViewer, PlotResult
+from src.core.infrastructure.base_viewer import BaseViewer, PlotResult
 from src.providers.codemaat.codemaat_repository import CodemaatRepository
 
 

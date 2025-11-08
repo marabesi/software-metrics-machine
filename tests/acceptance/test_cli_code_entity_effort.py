@@ -11,7 +11,7 @@ class TestCliCodeEntityOwnershipCommands:
 
     @pytest.fixture(scope="function", autouse=True)
     def reset_mock_run(self):
-        with patch("core.infrastructure.run.Run.run_command") as mock_run:
+        with patch("src.core.infrastructure.run.Run.run_command") as mock_run:
             mock_run.reset_mock()
             yield mock_run
 

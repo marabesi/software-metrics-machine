@@ -2,8 +2,8 @@ import re
 import pandas as pd
 from pydriller import Repository
 from typing import Iterable, Optional, Tuple
-from core.code_types import TraverserResult
-from core.infrastructure.configuration.configuration import Configuration
+from src.core.code_types import TraverserResult
+from src.core.infrastructure.configuration.configuration import Configuration
 
 
 class CommitTraverser:

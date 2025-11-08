@@ -1,8 +1,8 @@
 import click
 
-from core.infrastructure.configuration.configuration_builder import Driver
-from core.infrastructure.repository_factory import create_pipelines_repository
-from core.pipelines.plots.view_deployment_frequency import ViewDeploymentFrequency
+from src.core.infrastructure.configuration.configuration_builder import Driver
+from src.core.infrastructure.repository_factory import create_pipelines_repository
+from src.core.pipelines.plots.view_deployment_frequency import ViewDeploymentFrequency
 
 
 @click.command(

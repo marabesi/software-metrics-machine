@@ -5,20 +5,20 @@ from apps.dashboard.components.aggregate_by_select import (
     aggregate_by_select,
 )
 from apps.dashboard.components.tabulator import TabulatorComponent
-from core.pipelines.plots.view_jobs_by_status import ViewJobsByStatus
-from core.pipelines.plots.view_jobs_average_time_execution import (
+from src.core.pipelines.plots.view_jobs_by_status import ViewJobsByStatus
+from src.core.pipelines.plots.view_jobs_average_time_execution import (
     ViewJobsByAverageTimeExecution,
 )
-from core.pipelines.plots.view_pipeline_by_status import (
+from src.core.pipelines.plots.view_pipeline_by_status import (
     ViewPipelineByStatus,
 )
-from core.pipelines.plots.view_pipeline_execution_duration import (
+from src.core.pipelines.plots.view_pipeline_execution_duration import (
     ViewPipelineExecutionRunsDuration,
 )
-from core.pipelines.plots.view_pipeline_runs_by_week_or_month import (
+from src.core.pipelines.plots.view_pipeline_runs_by_week_or_month import (
     ViewWorkflowRunsByWeekOrMonth,
 )
-from core.pipelines.pipelines_repository import PipelinesRepository
+from src.core.pipelines.pipelines_repository import PipelinesRepository
 
 pn.extension(
     "tabulator",
