@@ -1,7 +1,7 @@
 import pytest
 from apps.cli.main import main
 from unittest.mock import patch
-
+from tests.response_builder import build_http_successfull_response
 from tests.file_handler_for_testing import FileHandlerForTesting
 
 
@@ -14,8 +14,14 @@ class TestCliCommands:
             yield mock_get
 
     def test_can_run_fetch_prs_command(self, cli):
-        result = cli.runner.invoke(main, ["--help"])
-        assert 0 == result.exit_code
+        with patch("requests.get") as mock_get:
+            mock_get.return_value = build_http_successfull_response([])
+
+            result = cli.runner.invoke(main, ["prs", "fetch"])
+            assert 0 == result.exit_code
+
+    def test_show_help_message(self, cli):
+        result = cli.runner.invoke(main, ["prs", "fetch", "--help"])
         assert "Show this message and exit" in result.output
 
     def test_can_run_fetch_with_raw_filters_for_api(self, cli):
@@ -39,15 +45,14 @@ class TestCliCommands:
         configuration = cli.configuration
 
         with patch("requests.get") as mock_get:
-            fetch_prs_fake_response = [
-                {
-                    "created_at": "2011-01-26T19:01:12Z",
-                    "closed_at": "2011-01-26T19:01:12Z",
-                }
-            ]
-
-            mock_get.return_value.json.return_value = fetch_prs_fake_response
-            mock_get.return_value.status_code = 200
+            mock_get.return_value = build_http_successfull_response(
+                [
+                    {
+                        "created_at": "2011-01-26T19:01:12Z",
+                        "closed_at": "2011-01-26T19:01:12Z",
+                    }
+                ]
+            )
 
             result = cli.runner.invoke(
                 main,
@@ -69,15 +74,14 @@ class TestCliCommands:
 
     def test_fetch_prs_from_last_month(self, cli):
         with patch("requests.get") as mock_get:
-            fetch_prs_fake_response = [
-                {
-                    "created_at": "2011-01-26T19:01:12Z",
-                    "closed_at": "2011-01-26T19:01:12Z",
-                }
-            ]
-
-            mock_get.return_value.json.return_value = fetch_prs_fake_response
-            mock_get.return_value.status_code = 200
+            mock_get.return_value = build_http_successfull_response(
+                [
+                    {
+                        "created_at": "2011-01-26T19:01:12Z",
+                        "closed_at": "2011-01-26T19:01:12Z",
+                    }
+                ]
+            )
 
             result = cli.runner.invoke(
                 main,
@@ -93,15 +97,14 @@ class TestCliCommands:
 
     def test_fetch_defaults_to_1_month_when_no_date_is_provided(self, cli):
         with patch("requests.get") as mock_get:
-            fetch_prs_fake_response = [
-                {
-                    "created_at": "2011-01-26T19:01:12Z",
-                    "closed_at": "2011-01-26T19:01:12Z",
-                }
-            ]
-
-            mock_get.return_value.json.return_value = fetch_prs_fake_response
-            mock_get.return_value.status_code = 200
+            mock_get.return_value = build_http_successfull_response(
+                [
+                    {
+                        "created_at": "2011-01-26T19:01:12Z",
+                        "closed_at": "2011-01-26T19:01:12Z",
+                    }
+                ]
+            )
 
             result = cli.runner.invoke(
                 main,
