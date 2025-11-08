@@ -58,7 +58,7 @@ class TestFetchCodemaat:
             run_command = mock_run.call_args[0][0]
             assert run_command == [
                 "sh",
-                "src/providers/codemaat/fetch-codemaat.sh",
+                "src/software_metrics_machine/providers/codemaat/fetch-codemaat.sh",
                 configuration.git_repository_location,
                 configuration.store_data,
                 start_date,
@@ -88,7 +88,7 @@ class TestFetchCodemaat:
             run_command = mock_run.call_args[0][0]
             assert run_command == [
                 "sh",
-                "src/providers/codemaat/fetch-codemaat.sh",
+                "src/software_metrics_machine/providers/codemaat/fetch-codemaat.sh",
                 configuration.git_repository_location,
                 configuration.store_data,
                 start_date,
@@ -119,7 +119,7 @@ class TestFetchCodemaat:
             run_command = mock_run.call_args[0][0]
             assert run_command == [
                 "sh",
-                "src/providers/codemaat/fetch-codemaat.sh",
+                "src/software_metrics_machine/providers/codemaat/fetch-codemaat.sh",
                 configuration.git_repository_location,
                 configuration.store_data,
                 start_date,

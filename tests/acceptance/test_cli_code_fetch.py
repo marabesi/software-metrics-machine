@@ -47,7 +47,7 @@ class TestCliCodeFetchCommands:
             run_command = mock_run.call_args[0][0]
             assert [
                 "sh",
-                "src/providers/codemaat/fetch-codemaat.sh",
+                "src/software_metrics_machine/providers/codemaat/fetch-codemaat.sh",
                 configuration.git_repository_location,
                 configuration.store_data,
                 "2025-01-01",
@@ -80,7 +80,7 @@ class TestCliCodeFetchCommands:
             run_command = mock_run.call_args[0][0]
             assert [
                 "sh",
-                "src/providers/codemaat/fetch-codemaat.sh",
+                "src/software_metrics_machine/providers/codemaat/fetch-codemaat.sh",
                 configuration.git_repository_location,
                 configuration.store_data,
                 "2025-01-01",
