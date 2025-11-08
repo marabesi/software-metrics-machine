@@ -8,9 +8,12 @@ from tests.file_handler_for_testing import FileHandlerForTesting
 class TestPipelineRunsByStatusCliCommands:
 
     def test_can_run_pipeline_by_status(self, cli):
-        result = cli.runner.invoke(main, ["pipelines", "pipeline-by-status", "--help"])
+        result = cli.runner.invoke(main, ["pipelines", "pipeline-by-status"])
         assert 0 == result.exit_code
-        assert "Show this message and exit" in result.output
+
+    def test_show_run_pipeline_by_status_help_message(self, cli):
+        result = cli.runner.invoke(main, ["pipelines", "pipeline-by-status", "--help"])
+        assert "Plot pipeline runs by their status" in result.output
 
     def test_should_filter_by_workflow_path(self, cli):
         workflow_runs = github_workflows_data()

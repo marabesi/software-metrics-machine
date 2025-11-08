@@ -43,9 +43,7 @@ class TestWorkflowsRunsDurationCliCommands:
         command = expected["command"]
         path_string = cli.data_stored_at
 
-        FileHandlerForTesting(path_string).store_json_file(
-            "workflows.json", workflow_runs
-        )
+        FileHandlerForTesting(path_string).store_pipelines_with(workflow_runs)
 
         result = cli.runner.invoke(
             main,
@@ -56,9 +54,7 @@ class TestWorkflowsRunsDurationCliCommands:
 
     def test_should_store_pipeline_run_duration_plot_in_the_given_directory(self, cli):
         path_string = cli.data_stored_at
-        FileHandlerForTesting(path_string).store_json_file(
-            "workflows.json", github_workflows_data()
-        )
+        FileHandlerForTesting(path_string).store_pipelines_with(github_workflows_data())
 
         result = cli.runner.invoke(
             main,
@@ -105,9 +101,7 @@ class TestWorkflowsRunsDurationCliCommands:
         expected_count = expected["count"]
         command = expected["command"]
         path_string = cli.data_stored_at
-        FileHandlerForTesting(path_string).store_json_file(
-            "workflows.json", workflow_runs
-        )
+        FileHandlerForTesting(path_string).store_pipelines_with(workflow_runs)
 
         result = cli.runner.invoke(
             main,
