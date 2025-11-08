@@ -31,7 +31,7 @@ git config --global user.email "you@example.com"
 git config --global user.name "Pytest"
 
 echo "Running tests..."
-export PYTHONPATH="$(pwd):$PYTHONPATH"
+#export PYTHONPATH="$(pwd):$PYTHONPATH"
 poetry run pytest -s "$@"
 
 echo "Cleaning up..."

@@ -27,3 +27,5 @@ jobs:
         with:
 #          packages-dir: dist/software_metrics_machine-${{steps.read_toml.outputs.value}}.tar.gz
           packages-dir: dist/
+          user: ${{ secrets.USER_PYPI }}
+          password: ${{ secrets.PASSWORD_PYPI }}
