@@ -80,9 +80,7 @@ jobs:
 
       - name: Run pytest
         run: |
-          git config --global user.email "you@example.com"
-          git config --global user.name "Pytest"
-          poetry run python -m pytest -vvv --cov=. --cov-report=xml ./tests
+          ./run-test.sh -vvv --cov=. --cov-report=xml
 
       - name: Save coverage report
         uses: actions/upload-artifact@v4
@@ -159,4 +157,5 @@ jobs:
       - name: Publish package to PyPI
         uses: pypa/gh-action-pypi-publish@release/v1
         with:
-          packages-dir: dist/software_metrics_machine-${{steps.read_toml.outputs.value}}.tar.gz
+#          packages-dir: dist/software_metrics_machine-${{steps.read_toml.outputs.value}}.tar.gz
+          packages-dir: dist/

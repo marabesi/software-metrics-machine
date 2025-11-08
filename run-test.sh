@@ -27,6 +27,9 @@ EOF
 
 echo "$TEMPLATE" > "$(pwd)/tmp_test/github/smm_config.json"
 
+git config --global user.email "you@example.com"
+git config --global user.name "Pytest"
+
 echo "Running tests..."
 export PYTHONPATH="$(pwd):$PYTHONPATH"
 poetry run pytest -s "$@"
