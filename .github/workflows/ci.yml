@@ -54,7 +54,6 @@ jobs:
 
       - name: Set PYTHONPATH
         run: |
-          echo "PYTHONPATH=$(pwd):$PYTHONPATH" >> $GITHUB_ENV
           echo "SMM_STORE_DATA_AT=$(pwd)/tmp_test/github" >> $GITHUB_ENV
           mkdir -p "$(pwd)/tmp_test/github"
 
@@ -77,10 +76,9 @@ jobs:
 
       - name: Run pytest
         run: |
-          pip install -e .
           git config --global user.email "you@example.com"
           git config --global user.name "Pytest"
-          poetry run pytest -vvv --cov=. --cov-report=xml
+          PYTHONPATH=$(pwd):$PYTHONPATH poetry run pytest -vvv --cov=. --cov-report=xml
 
       - name: Save coverage report
         uses: actions/upload-artifact@v4
