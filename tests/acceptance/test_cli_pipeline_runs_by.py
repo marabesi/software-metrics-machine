@@ -10,6 +10,9 @@ class TestWorkflowsRunsByCliCommands:
     def test_can_run_view_workflow_by(self, cli):
         result = cli.runner.invoke(main, ["pipelines", "runs-by", "--help"])
         assert 0 == result.exit_code
+
+    def test_show_filter_instructions(self, cli):
+        result = cli.runner.invoke(main, ["pipelines", "runs-by", "--help"])
         assert "Comma-separated key=value pairs to filter runs" in result.output
 
     @pytest.mark.parametrize(
@@ -33,9 +36,7 @@ class TestWorkflowsRunsByCliCommands:
         expected_count = expected["count"]
 
         path_string = cli.data_stored_at
-        FileHandlerForTesting(path_string).store_json_file(
-            "workflows.json", workflow_runs
-        )
+        FileHandlerForTesting(path_string).store_pipelines_with(workflow_runs)
 
         result = cli.runner.invoke(
             main,
@@ -57,9 +58,7 @@ class TestWorkflowsRunsByCliCommands:
         workflow_runs = github_workflows_data()
         path_string = cli.data_stored_at
 
-        FileHandlerForTesting(path_string).store_json_file(
-            "workflows.json", workflow_runs
-        )
+        FileHandlerForTesting(path_string).store_pipelines_with(workflow_runs)
 
         result = cli.runner.invoke(
             main,
@@ -80,9 +79,7 @@ class TestWorkflowsRunsByCliCommands:
         workflow_runs = github_workflows_data()
         path_string = cli.data_stored_at
 
-        FileHandlerForTesting(path_string).store_json_file(
-            "workflows.json", workflow_runs
-        )
+        FileHandlerForTesting(path_string).store_pipelines_with(workflow_runs)
 
         result = cli.runner.invoke(
             main,
@@ -98,9 +95,7 @@ class TestWorkflowsRunsByCliCommands:
         workflow_runs = github_workflows_data()
         path_string = cli.data_stored_at
 
-        FileHandlerForTesting(path_string).store_json_file(
-            "workflows.json", workflow_runs
-        )
+        FileHandlerForTesting(path_string).store_pipelines_with(workflow_runs)
 
         result = cli.runner.invoke(
             main,
@@ -134,9 +129,7 @@ class TestWorkflowsRunsByCliCommands:
 
         path_string = cli.data_stored_at
 
-        FileHandlerForTesting(path_string).store_json_file(
-            "workflows.json", workflow_runs
-        )
+        FileHandlerForTesting(path_string).store_pipelines_with(workflow_runs)
 
         result = cli.runner.invoke(
             main,
@@ -204,9 +197,7 @@ class TestWorkflowsRunsByCliCommands:
         workflow_runs = github_workflows_data()
         path_string = cli.data_stored_at
 
-        FileHandlerForTesting(path_string).store_json_file(
-            "workflows.json", workflow_runs
-        )
+        FileHandlerForTesting(path_string).store_pipelines_with(workflow_runs)
 
         result = cli.runner.invoke(main, command)
 

@@ -35,8 +35,6 @@ class TestWorkflowsDeploymentFrequencyCliCommands:
                 "deployment-frequency",
                 "--job-name",
                 "Deploy",
-                "--out-file",
-                "deployment_frequency_out.png",
             ],
         )
         assert 0 == result.exit_code
@@ -49,8 +47,6 @@ class TestWorkflowsDeploymentFrequencyCliCommands:
                 "deployment-frequency",
                 "--job-name",
                 "Deploy",
-                "--out-file",
-                "deployment_frequency_out.png",
             ],
         )
         assert "Loaded 1 runs" in result.output

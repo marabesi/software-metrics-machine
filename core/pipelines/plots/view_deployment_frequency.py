@@ -21,7 +21,6 @@ class ViewDeploymentFrequency(BaseViewer):
         job_name: str,
         start_date: str | None = None,
         end_date: str | None = None,
-        out_file: str | None = None,
     ) -> PlotResult:
         aggregated = DeploymentFrequency(repository=self.repository).execute(
             workflow_path=workflow_path,

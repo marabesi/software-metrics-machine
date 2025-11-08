@@ -10,13 +10,6 @@ from core.pipelines.plots.view_deployment_frequency import ViewDeploymentFrequen
     help="Plot pipeline deployment frequency by day, week, and month",
 )
 @click.option(
-    "--out-file",
-    "-o",
-    type=str,
-    default=None,
-    help="Optional path to save the plot image",
-)
-@click.option(
     "--workflow-path",
     "-w",
     type=str,
@@ -40,11 +33,10 @@ from core.pipelines.plots.view_deployment_frequency import ViewDeploymentFrequen
     type=str,
     help="End date (inclusive) in YYYY-MM-DD",
 )
-def deployment_frequency(out_file, workflow_path, job_name, start_date, end_date):
+def deployment_frequency(workflow_path, job_name, start_date, end_date):
     return ViewDeploymentFrequency(
         repository=create_pipelines_repository(driver=Driver.CLI)
     ).plot(
-        out_file=out_file,
         workflow_path=workflow_path,
         job_name=job_name,
         start_date=start_date,
