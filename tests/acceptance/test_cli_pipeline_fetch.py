@@ -1,7 +1,7 @@
 from unittest.mock import patch
 
 from requests import Response
-from apps.cli.main import main
+from src.apps.cli.main import main
 from tests.builders import as_json_string
 
 

@@ -2,7 +2,7 @@ from unittest.mock import patch
 
 import pytest
 
-from apps.cli.main import main
+from src.apps.cli.main import main
 from tests.csv_builder import CSVBuilder
 from tests.file_handler_for_testing import FileHandlerForTesting
 

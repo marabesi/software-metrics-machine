@@ -2,4 +2,4 @@
 
 export PYTHONPATH="$(pwd):$PYTHONPATH"
 
-poetry run streamlit run apps/dashboard/chat.py "$@"
+poetry run streamlit run src/apps/dashboard/chat.py "$@"

@@ -1,4 +1,4 @@
-from apps.cli.main import main
+from src.apps.cli.main import main
 
 
 class TestCliCodePairingIndexCommands:

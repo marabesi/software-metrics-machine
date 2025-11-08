@@ -3,7 +3,7 @@ from unittest.mock import patch
 
 import pytest
 
-from apps.cli.main import main
+from src.apps.cli.main import main
 
 
 class TestCliCodeFetchCommands:

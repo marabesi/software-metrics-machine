@@ -1,10 +1,10 @@
 import pandas as pd
 import panel as pn
-from apps.dashboard.components.aggregate_by_select import (
+from src.apps.dashboard.components.aggregate_by_select import (
     aggregate_by_metric_select,
     aggregate_by_select,
 )
-from apps.dashboard.components.tabulator import TabulatorComponent
+from src.apps.dashboard.components.tabulator import TabulatorComponent
 from src.core.pipelines.plots.view_jobs_by_status import ViewJobsByStatus
 from src.core.pipelines.plots.view_jobs_average_time_execution import (
     ViewJobsByAverageTimeExecution,

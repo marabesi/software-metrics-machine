@@ -1,4 +1,4 @@
-from apps.cli.main import main
+from src.apps.cli.main import main
 import pytest
 
 from tests.file_handler_for_testing import FileHandlerForTesting

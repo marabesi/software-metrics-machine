@@ -1,5 +1,5 @@
 import pytest
-from apps.cli.main import main
+from src.apps.cli.main import main
 from unittest.mock import patch
 from tests.response_builder import build_http_successfull_response
 from tests.file_handler_for_testing import FileHandlerForTesting

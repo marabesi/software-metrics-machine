@@ -4,12 +4,12 @@ import panel as pn
 import panel.pane.holoviews as _ph
 from panel.template import FastListTemplate
 
-from apps.dashboard.components.filter_state import FilterState
-from apps.dashboard.section_configuration import configuration_section
-from apps.dashboard.section_insight import insights_section
-from apps.dashboard.section_pipeline import pipeline_section
-from apps.dashboard.section_pull_request import prs_section as tab_pr_section
-from apps.dashboard.section_source_code import source_code_section
+from src.apps.dashboard.components.filter_state import FilterState
+from src.apps.dashboard.section_configuration import configuration_section
+from src.apps.dashboard.section_insight import insights_section
+from src.apps.dashboard.section_pipeline import pipeline_section
+from src.apps.dashboard.section_pull_request import prs_section as tab_pr_section
+from src.apps.dashboard.section_source_code import source_code_section
 from src.core.infrastructure.configuration.configuration_builder import Driver
 from src.core.infrastructure.repository_factory import create_configuration
 from src.core.pipelines.pipelines_repository import PipelinesRepository

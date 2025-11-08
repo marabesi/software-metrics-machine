@@ -1,6 +1,6 @@
 import pandas as pd
 import panel as pn
-from apps.dashboard.components.tabulator import TabulatorComponent
+from src.apps.dashboard.components.tabulator import TabulatorComponent
 from src.core.prs.plots.view_average_of_prs_open_by import (
     ViewAverageOfPrsOpenBy,
 )

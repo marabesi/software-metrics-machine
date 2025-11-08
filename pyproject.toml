@@ -3,7 +3,7 @@ name = "software-metrics-machine"
 version = "0.1.0"
 description = ""
 readme = "README.md"
-requires-python = ">=3.13,<4.0"
+requires-python = ">=3.11,<4.0"
 dependencies = [
     "pandas (>=2.3.2,<3.0.0)",
     "requests (>=2.32.5,<3.0.0)",
@@ -23,11 +23,11 @@ dependencies = [
 ]
 
 [project.scripts]
-smm = "apps.cli.main"
+smm = "apps.cli.main:main"
 
 [tool.poetry]
 package-mode = true
-packages = [{ include = "software_metrics_machine", from = "src" }]
+packages = [{ include = "*", from = "src" }]
 
 [build-system]
 requires = ["poetry-core>=2.0.0,<3.0.0"]

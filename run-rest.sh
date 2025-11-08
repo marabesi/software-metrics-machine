@@ -1,4 +1,4 @@
 #!/bin/bash
 
 export PYTHONPATH="$(pwd):$PYTHONPATH"
-poetry run fastapi dev apps/rest/main.py "$@"
+poetry run fastapi dev src/apps/rest/main.py "$@"

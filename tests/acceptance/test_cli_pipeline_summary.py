@@ -1,5 +1,5 @@
 import pytest
-from apps.cli.main import main
+from src.apps.cli.main import main
 from tests.builders import single_run
 
 from tests.file_handler_for_testing import FileHandlerForTesting

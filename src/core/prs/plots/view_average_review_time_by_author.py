@@ -1,7 +1,7 @@
 import pandas as pd
 
 from src.core.infrastructure.base_viewer import BaseViewer, PlotResult
-from apps.dashboard.components.barchart_stacked import build_barchart
+from src.apps.dashboard.components.barchart_stacked import build_barchart
 from src.core.prs.prs_repository import PrsRepository
 from collections import defaultdict
 from typing import List, Tuple
