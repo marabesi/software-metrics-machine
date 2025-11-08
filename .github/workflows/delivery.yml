@@ -34,7 +34,7 @@ jobs:
           pip install poetry
 
       - name: Install dependencies (poetry)
-        run: poetry install --no-interaction --no-ansi --no-root
+        run: poetry install --no-interaction --no-ansi --no-root --only main
 
       - name: Build
         run: |
