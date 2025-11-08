@@ -18,6 +18,17 @@ def single_deployment_frequency():
     ]
 
 
+def single_run():
+    return [
+        {
+            "id": 1,
+            "path": "/workflows/build.yml",
+            "status": "success",
+            "created_at": "2023-10-01T12:00:00Z",
+        },
+    ]
+
+
 def github_workflows_data():
     return [
         {
