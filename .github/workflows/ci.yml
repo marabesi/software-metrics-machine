@@ -130,12 +130,12 @@ jobs:
           python -m pip install --upgrade pip
           pip install poetry
 
-      - name: Install dependencies (poetry)
-        run: poetry install --no-interaction --no-ansi --no-root
-
       - name: Set PYTHONPATH
         run: |
-          echo "PYTHONPATH=$(pwd)" >> $GITHUB_ENV
+          echo "PYTHONPATH=$(pwd)/src:$(pwd)/${PYTHONPATH}" >> $GITHUB_ENV
+
+      - name: Install dependencies (poetry)
+        run: poetry install --no-interaction --no-ansi --no-root
 
       - name: "Run test"
         run: "./lib/bashunit tests/e2e"
