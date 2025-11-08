@@ -8,7 +8,7 @@ from bokeh.transform import linear_cmap
 from bokeh.palettes import Viridis256
 
 from core.infrastructure.base_viewer import BaseViewer, PlotResult
-from providers.codemaat.codemaat_repository import CodemaatRepository
+from src.providers.codemaat.codemaat_repository import CodemaatRepository
 
 
 class EntityEffortViewer(BaseViewer):

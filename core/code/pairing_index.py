@@ -2,8 +2,8 @@ from typing import Iterable, Optional
 
 from core.code_types import PairingIndexResult
 from core.infrastructure.configuration.configuration import Configuration
-from providers.codemaat.codemaat_repository import CodemaatRepository
-from providers.pydriller.commit_traverser import CommitTraverser
+from src.providers.codemaat.codemaat_repository import CodemaatRepository
+from src.providers.pydriller.commit_traverser import CommitTraverser
 
 
 class PairingIndex:

@@ -7,12 +7,13 @@ CLI commands.
 """
 
 from core.infrastructure.configuration.configuration_builder import (
-    ConfigurationBuilder, Driver)
-from core.infrastructure.file_system_base_repository import \
-    FileSystemBaseRepository
+    ConfigurationBuilder,
+    Driver,
+)
+from core.infrastructure.file_system_base_repository import FileSystemBaseRepository
 from core.pipelines.pipelines_repository import PipelinesRepository
 from core.prs.prs_repository import PrsRepository
-from providers.codemaat.codemaat_repository import CodemaatRepository
+from src.providers.codemaat.codemaat_repository import CodemaatRepository
 
 
 def create_configuration(driver: Driver = Driver.CLI):

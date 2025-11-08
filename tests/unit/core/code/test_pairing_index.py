@@ -3,7 +3,7 @@ from unittest.mock import patch
 import pytest
 from core.code.pairing_index import PairingIndex
 from core.code_types import TraverserResult
-from providers.codemaat.codemaat_repository import CodemaatRepository
+from src.providers.codemaat.codemaat_repository import CodemaatRepository
 from tests.commit_builder import CommitBuilder
 from tests.in_memory_configuration import InMemoryConfiguration
 
@@ -30,7 +30,7 @@ class TestPairingIndex:
         self, commits, expected_analysis_count
     ):
         with patch(
-            "providers.pydriller.commit_traverser.CommitTraverser.traverse_commits"
+            "src.providers.pydriller.commit_traverser.CommitTraverser.traverse_commits"
         ) as mock_run:
             list_of_commits = commits
 
@@ -69,7 +69,7 @@ class TestPairingIndex:
     )
     def test_calculates_number_of_paired_commits(self, commits, expected_paired_count):
         with patch(
-            "providers.pydriller.commit_traverser.CommitTraverser.traverse_commits"
+            "src.providers.pydriller.commit_traverser.CommitTraverser.traverse_commits"
         ) as mock_run:
             list_of_commits = commits
 
@@ -134,7 +134,7 @@ class TestPairingIndex:
     )
     def test_calculates_pairing_index(self, commits, expected):
         with patch(
-            "providers.pydriller.commit_traverser.CommitTraverser.traverse_commits"
+            "src.providers.pydriller.commit_traverser.CommitTraverser.traverse_commits"
         ) as mock_run:
             paired = expected["paired_commits"]
             index = expected["pairing_index"]
@@ -155,7 +155,7 @@ class TestPairingIndex:
 
     def test_respects_selected_authors_filter(self):
         with patch(
-            "providers.pydriller.commit_traverser.CommitTraverser.traverse_commits"
+            "src.providers.pydriller.commit_traverser.CommitTraverser.traverse_commits"
         ) as mock_run:
             mock_run.return_value = TraverserResult(
                 total_analyzed_commits=2, commits=[], paired_commits=1

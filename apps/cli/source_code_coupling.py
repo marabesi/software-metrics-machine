@@ -1,7 +1,7 @@
 import click
 
 from core.infrastructure.repository_factory import create_codemaat_repository
-from providers.codemaat.plots.coupling import CouplingViewer
+from src.providers.codemaat.plots.coupling import CouplingViewer
 
 
 @click.command(name="coupling", help="Plot coupling graph")

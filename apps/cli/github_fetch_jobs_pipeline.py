@@ -5,7 +5,7 @@ from core.infrastructure.repository_factory import (
     create_configuration,
     create_pipelines_repository,
 )
-from providers.github.github_workflow_client import GithubWorkflowClient
+from src.providers.github.github_workflow_client import GithubWorkflowClient
 
 
 def fetch_all_job_runs(start_date, end_date, raw_filters):

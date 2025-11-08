@@ -1,6 +1,6 @@
 import pytest
 from unittest.mock import call, patch, MagicMock
-from providers.github.github_workflow_client import GithubWorkflowClient
+from src.providers.github.github_workflow_client import GithubWorkflowClient
 from core.pipelines.pipelines_repository import PipelinesRepository
 from tests.in_memory_configuration import InMemoryConfiguration
 

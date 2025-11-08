@@ -1,6 +1,6 @@
 import pytest
 from unittest.mock import patch, MagicMock
-from providers.github.github_pr_client import GithubPrsClient
+from src.providers.github.github_pr_client import GithubPrsClient
 from tests.in_memory_configuration import InMemoryConfiguration
 
 

@@ -1,7 +1,7 @@
 from unittest.mock import patch
 import pandas as pd
 import pytest
-from providers.codemaat.codemaat_repository import CodemaatRepository
+from src.providers.codemaat.codemaat_repository import CodemaatRepository
 from tests.in_memory_configuration import InMemoryConfiguration
 
 

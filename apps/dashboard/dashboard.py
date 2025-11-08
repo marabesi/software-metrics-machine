@@ -14,7 +14,7 @@ from core.infrastructure.configuration.configuration_builder import Driver
 from core.infrastructure.repository_factory import create_configuration
 from core.pipelines.pipelines_repository import PipelinesRepository
 from core.prs.prs_repository import PrsRepository
-from providers.codemaat.codemaat_repository import CodemaatRepository
+from src.providers.codemaat.codemaat_repository import CodemaatRepository
 
 pn.extension(
     "tabulator",

@@ -1,7 +1,7 @@
 import pytest
 from subprocess import CompletedProcess, CalledProcessError
 from unittest.mock import patch
-from providers.codemaat.fetch import FetchCodemaat
+from src.providers.codemaat.fetch import FetchCodemaat
 from tests.in_memory_configuration import InMemoryConfiguration
 
 
@@ -54,7 +54,7 @@ class TestFetchCodemaat:
             run_command = mock_run.call_args[0][0]
             assert run_command == [
                 "sh",
-                "providers/codemaat/fetch-codemaat.sh",
+                "src/providers/codemaat/fetch-codemaat.sh",
                 configuration.git_repository_location,
                 configuration.store_data,
                 start_date,
@@ -82,7 +82,7 @@ class TestFetchCodemaat:
             run_command = mock_run.call_args[0][0]
             assert run_command == [
                 "sh",
-                "providers/codemaat/fetch-codemaat.sh",
+                "src/providers/codemaat/fetch-codemaat.sh",
                 configuration.git_repository_location,
                 configuration.store_data,
                 start_date,
@@ -111,7 +111,7 @@ class TestFetchCodemaat:
             run_command = mock_run.call_args[0][0]
             assert run_command == [
                 "sh",
-                "providers/codemaat/fetch-codemaat.sh",
+                "src/providers/codemaat/fetch-codemaat.sh",
                 configuration.git_repository_location,
                 configuration.store_data,
                 start_date,

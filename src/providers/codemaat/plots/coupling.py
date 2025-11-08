@@ -15,7 +15,7 @@ from bokeh.palettes import Viridis256, Category20_20
 from core.infrastructure.base_viewer import BaseViewer, PlotResult
 from core.infrastructure.logger import Logger
 from core.infrastructure.viewable import Viewable
-from providers.codemaat.codemaat_repository import CodemaatRepository
+from src.providers.codemaat.codemaat_repository import CodemaatRepository
 
 
 class CouplingViewer(BaseViewer, Viewable):

@@ -1,7 +1,7 @@
 import click
 
 from core.infrastructure.repository_factory import create_codemaat_repository
-from providers.codemaat.plots.entity_effort import EntityEffortViewer
+from src.providers.codemaat.plots.entity_effort import EntityEffortViewer
 
 
 @click.command(name="entity-effort", help="Plot entity effort graph")

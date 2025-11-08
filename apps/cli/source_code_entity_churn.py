@@ -1,7 +1,7 @@
 import click
 
 from core.infrastructure.repository_factory import create_codemaat_repository
-from providers.codemaat.plots.entity_churn import EntityChurnViewer
+from src.providers.codemaat.plots.entity_churn import EntityChurnViewer
 
 
 @click.command(name="entity-churn", help="Plot entity churn graph")

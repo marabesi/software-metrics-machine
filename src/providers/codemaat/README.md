@@ -16,7 +16,7 @@ export SSM_GIT_REPOSITORY_LOCATION=/my/path/to/git/repo
 ```
 
 This provider in addition to the SSM_GIT_REPOSITORY_LOCATION env variable, requires the SMM_STORE_DATA_AT env variable to know
-where to store the fetched data. [Make sure to have it set](../../README.md).
+where to store the fetched data. [Make sure to have it set](../../../README.md).
 
 ### Checkpoint
 

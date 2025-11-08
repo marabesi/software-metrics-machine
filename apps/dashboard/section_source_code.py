@@ -1,12 +1,12 @@
 import panel as pn
-from providers.codemaat.plots.code_churn import CodeChurnViewer
-from providers.codemaat.plots.coupling import CouplingViewer
-from providers.codemaat.plots.entity_churn import EntityChurnViewer
-from providers.codemaat.plots.entity_effort import EntityEffortViewer
-from providers.codemaat.plots.entity_ownership import EntityOnershipViewer
-from providers.codemaat.codemaat_repository import CodemaatRepository
+from src.providers.codemaat.plots.code_churn import CodeChurnViewer
+from src.providers.codemaat.plots.coupling import CouplingViewer
+from src.providers.codemaat.plots.entity_churn import EntityChurnViewer
+from src.providers.codemaat.plots.entity_effort import EntityEffortViewer
+from src.providers.codemaat.plots.entity_ownership import EntityOnershipViewer
+from src.providers.codemaat.codemaat_repository import CodemaatRepository
 from core.code.pairing_index import PairingIndex
-from providers.pydriller.commit_traverser import CommitTraverser
+from src.providers.pydriller.commit_traverser import CommitTraverser
 import typing
 
 pn.extension("tabulator")

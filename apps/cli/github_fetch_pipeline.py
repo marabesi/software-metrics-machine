@@ -1,7 +1,7 @@
 import click
 
 from core.infrastructure.repository_factory import create_configuration
-from providers.github.github_workflow_client import GithubWorkflowClient
+from src.providers.github.github_workflow_client import GithubWorkflowClient
 
 
 @click.command()

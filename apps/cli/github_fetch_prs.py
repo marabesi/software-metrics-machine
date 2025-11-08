@@ -1,7 +1,7 @@
 import click
 
 from core.infrastructure.repository_factory import create_configuration
-from providers.github.github_pr_client import GithubPrsClient
+from src.providers.github.github_pr_client import GithubPrsClient
 
 
 @click.command(name="fetch", help="Fetch pull requests from GitHub")

@@ -1,7 +1,7 @@
 import click
 
 from core.infrastructure.repository_factory import create_configuration
-from providers.codemaat.fetch import FetchCodemaat
+from src.providers.codemaat.fetch import FetchCodemaat
 
 
 @click.command(name="fetch", help="Fetch historical data from a git repository")

@@ -11,11 +11,11 @@ from core.infrastructure.repository_factory import (
 
 from core.code.pairing_index import PairingIndex
 from core.pipelines.plots.view_pipeline_summary import WorkflowRunSummary
-from providers.codemaat.plots.entity_churn import EntityChurnViewer
-from providers.codemaat.plots.code_churn import CodeChurnViewer
-from providers.codemaat.plots.coupling import CouplingViewer
-from providers.codemaat.plots.entity_effort import EntityEffortViewer
-from providers.codemaat.plots.entity_ownership import EntityOnershipViewer
+from src.providers.codemaat.plots.entity_churn import EntityChurnViewer
+from src.providers.codemaat.plots.code_churn import CodeChurnViewer
+from src.providers.codemaat.plots.coupling import CouplingViewer
+from src.providers.codemaat.plots.entity_effort import EntityEffortViewer
+from src.providers.codemaat.plots.entity_ownership import EntityOnershipViewer
 
 from core.pipelines.plots.view_pipeline_by_status import ViewPipelineByStatus
 from core.pipelines.plots.view_jobs_by_status import ViewJobsByStatus
