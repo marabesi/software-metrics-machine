@@ -8,8 +8,9 @@ GITHUB_TOKEN=$1
 # project="reactjs"
 # github_repo="facebook/react"
 
-project="vscode"
-github_repo="microsoft/vscode"
+project="smelly-test"
+github_repo="marabesi/smelly-test"
+
 repo_url="https://github.com/$github_repo.git"
 
 base_dir="$(pwd)"
@@ -19,8 +20,8 @@ analysis_dir="$base_dir/downloads/analysis"
 rm -rf "$analysis_dir"
 mkdir -p "$analysis_dir"
 
-start_date="2025-09-20"
-end_date="2025-09-25"
+start_date="2024-01-20"
+end_date="2025-10-25"
 
 export SMM_STORE_DATA_AT="$analysis_dir"
 
@@ -45,9 +46,9 @@ EOF
 echo "$TEMPLATE" > "$analysis_dir/smm_config.json"
 
 
-./run-cli.sh codemaat fetch --start-date "$start_date" --end-date "$end_date"
+./run-cli.sh code fetch --start-date "$start_date" --end-date "$end_date"
 ./run-cli.sh prs fetch --start-date "$start_date" --end-date "$end_date"
-./run-cli.sh pipelines fetch --start-date "$start_date" --end-date "$end_date" --ste-by="day"
+./run-cli.sh pipelines fetch --start-date "$start_date" --end-date "$end_date"
 ./run-cli.sh pipelines jobs-fetch --start-date "$start_date" --end-date "$end_date"
 
 ./run-cli.sh pipelines summary
