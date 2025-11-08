@@ -4,8 +4,13 @@ import pytest
 from requests import Response
 from apps.cli.main import main
 
-from tests.builders import as_json_string
+from tests.builders import as_json_string, single_run
+from tests.github_workflow_response import (
+    successfull_response_with_single_job,
+    successfull_response_with_empty_jobs,
+)
 from tests.file_handler_for_testing import FileHandlerForTesting
+from tests.pipeline_builder import PipelineBuilder
 
 job_with_single_step_completed_successfully = [
     {
@@ -40,17 +45,6 @@ job_with_single_step_completed_successfully = [
 ]
 
 
-def single_run_successfully():
-    return [
-        {
-            "id": 1,
-            "path": "/workflows/build.yml",
-            "status": "completed",
-            "created_at": "2023-10-01T12:00:00Z",
-        }
-    ]
-
-
 class TestJobsCliCommands:
 
     @pytest.fixture(scope="class", autouse=True)
@@ -62,48 +56,21 @@ class TestJobsCliCommands:
     def test_can_run_fetch_jobs_command(self, cli):
         result = cli.runner.invoke(main, ["pipelines", "jobs-fetch", "--help"])
         assert 0 == result.exit_code
+
+    def test_show_help_message(self, cli):
+        result = cli.runner.invoke(main, ["pipelines", "jobs-fetch", "--help"])
         assert "Show this message and exit" in result.output
 
     def test_should_fetch_jobs_for_a_workflow(self, cli, tmp_path):
         path_string = cli.data_stored_at
 
-        FileHandlerForTesting(path_string).store_json_file(
-            "workflows.json", single_run_successfully()
-        )
+        FileHandlerForTesting(path_string).store_pipelines_with(single_run())
 
         with patch("requests.get") as mock_get:
-            fetch_jobs_fake_response = {
-                "total_count": 1,
-                "jobs": [
-                    {
-                        "id": 1,
-                        "run_id": 1,
-                        "workflow_name": "Node CI",
-                        "run_attempt": 1,
-                        "node_id": "CR_kwDOF2CqAc8AAAALeduliQ",
-                        "url": "https://api.github.com/repos/marabesi/json-tool/actions/jobs/49289078153",
-                        "html_url": "https://github.com/marabesi/json-tool/actions/runs/17364448040/job/49289078153",
-                        "status": "completed",
-                        "conclusion": "success",
-                        "created_at": "2025-09-01T00:37:44Z",
-                        "started_at": "2025-09-01T00:37:46Z",
-                        "completed_at": "2025-09-01T00:38:14Z",
-                        "name": "build",
-                        "steps": [
-                            {
-                                "name": "Set up job",
-                                "status": "completed",
-                                "conclusion": "success",
-                                "number": 1,
-                                "started_at": "2025-09-01T00:37:47Z",
-                                "completed_at": "2025-09-01T00:37:48Z",
-                            }
-                        ],
-                    }
-                ],
-            }
             response = Response()
-            response._content = bytes(as_json_string(fetch_jobs_fake_response), "utf-8")
+            response._content = bytes(
+                as_json_string(successfull_response_with_single_job()), "utf-8"
+            )
             response.status_code = 200
 
             mock_get.return_value = response
@@ -125,9 +92,7 @@ class TestJobsCliCommands:
 
     def test_not_fetch_when_workflow_falls_off_the_start_date_and_end_date(self, cli):
         path_string = cli.data_stored_at
-        FileHandlerForTesting(path_string).store_json_file(
-            "workflows.json", single_run_successfully()
-        )
+        FileHandlerForTesting(path_string).store_pipelines_with(single_run())
 
         result = cli.runner.invoke(
             main,
@@ -148,23 +113,14 @@ class TestJobsCliCommands:
 
     def test_fetch_jobs_based_on_raw_filters(self, cli):
         path_string = cli.data_stored_at
-        single_run = [
-            {
-                "id": 1,
-                "path": "/workflows/build.yml",
-                "status": "success",
-                "created_at": "2023-01-01T12:00:00Z",
-            },
-        ]
-        FileHandlerForTesting(path_string).store_json_file("workflows.json", single_run)
+        single_run = [PipelineBuilder().with_created_at("2023-01-01T12:00:00Z").build()]
+        FileHandlerForTesting(path_string).store_pipelines_with(single_run)
 
         with patch("requests.get") as mock_get:
-            fetch_jobs_fake_response = {
-                "total_count": 0,
-                "jobs": [],
-            }
             response = Response()
-            response._content = bytes(as_json_string(fetch_jobs_fake_response), "utf-8")
+            response._content = bytes(
+                as_json_string(successfull_response_with_empty_jobs()), "utf-8"
+            )
             response.status_code = 200
 
             mock_get.return_value = response
@@ -211,7 +167,7 @@ class TestJobsCliCommands:
     def test_with_stored_data_summary(self, cli, jobs):
         path_string = cli.data_stored_at
         FileHandlerForTesting(path_string).store_json_file(
-            "workflows.json", single_run_successfully()
+            "workflows.json", single_run()
         )
         FileHandlerForTesting(path_string).store_json_file("jobs.json", jobs)
 
@@ -258,18 +214,8 @@ class TestJobsCliCommands:
         self, cli, jobs_for_test, command, expected
     ):
         path_string = cli.data_stored_at
-        single_run = [
-            {
-                "id": 1,
-                "name": "Deploy",
-                "path": "/workflows/build.yml",
-                "status": "success",
-                "created_at": "2025-09-01T00:33:00Z",
-                "conclusion": "success",
-            },
-        ]
-        FileHandlerForTesting(path_string).store_json_file("workflows.json", single_run)
-        FileHandlerForTesting(path_string).store_json_file("jobs.json", jobs_for_test)
+        FileHandlerForTesting(path_string).store_pipelines_with(single_run())
+        FileHandlerForTesting(path_string).store_jobs_with(jobs_for_test)
 
         result = cli.runner.invoke(main, command)
 
@@ -296,7 +242,7 @@ class TestJobsCliCommands:
             },
         ]
         FileHandlerForTesting(path_string).store_json_file(
-            "workflows.json", single_run_successfully()
+            "workflows.json", single_run()
         )
         FileHandlerForTesting(path_string).store_json_file("jobs.json", jobs)
 
@@ -333,7 +279,7 @@ class TestJobsCliCommands:
             },
         ]
         FileHandlerForTesting(path_string).store_json_file(
-            "workflows.json", single_run_successfully()
+            "workflows.json", single_run()
         )
         FileHandlerForTesting(path_string).store_json_file("jobs.json", jobs)
 
@@ -370,7 +316,7 @@ class TestJobsCliCommands:
             },
         ]
         FileHandlerForTesting(path_string).store_json_file(
-            "workflows.json", single_run_successfully()
+            "workflows.json", single_run()
         )
         FileHandlerForTesting(path_string).store_json_file("jobs.json", jobs)
 

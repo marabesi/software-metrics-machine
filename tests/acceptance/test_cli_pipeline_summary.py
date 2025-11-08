@@ -3,6 +3,7 @@ from apps.cli.main import main
 from tests.builders import single_run
 
 from tests.file_handler_for_testing import FileHandlerForTesting
+from tests.pipeline_builder import PipelineBuilder
 
 
 class TestPipelineSummaryCliCommands:
@@ -43,19 +44,14 @@ class TestPipelineSummaryCliCommands:
         "workflows",
         [
             [
-                {
-                    "id": 1,
-                    "path": "/workflows/build.yml",
-                    "conclusion": "success",
-                    "created_at": "2023-10-01T12:00:00Z",
-                },
+                PipelineBuilder().with_created_at("2020-01-01T12:00:00Z").build(),
             ],
         ],
     )
     def test_show_filter_summary_runs(self, cli, workflows):
         path_string = cli.data_stored_at
 
-        FileHandlerForTesting(path_string).store_json_file("workflows.json", workflows)
+        FileHandlerForTesting(path_string).store_pipelines_with(workflows)
 
         result = cli.runner.invoke(
             main,
@@ -63,9 +59,9 @@ class TestPipelineSummaryCliCommands:
                 "pipelines",
                 "summary",
                 "--start-date",
-                "2021-10-01",
+                "2021-01-01",
                 "--end-date",
-                "2021-01-02",
+                "2021-10-02",
             ],
         )
         assert "No workflow runs available" in result.output
