@@ -33,7 +33,6 @@ jobs:
       - name: Run flake8
         run: poetry run flake8
 
-
   pytest:
     name: Pytest
     runs-on: ubuntu-latest
@@ -80,7 +79,9 @@ jobs:
 
       - name: Run pytest
         run: |
-          ./run-test.sh -vvv --cov=. --cov-report=xml
+          git config --global user.email "you@example.com"
+          git config --global user.name "Pytest"
+          poetry run python -m pytest -vvv --cov=. --cov-report=xml
 
       - name: Save coverage report
         uses: actions/upload-artifact@v4

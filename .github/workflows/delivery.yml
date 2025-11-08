@@ -1,0 +1,29 @@
+name: CI
+
+on:
+  workflow_dispatch:
+
+env:
+  PYTHON_VERSION: 3.13.7
+
+jobs:
+  delivery:
+    runs-on: ubuntu-latest
+    needs: [ pytest, acceptance ]
+    if: github.ref == 'refs/heads/main' && contains(github.event.head_commit.message, 'tagged version')
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: fetch version
+        uses: SebRollen/toml-action@v1.2.0
+        id: read_toml
+        with:
+          file: 'pyproject.toml'
+          field: 'version'
+
+      - name: Publish package to PyPI
+        uses: pypa/gh-action-pypi-publish@release/v1
+        with:
+#          packages-dir: dist/software_metrics_machine-${{steps.read_toml.outputs.value}}.tar.gz
+          packages-dir: dist/
