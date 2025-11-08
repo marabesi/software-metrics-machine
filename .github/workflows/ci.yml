@@ -77,6 +77,7 @@ jobs:
 
       - name: Run pytest
         run: |
+          pip install -e .
           git config --global user.email "you@example.com"
           git config --global user.name "Pytest"
           poetry run pytest -vvv --cov=. --cov-report=xml
