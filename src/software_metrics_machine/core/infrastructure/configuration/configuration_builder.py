@@ -6,13 +6,11 @@ from software_metrics_machine.core.infrastructure.configuration.configuration im
 from software_metrics_machine.core.infrastructure.configuration.configuration_file_system_handler import (
     ConfigurationFileSystemHandler,
 )
-from tests.in_memory_configuration import InMemoryConfiguration
 
 
 class Driver(Enum):
     CLI = "CLI"
     JSON = "JSON"
-    IN_MEMORY = "IN_MEMORY"
     HTTP = "HTTP"
 
 
@@ -40,9 +38,6 @@ class ConfigurationBuilder:
             return ConfigurationFileSystemHandler(path).read_file_if_exists(
                 "smm_config.json"
             )
-        if self.driver == Driver.IN_MEMORY:
-            return InMemoryConfiguration(".")
-
         raise ValueError("Invalid configuration")
 
     def create_web_configuration(data):

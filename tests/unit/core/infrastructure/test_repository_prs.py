@@ -1,20 +1,15 @@
 import pytest
-from software_metrics_machine.core.infrastructure.configuration.configuration_builder import (
-    ConfigurationBuilder,
-    Driver,
-)
 from software_metrics_machine.core.prs.prs_repository import PrsRepository
 from unittest.mock import patch
-
+from tests.in_memory_configuration import InMemoryConfiguration
 from tests.builders import as_json_string
 
 
 class TestRepositoryPrs:
     @pytest.fixture(scope="function", autouse=True)
     def setup(self):
-        self.repository = PrsRepository(
-            configuration=ConfigurationBuilder(driver=Driver.IN_MEMORY).build()
-        )
+        self.configuration = InMemoryConfiguration(".")
+        self.repository = PrsRepository(configuration=self.configuration)
 
     def test_load_provided_data_when_exists(self):
         mocked_prs_data = [
@@ -30,9 +25,7 @@ class TestRepositoryPrs:
             "software_metrics_machine.core.prs.prs_repository.PrsRepository.read_file_if_exists",
             return_value=mocked_prs_data,
         ):
-            repository = PrsRepository(
-                configuration=ConfigurationBuilder(driver=Driver.IN_MEMORY).build()
-            )
+            repository = PrsRepository(configuration=self.configuration)
             all_prs = repository.read_file_if_exists("prs.json")
 
             assert len(all_prs) == 1
@@ -122,9 +115,7 @@ class TestRepositoryPrs:
             "software_metrics_machine.core.infrastructure.file_system_base_repository.FileSystemBaseRepository.read_file_if_exists",
             return_value=prs_fetched,
         ):
-            repository = PrsRepository(
-                configuration=ConfigurationBuilder(driver=Driver.IN_MEMORY).build()
-            )
+            repository = PrsRepository(configuration=self.configuration)
             filters = {"start_date": "2025-09-01", "end_date": "2025-09-15"}
 
             filtered = repository.prs_with_filters(filters)
@@ -151,9 +142,7 @@ class TestRepositoryPrs:
             "software_metrics_machine.core.infrastructure.file_system_base_repository.FileSystemBaseRepository.read_file_if_exists",
             return_value=prs_fetched,
         ):
-            repository = PrsRepository(
-                configuration=ConfigurationBuilder(driver=Driver.IN_MEMORY).build()
-            )
+            repository = PrsRepository(configuration=self.configuration)
 
             filters = {"start_date": "2025-09-10", "end_date": "2025-09-15"}
             filtered = repository.prs_with_filters(filters)
