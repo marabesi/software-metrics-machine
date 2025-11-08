@@ -36,13 +36,6 @@ jobs:
       - name: Install dependencies (poetry)
         run: poetry install --no-interaction --no-ansi --no-root
 
-      - name: fetch version
-        uses: SebRollen/toml-action@v1.2.0
-        id: read_toml
-        with:
-          file: 'pyproject.toml'
-          field: 'version'
-
       - name: Build
         run: |
           python -m pip install --upgrade build
@@ -51,6 +44,5 @@ jobs:
       - name: Publish package to PyPI
         uses: pypa/gh-action-pypi-publish@release/v1
         with:
-#          packages-dir: dist/software_metrics_machine-${{steps.read_toml.outputs.value}}.tar.gz
           packages-dir: dist/
           password: ${{ secrets.PYPI_API_TOKEN }}
