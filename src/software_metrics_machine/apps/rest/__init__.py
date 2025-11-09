@@ -1,5 +1,13 @@
-import uvicorn
+import os
+import sys
+
+DEFAULT_TARGET = "software_metrics_machine.apps.rest.main:app"
 
 
 def main():
-    uvicorn.run("software_metrics_machine.apps.rest.main:app")
+    args = sys.argv[1:]
+
+    if not any(":" in a or a.endswith(".py") for a in args if not a.startswith("-")):
+        args = [DEFAULT_TARGET] + args
+
+    os.execv(sys.executable, [sys.executable, "-m", "uvicorn", *args])
