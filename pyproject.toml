@@ -31,6 +31,9 @@ smm = "software_metrics_machine.apps.cli:main"
 
 [tool.poetry]
 package-mode = true
+packages = [
+    { include = "software_metrics_machine", from = "src" },
+]
 
 [build-system]
 requires = ["poetry-core>=2.0.0,<3.0.0"]
