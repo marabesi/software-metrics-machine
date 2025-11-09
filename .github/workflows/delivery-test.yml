@@ -5,6 +5,8 @@ on:
 
 jobs:
   delivery:
+    permissions:
+      id-token: write
     uses: ./.github/workflows/delivery-pypi.yml
     with:
       repository-url: 'https://test.pypi.org/legacy/'
