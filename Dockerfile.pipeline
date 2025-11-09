@@ -1,6 +1,7 @@
 # Use the same Python major version as CI
 FROM python:3.13-slim
 
+ENV PYTHONPATH=""
 ENV PYTHONPATH="/workspace/src:/workspace:${PYTHONPATH}"
 
 
@@ -22,7 +23,8 @@ RUN python -m pip install --upgrade pip \
 
 RUN poetry install --no-root --no-interaction --no-ansi
 
-
+RUN git config --global user.email "you@example.com" && \
+  git config --global user.name "Pytest"
 
 # Default command runs tests (this will fail with ModuleNotFoundError)
 CMD ["poetry", "run", "pytest", "-vvv"]
