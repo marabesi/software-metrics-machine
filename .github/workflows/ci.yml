@@ -54,9 +54,12 @@ jobs:
       - name: Install dependencies (poetry)
         run: poetry install --no-interaction --no-ansi --no-root
 
-      - name: Set PYTHONPATH
+#      - name: Set PYTHONPATH
+#        run: |
+#          echo "PYTHONPATH=$(pwd)/src:$(pwd)/${PYTHONPATH}" >> $GITHUB_ENV
+
+      - name: Set Configuration
         run: |
-          echo "PYTHONPATH=$(pwd)/src:$(pwd)/${PYTHONPATH}" >> $GITHUB_ENV
           echo "SMM_STORE_DATA_AT=$(pwd)/tmp_test/github" >> $GITHUB_ENV
           mkdir -p "$(pwd)/tmp_test/github"
 
@@ -130,9 +133,9 @@ jobs:
           python -m pip install --upgrade pip
           pip install poetry
 
-      - name: Set PYTHONPATH
-        run: |
-          echo "PYTHONPATH=$(pwd)/src:$(pwd)/${PYTHONPATH}" >> $GITHUB_ENV
+#      - name: Set PYTHONPATH
+#        run: |
+#          echo "PYTHONPATH=$(pwd)/src:$(pwd)/${PYTHONPATH}" >> $GITHUB_ENV
 
       - name: Install dependencies (poetry)
         run: poetry install --no-interaction --no-ansi --no-root
