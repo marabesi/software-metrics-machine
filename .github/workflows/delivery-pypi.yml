@@ -46,6 +46,9 @@ jobs:
           file: 'pyproject.toml'
           field: 'version'
 
+      - name: Show version
+        run: echo "Version is ${{ steps.read_toml.outputs.value }}"
+
       - name: Build
         run: |
           rm -rf ./tests
