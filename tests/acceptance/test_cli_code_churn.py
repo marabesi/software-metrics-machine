@@ -17,6 +17,16 @@ class TestCliCodeCommands:
             mock_run.reset_mock()
             yield mock_run
 
+    def test_can_run_code_churn(self, cli):
+        result = cli.runner.invoke(
+            main,
+            [
+                "code",
+                "code-churn",
+            ],
+        )
+        assert result.stderr == ""
+
     def test_can_run_code_churn_without_data_available(self, cli):
         result = cli.runner.invoke(
             main,
@@ -32,7 +42,6 @@ class TestCliCodeCommands:
             ],
         )
         assert "No code churn data available to plot" in result.output
-        assert result.stderr == ""
 
     @pytest.mark.parametrize(
         "csv_data, expected",
