@@ -1,4 +1,4 @@
-name: Delivery PyPI
+name: Delivery PyPI - Reusable
 
 env:
   PYTHON_VERSION: 3.13.7
