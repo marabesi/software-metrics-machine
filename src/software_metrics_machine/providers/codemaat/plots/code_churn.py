@@ -1,6 +1,7 @@
+from typing import List
 import holoviews as hv
-import pandas as pd
 
+from software_metrics_machine.core.code.code_churn_types import CodeChurn
 from software_metrics_machine.core.infrastructure.base_viewer import (
     BaseViewer,
     PlotResult,
@@ -26,36 +27,24 @@ class CodeChurnViewer(BaseViewer, Viewable):
         out_file: str | None = None,
         start_date: str | None = None,
         end_date: str | None = None,
-    ) -> PlotResult:
-        df = self.repository.get_code_churn(
+    ) -> PlotResult[List[CodeChurn]]:
+        code_churn_result = self.repository.get_code_churn(
             {"start_date": start_date, "end_date": end_date}
         )
 
-        # Normalize dataframe columns
-        if df is None or df.empty:
+        if len(code_churn_result) == 0:
             print("No code churn data available to plot")
-            # Return an informative placeholder (build_barchart will also handle empty data)
             plot = hv.Text(0.5, 0.5, "No code churn data available")
-            return PlotResult(plot=plot, data=pd.DataFrame([]))
+            return PlotResult(plot=plot, data=[])
 
-        if "date" not in df:
-            df["date"] = []
-        if "added" not in df:
-            df["added"] = 0
-        if "deleted" not in df:
-            df["deleted"] = 0
-
-        # Prepare data for a stacked bar chart: one row per (date, type)
         data = []
-        for _, row in df.iterrows():
-            data.append(
-                {"date": row.get("date"), "type": "Added", "value": row.get("added", 0)}
-            )
+        for row in code_churn_result:
+            data.append({"date": row["date"], "type": "Added", "value": row["added"]})
             data.append(
                 {
-                    "date": row.get("date"),
+                    "date": row["date"],
                     "type": "Deleted",
-                    "value": row.get("deleted", 0),
+                    "value": row["deleted"],
                 }
             )
 
@@ -74,4 +63,4 @@ class CodeChurnViewer(BaseViewer, Viewable):
             color=super().get_color(),
         )
 
-        return PlotResult(plot=chart, data=pd.DataFrame(data))
+        return PlotResult(plot=chart, data=data)

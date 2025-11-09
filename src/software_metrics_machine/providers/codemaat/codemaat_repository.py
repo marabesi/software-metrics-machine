@@ -3,6 +3,7 @@ from pathlib import Path
 from pathlib import PurePosixPath
 from typing import List
 
+from software_metrics_machine.core.code.code_churn_types import CodeChurn
 from software_metrics_machine.core.infrastructure.file_system_base_repository import (
     FileSystemBaseRepository,
 )
@@ -16,7 +17,7 @@ class CodemaatRepository(FileSystemBaseRepository):
         self.configuration = configuration
         super().__init__(configuration=self.configuration)
 
-    def get_code_churn(self, filters: None = None):
+    def get_code_churn(self, filters: None = None) -> List[CodeChurn]:
         file_path = Path(f"{self.configuration.store_data}/abs-churn.csv")
         if not file_path.exists():
             return pd.DataFrame()
@@ -29,7 +30,17 @@ class CodemaatRepository(FileSystemBaseRepository):
                 ed = pd.to_datetime(end_date).date()
                 data["date"] = pd.to_datetime(data["date"]).dt.date
                 data = data[(data["date"] >= sd) & (data["date"] <= ed)]
-        return data
+        output = []
+        for _, row in data.iterrows():
+            output.append(
+                {
+                    "date": row.get("date"),
+                    "added": row.get("added"),
+                    "deleted": row.get("deleted"),
+                    "commits": row.get("commits"),
+                }
+            )
+        return output
 
     def get_coupling(self, ignore_files: str | None = None, filters: None = None):
         file_path = Path(f"{self.configuration.store_data}/coupling.csv")

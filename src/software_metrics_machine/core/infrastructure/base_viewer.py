@@ -1,7 +1,6 @@
 import os
-from typing import List, NamedTuple
+from typing import Generic, List, NamedTuple, TypeVar
 
-import pandas as pd
 from software_metrics_machine.core.infrastructure.file_system_base_repository import (
     FileSystemBaseRepository,
 )
@@ -12,10 +11,12 @@ from matplotlib.figure import Figure
 import panel as pn
 import holoviews as hv
 
+T = TypeVar("T")
 
-class PlotResult(NamedTuple):
+
+class PlotResult(NamedTuple, Generic[T]):
     plot: Figure
-    data: pd.DataFrame
+    data: T
 
 
 class BaseViewer:

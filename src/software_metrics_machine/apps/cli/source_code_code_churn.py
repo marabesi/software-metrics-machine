@@ -33,7 +33,11 @@ def code_churn(out_file, start_date, end_date):
         end_date=end_date,
     )
 
-    click.echo(result.data)
+    for row in result.data:
+        if row["type"] == "Added":
+            click.echo(f"{row["date"]}    Added     {row["value"]}")
+        if row["type"] == "Deleted":
+            click.echo(f"{row["date"]}  Deleted     {row["value"]}")
 
 
 command = code_churn

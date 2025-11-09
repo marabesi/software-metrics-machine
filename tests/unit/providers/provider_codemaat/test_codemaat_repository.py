@@ -58,7 +58,7 @@ class TestCodemaatRepository:
                     {"start_date": "2023-01-01", "end_date": "2023-01-10"}
                 )
 
-                assert 0 == len(df["date"])
+                assert 0 == len(df)
 
     def test_long_file_names_should_short_to_20_chars_entity_churn(self):
         with patch("pathlib.Path.exists", return_value=True):
@@ -99,7 +99,7 @@ class TestCodemaatRepository:
                     {"start_date": "2023-05-16", "end_date": "2023-05-17"}
                 )
 
-                assert 2 == len(df["date"])
+                assert 2 == len(df)
 
     def test_filter_code_churn_exact_dates(self):
         with patch("pathlib.Path.exists", return_value=True):
@@ -115,7 +115,7 @@ class TestCodemaatRepository:
                     {"start_date": "2023-05-22", "end_date": "2023-05-22"}
                 )
 
-                assert 1 == len(df["date"])
+                assert 1 == len(df)
 
     def test_return_empty_list_when_no_authors_are_found(self):
         with patch("pathlib.Path.exists", return_value=True):
