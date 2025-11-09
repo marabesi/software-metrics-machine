@@ -25,9 +25,11 @@ dependencies = [
 
 [tool.poetry.scripts]
 smm = "software_metrics_machine.apps.cli:main"
+smm-dashboard = "software_metrics_machine.apps.dashboard:main"
 
 [project.scripts]
 smm = "software_metrics_machine.apps.cli:main"
+smm-dashboard = "software_metrics_machine.apps.dashboard:main"
 
 [tool.poetry]
 package-mode = true
