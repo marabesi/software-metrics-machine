@@ -64,7 +64,7 @@ class ViewPipelineByStatus(BaseViewer):
             color=super().get_color(),
         )
 
-        df = pd.DataFrame(runs)
+        df = pd.DataFrame(data)
 
         if out_file:
             try:

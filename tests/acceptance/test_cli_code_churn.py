@@ -34,20 +34,30 @@ class TestCliCodeCommands:
         assert "No code churn data available to plot" in result.output
         assert result.stderr == ""
 
-    @pytest.mark.skip(
-        reason="Needs refactoring to return PlotResult from render methods"
+    @pytest.mark.parametrize(
+        "csv_data, expected",
+        [
+            (
+                """date,added,deleted,commits
+2022-06-17,10,10,2""",
+                "2022-06-17    Added     10",
+            ),
+            (
+                """date,added,deleted,commits
+2022-06-17,10,10,2""",
+                "2022-06-17  Deleted     10",
+            ),
+        ],
     )
-    def test_given_the_data_it_renders_code_churn(self, cli):
+    def test_given_the_data_it_renders_code_churn(self, cli, csv_data, expected):
         path_string = cli.data_stored_at
-        csv_data = """date,added,deleted,commits
-2022-06-17,10,10,2"""
         FileHandlerForTesting(path_string).store_file("abs-churn.csv", csv_data)
 
         result = cli.runner.invoke(
             main,
             ["code", "code-churn", "--out-file", "code_churn.png"],
         )
-        assert f"Saved plot to {path_string}/code_churn.png" in result.output
+        assert expected in result.output
 
     def test_renders_code_churn_by_date(self, cli):
         path_string = cli.data_stored_at

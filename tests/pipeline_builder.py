@@ -18,14 +18,20 @@ class PipelineRun:
     name: str
     path: str
     conclusion: str
+    status: str
     jobs: List[JobRun] = field(default_factory=list)
 
 
 class PipelineBuilder:
-    def __init__(self, name="CI", path="/.github/workflows/ci.yml"):
+    def __init__(self, name="CI", path="/.github/workflows/ci.yml", status="completed"):
         self._id = 1
         self._pipeline = PipelineRun(
-            id=self._id, name=name, path=path, conclusion="success", jobs=[]
+            id=self._id,
+            name=name,
+            path=path,
+            conclusion="success",
+            status=status,
+            jobs=[],
         )
         self._job_counter = 0
         self._base_time = datetime.utcnow()
@@ -44,6 +50,14 @@ class PipelineBuilder:
 
     def with_conclusion(self, conclusion: str):
         self._pipeline.conclusion = conclusion
+        return self
+
+    def with_status(self, status: str):
+        self._pipeline.status = status
+        return self
+
+    def with_path(self, status: str):
+        self._pipeline.path = status
         return self
 
     def add_job(

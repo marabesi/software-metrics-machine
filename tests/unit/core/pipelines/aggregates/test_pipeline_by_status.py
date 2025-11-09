@@ -12,8 +12,6 @@ from tests.in_memory_configuration import InMemoryConfiguration
 class TestPipelineByStatus:
 
     def test_empty_runs(self):
-        """Test main() with empty runs."""
-
         def mocked_read_file_if_exists(file):
             if file == "workflows.json":
                 return as_json_string([])

@@ -3,6 +3,7 @@ from software_metrics_machine.apps.cli import main
 
 from tests.builders import github_workflows_data
 from tests.file_handler_for_testing import FileHandlerForTesting
+from tests.pipeline_builder import PipelineBuilder
 
 
 class TestPipelineRunsByStatusCliCommands:
@@ -15,8 +16,30 @@ class TestPipelineRunsByStatusCliCommands:
         result = cli.runner.invoke(main, ["pipelines", "pipeline-by-status", "--help"])
         assert "Plot pipeline runs by their status" in result.output
 
-    def test_should_filter_by_workflow_path(self, cli):
-        workflow_runs = github_workflows_data()
+    @pytest.mark.parametrize(
+        "workflow_runs, expected",
+        [
+            (
+                [
+                    PipelineBuilder()
+                    .with_status("completed")
+                    .with_path("/workflows/tests.yml")
+                    .build()
+                ],
+                "Total workflow runs after filters: 1",
+            ),
+            (
+                [
+                    PipelineBuilder()
+                    .with_status("completed")
+                    .with_path("/workflows/tests.yml")
+                    .build()
+                ],
+                "completed      1",
+            ),
+        ],
+    )
+    def test_should_filter_by_workflow_path(self, cli, workflow_runs, expected):
         path_string = cli.data_stored_at
 
         FileHandlerForTesting(path_string).store_pipelines_with(workflow_runs)
@@ -31,7 +54,7 @@ class TestPipelineRunsByStatusCliCommands:
             ],
         )
 
-        assert "Total workflow runs after filters: 1" in result.output
+        assert expected in result.output
 
     @pytest.mark.parametrize(
         "command, expected",

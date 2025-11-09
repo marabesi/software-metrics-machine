@@ -27,12 +27,13 @@ from software_metrics_machine.providers.codemaat.plots.code_churn import CodeChu
     help="Filter code churn data on or before this date (ISO 8601)",
 )
 def code_churn(out_file, start_date, end_date):
-    """Plot the code churn rate over time."""
-    return CodeChurnViewer(repository=create_codemaat_repository()).render(
+    result = CodeChurnViewer(repository=create_codemaat_repository()).render(
         out_file=out_file,
         start_date=start_date,
         end_date=end_date,
     )
+
+    click.echo(result.data)
 
 
 command = code_churn

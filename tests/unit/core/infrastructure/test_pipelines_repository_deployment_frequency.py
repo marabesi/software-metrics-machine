@@ -124,10 +124,6 @@ class TestPipelinesRepositoryDeploymentFrequency:
             )
             assert "2023-10-01" in result["days"]
 
-    @pytest.mark.skip(reason="Not implemented yet")
-    def test_should_calculate_all_weeks_between_two_dates_when_data_exists(self):
-        pass
-
     def test_should_not_compute_when_job_failed(self):
         single_deployment = as_json_string(
             [
