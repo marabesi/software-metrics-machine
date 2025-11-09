@@ -1,0 +1,65 @@
+name: Delivery PyPI
+
+env:
+  PYTHON_VERSION: 3.13.7
+
+on:
+  workflow_call:
+    inputs:
+      repository-url:
+        description: 'PyPI repository URL (e.g. https://test.pypi.org/legacy/)'
+        required: true
+        type: string
+      python-version:
+        description: 'Python version to use (e.g. 3.13.7)'
+        required: false
+        type: string
+    secrets:
+      password:
+        description: 'API token or password for the repository'
+
+
+jobs:
+  delivery:
+    permissions:
+      id-token: write
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: ${{ inputs.python-version || env.PYTHON_VERSION }}
+
+      - name: Install Poetry
+        run: |
+          python -m pip install --upgrade pip
+          pip install poetry
+
+      - name: Install dependencies (poetry)
+        run: poetry install --no-interaction --no-ansi --no-root --only main
+
+      - name: fetch version
+        uses: SebRollen/toml-action@v1.2.0
+        id: read_toml
+        with:
+          file: 'pyproject.toml'
+          field: 'version'
+
+      - name: Build
+        run: |
+          rm -rf ./tests
+          rm -rf ./fixtures
+          rm -rf ./docs
+          rm -rf .github/
+          python -m pip install --upgrade build
+          python3 -m build
+
+      - name: Publish package
+        uses: pypa/gh-action-pypi-publish@release/v1
+        with:
+          password: ${{ secrets.password }}
+          repository-url: ${{ inputs.repository-url }}
+          packages-dir: dist/
