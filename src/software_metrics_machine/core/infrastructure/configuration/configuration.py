@@ -35,8 +35,6 @@ class Configuration:
                 "❌  You must provide git_repository_location before running."
             )
         if self.git_provider.lower() == "github":
-            if not self.github_token:
-                raise ValueError("❌  You must provide git_provider before running.")
             # format: owner/repo
             if not self.github_repository:
                 raise ValueError(
