@@ -30,6 +30,7 @@ def cli_only():
             result = f(*args, **kwargs)
             if result.exit_code != 0:  # Show output only on error
                 sys.stdout.write(result.output)
+                sys.stdout.write(result.stdout)
             return result
 
         return wrapper

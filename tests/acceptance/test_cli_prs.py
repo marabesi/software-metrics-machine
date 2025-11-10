@@ -6,7 +6,7 @@ from tests.response_builder import build_http_successfull_response
 from tests.file_handler_for_testing import FileHandlerForTesting
 
 
-class TestCliCommands:
+class TestCliPrsCommands:
 
     @pytest.fixture(scope="class", autouse=True)
     def reset_mock_get(self):
@@ -21,7 +21,14 @@ class TestCliCommands:
             result = cli.runner.invoke(main, ["prs", "fetch"])
             assert 0 == result.exit_code
 
-    def test_show_help_message(self, cli):
+    def test_can_run_fetch_prs_comment_command(self, cli):
+        with patch("requests.get") as mock_get:
+            mock_get.return_value = build_http_successfull_response([])
+
+            result = cli.runner.invoke(main, ["prs", "fetch-comments"])
+            assert 0 == result.exit_code
+
+    def test_show_help_message_for_fetch_prs(self, cli):
         result = cli.runner.invoke(main, ["prs", "fetch", "--help"])
         assert "Show this message and exit" in result.output
 
