@@ -18,7 +18,7 @@ class ViewAverageCommentsPerPullRequest(BaseViewer):
     def __init__(self, repository: PrsRepository):
         self.repository = repository
 
-    def _pr_comment_count_before_merge(self, pr: dict) -> int:
+    def __pr_comment_count_before_merge(self, pr: dict) -> int:
         """Count comments present on the PR up to merged_at (or now if not merged).
 
         PRs and comments in repository are expected to have ISO datetime strings
@@ -84,7 +84,7 @@ class ViewAverageCommentsPerPullRequest(BaseViewer):
                 year = iso[0]
                 week = iso[1]
                 week_key = f"{year}-W{week:02d}"
-                cnt = self._pr_comment_count_before_merge(pr)
+                cnt = self.__pr_comment_count_before_merge(pr)
                 buckets.setdefault(week_key, []).append(cnt)
 
             weeks = sorted(buckets.keys())
@@ -150,7 +150,7 @@ class ViewAverageCommentsPerPullRequest(BaseViewer):
                 except Exception:
                     continue
                 month_key = merged_dt.strftime("%Y-%m")
-                cnt = self._pr_comment_count_before_merge(pr)
+                cnt = self.__pr_comment_count_before_merge(pr)
                 buckets.setdefault(month_key, []).append(cnt)
 
             months = sorted(buckets.keys())

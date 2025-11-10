@@ -3,6 +3,9 @@ import panel as pn
 from software_metrics_machine.apps.dashboard.components.tabulator import (
     TabulatorComponent,
 )
+from software_metrics_machine.core.prs.plots.view_average_comments_per_pr import (
+    ViewAverageCommentsPerPullRequest,
+)
 from software_metrics_machine.core.prs.plots.view_average_of_prs_open_by import (
     ViewAverageOfPrsOpenBy,
 )
@@ -56,6 +59,18 @@ def prs_section(
             ViewAverageReviewTimeByAuthor(repository=repository)
             .plot_average_open_time(
                 title="Average Review Time By Author",
+                start_date=date_range_picker[0],
+                end_date=date_range_picker[1],
+                labels=normalize_label(selected_labels),
+                authors=normalize_authors(author_select),
+            )
+            .plot
+        )
+
+    def plot_average_pr_comments(date_range_picker, selected_labels, author_select):
+        return (
+            ViewAverageCommentsPerPullRequest(repository=repository)
+            .main(
                 start_date=date_range_picker[0],
                 end_date=date_range_picker[1],
                 labels=normalize_label(selected_labels),
@@ -181,6 +196,22 @@ def prs_section(
                 pn.panel(
                     pn.bind(
                         plot_average_review_time_by_author,
+                        date_range_picker.param.value,
+                        label_selector.param.value,
+                        author_select.param.value,
+                    ),
+                    sizing_mode="stretch_width",
+                ),
+                sizing_mode="stretch_width",
+            ),
+            sizing_mode="stretch_width",
+        ),
+        pn.Row(
+            pn.Column(
+                "### Comments by PR",
+                pn.panel(
+                    pn.bind(
+                        plot_average_pr_comments,
                         date_range_picker.param.value,
                         label_selector.param.value,
                         author_select.param.value,
