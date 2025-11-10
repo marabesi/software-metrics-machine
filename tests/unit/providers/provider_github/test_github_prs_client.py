@@ -1,7 +1,9 @@
 import pytest
 from unittest.mock import patch, MagicMock
 from software_metrics_machine.providers.github.github_pr_client import GithubPrsClient
+from tests.builders import as_json_string
 from tests.in_memory_configuration import InMemoryConfiguration
+from tests.prs_builder import PullRequestBuilder
 
 
 class TestGithubPrsClient:
@@ -141,3 +143,115 @@ class TestGithubPrsClient:
                 params=expected,
             )
             mocked_store.assert_called_once()
+
+    def test_fetch_a_pr_comments_with_page_set_to_100(self):
+        def mocked_read_file_if_exists(file):
+            if file == "prs.json":
+                return as_json_string(
+                    [
+                        PullRequestBuilder()
+                        .with_number(1164)
+                        .with_created_at("2023-02-01T00:00:00Z")
+                        .with_review_comments_url(
+                            "https://api.github.com/repos/github/github-mcp-server/pulls/1164/comments"
+                        )
+                        .build(),
+                    ]
+                )
+            if file == "prs_review_comments.json":
+                return None
+            raise FileNotFoundError(f"File {file} not found")
+
+        with (
+            patch(
+                "software_metrics_machine.core.infrastructure.file_system_base_repository.FileSystemBaseRepository.read_file_if_exists",
+                side_effect=mocked_read_file_if_exists,
+            ),
+            patch(
+                "software_metrics_machine.core.infrastructure.file_system_base_repository.FileSystemBaseRepository.store_file"
+            ) as mocked_store,
+            patch("requests.get") as mock_get,
+        ):
+            mock_response = MagicMock()
+            mock_response.json.return_value = []
+            mock_response.links = {}
+            mock_response.status_code = 200
+            mock_get.return_value = mock_response
+
+            github_client = GithubPrsClient(configuration=self.configuration)
+            github_client.fetch_pr_comments(
+                filters={"start_date": "2023-01-01", "end_date": "2023-03-01"}
+            )
+
+            mock_get.assert_called_once_with(
+                "https://api.github.com/repos/github/github-mcp-server/pulls/1164/comments",
+                headers=self.headers,
+                params={
+                    "per_page": "100",
+                },
+            )
+            mocked_store.assert_called_once_with("prs_review_comments.json", [])
+
+    @pytest.mark.parametrize(
+        "raw_filters, params",
+        [
+            (
+                "per_page=100",
+                {
+                    "per_page": "100",
+                },
+            ),
+            (
+                "per_page=20",
+                {
+                    "per_page": "20",
+                },
+            ),
+        ],
+    )
+    def test_fetch_a_pr_comments(self, raw_filters, params):
+        def mocked_read_file_if_exists(file):
+            if file == "prs.json":
+                return as_json_string(
+                    [
+                        PullRequestBuilder()
+                        .with_number(1164)
+                        .with_created_at("2023-02-01T00:00:00Z")
+                        .with_review_comments_url(
+                            "https://api.github.com/repos/github/github-mcp-server/pulls/1164/comments"
+                        )
+                        .build(),
+                    ]
+                )
+            if file == "prs_review_comments.json":
+                return None
+            raise FileNotFoundError(f"File {file} not found")
+
+        with (
+            patch(
+                "software_metrics_machine.core.infrastructure.file_system_base_repository.FileSystemBaseRepository.read_file_if_exists",
+                side_effect=mocked_read_file_if_exists,
+            ),
+            patch(
+                "software_metrics_machine.core.infrastructure.file_system_base_repository.FileSystemBaseRepository.store_file"
+            ) as mocked_store,
+            patch("requests.get") as mock_get,
+        ):
+            mock_response = MagicMock()
+            mock_response.json.return_value = []
+            mock_response.links = {}
+            mock_response.status_code = 200
+            mock_get.return_value = mock_response
+
+            github_client = GithubPrsClient(configuration=self.configuration)
+            github_client.fetch_pr_comments(
+                filters={"start_date": "2023-01-01", "end_date": "2023-03-01"},
+                raw_params=raw_filters,
+            )
+
+            mock_get.assert_called_once_with(
+                "https://api.github.com/repos/github/github-mcp-server/pulls/1164/comments",
+                headers=self.headers,
+                params=params,
+            )
+            mocked_store.assert_called_once_with("prs_review_comments.json", [])

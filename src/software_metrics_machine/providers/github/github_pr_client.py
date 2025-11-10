@@ -111,3 +111,48 @@ class GithubPrsClient:
             url = link["url"] if link and not stop else None
 
         self.pr_repository.store_file(pr_json_path, prs)
+
+    def fetch_pr_comments(
+        self,
+        filters: None | None = None,
+        raw_params: str | None = None,
+        force: bool = False,
+    ):
+        prs = self.pr_repository.prs_with_filters(filters=filters)
+
+        review_comments_path = "prs_review_comments.json"
+
+        if not force:
+            if self.pr_repository.read_file_if_exists(review_comments_path) is not None:
+                print(
+                    f"Comments file already exists at {review_comments_path}. Use --force to re-fetch"
+                )
+                return
+
+        comments = []
+        for pr in prs:
+            review_comments_url = pr.get("review_comments_url")
+            review_comments = []
+            if review_comments_url:
+                print(f"Fetching review comments from {review_comments_url}")
+                params = {
+                    "per_page": "100",
+                }
+                if raw_params:
+                    params = {
+                        **params,
+                        **self.pr_repository.parse_raw_filters(raw_params),
+                    }
+                r = requests.get(
+                    review_comments_url, headers=self.HEADERS, params=params
+                )
+
+                r.raise_for_status()
+                review_comments = r.json()
+                print(
+                    f"Wrote {len(review_comments)} review comments to {review_comments_path}"
+                )
+            else:
+                print("No review_comments_url found on PR")
+
+        self.pr_repository.store_file(review_comments_path, comments)

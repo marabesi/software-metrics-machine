@@ -41,6 +41,7 @@ class PullRequestBuilder:
     closed_at: Optional[str] = field(default_factory=_now_iso)
     merged: bool = False
     merged_at: Optional[str] = None
+    review_comments_url: str = "unknown"
     comments: List[Dict[str, Any]] = field(default_factory=list)
     files_changed: List[str] = field(default_factory=list)
     labels: List[str] = field(default_factory=list)
@@ -81,6 +82,12 @@ class PullRequestBuilder:
         self.merged_at = _to_iso(merged_at)
         return self
 
+    def with_review_comments_url(
+        self, review_comments_url: str
+    ) -> "PullRequestBuilder":
+        self.review_comments_url = review_comments_url
+        return self
+
     def with_comment(
         self, author: str, body: str, created_at: Optional[Union[datetime, str]] = None
     ) -> "PullRequestBuilder":
@@ -113,6 +120,7 @@ class PullRequestBuilder:
             "closed_at": self.closed_at,
             "merged": self.merged,
             "merged_at": self.merged_at,
+            "review_comments_url": self.review_comments_url,
             "comments": comments,
             "files_changed": list(self.files_changed),
             "labels": list(self.labels),
