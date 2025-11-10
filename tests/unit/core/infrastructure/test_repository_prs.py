@@ -3,6 +3,8 @@ from software_metrics_machine.core.prs.prs_repository import PrsRepository
 from unittest.mock import patch
 from tests.in_memory_configuration import InMemoryConfiguration
 from tests.builders import as_json_string
+from tests.prs_builder import PullRequestBuilder
+from tests.prs_comment_builder import PullRequestCommentsBuilder
 
 
 class TestRepositoryPrs:
@@ -11,7 +13,7 @@ class TestRepositoryPrs:
         self.configuration = InMemoryConfiguration(".")
         self.repository = PrsRepository(configuration=self.configuration)
 
-    def test_load_provided_data_when_exists(self):
+    def test_load_provided_prs_data_when_exists(self):
         mocked_prs_data = [
             {
                 "id": 1,
@@ -163,3 +165,54 @@ class TestRepositoryPrs:
         assert labels[0]["prs_count"] == 2
         assert labels[1]["label_name"] == "enhancement"
         assert labels[1]["prs_count"] == 1
+
+    @pytest.mark.parametrize(
+        "prs_data, expected_count",
+        [
+            (
+                {
+                    "prs": [
+                        {
+                            "id": 1,
+                            "user": {"login": "user1"},
+                            "created_at": "2025-09-01T00:00:00Z",
+                        },
+                    ],
+                    "comments": None,
+                },
+                0,
+            ),
+            (
+                {
+                    "prs": [PullRequestBuilder().with_number(101).build()],
+                    "comments": [
+                        PullRequestCommentsBuilder()
+                        .with_number(101)
+                        .with_body("Looks good")
+                        .with_pull_request_url("/101")
+                        .build(),
+                    ],
+                },
+                1,
+            ),
+        ],
+    )
+    def test_associate_pull_requests_with_comments(self, prs_data, expected_count):
+
+        def mocked_read_file_if_exists(file):
+            if file == "prs.json":
+                return as_json_string(prs_data["prs"])
+            if file == "prs_review_comments.json":
+                return as_json_string(prs_data["comments"])
+            raise FileNotFoundError(f"File {file} not found")
+
+        with patch(
+            "software_metrics_machine.core.infrastructure.file_system_base_repository.FileSystemBaseRepository.read_file_if_exists",
+            side_effect=mocked_read_file_if_exists,
+        ):
+            configuration = InMemoryConfiguration(".")
+            repository = PrsRepository(configuration=configuration)
+
+            prs_with_comments = repository.prs_with_filters()
+
+            assert expected_count == len(prs_with_comments[0]["comments"])

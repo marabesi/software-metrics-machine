@@ -4,6 +4,7 @@ from software_metrics_machine.providers.github.github_pr_client import GithubPrs
 from tests.builders import as_json_string
 from tests.in_memory_configuration import InMemoryConfiguration
 from tests.prs_builder import PullRequestBuilder
+from tests.prs_comment_builder import PullRequestCommentsBuilder
 from tests.response_builder import build_http_successfull_response
 
 
@@ -252,3 +253,45 @@ class TestGithubPrsClient:
                 params=params,
             )
             mocked_store.assert_called_once_with("prs_review_comments.json", [])
+
+    def test_if_prs_comments_exists_should_not_refetch(self):
+        def mocked_read_file_if_exists(file):
+            if file == "prs.json":
+                return as_json_string(
+                    [
+                        PullRequestBuilder()
+                        .with_number(1164)
+                        .with_created_at("2023-02-01T00:00:00Z")
+                        .with_review_comments_url(
+                            "https://api.github.com/repos/github/github-mcp-server/pulls/1164/comments"
+                        )
+                        .build(),
+                    ]
+                )
+            if file == "prs_review_comments.json":
+                return as_json_string(
+                    [PullRequestCommentsBuilder().with_body("Existing comment").build()]
+                )
+            raise FileNotFoundError(f"File {file} not found")
+
+        with (
+            patch(
+                "software_metrics_machine.core.infrastructure.file_system_base_repository.FileSystemBaseRepository.read_file_if_exists",
+                side_effect=mocked_read_file_if_exists,
+            ),
+            patch(
+                "software_metrics_machine.core.infrastructure.file_system_base_repository.FileSystemBaseRepository.store_file"
+            ) as mocked_store,
+            patch("requests.get") as mock_get,
+        ):
+            mock_response = MagicMock()
+            mock_response.json.return_value = []
+            mock_response.links = {}
+            mock_response.status_code = 200
+            mock_get.return_value = mock_response
+
+            github_client = GithubPrsClient(configuration=self.configuration)
+            github_client.fetch_pr_comments()
+
+            mock_get.assert_not_called()
+            mocked_store.assert_not_called()

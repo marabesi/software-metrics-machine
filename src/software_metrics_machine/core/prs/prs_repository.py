@@ -201,6 +201,24 @@ class PrsRepository(FileSystemBaseRepository):
         print(f"Loaded {len(all_prs)} PRs")
         print("Load complete.")
 
+        for pr in all_prs:
+            if pr.get("comments") is None:
+                pr["comments"] = []
+
+        contents = super().read_file_if_exists("prs_review_comments.json")
+
+        if contents:
+            all_prs_comment = json.loads(contents)
+            if all_prs_comment:
+                print("Associating PRs with comments")
+                for pr in all_prs:
+                    for comment in all_prs_comment:
+                        if "pull_request_url" in comment and comment[
+                            "pull_request_url"
+                        ].endswith(f"/{pr['number']}"):
+                            pr["comments"].append(comment)
+                print("Associated PRs with comments")
+
         all_prs.sort(key=super().created_at_key_sort)
 
         return all_prs

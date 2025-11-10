@@ -6,12 +6,18 @@ from typing import Any, Dict, Optional
 
 @dataclass
 class PullRequestCommentsBuilder:
+    number: str = ""
     body: str = ""
     created_at: str = field(default="")
     updated_at: Optional[str] = field(default="")
+    pull_request_url: str = field(default="")
 
     def with_body(self, body: str) -> "PullRequestCommentsBuilder":
         self.body = body
+        return self
+
+    def with_number(self, number: str) -> "PullRequestCommentsBuilder":
+        self.number = number
         return self
 
     def with_created_at(self, created_at: str) -> "PullRequestCommentsBuilder":
@@ -22,10 +28,17 @@ class PullRequestCommentsBuilder:
         self.updated_at = updated_at
         return self
 
+    def with_pull_request_url(
+        self, pull_request_url: str
+    ) -> "PullRequestCommentsBuilder":
+        self.pull_request_url = pull_request_url
+        return self
+
     def build(self) -> Dict[str, Any]:
         comments: Dict[str, Any] = {
             "body": self.body,
             "created_at": self.created_at,
             "updated_at": self.updated_at,
+            "pull_request_url": self.pull_request_url,
         }
         return comments
