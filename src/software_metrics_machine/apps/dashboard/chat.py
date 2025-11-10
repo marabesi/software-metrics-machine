@@ -1,84 +1,143 @@
 import streamlit as st
-from langchain.chat_models import ChatOllama
-from langchain.memory import ConversationBufferMemory
-from langchain.chains import LLMChain
-from langchain.prompts import PromptTemplate
+import os
+from langchain_community.chat_models import ChatOllama
+from langchain_community.document_loaders import DirectoryLoader, JSONLoader
+from langchain_community.embeddings import OllamaEmbeddings
+from langchain_community.vectorstores import FAISS
+from langchain.text_splitter import RecursiveCharacterTextSplitter
+from langchain.chains import create_retrieval_chain
+from langchain.chains.combine_documents import create_stuff_documents_chain
+from langchain_core.prompts import ChatPromptTemplate
+from langchain_core.messages import HumanMessage, AIMessage
 
 st.set_page_config(layout="wide")
-st.title("My Local Chatbot")
+st.title("📄 My Local Metrics Agent")
+st.markdown(
+    "This chatbot uses local models and your JSON files to answer questions about your data."
+)
 
 st.sidebar.header("Settings")
 
-model_options = ["llama3", "deepseek-r1:1.5b"]
-MODEL = st.sidebar.selectbox("Choose a Model", model_options, index=0)
+model_options = ["llama3", "mistral", "gemma:2b"]
+MODEL = st.sidebar.selectbox("Choose a Chat Model", model_options, index=0)
 
-MAX_HISTORY = st.sidebar.number_input("Max History", min_value=1, value=2, step=1)
-CONTEXT_SIZE = st.sidebar.number_input(
-    "Context Size", min_value=1024, max_value=16384, value=8192, step=1024
+embed_model_options = ["nomic-embed-text", "mxbai-embed-large", "all-minilm"]
+EMBED_MODEL = st.sidebar.selectbox(
+    "Choose an Embedding Model", embed_model_options, index=0
+)
+st.sidebar.markdown(
+    "_Note: Ensure you have pulled these models with `ollama pull <model_name>`._"
+)
+
+DATA_PATH = st.sidebar.text_input(
+    "Path to your JSON files",
+    value="",
 )
 
 
-def clear_memory():
-    st.session_state.chat_history = []
-    st.session_state.memory = ConversationBufferMemory(
-        return_messages=True
-    )  # Reset memory
+@st.cache_resource(show_spinner="Setting up RAG pipeline...")
+def setup_rag_pipeline(folder_path, embedding_model):
+    """Loads data, creates embeddings, and sets up the retriever."""
+    if not os.path.isdir(folder_path):
+        st.error(
+            f"The provided path '{folder_path}' is not a valid directory. Please update the path."
+        )
+        return None
+
+    loader = DirectoryLoader(
+        path=folder_path,
+        glob="**/*.json",
+        loader_cls=JSONLoader,
+        loader_kwargs={
+            "jq_schema": ".[]",
+            "content_key": None,
+            "text_content": False,
+        },  # <-- THE CHANGE
+        show_progress=True,
+    )
+    documents = loader.load()
+
+    if not documents:
+        st.warning("No JSON documents found in the specified directory.")
+        return None
+
+    text_splitter = RecursiveCharacterTextSplitter(chunk_size=1000, chunk_overlap=200)
+    texts = text_splitter.split_documents(documents)
+
+    embeddings = OllamaEmbeddings(model=embedding_model)
+    vector_store = FAISS.from_documents(texts, embeddings)
+
+    return vector_store.as_retriever()
 
 
-if (
-    "prev_context_size" not in st.session_state
-    or st.session_state.prev_context_size != CONTEXT_SIZE
-):
-    clear_memory()
-    st.session_state.prev_context_size = CONTEXT_SIZE
+try:
+    retriever = setup_rag_pipeline(DATA_PATH, EMBED_MODEL)
+
+    if retriever:
+        llm = ChatOllama(model=MODEL, temperature=0.3)
+
+        prompt_template = ChatPromptTemplate.from_template(
+            """Answer the user's question based ONLY on the following context.
+            If the context doesn't contain the answer, say you don't know. Be concise.
+
+            Context:
+            {context}
+
+            Chat History:
+            {chat_history}
+
+            Question:
+            {input}
+            """
+        )
+
+        document_chain = create_stuff_documents_chain(llm, prompt_template)
+        retrieval_chain = create_retrieval_chain(retriever, document_chain)
+
+        st.sidebar.success("RAG pipeline is ready!")
+    else:
+        retrieval_chain = None
+
+except Exception as e:
+    st.sidebar.error(f"An error occurred: {e}")
+    retrieval_chain = None
 
 if "chat_history" not in st.session_state:
     st.session_state.chat_history = []
 
-if "memory" not in st.session_state:
-    st.session_state.memory = ConversationBufferMemory(return_messages=True)
+for message in st.session_state.chat_history:
+    if isinstance(message, HumanMessage):
+        with st.chat_message("user"):
+            st.markdown(message.content)
+    elif isinstance(message, AIMessage):
+        with st.chat_message("assistant"):
+            st.markdown(message.content)
 
-llm = ChatOllama(model=MODEL, streaming=True)
+if prompt := st.chat_input("Ask a question about your metrics..."):
+    if not retrieval_chain:
+        st.warning("Please provide a valid data path to initialize the agent.")
+    else:
+        with st.chat_message("user"):
+            st.markdown(prompt)
 
-prompt_template = PromptTemplate(
-    input_variables=["history", "human_input"],
-    template="{history}\nUser: {human_input}\nAssistant:",
-)
+        st.session_state.chat_history.append(HumanMessage(content=prompt))
 
-chain = LLMChain(llm=llm, prompt=prompt_template, memory=st.session_state.memory)
+        with st.chat_message("assistant"):
+            response_container = st.empty()
+            full_response = ""
 
-for msg in st.session_state.chat_history:
-    with st.chat_message(msg["role"]):
-        st.markdown(msg["content"])
+            chain_input = {
+                "input": prompt,
+                "chat_history": st.session_state.chat_history,
+            }
 
-
-def trim_memory():
-    while len(st.session_state.chat_history) > MAX_HISTORY * 2:
-        st.session_state.chat_history.pop(0)
-        if st.session_state.chat_history:
-            st.session_state.chat_history.pop(0)
-
-
-if prompt := st.chat_input("Say something"):
-    with st.chat_message("user"):
-        st.markdown(prompt)
-
-    st.session_state.chat_history.append({"role": "user", "content": prompt})
-
-    trim_memory()
-
-    with st.chat_message("assistant"):
-        response_container = st.empty()
-        full_response = ""
-
-        for chunk in chain.stream({"human_input": prompt}):
-            if isinstance(chunk, dict) and "text" in chunk:
-                text_chunk = chunk["text"]
-                full_response += text_chunk
+            try:
+                for chunk in retrieval_chain.stream(chain_input):
+                    if answer_chunk := chunk.get("answer"):
+                        full_response += answer_chunk
+                        response_container.markdown(full_response + "▌")
                 response_container.markdown(full_response)
+            except Exception as e:
+                st.error(f"Error during response generation: {e}")
 
-    st.session_state.chat_history.append(
-        {"role": "assistant", "content": full_response}
-    )
-
-    trim_memory()
+        st.session_state.chat_history.append(AIMessage(content=full_response))
