@@ -1,6 +1,7 @@
 import pytest
 from software_metrics_machine.apps.cli import main
 from unittest.mock import patch
+from tests.prs_builder import PullRequestBuilder
 from tests.response_builder import build_http_successfull_response
 from tests.file_handler_for_testing import FileHandlerForTesting
 
@@ -47,10 +48,10 @@ class TestCliCommands:
         with patch("requests.get") as mock_get:
             mock_get.return_value = build_http_successfull_response(
                 [
-                    {
-                        "created_at": "2011-01-26T19:01:12Z",
-                        "closed_at": "2011-01-26T19:01:12Z",
-                    }
+                    PullRequestBuilder()
+                    .with_created_at("2011-01-26T19:01:12Z")
+                    .with_closed_at("2011-01-26T19:01:12Z")
+                    .build()
                 ]
             )
 
@@ -76,10 +77,10 @@ class TestCliCommands:
         with patch("requests.get") as mock_get:
             mock_get.return_value = build_http_successfull_response(
                 [
-                    {
-                        "created_at": "2011-01-26T19:01:12Z",
-                        "closed_at": "2011-01-26T19:01:12Z",
-                    }
+                    PullRequestBuilder()
+                    .with_created_at("2011-01-26T19:01:12Z")
+                    .with_closed_at("2011-01-26T19:01:12Z")
+                    .build()
                 ]
             )
 
@@ -99,10 +100,10 @@ class TestCliCommands:
         with patch("requests.get") as mock_get:
             mock_get.return_value = build_http_successfull_response(
                 [
-                    {
-                        "created_at": "2011-01-26T19:01:12Z",
-                        "closed_at": "2011-01-26T19:01:12Z",
-                    }
+                    PullRequestBuilder()
+                    .with_created_at("2011-01-26T19:01:12Z")
+                    .with_closed_at("2011-01-26T19:01:12Z")
+                    .build()
                 ]
             )
 
@@ -123,14 +124,14 @@ class TestCliCommands:
     def test_with_stored_data_plot_prs_by_author(self, cli):
         path_string = cli.data_stored_at
         pull_requests_data = [
-            {
-                "created_at": "2011-01-26T19:01:12Z",
-                "closed_at": "2011-01-26T19:01:12Z",
-            },
-            {
-                "created_at": "2011-01-26T19:01:12Z",
-                "closed_at": "2011-01-26T19:01:12Z",
-            },
+            PullRequestBuilder()
+            .with_created_at("2011-01-26T19:01:12Z")
+            .with_closed_at("2011-01-26T19:01:12Z")
+            .build(),
+            PullRequestBuilder()
+            .with_created_at("2011-01-26T19:01:12Z")
+            .with_closed_at("2011-01-26T19:01:12Z")
+            .build(),
         ]
         FileHandlerForTesting(path_string).store_prs_with(pull_requests_data)
 
@@ -153,14 +154,14 @@ class TestCliCommands:
     def test_with_stored_data_review_time_by_author(self, cli):
         path_string = cli.data_stored_at
         pull_requests_data = [
-            {
-                "created_at": "2011-01-26T19:01:12Z",
-                "closed_at": "2011-01-26T19:01:12Z",
-            },
-            {
-                "created_at": "2011-01-26T19:01:12Z",
-                "closed_at": "2011-01-26T19:01:12Z",
-            },
+            PullRequestBuilder()
+            .with_created_at("2011-01-26T19:01:12Z")
+            .with_closed_at("2011-01-26T19:01:12Z")
+            .build(),
+            PullRequestBuilder()
+            .with_created_at("2011-01-26T19:01:12Z")
+            .with_closed_at("2011-01-26T19:01:12Z")
+            .build(),
         ]
         FileHandlerForTesting(path_string).store_prs_with(pull_requests_data)
 
@@ -184,14 +185,14 @@ class TestCliCommands:
         "prs",
         [
             [
-                {
-                    "created_at": "2011-01-26T19:01:12Z",
-                    "closed_at": "2011-01-26T19:01:12Z",
-                },
-                {
-                    "created_at": "2011-01-26T19:01:12Z",
-                    "closed_at": "2011-01-26T19:01:12Z",
-                },
+                PullRequestBuilder()
+                .with_created_at("2011-01-26T19:01:12Z")
+                .with_closed_at("2011-01-26T19:01:12Z")
+                .build(),
+                PullRequestBuilder()
+                .with_created_at("2011-01-26T19:01:12Z")
+                .with_closed_at("2011-01-26T19:01:12Z")
+                .build(),
             ],
             [],
         ],
@@ -222,10 +223,10 @@ class TestCliCommands:
         path_string = cli.data_stored_at
         FileHandlerForTesting(path_string).store_prs_with(
             [
-                {
-                    "created_at": "2011-01-26T19:01:12Z",
-                    "closed_at": "2011-01-26T19:01:12Z",
-                },
+                PullRequestBuilder()
+                .with_created_at("2011-01-26T19:01:12Z")
+                .with_closed_at("2011-01-26T19:01:12Z")
+                .build(),
             ]
         )
 
@@ -255,14 +256,14 @@ class TestCliCommands:
     def test_with_stored_data_plot_average_prs_open_by(self, cli):
         path_string = cli.data_stored_at
         pull_requests_data = [
-            {
-                "created_at": "2011-01-26T19:01:12Z",
-                "closed_at": "2011-01-26T19:01:12Z",
-            },
-            {
-                "created_at": "2011-01-26T19:01:12Z",
-                "closed_at": "2011-01-26T19:01:12Z",
-            },
+            PullRequestBuilder()
+            .with_created_at("2011-01-26T19:01:12Z")
+            .with_closed_at("2011-01-26T19:01:12Z")
+            .build(),
+            PullRequestBuilder()
+            .with_created_at("2011-01-26T19:01:12Z")
+            .with_closed_at("2011-01-26T19:01:12Z")
+            .build(),
         ]
         FileHandlerForTesting(path_string).store_prs_with(pull_requests_data)
 
