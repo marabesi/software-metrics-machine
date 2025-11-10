@@ -132,7 +132,6 @@ class GithubPrsClient:
         comments = []
         for pr in prs:
             review_comments_url = pr.get("review_comments_url")
-            review_comments = []
             if review_comments_url:
                 print(f"Fetching review comments from {review_comments_url}")
                 params = {
@@ -148,11 +147,13 @@ class GithubPrsClient:
                 )
 
                 r.raise_for_status()
-                review_comments = r.json()
-                print(
-                    f"Wrote {len(review_comments)} review comments to {review_comments_path}"
-                )
+                result = r.json()
+
+                for comment in result:
+                    comments.append(comment)
             else:
                 print("No review_comments_url found on PR")
+
+            print(f"Wrote {len(comments)} review comments to {review_comments_path}")
 
         self.pr_repository.store_file(review_comments_path, comments)

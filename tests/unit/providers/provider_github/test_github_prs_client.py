@@ -4,6 +4,7 @@ from software_metrics_machine.providers.github.github_pr_client import GithubPrs
 from tests.builders import as_json_string
 from tests.in_memory_configuration import InMemoryConfiguration
 from tests.prs_builder import PullRequestBuilder
+from tests.response_builder import build_http_successfull_response
 
 
 class TestGithubPrsClient:
@@ -172,11 +173,7 @@ class TestGithubPrsClient:
             ) as mocked_store,
             patch("requests.get") as mock_get,
         ):
-            mock_response = MagicMock()
-            mock_response.json.return_value = []
-            mock_response.links = {}
-            mock_response.status_code = 200
-            mock_get.return_value = mock_response
+            mock_get.return_value = build_http_successfull_response([])
 
             github_client = GithubPrsClient(configuration=self.configuration)
             github_client.fetch_pr_comments(
