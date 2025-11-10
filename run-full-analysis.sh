@@ -5,11 +5,11 @@ GITHUB_TOKEN=$1
 # project="ollama"
 # github_repo="ollama/ollama"
 
-# project="reactjs"
-# github_repo="facebook/react"
+ project="reactjs"
+ github_repo="facebook/react"
 
-project="smelly-test"
-github_repo="marabesi/smelly-test"
+#project="smelly-test"
+#github_repo="marabesi/smelly-test"
 
 repo_url="https://github.com/$github_repo.git"
 
@@ -20,8 +20,8 @@ analysis_dir="$base_dir/downloads/analysis"
 rm -rf "$analysis_dir"
 mkdir -p "$analysis_dir"
 
-start_date="2024-01-20"
-end_date="2025-10-25"
+start_date="2025-11-01"
+end_date="2025-11-10"
 
 export SMM_STORE_DATA_AT="$analysis_dir"
 
@@ -48,6 +48,7 @@ echo "$TEMPLATE" > "$analysis_dir/smm_config.json"
 
 ./run-cli.sh code fetch --start-date "$start_date" --end-date "$end_date"
 ./run-cli.sh prs fetch --start-date "$start_date" --end-date "$end_date"
+./run-cli.sh prs fetch-comments --start-date "$start_date" --end-date "$end_date"
 ./run-cli.sh pipelines fetch --start-date "$start_date" --end-date "$end_date"
 ./run-cli.sh pipelines jobs-fetch --start-date "$start_date" --end-date "$end_date"
 
