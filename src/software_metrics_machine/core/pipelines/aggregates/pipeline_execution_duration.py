@@ -29,7 +29,7 @@ class PipelineExecutionDuration(BaseViewer):
         metric: str = "avg",
         sort_by: str = "avg",
         raw_filters: str | None = None,
-    ) -> None:
+    ) -> PipelineExecutionDurationResult:
         filters = {
             "start_date": start_date,
             "end_date": end_date,

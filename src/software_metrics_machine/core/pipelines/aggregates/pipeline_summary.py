@@ -20,6 +20,7 @@ class PipelineRunSummaryStructure(TypedDict):
     runs_by_workflow: Dict[str, PipelineRunDetails]
     first_run: PipelineRun
     last_run: PipelineRun
+    most_failed: str
 
 
 class PipelineRunSummary:
@@ -71,9 +72,8 @@ class PipelineRunSummary:
         workflows = {r.get("name") for r in self.runs if r.get("name")}
         summary["unique_workflows"] = len(workflows)
 
-        # aggregate counts by workflow name and capture a representative path (if available)
-        name_counts = Counter()
-        name_paths = {}
+        name_counts: Counter[str] = Counter()
+        name_paths: dict = {}
         for r in self.runs:
             name = r.get("name") or "<unnamed>"
             name_counts[name] += 1
