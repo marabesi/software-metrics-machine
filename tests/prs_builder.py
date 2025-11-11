@@ -1,12 +1,12 @@
 from __future__ import annotations
 
 from dataclasses import dataclass, field
-from datetime import datetime
+from datetime import datetime, timezone
 from typing import Any, Dict, List, Optional, Union
 
 
 def _now_iso() -> str:
-    return datetime.utcnow().isoformat()
+    return datetime.now(tz=timezone.utc).isoformat()
 
 
 def _to_iso(value: Optional[Union[datetime, str]]) -> str:
@@ -27,7 +27,6 @@ class PullRequestBuilder:
             .with_number(42)
             .with_title("Fix bug")
             .with_author("alice")
-            .with_created_at(datetime.utcnow())
             .with_comment(author="bob", body="LGTM")
             .build()
         )
@@ -109,7 +108,6 @@ class PullRequestBuilder:
 
     def build(self) -> Dict[str, Any]:
         """Return a dictionary representing the pull request similar to stored shape."""
-        # ensure comments are shallow-copied and created_at are strings
         comments = [dict(c) for c in self.comments]
         pr: Dict[str, Any] = {
             "number": self.number,

@@ -1,6 +1,8 @@
 import json
 from typing import List, Iterable
 from datetime import datetime, timezone
+
+import pandas as pd
 from software_metrics_machine.core.infrastructure.file_system_base_repository import (
     FileSystemBaseRepository,
 )
@@ -211,14 +213,111 @@ class PrsRepository(FileSystemBaseRepository):
             all_prs_comment = json.loads(contents)
             if all_prs_comment:
                 print("Associating PRs with comments")
+                total = 1
                 for pr in all_prs:
                     for comment in all_prs_comment:
                         if "pull_request_url" in comment and comment[
                             "pull_request_url"
                         ].endswith(f"/{pr['number']}"):
                             pr["comments"].append(comment)
-                print("Associated PRs with comments")
+                            total += 1
+                print(f"Associated PRs with {total} comments")
 
         all_prs.sort(key=super().created_at_key_sort)
 
         return all_prs
+
+    def __count_comments_before_merge(self, pr: dict) -> int:
+        merged_at = pr.get("merged_at")
+        if not merged_at:
+            return 0
+        try:
+            merged_dt = datetime.fromisoformat(merged_at.replace("Z", "+00:00"))
+        except Exception:
+            return 0
+
+        comments = pr.get("comments") or []
+        cnt = 0
+        for c in comments:
+            c_created = c.get("created_at")
+            if not c_created:
+                continue
+            try:
+                c_dt = datetime.fromisoformat(c_created.replace("Z", "+00:00"))
+            except Exception:
+                continue
+            if c_dt <= merged_dt:
+                cnt += 1
+        return cnt
+
+    def average_comments(self, filters: None = None, aggregate_by: str = "week"):
+        prs = self.prs_with_filters(filters=filters)
+
+        merged_prs = prs
+
+        if aggregate_by == "week":
+            buckets: dict = {}
+            for pr in merged_prs:
+                try:
+                    merged_dt = datetime.fromisoformat(
+                        pr["merged_at"].replace("Z", "+00:00")
+                    )
+                except Exception:
+                    continue
+                iso = merged_dt.isocalendar()
+                year = iso[0]
+                week = iso[1]
+                week_key = f"{year}-W{week:02d}"
+                cnt = self.__count_comments_before_merge(pr)
+                buckets.setdefault(week_key, []).append((cnt, merged_dt))
+
+            weeks = sorted(buckets.keys())
+            avg_vals = [
+                sum([c for c, _ in buckets[w]]) / len(buckets[w]) for w in weeks
+            ]
+
+            # convert week keys to datetime (Monday of that ISO week)
+            week_dates = []
+            for wk in weeks:
+                try:
+                    parts = wk.split("-W")
+                    y = int(parts[0])
+                    w = int(parts[1])
+                    wd = datetime.fromisocalendar(y, w, 1)
+                    week_dates.append(wd)
+                except Exception:
+                    # fallback: try to parse as iso datetime string
+                    try:
+                        wd = datetime.fromisoformat(wk)
+                        week_dates.append(wd)
+                    except Exception:
+                        continue
+
+            x = [pd.to_datetime(dt) for dt in week_dates]
+            y = avg_vals
+            periods = weeks
+
+        else:
+            # aggregate by month
+            buckets: dict = {}
+            for pr in merged_prs:
+                try:
+                    merged_dt = datetime.fromisoformat(
+                        pr["merged_at"].replace("Z", "+00:00")
+                    )
+                except Exception:
+                    continue
+                month_key = merged_dt.strftime("%Y-%m")
+                cnt = self.__count_comments_before_merge(pr)
+                buckets.setdefault(month_key, []).append((cnt, merged_dt))
+
+            months = sorted(buckets.keys())
+            avg_vals = [
+                sum([c for c, _ in buckets[m]]) / len(buckets[m]) for m in months
+            ]
+
+            x = [pd.to_datetime(v) for v in months]
+            y = avg_vals
+            periods = months
+
+        return {"x": x, "y": y, "period": periods}

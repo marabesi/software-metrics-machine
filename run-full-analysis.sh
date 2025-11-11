@@ -20,7 +20,7 @@ analysis_dir="$base_dir/downloads/analysis"
 rm -rf "$analysis_dir"
 mkdir -p "$analysis_dir"
 
-start_date="2025-11-01"
+start_date="2025-11-05"
 end_date="2025-11-10"
 
 export SMM_STORE_DATA_AT="$analysis_dir"

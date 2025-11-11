@@ -19,6 +19,9 @@ class FileHandlerForTesting:
     def store_prs_with(self, data: str) -> bool:
         return self.store_file("prs.json", as_json_string(data))
 
+    def store_prs_comment_with(self, data: str) -> bool:
+        return self.store_file("prs_review_comments.json", as_json_string(data))
+
     def store_json_file(self, file: str, data: str) -> bool:
         final_path = self.default_dir + "/" + file
         p = Path(final_path)

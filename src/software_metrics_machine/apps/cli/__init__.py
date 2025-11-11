@@ -39,6 +39,7 @@ module_groups = {
         "software_metrics_machine.apps.cli.pull_request_view_average_review_time_by_author",
         "software_metrics_machine.apps.cli.pull_request_view_prs_by_author",
         "software_metrics_machine.apps.cli.pull_request_view_summary",
+        "software_metrics_machine.apps.cli.pull_request_average_of_comments_by_prs",
     ],
     "pipelines": [
         "software_metrics_machine.apps.cli.github_fetch_pipeline",

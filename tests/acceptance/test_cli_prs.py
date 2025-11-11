@@ -325,3 +325,30 @@ class TestCliPrsCommands:
             assert (
                 "Wrote 1 review comments to prs_review_comments.json" in result.output
             )
+
+    def test_calculates_the_average_of_comments_from_a_single_pr(self, cli):
+        path_string = cli.data_stored_at
+        pull_requests_data = [
+            PullRequestBuilder().with_created_at("2023-01-26T19:01:12Z").build(),
+        ]
+        FileHandlerForTesting(path_string).store_prs_with(pull_requests_data)
+
+        pull_requests_comments_data = [
+            PullRequestCommentsBuilder()
+            .with_created_at("2023-01-27T19:01:12Z")
+            .build(),
+        ]
+
+        FileHandlerForTesting(path_string).store_prs_comment_with(
+            pull_requests_comments_data
+        )
+
+        result = cli.runner.invoke(
+            main,
+            [
+                "prs",
+                "average-comments-by",
+            ],
+        )
+
+        assert "{'x': [], 'y': [], 'period': []}" in result.output

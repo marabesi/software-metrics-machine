@@ -44,15 +44,15 @@ from software_metrics_machine.core.prs.plots.view_average_comments_per_pr import
     default=None,
     help="Filter PRs created on or before this date (ISO 8601)",
 )
-def average_prs_comment(out_file, author, labels, aggregate_by, start_date, end_date):
-    ViewAverageCommentsPerPullRequest(repository=create_prs_repository()).main(
-        out_file=out_file,
+def average_prs_comment(author, labels, aggregate_by, start_date, end_date):
+    result = ViewAverageCommentsPerPullRequest(repository=create_prs_repository()).main(
         author=author,
         labels=labels,
         aggregate_by=aggregate_by,
         start_date=start_date,
         end_date=end_date,
     )
+    click.echo(result.data)
 
 
 command = average_prs_comment

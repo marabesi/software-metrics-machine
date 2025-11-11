@@ -18,42 +18,8 @@ class ViewAverageCommentsPerPullRequest(BaseViewer):
     def __init__(self, repository: PrsRepository):
         self.repository = repository
 
-    def __pr_comment_count_before_merge(self, pr: dict) -> int:
-        """Count comments present on the PR up to merged_at (or now if not merged).
-
-        PRs and comments in repository are expected to have ISO datetime strings
-        in `created_at` fields. We treat any comment with created_at <= merged_at as
-        counted for that PR. If merged_at is None, skip the PR (we focus on comments
-        before merge).
-        """
-        merged_at = pr.get("merged_at")
-        if not merged_at:
-            return 0
-        try:
-            merged_dt = datetime.fromisoformat(merged_at.replace("Z", "+00:00"))
-        except Exception:
-            # if unparsable, ignore this PR
-            return 0
-
-        comments = pr.get("comments") or []
-        count = 0
-        for c in comments:
-            c_created = c.get("created_at")
-            if not c_created:
-                continue
-            try:
-                c_dt = datetime.fromisoformat(c_created.replace("Z", "+00:00"))
-            except Exception:
-                # skip unparsable
-                continue
-            if c_dt <= merged_dt:
-                count += 1
-
-        return count
-
     def main(
         self,
-        out_file: str | None = None,
         author: str | None = None,
         authors: str | None = None,
         labels: str | None = None,
@@ -61,69 +27,43 @@ class ViewAverageCommentsPerPullRequest(BaseViewer):
         start_date: str | None = None,
         end_date: str | None = None,
     ) -> PlotResult:
-        prs = self.repository.prs_with_filters(
-            {"start_date": start_date, "end_date": end_date, "authors": authors}
+        # Delegate data processing to the repository
+        df = self.repository.average_comments(
+            filters={
+                "start_date": start_date,
+                "end_date": end_date,
+                "authors": authors,
+            },
+            aggregate_by=aggregate_by,
         )
 
-        # focus only on merged PRs (we measure comments before merge)
-        merged_prs = [pr for pr in prs if pr.get("merged_at")]
+        vlines = None
+        extra_labels = None
+        title = (
+            "Average comments per PR (by merge week)"
+            if aggregate_by == "week"
+            else "Average comments per PR (by merge month)"
+        )
 
-        if aggregate_by == "week":
-            # repository.average_by_week expects PRs and returns week keys and y-values;
-            # we'll compute our own aggregation: group by ISO week of merged_at and
-            # average comment counts per PR in each week.
-            buckets: dict = {}
-            for pr in merged_prs:
-                try:
-                    merged_dt = datetime.fromisoformat(
-                        pr["merged_at"].replace("Z", "+00:00")
-                    )
-                except Exception:
-                    continue
-                iso = merged_dt.isocalendar()
-                year = iso[0]
-                week = iso[1]
-                week_key = f"{year}-W{week:02d}"
-                cnt = self.__pr_comment_count_before_merge(pr)
-                buckets.setdefault(week_key, []).append(cnt)
+        is_empty = len(df["period"]) == 0
 
-            weeks = sorted(buckets.keys())
-            avg_vals = [sum(buckets[w]) / len(buckets[w]) for w in weeks]
-
-            # convert week keys to datetime (Monday of that ISO week)
-            week_dates = []
-            for wk in weeks:
-                try:
-                    parts = wk.split("-W")
-                    y = int(parts[0])
-                    w = int(parts[1])
-                    wd = datetime.fromisocalendar(y, w, 1)
-                    week_dates.append(wd)
-                except Exception:
-                    try:
-                        wd = datetime.fromisoformat(wk)
-                        week_dates.append(wd)
-                    except Exception:
-                        continue
-
-            x = [pd.to_datetime(dt) for dt in week_dates]
-            y = avg_vals
-
-            # compute month vlines/labels like the other view
-            start = x[0].date().replace(day=1) if x else None
-            end_dt = x[-1].date() if x else None
+        if not is_empty and aggregate_by == "week":
+            x = list(df["x"])
+            y = list(df["y"])
+            start = x[0].date().replace(day=1)
+            end_dt = x[-1].date()
             month_starts = []
-            if start and end_dt:
-                cur = start
-                while cur <= end_dt:
-                    month_starts.append(cur)
-                    if cur.month == 12:
-                        cur = date(cur.year + 1, 1, 1)
-                    else:
-                        cur = date(cur.year, cur.month + 1, 1)
+            cur = start
+            while cur <= end_dt:
+                month_starts.append(cur)
+                if cur.month == 12:
+                    cur = date(cur.year + 1, 1, 1)
+                else:
+                    cur = date(cur.year, cur.month + 1, 1)
+
             vlines = [datetime(ms.year, ms.month, ms.day) for ms in month_starts]
-            extra_labels = []
             ylim_top = max(y) if y else 1
+            extra_labels = []
             for i in range(len(month_starts)):
                 ms = month_starts[i]
                 if i + 1 < len(month_starts):
@@ -137,32 +77,14 @@ class ViewAverageCommentsPerPullRequest(BaseViewer):
                     {"x": mid, "y": ylim_top * 0.98, "text": ms.strftime("%b %Y")}
                 )
 
-            title = "Average comments per PR (by merge week)"
-
+            data = [{"x": xi, "y": yi} for xi, yi in zip(x, y)]
         else:
-            # aggregate by month using merged_at month
-            buckets: dict = {}
-            for pr in merged_prs:
-                try:
-                    merged_dt = datetime.fromisoformat(
-                        pr["merged_at"].replace("Z", "+00:00")
-                    )
-                except Exception:
-                    continue
-                month_key = merged_dt.strftime("%Y-%m")
-                cnt = self.__pr_comment_count_before_merge(pr)
-                buckets.setdefault(month_key, []).append(cnt)
-
-            months = sorted(buckets.keys())
-            avg_vals = [sum(buckets[m]) / len(buckets[m]) for m in months]
-
-            x = [pd.to_datetime(v) for v in months]
-            y = avg_vals
-            vlines = None
-            extra_labels = None
-            title = "Average comments per PR (by merge month)"
-
-        data = [{"x": xi, "y": yi} for xi, yi in zip(x, y)]
+            if is_empty:
+                data = []
+            else:
+                x = list(df["x"])
+                y = list(df["y"])
+                data = [{"x": xi, "y": yi} for xi, yi in zip(x, y)]
 
         chart = build_barchart_with_lines(
             data,
@@ -174,9 +96,7 @@ class ViewAverageCommentsPerPullRequest(BaseViewer):
             label_generator=super().build_labels_above_bars,
             vlines=vlines,
             extra_labels=extra_labels,
-            out_file=out_file,
             tools=super().get_tools(),
         )
 
-        df = pd.DataFrame({"x": x, "y": y})
         return PlotResult(plot=chart, data=df)

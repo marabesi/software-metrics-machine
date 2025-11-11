@@ -1,5 +1,5 @@
 from dataclasses import dataclass, field
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from typing import List
 
 
@@ -34,7 +34,7 @@ class PipelineBuilder:
             jobs=[],
         )
         self._job_counter = 0
-        self._base_time = datetime.utcnow()
+        self._base_time = datetime.now(tz=timezone.utc)
 
     def with_id(self, id: int):
         self._pipeline.id = id
