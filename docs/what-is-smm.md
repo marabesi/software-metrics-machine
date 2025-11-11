@@ -37,7 +37,7 @@ The process is:
 flowchart TD
     A[Fetch Data] --> B[Process Data]
     B --> C[Plot Data with Dashboard]
-    B --> D[Plot Data with CLI]
+    B --> D[See Data with CLI]
 ```
 
 By focusing on these metrics, SMM enables teams to:
