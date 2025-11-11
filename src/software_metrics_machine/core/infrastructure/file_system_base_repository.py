@@ -20,7 +20,7 @@ class FileSystemBaseRepository:
         final_path = self.default_dir + "/" + filename
         p = Path(final_path)
         print(f"Using data directory: {p.absolute()}")
-        return p.absolute()
+        return p.absolute().__str__()
 
     def read_file_if_exists(self, filename: str) -> Optional[str]:
         return self.file_system_handler.read_file_if_exists(filename)
@@ -71,9 +71,7 @@ class FileSystemBaseRepository:
             for f in raw_filters.split(","):
                 if "=" in f:
                     k, v = f.split("=", 1)
-                    if v == "None":
-                        v = None
-                    params[k] = v
+                    params[k] = None if v == "None" else v
         return params
 
     def __to_dt(self, v):

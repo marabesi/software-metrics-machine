@@ -54,7 +54,7 @@ class CommitTraverser:
             # Determine whether this commit should be included based on selected_authors
             author_name = getattr(commit.author, "name", "") or ""
             author_email = getattr(commit.author, "email", "") or ""
-            author_key = self.__normalize_author_key(author_name, author_email)
+            author_key = self._normalize_author_key(author_name, author_email)
 
             # Parse co-authors from the commit message
             commit_message = commit.msg or ""
@@ -97,7 +97,7 @@ class CommitTraverser:
             commits=commits_from_repo,
         )
 
-    def __normalize_author_key(self, name: str, email: str) -> str:
+    def _normalize_author_key(self, name: str, email: str) -> str:
         # Use lowercase email if present, otherwise lowercase name
         return (email or name).strip().lower()
 
