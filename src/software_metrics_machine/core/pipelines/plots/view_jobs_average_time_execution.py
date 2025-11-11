@@ -14,6 +14,7 @@ from software_metrics_machine.core.pipelines.aggregates.jobs_average_time_execut
 from software_metrics_machine.core.pipelines.pipelines_repository import (
     PipelinesRepository,
 )
+from typing import Optional
 
 hv.extension("bokeh")
 
@@ -25,21 +26,21 @@ class ViewJobsByAverageTimeExecution(BaseViewer):
 
     def main(
         self,
-        workflow_path: str | None = None,
-        out_file: str | None = None,
-        raw_filters: str | None = None,
         top: int = 20,
-        exclude_jobs: str = None,
-        start_date: str | None = None,
-        end_date: str | None = None,
+        workflow_path: Optional[str] = None,
+        out_file: Optional[str] = None,
+        raw_filters: Optional[str] = None,
+        exclude_jobs: Optional[str] = None,
+        start_date: Optional[str] = None,
+        end_date: Optional[str] = None,
         force_all_jobs: bool = False,
-        job_name: str | None = None,
-        pipeline_raw_filters: str | None = None,
+        job_name: Optional[str] = None,
+        pipeline_raw_filters: Optional[str] = None,
     ) -> PlotResult:
         result = JobsByAverageTimeExecution(repository=self.repository).main(
+            top=top,
             workflow_path=workflow_path,
             raw_filters=raw_filters,
-            top=top,
             exclude_jobs=exclude_jobs,
             start_date=start_date,
             end_date=end_date,

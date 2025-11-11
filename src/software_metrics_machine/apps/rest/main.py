@@ -49,9 +49,9 @@ from software_metrics_machine.core.prs.plots.view_summary import PrViewSummary
 app = FastAPI()
 
 
-source_code_tags = ["Source code"]
-pipeline_tags = ["Pipeline"]
-pull_request_tags = ["Pull Requests"]
+source_code_tags: list[str] = ["Source code"]
+pipeline_tags: list[str] = ["Pipeline"]
+pull_request_tags: list[str] = ["Pull Requests"]
 
 
 @app.get("/code/pairing-index", tags=source_code_tags)

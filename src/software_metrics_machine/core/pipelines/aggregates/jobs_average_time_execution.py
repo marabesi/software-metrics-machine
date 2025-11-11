@@ -1,7 +1,7 @@
 import dataclasses
 from collections import defaultdict
 from datetime import datetime
-from typing import List
+from typing import Optional, List
 
 from software_metrics_machine.core.pipelines.pipelines_repository import (
     PipelinesRepository,
@@ -27,15 +27,15 @@ class JobsByAverageTimeExecution:
 
     def main(
         self,
-        workflow_path: str | None = None,
-        raw_filters: str | None = None,
+        workflow_path: Optional[str] = None,
+        raw_filters: Optional[str] = None,
         top: int = 20,
-        exclude_jobs: str = None,
-        start_date: str | None = None,
-        end_date: str | None = None,
+        exclude_jobs: Optional[str] = None,
+        start_date: Optional[str] = None,
+        end_date: Optional[str] = None,
         force_all_jobs: bool = False,
-        job_name: str | None = None,
-        pipeline_raw_filters: str | None = None,
+        job_name: Optional[str] = None,
+        pipeline_raw_filters: Optional[str] = None,
         metric: str = "avg",
     ) -> JobsAverageTimeExecutionResult:
         """Compute average job execution time (completed_at - started_at) grouped by job name and plot top-N.

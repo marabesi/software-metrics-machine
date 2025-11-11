@@ -1,4 +1,4 @@
-from typing import Dict, TypedDict
+from typing import Optional, Dict, TypedDict
 from software_metrics_machine.core.infrastructure.date_and_time import datetime_to_local
 from software_metrics_machine.core.pipelines.aggregates.pipeline_summary import (
     PipelineRunSummary,
@@ -31,9 +31,9 @@ class WorkflowRunSummary:
     def print_summary(
         self,
         max_workflows: int = 10,
-        start_date: str | None = None,
-        end_date: str | None = None,
-        output_format: str = None,
+        start_date: Optional[str] = None,
+        end_date: Optional[str] = None,
+        output_format: Optional[str] = None,
     ):
         """
         Print or return the summary of workflow runs.
