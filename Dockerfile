@@ -1,20 +1,14 @@
-# Use a lightweight Python base image
-FROM python:3.13-alpine
+FROM python:3.13-slim
 
+ENV DEBIAN_FRONTEND=noninteractive
 WORKDIR /app
 
-ENV PYTHONPATH="/app:/app"
+RUN apt-get update \
+    && apt-get install -y --no-install-recommends git ca-certificates \
+    && rm -rf /var/lib/apt/lists/*
 
-RUN apk add --no-cache gcc g++ musl-dev libffi-dev openssl-dev make
+RUN python -m pip install --upgrade pip
 
-COPY pyproject.toml poetry.lock README.md ./
+RUN python -m pip install software-metrics-machine
 
-RUN pip install --no-cache-dir poetry && \
-    poetry config virtualenvs.create false && \
-    poetry install --only main --no-interaction --no-ansi
-
-COPY . .
-
-EXPOSE 5006
-
-CMD ["poetry", "run", "panel", "serve", "apps/dashboard/dashboard.py"]
+CMD ["smm"]

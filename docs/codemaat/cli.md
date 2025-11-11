@@ -8,7 +8,7 @@ This document provides a guide for developers to run Codemaat-related analyses u
 ### Fetch Historical Data from Git Repository
 
 ```bash
-./run-cli.sh code fetch
+smm code fetch
 ```
 
 Fetches historical data from a git repository using Codemaat for analysis.
@@ -18,7 +18,7 @@ Fetches historical data from a git repository using Codemaat for analysis.
 ### Run Code Churn Analysis
 
 ```bash
-./run-cli.sh code code-churn
+smm code code-churn
 ```
 
 Analyzes the code churn in the repository.
@@ -28,7 +28,7 @@ Analyzes the code churn in the repository.
 ### Run Coupling Analysis
 
 ```bash
-./run-cli.sh code coupling
+smm code coupling
 ```
 
 Analyzes the coupling between entities in the repository.
@@ -38,7 +38,7 @@ Analyzes the coupling between entities in the repository.
 ### Run Entity Churn Analysis
 
 ```bash
-./run-cli.sh code entity-churn
+smm code entity-churn
 ```
 
 Analyzes the churn of entities in the repository.
@@ -48,7 +48,7 @@ Analyzes the churn of entities in the repository.
 ### Run Entity Effort Analysis
 
 ```bash
-./run-cli.sh code entity-effort
+smm code entity-effort
 ```
 
 Analyzes the effort spent on entities in the repository.
@@ -58,7 +58,7 @@ Analyzes the effort spent on entities in the repository.
 ### Run Entity Ownership Analysis
 
 ```bash
-./run-cli.sh code entity-ownership
+smm code entity-ownership
 ```
 
 Analyzes the ownership of entities in the repository.

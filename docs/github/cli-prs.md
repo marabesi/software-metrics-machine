@@ -8,7 +8,7 @@ This document provides a guide for developers to run GitHub-related analyses usi
 ### Fetch PRs
 
 ```bash
-./run-cli.sh prs fetch
+smm prs fetch
 ```
 
 | Option         | Description                         | Example                  |
@@ -26,7 +26,7 @@ API provides.
 Once data is fetched, you can run a summary of the data using the following command:
 
 ```bash
-./run-cli.sh prs summary
+smm prs summary
 ```
 
 It will print a summary of the PRs fetched, including:
@@ -44,7 +44,7 @@ It will print a summary of the PRs fetched, including:
 ### Average Review Time by Author
 
 ```bash
-./run-cli.sh prs review-time-by-author
+smm prs review-time-by-author
 ```
 
 | Option         | Description                          | Example                  |
@@ -59,11 +59,23 @@ It will print a summary of the PRs fetched, including:
 ### PRs by Author
 
 ```bash
-./run-cli.sh prs by-author
+smm prs by-author
 ```
 
 ### Average of PRs Open by Time
 
 ```bash
-./run-cli.sh prs average-open-by
+smm prs average-open-by
 ```
+
+### Average Comments per PR
+
+Plot the average number of comments a PR receives before it is merged, aggregated by week or month.
+
+```bash
+smm prs average-comments-by --aggregate-by=week
+```
+
+Note: CLI commands that return processed data will now print the returned data to the console when run
+non-interactively (for example, when executed by the test harness or CI). If a command produces a plot and you
+pass `--out-file`, the plot will also be saved to the provided path.

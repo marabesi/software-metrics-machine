@@ -3,7 +3,7 @@
 ## Fetch Workflows
 
 ```bash
-./run-cli.sh pipelines fetch
+smm pipelines fetch
 ```
 
 | Option         | Description                          | Example                  |
@@ -15,53 +15,53 @@
 ## Fetch Jobs
 
 ```bash
-./run-cli.sh pipelines jobs-fetch
+smm pipelines jobs-fetch
 ```
 
 ### Jobs Average Time Execution
 
 ```bash
-./run-cli.sh pipelines jobs-by-execution-time
+smm pipelines jobs-by-execution-time
 ```
 
 ### Jobs by Status
 
 ```bash
-./run-cli.sh pipelines jobs-by-status
+smm pipelines jobs-by-status
 ```
 
 ### Jobs Summary
 
 ```bash
-./run-cli.sh pipelines jobs-summary
+smm pipelines jobs-summary
 ```
 
 ### Pipeline by Status
 
 ```bash
-./run-cli.sh pipelines pipeline-by-status
+smm pipelines pipeline-by-status
 ```
 
 ### Pipeline Deployment Frequency
 
 ```bash
-./run-cli.sh pipelines deployment-frequency
+smm pipelines deployment-frequency
 ```
 
 ### Pipeline Runs by Time
 
 ```bash
-./run-cli.sh pipelines runs-by
+smm pipelines runs-by
 ```
 
 ### Pipeline Runs Duration
 
 ```bash
-./run-cli.sh pipelines runs-duration
+smm pipelines runs-duration
 ```
 
 ### Pipeline Summary
 
 ```bash
-./run-cli.sh pipelines summary
+smm pipelines summary
 ```

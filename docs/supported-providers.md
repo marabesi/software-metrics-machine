@@ -13,17 +13,22 @@ is a list of the currently supported providers and tools.
 
 If your are using [GitHub/Github actions](./github.md), the following metrics are supported:
 
-- Pull requests open days average
-- Pipeline success rate
-- Pipeline average time to complete
+- Insights
+- Pipeline
+- Pull requests
+- Source code analysis via git
 
 ### GitLab
 
-(coming soon)
+If your are using [GitLab](./gitlab.md), the following metrics are supported:
+
+- Source code analysis via git
 
 ### Bitbucket
 
-(coming soon)
+If your are using BitBucket, the following metrics are supported:
+
+- Source code analysis via git
 
 ## Code analysis tools
 
@@ -36,6 +41,10 @@ means, it can be used regardless of the vendor. The following metrics are suppor
 - Hotspots
 - Age of code
 - Authors per file
+
+### PyDriller
+
+(comming soon)
 
 ### SonarQube
 

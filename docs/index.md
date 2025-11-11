@@ -16,7 +16,7 @@ hero:
       text: What is Software Metrics Machine?
       link: /what-is-smm
 features:
-  - title: Privacy first 🔐 
+  - title: Privacy first 🔐
     details: This tool is designed to run locally, ensuring that your data remains private and secure never leaving your environment.
     link: ./privacy-first.md
   - title: Integrates with your source control version 🧑🏼‍💻
@@ -25,3 +25,6 @@ features:
   - title: One image is worth a thousand words 📊
     details: Visualize your data with interactive charts and graphs that make it easy to understand complex metrics at a glance.
     link: ./dashboard.md
+  - title: Developer notes 🛠️
+    details: Guidance for contributors on where to implement data aggregation vs visualization (repository vs view).
+    link: ./dashboard/prs.md#developer-notes-recent-changes

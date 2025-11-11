@@ -71,7 +71,7 @@ To fetch data from the GitHub repository, we will use the CLI commands provided 
 To fetch the git history data using codemaat, run the following command:
 
 ```bash
-./run-cli.sh code fetch --start-date 2023-01-01 --end-date 2023-01-10
+smm code fetch --start-date 2023-01-01 --end-date 2023-01-10
 ```
 
 ### Fetch Pull Requests
@@ -79,7 +79,7 @@ To fetch the git history data using codemaat, run the following command:
 To fetch pull requests from the repository, run the following command:
 
 ```bash
-./run-cli.sh prs fetch --start-date 2023-01-01 --end-date 2023-01-10
+smm prs fetch --start-date 2023-01-01 --end-date 2023-01-10
 ```
 
 This command fetches pull requests created between January 1, 2025, and January 10, 2025. You can adjust the dates as
@@ -91,7 +91,7 @@ pull requests may take a while and could hit GitHub API rate limits.
 To fetch workflow runs from the repository, run the following command:
 
 ```bash
-./run-cli.sh pipelines fetch --start-date 2025-01-01 --end-date 2025-12-10
+smm pipelines fetch --start-date 2025-01-01 --end-date 2025-12-10
 ```
 
 This command fetches pipelines created between January 1, 2025, and December 10, 2025. You can adjust the dates as
@@ -104,7 +104,7 @@ Now that you have fetched the data, you can visualize it using the dashboard app
 Machine. To start the dashboard, run the following command:
 
 ```bash
-./run-dashboard.sh
+smm-dashboard
 ```
 
 This will start a local server, and you can access the dashboard by navigating to `http://localhost:5006/dashboard` in your web

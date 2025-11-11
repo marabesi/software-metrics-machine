@@ -21,6 +21,38 @@ We welcome contributions from the community to enhance the Software Metrics Mach
 git clone https://github.com/marabesi/software-metrics-machine
 ```
 
+### MacOs
+
+If you are on a mac, you can easily install them using the following commands:
+
+```bash
+brew install python
+brew install poetry
+```
+
+### Checkpoint python and poetry installation
+
+Once installed python and poetry, run the following command:
+
+```bash
+poetry run python --version
+```
+
+You should see an output something like the following:
+
+```plaintext
+Python 3.11.0
+```
+
+### Install dependencies
+
+Change directory to the cloned repository and install the dependencies using poetry:
+
+```bash
+cd software-metrics-machine
+poetry install --no-root
+```
+
 3. **Create a Branch**: Create a new branch for your feature or bug fix:
 
 ```bash

@@ -79,7 +79,7 @@ are optional. [See the CLI documentation for more details](./github/cli.md).
 For options to fetch pull requests refer to the [CLI documentation](./github/cli-prs.md).
 
 ```bash
-./run-cli.sh prs fetch
+smm prs fetch
 ```
 
 ### Workflows (pipelines)
@@ -87,7 +87,7 @@ For options to fetch pull requests refer to the [CLI documentation](./github/cli
 For options to fetch workflows and jobs refer to the [CLI documentation](./github/cli-workflows.md).
 
 ```bash
-./run-cli.sh pipelines fetch
+smm pipelines fetch
 ```
 
 ## Limitations

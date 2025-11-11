@@ -37,6 +37,16 @@ For example, if September 25th shows many opened PRs but none closed, it could s
 3. Data is processed to count opened and closed PRs per day.
 4. You can filter the chart to focus on specific periods, such as a sprint or release window.
 
+## Developer notes (recent changes)
+
+The data processing for some PR-related metrics has been refactored to live inside the repository layer
+(`PrsRepository`). Specifically, comment-aggregation logic (average comments per PR by week/month) is now
+implemented in `PrsRepository.average_comments(...)`. Views (e.g. `ViewAverageCommentsPerPullRequest`) now
+focus solely on visualization: they call repository methods to obtain processed data and then build charts.
+
+If you're adding new metrics or changing aggregation rules, prefer adding/adjusting methods on `PrsRepository`
+so the visualization code can remain focused on rendering.
+
 ## Average PR Open Days by Time Period
 
 ![Pull requests open by on average](/dashboard/prs/open_prs_average.png)
