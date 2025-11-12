@@ -50,7 +50,7 @@ from software_metrics_machine.core.pipelines.plots.view_pipeline_execution_durat
 def workflows_run_duration(
     out_file, workflow_path, start_date, end_date, max_runs, raw_filters
 ):
-    return ViewPipelineExecutionRunsDuration(
+    result = ViewPipelineExecutionRunsDuration(
         repository=create_pipelines_repository()
     ).main(
         out_file=out_file,
@@ -59,6 +59,7 @@ def workflows_run_duration(
         end_date=end_date,
         raw_filters=raw_filters,
     )
+    click.echo(result.data)
 
 
 command = workflows_run_duration

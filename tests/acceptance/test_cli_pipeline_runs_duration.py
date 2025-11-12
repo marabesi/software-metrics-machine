@@ -109,3 +109,32 @@ class TestWorkflowsRunsDurationCliCommands:
         )
 
         assert f"Found {expected_count} runs after filtering" in result.output
+
+    @pytest.mark.parametrize(
+        "workflow_runs, expected",
+        [
+            (
+                github_workflows_data(),
+                {
+                    "command": [
+                        "pipelines",
+                        "runs-duration",
+                        "--raw-filters",
+                        "status=completed",
+                    ],
+                    "output": "dynamic/workflows/dependabot   60.0      1",
+                },
+            ),
+        ],
+    )
+    def test_should_print_result_in_minutes(self, cli, workflow_runs, expected):
+        command = expected["command"]
+        path_string = cli.data_stored_at
+        FileHandlerForTesting(path_string).store_pipelines_with(workflow_runs)
+
+        result = cli.runner.invoke(
+            main,
+            command,
+        )
+
+        assert expected["output"] in result.output

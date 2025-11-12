@@ -49,6 +49,7 @@ class ViewPipelineExecutionRunsDuration(BaseViewer):
         title_metric = result.title_metric
         rows = result.rows
         data = []
+
         for name, val, cnt in zip(names, values, counts):
             data.append({"name": name, "value": val, "count": cnt})
 
@@ -66,7 +67,7 @@ class ViewPipelineExecutionRunsDuration(BaseViewer):
             color=super().get_color(),
         )
 
-        df = pd.DataFrame(rows)
+        df = pd.DataFrame(data)
 
         if out_file:
             # get_screenshot_as_png(chart, filename=f"{self.repository.configuration.store_data}/run_duration.png")
