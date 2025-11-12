@@ -90,3 +90,26 @@ file.txt,John,10,2"""
             "Applied include only file patterns: ['src/**'], remaining rows: 1"
             in result.output
         )
+
+    def test_print_entity_ownership(self, cli):
+        path_string = cli.data_stored_at
+
+        csv_data = (
+            CSVBuilder(headers=["entity", "author", "added", "deleted"])
+            .extend_rows(
+                [
+                    ["src/another.txt", "John", 10, 2],
+                ]
+            )
+            .build()
+        )
+        FileHandlerForTesting(path_string).store_file("entity-ownership.csv", csv_data)
+        result = cli.runner.invoke(
+            main,
+            ["code", "entity-ownership"],
+        )
+        # entity     short_entity author  added  deleted  total
+        assert (
+            "src/another.txt  src/another.txt   John     10        2     12"
+            in result.output
+        )

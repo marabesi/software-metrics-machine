@@ -44,13 +44,14 @@ def entity_ownership(out_file, top, ignore_files, authors, include_only):
     """Plot entity (File) ownership."""
     df_repo = create_codemaat_repository()
     viewer = EntityOnershipViewer(repository=df_repo)
-    viewer.render(
+    result = viewer.render(
         top_n=top,
         ignore_files=ignore_files,
         out_file=out_file,
         authors=authors,
         include_only=include_only,
     )
+    click.echo(result.data)
 
 
 command = entity_ownership
