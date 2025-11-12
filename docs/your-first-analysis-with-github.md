@@ -86,6 +86,14 @@ This command fetches pull requests created between January 1, 2025, and January 
 needed. If you want to fetch all pull requests, you can omit the date filters. However, be aware that fetching a large number of
 pull requests may take a while and could hit GitHub API rate limits.
 
+In addition to fetching pull requests, you can also fetch associated reviews and comments by running the following command:
+
+```bash
+smm prs fetch-comments --start-date 2023-01-01 --end-date 2023-01-10
+```
+
+The comments fetched are based in the pull requests already fetched, so ensure you run the `smm prs fetch` command first.
+
 ### Fetch pipelines (workflow runs)
 
 To fetch workflow runs from the repository, run the following command:
@@ -97,6 +105,15 @@ smm pipelines fetch --start-date 2025-01-01 --end-date 2025-12-10
 This command fetches pipelines created between January 1, 2025, and December 10, 2025. You can adjust the dates as
 needed. If you want to fetch all runs, you can omit the date filters. However, be aware that fetching a large number of
 pull requests may take a while and could hit GitHub API rate limits.
+
+Pipelines are associated with jobs, to fetch the jobs associated with the fetched pipelines, run the following command:
+
+```bash
+smm pipelines jobs-fetch --start-date 2025-01-01 --end-date 2025-12-10
+```
+
+Like the pull request comments, the jobs fetched are based in the pipelines already fetched, so ensure you run the
+`smm pipelines fetch` command first.
 
 ## Visualizing the data
 

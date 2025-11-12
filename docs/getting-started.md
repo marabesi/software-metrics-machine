@@ -25,7 +25,18 @@ The way this project works goes through three main steps:
 ### Via PyPI
 
 ```bash
-pip install software-metrics-machine
+pipx install software-metrics-machine
+```
+
+Once installed, you can run the `smm` command in your terminal along with other ones:
+
+```plaintext
+installed package software-metrics-machine, installed using Python
+
+These apps are now globally available
+- smm
+- smm-dashboard
+- smm-rest
 ```
 
 ## Define where to store the data
@@ -42,7 +53,8 @@ changes. For example:
 
 ## Create the configuration file
 
-in the folder pointed to store the data, create a configuration file named `smm_config.json` with the following content:
+The configuration file is the central point to configure the project and give it default values, it uses JSON format.
+In the folder pointed to store the data, create a configuration file named `smm_config.json` with the following content:
 
 ```json
 {

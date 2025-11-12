@@ -114,7 +114,7 @@ The web application provides an interactive dashboard to explore the data visual
 following command:
 
 ```bash
-./run-dashboard.sh
+smm-dashboard
 ```
 
 ### CLI commands
