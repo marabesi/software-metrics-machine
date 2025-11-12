@@ -254,6 +254,59 @@ class TestJobsCliCommands:
         assert 0 == result.exit_code
         assert "Found 1 workflow runs and 1 jobs after filtering" in result.output
 
+    @pytest.mark.parametrize(
+        "jobs_with_conclusion, expected",
+        [
+            (
+                {
+                    "jobs": [
+                        {
+                            "id": 105,
+                            "run_id": 1,
+                            "name": "Deploy",
+                            "conclusion": "success",
+                            "started_at": "2023-10-01T09:05:00Z",
+                            "completed_at": "2023-10-01T09:10:00Z",
+                        },
+                    ],
+                    "job_name": "Deploy",
+                },
+                "success      1",
+            ),
+            (
+                {
+                    "jobs": [
+                        {
+                            "id": 101,
+                            "run_id": 1,
+                            "name": "Build",
+                            "conclusion": "failure",
+                            "started_at": "2023-10-01T09:04:00Z",
+                            "completed_at": "2023-10-01T09:05:00Z",
+                        },
+                    ],
+                    "job_name": "Build",
+                },
+                "failure      1",
+            ),
+        ],
+    )
+    def test_print_jobs_by_status(self, cli, jobs_with_conclusion, expected):
+        path_string = cli.data_stored_at
+        FileHandlerForTesting(path_string).store_pipelines_with(single_run())
+        FileHandlerForTesting(path_string).store_jobs_with(jobs_with_conclusion["jobs"])
+
+        result = cli.runner.invoke(
+            main,
+            [
+                "pipelines",
+                "jobs-by-status",
+                "--job-name",
+                jobs_with_conclusion["job_name"],
+            ],
+        )
+        assert expected in result.output
+
     def test_plot_jobs_by_average_execution_time(self, cli):
         path_string = cli.data_stored_at
         jobs = [
@@ -323,3 +376,48 @@ class TestJobsCliCommands:
         )
         assert 0 == result.exit_code
         assert "Found 0 workflow runs and 0 jobs after filtering" in result.output
+
+    @pytest.mark.parametrize(
+        "jobs, expected",
+        [
+            (
+                [
+                    {
+                        "id": 105,
+                        "run_id": 1,
+                        "name": "Deploy",
+                        "conclusion": "success",
+                        "started_at": "2023-10-01T09:05:00Z",
+                        "completed_at": "2023-10-01T09:10:00Z",
+                    },
+                ],
+                "Deploy  5.0",
+            ),
+            (
+                [
+                    {
+                        "id": 105,
+                        "run_id": 1,
+                        "name": "Build",
+                        "conclusion": "success",
+                        "started_at": "2023-10-01T09:04:00Z",
+                        "completed_at": "2023-10-01T09:05:00Z",
+                    },
+                ],
+                "Build  1.0",
+            ),
+        ],
+    )
+    def test_print_pipelines_by_execution_time_in_minutes(self, cli, jobs, expected):
+        path_string = cli.data_stored_at
+        FileHandlerForTesting(path_string).store_pipelines_with(single_run())
+        FileHandlerForTesting(path_string).store_jobs_with(jobs)
+
+        result = cli.runner.invoke(
+            main,
+            [
+                "pipelines",
+                "jobs-by-execution-time",
+            ],
+        )
+        assert expected in result.output

@@ -1,4 +1,6 @@
 from unittest.mock import patch, MagicMock
+
+import pytest
 from software_metrics_machine.core.pipelines.aggregates.deployment_frequency import (
     DeploymentFrequency,
 )
@@ -11,13 +13,20 @@ from tests.in_memory_configuration import InMemoryConfiguration
 
 class TestDeploymentFrequency:
 
-    def test_no_compute_without_workflow_and_job(self):
-        def mocked_read_file_if_exists(file):
-            if file == "workflows.json":
-                return as_json_string(github_workflows_data())
-            if file == "jobs.json":
-                return as_json_string(
-                    [
+    @pytest.mark.parametrize(
+        "data, job_name",
+        [
+            (
+                {
+                    "pipelines": [],
+                    "jobs": [],
+                },
+                None,
+            ),
+            (
+                {
+                    "pipelines": github_workflows_data(),
+                    "jobs": [
                         {
                             "id": 105,
                             "run_id": 1,
@@ -34,8 +43,45 @@ class TestDeploymentFrequency:
                             "started_at": "2023-01-01T09:05:00Z",
                             "completed_at": "2023-01-01T09:10:00Z",
                         },
-                    ]
-                )
+                    ],
+                },
+                None,
+            ),
+            (
+                {
+                    "pipelines": github_workflows_data(),
+                    "jobs": [
+                        {
+                            "id": 105,
+                            "run_id": 1,
+                            "name": "Deploy",
+                            "conclusion": "success",
+                            "started_at": "2023-10-01T09:05:00Z",
+                            "completed_at": "2023-10-01T09:10:00Z",
+                        },
+                        {
+                            "id": 107,
+                            "run_id": 1,
+                            "name": "Build",
+                            "conclusion": "failed",
+                            "started_at": "2023-01-01T09:05:00Z",
+                            "completed_at": "2023-01-01T09:10:00Z",
+                        },
+                    ],
+                },
+                "NonExistentJob",
+            ),
+        ],
+    )
+    def test_no_compute_without_data(self, data, job_name):
+        pipelines = data["pipelines"]
+        jobs = data["jobs"]
+
+        def mocked_read_file_if_exists(file):
+            if file == "workflows.json":
+                return as_json_string(pipelines)
+            if file == "jobs.json":
+                return as_json_string(jobs)
 
         with patch(
             "software_metrics_machine.core.infrastructure.file_system_base_repository.FileSystemBaseRepository.read_file_if_exists",
@@ -44,7 +90,7 @@ class TestDeploymentFrequency:
             repository = PipelinesRepository(configuration=InMemoryConfiguration("."))
 
             deployment_frequency = DeploymentFrequency(repository=repository)
-            result = deployment_frequency.execute(workflow_path=None, job_name=None)
+            result = deployment_frequency.execute(workflow_path=None, job_name=job_name)
 
             assert [] == result["days"]
             assert [] == result["daily_counts"]
@@ -52,7 +98,7 @@ class TestDeploymentFrequency:
             assert [] == result["weeks"]
             assert [] == result["monthly_counts"]
 
-    def test_no_compute_with_missing_workflow_(self):
+    def test_no_compute_with_missing_workflow(self):
         """If no workflow_path and no job_name are provided, do not compute deployment frequency."""
 
         def mocked_read_file_if_exists(file):

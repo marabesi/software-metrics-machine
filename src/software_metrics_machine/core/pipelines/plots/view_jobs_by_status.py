@@ -103,7 +103,7 @@ class ViewJobsByStatus(BaseViewer):
         else:
             chart = timeline_bars
 
-        df = pd.DataFrame(runs)
+        df = pd.DataFrame(status_data)
 
         if out_file:
             try:

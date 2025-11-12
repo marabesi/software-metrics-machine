@@ -40,7 +40,7 @@ from software_metrics_machine.core.pipelines.plots.view_deployment_frequency imp
     help="End date (inclusive) in YYYY-MM-DD",
 )
 def deployment_frequency(workflow_path, job_name, start_date, end_date):
-    return ViewDeploymentFrequency(
+    result = ViewDeploymentFrequency(
         repository=create_pipelines_repository(driver=Driver.CLI)
     ).plot(
         workflow_path=workflow_path,
@@ -48,6 +48,8 @@ def deployment_frequency(workflow_path, job_name, start_date, end_date):
         start_date=start_date,
         end_date=end_date,
     )
+
+    click.echo(result.data)
 
 
 command = deployment_frequency

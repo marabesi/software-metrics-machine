@@ -1,4 +1,6 @@
 from unittest.mock import patch
+
+import pytest
 from software_metrics_machine.core.pipelines.aggregates.jobs_by_status import (
     JobsByStatus,
 )
@@ -11,14 +13,32 @@ from tests.in_memory_configuration import InMemoryConfiguration
 
 class TestJobsByStatus:
 
-    def test_empty_jobs_and_runs(self):
+    @pytest.mark.parametrize(
+        "pipelines, jobs",
+        [
+            ([], []),
+            (
+                [],
+                [
+                    {
+                        "id": 101,
+                        "name": "test",
+                        "run_id": 1,
+                        "conclusion": "success",
+                        "created_at": "2023-01-01T10:00:00Z",
+                    },
+                ],
+            ),
+        ],
+    )
+    def test_empty_jobs_and_runs(self, pipelines, jobs):
         """Test main() with empty jobs and runs."""
 
         def mocked_read_file_if_exists(file):
             if file == "workflows.json":
-                return as_json_string([])
+                return as_json_string(pipelines)
             if file == "jobs.json":
-                return as_json_string([])
+                return as_json_string(jobs)
             return None
 
         with patch(
@@ -98,7 +118,7 @@ class TestJobsByStatus:
             result = jobs_by_status.main(job_name="build", aggregate_by_week=False)
 
             # Verify status counts for runs
-            assert result.status_counts["success"] == 1
+            assert result.status_counts["success"] == 2
             assert result.status_counts["failure"] == 1
 
             # Verify date grouping (2 days)

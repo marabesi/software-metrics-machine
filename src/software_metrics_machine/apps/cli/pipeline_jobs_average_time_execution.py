@@ -88,7 +88,7 @@ def jobs_by_execution_time(
     job_name,
     pipeline_raw_filters,
 ):
-    return ViewJobsByAverageTimeExecution(
+    result = ViewJobsByAverageTimeExecution(
         repository=create_pipelines_repository()
     ).main(
         workflow_path=workflow_path,
@@ -102,6 +102,7 @@ def jobs_by_execution_time(
         job_name=job_name,
         pipeline_raw_filters=pipeline_raw_filters,
     )
+    click.echo(result.data)
 
 
 command = jobs_by_execution_time

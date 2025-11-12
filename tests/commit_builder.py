@@ -23,6 +23,7 @@ class CommitBuilder:
         self._msg = msg or "initial commit"
         self._hash = hash
         self.date = None
+        self._coauthors: list[tuple[str, str]] = []
 
     def with_author(self, author: str) -> "CommitBuilder":
         self._author = author
@@ -40,13 +41,23 @@ class CommitBuilder:
         self.date = date
         return self
 
+    def with_coauthor(self, name: str, email: str) -> "CommitBuilder":
+        self._coauthors.append((name, email))
+        return self
+
     def _generate_hash(self) -> str:
-        # Create a short deterministic hash based on author, msg and time
         seed = f"{self._author}:{self._msg}:{time.time_ns()}"
         return hashlib.sha1(seed.encode("utf-8")).hexdigest()[:12]
 
     def build(self) -> CommitTypedDict:
         if not self._hash:
             self._hash = self._generate_hash()
+        msg = self._msg
+        if self._coauthors:
+            if not msg.endswith("\n"):
+                msg = msg + "\n"
+            for name, email in self._coauthors:
+                msg += f"Co-authored-by: {name} <{email}>\n"
+
         # Return a plain dict matching the TypedDict shape
-        return CommitTypedDict(author=self._author, msg=self._msg, hash=self._hash)
+        return CommitTypedDict(author=self._author, msg=msg, hash=self._hash)

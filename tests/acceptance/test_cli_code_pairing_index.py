@@ -71,3 +71,15 @@ class TestCliCodePairingIndexCommands:
         )
 
         assert "Total commits analyzed: 1" in result.output
+
+    def test_print_pairing_index(self, cli, git):
+        git.commit().with_author("John Doe", "john@example.com").with_coauthor(
+            "Maria", "chec@check.com"
+        ).execute()
+
+        result = cli.runner.invoke(
+            main,
+            ["code", "pairing-index"],
+        )
+
+        assert "100.0 %" in result.output

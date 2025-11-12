@@ -28,9 +28,10 @@ from software_metrics_machine.core.infrastructure.repository_factory import (
     help="Filter commits by a comma-separated list of author emails",
 )
 def pairing_index(start_date: str | None, end_date: str | None, authors: str | None):
-    return PairingIndex(repository=create_codemaat_repository()).get_pairing_index(
+    result = PairingIndex(repository=create_codemaat_repository()).get_pairing_index(
         start_date=start_date, end_date=end_date, authors=authors
     )
+    click.echo(f"{result["pairing_index"]} %")
 
 
 command = pairing_index

@@ -80,7 +80,7 @@ def jobs_by_status(
     end_date,
     force_all_jobs,
 ):
-    return ViewJobsByStatus(repository=create_pipelines_repository()).main(
+    result = ViewJobsByStatus(repository=create_pipelines_repository()).main(
         job_name=job_name,
         workflow_path=workflow_path,
         out_file=out_file,
@@ -91,6 +91,7 @@ def jobs_by_status(
         end_date=end_date,
         force_all_jobs=force_all_jobs,
     )
+    click.echo(result.data)
 
 
 command = jobs_by_status

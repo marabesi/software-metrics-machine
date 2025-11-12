@@ -1,5 +1,5 @@
 from dataclasses import dataclass
-from typing import List
+from typing import List, Optional
 from collections import Counter, defaultdict
 from datetime import datetime
 
@@ -46,7 +46,7 @@ class JobsByStatus:
                     date_key = created
             else:
                 date_key = "unknown"
-            conclusion = (j.get("conclusion") or "unknown").lower()
+            conclusion = (j.get("conclusion")).lower()
             per_day[date_key][conclusion] += 1
 
         if not per_day:
@@ -125,13 +125,13 @@ class JobsByStatus:
     def main(
         self,
         job_name: str,
-        workflow_path: str | None = None,
+        workflow_path: Optional[str] = None,
         aggregate_by_week: bool = False,
-        raw_filters: str | None = None,
-        start_date: str | None = None,
-        end_date: str | None = None,
+        raw_filters: Optional[str] = None,
+        start_date: Optional[str] = None,
+        end_date: Optional[str] = None,
         force_all_jobs: bool = False,
-    ) -> None:
+    ) -> JobByStatusResult:
         filters = {
             "start_date": start_date,
             "end_date": end_date,
@@ -178,10 +178,8 @@ class JobsByStatus:
         if not display_workflow_name:
             display_workflow_name = "<any>"
 
-        # left: workflow conclusions (existing)
-        status_counts = Counter(run.get("conclusion") or "undefined" for run in runs)
+        status_counts = Counter(job["conclusion"] for job in jobs)
 
-        # right: delivery executions grouped by conclusion (day or week)
         if aggregate_by_week:
             dates, conclusions, matrix = self.count_delivery_by_week(
                 jobs, job_name=job_name

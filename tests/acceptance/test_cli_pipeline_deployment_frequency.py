@@ -50,3 +50,19 @@ class TestWorkflowsDeploymentFrequencyCliCommands:
             ],
         )
         assert "Loaded 1 runs" in result.output
+
+    def test_prints_deployment_frequency(self, cli):
+        result = cli.runner.invoke(
+            main,
+            [
+                "pipelines",
+                "deployment-frequency",
+                "--job-name",
+                "Deploy",
+            ],
+        )
+        # days     weeks   months  daily_counts  weekly_counts  monthly_counts
+        assert (
+            "2023-10-01  2023-W39  2023-10             1              1               1"
+            in result.output
+        )
