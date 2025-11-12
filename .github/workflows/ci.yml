@@ -11,7 +11,7 @@ env:
 
 jobs:
   code-quality:
-    name: Flake8 (Poetry)
+    name: Code Quality
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
