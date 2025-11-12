@@ -56,3 +56,23 @@ class TestCliCodeEntityOwnershipCommands:
             "Applied include only file patterns: ['src/**'], remaining rows: 1"
             in result.output
         )
+
+    def test_print_entity_effort(self, cli):
+        path_string = cli.data_stored_at
+
+        csv_data = (
+            CSVBuilder(headers=["entity", "author", "author-revs", "total-revs"])
+            .extend_rows(
+                [
+                    ["application/file.ts", "Maria", 10, 2],
+                ]
+            )
+            .build()
+        )
+        FileHandlerForTesting(path_string).store_file("entity-effort.csv", csv_data)
+        result = cli.runner.invoke(
+            main,
+            ["code", "entity-effort"],
+        )
+        # entity  total-revs
+        assert "application/file.ts           2" in result.output

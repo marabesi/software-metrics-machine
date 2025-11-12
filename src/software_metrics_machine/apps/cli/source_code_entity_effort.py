@@ -38,12 +38,13 @@ def entity_effort(out_file, top, ignore_files, include_only):
     """Plot entity (File) effort."""
     df_repo = create_codemaat_repository()
     viewer = EntityEffortViewer(repository=df_repo)
-    viewer.render_treemap(
+    result = viewer.render_treemap(
         top_n=top,
         ignore_files=ignore_files,
         out_file=out_file,
         include_only=include_only,
     )
+    click.echo(result.data)
 
 
 command = entity_effort
