@@ -28,11 +28,12 @@ from software_metrics_machine.providers.codemaat.plots.coupling import CouplingV
 )
 def coupling(ignore_files, out_file, include_only):
     """Plot coupling graph."""
-    return CouplingViewer(repository=create_codemaat_repository()).render(
+    result = CouplingViewer(repository=create_codemaat_repository()).render(
         out_file=out_file,
         ignore_files=ignore_files,
         include_only=include_only,
     )
+    click.echo(result.data)
 
 
 command = coupling

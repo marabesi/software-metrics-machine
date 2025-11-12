@@ -56,3 +56,27 @@ class TestCliCodeEntityChurnCommands:
             "Applied include only file patterns: ['src/**'], remaining rows: 1"
             in result.output
         )
+
+    def test_print_code_churn_data(self, cli):
+        path_string = cli.data_stored_at
+
+        csv_data = (
+            CSVBuilder(headers=["entity", "added", "deleted", "commits"])
+            .extend_rows(
+                [
+                    ["src/another.txt", 10, 2, 1],
+                    ["application/file.ts", 10, 2, 1],
+                ]
+            )
+            .build()
+        )
+        FileHandlerForTesting(path_string).store_file("entity-churn.csv", csv_data)
+        result = cli.runner.invoke(
+            main,
+            ["code", "entity-churn", "--include-only", "src/**"],
+        )
+        # entity  added  deleted  commits     short_entity  total_churn
+        assert (
+            "src/another.txt     10        2        1  src/another.txt           12"
+            in result.output
+        )

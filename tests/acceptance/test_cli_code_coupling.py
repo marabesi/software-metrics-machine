@@ -78,3 +78,24 @@ class TestCliCodeCouplingCommands:
             "Applied include only file patterns: ['src/**'], remaining rows: 1"
             in result.output
         )
+
+    def test_shows_coupling_data(self, cli):
+        path_string = cli.data_stored_at
+
+        csv_data = (
+            CSVBuilder(headers=["entity", "coupled", "degree", "average-revs"])
+            .extend_rows(
+                [
+                    ["src/another.txt", "aaaa.mp3", 10, 2],
+                    ["application/file.ts", "brum.ts", 10, 2],
+                ]
+            )
+            .build()
+        )
+        FileHandlerForTesting(path_string).store_file("coupling.csv", csv_data)
+        result = cli.runner.invoke(
+            main,
+            ["code", "coupling"],
+        )
+        # entity   coupled  degree  average-revs
+        assert "src/another.txt  aaaa.mp3      10             2" in result.output
