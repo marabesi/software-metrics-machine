@@ -46,7 +46,7 @@ from software_metrics_machine.core.prs.plots.view_average_review_time_by_author 
 def review_time_by_author(top, labels, out_file, start_date, end_date):
     """Plot average PR open time by author."""
 
-    return ViewAverageReviewTimeByAuthor(
+    result = ViewAverageReviewTimeByAuthor(
         repository=create_prs_repository()
     ).plot_average_open_time(
         title=f"Top {top} PR authors by avg open time",
@@ -56,6 +56,8 @@ def review_time_by_author(top, labels, out_file, start_date, end_date):
         start_date=start_date,
         end_date=end_date,
     )
+
+    click.echo(result.data)
 
 
 command = review_time_by_author

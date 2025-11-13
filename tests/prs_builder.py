@@ -112,6 +112,7 @@ class PullRequestBuilder:
             "title": self.title,
             "body": self.body,
             "author": self.author,
+            "user": {"login": self.author},
             "created_at": self.created_at,
             "closed_at": self.closed_at,
             "merged_at": self.merged_at,

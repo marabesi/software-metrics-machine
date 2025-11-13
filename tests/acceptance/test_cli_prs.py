@@ -190,6 +190,65 @@ class TestCliPrsCommands:
         assert "Loaded 2 PRs" in result.output
 
     @pytest.mark.parametrize(
+        "data, expected_output",
+        [
+            pytest.param(
+                {
+                    "prs": [
+                        PullRequestBuilder()
+                        .with_author("alice")
+                        .with_created_at("2011-01-26T19:00:12Z")
+                        .mark_merged("2011-01-26T19:10:12Z")
+                        .build(),
+                    ],
+                },
+                "alice  0.006944",
+                id="merged in 10 minutes",
+            ),
+            pytest.param(
+                {
+                    "prs": [
+                        PullRequestBuilder()
+                        .with_author("bob")
+                        .with_created_at("2011-01-25T19:00:12Z")
+                        .mark_merged("2011-01-26T19:20:12Z")
+                        .build(),
+                    ],
+                },
+                "bob  1.0",
+                id="merged in 1 day and 20 minutes",
+            ),
+            pytest.param(
+                {
+                    "prs": [
+                        PullRequestBuilder()
+                        .with_author("charlie")
+                        .with_created_at("2011-01-01T19:00:12Z")
+                        .mark_merged("2011-01-31T19:20:12Z")
+                        .build(),
+                    ],
+                },
+                "charlie  30.0",
+                id="merged in 30 days and 20 minutes",
+            ),
+        ],
+    )
+    def test_with_stored_data_print_review_time_by_day(
+        self, cli, data, expected_output
+    ):
+        path_string = cli.data_stored_at
+        FileHandlerForTesting(path_string).store_prs_with(data["prs"])
+
+        result = cli.runner.invoke(
+            main,
+            [
+                "prs",
+                "review-time-by-author",
+            ],
+        )
+        assert expected_output in result.output
+
+    @pytest.mark.parametrize(
         "prs",
         [
             [

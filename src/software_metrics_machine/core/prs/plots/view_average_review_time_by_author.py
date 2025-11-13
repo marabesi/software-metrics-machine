@@ -107,8 +107,6 @@ class ViewAverageReviewTimeByAuthor(BaseViewer):
             delta_days = (dt_merged - dt_created).total_seconds() / 86400.0
             user = pr.get("user") or {}
             login = user.get("login") if isinstance(user, dict) else str(user)
-            if not login:
-                login = "<unknown>"
             sums[login] += delta_days
             counts[login] += 1
 
