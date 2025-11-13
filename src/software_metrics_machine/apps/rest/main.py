@@ -162,7 +162,10 @@ def pipeline_summary(
     view = WorkflowRunSummary(repository=create_pipelines_repository())
     # print_summary prints to stdout; call method and return ok
     result = view.print_summary(
-        max_workflows=10, start_date=start_date, end_date=end_date, output_format="json"
+        max_workflows=None,
+        start_date=start_date,
+        end_date=end_date,
+        output_format="json",
     )
     return JSONResponse(result.data.to_dict(orient="records"))
 

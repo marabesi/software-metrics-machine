@@ -62,7 +62,6 @@ def jobs_summary(max_jobs, start_date, end_date):
     if jobs_by_name:
         click.echo("")
         click.echo("Executions by job name:")
-        # jobs_by_name may be a dict of name -> info; keep ordering
         for name, info in jobs_by_name.items():
             cnt = info.get("count", 0) if isinstance(info, dict) else 0
             title = info.get("title") if isinstance(info, dict) else None

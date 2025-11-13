@@ -36,13 +36,57 @@ from software_metrics_machine.core.pipelines.plots.view_pipeline_summary import 
     help="Either 'text' or 'json' to specify the output format",
 )
 def summary(max_workflows, start_date, end_date, output):
-    lw = WorkflowRunSummary(repository=create_pipelines_repository())
-    lw.print_summary(
+    view = WorkflowRunSummary(repository=create_pipelines_repository())
+    result = view.print_summary(
         max_workflows=max_workflows,
         start_date=start_date,
         end_date=end_date,
-        output_format=output,
+        output_format=None,
     )
+
+    if output == "json":
+        import json
+
+        click.echo(json.dumps(result, indent=4))
+        return result
+
+    # text output formatting
+    click.echo("\nWorkflow runs summary:")
+    click.echo(f"  Total runs: {result.get('total_runs')}")
+    click.echo(f"  Completed runs: {result.get('completed')}")
+    click.echo(f"  In-progress runs: {result.get('in_progress')}")
+    click.echo(f"  Queued runs: {result.get('queued')}")
+    if result.get("most_failed"):
+        click.echo(f"  Most failed run: {result.get('most_failed')}")
+
+    runs_by_wf = result.get("runs_by_workflow") or {}
+    if runs_by_wf:
+        click.echo("")
+        click.echo("Runs by workflow name:")
+        sorted_items = sorted(
+            runs_by_wf.items(), key=lambda x: x[1].get("count", 0), reverse=True
+        )
+        for name, info in sorted_items[:max_workflows]:
+            cnt = info.get("count", 0)
+            path = info.get("path") or ""
+            click.echo(f"  {cnt:4d}  {name}  ({path})")
+
+    first = result.get("first_run") or {}
+    last = result.get("last_run") or {}
+
+    click.echo("")
+    click.echo("First run:")
+    click.echo(f"  Created run at: {first.get('created_at')}")
+    click.echo(f"  Started run at: {first.get('run_started_at')}")
+    click.echo(f"  Updated run at: {first.get('updated_at')} (Ended at)")
+
+    click.echo("")
+    click.echo("Last run:")
+    click.echo(f"  Created run at: {last.get('created_at')}")
+    click.echo(f"  Started run at: {last.get('run_started_at')}")
+    click.echo(f"  Updated run at: {last.get('updated_at')} (Ended at)")
+
+    return result
 
 
 command = summary

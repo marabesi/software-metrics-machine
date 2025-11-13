@@ -34,82 +34,66 @@ class WorkflowRunSummary:
         start_date: Optional[str] = None,
         end_date: Optional[str] = None,
         output_format: Optional[str] = None,
-    ):
+    ) -> WorkflowRunSummaryStructure:
         """
-        Print or return the summary of workflow runs.
+        Build and return the summary of workflow runs as a structured dict.
 
-        :param max_workflows: Maximum number of workflows to display.
-        :param output_format: Specifies the output format. Accepts 'text' or 'json'.
-                              If not provided, returns the summary structure.
+        The function no longer prints output. Callers (for example CLI) should
+        format or pretty-print the returned structure.
         """
         summary = self.summary.compute_summary(start_date=start_date, end_date=end_date)
 
-        if output_format:
-            if output_format not in ["text", "json"]:
-                raise ValueError("Invalid output_format. Must be 'text' or 'json'.")
+        if output_format and output_format not in ["text", "json"]:
+            raise ValueError("Invalid output_format. Must be 'text' or 'json'.")
 
-            if output_format == "json":
-                import json
+        # if no runs, return an empty structured summary
+        if summary.get("total_runs", 0) == 0:
+            return {
+                "total_runs": 0,
+                "completed": 0,
+                "in_progress": 0,
+                "queued": 0,
+                "unique_workflows": 0,
+                "runs_by_workflow": {},
+                "first_run": {},
+                "last_run": {},
+            }
 
-                print(json.dumps(summary, indent=4))
-                return
+        # Build structured summary, formatting dates for first/last runs
+        runs_by_wf = summary.get("runs_by_workflow", {})
 
-            if output_format == "text":
-                if summary["total_runs"] == 0:
-                    print("No workflow runs available.")
-                    return
+        result: WorkflowRunSummaryStructure = {
+            "total_runs": summary.get("total_runs", 0),
+            "completed": summary.get("completed", 0),
+            "in_progress": summary.get("in_progress", 0),
+            "queued": summary.get("queued", 0),
+            "unique_workflows": summary.get("unique_workflows", 0),
+            "runs_by_workflow": runs_by_wf,
+            "first_run": self.__build_run_times(summary.get("first_run", {})),
+            "last_run": self.__build_run_times(summary.get("last_run", {})),
+        }
 
-                print("")
-                print("Workflow runs summary:")
-                print(f"  Total runs: {summary['total_runs']}")
-                print(f"  Completed runs: {summary['completed']}")
-                print(f"  In-progress runs: {summary['in_progress']}")
-                print(f"  Queued runs: {summary['queued']}")
-                print(f"  Most failed run: {summary['most_failed']}")
+        # include 'most_failed' if present
+        if "most_failed" in summary:
+            result["most_failed"] = summary["most_failed"]  # type: ignore[index]
 
-                # print runs aggregated by workflow name (sorted by count desc)
-                runs_by_wf = summary["runs_by_workflow"]
-                if runs_by_wf:
-                    print("")
-                    print("Runs by workflow name:")
-                    sorted_items = sorted(
-                        runs_by_wf.items(), key=lambda x: x[1]["count"], reverse=True
-                    )
-                    for name, info in sorted_items[:max_workflows]:
-                        cnt = info["count"]
-                        path = info["path"]
-                        print(f"  {cnt:4d}  {name}  ({path})")
+        return result
 
-                # print first/last with formatted dates
-                first = summary["first_run"]
-                last = summary["last_run"]
+    def __build_run_times(self, run: Dict) -> Dict:
+        """Return a dict with formatted time strings for the provided run.
 
-                self.__print_run(first, last)
-                return
+        The dict will include 'created_at', 'run_started_at' and 'updated_at'
+        formatted via datetime_to_local when values are present.
+        """
+        if not run:
+            return {}
 
-        return summary
+        created_at = run.get("created_at")
+        started_at = run.get("run_started_at")
+        updated_at = run.get("updated_at")
 
-    def __print_run(self, first: dict, last: dict) -> None:
-        if (first.get("created_at") is None) or (
-            last.get("created_at") is None or first.get("updated_at") is None
-        ):
-            print("No valid run data available to display first and last runs.")
-            return
-
-        print("")
-        print("First run:")
-        created_at = first.get("created_at")
-        started_at = first.get("run_started_at")
-        ended_at = first.get("updated_at")
-        print(f"  Created run at: {datetime_to_local(created_at)}")
-        print(f"  Started run at: {datetime_to_local(started_at)}")
-        print(f"  Updated run at: {datetime_to_local(ended_at)} (Ended at)")
-
-        print("")
-        print("Last run:")
-        created_at = last.get("created_at")
-        started_at = last.get("run_started_at")
-        ended_at = last.get("updated_at")
-        print(f"  Created run at: {datetime_to_local(created_at)}")
-        print(f"  Started run at: {datetime_to_local(started_at)}")
-        print(f"  Updated run at: {datetime_to_local(ended_at)} (Ended at)")
+        return {
+            "created_at": datetime_to_local(created_at) if created_at else None,
+            "run_started_at": datetime_to_local(started_at) if started_at else None,
+            "updated_at": datetime_to_local(updated_at) if updated_at else None,
+        }

@@ -64,4 +64,4 @@ class TestPipelineSummaryCliCommands:
                 "2021-10-02",
             ],
         )
-        assert "No workflow runs available" in result.output
+        assert "Total runs: 0" in result.output
