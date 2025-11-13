@@ -37,7 +37,7 @@ class PullRequestBuilder:
     body: str = ""
     author: str = "unknown"
     created_at: str = field(default_factory=_now_iso)
-    closed_at: Optional[str] = field(default_factory=_now_iso)
+    closed_at: Optional[str] = None
     merged_at: Optional[str] = None
     review_comments_url: str = "unknown"
     comments: List[Dict[str, Any]] = field(default_factory=list)

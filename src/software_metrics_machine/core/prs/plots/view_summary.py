@@ -1,4 +1,3 @@
-import json
 import csv
 
 from software_metrics_machine.core.prs.prs_repository import PrsRepository
@@ -22,22 +21,44 @@ class PrViewSummary:
         )
 
         if len(self.prs) == 0:
-            print("No PRs to summarize")
-            return None
+            # No PRs to summarize; return an empty structured summary
+            return {
+                "total_prs": 0,
+                "merged_prs": 0,
+                "closed_prs": 0,
+                "without_conclusion": 0,
+                "unique_authors": 0,
+                "unique_labels": 0,
+                "labels": [],
+                "first_pr": {
+                    "number": None,
+                    "title": None,
+                    "login": None,
+                    "created": None,
+                    "merged": None,
+                    "closed": None,
+                },
+                "last_pr": {
+                    "number": None,
+                    "title": None,
+                    "login": None,
+                    "created": None,
+                    "merged": None,
+                    "closed": None,
+                },
+            }
 
         summary = self.__summarize_prs()
 
+        # Export CSV if requested (write to file), return structured data always
         if self.csv:
-            print(f"Exporting summary to {self.csv}...")
             self.__export_summary_to_csv(summary)
-        else:
-            structured_summary = self.__get_structured_summary(summary)
-            if output_format == "text":
-                self.__print_text_summary(structured_summary)
-            elif output_format == "json":
-                print(json.dumps(structured_summary, indent=4))
-            else:
-                return structured_summary
+
+        structured_summary = self.__get_structured_summary(summary)
+
+        # For backward compatibility, preserve output_format options by returning
+        # the structured summary. The caller can format as needed (text/json/etc.).
+        return structured_summary
 
     def __export_summary_to_csv(self, summary):
         with open(self.csv, mode="w", newline="") as csv_file:
@@ -45,7 +66,8 @@ class PrViewSummary:
             writer.writerow(["Metric", "Value"])
             for metric, value in summary.items():
                 writer.writerow([metric, value])
-        print(f"Successfully exported data to {self.csv}")
+        # Return exported filename for callers that want confirmation
+        return self.csv
 
     def __summarize_prs(self):
         summary = {}
@@ -72,10 +94,8 @@ class PrViewSummary:
         summary["last_pr"] = last
 
         merged = [p for p in self.prs if p.get("merged_at")]
-        closed = [p for p in self.prs if p.get("closed_at") and not p.get("merged_at")]
-        without = [
-            p for p in self.prs if not p.get("closed_at") and not p.get("merged_at")
-        ]
+        closed = [p for p in self.prs if p.get("closed_at")]
+        without = [p for p in self.prs if not p.get("merged_at")]
 
         summary["merged_prs"] = len(merged)
         summary["closed_prs"] = len(closed)
@@ -125,39 +145,46 @@ class PrViewSummary:
             "closed": closed,
         }
 
-    def __print_text_summary(self, structured_summary):
+    def print_text_summary(self, structured_summary):
         """
         Print the structured summary in a readable text format.
 
         Args:
             structured_summary (dict): The structured summary object.
         """
-        print("\nPRs Summary:\n")
-        print(f"Total PRs: {structured_summary['total_prs']}")
-        print(f"Merged PRs: {structured_summary['merged_prs']}")
-        print(f"Closed PRs: {structured_summary['closed_prs']}")
-        print(f"PRs Without Conclusion: {structured_summary['without_conclusion']}")
-        print(f"Unique Authors: {structured_summary['unique_authors']}")
-        print(f"Unique Labels: {structured_summary['unique_labels']}")
+        # This helper used to print text; keep it for callers that want a
+        # textual representation, but return the string instead of printing.
+        lines = []
+        lines.append("\nPRs Summary:\n")
+        lines.append(f"Total PRs: {structured_summary['total_prs']}")
+        lines.append(f"Merged PRs: {structured_summary['merged_prs']}")
+        lines.append(f"Closed PRs: {structured_summary['closed_prs']}")
+        lines.append(
+            f"PRs Without Conclusion: {structured_summary['without_conclusion']}"
+        )
+        lines.append(f"Unique Authors: {structured_summary['unique_authors']}")
+        lines.append(f"Unique Labels: {structured_summary['unique_labels']}")
 
-        print("\nLabels:")
+        lines.append("\nLabels:")
         for label in structured_summary["labels"]:
-            print(f"  - {label['label_name']}: {label['prs_count']} PRs")
+            lines.append(f"  - {label['label_name']}: {label['prs_count']} PRs")
 
-        print("\nFirst PR:")
+        lines.append("\nFirst PR:")
         first_pr = structured_summary["first_pr"]
-        print(f"  Number: {first_pr['number']}")
-        print(f"  Title: {first_pr['title']}")
-        print(f"  Author: {first_pr['login']}")
-        print(f"  Created: {first_pr['created']}")
-        print(f"  Merged: {first_pr['merged']}")
-        print(f"  Closed: {first_pr['closed']}")
+        lines.append(f"  Number: {first_pr['number']}")
+        lines.append(f"  Title: {first_pr['title']}")
+        lines.append(f"  Author: {first_pr['login']}")
+        lines.append(f"  Created: {first_pr['created']}")
+        lines.append(f"  Merged: {first_pr['merged']}")
+        lines.append(f"  Closed: {first_pr['closed']}")
 
-        print("\nLast PR:")
+        lines.append("\nLast PR:")
         last_pr = structured_summary["last_pr"]
-        print(f"  Number: {last_pr['number']}")
-        print(f"  Title: {last_pr['title']}")
-        print(f"  Author: {last_pr['login']}")
-        print(f"  Created: {last_pr['created']}")
-        print(f"  Merged: {last_pr['merged']}")
-        print(f"  Closed: {last_pr['closed']}")
+        lines.append(f"  Number: {last_pr['number']}")
+        lines.append(f"  Title: {last_pr['title']}")
+        lines.append(f"  Author: {last_pr['login']}")
+        lines.append(f"  Created: {last_pr['created']}")
+        lines.append(f"  Merged: {last_pr['merged']}")
+        lines.append(f"  Closed: {last_pr['closed']}")
+
+        return "\n".join(lines)

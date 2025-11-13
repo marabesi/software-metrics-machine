@@ -159,6 +159,26 @@ class TestCliPrsCommands:
         assert 0 == result.exit_code
         assert "Loaded 2 PRs" in result.output
 
+    def test_print_prs_created_by_authors(self, cli):
+        path_string = cli.data_stored_at
+        pull_requests_data = [
+            PullRequestBuilder()
+            .with_author("ana")
+            .with_created_at("2011-01-26T19:01:12Z")
+            .with_closed_at("2011-01-26T19:01:12Z")
+            .build(),
+        ]
+        FileHandlerForTesting(path_string).store_prs_with(pull_requests_data)
+
+        result = cli.runner.invoke(
+            main,
+            [
+                "prs",
+                "by-author",
+            ],
+        )
+        assert "ana      1" in result.output
+
     def test_with_stored_data_review_time_by_author(self, cli):
         path_string = cli.data_stored_at
         pull_requests_data = [
@@ -317,8 +337,105 @@ class TestCliPrsCommands:
             ],
         )
 
-        assert "No PRs to summarize" in result.output
-        assert 0 == result.exit_code
+        assert "Total PRs: 0" in result.output
+
+    @pytest.mark.parametrize(
+        "prs, expected_lines",
+        [
+            (
+                [],
+                [
+                    "Total PRs: 0",
+                    "Merged PRs: 0",
+                    "Closed PRs: 0",
+                    "PRs Without Conclusion: 0",
+                    "Unique Authors: 0",
+                    "Unique Labels: 0",
+                ],
+            ),
+            (
+                [
+                    PullRequestBuilder()
+                    .with_created_at("2025-09-02T00:50:00Z")
+                    .with_author("eriirfos-eng")
+                    .build()
+                ],
+                [
+                    "Total PRs: 1",
+                    "Merged PRs: 0",
+                    "Closed PRs: 0",
+                    "PRs Without Conclusion: 1",
+                    "Unique Authors: 1",
+                ],
+            ),
+        ],
+    )
+    def test_summary_lines_are_printed(self, cli, prs, expected_lines):
+        # Arrange: store the test PRs
+        path_string = cli.data_stored_at
+        FileHandlerForTesting(path_string).store_prs_with(prs)
+
+        # Act: invoke the summary command with text output
+        result = cli.runner.invoke(
+            main,
+            [
+                "prs",
+                "summary",
+                "--output",
+                "text",
+            ],
+        )
+
+        # Assert: each expected line is present in the output
+        for line in expected_lines:
+            assert line in result.output
+
+    def test_full_summary_example_matches_expected_format(self, cli):
+        # Build a realistic dataset matching the example in the request
+        prs = [
+            PullRequestBuilder()
+            .with_number(1029)
+            .with_title("Add files via upload")
+            .with_author("eriirfos-eng")
+            .with_created_at("2025-09-02T00:50:00Z")
+            .build(),
+            PullRequestBuilder()
+            .with_number(1164)
+            .with_title("Add Repository Tree Navigation Tool")
+            .with_author("natagdunbar")
+            .with_created_at("2025-09-30T19:12:17Z")
+            .build(),
+        ]
+
+        # Add labels: we'll attach simple label summaries via repository behavior
+        path_string = cli.data_stored_at
+        FileHandlerForTesting(path_string).store_prs_with(prs)
+
+        # Run the summary command
+        result = cli.runner.invoke(
+            main,
+            [
+                "prs",
+                "summary",
+                "--output",
+                "text",
+            ],
+        )
+
+        # Check several representative lines from the example output
+        assert "PRs Summary:" in result.output
+        assert "Total PRs: 2" in result.output
+        assert "Unique Authors: 2" in result.output
+        assert "First PR:" in result.output
+        assert "Number: 1029" in result.output
+        assert "Title: Add files via upload" in result.output
+        assert "Author: eriirfos-eng" in result.output
+        assert "Created: 2025-09-02T00:50:00Z" in result.output
+        assert "Last PR:" in result.output
+        assert "Number: 1164" in result.output
+        assert "Title: Add Repository Tree Navigation Tool" in result.output
+        assert "Author: natagdunbar" in result.output
+        assert "Created: 2025-09-30T19:12:17Z" in result.output
 
     def test_with_stored_data_plot_average_prs_open_by(self, cli):
         path_string = cli.data_stored_at

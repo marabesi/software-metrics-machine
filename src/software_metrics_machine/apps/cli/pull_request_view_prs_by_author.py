@@ -40,7 +40,7 @@ from software_metrics_machine.core.prs.plots.view_prs_by_author import ViewPrsBy
     help="Filter PRs created on or before this date (ISO 8601)",
 )
 def by_author(top, labels, out_file, start_date, end_date):
-    return ViewPrsByAuthor(repository=create_prs_repository()).plot_top_authors(
+    result = ViewPrsByAuthor(repository=create_prs_repository()).plot_top_authors(
         title=f"Top {top} PR authors",
         top=top,
         labels=labels,
@@ -48,6 +48,7 @@ def by_author(top, labels, out_file, start_date, end_date):
         start_date=start_date,
         end_date=end_date,
     )
+    click.echo(result.data)
 
 
 command = by_author
