@@ -45,6 +45,64 @@ class TestRepositoryPrs:
         assert len(merged_prs) == 1
         assert merged_prs[0]["id"] == 1
 
+    @pytest.mark.parametrize(
+        "prs, expected_weeks, expected_averages, aggregate_by",
+        [
+            pytest.param(
+                [
+                    PullRequestBuilder()
+                    .with_created_at("2011-01-26T19:01:12Z")
+                    .with_closed_at("2011-01-26T19:02:12Z")
+                    .build(),
+                ],
+                [],
+                [],
+                "week",
+                id="no merged prs",
+            ),
+            pytest.param(
+                [
+                    PullRequestBuilder()
+                    .with_created_at("2025-09-01T00:00:00Z")
+                    .mark_merged("2025-09-06T00:00:00Z")
+                    .build(),
+                    PullRequestBuilder()
+                    .with_created_at("2025-09-15T00:00:00Z")
+                    .mark_merged("2025-09-20T00:00:00Z")
+                    .build(),
+                ],
+                ["2025-W36", "2025-W38"],
+                [5.0, 5.0],
+                "week",
+                id="two prs with 5 days open each in different weeks",
+            ),
+            pytest.param(
+                [
+                    PullRequestBuilder()
+                    .with_created_at("2025-09-01T00:00:00Z")
+                    .mark_merged("2025-09-03T00:00:00Z")
+                    .build(),
+                    PullRequestBuilder()
+                    .with_created_at("2025-09-02T00:00:00Z")
+                    .mark_merged("2025-09-04T00:00:00Z")
+                    .build(),
+                ],
+                ["2025-W36"],
+                [2.0],
+                "week",
+                id="two prs with 2 days open each in same week",
+            ),
+        ],
+    )
+    def test_calculate_averages_for_prs(
+        self, prs, expected_weeks, expected_averages, aggregate_by
+    ):
+        self.repository.all_prs = prs
+        average = self.repository.average_by(aggregate_by, prs=prs)
+
+        assert average[0] == expected_weeks
+        assert average[1] == expected_averages
+
     def test_closed(self):
         self.repository.all_prs = [
             {"id": 1, "closed_at": "2025-09-20", "merged_at": None},
@@ -60,21 +118,12 @@ class TestRepositoryPrs:
             {"created_at": "2025-09-15T00:00:00Z", "merged_at": "2025-09-20T00:00:00Z"},
         ]
 
-        months, averages = self.repository.average_by_month(prs=self.repository.all_prs)
+        months, averages = self.repository.average_by(
+            by="month", prs=self.repository.all_prs
+        )
 
         assert months == ["2025-09"]
         assert averages == [7.0]
-
-    def test_average_by_week(self):
-        self.repository.all_prs = [
-            {"created_at": "2025-09-01T00:00:00Z", "merged_at": "2025-09-06T00:00:00Z"},
-            {"created_at": "2025-09-15T00:00:00Z", "merged_at": "2025-09-20T00:00:00Z"},
-        ]
-
-        weeks, averages = self.repository.average_by_week(prs=self.repository.all_prs)
-
-        assert weeks == ["2025-W36", "2025-W38"]
-        assert averages == [5.0, 5.0]
 
     def test_filter_prs_by_labels(self):
         prs = [

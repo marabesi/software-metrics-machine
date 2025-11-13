@@ -35,10 +35,11 @@ class ViewAverageOfPrsOpenBy(BaseViewer):
         )
         print(f"Filtered PRs count: {len(prs)}")
 
+        x_vals, y_vals = self.repository.average_by(
+            by=aggregate_by, author=author, labels=labels, prs=prs
+        )
+
         if aggregate_by == "week":
-            x_vals, y_vals = self.repository.average_by_week(
-                author=author, labels=labels, prs=prs
-            )
             # x_vals are ISO week strings like 'YYYY-Www' — convert to a datetime for the week's Monday
             week_dates = []
             for wk in x_vals:
@@ -60,15 +61,9 @@ class ViewAverageOfPrsOpenBy(BaseViewer):
                         continue
 
             title = "Average PR Open Days by Week"
-            # xlabel = "Week"
         else:
-            x_vals, y_vals = self.repository.average_by_month(
-                author=author, labels=labels, prs=prs
-            )
             title = "Average PR Open Days by Month"
-            # xlabel = "Month"
 
-        # prepare x/y
         if aggregate_by == "week":
             x = [pd.to_datetime(dt) for dt in week_dates]
             # compute month_starts for vlines and month labels

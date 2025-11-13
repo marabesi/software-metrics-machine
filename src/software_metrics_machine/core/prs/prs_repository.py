@@ -44,7 +44,22 @@ class PrsRepository(FileSystemBaseRepository):
 
         return (closed - created).days
 
-    def average_by_month(
+    def average_by(
+        self, by: str, author: str | None = None, labels: str | None = None, prs=[]
+    ) -> tuple[List[str], List[float]]:
+        """Calculate average open days grouped by month or week.
+
+        labels are comma-separated string.
+        Matching is case-insensitive.
+        """
+        if by == "month":
+            return self.__average_by_month(author=author, labels=labels, prs=prs)
+        elif by == "week":
+            return self.__average_by_week(author=author, labels=labels, prs=prs)
+        else:
+            raise ValueError(f"Unsupported 'by' value: {by}")
+
+    def __average_by_month(
         self, author: str | None = None, labels: str | None = None, prs=[]
     ) -> tuple[List[str], List[float]]:
         """Calculate average open days grouped by month.
@@ -74,7 +89,7 @@ class PrsRepository(FileSystemBaseRepository):
         avg_by_month = [sum(pr_months[m]) / len(pr_months[m]) for m in months]
         return months, avg_by_month
 
-    def average_by_week(
+    def __average_by_week(
         self, author: str | None = None, labels: str | None = None, prs=[]
     ) -> tuple[List[str], List[float]]:
         """Calculate average open days grouped by ISO week (YYYY-Www).
@@ -93,6 +108,8 @@ class PrsRepository(FileSystemBaseRepository):
 
         print(f"Calculating average open days for {len(all_prs)} PRs (by week)")
         for pr in all_prs:
+            if pr["merged_at"] is None:
+                continue
             if author and pr.get("user", {}).get("login", "").lower() != author.lower():
                 continue
             created = datetime.fromisoformat(pr["created_at"].replace("Z", "+00:00"))
@@ -125,20 +142,6 @@ class PrsRepository(FileSystemBaseRepository):
             if names & labels_set:
                 filtered.append(pr)
         return filtered
-
-    def __normalize_labels(self, labels: str | None) -> List[str]:
-        # normalize labels argument into a list of lowercase names
-        labels_list: List[str] = []
-        if labels:
-            if isinstance(labels, str):
-                labels_list = [
-                    label.strip().lower()
-                    for label in labels.split(",")
-                    if label.strip()
-                ]
-            else:
-                labels_list = [str(label).strip().lower() for label in labels]
-        return labels_list
 
     def get_unique_authors(self) -> List[str]:
         """Return a list of unique author names from the PRs."""
@@ -323,3 +326,17 @@ class PrsRepository(FileSystemBaseRepository):
             periods = months
 
         return {"x": x, "y": y, "period": periods}
+
+    def __normalize_labels(self, labels: str | None) -> List[str]:
+        # normalize labels argument into a list of lowercase names
+        labels_list: List[str] = []
+        if labels:
+            if isinstance(labels, str):
+                labels_list = [
+                    label.strip().lower()
+                    for label in labels.split(",")
+                    if label.strip()
+                ]
+            else:
+                labels_list = [str(label).strip().lower() for label in labels]
+        return labels_list
