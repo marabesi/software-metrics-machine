@@ -129,7 +129,7 @@ class TestCliPrsCommands:
             )
             mock_get.assert_called_once()
 
-    def test_with_stored_data_plot_prs_by_author(self, cli):
+    def test_with_stored_data_load_prs_to_be_plot_by_author(self, cli):
         path_string = cli.data_stored_at
         pull_requests_data = [
             PullRequestBuilder()
@@ -266,11 +266,11 @@ class TestCliPrsCommands:
         pull_requests_data = [
             PullRequestBuilder()
             .with_created_at("2011-01-26T19:01:12Z")
-            .with_closed_at("2011-01-26T19:01:12Z")
+            .with_closed_at("2011-01-26T19:02:12Z")
             .build(),
             PullRequestBuilder()
             .with_created_at("2011-01-26T19:01:12Z")
-            .with_closed_at("2011-01-26T19:01:12Z")
+            .with_closed_at("2011-01-26T19:02:12Z")
             .build(),
         ]
         FileHandlerForTesting(path_string).store_prs_with(pull_requests_data)
@@ -293,6 +293,49 @@ class TestCliPrsCommands:
         assert 0 == result.exit_code
         assert "Loaded 2 PRs" in result.output
         assert "Filtered PRs count: 2" in result.output
+
+    @pytest.mark.parametrize(
+        "data, expected_output",
+        [
+            (
+                {
+                    "prs": [
+                        PullRequestBuilder()
+                        .with_created_at("2011-01-25T19:00:12Z")
+                        .with_closed_at("2011-01-26T19:20:12Z")
+                        .mark_merged("2011-01-26T19:20:12Z")
+                        .build(),
+                    ],
+                    "aggregate_by": "month",
+                },
+                "2011-01-01  1.0",
+            ),
+            (
+                {
+                    "prs": [
+                        PullRequestBuilder()
+                        .with_created_at("2011-01-25T19:00:12Z")
+                        .with_closed_at("2011-01-26T19:20:12Z")
+                        .mark_merged("2011-01-26T19:20:12Z")
+                        .build(),
+                    ],
+                    "aggregate_by": "week",
+                },
+                "2011-01-24  1.0",
+            ),
+        ],
+    )
+    def test_with_stored_data_print_average_prs_open_by(
+        self, cli, data, expected_output
+    ):
+        path_string = cli.data_stored_at
+        FileHandlerForTesting(path_string).store_prs_with(data["prs"])
+
+        result = cli.runner.invoke(
+            main,
+            ["prs", "average-open-by", "--aggregate-by", data["aggregate_by"]],
+        )
+        assert expected_output in result.output
 
     def test_fetch_prs_comments_between_dates(self, cli):
         path_string = cli.data_stored_at

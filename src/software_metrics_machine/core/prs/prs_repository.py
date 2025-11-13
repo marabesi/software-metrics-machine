@@ -39,6 +39,8 @@ class PrsRepository(FileSystemBaseRepository):
         else:
             # still open – use current UTC time
             closed = datetime.now(timezone.utc)
+            # closed = datetime.fromisoformat(pr["closed_at"].replace("Z", "+00:00"))
+            # return None
 
         return (closed - created).days
 

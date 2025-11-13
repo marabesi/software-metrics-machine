@@ -53,7 +53,7 @@ from software_metrics_machine.core.prs.plots.view_average_of_prs_open_by import 
 )
 def average_open_by(out_file, author, labels, aggregate_by, start_date, end_date):
     """Plot average PR open."""
-    ViewAverageOfPrsOpenBy(repository=create_prs_repository()).main(
+    result = ViewAverageOfPrsOpenBy(repository=create_prs_repository()).main(
         out_file=out_file,
         author=author,
         labels=labels,
@@ -61,6 +61,7 @@ def average_open_by(out_file, author, labels, aggregate_by, start_date, end_date
         start_date=start_date,
         end_date=end_date,
     )
+    click.echo(result.data)
 
 
 command = average_open_by

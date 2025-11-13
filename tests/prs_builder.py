@@ -38,7 +38,6 @@ class PullRequestBuilder:
     author: str = "unknown"
     created_at: str = field(default_factory=_now_iso)
     closed_at: Optional[str] = field(default_factory=_now_iso)
-    merged: bool = False
     merged_at: Optional[str] = None
     review_comments_url: str = "unknown"
     comments: List[Dict[str, Any]] = field(default_factory=list)
@@ -77,7 +76,6 @@ class PullRequestBuilder:
     def mark_merged(
         self, merged_at: Optional[Union[datetime, str]] = None
     ) -> "PullRequestBuilder":
-        self.merged = True
         self.merged_at = _to_iso(merged_at)
         return self
 
@@ -116,7 +114,6 @@ class PullRequestBuilder:
             "author": self.author,
             "created_at": self.created_at,
             "closed_at": self.closed_at,
-            "merged": self.merged,
             "merged_at": self.merged_at,
             "review_comments_url": self.review_comments_url,
             "comments": comments,
