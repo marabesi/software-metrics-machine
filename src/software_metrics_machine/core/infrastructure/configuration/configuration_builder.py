@@ -6,6 +6,7 @@ from software_metrics_machine.core.infrastructure.configuration.configuration im
 from software_metrics_machine.core.infrastructure.configuration.configuration_file_system_handler import (
     ConfigurationFileSystemHandler,
 )
+from software_metrics_machine.core.infrastructure.logger import Logger
 
 
 class Driver(Enum):
@@ -35,9 +36,19 @@ class ConfigurationBuilder:
             path = os.getenv("SMM_STORE_DATA_AT")
             if not path:
                 raise ValueError("Path must be provided when using JSON driver")
-            return ConfigurationFileSystemHandler(path).read_file_if_exists(
+
+            configuration = ConfigurationFileSystemHandler(path).read_file_if_exists(
                 "smm_config.json"
             )
+
+            logger = Logger(configuration=configuration).get_logger()
+            logger.debug(
+                f"git_repository_location {configuration.git_repository_location} repository={configuration.github_repository} "
+            )
+            logger.info(
+                f"Configuration: {configuration.git_provider} store_data={configuration.store_data}"
+            )
+            return configuration
         raise ValueError("Invalid configuration")
 
     def create_web_configuration(data):

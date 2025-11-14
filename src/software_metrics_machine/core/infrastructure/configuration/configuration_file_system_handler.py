@@ -5,6 +5,7 @@ from software_metrics_machine.core.infrastructure.configuration.configuration im
 from software_metrics_machine.core.infrastructure.file_system_handler import (
     FileSystemHandler,
 )
+from software_metrics_machine.core.infrastructure.logger import Logger
 
 
 class ConfigurationFileSystemHandler:
@@ -36,7 +37,8 @@ class ConfigurationFileSystemHandler:
         )
 
     def store_file(self, file: str, data: Configuration) -> bool:
-        print(f"Storing configuration to {file}")
+        logger = Logger(configuration=data).get_logger()
+        logger.debug(f"Storing configuration to {file}")
         data.store_data = self.default_dir
         data = data.__dict__
         return self.file_system_handler.store_file(file, data)
