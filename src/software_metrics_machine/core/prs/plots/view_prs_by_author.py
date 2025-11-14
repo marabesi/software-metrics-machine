@@ -29,20 +29,14 @@ class ViewPrsByAuthor(BaseViewer):
             {"start_date": start_date, "end_date": end_date}
         )
 
-        if not prs:
-            print("No PRs to plot")
-
         if labels:
             labels = [s.strip() for s in labels.split(",") if s.strip()]
             prs = self.repository.filter_prs_by_labels(prs, labels)
-
-        print(f"Loaded {len(prs)} PRs after filtering")
 
         top_authors = self.top_authors(prs, top)
 
         if len(top_authors) == 0:
             top_authors = [("No PRs to plot after filtering", 0)]
-            print("No PRs to plot after filtering")
 
         authors, counts = zip(*top_authors)
 

@@ -47,8 +47,15 @@ from software_metrics_machine.core.pipelines.plots.view_pipeline_execution_durat
         "For possible filters, see https://docs.github.com/en/rest/actions/workflow-runs?apiVersion=2022-11-28#list-workflow-runs-for-a-repository"  # noqa
     ),
 )
+@click.option(
+    "--metric",
+    type=str,
+    help=(
+        "Metric to plot: 'avg' for average duration, 'sum' for total duration and 'count', 'default: 'avg'"
+    ),
+)
 def workflows_run_duration(
-    out_file, workflow_path, start_date, end_date, max_runs, raw_filters
+    out_file, workflow_path, start_date, end_date, max_runs, raw_filters, metric
 ):
     result = ViewPipelineExecutionRunsDuration(
         repository=create_pipelines_repository()
@@ -58,6 +65,8 @@ def workflows_run_duration(
         start_date=start_date,
         end_date=end_date,
         raw_filters=raw_filters,
+        max_runs=max_runs,
+        metric=metric,
     )
     click.echo(result.data)
 

@@ -56,7 +56,6 @@ class ViewJobsByAverageTimeExecution(BaseViewer):
         total_jobs = len(jobs)
 
         if not averages:
-            print("No job durations found after filtering")
             empty = hv.Text(0, 0, "No job durations found").opts(
                 height=super().get_chart_height()
             )

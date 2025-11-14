@@ -83,7 +83,6 @@ class TestJobsCliCommands:
                 ],
             )
 
-            assert "Loaded 1 runs" in result.output
             assert (
                 "run 1 of 1 → fetching https://api.github.com/repos/fake/repo/actions/runs/1/jobs?per_page=100"
                 in result.output

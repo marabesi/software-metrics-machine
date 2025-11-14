@@ -26,7 +26,7 @@ from software_metrics_machine.providers.codemaat.codemaat_repository import (
 class CouplingViewer(BaseViewer, Viewable):
     def __init__(self, repository: CodemaatRepository):
         self.repository = repository
-        self.logger = Logger(__name__).get_logger()
+        self.logger = Logger(configuration=repository.configuration).get_logger()
 
     def render(
         self,

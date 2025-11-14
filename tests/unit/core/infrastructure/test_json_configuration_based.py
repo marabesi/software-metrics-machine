@@ -20,7 +20,7 @@ class TestJsonConfigurationBased:
             "my_conf.json", configuration
         )
 
-    def test_by_defaulk_sets_dashboard_color(sel, tmp_path):
+    def test_by_defaulk_sets_dashboard_color(sel):
         configuration = Configuration(
             git_provider="github",
             github_token="token",
@@ -28,6 +28,15 @@ class TestJsonConfigurationBased:
             git_repository_location="/my/repo",
         )
         assert "#4c78a8" == configuration.dashboard_color
+
+    def test_by_defaulk_sets_logging_to_critical(sel):
+        configuration = Configuration(
+            git_provider="github",
+            github_token="token",
+            github_repository="owner/repo",
+            git_repository_location="/my/repo",
+        )
+        assert "CRITICAL" == configuration.logging_level
 
     def test_reads_a_valid_configuration(self, tmp_path):
         configuration_file_system_handler = ConfigurationFileSystemHandler(tmp_path)
@@ -42,6 +51,7 @@ class TestJsonConfigurationBased:
             dashboard_start_date="2023-01-01",
             dashboard_end_date="2023-01-01",
             dashboard_color="#000",
+            logging_level="INFO",
         )
         file = "my_conf.json"
         configuration_file_system_handler.store_file(file, configuration)
@@ -58,3 +68,4 @@ class TestJsonConfigurationBased:
         assert read_configuration.dashboard_start_date == "2023-01-01"
         assert read_configuration.dashboard_end_date == "2023-01-01"
         assert read_configuration.dashboard_color == "#000"
+        assert read_configuration.logging_level == "INFO"

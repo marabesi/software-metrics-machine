@@ -83,7 +83,6 @@ class PipelineWorkflowRunsByWekOrMonth(BaseViewer):
             workflow_names.add(name)
 
         if not period_set:
-            print("No data to plot")
             return PipelineWorkflowRunsByWeekOrMonthResult(
                 rep_dates=[],
                 periods=[],

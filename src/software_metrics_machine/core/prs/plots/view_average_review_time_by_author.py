@@ -34,20 +34,14 @@ class ViewAverageReviewTimeByAuthor(BaseViewer):
             {"start_date": start_date, "end_date": end_date, "authors": authors}
         )
 
-        if not pairs:
-            print("No merged PRs to plot ", __file__)
-
         if labels:
             labels = [s.strip() for s in labels.split(",") if s.strip()]
             pairs = self.repository.filter_prs_by_labels(pairs, labels)
 
         pairs = self.__average_open_time_by_author(pairs, top)
 
-        print("found ", len(pairs), "    ", top)
-
         if len(pairs) == 0:
             pairs = [("No PRs to plot after filtering", 0)]
-            print("No PRs to plot after filtering")
 
         authors, avgs = zip(*pairs)
 
@@ -87,7 +81,6 @@ class ViewAverageReviewTimeByAuthor(BaseViewer):
         """
         sums = defaultdict(float)
         counts = defaultdict(int)
-        print("Computing average open time for ", len(prs), " PRs")
         for pr in prs:
             merged = pr.get("merged_at")
             created = pr.get("created_at")

@@ -9,12 +9,14 @@ from software_metrics_machine.core.infrastructure.file_system_base_repository im
 from software_metrics_machine.core.infrastructure.configuration.configuration import (
     Configuration,
 )
+from software_metrics_machine.core.infrastructure.logger import Logger
 from software_metrics_machine.core.prs.pr_types import LabelSummary, PRDetails
 
 
 class PrsRepository(FileSystemBaseRepository):
     def __init__(self, configuration: Configuration):
         super().__init__(configuration=configuration)
+        self.logger = Logger(configuration=configuration).get_logger()
         self.file = "prs.json"
         self.all_prs: List[PRDetails] = []
         self.all_prs: List[PRDetails] = self.__load()
@@ -32,7 +34,6 @@ class PrsRepository(FileSystemBaseRepository):
     def __pr_open_days(self, pr) -> int:
         """Return how many days the PR was open until merged."""
         created = datetime.fromisoformat(pr["created_at"].replace("Z", "+00:00"))
-        # closed_at may be null for open PRs
         closed = pr.get("merged_at")
         if closed:
             closed = datetime.fromisoformat(closed.replace("Z", "+00:00"))
@@ -76,7 +77,7 @@ class PrsRepository(FileSystemBaseRepository):
             labels_list = self.__normalize_labels(labels)
             all_prs = self.filter_prs_by_labels(all_prs, labels_list)
 
-        print(f"Calculating average open days for {len(all_prs)} PRs")
+        self.logger.debug(f"Calculating average open days for {len(all_prs)} PRs")
         for pr in all_prs:
             if author and pr.get("user", {}).get("login", "").lower() != author.lower():
                 continue
@@ -106,7 +107,9 @@ class PrsRepository(FileSystemBaseRepository):
             labels_list = self.__normalize_labels(labels)
             all_prs = self.filter_prs_by_labels(all_prs, labels_list)
 
-        print(f"Calculating average open days for {len(all_prs)} PRs (by week)")
+        self.logger.debug(
+            f"Calculating average open days for {len(all_prs)} PRs (by week)"
+        )
         for pr in all_prs:
             if pr["merged_at"] is None:
                 continue
@@ -196,17 +199,18 @@ class PrsRepository(FileSystemBaseRepository):
 
     def __load(self) -> List[PRDetails]:
         all_prs = []
-        print("Loading PRs")
+        self.logger.debug("Loading PRs")
         contents = super().read_file_if_exists(self.file)
 
         if contents is None:
-            print(f"No PRs file found at {self.file}. Please run fetch_prs first.")
+            self.logger.debug(
+                f"No PRs file found at {self.file}. Please run fetch_prs first."
+            )
             return all_prs
 
         all_prs = json.loads(contents)
 
-        print(f"Loaded {len(all_prs)} PRs")
-        print("Load complete.")
+        self.logger.debug(f"Loaded {len(all_prs)} PRs")
 
         for pr in all_prs:
             if pr.get("comments") is None:
@@ -217,7 +221,7 @@ class PrsRepository(FileSystemBaseRepository):
         if contents:
             all_prs_comment = json.loads(contents)
             if all_prs_comment:
-                print("Associating PRs with comments")
+                self.logger.debug("Associating PRs with comments")
                 total = 1
                 for pr in all_prs:
                     for comment in all_prs_comment:
@@ -226,7 +230,7 @@ class PrsRepository(FileSystemBaseRepository):
                         ].endswith(f"/{pr['number']}"):
                             pr["comments"].append(comment)
                             total += 1
-                print(f"Associated PRs with {total} comments")
+                self.logger.debug(f"Associated PRs with {total} comments")
 
         all_prs.sort(key=super().created_at_key_sort)
 

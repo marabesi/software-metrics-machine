@@ -11,4 +11,5 @@ class InMemoryConfiguration(Configuration):
             github_repository="fake/repo",
             store_data=store_data,
             git_repository_location=f"{store_data}/acceptance_repo",
+            logging_level="DEBUG",
         )

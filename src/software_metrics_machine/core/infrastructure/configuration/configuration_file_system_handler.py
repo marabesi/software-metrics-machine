@@ -32,6 +32,7 @@ class ConfigurationFileSystemHandler:
             dashboard_start_date=data.get("dashboard_start_date"),
             dashboard_end_date=data.get("dashboard_end_date"),
             dashboard_color=data.get("dashboard_color"),
+            logging_level=data.get("logging_level"),
         )
 
     def store_file(self, file: str, data: Configuration) -> bool:

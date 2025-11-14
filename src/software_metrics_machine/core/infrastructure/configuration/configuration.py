@@ -12,6 +12,7 @@ class Configuration:
         dashboard_start_date=None,
         dashboard_end_date=None,
         dashboard_color=None,
+        logging_level=None,
     ):
         self.git_provider = git_provider
         self.github_token = github_token
@@ -24,11 +25,7 @@ class Configuration:
         self.dashboard_start_date = dashboard_start_date
         self.dashboard_end_date = dashboard_end_date
         self.dashboard_color = dashboard_color
-
-        print("git_repository_location", self.git_repository_location)
-        print(
-            f"Configuration: {self.git_provider} repository={self.github_repository} store_data={self.store_data}"
-        )
+        self.logging_level = logging_level
 
         if not self.git_repository_location:
             raise ValueError(
@@ -42,3 +39,6 @@ class Configuration:
                 )
         if not self.dashboard_color:
             self.dashboard_color = "#4c78a8"
+
+        if not self.logging_level:
+            self.logging_level = "CRITICAL"

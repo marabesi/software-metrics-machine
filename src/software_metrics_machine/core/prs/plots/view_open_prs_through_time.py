@@ -28,7 +28,6 @@ class ViewOpenPrsThroughTime(BaseViewer):
         )
 
         if not prs:
-            print("No PRs to plot for prs through time")
             # return an empty hv.Text so callers can render the message
             empty = hv.Text(0, 0, "No PRs to plot for prs through time").opts(
                 height=super().get_chart_height()

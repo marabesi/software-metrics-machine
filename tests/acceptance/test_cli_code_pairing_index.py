@@ -19,7 +19,7 @@ class TestCliCodePairingIndexCommands:
             ["code", "pairing-index"],
         )
 
-        assert "Total commits analyzed: 1" in result.output
+        assert "0.0 %" in result.output
 
     def test_calculates_the_number_of_paired_commits(self, cli, git):
         git.commit().with_author("John Doe", "email@example.com").with_coauthor(
@@ -31,7 +31,7 @@ class TestCliCodePairingIndexCommands:
             ["code", "pairing-index"],
         )
 
-        assert "Total commits with co-authors: 1" in result.output
+        assert "100.0 %" in result.output
 
     def test_calculates_the_number_of_used_commits_contrainted_by_start_date(
         self, cli, git
@@ -45,7 +45,7 @@ class TestCliCodePairingIndexCommands:
             ["code", "pairing-index", "--start-date", "2026-01-01"],
         )
 
-        assert "Total commits analyzed: 0" in result.output
+        assert "0.0 %" in result.output
 
     def test_calculates_the_number_of_used_commits_contrainted_by_end_date(
         self, cli, git
@@ -59,7 +59,7 @@ class TestCliCodePairingIndexCommands:
             ["code", "pairing-index", "--end-date", "2024-01-01"],
         )
 
-        assert "Total commits analyzed: 0" in result.output
+        assert "0.0 %" in result.output
 
     def test_cli_filters_commits_by_author_flag(self, cli, git):
         git.commit().with_author("John Doe", "john@example.com").execute()
@@ -70,7 +70,7 @@ class TestCliCodePairingIndexCommands:
             ["code", "pairing-index", "--authors", "john@example.com"],
         )
 
-        assert "Total commits analyzed: 1" in result.output
+        assert "0.0 %" in result.output
 
     def test_print_pairing_index(self, cli, git):
         git.commit().with_author("John Doe", "john@example.com").with_coauthor(

@@ -10,6 +10,8 @@ from software_metrics_machine.core.infrastructure.configuration.configuration im
 )
 from software_metrics_machine.core.prs.prs_repository import PrsRepository
 
+from software_metrics_machine.core.infrastructure.logger import Logger
+
 
 class GithubWorkflowClient:
 
@@ -21,6 +23,7 @@ class GithubWorkflowClient:
         self.repository_slug = configuration.github_repository
         self.pr_repository = PrsRepository(configuration=configuration)
         self.configuration = configuration
+        self.logger = Logger(configuration=configuration).get_logger()
 
     def fetch_workflows(
         self,
@@ -34,7 +37,7 @@ class GithubWorkflowClient:
         runs_json_path = "workflows.json"
         contents = workflow_repository.read_file_if_exists(runs_json_path)
         if contents is not None:
-            print(
+            self.logger.info(
                 f"Workflows file already exists. Loading workflows from {runs_json_path}"
             )
             return
@@ -153,7 +156,6 @@ class GithubWorkflowClient:
         end_date=None,
         raw_filters=None,
     ):
-        # Make progress resumable by storing a small progress file and writing jobs incrementally.
         jobs_json_path = workflows.default_path_for("jobs.json")
         jobs_json_path_incompleted = workflows.default_path_for("jobs_incompleted.json")
         progress_path = workflows.default_path_for("jobs_progress.json")
@@ -163,7 +165,6 @@ class GithubWorkflowClient:
             print(f"Jobs file already exists. Loading jobs from {jobs_json_path}")
             return
 
-        # load existing jobs if present so we append instead of overwriting
         all_jobs = []
         if os.path.exists(jobs_json_path):
             try:

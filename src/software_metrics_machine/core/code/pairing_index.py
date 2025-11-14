@@ -4,6 +4,7 @@ from software_metrics_machine.core.code_types import PairingIndexResult
 from software_metrics_machine.core.infrastructure.configuration.configuration import (
     Configuration,
 )
+from software_metrics_machine.core.infrastructure.logger import Logger
 from software_metrics_machine.providers.codemaat.codemaat_repository import (
     CodemaatRepository,
 )
@@ -16,6 +17,7 @@ class PairingIndex:
     def __init__(self, repository: CodemaatRepository):
         self.configuration: Configuration = repository.configuration
         self.traverser = CommitTraverser(configuration=self.configuration)
+        self.logger = Logger(configuration=self.configuration).get_logger()
 
     def get_pairing_index(
         self,
@@ -36,7 +38,7 @@ class PairingIndex:
                     selected_authors = parsed
 
         if selected_authors:
-            print(f"Filtering commits to authors: {list(selected_authors)}")
+            self.logger.debug(f"Filtering commits to authors: {list(selected_authors)}")
 
         traverse = self.traverser.traverse_commits(
             selected_authors=selected_authors, start_date=start_date, end_date=end_date
@@ -45,7 +47,7 @@ class PairingIndex:
         list_of_commits = total
         paired_commits = traverse["paired_commits"]
 
-        print(f"Total commits analyzed: {list_of_commits}")
+        self.logger.debug(f"Total commits analyzed: {list_of_commits}")
 
         if list_of_commits == 0:
             return PairingIndexResult(
@@ -54,7 +56,7 @@ class PairingIndex:
                 paired_commits=0,
             )
 
-        print(f"Total commits with co-authors: {paired_commits}")
+        self.logger.debug(f"Total commits with co-authors: {paired_commits}")
 
         index = (paired_commits / list_of_commits) * 100
         pairing_index = float(f"{index:.2f}")

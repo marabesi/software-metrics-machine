@@ -21,7 +21,7 @@ class PipelinesRepository(FileSystemBaseRepository):
 
     def __init__(self, configuration: Configuration):
         super().__init__(configuration=configuration)
-        self.logger = Logger(__name__).get_logger()
+        self.logger = Logger(configuration=configuration).get_logger()
         self.pipeline_file = "workflows.json"
         self.jobs_file = "jobs.json"
         self.all_runs: List[PipelineRun] = []
@@ -31,7 +31,7 @@ class PipelinesRepository(FileSystemBaseRepository):
 
         contents = super().read_file_if_exists(self.pipeline_file)
         if contents is None:
-            print(
+            self.logger.debug(
                 f"No workflow file found at {self.pipeline_file}. Please fetch it first."
             )
             return
@@ -39,8 +39,7 @@ class PipelinesRepository(FileSystemBaseRepository):
         self.all_runs = json.loads(contents)
         self.all_runs.sort(key=super().created_at_key_sort)
 
-        print(f"Loaded {len(self.all_runs)} runs")
-        print("Load complete.")
+        self.logger.debug(f"Loaded {len(self.all_runs)} runs")
 
         self.__load_jobs()
 
@@ -312,7 +311,6 @@ class PipelinesRepository(FileSystemBaseRepository):
             groups.setdefault(name, []).append(dur)
 
         if not groups:
-            print("No runs with start timestamps to aggregate")
             return {"total": len(runs), "rows": []}
 
         # compute aggregated metrics per group
@@ -370,11 +368,11 @@ class PipelinesRepository(FileSystemBaseRepository):
     def __load_jobs(self):
         contents = super().read_file_if_exists(self.jobs_file)
         if contents is None:
-            print("No jobs file found at jobs.json. Please fetch it first.")
+            self.logger.debug("No jobs file found at jobs.json. Please fetch it first.")
             return
 
         self.all_jobs = json.loads(contents)
-        print(f"Loaded {len(self.all_jobs)} jobs")
+        self.logger.debug(f"Loaded {len(self.all_jobs)} jobs")
         self.all_jobs.sort(key=super().created_at_key_sort)
 
         run_id_to_run = {run["id"]: run for run in self.all_runs if "id" in run}
@@ -387,8 +385,7 @@ class PipelinesRepository(FileSystemBaseRepository):
                     run["jobs"] = []  # Initialize the jobs list if not present
                 run["jobs"].append(job)
 
-        print("Jobs have been associated with their corresponding runs.")
-        print("Load complete.")
+        self.logger.debug("Jobs have been associated with their corresponding runs.")
 
     def __is_defined_yaml(self, run_obj: dict) -> bool:
         path = run_obj.get("path")

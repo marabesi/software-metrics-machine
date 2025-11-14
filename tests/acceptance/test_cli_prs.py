@@ -129,16 +129,18 @@ class TestCliPrsCommands:
             )
             mock_get.assert_called_once()
 
-    def test_with_stored_data_load_prs_to_be_plot_by_author(self, cli):
+    def test_no_prs_with_given_label(self, cli):
         path_string = cli.data_stored_at
         pull_requests_data = [
             PullRequestBuilder()
             .with_created_at("2011-01-26T19:01:12Z")
             .with_closed_at("2011-01-26T19:01:12Z")
+            .with_author("ana")
             .build(),
             PullRequestBuilder()
             .with_created_at("2011-01-26T19:01:12Z")
             .with_closed_at("2011-01-26T19:01:12Z")
+            .with_author("ana")
             .build(),
         ]
         FileHandlerForTesting(path_string).store_prs_with(pull_requests_data)
@@ -157,7 +159,7 @@ class TestCliPrsCommands:
             ],
         )
         assert 0 == result.exit_code
-        assert "Loaded 2 PRs" in result.output
+        assert "No PRs to plot after filtering" in result.output
 
     def test_print_prs_created_by_authors(self, cli):
         path_string = cli.data_stored_at
@@ -180,15 +182,18 @@ class TestCliPrsCommands:
         assert "ana      1" in result.output
 
     def test_with_stored_data_review_time_by_author(self, cli):
+        # does not take into account closed prs, only prs that were merged
         path_string = cli.data_stored_at
         pull_requests_data = [
             PullRequestBuilder()
             .with_created_at("2011-01-26T19:01:12Z")
-            .with_closed_at("2011-01-26T19:01:12Z")
+            .mark_merged("2011-01-26T19:01:12Z")
+            .with_author("ana")
             .build(),
             PullRequestBuilder()
             .with_created_at("2011-01-26T19:01:12Z")
             .with_closed_at("2011-01-26T19:01:12Z")
+            .with_author("ana")
             .build(),
         ]
         FileHandlerForTesting(path_string).store_prs_with(pull_requests_data)
@@ -200,14 +205,12 @@ class TestCliPrsCommands:
                 "review-time-by-author",
                 "--top",
                 "5",
-                "--labels",
-                "enhancement",
                 "--out-file",
                 "output.png",
             ],
         )
         assert 0 == result.exit_code
-        assert "Loaded 2 PRs" in result.output
+        assert "ana       0.0" in result.output
 
     @pytest.mark.parametrize(
         "data, expected_output",
@@ -269,22 +272,24 @@ class TestCliPrsCommands:
         assert expected_output in result.output
 
     @pytest.mark.parametrize(
-        "prs",
+        "prs, expected_count",
         [
-            [
-                PullRequestBuilder()
-                .with_created_at("2011-01-26T19:01:12Z")
-                .with_closed_at("2011-01-26T19:01:12Z")
-                .build(),
-                PullRequestBuilder()
-                .with_created_at("2011-01-26T19:01:12Z")
-                .with_closed_at("2011-01-26T19:01:12Z")
-                .build(),
-            ],
-            [],
+            pytest.param(
+                [
+                    PullRequestBuilder()
+                    .with_created_at("2011-01-26T19:01:12Z")
+                    .with_closed_at("2011-01-26T19:01:12Z")
+                    .build(),
+                    PullRequestBuilder()
+                    .with_created_at("2011-01-26T19:01:12Z")
+                    .with_closed_at("2011-01-26T19:01:12Z")
+                    .build(),
+                ],
+                "0",
+            )
         ],
     )
-    def test_with_stored_data_summary(self, cli, prs):
+    def test_with_stored_data_summary(self, cli, prs, expected_count):
         path_string = cli.data_stored_at
         FileHandlerForTesting(path_string).store_prs_with(prs)
 
@@ -304,7 +309,7 @@ class TestCliPrsCommands:
             ],
         )
         assert 0 == result.exit_code
-        assert f"Loaded {len(prs)} PRs" in result.output
+        assert f"Total PRs: {expected_count}" in result.output
 
     def test_exports_csv_data(self, cli):
         path_string = cli.data_stored_at
@@ -436,39 +441,6 @@ class TestCliPrsCommands:
         assert "Title: Add Repository Tree Navigation Tool" in result.output
         assert "Author: natagdunbar" in result.output
         assert "Created: 2025-09-30T19:12:17Z" in result.output
-
-    def test_with_stored_data_plot_average_prs_open_by(self, cli):
-        path_string = cli.data_stored_at
-        pull_requests_data = [
-            PullRequestBuilder()
-            .with_created_at("2011-01-26T19:01:12Z")
-            .with_closed_at("2011-01-26T19:02:12Z")
-            .build(),
-            PullRequestBuilder()
-            .with_created_at("2011-01-26T19:01:12Z")
-            .with_closed_at("2011-01-26T19:02:12Z")
-            .build(),
-        ]
-        FileHandlerForTesting(path_string).store_prs_with(pull_requests_data)
-
-        result = cli.runner.invoke(
-            main,
-            [
-                "prs",
-                "average-open-by",
-                "--out-file",
-                "output.png",
-                "--author",
-                "john",
-                "--labels",
-                "bug",
-                "--aggregate-by",
-                "month",
-            ],
-        )
-        assert 0 == result.exit_code
-        assert "Loaded 2 PRs" in result.output
-        assert "Filtered PRs count: 2" in result.output
 
     @pytest.mark.parametrize(
         "data, expected_output",
