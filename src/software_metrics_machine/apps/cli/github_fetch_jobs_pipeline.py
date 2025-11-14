@@ -12,17 +12,6 @@ from software_metrics_machine.providers.github.github_workflow_client import (
 )
 
 
-def fetch_all_job_runs(start_date, end_date, raw_filters):
-    configuration = create_configuration(driver=Driver.CLI)
-    client = GithubWorkflowClient(configuration=configuration)
-    client.fetch_jobs_for_workflows(
-        create_pipelines_repository(driver=Driver.CLI),
-        start_date=start_date,
-        end_date=end_date,
-        raw_filters=raw_filters,
-    )
-
-
 @click.command(name="jobs-fetch", help="Fetch job from pipelines")
 @click.option(
     "--start-date",
@@ -48,7 +37,10 @@ def fetch_all_job_runs(start_date, end_date, raw_filters):
     ),
 )
 def fetch_jobs(start_date, end_date, raw_filters):
-    fetch_all_job_runs(
+    configuration = create_configuration(driver=Driver.CLI)
+    client = GithubWorkflowClient(configuration=configuration)
+    client.fetch_jobs_for_workflows(
+        create_pipelines_repository(driver=Driver.CLI),
         start_date=start_date,
         end_date=end_date,
         raw_filters=raw_filters,

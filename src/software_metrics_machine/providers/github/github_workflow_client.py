@@ -1,6 +1,7 @@
 import os
 import requests
 import json
+from typing import TypedDict
 from datetime import datetime, timedelta
 from software_metrics_machine.core.pipelines.pipelines_repository import (
     PipelinesRepository,
@@ -11,6 +12,11 @@ from software_metrics_machine.core.infrastructure.configuration.configuration im
 from software_metrics_machine.core.prs.prs_repository import PrsRepository
 
 from software_metrics_machine.core.infrastructure.logger import Logger
+
+
+class FetchPipelinesResult(TypedDict):
+    file_path: str
+    message: str
 
 
 class GithubWorkflowClient:
@@ -32,15 +38,15 @@ class GithubWorkflowClient:
         end_date: str | None,
         raw_filters=None,
         step_by: str | None = None,
-    ):
+    ) -> FetchPipelinesResult:
         workflow_repository = PipelinesRepository(configuration=self.configuration)
         runs_json_path = "workflows.json"
         contents = workflow_repository.read_file_if_exists(runs_json_path)
         if contents is not None:
-            self.logger.info(
-                f"Workflows file already exists. Loading workflows from {runs_json_path}"
+            return FetchPipelinesResult(
+                message=f"Workflows file already exists. Loading workflows from {runs_json_path}",
+                file_path=workflow_repository.default_path_for(runs_json_path),
             )
-            return
 
         params = self.pr_repository.parse_raw_filters(raw_filters)
         if target_branch:
@@ -147,7 +153,10 @@ class GithubWorkflowClient:
 
         workflow_repository.store_file(runs_json_path, runs)
 
-        return runs
+        return FetchPipelinesResult(
+            message=f"Fetched {len(runs)}",
+            file_path=workflow_repository.default_path_for(runs_json_path),
+        )
 
     def fetch_jobs_for_workflows(
         self,
