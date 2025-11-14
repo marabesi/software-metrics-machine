@@ -33,13 +33,14 @@ from software_metrics_machine.providers.github.github_workflow_client import (
 @click.option("--step-by", type=str, help="Step by (e.g., hour, day, month)")
 def fetch(target_branch, start_date, end_date, raw_filters, step_by):
     client = GithubWorkflowClient(configuration=create_configuration())
-    client.fetch_workflows(
+    result = client.fetch_workflows(
         target_branch=target_branch,
         start_date=start_date,
         end_date=end_date,
         raw_filters=raw_filters,
         step_by=step_by,
     )
+    click.echo(result["message"])
 
 
 command = fetch

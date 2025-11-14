@@ -3,6 +3,7 @@ from unittest.mock import patch
 from requests import Response
 from software_metrics_machine.apps.cli import main
 from tests.builders import as_json_string
+from tests.file_handler_for_testing import FileHandlerForTesting
 
 
 class TestWorkflowsFetchCliCommands:
@@ -131,3 +132,21 @@ class TestWorkflowsFetchCliCommands:
                 "fetching https://api.github.com/repos/fake/repo/actions/runs?per_page=100 with params: {'created': '2023-01-01T00:00:00..2023-01-01T01:00:00'}"  # noqa
                 in result.output
             )
+
+    def test_not_fetch_if_already_exists(self, cli):
+        path_string = cli.data_stored_at
+
+        FileHandlerForTesting(path_string).store_pipelines_with([])
+
+        result = cli.runner.invoke(
+            main,
+            [
+                "pipelines",
+                "fetch",
+            ],
+        )
+
+        assert (
+            "Workflows file already exists. Loading workflows from workflows.json"
+            in result.output
+        )
