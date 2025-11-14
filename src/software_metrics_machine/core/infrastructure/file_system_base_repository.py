@@ -7,6 +7,7 @@ from software_metrics_machine.core.infrastructure.configuration.configuration im
 from software_metrics_machine.core.infrastructure.file_system_handler import (
     FileSystemHandler,
 )
+from software_metrics_machine.core.infrastructure.logger import Logger
 
 
 class FileSystemBaseRepository:
@@ -15,11 +16,12 @@ class FileSystemBaseRepository:
         self.default_dir = str(configuration.store_data)
         self.file_system_handler = FileSystemHandler(self.default_dir)
         self.configuration = configuration
+        self.logger = Logger(configuration=self.configuration).get_logger()
 
     def default_path_for(self, filename: str) -> str:
         final_path = self.default_dir + "/" + filename
         p = Path(final_path)
-        print(f"Using data directory: {p.absolute()}")
+        self.logger.debug(f"Using data directory: {p.absolute()}")
         return p.absolute().__str__()
 
     def read_file_if_exists(self, filename: str) -> Optional[str]:
@@ -50,15 +52,10 @@ class FileSystemBaseRepository:
 
             if not created:
                 continue
-            try:
-                created_dt = datetime.fromisoformat(created.replace("Z", "+00:00"))
-                if created_dt.tzinfo is None:
-                    created_dt = created_dt.replace(tzinfo=timezone.utc)
-                else:
-                    created_dt = created_dt.astimezone(timezone.utc)
-            except Exception:
-                print(f"Could not parse created_at date: {created}")
-                continue
+
+            created_dt = datetime.fromisoformat(created.replace("Z", "+00:00"))
+            if created_dt.tzinfo is None:
+                created_dt = created_dt.replace(tzinfo=timezone.utc)
 
             if sd.date() <= created_dt.date() <= ed.date():
                 filtered.append(run)

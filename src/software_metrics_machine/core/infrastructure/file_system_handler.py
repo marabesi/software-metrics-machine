@@ -16,7 +16,6 @@ class FileSystemHandler:
         return None
 
     def store_file(self, file: str, data: str) -> bool:
-        print(file)
         final_path = self.default_dir + "/" + file
         p = Path(final_path)
         # ensure parent directory exists
