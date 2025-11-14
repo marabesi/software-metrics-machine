@@ -127,11 +127,9 @@ class PipelinesRepository(FileSystemBaseRepository):
         if not job_name_set:
             return jobs
 
-        print(f"Excluding jobs: {job_name_set}")
         filtered: List[dict] = []
         for job in jobs:
             pr_job_name = (job.get("name") or "").lower()
-            # if any exclusion token appears in the job name, skip it
             if any(token in pr_job_name for token in job_name_set):
                 continue
             filtered.append(job)

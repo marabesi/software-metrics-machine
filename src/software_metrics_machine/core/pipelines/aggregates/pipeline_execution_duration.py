@@ -41,8 +41,6 @@ class PipelineExecutionDuration(BaseViewer):
 
         data = self.repository.get_workflows_run_duration(filters)
 
-        print(f"Found {data["total"]} runs after filtering")
-
         rows = data["rows"]
 
         sort_key = {

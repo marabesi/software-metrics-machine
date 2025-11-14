@@ -1,4 +1,5 @@
 import click
+import json
 
 from software_metrics_machine.core.infrastructure.repository_factory import (
     create_pipelines_repository,
@@ -45,12 +46,9 @@ def summary(max_workflows, start_date, end_date, output):
     )
 
     if output == "json":
-        import json
-
         click.echo(json.dumps(result, indent=4))
         return result
 
-    # text output formatting
     click.echo("\nWorkflow runs summary:")
     click.echo(f"  Total runs: {result.get('total_runs')}")
     click.echo(f"  Completed runs: {result.get('completed')}")

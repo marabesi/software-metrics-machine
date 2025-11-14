@@ -21,7 +21,7 @@ class TestWorkflowsRunsDurationCliCommands:
                         "--end-date",
                         "2023-10-01",
                     ],
-                    "count": 1,
+                    "count": "/workflows/tests.yml   60.0      1",
                 },
             ),
             (
@@ -33,7 +33,7 @@ class TestWorkflowsRunsDurationCliCommands:
                         "--workflow-path",
                         "/workflows/tests.yml",
                     ],
-                    "count": 1,
+                    "count": "/workflows/tests.yml   60.0      1",
                 },
             ),
         ],
@@ -50,7 +50,7 @@ class TestWorkflowsRunsDurationCliCommands:
             command,
         )
 
-        assert f"Found {expected_count} runs after filtering" in result.output
+        assert expected_count in result.output
 
     def test_should_store_pipeline_run_duration_plot_in_the_given_directory(self, cli):
         path_string = cli.data_stored_at
@@ -80,7 +80,7 @@ class TestWorkflowsRunsDurationCliCommands:
                         "--raw-filters",
                         "status=completed",
                     ],
-                    "count": 1,
+                    "count": "dynamic/workflows/dependabot   60.0      1",
                 },
             ),
             (
@@ -92,7 +92,7 @@ class TestWorkflowsRunsDurationCliCommands:
                         "--raw-filters",
                         "conclusion=success",
                     ],
-                    "count": 1,
+                    "count": "/workflows/tests.yml   60.0      1",
                 },
             ),
         ],
@@ -108,7 +108,7 @@ class TestWorkflowsRunsDurationCliCommands:
             command,
         )
 
-        assert f"Found {expected_count} runs after filtering" in result.output
+        assert expected_count in result.output
 
     @pytest.mark.parametrize(
         "workflow_runs, expected",
