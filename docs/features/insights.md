@@ -17,7 +17,7 @@ processes. Those come from your pipelines. However, pairing index comes from you
 Deployment Frequency measures how often code is deployed to production. A higher deployment frequency indicates a more
 agile and responsive development process.
 
-:::tabs
+:::tabs key:cli
 == Dashboard
 ![Insights Overview](/dashboard/insights-deployment-frequency.png)
 
@@ -28,3 +28,23 @@ smm pipelines deployment-frequency
 ```
 
 :::
+
+## Pairing index
+
+The Pairing Index provides insights into collaboration within your development team by analyzing how often developers
+work together on code changes. A higher pairing index suggests a more collaborative environment, which can lead to
+improved code quality and knowledge sharing.
+
+:::tabs key:cli
+== Dashboard
+
+TBD
+
+== CLI
+
+```bash
+smm code pairing-index
+```
+
+:::
+

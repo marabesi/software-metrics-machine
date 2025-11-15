@@ -4,7 +4,9 @@ outline: deep
 
 # Configuration
 
-The configuration file `smm_config.json` supports the following options:
+The configuration file `smm_config.json` is the central place to change features available in the software metrics machine.
+With the configuration file in json format you can set the provider you are using, the repository location and more.
+The following table depicts the supported configuration options.
 
 | Key                     |  Section      |  Description                                                            | Required | Default Value        |
 |-------------------------| -------       | ------------------------------------------------------------------------|----------|----------------------|
