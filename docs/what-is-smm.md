@@ -38,6 +38,7 @@ flowchart TD
     A[Fetch Data] --> B[Process Data]
     B --> C[Plot Data with Dashboard]
     B --> D[See Data with CLI]
+    B --> E[See Data with REST]
 ```
 
 By focusing on these metrics, SMM enables teams to:

@@ -212,11 +212,10 @@ or date range, and interact with the chart to explore contributions in detail.
 
 Analyzes the coupling between entities in the repository.
 
-
 :::tabs key:cli
 == Dashboard
 
-
+![Source code coupling](/dashboard/code/code-coupling.png "Source code coupling chart showing relationships between files based on co-changes in commits.")
 
 == CLI
 
