@@ -94,6 +94,14 @@ export default withMermaid(
             },
             // { text: 'GitLab', link: '/gitlab' }
           ]
+        },
+        {
+          text: 'Investigations',
+          items: [
+            {
+              text: 'Team review process', link: '/investigations/review-process', items: [ ]
+            },
+          ]
         }
       ],
 
