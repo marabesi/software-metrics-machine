@@ -15,7 +15,17 @@ and track the impact of development practices over time.
 A stacked bar chart showing the total number of lines added (blue) and deleted (red) across
 the entire repository on a given date.
 
+
+:::tabs key:cli
+== Dashboard
+
 ![Source code](/dashboard/code/code-churn.png)
+
+
+== CLI
+
+
+:::
 
 ### Type of Chart
 
