@@ -4,6 +4,8 @@ outline: deep
 
 # Pipelines
 
+<!--@include: ../parts/supported-by-all.md-->
+
 The pipelines section is at the core of any CI/CD system. It provides a high-level overview of the pipelines that have
 been executed, their statuses, and key metrics related to their performance at a glance. It focuses on first, a quick
 statuses run for the pipelines, and second, on the time it takes to run them.

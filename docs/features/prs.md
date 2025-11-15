@@ -4,6 +4,8 @@ outline: deep
 
 # Pull Requests
 
+<!--@include: ../parts/supported-by-all.md{,2}-->
+
 This dashboard provides insights into Pull Request (PR) activity within a software repository. It includes four distinct
 charts, each designed to highlight different aspects of PR management and team dynamics.
 

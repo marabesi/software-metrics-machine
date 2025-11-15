@@ -39,6 +39,9 @@ export default withMermaid(
       },
     },
     themeConfig: {
+      lastUpdated: {
+        text: 'Last updated'
+      },
       returnToTopLabel: 'Back to top',
       editLink: {
         pattern: 'https://github.com/marabesi/software-metrics-machine/edit/main/docs/:path',

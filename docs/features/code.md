@@ -4,7 +4,7 @@ outline: deep
 
 # Source code
 
-Works with: <Badge type="info" text="GitHub" /> <Badge type="info" text="GitLab" /> <Badge type="info" text="Bitbucket" /> <Badge type="info" text="any git based repository" />
+<!--@include: ../parts/supported-by-all.md-->
 
 The Code Metrics Dashboard provides a comprehensive overview of your project's source code
 health and evolution. Designed for software developers and team leads, this section offers
