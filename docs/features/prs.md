@@ -7,9 +7,6 @@ outline: deep
 This dashboard provides insights into Pull Request (PR) activity within a software repository. It includes four distinct
 charts, each designed to highlight different aspects of PR management and team dynamics.
 
-> [!NOTE]
-> The pull request data depends on the provider used, a list of supported providers can be found in the [GitHub setup guide](../supported-providers.md).
-
 Each chart in the dashboard is interactive and supports filtering by author, labels, and date range, allowing you to
 drill down into the data that matters most for your team. This enables you to monitor team flow and identify bottlenecks.
 

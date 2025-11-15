@@ -4,6 +4,8 @@ outline: deep
 
 # Source code
 
+Works with: <Badge type="info" text="GitHub" /> <Badge type="info" text="GitLab" /> <Badge type="info" text="Bitbucket" /> <Badge type="info" text="any git based repository" />
+
 The Code Metrics Dashboard provides a comprehensive overview of your project's source code
 health and evolution. Designed for software developers and team leads, this section offers
 actionable insights into code quality, complexity, and change patterns. By visualizing key
@@ -24,6 +26,9 @@ the entire repository on a given date.
 
 == CLI
 
+```bash
+smm code code-churn
+```
 
 :::
 
@@ -46,6 +51,15 @@ sprints. For example, a spike in both additions and deletions may indicate a maj
 Aggregates commit data by day, counting lines added and deleted. You can filter by date range and interact with the chart
 to see which commits contributed to the churn on a specific day.
 
+
+
+
+
+
+
+
+
+
 ## Entity Churn
 
 Entity churn reveals which files in your project are changed most often. This chart helps you pinpoint hotspots—files
@@ -53,7 +67,19 @@ that may need refactoring, more tests, or architectural review. With powerful fi
 files or focus on the top N most frequently changed files. This makes it easy to find areas of your codebase that require
 attention and improvement.
 
+:::tabs key:cli
+== :: Dashboard
+
 ![Source code](/dashboard/code/entity-churn.png "A bar chart that breaks down the total code churn by individual file (entity), showing the top N most frequently changed files")
+
+== CLI
+
+```bash
+smm code entity-churn
+```
+
+:::
+
 
 ### Type of Chart
 
@@ -74,6 +100,15 @@ file is always changing, it might be a source of bugs or instability.
 Counts lines added and deleted per file, then ranks files by total churn. Filtering options let you exclude generated
 files, vendor directories, or focus on the top N entries for meaningful insights.
 
+
+
+
+
+
+
+
+
+
 ## Entity Effort
 
 The entity effort chart shows how much work has gone into each file, measured by the number of commits. This visualization
@@ -81,7 +116,19 @@ helps you understand which files are under constant development and which are mo
 files that may be over-engineered, need simplification, or are critical to your project’s success. The treemap format
 makes it easy to see the distribution of effort at a glance.
 
+:::tabs key:cli
+== Dashboard
+
 ![Source code](/dashboard/code/entity-effort.png "A treemap where the size of each rectangle represents the total number of revisions (commits) for a given file.")
+
+== CLI
+
+```bash
+smm code entity-effort
+```
+
+:::
+
 
 ### Type of Chart
 
@@ -102,6 +149,16 @@ README.md with many revisions may indicate evolving documentation needs.
 Counts the number of commits per file and visualizes the distribution. You can filter by file type or directory to
 focus on specific areas of your codebase.
 
+
+
+
+
+
+
+
+
+
+
 ## Entity Ownership
 
 Entity ownership highlights who has contributed to each file, showing the breakdown of changes by author. This chart is
@@ -109,7 +166,21 @@ invaluable for understanding code expertise and team collaboration. It helps you
 a review on specific files, and supports onboarding by making team knowledge visible. The chart is interactive, allowing
 you to explore contributions and filter by author or file.
 
+:::tabs key:cli
+== Dashboard
+
 ![Source code](/dashboard/code/entity-ownership.png "A stacked bar chart showing the breakdown of lines changed for each file, attributed to each author.")
+
+
+== CLI
+
+
+```bash
+smm code entity-ownership
+```
+
+:::
+
 
 ### Type of Chart
 
@@ -129,3 +200,29 @@ if one author owns most of a security module, ensure others are familiar with it
 
 Aggregates lines added and deleted per file, attributing changes to each author. You can filter by author, file,
 or date range, and interact with the chart to explore contributions in detail.
+
+
+
+
+
+
+
+
+## Coupling
+
+Analyzes the coupling between entities in the repository.
+
+
+:::tabs key:cli
+== Dashboard
+
+
+
+== CLI
+
+```bash
+smm code coupling
+```
+
+:::
+
