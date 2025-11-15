@@ -75,7 +75,7 @@ class ViewAverageReviewTimeByAuthor(BaseViewer):
     def __average_open_time_by_author(
         self, prs: List[dict], top: int
     ) -> List[Tuple[str, float]]:
-        """Compute average open time in days for merged PRs grouped by author.
+        """Compute average open time in days before merged PRs grouped by author.
 
         Returns top authors sorted by average descending.
         """

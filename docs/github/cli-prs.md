@@ -1,5 +1,5 @@
 ---
-utline: deep
+outline: deep
 ---
 
 # GitHub CLI Commands for Pull Request
@@ -30,7 +30,7 @@ smm prs fetch
 Filtering the data fetch from PRs by date is done logically while fetching the data, this is not a feature that GitHub
 API provides.
 
-### Fetch PRs - Examples
+### Examples - Fetch PRs
 
 Fetching PRs from the last 3 months:
 
@@ -74,6 +74,20 @@ smm prs fetch-comments
 | Filters        | Allows to pass in filters directly to the [GitHub API](https://docs.github.com/en/rest/pulls/comments?apiVersion=2022-11-28&versionId=free-pro-team%40latest&category=pulls&subcategory=review-requests#list-review-comments-on-a-pull-request). It will pass the filters for each PR request.  | `--raw-filters=sort=created`  |
 | Force       | By default a file is stored with the retrieved data to avoid refetching it again. However, using this parameter bypass this cache. | `--force=true`  |
 
+### Examples - Fetch PRs comments
+
+Fetching comments for PRs created between January 1, 2025, and June 30, 2025:
+
+```bash
+smm prs fetch-comments --start-date=2025-01-01 --end-date=2025-06-30
+```
+
+Forcing the fetch to ignore already fetched comments (this overrides the data stored):
+
+```bash
+smm prs fetch-comments --force=true
+```
+
 ## Data quality
 
 Once data is fetched, you might want to check the quality of it and if the data matches the expected values. To achieve that,
@@ -99,6 +113,9 @@ smm prs summary
 
 ## Average Review Time by Author
 
+Plot the average time taken from the team to review a PRs open by an author and merge it. The result is shown in average
+by days.
+
 ```bash
 smm prs review-time-by-author
 ```
@@ -106,11 +123,15 @@ smm prs review-time-by-author
 | Option         | Description                          | Example                  |
 |----------------|--------------------------------------|--------------------------|
 | Labels         | Filters PRs by the labels attached to it.      | `--labels=my_label,another_label`       |
-| Start date     | Fetches PRs created after a date.   | `--start-date=2025-01-01`     |
-| End date       | Fetches PRs created before a date.  | `--end-date=2025-12-31`     |
+| Start date     | Fetches PRs created after a date.    | `--start-date=2025-01-01`     |
+| End date       | Fetches PRs created before a date.   | `--end-date=2025-12-31`     |
 | Limit          | If the list is too big --top will show only the top x results from the list.  | `--top=10`     |
-| File           | The name of the file to store the generated chart  | `--out-file=my_chart.png` or   `--out-file=subfolder/my_chart.png`   |
-| Step           | Step defines the pace in which the data is fetched. It helps to mitigate the rate limits in the GitHub API | `--step-by=day` |
+
+### Examples - Average Review Time by Author
+
+```bash
+smm prs review-time-by-author --labels=bug,enhancement --top=5
+```
 
 ## PRs by Author
 
