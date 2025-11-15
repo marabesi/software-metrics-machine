@@ -1,5 +1,6 @@
 import { defineConfig, HeadConfig } from 'vitepress'
 import { withMermaid } from 'vitepress-plugin-mermaid';
+import { tabsMarkdownPlugin } from 'vitepress-plugin-tabs'
 
 const head: HeadConfig[] = [];
 // @ts-ignore
@@ -32,6 +33,11 @@ export default withMermaid(
     description: "Stop pointing, start measuring",
     base: '/software-metrics-machine/',
     head,
+    markdown: {
+      config(md) {
+        md.use(tabsMarkdownPlugin)
+      },
+    },
     themeConfig: {
       returnToTopLabel: 'Back to top',
       editLink: {
@@ -61,15 +67,12 @@ export default withMermaid(
         {
           text: 'Features',
           items: [
-            {
-              text: 'Dashboard', link: '/dashboard', items: [
+              
                 { text: 'Insights', link: '/dashboard/insights' },
                 { text: 'Pipelines', link: '/dashboard/pipelines' },
                 { text: 'Pull requests', link: '/dashboard/prs' },
                 { text: 'Source code', link: '/dashboard/code' },
                 { text: 'Configuration', link: '/dashboard/configuration' },
-              ]
-            },
           ]
         },
         {
