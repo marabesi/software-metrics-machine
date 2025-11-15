@@ -15,7 +15,17 @@ drill down into the data that matters most for your team. This enables you to mo
 
 ## Open PRs Through Time
 
+:::tabs key:cli
+== Dashboard
 ![Pull requests timeline](/dashboard/prs/prs_timeline.png)
+
+== CLI
+
+```bash
+smm prs average-open-by
+```
+
+:::
 
 ### Type of Chart
 
@@ -37,19 +47,20 @@ For example, if September 25th shows many opened PRs but none closed, it could s
 3. Data is processed to count opened and closed PRs per day.
 4. You can filter the chart to focus on specific periods, such as a sprint or release window.
 
-## Developer notes (recent changes)
+## Average PR Open
 
-The data processing for some PR-related metrics has been refactored to live inside the repository layer
-(`PrsRepository`). Specifically, comment-aggregation logic (average comments per PR by week/month) is now
-implemented in `PrsRepository.average_comments(...)`. Views (e.g. `ViewAverageCommentsPerPullRequest`) now
-focus solely on visualization: they call repository methods to obtain processed data and then build charts.
-
-If you're adding new metrics or changing aggregation rules, prefer adding/adjusting methods on `PrsRepository`
-so the visualization code can remain focused on rendering.
-
-## Average PR Open Days by Time Period
+:::tabs key:cli
+== Dashboard
 
 ![Pull requests open by on average](/dashboard/prs/open_prs_average.png)
+
+== CLI
+
+```bash
+smm prs average-open-by
+```
+
+:::
 
 ### Type of Chart
 
@@ -70,9 +81,40 @@ if the average drops from 5 to 2 days over several weeks, your review process is
 2. Supports filters for author, labels (e.g., bug, enhancement), and date range.
 3. Aggregation smooths out daily fluctuations, showing long-term trends.
 
+
+
+
+
 ## Average Review Time By Author
 
+Plot the average time taken from the team to review a PR open by an author and merge it. The result is shown in average
+by days.
+
+:::tabs key:cli
+== Dashboard
 ![Pull requests open by author](/dashboard/prs/prs_open_by_author.png)
+
+== CLI
+
+```bash
+smm prs review-time-by-author
+```
+
+| Option         | Description                          | Example                  |
+|----------------|--------------------------------------|--------------------------|
+| Labels         | Filters PRs by the labels attached to it.      | `--labels=my_label,another_label`       |
+| Start date     | Fetches PRs created after a date.    | `--start-date=2025-01-01`     |
+| End date       | Fetches PRs created before a date.   | `--end-date=2025-12-31`     |
+| Limit          | If the list is too big --top will show only the top x results from the list.  | `--top=10`     |
+
+### Examples - Average Review Time by Author
+
+```bash
+smm prs review-time-by-author --labels=bug,enhancement --top=5
+```
+
+:::
+
 
 ### Type of Chart
 
@@ -93,7 +135,24 @@ example, if Alice's PRs average 7 days open while others average 2, you can inve
 2. Filters by top N authors, labels, and date range.
 3. Data is processed to exclude bots or focus on specific contributors.
 
+
+
+
+
+
+
 ## PRs By Author
+
+:::tabs key:cli
+== Dashboard
+
+== CLI
+
+```bash
+smm prs by-author
+```
+
+:::
 
 ### Type of Chart
 
@@ -113,3 +172,32 @@ opened 30 PRs in a month, he’s a key contributor.
 1. Counts PRs opened by each author.
 2. Filters by top N authors, labels, and date range.
 3. Includes bots (e.g., dependabot) to show the impact of automation.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+## Average Comments per PR
+
+Plot the average number of comments a PR receives before it is merged, aggregated by week or month.
+
+:::tabs key:cli
+== Dashboard
+
+== CLI
+
+```bash
+smm prs average-comments-by --aggregate-by=week
+```
+
+:::
+

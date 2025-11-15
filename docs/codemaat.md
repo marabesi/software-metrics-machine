@@ -1,4 +1,8 @@
-# Git provider
+---
+outline: deep
+---
+
+# Codemaat Provider
 
 This provider is focused on fetching and visualizing data from git repositories, it does it through [Codemaat](https://github.com/adamtornhill/code-maat)
 which is a tool to extract and analyze data from version control systems. It is a must to have the repository cloned
