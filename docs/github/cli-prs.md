@@ -113,7 +113,7 @@ smm prs summary
 
 ## Average Review Time by Author
 
-Plot the average time taken from the team to review a PRs open by an author and merge it. The result is shown in average
+Plot the average time taken from the team to review a PR open by an author and merge it. The result is shown in average
 by days.
 
 ```bash
