@@ -1,4 +1,6 @@
+from matplotlib import typing
 import panel as pn
+from software_metrics_machine.core.code.pairing_index import PairingIndex
 from software_metrics_machine.core.pipelines.aggregates.pipeline_summary import (
     PipelineRunSummary,
 )
@@ -8,11 +10,18 @@ from software_metrics_machine.core.pipelines.plots.view_deployment_frequency imp
 from software_metrics_machine.core.pipelines.pipelines_repository import (
     PipelinesRepository,
 )
+from software_metrics_machine.providers.pydriller.commit_traverser import (
+    CommitTraverser,
+)
 
 pn.extension("tabulator")
 
 
 def insights_section(repository: PipelinesRepository, date_range_picker):
+    authors_text = pn.widgets.TextInput(
+        name="Authors filter", placeholder="comma-separated emails", value=""
+    )
+
     def plot_deployment_frequency(date_range_picker):
         return (
             ViewDeploymentFrequency(repository=repository)
@@ -55,6 +64,73 @@ def insights_section(repository: PipelinesRepository, date_range_picker):
         most_failed = summary.get("most_failed", "N/A")
         return pn.widgets.StaticText(
             name="Most failed pipeline", value=f"{most_failed}"
+        )
+
+    def render_pairing_index_card(date_range_picker, authors: str | None = None):
+        """Render a small card showing the pairing index and the last 20 commits.
+
+        The commit list prefers commits whose message contains the exact phrase
+        'implemented the feature in the cli' (case-insensitive). If none match,
+        the card falls back to the last 20 commits in the repository.
+        """
+        pi = PairingIndex(repository=repository)
+        result = pi.get_pairing_index(
+            start_date=date_range_picker[0],
+            end_date=date_range_picker[1],
+            authors=authors,
+        )
+
+        # Attempt to read pairing index from either of the possible keys
+        pairing_val = None
+        if isinstance(result, dict):
+            pairing_val = (
+                result.get("pairing_index")
+                or result.get("pairing_index_percentage")
+                or result.get("pairing_index_percentage")
+            )
+
+        pairing_text = (
+            f"**Pairing index:** {pairing_val}%"
+            if pairing_val is not None
+            else "Pairing index: n/a"
+        )
+
+        # Get commit list from traverser
+        commits_data: typing.List[typing.Dict[str, str]] = []
+        try:
+            traverser = CommitTraverser(configuration=repository.configuration)
+            traverse_result = traverser.traverse_commits()
+            commits_iter = (
+                traverse_result.get("commits")
+                if isinstance(traverse_result, dict)
+                else traverse_result
+            )
+            commits_list = list(commits_iter)
+
+            # Filter by explicit phrase first
+            phrase = "implemented the feature in the cli"
+            filtered = [c for c in commits_list if phrase in ((c.msg or "").lower())]
+
+            source_list = filtered if filtered else commits_list[-20:]
+
+            # Prepare rows newest-first
+            for c in reversed(source_list[-20:]):
+                author = getattr(getattr(c, "author", None), "name", "") or ""
+                commits_data.append(
+                    {
+                        "author": author,
+                        "msg": c.msg or "",
+                        "hash": getattr(c, "hash", ""),
+                    }
+                )
+        except Exception:
+            # On errors, keep commits_data empty
+            commits_data = []
+
+        return pn.Column(
+            authors_text,
+            pn.pane.Markdown(pairing_text),
+            sizing_mode="stretch_width",
         )
 
     return pn.Column(
@@ -104,6 +180,16 @@ def insights_section(repository: PipelinesRepository, date_range_picker):
                     """
                 ),
                 pn.bind(plot_deployment_frequency, date_range_picker.param.value),
+            ),
+        ),
+        pn.Row(
+            pn.Column(
+                "## Pairing Index",
+                pn.bind(
+                    render_pairing_index_card,
+                    date_range_picker.param.value,
+                    authors_text.param.value,
+                ),
             ),
         ),
     )
