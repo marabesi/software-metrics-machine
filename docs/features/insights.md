@@ -29,6 +29,13 @@ agile and responsive development process.
 smm pipelines deployment-frequency
 ```
 
+| Option         | Description                          | Example                  |
+|----------------|--------------------------------------|--------------------------|
+| Start date     | Uses pipeline starting from this date.    | `--start-date=2025-01-01`     |
+| End date       | Uses pipeline starting until this date.   | `--end-date=2025-12-31`     |
+| Pipeline       | Pipeline to use                           | `--workflow-path=.github/workflows/ci.yml`       |
+| Job            | The job that deploys to production        | `--job-name=deploy_production`       |
+
 :::
 
 ## Pairing index
@@ -54,7 +61,16 @@ smm code pairing-index
 |----------------|--------------------------------------|--------------------------|
 | Start date     | Fetches PRs created after a date.    | `--start-date=2025-01-01`     |
 | End date       | Fetches PRs created before a date.   | `--end-date=2025-12-31`     |
-| Authors        | The authors to include in the index. It must be the email used in the commit. | `--authors=me@me.com,another@another.com`       |
+| Authors        | The comma separated authors to include in the index. It must be the email used in the commit. | `--authors=me@me.com`       |
+
+### Examples - Pairing Index
+
+```bash
+smm code pairing-index \
+  --start-date="2025-08-01" \
+  --end-date="2025-08-10" \
+  --authors=me@me.com,another@another.com
+```
 
 :::
 
