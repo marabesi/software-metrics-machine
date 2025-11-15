@@ -24,7 +24,4 @@ features:
     details: GitHub, GitLab, Bitbucket
   - title: One image is worth a thousand words 📊
     details: Visualize your data with interactive charts and graphs that make it easy to understand complex metrics at a glance.
-    link: ./dashboard.md
-  - title: Developer notes 🛠️
-    details: Guidance for contributors on where to implement data aggregation vs visualization (repository vs view).
-    link: ./dashboard/prs.md#developer-notes-recent-changes
+    link: ./features.md

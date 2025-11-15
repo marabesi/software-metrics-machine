@@ -67,7 +67,7 @@ In the folder pointed to store the data, create a configuration file named `smm_
 
 This configuration is the central point to configure the project and give it default values. Replace `your_github_token` with
 the token you generated, and `/your/local/repo` with the path where you cloned the repository. A table wih the full
-configuration options is available at [Configuration options](./dashboard/configuration.md).
+configuration options is available at [Configuration options](./features/configuration.md).
 
 ### Checkpoint store data
 

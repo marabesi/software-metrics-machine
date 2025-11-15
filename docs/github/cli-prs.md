@@ -8,7 +8,7 @@ Pull Requests (PRs) are a fundamental part of collaborative software development
 propose changes to a codebase, review code, and discuss modifications before merging them into the main branch. Analyzing
 PRs can provide valuable insights into the development process, code quality, and team collaboration. In this section,
 we will explore the CLI commands available for fetching and analyzing Pull Requests from GitHub repositories. This is a
-must step in order to analyze PRs data using the CLI or [the dashboard](../dashboard/prs.md).
+must step in order to analyze PRs data using the CLI or [the dashboard](../features/prs.md).
 
 ## Fetch PRs
 
