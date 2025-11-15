@@ -65,14 +65,14 @@ export default withMermaid(
           ]
         },
         {
-          text: 'Features',
+          text: 'SMM',
           items: [
-              
-                { text: 'Insights', link: '/dashboard/insights' },
-                { text: 'Pipelines', link: '/dashboard/pipelines' },
-                { text: 'Pull requests', link: '/dashboard/prs' },
-                { text: 'Source code', link: '/dashboard/code' },
-                { text: 'Configuration', link: '/dashboard/configuration' },
+            { text: 'Features', link: '/features' },
+            { text: 'Insights', link: '/features/insights' },
+            { text: 'Pipelines', link: '/features/pipelines' },
+            { text: 'Pull requests', link: '/features/prs' },
+            { text: 'Source code', link: '/features/code' },
+            { text: 'Configuration', link: '/features/configuration' },
           ]
         },
         {
