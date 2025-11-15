@@ -1,18 +1,27 @@
+---
+utline: deep
+---
+
 # GitHub CLI Commands for Pull Request
 
-This document provides a guide for developers to run GitHub-related analyses using the CLI commands available in the
-`software-metrics-machine` project. Each command is categorized by its purpose and functionality.
+Pull Requests (PRs) are a fundamental part of collaborative software development on GitHub. They allow developers to
+propose changes to a codebase, review code, and discuss modifications before merging them into the main branch. Analyzing
+PRs can provide valuable insights into the development process, code quality, and team collaboration. In this section,
+we will explore the CLI commands available for fetching and analyzing Pull Requests from GitHub repositories. This is a
+must step in order to analyze PRs data using the CLI or [the dashboard](../dashboard/prs.md).
 
-## Pull Requests
+## Fetch PRs
 
-### Fetch PRs
+Fetching PR data from GitHub is the first step before performing any analysis. The CLI provide comments to fetch PRs from
+a specified repository from GitHub.
 
 ```bash
 smm prs fetch
 ```
 
-| Option         | Description                         | Example                  |
+| Option         | Description <div style="width:200px"></div> | Example <div style="width:200px"></div> |
 |----------------|-------------------------------------|--------------------------|
+| Months         | It defaults to 1. It is used if no start or end date is given   | `--months=2`|
 | Start date     | Fetches PRs created after a date.   | `--start-date=2025-01-01`|
 | End date       | Fetches PRs created before a date.  | `--end-date=2025-12-31`  |
 | Filters       | Allows to pass in filters directly to the [GitHub API](https://docs.github.com/en/rest/pulls/pulls#list-pull-requests)  | `--raw-filters=state=open`  |
@@ -21,13 +30,54 @@ smm prs fetch
 Filtering the data fetch from PRs by date is done logically while fetching the data, this is not a feature that GitHub
 API provides.
 
-### Data quality
+### Fetch PRs - Examples
 
-Once data is fetched, you can run a summary of the data using the following command:
+Fetching PRs from the last 3 months:
 
 ```bash
-smm prs summary
+smm prs fetch --months=3
 ```
+
+Fetching PRs created between January 1, 2025, and June 30, 2025:
+
+```bash
+smm prs fetch --start-date=2025-01-01 --end-date=2025-06-30
+```
+
+Fetching only open PRs:
+
+```bash
+smm prs fetch --raw-filters=state=open,head=main
+```
+
+Forcing the fetch to ignore already fetched PRs (this overrides the data stored):
+
+```bash
+smm prs fetch --force=true
+```
+
+## Fetch PRs comments
+
+Pull requests often have comments that provide insights into the review process. However, in order to fetch comments for
+Pull Request, you must first fetch the PRs using the `smm prs fetch` command. The comments are not fetched by default to
+optimize the data retrieval process as GitHub API has rate limits. Before fetching the comments, it first uses the PRs
+data already fetched to get the comments for each PR using the property `review_comments_url` from each PR.
+
+```bash
+smm prs fetch-comments
+```
+
+| Option         | Description <div style="width:200px"></div> | Example <div style="width:240px"></div> |
+|----------------|-------------------------------------|--------------------------|
+| Start date     |  The PRs created date to filter after this date, this is the PR not the comment pr itself.  | `--start-date=2025-01-01`|
+| End date       | The PRs created date to filter before this date, this is the PR not the comment pr itself.  | `--end-date=2025-12-31`  |
+| Filters        | Allows to pass in filters directly to the [GitHub API](https://docs.github.com/en/rest/pulls/comments?apiVersion=2022-11-28&versionId=free-pro-team%40latest&category=pulls&subcategory=review-requests#list-review-comments-on-a-pull-request). It will pass the filters for each PR request.  | `--raw-filters=sort=created`  |
+| Force       | By default a file is stored with the retrieved data to avoid refetching it again. However, using this parameter bypass this cache. | `--force=true`  |
+
+## Data quality
+
+Once data is fetched, you might want to check the quality of it and if the data matches the expected values. To achieve that,
+SMM has a summary command that shows basic information about the quality of the data. Such as:
 
 It will print a summary of the PRs fetched, including:
 
@@ -41,7 +91,13 @@ It will print a summary of the PRs fetched, including:
 - Unique Labels (unique_labels): The number of unique labels used across pull requests.
 - Labels (labels): A list of all unique labels used in pull requests.
 
-### Average Review Time by Author
+The command to get the summary is:
+
+```bash
+smm prs summary
+```
+
+## Average Review Time by Author
 
 ```bash
 smm prs review-time-by-author
@@ -56,19 +112,19 @@ smm prs review-time-by-author
 | File           | The name of the file to store the generated chart  | `--out-file=my_chart.png` or   `--out-file=subfolder/my_chart.png`   |
 | Step           | Step defines the pace in which the data is fetched. It helps to mitigate the rate limits in the GitHub API | `--step-by=day` |
 
-### PRs by Author
+## PRs by Author
 
 ```bash
 smm prs by-author
 ```
 
-### Average of PRs Open by Time
+## Average of PRs Open by Time
 
 ```bash
 smm prs average-open-by
 ```
 
-### Average Comments per PR
+## Average Comments per PR
 
 Plot the average number of comments a PR receives before it is merged, aggregated by week or month.
 
