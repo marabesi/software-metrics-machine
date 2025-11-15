@@ -21,7 +21,7 @@ agile and responsive development process.
 
 :::tabs key:cli
 == Dashboard
-![Insights Overview](/dashboard/insights-deployment-frequency.png)
+![Insights Deployment Frequency](/dashboard/insights-deployment-frequency.png)
 
 == CLI
 
@@ -42,13 +42,19 @@ improved code quality and knowledge sharing.
 :::tabs key:cli
 == Dashboard
 
-TBD
+![Insights Pairing Index](/dashboard/insights-pairing-index.png)
 
 == CLI
 
 ```bash
 smm code pairing-index
 ```
+
+| Option         | Description                          | Example                  |
+|----------------|--------------------------------------|--------------------------|
+| Start date     | Fetches PRs created after a date.    | `--start-date=2025-01-01`     |
+| End date       | Fetches PRs created before a date.   | `--end-date=2025-12-31`     |
+| Authors        | The authors to include in the index. It must be the email used in the commit. | `--authors=me@me.com,another@another.com`       |
 
 :::
 
