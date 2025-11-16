@@ -12,7 +12,12 @@ repos:
         name: flake8
         entry: poetry run flake8 .
         language: system
-        types: [python] 
+        types: [python]
+      - id: mypy
+        name: mypy
+        entry: poetry run mypy src/software_metrics_machine/core/infrastructure src/software_metrics_machine/core/code
+        language: system
+        types: [python]
       - id: pytest
         name: pytest
         entry: ./run-tests.sh
