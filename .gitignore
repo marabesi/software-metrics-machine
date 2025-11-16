@@ -223,6 +223,8 @@ node_modules/
 **/.vitepress/cache
 tmp_test/
 
+./e2e/**
+
 tests/e2e/target_repo
 tests/e2e/analysis
 tests/e2e/target

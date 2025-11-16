@@ -38,6 +38,7 @@ class TestFetchCodemaat:
                     call(
                         [
                             "mkdir",
+                            "-p",
                             f"{cli.storage.default_dir}/github_fake_repo",
                         ],
                         capture_output=True,

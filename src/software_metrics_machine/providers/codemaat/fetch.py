@@ -22,7 +22,7 @@ class FetchCodemaat:
         self, start_date: str, end_date: str, subfolder: str = "", force: bool = False
     ) -> ExecutionResult:
         Run().run_command(
-            ["mkdir", self.codemaat_repository.default_dir],
+            ["mkdir", "-p", self.codemaat_repository.default_dir],
             capture_output=True,
             text=True,
             check=True,
