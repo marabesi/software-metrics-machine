@@ -27,7 +27,7 @@ class FileSystemBaseRepository:
     def read_file_if_exists(self, filename: str) -> Optional[str]:
         return self.file_system_handler.read_file_if_exists(filename)
 
-    def store_file(self, file: str, data: str) -> None:
+    def store_file(self, file: str, data: str) -> bool:
         return self.file_system_handler.store_file(file, data)
 
     def remove_file(self, filename: str) -> Optional[str]:

@@ -19,7 +19,7 @@ class TestGithubWorkflowsClient:
             "Accept": "application/vnd.github+json",
         }
 
-    def test_fetch_workflows(self):
+    def tprogest_fetch_workflows(self):
         with (
             patch("requests.get") as mock_get,
             patch(
@@ -49,7 +49,7 @@ class TestGithubWorkflowsClient:
                 headers=self.headers,
                 params={"branch": "main", "created": "2025-01-01..2025-12-31"},
             )
-            mock_store.assert_called_once_with("workflows.json", [])
+            mock_store.assert_called_once_with("workflows.json", "[]")
 
     def test_fetch_workflows_by_hour_step(self):
         with (

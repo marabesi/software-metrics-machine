@@ -1,6 +1,5 @@
 from typing import Optional
 from pathlib import Path
-import json
 
 
 class FileSystemHandler:
@@ -16,13 +15,16 @@ class FileSystemHandler:
         return None
 
     def store_file(self, file: str, data: str) -> bool:
+        if not isinstance(data, str):
+            raise ValueError(f"{file} value given not string :::: {data}")
+
         final_path = self.default_dir + "/" + file
         p = Path(final_path)
         # ensure parent directory exists
         p.parent.mkdir(parents=True, exist_ok=True)
 
         with p.open("w", encoding="utf-8") as f:
-            json.dump(data, f, indent=2)
+            f.write(data)
         print(f"  → Data written to {p}")
         return True
 

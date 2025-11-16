@@ -5,6 +5,7 @@ from software_metrics_machine.core.infrastructure.configuration.configuration im
     Configuration,
 )
 from software_metrics_machine.core.prs.prs_repository import PrsRepository
+from tests.builders import as_json_string
 
 
 class GithubPrsClient:
@@ -110,7 +111,7 @@ class GithubPrsClient:
             print(f"  → link: {link}")
             url = link["url"] if link and not stop else None
 
-        self.pr_repository.store_file(pr_json_path, prs)
+        self.pr_repository.store_file(pr_json_path, as_json_string(prs))
 
     def fetch_pr_comments(
         self,
@@ -156,4 +157,4 @@ class GithubPrsClient:
 
             print(f"Wrote {len(comments)} review comments to {review_comments_path}")
 
-        self.pr_repository.store_file(review_comments_path, comments)
+        self.pr_repository.store_file(review_comments_path, as_json_string(comments))

@@ -12,6 +12,7 @@ from software_metrics_machine.core.infrastructure.configuration.configuration im
 from software_metrics_machine.core.prs.prs_repository import PrsRepository
 
 from software_metrics_machine.core.infrastructure.logger import Logger
+from tests.builders import as_json_string
 
 
 class FetchPipelinesResult(TypedDict):
@@ -151,7 +152,7 @@ class GithubWorkflowClient:
                 print(f"  → link: {link}")
                 url = link["url"] if link else None
 
-        workflow_repository.store_file(runs_json_path, runs)
+        workflow_repository.store_file(runs_json_path, as_json_string(runs))
 
         return FetchPipelinesResult(
             message=f"Fetched {len(runs)}",
@@ -248,8 +249,10 @@ class GithubWorkflowClient:
                             "processed_run_ids": list(processed_runs),
                             "partial": {"run_id": run_id, "next_url": next_url},
                         }
-                        workflows.store_file("jobs_progress.json", prog)
-                        workflows.store_file("jobs_incompleted.json", all_jobs)
+                        workflows.store_file("jobs_progress.json", as_json_string(prog))
+                        workflows.store_file(
+                            "jobs_incompleted.json", as_json_string(all_jobs)
+                        )
 
                         url = next_url
                     else:
@@ -260,15 +263,17 @@ class GithubWorkflowClient:
                             "partial": None,
                         }
 
-                        workflows.store_file("jobs_progress.json", prog)
-                        workflows.store_file("jobs_incompleted.json", all_jobs)
+                        workflows.store_file("jobs_progress.json", as_json_string(prog))
+                        workflows.store_file(
+                            "jobs_incompleted.json", as_json_string(all_jobs)
+                        )
 
                         url = None
 
         except Exception:
             # on any failure, ensure progress and jobs are persisted before raising
             prog = {"processed_run_ids": list(processed_runs), "partial": partial}
-            workflows.store_file("jobs_progress.json", prog)
+            workflows.store_file("jobs_progress.json", as_json_string(prog))
             raise
 
         # completed all runs successfully; remove progress file

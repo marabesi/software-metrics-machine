@@ -1,6 +1,8 @@
 # flake8: noqa: F601
 import json
-from typing import Any
+from typing import Any, List
+
+from software_metrics_machine.core.pipelines.pipelines_types import PipelineRun
 
 
 class TypedDictEncoder(json.JSONEncoder):
@@ -21,7 +23,7 @@ def as_json_string(object: Any) -> str:
     return json.dumps(object, indent=2, cls=TypedDictEncoder)
 
 
-def single_deployment_frequency():
+def single_deployment_frequency() -> List[PipelineRun]:
     return [
         {
             "id": 1,
@@ -33,7 +35,7 @@ def single_deployment_frequency():
     ]
 
 
-def single_run():
+def single_run() -> List[PipelineRun]:
     return [
         {
             "id": 1,
@@ -45,7 +47,7 @@ def single_run():
     ]
 
 
-def github_workflows_data():
+def github_workflows_data() -> List[PipelineRun]:
     return [
         {
             "id": 1,

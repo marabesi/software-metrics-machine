@@ -188,7 +188,7 @@ class TestGithubPrsClient:
                     "per_page": "100",
                 },
             )
-            mocked_store.assert_called_once_with("prs_review_comments.json", [])
+            mocked_store.assert_called_once_with("prs_review_comments.json", "[]")
 
     @pytest.mark.parametrize(
         "raw_filters, params",
@@ -252,7 +252,7 @@ class TestGithubPrsClient:
                 headers=self.headers,
                 params=params,
             )
-            mocked_store.assert_called_once_with("prs_review_comments.json", [])
+            mocked_store.assert_called_once_with("prs_review_comments.json", "[]")
 
     def test_if_prs_comments_exists_should_not_refetch(self):
         def mocked_read_file_if_exists(file):

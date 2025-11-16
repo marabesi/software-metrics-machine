@@ -41,4 +41,5 @@ class ConfigurationFileSystemHandler:
         logger.debug(f"Storing configuration to {file}")
         data.store_data = self.default_dir
         data = data.__dict__
-        return self.file_system_handler.store_file(file, data)
+        stringyfied_configuration = str(json.dumps(data, indent=2))
+        return self.file_system_handler.store_file(file, stringyfied_configuration)

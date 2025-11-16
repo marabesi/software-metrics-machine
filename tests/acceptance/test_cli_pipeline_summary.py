@@ -26,7 +26,6 @@ class TestPipelineSummaryCliCommands:
         ],
     )
     def test_summary_pipeline(self, cli, workflows, expected_output):
-
         cli.storage.store_pipelines_with(workflows)
 
         result = cli.runner.invoke(
@@ -47,7 +46,6 @@ class TestPipelineSummaryCliCommands:
         ],
     )
     def test_show_filter_summary_runs(self, cli, workflows):
-
         cli.storage.store_pipelines_with(workflows)
 
         result = cli.runner.invoke(
