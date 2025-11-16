@@ -28,7 +28,7 @@ class TestCliCodeEntityOwnershipCommands:
 
         csv_data = """entity,author,added,deleted
 file.txt,John,10,2"""
-        cli.storage.store_file("entity-ownership.csv", csv_data)
+        cli.storage.store_csv_file("entity-ownership.csv", csv_data)
 
         result = cli.runner.invoke(
             main,
@@ -41,7 +41,7 @@ file.txt,John,10,2"""
 
         csv_data = """entity,author,added,deleted
 file.txt,John,10,2"""
-        cli.storage.store_file("entity-ownership.csv", csv_data)
+        cli.storage.store_csv_file("entity-ownership.csv", csv_data)
 
         result = cli.runner.invoke(
             main,
@@ -58,8 +58,7 @@ file.txt,John,10,2"""
         assert "Found 0 row for entity ownership" in result.output
 
     def test_defines_include_only_argument(self, cli):
-
-        cli.storage.store_file("entity-ownership.csv", "")
+        cli.storage.store_csv_file("entity-ownership.csv", "")
         result = cli.runner.invoke(
             main,
             ["code", "entity-ownership", "--help"],
@@ -67,7 +66,6 @@ file.txt,John,10,2"""
         assert "--include-only" in result.output
 
     def test_includes_only_specified_paths_for_analysis(self, cli):
-
         csv_data = (
             CSVBuilder(headers=["entity", "author", "added", "deleted"])
             .extend_rows(
@@ -78,7 +76,7 @@ file.txt,John,10,2"""
             )
             .build()
         )
-        cli.storage.store_file("entity-ownership.csv", csv_data)
+        cli.storage.store_csv_file("entity-ownership.csv", csv_data)
         result = cli.runner.invoke(
             main,
             ["code", "entity-ownership", "--include-only", "src/**"],
@@ -89,7 +87,6 @@ file.txt,John,10,2"""
         )
 
     def test_print_entity_ownership(self, cli):
-
         csv_data = (
             CSVBuilder(headers=["entity", "author", "added", "deleted"])
             .extend_rows(
@@ -99,7 +96,7 @@ file.txt,John,10,2"""
             )
             .build()
         )
-        cli.storage.store_file("entity-ownership.csv", csv_data)
+        cli.storage.store_csv_file("entity-ownership.csv", csv_data)
         result = cli.runner.invoke(
             main,
             ["code", "entity-ownership"],

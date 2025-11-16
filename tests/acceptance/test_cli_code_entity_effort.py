@@ -24,8 +24,7 @@ class TestCliCodeEntityOwnershipCommands:
         assert "No entity effort data available to plot" in result.output
 
     def test_defines_include_only_argument(self, cli):
-
-        cli.storage.store_file("entity-effort.csv", "")
+        cli.storage.store_csv_file("entity-effort.csv", "")
         result = cli.runner.invoke(
             main,
             ["code", "entity-effort", "--help"],
@@ -44,7 +43,7 @@ class TestCliCodeEntityOwnershipCommands:
             )
             .build()
         )
-        cli.storage.store_file("entity-effort.csv", csv_data)
+        cli.storage.store_csv_file("entity-effort.csv", csv_data)
         result = cli.runner.invoke(
             main,
             ["code", "entity-effort", "--include-only", "src/**"],
@@ -55,7 +54,6 @@ class TestCliCodeEntityOwnershipCommands:
         )
 
     def test_print_entity_effort(self, cli):
-
         csv_data = (
             CSVBuilder(headers=["entity", "author", "author-revs", "total-revs"])
             .extend_rows(
@@ -65,7 +63,7 @@ class TestCliCodeEntityOwnershipCommands:
             )
             .build()
         )
-        cli.storage.store_file("entity-effort.csv", csv_data)
+        cli.storage.store_csv_file("entity-effort.csv", csv_data)
         result = cli.runner.invoke(
             main,
             ["code", "entity-effort"],

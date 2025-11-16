@@ -45,12 +45,13 @@ class FileHandlerForTesting:
         return True
 
     def store_file(self, file: str, data: str) -> bool:
-        final_path = self.default_dir + "/" + file
-        p = Path(final_path)
+        self.file_system_handler.store_file(file, as_json_string(data))
+        print(f"  → Data written to {self.default_dir}/{file}")
+        return True
 
-        with p.open("w", encoding="utf-8") as f:
-            f.write(data)
-        print(f"  → Data written to {p}")
+    def store_csv_file(self, file: str, data: str) -> bool:
+        self.file_system_handler.store_file(file, data)
+        print(f"  → Data written to {self.default_dir}/{file}")
         return True
 
     def remove_file(self, filename: str) -> Optional[str]:

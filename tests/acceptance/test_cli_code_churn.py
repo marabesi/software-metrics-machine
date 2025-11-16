@@ -57,8 +57,7 @@ class TestCliCodeCommands:
         ],
     )
     def test_given_the_data_it_renders_code_churn(self, cli, csv_data, expected):
-
-        cli.storage.store_file("abs-churn.csv", csv_data)
+        cli.storage.store_csv_file("abs-churn.csv", csv_data)
 
         result = cli.runner.invoke(
             main,
@@ -70,7 +69,7 @@ class TestCliCodeCommands:
 
         csv_data = """date,added,deleted,commits
 2022-06-17,10,10,2"""
-        cli.storage.store_file("abs-churn.csv", csv_data)
+        cli.storage.store_csv_file("abs-churn.csv", csv_data)
 
         result = cli.runner.invoke(
             main,

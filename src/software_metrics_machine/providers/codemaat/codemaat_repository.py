@@ -1,7 +1,7 @@
 import pandas as pd
-from pathlib import Path
 from pathlib import PurePosixPath
 from typing import List
+from io import StringIO
 
 from software_metrics_machine.core.code.code_churn_types import CodeChurn
 from software_metrics_machine.core.infrastructure.file_system_base_repository import (
@@ -17,11 +17,20 @@ class CodemaatRepository(FileSystemBaseRepository):
         self.configuration = configuration
         super().__init__(configuration=self.configuration)
 
+    def __parse_csv(self, data: str):
+        csvStringIO = StringIO(data)
+        return pd.read_csv(csvStringIO, sep=",")
+
     def get_code_churn(self, filters: None = None) -> List[CodeChurn]:
-        file_path = Path(f"{self.configuration.store_data}/abs-churn.csv")
-        if not file_path.exists():
+        file = "abs-churn.csv"
+
+        file_path = super().read_file_if_exists(file)
+        if not file_path:
             return pd.DataFrame()
-        data = pd.read_csv(file_path)
+
+        data = self.__parse_csv(file_path)
+        print(f"Found {file_path}")
+
         if filters:
             start_date = filters.get("start_date")
             end_date = filters.get("end_date")
@@ -43,11 +52,12 @@ class CodemaatRepository(FileSystemBaseRepository):
         return output
 
     def get_coupling(self, ignore_files: str | None = None, filters: None = None):
-        file_path = Path(f"{self.configuration.store_data}/coupling.csv")
-        if not file_path.exists():
+        file = "coupling.csv"
+        file_path = super().read_file_if_exists(file)
+        if not file_path:
             return pd.DataFrame()
 
-        data = pd.read_csv(file_path)
+        data = self.__parse_csv(file_path)
 
         if ignore_files:
             data = self.apply_ignore_file_patterns(data, ignore_files)
@@ -63,11 +73,14 @@ class CodemaatRepository(FileSystemBaseRepository):
         return data
 
     def get_entity_churn(self, ignore_files: str | None = None, filters: None = None):
-        file_path = Path(f"{self.configuration.store_data}/entity-churn.csv")
-        if not file_path.exists():
+        file = "entity-churn.csv"
+
+        file_path = super().read_file_if_exists(file)
+        if not file_path:
             return pd.DataFrame()
 
-        data = pd.read_csv(file_path)
+        data = self.__parse_csv(file_path)
+
         if "entity" in data.columns:
             data["short_entity"] = data["entity"].apply(self.__short_ent)
 
@@ -85,12 +98,14 @@ class CodemaatRepository(FileSystemBaseRepository):
         return data
 
     def get_entity_effort(self, filters: None = None):
-        file_path = Path(f"{self.configuration.store_data}/entity-effort.csv")
-        if not file_path.exists():
+        file = "entity-effort.csv"
+        file_path = super().read_file_if_exists(file)
+        if not file_path:
             print("No entity effort data available to plot")
             return pd.DataFrame()
 
-        data = pd.read_csv(file_path)
+        data = self.__parse_csv(file_path)
+
         if filters and filters.get("include_only"):
             include_patterns: List[str] = filters.get("include_only") or None
             if include_patterns:
@@ -100,10 +115,13 @@ class CodemaatRepository(FileSystemBaseRepository):
         return data
 
     def get_entity_ownership(self, authors: List[str] = [], filters: None = None):
-        file_path = Path(f"{self.configuration.store_data}/entity-ownership.csv")
-        if not file_path.exists():
+        file = "entity-ownership.csv"
+        file_path = super().read_file_if_exists(file)
+        if not file_path:
+            print("No entity effort data available to plot")
             return pd.DataFrame()
-        data = pd.read_csv(file_path)
+
+        data = self.__parse_csv(file_path)
 
         if "entity" in data.columns:
             data["short_entity"] = data["entity"].apply(self.__short_ent)

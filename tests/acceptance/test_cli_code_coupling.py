@@ -18,8 +18,7 @@ class TestCliCodeCouplingCommands:
             yield mock_run
 
     def test_defines_include_only_argument(self, cli):
-
-        cli.storage.store_file("coupling.csv", "")
+        cli.storage.store_csv_file("coupling.csv", "")
         result = cli.runner.invoke(
             main,
             ["code", "coupling", "--help"],
@@ -34,7 +33,6 @@ class TestCliCodeCouplingCommands:
         assert "No coupling data available to plot" in result.output
 
     def test_can_run_coupling_with_ignored_files(self, cli):
-
         csv_data = (
             CSVBuilder(headers=["entity", "coupled", "degree", "average-revs"])
             .extend_rows(
@@ -46,7 +44,7 @@ class TestCliCodeCouplingCommands:
             .build()
         )
 
-        cli.storage.store_file("coupling.csv", csv_data)
+        cli.storage.store_csv_file("coupling.csv", csv_data)
         result = cli.runner.invoke(
             main,
             ["code", "coupling", "--ignore-files", "*.txt"],
@@ -54,7 +52,6 @@ class TestCliCodeCouplingCommands:
         assert "Filtered coupling data count: 1" in result.output
 
     def test_includes_only_specified_paths_for_analysis(self, cli):
-
         csv_data = (
             CSVBuilder(headers=["entity", "coupled", "degree", "average-revs"])
             .extend_rows(
@@ -65,7 +62,7 @@ class TestCliCodeCouplingCommands:
             )
             .build()
         )
-        cli.storage.store_file("coupling.csv", csv_data)
+        cli.storage.store_csv_file("coupling.csv", csv_data)
         result = cli.runner.invoke(
             main,
             ["code", "coupling", "--include-only", "src/**"],
@@ -76,7 +73,6 @@ class TestCliCodeCouplingCommands:
         )
 
     def test_shows_coupling_data(self, cli):
-
         csv_data = (
             CSVBuilder(headers=["entity", "coupled", "degree", "average-revs"])
             .extend_rows(
@@ -87,7 +83,7 @@ class TestCliCodeCouplingCommands:
             )
             .build()
         )
-        cli.storage.store_file("coupling.csv", csv_data)
+        cli.storage.store_csv_file("coupling.csv", csv_data)
         result = cli.runner.invoke(
             main,
             ["code", "coupling"],

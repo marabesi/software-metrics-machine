@@ -17,8 +17,7 @@ class TestCliCodeEntityChurnCommands:
             yield mock_run
 
     def test_defines_include_only_argument(self, cli):
-
-        cli.storage.store_file("entity_churn.csv", "")
+        cli.storage.store_csv_file("entity_churn.csv", "")
         result = cli.runner.invoke(
             main,
             ["code", "entity-churn", "--help"],
@@ -33,7 +32,6 @@ class TestCliCodeEntityChurnCommands:
         assert "No entity churn data available to plot" in result.output
 
     def test_includes_only_specified_paths_for_analysis(self, cli):
-
         csv_data = (
             CSVBuilder(headers=["entity", "added", "deleted", "commits"])
             .extend_rows(
@@ -44,7 +42,7 @@ class TestCliCodeEntityChurnCommands:
             )
             .build()
         )
-        cli.storage.store_file("entity-churn.csv", csv_data)
+        cli.storage.store_csv_file("entity-churn.csv", csv_data)
         result = cli.runner.invoke(
             main,
             ["code", "entity-churn", "--include-only", "src/**"],
@@ -55,7 +53,6 @@ class TestCliCodeEntityChurnCommands:
         )
 
     def test_print_code_churn_data(self, cli):
-
         csv_data = (
             CSVBuilder(headers=["entity", "added", "deleted", "commits"])
             .extend_rows(
@@ -66,7 +63,7 @@ class TestCliCodeEntityChurnCommands:
             )
             .build()
         )
-        cli.storage.store_file("entity-churn.csv", csv_data)
+        cli.storage.store_csv_file("entity-churn.csv", csv_data)
         result = cli.runner.invoke(
             main,
             ["code", "entity-churn", "--include-only", "src/**"],

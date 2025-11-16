@@ -14,6 +14,15 @@ class FileSystemBaseRepository:
 
     def __init__(self, configuration: Configuration):
         self.default_dir = str(configuration.store_data)
+
+        repo = str(configuration.github_repository).replace("/", "_")
+        target_dir = f"{configuration.git_provider}_{repo}"
+
+        if self.default_dir.endswith("/"):
+            self.default_dir = self.default_dir[:-1]
+
+        self.default_dir = f"{self.default_dir}_{target_dir}"
+
         self.file_system_handler = FileSystemHandler(self.default_dir)
         self.configuration = configuration
         self.logger = Logger(configuration=self.configuration).get_logger()
@@ -89,3 +98,14 @@ class FileSystemBaseRepository:
             except Exception:
                 return None
         return None
+
+    def __resolve_default_dir(self) -> str:
+        self.default_dir = str(self.configuration.store_data)
+
+        repo = str(self.configuration.github_repository).replace("/", "_")
+        target_dir = f"{self.configuration.git_provider}/{repo}"
+
+        if self.default_dir.endswith("/"):
+            self.default_dir = self.default_dir[:-1]
+
+        self.default_dir = f"{self.default_dir}/{target_dir}"
