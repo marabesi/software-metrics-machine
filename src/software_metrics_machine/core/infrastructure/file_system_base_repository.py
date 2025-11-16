@@ -109,3 +109,4 @@ class FileSystemBaseRepository:
             self.default_dir = self.default_dir[:-1]
 
         self.default_dir = f"{self.default_dir}/{target_dir}"
+        return self.default_dir
