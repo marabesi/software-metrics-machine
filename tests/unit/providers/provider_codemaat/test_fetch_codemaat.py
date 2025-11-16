@@ -35,7 +35,7 @@ class TestFetchCodemaat:
 
             mock_run.assert_called_once()
 
-    def test_invoke_codemaat_force(self, tmp_path):
+    def test_invoke_codemaat_force(self, tmp_path, cli):
         path_string = str(tmp_path)
         configuration = InMemoryConfiguration(store_data=path_string)
 
@@ -60,13 +60,13 @@ class TestFetchCodemaat:
                 "sh",
                 "src/software_metrics_machine/providers/codemaat/fetch-codemaat.sh",
                 configuration.git_repository_location,
-                configuration.store_data,
+                f"{cli.data_stored_at}_github_fake_repo",
                 start_date,
                 subfolder,
                 "false",
             ]
 
-    def test_invoke_codemaat_with_force(self, tmp_path):
+    def test_invoke_codemaat_with_force(self, tmp_path, cli):
         path_string = str(tmp_path)
         configuration = InMemoryConfiguration(store_data=path_string)
         with patch(
@@ -90,13 +90,13 @@ class TestFetchCodemaat:
                 "sh",
                 "src/software_metrics_machine/providers/codemaat/fetch-codemaat.sh",
                 configuration.git_repository_location,
-                configuration.store_data,
+                f"{cli.data_stored_at}_github_fake_repo",
                 start_date,
                 subfolder,
                 "true",
             ]
 
-    def test_invoke_codemaat_with_subfolder(self, tmp_path):
+    def test_invoke_codemaat_with_subfolder(self, tmp_path, cli):
         path_string = str(tmp_path)
         configuration = InMemoryConfiguration(store_data=path_string)
 
@@ -121,7 +121,7 @@ class TestFetchCodemaat:
                 "sh",
                 "src/software_metrics_machine/providers/codemaat/fetch-codemaat.sh",
                 configuration.git_repository_location,
-                configuration.store_data,
+                f"{cli.data_stored_at}_github_fake_repo",
                 start_date,
                 subfolder,
                 "true",

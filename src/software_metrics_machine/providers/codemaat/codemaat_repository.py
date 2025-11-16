@@ -17,10 +17,6 @@ class CodemaatRepository(FileSystemBaseRepository):
         self.configuration = configuration
         super().__init__(configuration=self.configuration)
 
-    def __parse_csv(self, data: str):
-        csvStringIO = StringIO(data)
-        return pd.read_csv(csvStringIO, sep=",")
-
     def get_code_churn(self, filters: None = None) -> List[CodeChurn]:
         file = "abs-churn.csv"
 
@@ -209,3 +205,7 @@ class CodemaatRepository(FileSystemBaseRepository):
             f"Applied include only file patterns: {pats}, remaining rows: {len(data)}"
         )
         return data
+
+    def __parse_csv(self, data: str):
+        csvStringIO = StringIO(data)
+        return pd.read_csv(csvStringIO, sep=",")
