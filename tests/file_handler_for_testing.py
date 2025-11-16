@@ -24,14 +24,16 @@ class FileHandlerForTesting:
             "workflows.json", as_json_string(data)
         )
 
-    def store_jobs_with(self, data: str) -> bool:
+    def store_jobs_with(self, data: List) -> bool:
         return self.file_system_handler.store_file("jobs.json", as_json_string(data))
 
-    def store_prs_with(self, data: str) -> bool:
+    def store_prs_with(self, data: List) -> bool:
         return self.file_system_handler.store_file("prs.json", as_json_string(data))
 
-    def store_prs_comment_with(self, data: str) -> bool:
-        return self.store_file("prs_review_comments.json", as_json_string(data))
+    def store_prs_comment_with(self, data: List) -> bool:
+        return self.file_system_handler.store_file(
+            "prs_review_comments.json", as_json_string(data)
+        )
 
     def store_json_file(self, file: str, data: str) -> bool:
         final_path = self.default_dir + "/" + file
