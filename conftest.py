@@ -12,6 +12,7 @@ from software_metrics_machine.core.infrastructure.configuration.configuration im
 from software_metrics_machine.core.infrastructure.configuration.configuration_file_system_handler import (
     ConfigurationFileSystemHandler,
 )
+from tests.file_handler_for_testing import FileHandlerForTesting
 from tests.in_memory_configuration import InMemoryConfiguration
 
 
@@ -122,6 +123,7 @@ class CliResult:
     runner: CliRunner
     data_stored_at: str
     configuration: Configuration
+    storage: FileHandlerForTesting
 
 
 @pytest.fixture
@@ -135,6 +137,11 @@ def cli(cli_only, tmp_path):
         "smm_config.json", configuration
     )
 
+    storage = FileHandlerForTesting(path_string, configuration)
+
     yield CliResult(
-        runner=cli_only, data_stored_at=path_string, configuration=configuration
+        runner=cli_only,
+        data_stored_at=path_string,
+        configuration=configuration,
+        storage=storage,
     )

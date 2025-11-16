@@ -9,7 +9,6 @@ from tests.github_workflow_response import (
     successfull_response_with_single_job,
     successfull_response_with_empty_jobs,
 )
-from tests.file_handler_for_testing import FileHandlerForTesting
 from tests.pipeline_builder import PipelineBuilder
 
 job_with_single_step_completed_successfully = [
@@ -62,9 +61,8 @@ class TestJobsCliCommands:
         assert "Show this message and exit" in result.output
 
     def test_should_fetch_jobs_for_a_workflow(self, cli, tmp_path):
-        path_string = cli.data_stored_at
 
-        FileHandlerForTesting(path_string).store_pipelines_with(single_run())
+        cli.storage.store_pipelines_with(single_run())
 
         with patch("requests.get") as mock_get:
             response = Response()
@@ -90,8 +88,8 @@ class TestJobsCliCommands:
             assert f" → Jobs written to {str(tmp_path)}" in result.output
 
     def test_not_fetch_when_workflow_falls_off_the_start_date_and_end_date(self, cli):
-        path_string = cli.data_stored_at
-        FileHandlerForTesting(path_string).store_pipelines_with(single_run())
+
+        cli.storage.store_pipelines_with(single_run())
 
         result = cli.runner.invoke(
             main,
@@ -111,9 +109,9 @@ class TestJobsCliCommands:
         )
 
     def test_fetch_jobs_based_on_raw_filters(self, cli):
-        path_string = cli.data_stored_at
+
         single_run = [PipelineBuilder().with_created_at("2023-01-01T12:00:00Z").build()]
-        FileHandlerForTesting(path_string).store_pipelines_with(single_run)
+        cli.storage.store_pipelines_with(single_run)
 
         with patch("requests.get") as mock_get:
             response = Response()
@@ -164,9 +162,9 @@ class TestJobsCliCommands:
         ],
     )
     def test_with_stored_data_summary(self, cli, jobs):
-        path_string = cli.data_stored_at
-        FileHandlerForTesting(path_string).store_pipelines_with(single_run())
-        FileHandlerForTesting(path_string).store_jobs_with(jobs)
+
+        cli.storage.store_pipelines_with(single_run())
+        cli.storage.store_jobs_with(jobs)
 
         result = cli.runner.invoke(
             main,
@@ -210,16 +208,16 @@ class TestJobsCliCommands:
     def test_jobs_summary_with_data_available(
         self, cli, jobs_for_test, command, expected
     ):
-        path_string = cli.data_stored_at
-        FileHandlerForTesting(path_string).store_pipelines_with(single_run())
-        FileHandlerForTesting(path_string).store_jobs_with(jobs_for_test)
+
+        cli.storage.store_pipelines_with(single_run())
+        cli.storage.store_jobs_with(jobs_for_test)
 
         result = cli.runner.invoke(main, command)
 
         assert expected in result.output
 
     def test_plot_jobs_by_status(self, cli):
-        path_string = cli.data_stored_at
+
         jobs = [
             {
                 "id": 105,
@@ -238,8 +236,8 @@ class TestJobsCliCommands:
                 "completed_at": "2023-10-01T09:10:00Z",
             },
         ]
-        FileHandlerForTesting(path_string).store_pipelines_with(single_run())
-        FileHandlerForTesting(path_string).store_jobs_with(jobs)
+        cli.storage.store_pipelines_with(single_run())
+        cli.storage.store_jobs_with(jobs)
 
         result = cli.runner.invoke(
             main,
@@ -291,9 +289,9 @@ class TestJobsCliCommands:
         ],
     )
     def test_print_jobs_by_status(self, cli, jobs_with_conclusion, expected):
-        path_string = cli.data_stored_at
-        FileHandlerForTesting(path_string).store_pipelines_with(single_run())
-        FileHandlerForTesting(path_string).store_jobs_with(jobs_with_conclusion["jobs"])
+
+        cli.storage.store_pipelines_with(single_run())
+        cli.storage.store_jobs_with(jobs_with_conclusion["jobs"])
 
         result = cli.runner.invoke(
             main,
@@ -307,7 +305,7 @@ class TestJobsCliCommands:
         assert expected in result.output
 
     def test_plot_jobs_by_average_execution_time(self, cli):
-        path_string = cli.data_stored_at
+
         jobs = [
             {
                 "id": 105,
@@ -326,8 +324,8 @@ class TestJobsCliCommands:
                 "completed_at": "2023-10-01T09:10:00Z",
             },
         ]
-        FileHandlerForTesting(path_string).store_pipelines_with(single_run())
-        FileHandlerForTesting(path_string).store_jobs_with(jobs)
+        cli.storage.store_pipelines_with(single_run())
+        cli.storage.store_jobs_with(jobs)
 
         result = cli.runner.invoke(
             main,
@@ -342,7 +340,7 @@ class TestJobsCliCommands:
         assert "Found 1 workflow runs and 1 jobs after filtering" in result.output
 
     def test_plot_jobs_by_average_execution_time_by_raw_filters(self, cli):
-        path_string = cli.data_stored_at
+
         jobs = [
             {
                 "id": 105,
@@ -361,8 +359,8 @@ class TestJobsCliCommands:
                 "completed_at": "2023-10-01T09:10:00Z",
             },
         ]
-        FileHandlerForTesting(path_string).store_pipelines_with(single_run())
-        FileHandlerForTesting(path_string).store_jobs_with(jobs)
+        cli.storage.store_pipelines_with(single_run())
+        cli.storage.store_jobs_with(jobs)
 
         result = cli.runner.invoke(
             main,
@@ -408,9 +406,9 @@ class TestJobsCliCommands:
         ],
     )
     def test_print_pipelines_by_execution_time_in_minutes(self, cli, jobs, expected):
-        path_string = cli.data_stored_at
-        FileHandlerForTesting(path_string).store_pipelines_with(single_run())
-        FileHandlerForTesting(path_string).store_jobs_with(jobs)
+
+        cli.storage.store_pipelines_with(single_run())
+        cli.storage.store_jobs_with(jobs)
 
         result = cli.runner.invoke(
             main,

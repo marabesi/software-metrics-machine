@@ -3,7 +3,6 @@ from unittest.mock import patch
 from requests import Response
 from software_metrics_machine.apps.cli import main
 from tests.builders import as_json_string
-from tests.file_handler_for_testing import FileHandlerForTesting
 
 
 class TestWorkflowsFetchCliCommands:
@@ -134,9 +133,8 @@ class TestWorkflowsFetchCliCommands:
             )
 
     def test_not_fetch_if_already_exists(self, cli):
-        path_string = cli.data_stored_at
 
-        FileHandlerForTesting(path_string).store_pipelines_with([])
+        cli.storage.store_pipelines_with([])
 
         result = cli.runner.invoke(
             main,

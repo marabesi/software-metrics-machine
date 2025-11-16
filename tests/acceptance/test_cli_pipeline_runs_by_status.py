@@ -2,7 +2,6 @@ import pytest
 from software_metrics_machine.apps.cli import main
 
 from tests.builders import github_workflows_data
-from tests.file_handler_for_testing import FileHandlerForTesting
 from tests.pipeline_builder import PipelineBuilder
 
 
@@ -40,9 +39,8 @@ class TestPipelineRunsByStatusCliCommands:
         ],
     )
     def test_should_filter_by_workflow_path(self, cli, workflow_runs, expected):
-        path_string = cli.data_stored_at
 
-        FileHandlerForTesting(path_string).store_pipelines_with(workflow_runs)
+        cli.storage.store_pipelines_with(workflow_runs)
 
         result = cli.runner.invoke(
             main,
@@ -77,9 +75,8 @@ class TestPipelineRunsByStatusCliCommands:
     def test_should_filter_by_multiple_parameters(self, cli, command, expected):
         expected_count = expected["count"]
         workflow_runs = github_workflows_data()
-        path_string = cli.data_stored_at
 
-        FileHandlerForTesting(path_string).store_pipelines_with(workflow_runs)
+        cli.storage.store_pipelines_with(workflow_runs)
 
         result = cli.runner.invoke(main, command)
 

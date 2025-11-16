@@ -4,7 +4,6 @@ from unittest.mock import patch
 from tests.prs_builder import PullRequestBuilder
 from tests.prs_comment_builder import PullRequestCommentsBuilder
 from tests.response_builder import build_http_successfull_response
-from tests.file_handler_for_testing import FileHandlerForTesting
 
 
 class TestCliPrsCommands:
@@ -130,7 +129,7 @@ class TestCliPrsCommands:
             mock_get.assert_called_once()
 
     def test_no_prs_with_given_label(self, cli):
-        path_string = cli.data_stored_at
+
         pull_requests_data = [
             PullRequestBuilder()
             .with_created_at("2011-01-26T19:01:12Z")
@@ -143,7 +142,7 @@ class TestCliPrsCommands:
             .with_author("ana")
             .build(),
         ]
-        FileHandlerForTesting(path_string).store_prs_with(pull_requests_data)
+        cli.storage.store_prs_with(pull_requests_data)
 
         result = cli.runner.invoke(
             main,
@@ -162,7 +161,7 @@ class TestCliPrsCommands:
         assert "No PRs to plot after filtering" in result.output
 
     def test_print_prs_created_by_authors(self, cli):
-        path_string = cli.data_stored_at
+
         pull_requests_data = [
             PullRequestBuilder()
             .with_author("ana")
@@ -170,7 +169,7 @@ class TestCliPrsCommands:
             .with_closed_at("2011-01-26T19:01:12Z")
             .build(),
         ]
-        FileHandlerForTesting(path_string).store_prs_with(pull_requests_data)
+        cli.storage.store_prs_with(pull_requests_data)
 
         result = cli.runner.invoke(
             main,
@@ -183,7 +182,7 @@ class TestCliPrsCommands:
 
     def test_with_stored_data_review_time_by_author(self, cli):
         # does not take into account closed prs, only prs that were merged
-        path_string = cli.data_stored_at
+
         pull_requests_data = [
             PullRequestBuilder()
             .with_created_at("2011-01-26T19:01:12Z")
@@ -196,7 +195,7 @@ class TestCliPrsCommands:
             .with_author("ana")
             .build(),
         ]
-        FileHandlerForTesting(path_string).store_prs_with(pull_requests_data)
+        cli.storage.store_prs_with(pull_requests_data)
 
         result = cli.runner.invoke(
             main,
@@ -259,8 +258,8 @@ class TestCliPrsCommands:
     def test_with_stored_data_print_review_time_by_day(
         self, cli, data, expected_output
     ):
-        path_string = cli.data_stored_at
-        FileHandlerForTesting(path_string).store_prs_with(data["prs"])
+
+        cli.storage.store_prs_with(data["prs"])
 
         result = cli.runner.invoke(
             main,
@@ -290,8 +289,8 @@ class TestCliPrsCommands:
         ],
     )
     def test_with_stored_data_summary(self, cli, prs, expected_count):
-        path_string = cli.data_stored_at
-        FileHandlerForTesting(path_string).store_prs_with(prs)
+
+        cli.storage.store_prs_with(prs)
 
         result = cli.runner.invoke(
             main,
@@ -312,8 +311,8 @@ class TestCliPrsCommands:
         assert f"Total PRs: {expected_count}" in result.output
 
     def test_exports_csv_data(self, cli):
-        path_string = cli.data_stored_at
-        FileHandlerForTesting(path_string).store_prs_with(
+
+        cli.storage.store_prs_with(
             [
                 PullRequestBuilder()
                 .with_created_at("2011-01-26T19:01:12Z")
@@ -377,8 +376,8 @@ class TestCliPrsCommands:
     )
     def test_summary_lines_are_printed(self, cli, prs, expected_lines):
         # Arrange: store the test PRs
-        path_string = cli.data_stored_at
-        FileHandlerForTesting(path_string).store_prs_with(prs)
+
+        cli.storage.store_prs_with(prs)
 
         # Act: invoke the summary command with text output
         result = cli.runner.invoke(
@@ -413,8 +412,8 @@ class TestCliPrsCommands:
         ]
 
         # Add labels: we'll attach simple label summaries via repository behavior
-        path_string = cli.data_stored_at
-        FileHandlerForTesting(path_string).store_prs_with(prs)
+
+        cli.storage.store_prs_with(prs)
 
         # Run the summary command
         result = cli.runner.invoke(
@@ -476,8 +475,8 @@ class TestCliPrsCommands:
     def test_with_stored_data_print_average_prs_open_by(
         self, cli, data, expected_output
     ):
-        path_string = cli.data_stored_at
-        FileHandlerForTesting(path_string).store_prs_with(data["prs"])
+
+        cli.storage.store_prs_with(data["prs"])
 
         result = cli.runner.invoke(
             main,
@@ -486,11 +485,11 @@ class TestCliPrsCommands:
         assert expected_output in result.output
 
     def test_fetch_prs_comments_between_dates(self, cli):
-        path_string = cli.data_stored_at
+
         pull_requests_data = [
             PullRequestBuilder().with_created_at("2023-01-26T19:01:12Z").build(),
         ]
-        FileHandlerForTesting(path_string).store_prs_with(pull_requests_data)
+        cli.storage.store_prs_with(pull_requests_data)
 
         with patch("requests.get") as mock_get:
             mock_get.return_value = build_http_successfull_response(
@@ -518,11 +517,11 @@ class TestCliPrsCommands:
             )
 
     def test_calculates_the_average_of_comments_from_a_single_pr(self, cli):
-        path_string = cli.data_stored_at
+
         pull_requests_data = [
             PullRequestBuilder().with_created_at("2023-01-26T19:01:12Z").build(),
         ]
-        FileHandlerForTesting(path_string).store_prs_with(pull_requests_data)
+        cli.storage.store_prs_with(pull_requests_data)
 
         pull_requests_comments_data = [
             PullRequestCommentsBuilder()
@@ -530,9 +529,7 @@ class TestCliPrsCommands:
             .build(),
         ]
 
-        FileHandlerForTesting(path_string).store_prs_comment_with(
-            pull_requests_comments_data
-        )
+        cli.storage.store_prs_comment_with(pull_requests_comments_data)
 
         result = cli.runner.invoke(
             main,

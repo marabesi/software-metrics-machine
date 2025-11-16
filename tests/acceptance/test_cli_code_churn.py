@@ -4,8 +4,6 @@ import pytest
 
 from software_metrics_machine.apps.cli import main
 
-from tests.file_handler_for_testing import FileHandlerForTesting
-
 
 class TestCliCodeCommands:
 
@@ -59,8 +57,8 @@ class TestCliCodeCommands:
         ],
     )
     def test_given_the_data_it_renders_code_churn(self, cli, csv_data, expected):
-        path_string = cli.data_stored_at
-        FileHandlerForTesting(path_string).store_file("abs-churn.csv", csv_data)
+
+        cli.storage.store_file("abs-churn.csv", csv_data)
 
         result = cli.runner.invoke(
             main,
@@ -69,11 +67,10 @@ class TestCliCodeCommands:
         assert expected in result.output
 
     def test_renders_code_churn_by_date(self, cli):
-        path_string = cli.data_stored_at
 
         csv_data = """date,added,deleted,commits
 2022-06-17,10,10,2"""
-        FileHandlerForTesting(path_string).store_file("abs-churn.csv", csv_data)
+        cli.storage.store_file("abs-churn.csv", csv_data)
 
         result = cli.runner.invoke(
             main,

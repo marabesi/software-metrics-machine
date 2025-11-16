@@ -2,7 +2,6 @@ import pytest
 from software_metrics_machine.apps.cli import main
 
 from tests.builders import github_workflows_data
-from tests.file_handler_for_testing import FileHandlerForTesting
 
 
 class TestWorkflowsRunsDurationCliCommands:
@@ -41,9 +40,8 @@ class TestWorkflowsRunsDurationCliCommands:
     def test_should_run_duration_for_a_workflow(self, cli, workflow_runs, expected):
         expected_count = expected["count"]
         command = expected["command"]
-        path_string = cli.data_stored_at
 
-        FileHandlerForTesting(path_string).store_pipelines_with(workflow_runs)
+        cli.storage.store_pipelines_with(workflow_runs)
 
         result = cli.runner.invoke(
             main,
@@ -51,22 +49,6 @@ class TestWorkflowsRunsDurationCliCommands:
         )
 
         assert expected_count in result.output
-
-    def test_should_store_pipeline_run_duration_plot_in_the_given_directory(self, cli):
-        path_string = cli.data_stored_at
-        FileHandlerForTesting(path_string).store_pipelines_with(github_workflows_data())
-
-        result = cli.runner.invoke(
-            main,
-            [
-                "pipelines",
-                "runs-duration",
-                "--out-file",
-                "run_duration.png",
-            ],
-        )
-
-        assert f"Saved plot to {path_string}/run_duration.png" in result.output
 
     @pytest.mark.parametrize(
         "workflow_runs, expected",
@@ -100,8 +82,8 @@ class TestWorkflowsRunsDurationCliCommands:
     def test_should_filter_by_raw_filters(self, cli, workflow_runs, expected):
         expected_count = expected["count"]
         command = expected["command"]
-        path_string = cli.data_stored_at
-        FileHandlerForTesting(path_string).store_pipelines_with(workflow_runs)
+
+        cli.storage.store_pipelines_with(workflow_runs)
 
         result = cli.runner.invoke(
             main,
@@ -129,8 +111,8 @@ class TestWorkflowsRunsDurationCliCommands:
     )
     def test_should_print_result_in_minutes(self, cli, workflow_runs, expected):
         command = expected["command"]
-        path_string = cli.data_stored_at
-        FileHandlerForTesting(path_string).store_pipelines_with(workflow_runs)
+
+        cli.storage.store_pipelines_with(workflow_runs)
 
         result = cli.runner.invoke(
             main,

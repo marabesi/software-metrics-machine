@@ -4,7 +4,6 @@ import pytest
 
 from software_metrics_machine.apps.cli import main
 from tests.csv_builder import CSVBuilder
-from tests.file_handler_for_testing import FileHandlerForTesting
 
 
 class TestCliCodeEntityChurnCommands:
@@ -18,9 +17,8 @@ class TestCliCodeEntityChurnCommands:
             yield mock_run
 
     def test_defines_include_only_argument(self, cli):
-        path_string = cli.data_stored_at
 
-        FileHandlerForTesting(path_string).store_file("entity_churn.csv", "")
+        cli.storage.store_file("entity_churn.csv", "")
         result = cli.runner.invoke(
             main,
             ["code", "entity-churn", "--help"],
@@ -35,7 +33,6 @@ class TestCliCodeEntityChurnCommands:
         assert "No entity churn data available to plot" in result.output
 
     def test_includes_only_specified_paths_for_analysis(self, cli):
-        path_string = cli.data_stored_at
 
         csv_data = (
             CSVBuilder(headers=["entity", "added", "deleted", "commits"])
@@ -47,7 +44,7 @@ class TestCliCodeEntityChurnCommands:
             )
             .build()
         )
-        FileHandlerForTesting(path_string).store_file("entity-churn.csv", csv_data)
+        cli.storage.store_file("entity-churn.csv", csv_data)
         result = cli.runner.invoke(
             main,
             ["code", "entity-churn", "--include-only", "src/**"],
@@ -58,7 +55,6 @@ class TestCliCodeEntityChurnCommands:
         )
 
     def test_print_code_churn_data(self, cli):
-        path_string = cli.data_stored_at
 
         csv_data = (
             CSVBuilder(headers=["entity", "added", "deleted", "commits"])
@@ -70,7 +66,7 @@ class TestCliCodeEntityChurnCommands:
             )
             .build()
         )
-        FileHandlerForTesting(path_string).store_file("entity-churn.csv", csv_data)
+        cli.storage.store_file("entity-churn.csv", csv_data)
         result = cli.runner.invoke(
             main,
             ["code", "entity-churn", "--include-only", "src/**"],

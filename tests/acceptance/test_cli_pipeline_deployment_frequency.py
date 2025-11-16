@@ -1,7 +1,6 @@
 from software_metrics_machine.apps.cli import main
 import pytest
 
-from tests.file_handler_for_testing import FileHandlerForTesting
 from tests.builders import single_deployment_frequency
 
 
@@ -9,12 +8,10 @@ class TestWorkflowsDeploymentFrequencyCliCommands:
 
     @pytest.fixture(autouse=True)
     def setup_data(self, cli):
-        path_string = cli.data_stored_at
-        FileHandlerForTesting(path_string).store_pipelines_with(
-            single_deployment_frequency()
-        )
 
-        FileHandlerForTesting(path_string).store_jobs_with(
+        cli.storage.store_pipelines_with(single_deployment_frequency())
+
+        cli.storage.store_jobs_with(
             [
                 {
                     "id": 105,

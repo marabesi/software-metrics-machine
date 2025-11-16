@@ -4,7 +4,6 @@ import pytest
 
 from software_metrics_machine.apps.cli import main
 from tests.csv_builder import CSVBuilder
-from tests.file_handler_for_testing import FileHandlerForTesting
 
 
 class TestCliCodeEntityOwnershipCommands:
@@ -25,9 +24,8 @@ class TestCliCodeEntityOwnershipCommands:
         assert "No entity effort data available to plot" in result.output
 
     def test_defines_include_only_argument(self, cli):
-        path_string = cli.data_stored_at
 
-        FileHandlerForTesting(path_string).store_file("entity-effort.csv", "")
+        cli.storage.store_file("entity-effort.csv", "")
         result = cli.runner.invoke(
             main,
             ["code", "entity-effort", "--help"],
@@ -35,7 +33,6 @@ class TestCliCodeEntityOwnershipCommands:
         assert "--include-only" in result.output
 
     def test_includes_only_specified_paths_for_analysis(self, cli):
-        path_string = cli.data_stored_at
 
         csv_data = (
             CSVBuilder(headers=["entity", "author", "author-revs", "total-revs"])
@@ -47,7 +44,7 @@ class TestCliCodeEntityOwnershipCommands:
             )
             .build()
         )
-        FileHandlerForTesting(path_string).store_file("entity-effort.csv", csv_data)
+        cli.storage.store_file("entity-effort.csv", csv_data)
         result = cli.runner.invoke(
             main,
             ["code", "entity-effort", "--include-only", "src/**"],
@@ -58,7 +55,6 @@ class TestCliCodeEntityOwnershipCommands:
         )
 
     def test_print_entity_effort(self, cli):
-        path_string = cli.data_stored_at
 
         csv_data = (
             CSVBuilder(headers=["entity", "author", "author-revs", "total-revs"])
@@ -69,7 +65,7 @@ class TestCliCodeEntityOwnershipCommands:
             )
             .build()
         )
-        FileHandlerForTesting(path_string).store_file("entity-effort.csv", csv_data)
+        cli.storage.store_file("entity-effort.csv", csv_data)
         result = cli.runner.invoke(
             main,
             ["code", "entity-effort"],

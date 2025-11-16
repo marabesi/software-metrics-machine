@@ -2,13 +2,17 @@ from typing import Optional
 from pathlib import Path
 import json
 
+from software_metrics_machine.core.infrastructure.configuration.configuration import (
+    Configuration,
+)
 from tests.builders import as_json_string
 
 
 class FileHandlerForTesting:
 
-    def __init__(self, path):
+    def __init__(self, path, configuration: Configuration):
         self.default_dir = str(path)
+        # self.file_system_handler = FileSystemBaseRepository(self.default_dir)
 
     def store_pipelines_with(self, data: str) -> bool:
         return self.store_file("workflows.json", as_json_string(data))

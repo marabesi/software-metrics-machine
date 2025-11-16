@@ -2,7 +2,6 @@ import pytest
 from software_metrics_machine.apps.cli import main
 from tests.builders import single_run
 
-from tests.file_handler_for_testing import FileHandlerForTesting
 from tests.pipeline_builder import PipelineBuilder
 
 
@@ -27,9 +26,8 @@ class TestPipelineSummaryCliCommands:
         ],
     )
     def test_summary_pipeline(self, cli, workflows, expected_output):
-        path_string = cli.data_stored_at
 
-        FileHandlerForTesting(path_string).store_pipelines_with(workflows)
+        cli.storage.store_pipelines_with(workflows)
 
         result = cli.runner.invoke(
             main,
@@ -49,9 +47,8 @@ class TestPipelineSummaryCliCommands:
         ],
     )
     def test_show_filter_summary_runs(self, cli, workflows):
-        path_string = cli.data_stored_at
 
-        FileHandlerForTesting(path_string).store_pipelines_with(workflows)
+        cli.storage.store_pipelines_with(workflows)
 
         result = cli.runner.invoke(
             main,
