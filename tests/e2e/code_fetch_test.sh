@@ -7,6 +7,7 @@ export SMM_STORE_DATA_AT="$analysis_dir"
 
 function set_up() {
   mkdir -p "$analysis_dir"
+  chmod +w "$analysis_dir"
 
   if [ ! -d "$clone_dir" ]; then
     git clone "$repo_url" "$clone_dir"

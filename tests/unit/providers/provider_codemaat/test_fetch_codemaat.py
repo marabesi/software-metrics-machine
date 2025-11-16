@@ -1,6 +1,6 @@
 import pytest
 from subprocess import CompletedProcess, CalledProcessError
-from unittest.mock import patch
+from unittest.mock import call, patch
 from software_metrics_machine.providers.codemaat.fetch import FetchCodemaat
 from tests.in_memory_configuration import InMemoryConfiguration
 
@@ -18,7 +18,7 @@ class TestFetchCodemaat:
             args="", returncode=0, stdout="total 0 .\nexample\n", stderr=""
         )
 
-    def test_invoke_codemaat(self, tmp_path):
+    def test_create_folder_when_invoke_codemaat(self, tmp_path, cli):
         path_string = str(tmp_path)
         configuration = InMemoryConfiguration(store_data=path_string)
 
@@ -33,7 +33,49 @@ class TestFetchCodemaat:
                 start_date=start_date, end_date=end_date, subfolder="", force=False
             )
 
-            mock_run.assert_called_once()
+            mock_run.assert_has_calls(
+                [
+                    call(
+                        [
+                            "mkdir",
+                            f"{cli.storage.default_dir}/github_fake_repo",
+                        ],
+                        capture_output=True,
+                        text=True,
+                        check=True,
+                    )
+                ]
+            )
+
+    def test_run_codemaat_to_compute_date(self, tmp_path, cli):
+        path_string = str(tmp_path)
+        configuration = InMemoryConfiguration(store_data=path_string)
+
+        with patch(
+            "software_metrics_machine.core.infrastructure.run.Run.run_command"
+        ) as mock_run:
+            mock_run.return_value = self.__mock_run_command_return_success()
+
+            start_date = "2023-01-01"
+            end_date = "2023-12-31"
+            FetchCodemaat(configuration=configuration).execute_codemaat(
+                start_date=start_date, end_date=end_date, subfolder="", force=False
+            )
+
+            mock_run.assert_called_with(
+                [
+                    "sh",
+                    "src/software_metrics_machine/providers/codemaat/fetch-codemaat.sh",
+                    cli.configuration.git_repository_location,
+                    f"{cli.storage.default_dir}/github_fake_repo",
+                    start_date,
+                    "",
+                    "false",
+                ],
+                capture_output=True,
+                text=True,
+                check=True,
+            )
 
     def test_invoke_codemaat_force(self, tmp_path, cli):
         path_string = str(tmp_path)
@@ -60,7 +102,7 @@ class TestFetchCodemaat:
                 "sh",
                 "src/software_metrics_machine/providers/codemaat/fetch-codemaat.sh",
                 configuration.git_repository_location,
-                f"{cli.data_stored_at}_github_fake_repo",
+                f"{cli.data_stored_at}/github_fake_repo",
                 start_date,
                 subfolder,
                 "false",
@@ -90,7 +132,7 @@ class TestFetchCodemaat:
                 "sh",
                 "src/software_metrics_machine/providers/codemaat/fetch-codemaat.sh",
                 configuration.git_repository_location,
-                f"{cli.data_stored_at}_github_fake_repo",
+                f"{cli.data_stored_at}/github_fake_repo",
                 start_date,
                 subfolder,
                 "true",
@@ -121,7 +163,7 @@ class TestFetchCodemaat:
                 "sh",
                 "src/software_metrics_machine/providers/codemaat/fetch-codemaat.sh",
                 configuration.git_repository_location,
-                f"{cli.data_stored_at}_github_fake_repo",
+                f"{cli.data_stored_at}/github_fake_repo",
                 start_date,
                 subfolder,
                 "true",

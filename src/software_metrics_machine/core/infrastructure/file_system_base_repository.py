@@ -21,7 +21,7 @@ class FileSystemBaseRepository:
         if self.default_dir.endswith("/"):
             self.default_dir = self.default_dir[:-1]
 
-        self.default_dir = f"{self.default_dir}_{target_dir}"
+        self.default_dir = f"{self.default_dir}/{target_dir}"
 
         self.file_system_handler = FileSystemHandler(self.default_dir)
         self.configuration = configuration

@@ -21,6 +21,13 @@ class FetchCodemaat:
     def execute_codemaat(
         self, start_date: str, end_date: str, subfolder: str = "", force: bool = False
     ) -> ExecutionResult:
+        Run().run_command(
+            ["mkdir", self.codemaat_repository.default_dir],
+            capture_output=True,
+            text=True,
+            check=True,
+        )
+
         command = [
             "sh",
             "src/software_metrics_machine/providers/codemaat/fetch-codemaat.sh",
