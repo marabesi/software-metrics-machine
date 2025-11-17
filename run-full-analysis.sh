@@ -5,11 +5,14 @@ GITHUB_TOKEN=$1
 # project="ollama"
 # github_repo="ollama/ollama"
 
- project="vitepress"
- github_repo="vuejs/vitepress"
+# project="vitepress"
+# github_repo="vuejs/vitepress"
 
 #project="smelly-test"
 #github_repo="marabesi/smelly-test"
+
+project="marabesi"
+github_repo="marabesi/json-tool"
 
 repo_url="https://github.com/$github_repo.git"
 
@@ -20,8 +23,8 @@ analysis_dir="$base_dir/downloads/analysis"
 rm -rf "$analysis_dir"
 mkdir -p "$analysis_dir"
 
-start_date="2025-11-01"
-end_date="2025-11-05"
+start_date="2025-08-17"
+end_date="2025-11-17"
 
 export SMM_STORE_DATA_AT="$analysis_dir"
 
