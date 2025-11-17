@@ -20,7 +20,8 @@ dependencies = [
     "ollama (>=0.6.0,<0.7.0)",
     "pydriller (>=2.9,<3.0)",
     "holoviews (>=1.21.0,<2.0.0)",
-    "rich (>=14.2.0,<15.0.0)"
+    "rich (>=14.2.0,<15.0.0)",
+    "pydantic (>=2.12.4,<3.0.0)"
 ]
 
 [tool.poetry.scripts]
