@@ -24,7 +24,6 @@ class ViewPipelineExecutionRunsDuration(BaseViewer):
 
     def main(
         self,
-        out_file: str | None = None,
         workflow_path: str | None = None,
         start_date: str | None = None,
         end_date: str | None = None,
@@ -68,11 +67,5 @@ class ViewPipelineExecutionRunsDuration(BaseViewer):
         )
 
         df = pd.DataFrame(data)
-
-        if out_file:
-            # get_screenshot_as_png(chart, filename=f"{self.repository.configuration.store_data}/run_duration.png")
-            print(
-                f"Saved plot to {self.repository.configuration.store_data}/run_duration.png"
-            )
 
         return PlotResult(chart, df)

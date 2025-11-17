@@ -10,13 +10,6 @@ from software_metrics_machine.core.pipelines.plots.view_pipeline_execution_durat
 
 @click.command(name="runs-duration", help="Plot pipeline runs duration")
 @click.option(
-    "--out-file",
-    "-o",
-    type=str,
-    default=None,
-    help="Optional path to save the plot image",
-)
-@click.option(
     "--workflow-path",
     "-w",
     help="Workflow path (exact match, case-insensitive). Can be repeated or supply comma-separated values.",
@@ -55,12 +48,11 @@ from software_metrics_machine.core.pipelines.plots.view_pipeline_execution_durat
     ),
 )
 def workflows_run_duration(
-    out_file, workflow_path, start_date, end_date, max_runs, raw_filters, metric
+    workflow_path, start_date, end_date, max_runs, raw_filters, metric
 ):
     result = ViewPipelineExecutionRunsDuration(
         repository=create_pipelines_repository()
     ).main(
-        out_file=out_file,
         workflow_path=workflow_path,
         start_date=start_date,
         end_date=end_date,

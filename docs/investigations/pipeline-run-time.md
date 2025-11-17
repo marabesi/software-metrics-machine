@@ -31,11 +31,8 @@ and calculating the duration average in minutes. The pipeline used is the one na
 executed when changes are pushed to the main line. The following CLI command was used to perform this analysis:
 
 ```bash
-smm pipelines pipelines runs-duration --start-date 2025-08-17 --end-date 2025-11-17 --workflow-path=".github/workflows/ci.yml"
+smm pipelines runs-duration --start-date 2025-08-17 --end-date 2025-11-17 --workflow-path=".github/workflows/ci.yml"
 ```
-
-
-
 
 ## Findings
 

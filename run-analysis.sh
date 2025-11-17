@@ -22,8 +22,10 @@ analysis_dir="$base_dir/downloads/analysis"
 
 export SMM_STORE_DATA_AT="$analysis_dir"
 
+echo $analysis_dir
+
 start_date="2025-08-17"
-end_date="2025-11-17"
+end_date="2025-08-17"
 
 current="$start_date"
 
