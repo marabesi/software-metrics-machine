@@ -165,7 +165,7 @@ class PipelinesRepository(FileSystemBaseRepository):
         return listWithPaths
 
     def get_unique_jobs_name(self, filters=None) -> List[str]:
-        jobs = []
+        jobs: List[PipelineJob] = []
         if filters and filters.get("path"):
             runs = self.runs()
             ids = []
@@ -380,7 +380,7 @@ class PipelinesRepository(FileSystemBaseRepository):
             if run_id and run_id in run_id_to_run:
                 run = run_id_to_run[run_id]
                 if "jobs" not in run:
-                    run["jobs"] = []  # Initialize the jobs list if not present
+                    run["jobs"] = []
                 run["jobs"].append(job)
 
         self.logger.debug("Jobs have been associated with their corresponding runs.")

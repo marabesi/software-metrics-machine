@@ -1,5 +1,6 @@
 from dataclasses import dataclass
 from typing import List
+from datetime import datetime, timedelta
 from software_metrics_machine.core.infrastructure.base_viewer import BaseViewer
 from software_metrics_machine.core.pipelines.pipelines_repository import (
     PipelinesRepository,
@@ -29,6 +30,7 @@ class PipelineExecutionDuration(BaseViewer):
         metric: str = "avg",
         sort_by: str = "avg",
         raw_filters: str | None = None,
+        aggregate_by_day: bool = False,
     ) -> PipelineExecutionDurationResult:
         filters = {
             "start_date": start_date,
@@ -38,6 +40,9 @@ class PipelineExecutionDuration(BaseViewer):
 
         if raw_filters:
             filters = {**filters, **self.repository.parse_raw_filters(raw_filters)}
+
+        if aggregate_by_day:
+            return self.__aggregate_by_day(start_date, end_date, filters, metric)
 
         data = self.repository.get_workflows_run_duration(filters)
 
@@ -77,4 +82,79 @@ class PipelineExecutionDuration(BaseViewer):
             ylabel=ylabel,
             title_metric=title_metric,
             rows=rows,
+        )
+
+    def __aggregate_by_day(
+        self, start_date: str | None, end_date: str | None, filters: dict, metric: str
+    ) -> PipelineExecutionDurationResult:
+        if not start_date or not end_date:
+            return PipelineExecutionDurationResult(
+                names=[],
+                values=[],
+                counts=[],
+                ylabel="",
+                title_metric="",
+                rows=[],
+            )
+
+        try:
+            sd = datetime.fromisoformat(start_date).date()
+            ed = datetime.fromisoformat(end_date).date()
+        except Exception:
+            return PipelineExecutionDurationResult(
+                names=[],
+                values=[],
+                counts=[],
+                ylabel="",
+                title_metric="",
+                rows=[],
+            )
+
+        days = []
+        cur = sd
+        while cur <= ed:
+            days.append(str(cur))
+            cur = cur + timedelta(days=1)
+
+        names: List[str] = []
+        values: List[float] = []
+        counts: List[int] = []
+        rows_per_day: List[List] = []
+
+        for day in days:
+            day_filters = {**filters, "start_date": day, "end_date": day}
+            data = self.repository.get_workflows_run_duration(day_filters)
+            rows_day = data.get("rows", [])
+
+            # compute aggregates across all pipelines for the day
+            total_minutes = sum([r[3] for r in rows_day]) if rows_day else 0.0
+            total_counts = sum([r[1] for r in rows_day]) if rows_day else 0
+            # approximate average across day: total_minutes / max(1, total_counts)
+            avg_minutes = (total_minutes / total_counts) if total_counts else 0.0
+
+            if metric == "sum":
+                metric_value = total_minutes
+                ylabel = "Total minutes"
+                title_metric = "Total"
+            elif metric == "count":
+                metric_value = total_counts
+                ylabel = "Count"
+                title_metric = "Count"
+            else:
+                metric_value = avg_minutes
+                ylabel = "Average minutes"
+                title_metric = "Average"
+
+            names.append(day)
+            values.append(metric_value)
+            counts.append(total_counts)
+            rows_per_day.append(rows_day)
+
+        return PipelineExecutionDurationResult(
+            names=names,
+            values=values,
+            counts=counts,
+            ylabel=ylabel,
+            title_metric=title_metric,
+            rows=rows_per_day,
         )

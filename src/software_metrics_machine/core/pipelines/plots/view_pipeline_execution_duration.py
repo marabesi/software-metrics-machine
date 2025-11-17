@@ -40,6 +40,7 @@ class ViewPipelineExecutionRunsDuration(BaseViewer):
             metric=metric,
             sort_by=sort_by,
             raw_filters=raw_filters,
+            aggregate_by_day=False,
         )
         names = result.names
         values = result.values
