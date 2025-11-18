@@ -27,10 +27,6 @@ echo $analysis_dir
 start_date="2025-08-17"
 end_date="2025-08-20"
 
-
-
-
-
 ./run-cli.sh pipelines runs-duration --start-date "$start_date" \
   --end-date "$end_date" \
   --workflow-path=".github/workflows/ci.yml" \
@@ -42,6 +38,7 @@ end_date="2025-08-20"
   --start-date $start_date \
   --end-date $end_date \
   --workflow-path=".github/workflows/ci.yml"
+
 
 # current="$start_date"
 
