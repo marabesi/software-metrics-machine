@@ -42,11 +42,22 @@ smm pipelines pipeline-by-status
 
 ## Pipeline Runs by Time
 
+Computes the number of pipeline runs over time and returns a time series plot showing how many pipeline executions
+were triggered in the given time frame. Aggregated by week or month.
+
 ```bash
 smm pipelines runs-by
 ```
 
+
+
+
+
+
 ## Pipeline Runs Duration
+
+Computes the duration of each pipeline run over time and returns a time series plot showing how long each pipeline
+execution took to complete in minutes.
 
 :::tabs key:cli
 == Dashboard
@@ -84,9 +95,28 @@ smm pipelines runs-duration \
 
 ## Pipeline Summary
 
+Summary of pipelines executed showing total runs, statuses, first and last run available from the data.
+
+:::tabs key:cli
+== Dashboard
+
+Not available yet.
+
+== CLI
+
 ```bash
 smm pipelines summary
 ```
+
+| Option         | Description                          | Example <div style="width:200px"></div> |
+|----------------|--------------------------------------|--------------------------|
+| Start date     | Filter by created after this date.   | `--start-date=2025-01-01`     |
+| End date       | Filter by created before this date.  | `--end-date=2025-12-31`     |
+| Limit          | Limit the number of pipelines shown  | `--max-workflows`     |
+| Output format  | Format of the output, text or json  | `--output=json`     |
+
+:::
+
 
 
 
