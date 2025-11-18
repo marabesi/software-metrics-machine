@@ -34,7 +34,8 @@ end_date="2025-08-20"
 ./run-cli.sh pipelines runs-duration --start-date "$start_date" \
   --end-date "$end_date" \
   --workflow-path=".github/workflows/ci.yml" \
-  --metric="avg"
+  --metric="avg" \
+  --aggregate-by-day=true
 
 
 

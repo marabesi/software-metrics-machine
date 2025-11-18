@@ -47,8 +47,17 @@ from software_metrics_machine.core.pipelines.plots.view_pipeline_execution_durat
         "Metric to plot: 'avg' for average duration, 'sum' for total duration and 'count', 'default: 'avg'"
     ),
 )
+@click.option(
+    "--aggregate-by-day",
+    type=bool,
+    default=False,
+    help=(
+        "If set to 'true', aggregate the data by day returning all the days in the given date range with the metric"
+        "value for that day."
+    ),
+)
 def workflows_run_duration(
-    workflow_path, start_date, end_date, max_runs, raw_filters, metric
+    workflow_path, start_date, end_date, max_runs, raw_filters, metric, aggregate_by_day
 ):
     result = ViewPipelineExecutionRunsDuration(
         repository=create_pipelines_repository()
@@ -59,6 +68,7 @@ def workflows_run_duration(
         raw_filters=raw_filters,
         max_runs=max_runs,
         metric=metric,
+        aggregate_by_day=aggregate_by_day,
     )
     click.echo(result.data)
 

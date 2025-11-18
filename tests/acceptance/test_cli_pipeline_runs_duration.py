@@ -120,3 +120,23 @@ class TestWorkflowsRunsDurationCliCommands:
         )
 
         assert expected["output"] in result.output
+
+    @pytest.mark.parametrize(
+        "expected",
+        [
+            pytest.param("/workflows/tests.yml   60.0      1"),
+            pytest.param("/workflows/build.yml   60.0      1"),
+            pytest.param("dynamic/workflows/dependabot   60.0      3"),
+        ],
+    )
+    def test_return_results_aggregated_by_day_with_average_metric(self, cli, expected):
+        workflow_runs = github_workflows_data()
+
+        cli.storage.store_pipelines_with(workflow_runs)
+
+        result = cli.runner.invoke(
+            main,
+            ["pipelines", "runs-duration", "--aggregate-by-day", "false"],
+        )
+
+        assert expected in result.output
