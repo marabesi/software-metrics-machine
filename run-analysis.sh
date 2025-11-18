@@ -38,6 +38,10 @@ end_date="2025-08-20"
   --aggregate-by-day=true
 
 
+./run-cli.sh pipelines jobs-by-execution-time \
+  --start-date $start_date \
+  --end-date $end_date \
+  --workflow-path=".github/workflows/ci.yml"
 
 # current="$start_date"
 

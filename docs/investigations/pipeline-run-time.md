@@ -31,8 +31,44 @@ and calculating the duration average in minutes. The pipeline used is the one na
 executed when changes are pushed to the main line. The following CLI command was used to perform this analysis:
 
 ```bash
-smm pipelines runs-duration --start-date 2025-08-17 --end-date 2025-11-17 --workflow-path=".github/workflows/ci.yml" --aggregate-by-day=true
+smm pipelines runs-duration \
+  --start-date 2025-08-17 \
+  --end-date 2025-11-17 \
+  --workflow-path=".github/workflows/ci.yml" \
+  --aggregate-by-day=true
 ```
 
+The resulting data is the following (value in minutes):
+
+```plaintext
+         name     value  count
+0  2025-08-17  3.616667      1
+1  2025-08-18  3.716667      1
+2  2025-08-19  3.250000      1
+3  2025-08-20  3.272222      3
+```
+
+Next step is to visualize the data from the jobs run duration analysis. The following CLI command was used to generate the visualization:
+
+```bash
+smm pipelines jobs-by-execution-time \
+  --start-date 2025-08-17 \
+  --end-date 2025-11-17 \
+  --workflow-path=".github/workflows/ci.yml"
+```
+
+The resulting data is the following (value in miuntes):
+
+```plaintext
+            0         1
+0  acceptance  2.280000
+1        test  1.020000
+2       build  0.526667
+3    coverage  0.350000
+4    delivery  0.000000
+```
+
+<!--
 ## Findings
+-->
 

@@ -42,6 +42,13 @@ smm pipelines pipeline-by-status
 smm pipelines jobs-by-execution-time
 ```
 
+| Option         | Description                          | Example <div style="width:200px"></div> |
+|----------------|--------------------------------------|--------------------------|
+| Start date     | Filter by created after this date.    | `--start-date=2025-01-01`     |
+| End date       | Filter by created before this date.   | `--end-date=2025-12-31`     |
+| Limit          |    | `--top=2`     |
+
+
 :::
 
 
