@@ -10,13 +10,6 @@ from software_metrics_machine.core.pipelines.plots.view_pipeline_by_status impor
 
 @click.command(name="pipeline-by-status", help="Plot pipeline runs by their status")
 @click.option(
-    "--out-file",
-    "-o",
-    type=str,
-    default=None,
-    help="Optional path to save the plot image",
-)
-@click.option(
     "--workflow-path",
     "-w",
     type=str,
@@ -33,9 +26,8 @@ from software_metrics_machine.core.pipelines.plots.view_pipeline_by_status impor
     type=str,
     help="End date (inclusive) in YYYY-MM-DD",
 )
-def pipeline_by_status(out_file, workflow_path, start_date, end_date):
+def pipeline_by_status(workflow_path, start_date, end_date):
     result = ViewPipelineByStatus(repository=create_pipelines_repository()).main(
-        out_file=out_file,
         workflow_path=workflow_path,
         start_date=start_date,
         end_date=end_date,

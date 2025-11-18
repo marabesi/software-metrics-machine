@@ -25,7 +25,6 @@ class ViewPipelineByStatus(BaseViewer):
 
     def main(
         self,
-        out_file: str | None = None,
         workflow_path: str | None = None,
         start_date: str | None = None,
         end_date: str | None = None,
@@ -59,17 +58,10 @@ class ViewPipelineByStatus(BaseViewer):
             title=title,
             xrotation=45,
             label_generator=super().build_labels_above_bars,
-            out_file=None,
             tools=super().get_tools(),
             color=super().get_color(),
         )
 
         df = pd.DataFrame(data)
-
-        if out_file:
-            try:
-                hv.save(chart, out_file)
-            except Exception:
-                pass
 
         return PlotResult(chart, df)
