@@ -28,7 +28,6 @@ class ViewJobsByAverageTimeExecution(BaseViewer):
         self,
         top: int = 20,
         workflow_path: Optional[str] = None,
-        out_file: Optional[str] = None,
         raw_filters: Optional[str] = None,
         exclude_jobs: Optional[str] = None,
         start_date: Optional[str] = None,
@@ -87,7 +86,6 @@ class ViewJobsByAverageTimeExecution(BaseViewer):
             title=title,
             xrotation=0,
             label_generator=super().build_labels_above_bars,
-            out_file=out_file,
             tools=super().get_tools(),
             color=super().get_color(),
         )

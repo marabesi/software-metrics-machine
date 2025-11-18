@@ -17,13 +17,6 @@ from software_metrics_machine.core.pipelines.plots.view_jobs_average_time_execut
     help="Optional workflow path (case-insensitive substring) to filter runs and jobs",
 )
 @click.option(
-    "--out-file",
-    "-o",
-    type=str,
-    default=None,
-    help="Optional path to save the plot image",
-)
-@click.option(
     "--top",
     type=int,
     default=20,
@@ -77,7 +70,6 @@ from software_metrics_machine.core.pipelines.plots.view_jobs_average_time_execut
 )
 def jobs_by_execution_time(
     workflow_path,
-    out_file,
     top,
     event,
     target_branch,
@@ -92,7 +84,6 @@ def jobs_by_execution_time(
         repository=create_pipelines_repository()
     ).main(
         workflow_path=workflow_path,
-        out_file=out_file,
         raw_filters=f"event={event},target_branch={target_branch}",
         top=top,
         exclude_jobs=exclude_jobs,
