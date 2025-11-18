@@ -9,7 +9,7 @@ from tests.builders import as_json_string
 from tests.in_memory_configuration import InMemoryConfiguration
 
 
-class TestPipelineExecutionDuration:
+class TestPipelineRunDuration:
 
     def test_empty_runs(self):
         """Test main() with empty runs."""
