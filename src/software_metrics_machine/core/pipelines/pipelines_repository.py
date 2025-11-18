@@ -20,7 +20,7 @@ from software_metrics_machine.core.pipelines.pipelines_types import (
 class PipelinesRepository(FileSystemBaseRepository):
 
     def __init__(self, configuration: Configuration):
-        super().__init__(configuration=configuration)
+        super().__init__(configuration=configuration, target_subfolder="github")
         self.logger = Logger(configuration=configuration).get_logger()
         self.pipeline_file = "workflows.json"
         self.jobs_file = "jobs.json"

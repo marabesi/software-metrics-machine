@@ -12,7 +12,9 @@ from software_metrics_machine.core.infrastructure.logger import Logger
 
 class FileSystemBaseRepository:
 
-    def __init__(self, configuration: Configuration):
+    def __init__(
+        self, configuration: Configuration, target_subfolder: str | None = None
+    ):
         self.default_dir = str(configuration.store_data)
 
         repo = str(configuration.github_repository).replace("/", "_")
@@ -22,6 +24,9 @@ class FileSystemBaseRepository:
             self.default_dir = self.default_dir[:-1]
 
         self.default_dir = f"{self.default_dir}/{target_dir}"
+
+        if target_subfolder:
+            self.default_dir = f"{self.default_dir}/{target_subfolder}"
 
         self.file_system_handler = FileSystemHandler(self.default_dir)
         self.configuration = configuration
@@ -98,15 +103,3 @@ class FileSystemBaseRepository:
             except Exception:
                 return None
         return None
-
-    def __resolve_default_dir(self) -> str:
-        self.default_dir = str(self.configuration.store_data)
-
-        repo = str(self.configuration.github_repository).replace("/", "_")
-        target_dir = f"{self.configuration.git_provider}/{repo}"
-
-        if self.default_dir.endswith("/"):
-            self.default_dir = self.default_dir[:-1]
-
-        self.default_dir = f"{self.default_dir}/{target_dir}"
-        return self.default_dir

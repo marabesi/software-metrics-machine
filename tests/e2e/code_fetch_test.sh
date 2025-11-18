@@ -80,11 +80,11 @@ function test_skip_refetching_when_files_exists() {
   output=$(./run-cli.sh code fetch --start-date "$start_date" --end-date "$end_date" --subfolder "api/" 2>&1)
 
   assert_contains "Running CodeMaat analyses... this may take a while depending on the size of the repository." "$output"
-  assert_contains "Skipping age: output already exists at $analysis_dir/github_ollama_ollama/age.csv" "$output"
-  assert_contains "Skipping abs-churn: output already exists at $analysis_dir/github_ollama_ollama/abs-churn.csv" "$output"
-  assert_contains "Skipping author-churn: output already exists at $analysis_dir/github_ollama_ollama/author-churn.csv" "$output"
-  assert_contains "Skipping entity-ownership: output already exists at $analysis_dir/github_ollama_ollama/entity-ownership.csv" "$output"
-  assert_contains "Skipping entity-effort: output already exists at $analysis_dir/github_ollama_ollama/entity-effort.csv" "$output"
-  assert_contains "Skipping entity-churn: output already exists at $analysis_dir/github_ollama_ollama/entity-churn.csv" "$output"
-  assert_contains "Skipping coupling: output already exists at $analysis_dir/github_ollama_ollama/coupling.csv" "$output"
+  assert_contains "Skipping age: output already exists at $analysis_dir/github_ollama_ollama/codemaat/age.csv" "$output"
+  assert_contains "Skipping abs-churn: output already exists at $analysis_dir/github_ollama_ollama/codemaat/abs-churn.csv" "$output"
+  assert_contains "Skipping author-churn: output already exists at $analysis_dir/github_ollama_ollama/codemaat/author-churn.csv" "$output"
+  assert_contains "Skipping entity-ownership: output already exists at $analysis_dir/github_ollama_ollama/codemaat/entity-ownership.csv" "$output"
+  assert_contains "Skipping entity-effort: output already exists at $analysis_dir/github_ollama_ollama/codemaat/entity-effort.csv" "$output"
+  assert_contains "Skipping entity-churn: output already exists at $analysis_dir/github_ollama_ollama/codemaat/entity-churn.csv" "$output"
+  assert_contains "Skipping coupling: output already exists at $analysis_dir/github_ollama_ollama/codemaat/coupling.csv" "$output"
 }

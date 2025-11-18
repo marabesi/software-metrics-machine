@@ -5,6 +5,7 @@ import subprocess
 import pytest
 import sys
 from click.testing import CliRunner
+from typing import List, Tuple
 
 from software_metrics_machine.core.infrastructure.configuration.configuration import (
     Configuration,
@@ -54,10 +55,10 @@ class GitRepositoryResult:
         class CommitMaker:
             def __init__(self, repo_path: str):
                 self.repo_path = repo_path
-                self._author_name = None
-                self._author_email = None
+                self._author_name: str
+                self._author_email: str
                 self._message = "feat: building app"
-                self.coauthors = []
+                self.coauthors: List[Tuple[str, str]] = []
                 self.date = None
 
             def with_author(self, name: str, email: str):
@@ -122,6 +123,7 @@ def git(cli):
 class CliResult:
     runner: CliRunner
     data_stored_at: str
+    codemaat_stored_at: str
     configuration: Configuration
     storage: FileHandlerForTesting
 
@@ -142,6 +144,7 @@ def cli(cli_only, tmp_path):
     yield CliResult(
         runner=cli_only,
         data_stored_at=path_string,
+        codemaat_stored_at=f"{path_string}/{configuration.git_provider}_fake_repo/codemaat",
         configuration=configuration,
         storage=storage,
     )

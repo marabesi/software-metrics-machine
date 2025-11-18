@@ -14,8 +14,14 @@ from tests.builders import as_json_string
 class FileHandlerForTesting:
 
     def __init__(self, path, configuration: Configuration):
-        self.file_system_handler = FileSystemBaseRepository(configuration=configuration)
+        self.file_system_handler = FileSystemBaseRepository(
+            configuration=configuration, target_subfolder="github"
+        )
         self.default_dir = str(path)
+
+        self.file_system_codemaat_handler = FileSystemBaseRepository(
+            configuration=configuration, target_subfolder="codemaat"
+        )
 
     def store_pipelines_with(self, data: List) -> bool:
         if isinstance(data, str):
@@ -50,13 +56,16 @@ class FileHandlerForTesting:
         return True
 
     def store_csv_file(self, file: str, data: str) -> bool:
-        self.file_system_handler.store_file(file, data)
-        print(f"  → Data written to {self.default_dir}/{file}")
+        self.file_system_codemaat_handler.store_file(file, data)
+        print(
+            f"  → Data written to {self.file_system_codemaat_handler.default_dir}/{file}"
+        )
         return True
 
     def remove_file(self, filename: str) -> Optional[str]:
         final_path = self.default_dir + "/" + filename
         p = Path(final_path)
         if p.is_file():
-            return p.unlink()
+            p.unlink()
+            return final_path
         return None

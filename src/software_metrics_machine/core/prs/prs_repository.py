@@ -15,7 +15,7 @@ from software_metrics_machine.core.prs.pr_types import LabelSummary, PRDetails
 
 class PrsRepository(FileSystemBaseRepository):
     def __init__(self, configuration: Configuration):
-        super().__init__(configuration=configuration)
+        super().__init__(configuration=configuration, target_subfolder="github")
         self.logger = Logger(configuration=configuration).get_logger()
         self.file = "prs.json"
         self.all_prs: List[PRDetails] = []

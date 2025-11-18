@@ -15,17 +15,16 @@ from software_metrics_machine.core.infrastructure.configuration.configuration im
 class CodemaatRepository(FileSystemBaseRepository):
     def __init__(self, configuration: Configuration):
         self.configuration = configuration
-        super().__init__(configuration=self.configuration)
+        super().__init__(configuration=self.configuration, target_subfolder="codemaat")
 
     def get_code_churn(self, filters: None = None) -> List[CodeChurn]:
         file = "abs-churn.csv"
 
         file_path = super().read_file_if_exists(file)
         if not file_path:
-            return pd.DataFrame()
+            return []
 
         data = self.__parse_csv(file_path)
-        print(f"Found {file_path}")
 
         if filters:
             start_date = filters.get("start_date")
@@ -142,9 +141,11 @@ class CodemaatRepository(FileSystemBaseRepository):
     def apply_ignore_file_patterns(
         self, df: pd.DataFrame, ignore_files: str | None
     ) -> pd.DataFrame:
-        ignore_patterns: List[str] = ignore_files or []
-        if ignore_patterns:
-            # normalize patterns list (split by comma if necessary)
+        ignore_patterns: List[str] = []
+        if ignore_files:
+            ignore_patterns = ignore_files.split(",")
+
+        if len(ignore_patterns) > 0:
             if isinstance(ignore_patterns, str):
                 pats = [p.strip() for p in ignore_patterns.split(",") if p.strip()]
             else:
