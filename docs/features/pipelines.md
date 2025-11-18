@@ -26,50 +26,17 @@ statuses run for the pipelines, and second, on the time it takes to run them.
 smm pipelines pipeline-by-status
 ```
 
-:::
-
-## Jobs Average Time Execution
-
-Jobs are the building blocks of any pipeline. They represent individual tasks or steps that need to be executed as
-part of the overall pipeline process. This command associates the jobs wih their corresponding pipeline execution.
-
-:::tabs key:cli
-== Dashboard
-
-![Jobs averaged out by run duration](/dashboard/pipelines/jobs_duration.png)
-
-== CLI
-
-```bash
-smm pipelines jobs-by-execution-time
-```
-
 | Option         | Description                          | Example <div style="width:200px"></div> |
 |----------------|--------------------------------------|--------------------------|
 | Start date     | Filter by created after this date.   | `--start-date=2025-01-01`     |
 | End date       | Filter by created before this date.  | `--end-date=2025-12-31`     |
-| Limit          |                                      | `--top=2`     |
-| Filtering      | Include setup jobs used by GitHub actions, such as 'Set up job' or 'Checkout code'  | `--force-all-job` |
-| Filtering      | Filters jobs based on their pipeline  | `--pipeline-raw-filters=target_branch=main` |
-| Job name       | Optional job name substring to filter jobs | `--job-name=test` |
+| Workflow path | Filter by the workflow file path      | `--workflow-path=".github/workflows/ci.yml"`     |
 
 
 :::
 
 
 
-
-## Jobs by Status
-
-```bash
-smm pipelines jobs-by-status
-```
-
-## Jobs Summary
-
-```bash
-smm pipelines jobs-summary
-```
 
 
 
@@ -98,6 +65,7 @@ smm pipelines runs-duration
 | End date       | Filter by created before this date.   | `--end-date=2025-12-31`     |
 | Metric         | The type of metric to compute for each execution (avg, sum, count)   | `--metric=sum`     |
 | Aggregate      | Aggregate the data by day, plotting each day computing the desired metric   | `--aggregate-by-day=true`     |
+| Workflow path | Filter by the workflow file path   | `--workflow-path=".github/workflows/ci.yml"`     |
 
 ### Examples - Runs duration
 
@@ -119,3 +87,53 @@ smm pipelines runs-duration \
 ```bash
 smm pipelines summary
 ```
+
+
+
+
+
+## Jobs Average Time Execution
+
+Jobs are the building blocks of any pipeline. They represent individual tasks or steps that need to be executed as
+part of the overall pipeline process. This command associates the jobs wih their corresponding pipeline execution.
+
+:::tabs key:cli
+== Dashboard
+
+![Jobs averaged out by run duration](/dashboard/pipelines/jobs_duration.png)
+
+== CLI
+
+```bash
+smm pipelines jobs-by-execution-time
+```
+
+| Option         | Description                          | Example <div style="width:200px"></div> |
+|----------------|--------------------------------------|--------------------------|
+| Start date     | Filter by created after this date.   | `--start-date=2025-01-01`     |
+| End date       | Filter by created before this date.  | `--end-date=2025-12-31`     |
+| Limit          |                                      | `--top=2`     |
+| Filtering      | Include setup jobs used by GitHub actions,such as 'Set up job' or 'Checkout code'  | `--force-all-job` |
+| Filtering      | Filters jobs based on their pipeline  | `--pipeline-raw-filters=target_branch=main` |
+| Job name       | Optional job name substring to filter jobs | `--job-name=test` |
+
+
+:::
+
+
+
+
+## Jobs by Status
+
+```bash
+smm pipelines jobs-by-status
+```
+
+## Jobs Summary
+
+```bash
+smm pipelines jobs-summary
+```
+
+
+
