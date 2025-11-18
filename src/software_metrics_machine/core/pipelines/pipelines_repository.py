@@ -292,11 +292,9 @@ class PipelinesRepository(FileSystemBaseRepository):
         runs = self.runs(filters)
         groups = {}
         for r in runs:
-            name = r.get("path") or "<unnamed>"
+            name = r.get("path")
 
-            start = (
-                r.get("run_started_at") or r.get("created_at") or r.get("started_at")
-            )
+            start = r.get("run_started_at")
             end = r.get("updated_at")
             sdt = self.__parse_dt(start)
             edt = self.__parse_dt(end)

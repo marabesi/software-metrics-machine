@@ -124,9 +124,9 @@ class TestWorkflowsRunsDurationCliCommands:
     @pytest.mark.parametrize(
         "expected",
         [
-            pytest.param("/workflows/tests.yml   60.0      1"),
-            pytest.param("/workflows/build.yml   60.0      1"),
-            pytest.param("dynamic/workflows/dependabot   60.0      3"),
+            pytest.param("/workflows/tests.yml     60.0      1"),
+            pytest.param("/workflows/build.yml  13020.0      1"),
+            pytest.param("dynamic/workflows/dependabot     60.0      3"),
         ],
     )
     def test_return_results_aggregated_by_day_with_average_metric(self, cli, expected):
