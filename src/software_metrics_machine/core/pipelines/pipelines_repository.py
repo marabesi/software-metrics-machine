@@ -311,7 +311,6 @@ class PipelinesRepository(FileSystemBaseRepository):
                     dur = None
                 name = run.get("path")
                 groups.setdefault(name, []).append(dur)
-
         if not groups:
             return {"total": len(runs), "rows": []}
 
@@ -320,10 +319,10 @@ class PipelinesRepository(FileSystemBaseRepository):
         for name, durs in groups.items():
             # consider only durations that are not None
             valid = [d for d in durs if d is not None and d > 0]
-            count = len(durs)
+            jobs_count = len(durs)
             total = sum(valid) if valid else 0.0
             avg = (total / len(valid)) if valid else 0.0
-            rows.append((name, count, avg / 60.0, total / 60.0))
+            rows.append((name, jobs_count, avg / 60.0, total / 60.0))
 
         return {"total": len(runs), "rows": rows}
 
