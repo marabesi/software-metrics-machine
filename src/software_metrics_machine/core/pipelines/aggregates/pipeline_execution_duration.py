@@ -12,6 +12,7 @@ class PipelineExecutionDurationResult:
     names: List[str]
     values: List[float]
     job_counts: List[int]
+    run_counts: int
     ylabel: str
     title_metric: str
     rows: List[List]
@@ -47,6 +48,7 @@ class PipelineExecutionDuration(BaseViewer):
         data = self.repository.get_workflows_run_duration(filters)
 
         rows = data["rows"]
+        run_count = data["total"]
 
         sort_key = {
             "avg": lambda r: r[2],
@@ -82,6 +84,7 @@ class PipelineExecutionDuration(BaseViewer):
             ylabel=ylabel,
             title_metric=title_metric,
             rows=rows,
+            run_counts=run_count,
         )
 
     def __aggregate_by_day(
@@ -95,6 +98,7 @@ class PipelineExecutionDuration(BaseViewer):
                 ylabel="",
                 title_metric="",
                 rows=[],
+                run_counts=0,
             )
 
         try:
@@ -108,6 +112,7 @@ class PipelineExecutionDuration(BaseViewer):
                 ylabel="",
                 title_metric="",
                 rows=[],
+                run_counts=0,
             )
 
         days = []
@@ -124,6 +129,7 @@ class PipelineExecutionDuration(BaseViewer):
         for day in days:
             day_filters = {**filters, "start_date": day, "end_date": day}
             data = self.repository.get_workflows_run_duration(day_filters)
+            run_count = data.get("total", 0)
             rows_day = data.get("rows", [])
 
             # compute aggregates across all pipelines for the day
@@ -157,4 +163,5 @@ class PipelineExecutionDuration(BaseViewer):
             ylabel=ylabel,
             title_metric=title_metric,
             rows=rows_per_day,
+            run_counts=run_count,
         )
