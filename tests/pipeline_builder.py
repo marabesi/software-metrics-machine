@@ -80,3 +80,65 @@ class PipelineBuilder:
 
     def build(self) -> PipelineRun:
         return self._pipeline
+
+
+class PipelineJobBuilder:
+    """Test helper to build job dicts compatible with `PipelineJob` TypedDict.
+
+    Usage:
+        job = PipelineJobBuilder().with_id(1).with_name("test").build()
+    """
+
+    def __init__(self):
+        from datetime import datetime, timezone
+
+        self._job = {
+            "id": None,
+            "run_id": None,
+            "name": "job-1",
+            "conclusion": "success",
+            "created_at": None,
+            "started_at": datetime.now(tz=timezone.utc).isoformat(),
+            "completed_at": (
+                datetime.now(tz=timezone.utc) + timedelta(minutes=1)
+            ).isoformat(),
+            "workflow_path": None,
+            "workflow": None,
+            "run_name": None,
+        }
+
+    def with_run_id(self, run_id: int):
+        self._job["run_id"] = run_id
+        return self
+
+    def with_id(self, run_id: int):
+        self._job["id"] = run_id
+        return self
+
+    def with_name(self, name: str):
+        self._job["name"] = name
+        return self
+
+    def with_conclusion(self, conclusion: str):
+        self._job["conclusion"] = conclusion
+        return self
+
+    def with_started_at(self, started_iso: str):
+        self._job["started_at"] = started_iso
+        return self
+
+    def with_completed_at(self, completed_iso: str):
+        self._job["completed_at"] = completed_iso
+        return self
+
+    def with_workflow_path(self, path: str):
+        self._job["workflow_path"] = path
+        return self
+
+    def with_run_name(self, run_name: str):
+        self._job["run_name"] = run_name
+        return self
+
+    def build(self) -> dict:
+        # Return a shallow copy to avoid accidental mutation in tests
+        return dict(self._job)

@@ -7,6 +7,7 @@ from software_metrics_machine.core.pipelines.pipelines_repository import (
 )
 from tests.builders import as_json_string, github_workflows_data
 from tests.in_memory_configuration import InMemoryConfiguration
+from tests.pipeline_builder import PipelineJobBuilder
 
 
 class TestPipelinesRepository:
@@ -84,7 +85,7 @@ class TestPipelinesRepository:
             (
                 {"status": "completed"},
                 {
-                    "count": 1,
+                    "count": 2,
                 },
             ),
             (
@@ -531,6 +532,16 @@ class TestPipelinesRepository:
         def mocked_read_file_if_exists(file):
             if file == "workflows.json":
                 return single_run
+            if file == "jobs.json":
+                return as_json_string(
+                    [
+                        PipelineJobBuilder()
+                        .with_run_id(1)
+                        .with_started_at("2023-10-01T09:00:00Z")
+                        .with_completed_at("2023-10-01T09:10:00Z")
+                        .build()
+                    ]
+                )
             return None
 
         with patch(

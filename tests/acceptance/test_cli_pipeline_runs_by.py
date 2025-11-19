@@ -114,7 +114,7 @@ class TestWorkflowsRunsByCliCommands:
             ([], {"event": "event=push", "count": 0}),
             (
                 github_workflows_data(),
-                {"event": "status=completed", "count": 1},
+                {"event": "status=completed", "count": 2},
             ),
         ],
     )

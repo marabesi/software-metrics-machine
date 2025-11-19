@@ -1,7 +1,5 @@
 #!/bin/bash
 
-GITHUB_TOKEN=$1
-
 # project="ollama"
 # github_repo="ollama/ollama"
 
@@ -28,24 +26,24 @@ start_date="2025-08-17"
 end_date="2025-08-20"
 
 
+#./run-cli.sh pipelines summary
 
 #./run-cli.sh code code-churn --start-date "$start_date" --end-date "$end_date"
 
-./run-cli.sh pipelines pipeline-by-status --start-date "$start_date" \
-  --end-date "$end_date" \
-  --workflow-path=".github/workflows/ci.yml"
+#./run-cli.sh pipelines pipeline-by-status --start-date "$start_date" \
+#  --end-date "$end_date" \
+#  --workflow-path=".github/workflows/ci.yml"
 
-
-./run-cli.sh pipelines runs-duration --start-date "$start_date" \
+./run-cli.sh pipelines runs-duration \
+  --start-date "$start_date" \
   --end-date "$end_date" \
   --workflow-path=".github/workflows/ci.yml" \
-  --metric="avg" \
-  --aggregate-by-day=true
+  --metric="sum"
 
-./run-cli.sh pipelines jobs-by-execution-time \
-  --start-date $start_date \
-  --end-date $end_date \
-  --workflow-path=".github/workflows/ci.yml"
+#./run-cli.sh pipelines jobs-by-execution-time \
+#  --start-date $start_date \
+#  --end-date $end_date \
+#  --workflow-path=".github/workflows/ci.yml"
 
 
 # current="$start_date"

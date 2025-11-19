@@ -289,22 +289,28 @@ class PipelinesRepository(FileSystemBaseRepository):
         }
 
     def get_workflows_run_duration(self, filters=None):
+        """
+        Duration is computed based on the time start/finished from all jobs
+        :param filters:
+        :return:
+        """
         runs = self.runs(filters)
         groups = {}
-        for r in runs:
-            name = r.get("path")
-
-            start = r.get("run_started_at")
-            end = r.get("updated_at")
-            sdt = self.__parse_dt(start)
-            edt = self.__parse_dt(end)
-            if not sdt:
-                continue
-            if edt:
-                dur = (edt - sdt).total_seconds()
-            else:
-                dur = None
-            groups.setdefault(name, []).append(dur)
+        for run in runs:
+            name = run.get("path")
+            for job in run.get("jobs", []):
+                start = job.get("started_at")
+                end = job.get("completed_at")
+                sdt = self.__parse_dt(start)
+                edt = self.__parse_dt(end)
+                if not sdt:
+                    continue
+                if edt:
+                    dur = (edt - sdt).total_seconds()
+                else:
+                    dur = None
+                name = run.get("path")
+                groups.setdefault(name, []).append(dur)
 
         if not groups:
             return {"total": len(runs), "rows": []}
