@@ -11,7 +11,7 @@ from software_metrics_machine.core.pipelines.pipelines_repository import (
 class PipelineExecutionDurationResult:
     names: List[str]
     values: List[float]
-    counts: List[int]
+    job_counts: List[int]
     ylabel: str
     title_metric: str
     rows: List[List]
@@ -78,7 +78,7 @@ class PipelineExecutionDuration(BaseViewer):
         return PipelineExecutionDurationResult(
             names=names,
             values=values,
-            counts=counts,
+            job_counts=counts,
             ylabel=ylabel,
             title_metric=title_metric,
             rows=rows,
@@ -91,7 +91,7 @@ class PipelineExecutionDuration(BaseViewer):
             return PipelineExecutionDurationResult(
                 names=[],
                 values=[],
-                counts=[],
+                job_counts=[],
                 ylabel="",
                 title_metric="",
                 rows=[],
@@ -104,7 +104,7 @@ class PipelineExecutionDuration(BaseViewer):
             return PipelineExecutionDurationResult(
                 names=[],
                 values=[],
-                counts=[],
+                job_counts=[],
                 ylabel="",
                 title_metric="",
                 rows=[],
@@ -153,7 +153,7 @@ class PipelineExecutionDuration(BaseViewer):
         return PipelineExecutionDurationResult(
             names=names,
             values=values,
-            counts=counts,
+            job_counts=counts,
             ylabel=ylabel,
             title_metric=title_metric,
             rows=rows_per_day,

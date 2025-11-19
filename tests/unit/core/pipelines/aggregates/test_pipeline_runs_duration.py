@@ -38,7 +38,7 @@ class TestPipelineRunDuration:
             # Verify empty result structure
             assert result.names == []
             assert result.values == []
-            assert result.counts == []
+            assert result.job_counts == []
             assert result.rows == []
 
     def test_runs_with_avg_metric(self):
@@ -76,7 +76,7 @@ class TestPipelineRunDuration:
             # Verify result structure
             assert len(result.names) == 3
             assert len(result.values) == 3
-            assert len(result.counts) == 3
+            assert len(result.job_counts) == 3
 
             # Verify sorting by avg (descending)
             assert result.names[0] == "Build Pipeline"
@@ -132,7 +132,7 @@ class TestPipelineRunDuration:
             )
             assert res_avg.names == ["2025-01-01", "2025-01-02", "2025-01-03"]
             # Day1: total 25 minutes, counts 3 -> avg ~ 8.3333
-            assert res_avg.counts == [3, 0, 1]
+            assert res_avg.job_counts == [3, 0, 1]
             assert abs(res_avg.values[0] - (25.0 / 3.0)) < 1e-6
             assert res_avg.values[1] == 0.0
             assert res_avg.values[2] == 30.0

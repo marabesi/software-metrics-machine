@@ -45,7 +45,7 @@ class ViewPipelineExecutionRunsDuration(BaseViewer):
         )
         names = result.names
         values = result.values
-        counts = result.counts
+        counts = result.job_counts
         # ylabel = result.ylabel
         title_metric = result.title_metric
         rows = result.rows

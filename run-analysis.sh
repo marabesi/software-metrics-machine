@@ -23,7 +23,7 @@ export SMM_STORE_DATA_AT="$analysis_dir"
 echo $analysis_dir
 
 start_date="2025-08-17"
-end_date="2025-08-20"
+end_date="2025-08-18"
 
 
 #./run-cli.sh pipelines summary
