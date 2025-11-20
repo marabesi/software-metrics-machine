@@ -58,3 +58,5 @@ Here are some references:
   * <https://matplotlib.org/>
   * <https://git-scm.com/doc>
   * <https://docs.github.com/en/rest?apiVersion=2022-11-28>
+* Research
+  * <https://www.researchgate.net/publication/379096213_Software_Metrics_in_Agile_Software_Development_A_Review_Report> 
