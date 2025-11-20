@@ -230,3 +230,5 @@ tests/e2e/analysis
 tests/e2e/target
 
 .run/
+
+mutants/
