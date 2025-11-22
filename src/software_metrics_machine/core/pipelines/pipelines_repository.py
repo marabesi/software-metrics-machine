@@ -74,6 +74,7 @@ class PipelinesRepository(FileSystemBaseRepository):
         target_branch = filters.get("target_branch")
 
         if target_branch:
+
             def branch_matches(obj: PipelineRun):
                 if target_branch == obj.head_branch:
                     return True
@@ -284,20 +285,18 @@ class PipelinesRepository(FileSystemBaseRepository):
         runs = self.runs(filters)
         groups: dict[str, List[float]] = {}
         for run in runs:
-            name = run.get("path")
-            for job in run.get("jobs", []):
-                start = job.get("started_at")
-                end = job.get("completed_at")
+            name = run.path
+            for job in run.jobs:
+                start = job.started_at
+                end = job.completed_at
                 sdt = self.__parse_dt(start)
                 edt = self.__parse_dt(end)
-                if not sdt:
-                    continue
                 if edt:
                     dur = (edt - sdt).total_seconds()
-                    name = run.get("path")
+                    name = run.path
                     groups.setdefault(name, []).append(dur)
                 else:
-                    self.logger.warning(f"No completed_at for job {job.get('id')}")
+                    self.logger.warning(f"No completed_at for job {job.id}")
 
         if not groups:
             return PipelineComputedDurations(len(runs), [])
@@ -351,16 +350,8 @@ class PipelinesRepository(FileSystemBaseRepository):
         list_all.insert(0, "All")
         return list_all
 
-    def __parse_dt(self, v: str) -> datetime | None:
-        if not v:
-            return None
-        try:
-            return datetime.fromisoformat(v.replace("Z", "+00:00"))
-        except Exception:
-            try:
-                return datetime.strptime(v, "%Y-%m-%dT%H:%M:%SZ")
-            except Exception:
-                return None
+    def __parse_dt(self, v: str) -> datetime:
+        return datetime.fromisoformat(v.replace("Z", "+00:00"))
 
     def __load_jobs(self) -> None:
         contents = super().read_file_if_exists(self.jobs_file)

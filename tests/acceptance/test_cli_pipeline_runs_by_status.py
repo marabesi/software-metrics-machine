@@ -66,7 +66,7 @@ class TestPipelineRunsByStatusCliCommands:
                     "2023-12-01",
                 ],
                 {
-                    "count": 2,
+                    "count": 3,
                 },
             ),
         ],

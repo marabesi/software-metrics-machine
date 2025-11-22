@@ -2,6 +2,7 @@ import pytest
 from software_metrics_machine.apps.cli import main
 
 from tests.builders import github_workflows_data
+from tests.pipeline_builder import PipelineBuilder, PipelineJobBuilder
 
 
 class TestWorkflowsRunsDurationCliCommands:
@@ -93,10 +94,30 @@ class TestWorkflowsRunsDurationCliCommands:
         assert expected_count in result.output
 
     @pytest.mark.parametrize(
-        "workflow_runs, expected",
+        "workflow_runs, jobs, expected",
         [
             (
-                github_workflows_data(),
+                [
+                    PipelineBuilder()
+                    .with_id(3)
+                    .with_path("dynamic/workflows/dependabot")
+                    .with_status("completed")
+                    .with_conclusion("success")
+                    .with_created_at("2023-10-01T12:00:00Z")
+                    .with_run_started_at("2023-10-01T12:00:00Z")
+                    .with_updated_at("2023-10-01T13:00:00Z")
+                    .with_head_branch("master")
+                    .with_event("dependabot")
+                    .with_jobs([])
+                    .build(),
+                ],
+                [
+                    PipelineJobBuilder()
+                    .with_run_id(3)
+                    .with_started_at("2023-10-01T12:00:00Z")
+                    .with_completed_at("2023-10-01T13:00:00Z")
+                    .build()
+                ],
                 {
                     "command": [
                         "pipelines",
@@ -109,10 +130,11 @@ class TestWorkflowsRunsDurationCliCommands:
             ),
         ],
     )
-    def test_should_print_result_in_minutes(self, cli, workflow_runs, expected):
+    def test_should_print_result_in_minutes(self, cli, workflow_runs, jobs, expected):
         command = expected["command"]
 
         cli.storage.store_pipelines_with(workflow_runs)
+        cli.storage.store_jobs_with(jobs)
 
         result = cli.runner.invoke(
             main,

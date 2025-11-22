@@ -24,7 +24,7 @@ class PipelineByStatus:
         start_date: str | None = None,
         end_date: str | None = None,
         target_branch: str | None = None,
-    ) -> None:
+    ) -> PipelineByStatusResult:
         filters = {
             "start_date": start_date,
             "end_date": end_date,
@@ -33,7 +33,7 @@ class PipelineByStatus:
         }
         runs = self.repository.runs(filters)
 
-        status_counts = Counter(run.get("status") or "undefined" for run in runs)
+        status_counts = Counter(run.status for run in runs)
 
         print(f"Total workflow runs after filters: {len(runs)}")
         return PipelineByStatusResult(

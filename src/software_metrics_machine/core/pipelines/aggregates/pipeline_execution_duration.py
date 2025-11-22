@@ -129,8 +129,8 @@ class PipelineExecutionDuration(BaseViewer):
         for day in days:
             day_filters = {**filters, "start_date": day, "end_date": day}
             data = self.repository.get_workflows_run_duration(day_filters)
-            run_count = data.get("total", 0)
-            rows_day = data.get("rows", [])
+            run_count = data.total
+            rows_day = data.rows
 
             # compute aggregates across all pipelines for the day
             total_minutes = sum([r[3] for r in rows_day]) if rows_day else 0.0

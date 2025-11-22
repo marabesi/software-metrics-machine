@@ -36,8 +36,8 @@ class PipelineJob(BaseModel):
     name: str
     conclusion: str
     created_at: str
-    started_at: Optional[str]
-    completed_at: Optional[str]
+    started_at: str
+    completed_at: str
     workflow_name: str
     # workflow: Optional[str]
     # run_name: Optional[str]
@@ -82,12 +82,12 @@ class DeploymentFrequency(TypedDict):
 
 
 class PipelineFilters(TypedDict):
-    start_date: str | None
-    end_date: str | None
-    target_branch: str | None
-    event: str | None
-    workflow_paths: str | None
-    include_defined_only: bool | None
-    status: str | None
-    conclusions: str | None
-    path: str | None
+    start_date: Optional[str]
+    end_date: Optional[str]
+    target_branch: Optional[str]
+    event: Optional[str]
+    workflow_paths: Optional[str]
+    include_defined_only: Optional[bool]
+    status: Optional[str]
+    conclusions: Optional[str]
+    path: Optional[str]

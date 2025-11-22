@@ -1,6 +1,8 @@
-from datetime import datetime, timedelta, timezone
 from typing import List
-from software_metrics_machine.core.pipelines.pipelines_types import PipelineJob, PipelineRun
+from software_metrics_machine.core.pipelines.pipelines_types import (
+    PipelineJob,
+    PipelineRun,
+)
 
 
 class PipelineBuilder:
@@ -73,7 +75,6 @@ class PipelineBuilder:
         started_at: str | None = None,
         finished_at: str | None = None,
         updated_at: str | None = None,
-
     ):
         job = PipelineJob(
             run_id=run_id,
@@ -81,7 +82,7 @@ class PipelineBuilder:
             conclusion=conclusion,
             started_at=started_at,
             finished_at=finished_at,
-            updated_at=updated_at
+            updated_at=updated_at,
         )
         self._pipeline.jobs.append(job)
         return self

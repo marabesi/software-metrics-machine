@@ -13,13 +13,13 @@ class TestWorkflowsDeploymentFrequencyCliCommands:
         cli.storage.store_jobs_with(
             [
                 PipelineJobBuilder()
-                    .with_id(105)
-                    .with_run_id(1)
-                    .with_name("Deploy")
-                    .with_conclusion("success")
-                    .with_started_at("2023-10-01T09:05:00Z")
-                    .with_completed_at("2023-10-01T09:10:00Z")
-                    .build(),
+                .with_id(105)
+                .with_run_id(1)
+                .with_name("Deploy")
+                .with_conclusion("success")
+                .with_started_at("2023-10-01T09:05:00Z")
+                .with_completed_at("2023-10-01T09:10:00Z")
+                .build(),
             ],
         )
 
