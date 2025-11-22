@@ -1,20 +1,10 @@
 from __future__ import annotations
 
 from dataclasses import dataclass, field
-from datetime import datetime, timezone
+from datetime import datetime
 from typing import Any, Dict, List, Optional, Union
 
-
-def _now_iso() -> str:
-    return datetime.now(tz=timezone.utc).isoformat()
-
-
-def _to_iso(value: Optional[Union[datetime, str]]) -> str:
-    if value is None:
-        return _now_iso()
-    if isinstance(value, datetime):
-        return value.isoformat()
-    return str(value)
+from software_metrics_machine.core.prs.pr_types import PRDetails, PrUser, PRComments
 
 
 @dataclass
@@ -36,7 +26,7 @@ class PullRequestBuilder:
     title: str = ""
     body: str = ""
     author: str = "unknown"
-    created_at: str = field(default_factory=_now_iso)
+    created_at: str = "2023-10-10T00:00:00Z"
     closed_at: Optional[str] = None
     merged_at: Optional[str] = None
     review_comments_url: str = "unknown"
@@ -61,22 +51,16 @@ class PullRequestBuilder:
         self.author = author
         return self
 
-    def with_created_at(
-        self, created_at: Optional[Union[datetime, str]]
-    ) -> "PullRequestBuilder":
-        self.created_at = _to_iso(created_at)
+    def with_created_at(self, created_at: str) -> "PullRequestBuilder":
+        self.created_at = created_at
         return self
 
-    def with_closed_at(
-        self, closed_at: Optional[Union[datetime, str]]
-    ) -> "PullRequestBuilder":
-        self.closed_at = _to_iso(closed_at)
+    def with_closed_at(self, closed_at: str) -> "PullRequestBuilder":
+        self.closed_at = closed_at
         return self
 
-    def mark_merged(
-        self, merged_at: Optional[Union[datetime, str]] = None
-    ) -> "PullRequestBuilder":
-        self.merged_at = _to_iso(merged_at)
+    def mark_merged(self, merged_at: str) -> "PullRequestBuilder":
+        self.merged_at = merged_at
         return self
 
     def with_review_comments_url(
@@ -86,12 +70,12 @@ class PullRequestBuilder:
         return self
 
     def with_comment(
-        self, author: str, body: str, created_at: Optional[Union[datetime, str]] = None
+        self, author: str, body: str, created_at: str = None
     ) -> "PullRequestBuilder":
         comment = {
             "author": author,
             "body": body,
-            "created_at": _to_iso(created_at),
+            "created_at": created_at,
         }
         self.comments.append(comment)
         return self
@@ -106,21 +90,23 @@ class PullRequestBuilder:
 
     def build(self) -> Dict[str, Any]:
         """Return a dictionary representing the pull request similar to stored shape."""
-        comments = [dict(c) for c in self.comments]
-        pr: Dict[str, Any] = {
-            "number": self.number,
-            "title": self.title,
-            "body": self.body,
-            "author": self.author,
-            "user": {"login": self.author},
-            "created_at": self.created_at,
-            "closed_at": self.closed_at,
-            "merged_at": self.merged_at,
-            "review_comments_url": self.review_comments_url,
-            "comments": comments,
-            "files_changed": list(self.files_changed),
-            "labels": list(self.labels),
-        }
+        comments: List[PRComments] = [c for c in self.comments]
+        pr = PRDetails(
+            **{
+                "number": self.number,
+                "title": self.title,
+                "body": self.body,
+                "author": self.author,
+                "user": PrUser(**{"login": self.author}),
+                "created_at": self.created_at,
+                "closed_at": self.closed_at,
+                "merged_at": self.merged_at,
+                "review_comments_url": self.review_comments_url,
+                "comments": comments,
+                # "files_changed": list(self.files_changed),
+                # "labels": list(self.labels),
+            }
+        )
         return pr
 
 

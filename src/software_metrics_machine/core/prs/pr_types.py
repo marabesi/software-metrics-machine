@@ -1,4 +1,5 @@
-from typing import TypedDict, List, Union
+from pydantic import BaseModel
+from typing import TypedDict, List, Union, Optional
 
 
 class LabelSummary(TypedDict):
@@ -6,13 +7,26 @@ class LabelSummary(TypedDict):
     prs_count: int
 
 
-class PRDetails(TypedDict):
-    number: Union[str, None]
-    title: Union[str, None]
-    login: Union[str, None]
-    created: Union[str, None]
-    merged: Union[str, None]
-    closed: Union[str, None]
+class PRComments(BaseModel):
+    id: int
+    body: str
+    created_at: str
+    updated_at: str
+    pull_request_url: str
+
+
+class PrUser(BaseModel):
+    login: str
+
+
+class PRDetails(BaseModel):
+    number: int
+    title: str
+    user: PrUser
+    created_at: str
+    merged_at: Optional[str]
+    closed_at: Optional[str]
+    comments: List[PRComments]
 
 
 class SummaryResult(TypedDict):

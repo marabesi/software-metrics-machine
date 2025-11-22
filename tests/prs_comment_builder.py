@@ -3,9 +3,12 @@ from __future__ import annotations
 from dataclasses import dataclass, field
 from typing import Any, Dict, Optional
 
+from software_metrics_machine.core.prs.pr_types import PRComments
+
 
 @dataclass
 class PullRequestCommentsBuilder:
+    id: int = 1
     number: str = ""
     body: str = ""
     created_at: str = field(default="")
@@ -35,10 +38,13 @@ class PullRequestCommentsBuilder:
         return self
 
     def build(self) -> Dict[str, Any]:
-        comments: Dict[str, Any] = {
-            "body": self.body,
-            "created_at": self.created_at,
-            "updated_at": self.updated_at,
-            "pull_request_url": self.pull_request_url,
-        }
+        comments = PRComments(
+            **{
+                "id": self.id,
+                "body": self.body,
+                "created_at": self.created_at,
+                "updated_at": self.updated_at,
+                "pull_request_url": self.pull_request_url,
+            }
+        )
         return comments

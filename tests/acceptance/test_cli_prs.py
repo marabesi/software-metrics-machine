@@ -129,7 +129,6 @@ class TestCliPrsCommands:
             mock_get.assert_called_once()
 
     def test_no_prs_with_given_label(self, cli):
-
         pull_requests_data = [
             PullRequestBuilder()
             .with_created_at("2011-01-26T19:01:12Z")

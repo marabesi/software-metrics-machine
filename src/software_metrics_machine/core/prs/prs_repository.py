@@ -10,7 +10,11 @@ from software_metrics_machine.core.infrastructure.configuration.configuration im
     Configuration,
 )
 from software_metrics_machine.core.infrastructure.logger import Logger
-from software_metrics_machine.core.prs.pr_types import LabelSummary, PRDetails
+from software_metrics_machine.core.prs.pr_types import (
+    LabelSummary,
+    PRDetails,
+    PRComments,
+)
 
 
 class PrsRepository(FileSystemBaseRepository):
@@ -19,7 +23,7 @@ class PrsRepository(FileSystemBaseRepository):
         self.logger = Logger(configuration=configuration).get_logger()
         self.file = "prs.json"
         self.all_prs: List[PRDetails] = []
-        self.all_prs: List[PRDetails] = self.__load()
+        self.__load()
 
     def merged(self) -> List[PRDetails]:
         return [pr for pr in self.all_prs if pr.get("merged_at") is not None]
@@ -206,35 +210,33 @@ class PrsRepository(FileSystemBaseRepository):
             self.logger.debug(
                 f"No PRs file found at {self.file}. Please run fetch_prs first."
             )
-            return all_prs
+            return
 
         all_prs = json.loads(contents)
 
+        for pr in all_prs:
+            pr["comments"] = []
+            self.all_prs.append(PRDetails(**pr))
+
         self.logger.debug(f"Loaded {len(all_prs)} PRs")
 
-        for pr in all_prs:
-            if pr.get("comments") is None:
-                pr["comments"] = []
+        contents_comments = super().read_file_if_exists("prs_review_comments.json")
 
-        contents = super().read_file_if_exists("prs_review_comments.json")
-
-        if contents:
-            all_prs_comment = json.loads(contents)
+        if contents_comments:
+            all_prs_comment = json.loads(contents_comments)
             if all_prs_comment:
                 self.logger.debug("Associating PRs with comments")
                 total = 1
-                for pr in all_prs:
+                for pr in self.all_prs:
                     for comment in all_prs_comment:
                         if "pull_request_url" in comment and comment[
                             "pull_request_url"
-                        ].endswith(f"/{pr['number']}"):
-                            pr["comments"].append(comment)
+                        ].endswith(f"/{pr.number}"):
+                            pr.comments.append(PRComments(**comment))
                             total += 1
                 self.logger.debug(f"Associated PRs with {total} comments")
 
-        all_prs.sort(key=super().created_at_key_sort)
-
-        return all_prs
+        self.all_prs.sort(key=super().created_at_key_sort)
 
     def __count_comments_before_merge(self, pr: dict) -> int:
         merged_at = pr.get("merged_at")

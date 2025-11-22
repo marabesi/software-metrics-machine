@@ -15,12 +15,10 @@ class TestRepositoryPrs:
 
     def test_load_provided_prs_data_when_exists(self):
         mocked_prs_data = [
-            {
-                "id": 1,
-                "title": "Fix bug",
-                "author": "user1",
-                "created_at": "2025-09-20",
-            },
+            PullRequestBuilder()
+            .with_created_at("2011-01-26T19:01:12Z")
+            .with_closed_at("2011-01-26T19:02:12Z")
+            .build(),
         ]
 
         with patch(
@@ -221,11 +219,7 @@ class TestRepositoryPrs:
             (
                 {
                     "prs": [
-                        {
-                            "id": 1,
-                            "user": {"login": "user1"},
-                            "created_at": "2025-09-01T00:00:00Z",
-                        },
+                        PullRequestBuilder().with_number(1).build(),
                     ],
                     "comments": None,
                 },
@@ -264,4 +258,4 @@ class TestRepositoryPrs:
 
             prs_with_comments = repository.prs_with_filters()
 
-            assert expected_count == len(prs_with_comments[0]["comments"])
+            assert expected_count == len(prs_with_comments[0].comments)
