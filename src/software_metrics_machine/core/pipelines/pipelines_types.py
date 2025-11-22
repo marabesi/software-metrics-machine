@@ -81,3 +81,15 @@ class DeploymentFrequency(TypedDict):
     daily_counts: List[str]
     weekly_counts: List[str]
     monthly_counts: List[str]
+
+
+class PipelineFilters(TypedDict):
+    start_date: str | None
+    end_date: str | None
+    target_branch: str | None
+    event: str | None
+    workflow_paths: str | None
+    include_defined_only: bool | None
+    status: str | None
+    conclusions: str | None
+    path: str | None

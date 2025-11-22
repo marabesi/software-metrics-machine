@@ -18,6 +18,7 @@ from software_metrics_machine.core.pipelines.pipelines_types import (
     DeploymentFrequency,
     PipelineJob,
     PipelineRun,
+    PipelineFilters,
 )
 
 
@@ -60,7 +61,7 @@ class PipelinesRepository(FileSystemBaseRepository):
 
         return runs
 
-    def runs(self, filters=None) -> List[PipelineRun]:
+    def runs(self, filters: PipelineFilters | None = None) -> List[PipelineRun]:
         if not filters:
             return self.all_runs
 
