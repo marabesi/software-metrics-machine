@@ -11,7 +11,9 @@ A convenience alias `Pipeline` points to PipelineRun for places that expect a
 single type name called "Pipeline".
 """
 
-from typing import TypedDict, List, Optional, Union, Any
+from typing import TypedDict, List, Optional, Union
+
+from pydantic import BaseModel
 
 StrOrInt = Union[str, int]
 
@@ -40,11 +42,9 @@ class PipelineJob(TypedDict, total=False):
     workflow_path: Optional[str]
     workflow: Optional[str]
     run_name: Optional[str]
-    # allow other fields to be present
-    other: Optional[Any]
 
 
-class PipelineRun(TypedDict, total=False):
+class PipelineRun(BaseModel):
     """A workflow run / pipeline entry.
 
     Common fields used in the codebase:
@@ -58,18 +58,18 @@ class PipelineRun(TypedDict, total=False):
     - jobs: optional list of PipelineJob items
     """
 
-    id: Optional[StrOrInt]
-    path: Optional[str]
-    name: Optional[str]
-    created_at: Optional[str]
-    run_started_at: Optional[str]
-    started_at: Optional[str]
-    updated_at: Optional[str]
-    event: Optional[str]
-    head_branch: Optional[str]
-    status: Optional[str]
-    conclusion: Optional[str]
-    jobs: Optional[List[PipelineJob]]
+    id: int
+    path: str
+    name: str
+    created_at: str
+    run_started_at: str
+    started_at: str
+    updated_at: str
+    event: str
+    head_branch: str
+    status: str
+    conclusion: str
+    jobs: List[PipelineJob]
 
 
 Pipeline = PipelineRun
