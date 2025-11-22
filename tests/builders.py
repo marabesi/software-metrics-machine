@@ -32,6 +32,11 @@ def single_deployment_frequency() -> List[PipelineRun]:
             "status": "completed",
             "conclusion": "success",
             "created_at": "2023-10-01T12:00:00Z",
+            "run_started_at": "2023-10-01T12:01:00Z",
+            "updated_at": "2023-10-01T12:10:00Z",
+            "event": "push",
+            "head_branch": "main",
+            "jobs": [],
         },
     ]
 
@@ -44,6 +49,11 @@ def single_run() -> List[PipelineRun]:
             "status": "completed",
             "conclusion": "success",
             "created_at": "2023-10-01T12:00:00Z",
+            "run_started_at": "2023-10-01T12:01:00Z",
+            "updated_at": "2023-10-01T12:10:00Z",
+            "event": "push",
+            "head_branch": "main",
+            "jobs": [],
         },
     ]
 

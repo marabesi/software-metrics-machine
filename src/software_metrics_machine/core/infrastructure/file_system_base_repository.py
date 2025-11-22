@@ -1,5 +1,5 @@
 from datetime import datetime, date, timezone
-from typing import List, Optional
+from typing import List, Optional, Any
 from pathlib import Path
 from software_metrics_machine.core.infrastructure.configuration.configuration import (
     Configuration,
@@ -47,22 +47,22 @@ class FileSystemBaseRepository:
     def remove_file(self, filename: str) -> Optional[str]:
         return self.file_system_handler.remove_file(filename)
 
-    def created_at_key_sort(self, collection):
-        created = collection.get("created_at")
+    def created_at_key_sort(self, collection: Any):
+        created = collection.__getattribute__("created_at")
         if created:
             return datetime.fromisoformat(created.replace("Z", "+00:00"))
         else:
             return datetime.min.replace(tzinfo=timezone.utc)
 
     def filter_by_date_range(
-        self, items: List[dict], start_date: datetime, end_date: datetime
+        self, items: List[Any], start_date: datetime, end_date: datetime
     ):
         filtered = []
         sd = self.__to_dt(start_date)
         ed = self.__to_dt(end_date)
 
         for run in items:
-            created = run.get("created_at")
+            created = run.__getattribute__("created_at")
 
             if not created:
                 continue

@@ -210,7 +210,7 @@ class GithubWorkflowClient:
         try:
             for run in all_runs:
                 run_counter += 1
-                run_id = run.get("id")
+                run_id = run.id
                 if not run_id:
                     continue
                 if run_id in processed_runs:

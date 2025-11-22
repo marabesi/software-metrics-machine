@@ -7,6 +7,8 @@ from software_metrics_machine.core.pipelines.pipelines_repository import (
     PipelinesRepository,
 )
 from tests.in_memory_configuration import InMemoryConfiguration
+from tests.pipeline_builder import PipelineBuilder
+from tests.builders import as_json_string
 
 
 class TestGithubWorkflowsClient:
@@ -143,7 +145,14 @@ class TestGithubWorkflowsClient:
     def test_fetch_jobs(self):
         def side_effect_repository_read(path):
             if path == "workflows.json":
-                return '[{"id": 1, "created_at": "2025-06-15T12:00:00Z"}]'
+                return as_json_string(
+                    [
+                        PipelineBuilder()
+                        .with_id(1)
+                        .with_created_at("2025-06-15T12:00:00Z")
+                        .build()
+                    ]
+                )
             elif path == "jobs.json":
                 return None
             return None
