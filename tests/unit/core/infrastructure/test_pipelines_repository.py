@@ -7,7 +7,7 @@ from software_metrics_machine.core.pipelines.pipelines_repository import (
 )
 from tests.builders import as_json_string, github_workflows_data
 from tests.in_memory_configuration import InMemoryConfiguration
-from tests.pipeline_builder import PipelineBuilder
+from tests.pipeline_builder import PipelineBuilder, PipelineJobBuilder
 
 
 class TestPipelinesRepository:
@@ -58,69 +58,79 @@ class TestPipelinesRepository:
     @pytest.mark.parametrize(
         "filters, expected",
         [
-            (
+            pytest.param(
                 {"event": "push"},
                 {
                     "count": 1,
                 },
+                id="filter_by_event",
             ),
-            (
+            pytest.param(
                 {"start_date": "2023-10-01", "end_date": "2023-10-01"},
                 {
-                    "count": 1,
+                    "count": 3,
                 },
+                id="filter_by_date",
             ),
-            (
+            pytest.param(
                 {
                     "start_date": "2023-10-01",
                     "end_date": "2023-10-01",
                     "event": "pull_request",
                 },
                 {
-                    "count": 0,
+                    "count": 1,
                 },
+                id="filter_by_date_and_event",
             ),
-            (
+            pytest.param(
                 {"target_branch": "main"},
                 {
                     "count": 1,
                 },
+                id="filter_by_target_branch",
             ),
-            (
+            pytest.param(
                 {"workflow_path": "non-existent.yml"},
                 {
                     "count": 0,
                 },
+                id="filter_by_workflow_path",
             ),
-            (
+            pytest.param(
                 {"include_defined_only": "true"},
                 {
                     "count": 2,
                 },
+                id="filter_by_include_defined_only",
             ),
-            (
+            pytest.param(
                 {"status": "completed"},
                 {
-                    "count": 2,
+                    "count": 4,
                 },
+                id="filter_by_status",
             ),
-            (
+            pytest.param(
                 {"conclusion": "success"},
                 {
-                    "count": 1,
+                    "count": 3,
                 },
+                id="filter_by_conclusion",
             ),
-            (
+            pytest.param(
                 {"conclusion": ""},
                 {
                     "count": 5,
                 },
+                id="filter_by_empty_conclusion",
             ),
-            (
+            pytest.param(
                 {"path": "/workflows/tests.yml"},
                 {
                     "count": 1,
                 },
+                id="filter_by_path",
             ),
         ],
     )
@@ -176,22 +186,22 @@ class TestPipelinesRepository:
             elif file == "jobs.json":
                 return as_json_string(
                     [
-                        {
-                            "id": 105,
-                            "run_id": 1,
-                            "name": "Deploy",
-                            "conclusion": "success",
-                            "started_at": "2023-10-01T09:05:00Z",
-                            "completed_at": "2023-10-01T09:10:00Z",
-                        },
-                        {
-                            "id": 107,
-                            "run_id": 1,
-                            "name": "Build",
-                            "conclusion": "failed",
-                            "started_at": "2023-01-01T09:05:00Z",
-                            "completed_at": "2023-01-01T09:10:00Z",
-                        },
+                        PipelineJobBuilder()
+                        .with_id(105)
+                        .with_run_id(1)
+                        .with_name("Deploy")
+                        .with_conclusion("success")
+                        .with_started_at("2023-10-01T09:05:00Z")
+                        .with_completed_at("2023-10-01T09:10:00Z")
+                        .build(),
+                        PipelineJobBuilder()
+                        .with_id(107)
+                        .with_run_id(1)
+                        .with_name("Build")
+                        .with_conclusion("failed")
+                        .with_started_at("2023-10-01T09:05:00Z")
+                        .with_completed_at("2023-10-01T09:10:00Z")
+                        .build(),
                     ]
                 )
             raise FileNotFoundError(f"File {file} not found")
@@ -227,7 +237,7 @@ class TestPipelinesRepository:
             assert len(result) == 4
 
     def test_get_unique_jobs_name(self):
-        jobs_with_duplicated_paths = [
+        jobs_with_duplicated_names = [
             {
                 "name": "Deploy",
             },
@@ -243,7 +253,7 @@ class TestPipelinesRepository:
             if file == "workflows.json":
                 return as_json_string(github_workflows_data())
             elif file == "jobs.json":
-                return as_json_string(jobs_with_duplicated_paths)
+                return as_json_string(jobs_with_duplicated_names)
             raise FileNotFoundError(f"File {file} not found")
 
         with patch(
