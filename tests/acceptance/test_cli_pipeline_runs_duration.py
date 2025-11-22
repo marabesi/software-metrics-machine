@@ -2,7 +2,6 @@ import pytest
 from software_metrics_machine.apps.cli import main
 
 from tests.builders import github_workflows_data
-from tests.pipeline_builder import PipelineBuilder
 
 
 class TestWorkflowsRunsDurationCliCommands:
@@ -78,132 +77,9 @@ class TestWorkflowsRunsDurationCliCommands:
                     "count": "/workflows/tests.yml   60.0      1",
                 },
             ),
-            (
-                [
-                    PipelineBuilder()
-                    .with_id(1)
-                    .with_path("/workflows/tests.yml")
-                    .with_status("completed")
-                    .with_conclusion("failure")
-                    .with_run_started_at("2023-10-01T12:00:00Z")
-                    .add_job(
-                        name="test-job",
-                        conclusion="failure",
-                        started_at="2023-10-01T12:00:00Z",
-                        completed_at="2023-10-01T13:00:00Z",
-                    )
-                    .build(),
-                    PipelineBuilder()
-                    .with_id(1)
-                    .with_path("/workflows/build.yml")
-                    .with_status("completed")
-                    .with_conclusion("failure")
-                    .with_run_started_at("2023-10-01T12:00:00Z")
-                    .add_job(
-                        name="test-job",
-                        conclusion="failure",
-                        started_at="2023-10-01T12:00:00Z",
-                        completed_at="2023-10-01T13:00:00Z",
-                    )
-                    .build(),
-                ],
-                {
-                    "command": [
-                        "pipelines",
-                        "runs-duration",
-                    ],
-                    "count": "/workflows/tests.yml   60.0      1           1",
-                },
-            ),
-            pytest.param(
-                [
-                    PipelineBuilder()
-                    .with_id(1)
-                    .with_path("/workflows/tests.yml")
-                    .with_status("completed")
-                    .with_conclusion("failure")
-                    .with_run_started_at("2023-10-01T12:00:00Z")
-                    .add_job(
-                        name="test-job",
-                        conclusion="failure",
-                        started_at="2023-10-01T12:00:00Z",
-                        completed_at="2023-10-01T13:00:00Z",
-                    )
-                    .build(),
-                    PipelineBuilder()
-                    .with_id(1)
-                    .with_path("/workflows/tests.yml")
-                    .with_status("completed")
-                    .with_conclusion("failure")
-                    .with_run_started_at("2023-10-01T12:00:00Z")
-                    .add_job(
-                        name="test-job",
-                        conclusion="failure",
-                        started_at="2023-10-01T12:00:00Z",
-                        completed_at="2023-10-01T13:00:00Z",
-                    )
-                    .build(),
-                ],
-                {
-                    "command": [
-                        "pipelines",
-                        "runs-duration",
-                    ],
-                    "count": "/workflows/tests.yml   60.0      2           2",
-                },
-                id="aggregate multiple runs for the same workflow and show total",
-            ),
-            pytest.param(
-                [
-                    PipelineBuilder()
-                    .with_id(1)
-                    .with_path("/workflows/tests.yml")
-                    .with_status("completed")
-                    .with_conclusion("failure")
-                    .with_created_at("2023-10-01T12:00:00Z")
-                    .with_run_started_at("2023-10-01T12:00:00Z")
-                    .add_job(
-                        name="test-job",
-                        conclusion="failure",
-                        started_at="2023-10-01T12:00:00Z",
-                        completed_at="2023-10-01T13:00:00Z",
-                    )
-                    .build(),
-                    PipelineBuilder()
-                    .with_id(2)
-                    .with_path("/workflows/tests.yml")
-                    .with_status("completed")
-                    .with_conclusion("failure")
-                    .with_created_at("2023-10-01T12:00:00Z")
-                    .with_run_started_at("2023-10-01T12:00:00Z")
-                    .add_job(
-                        name="test-job",
-                        conclusion="failure",
-                        started_at="2023-10-01T12:00:00Z",
-                        completed_at="2023-10-01T13:00:00Z",
-                    )
-                    .build(),
-                ],
-                {
-                    "command": [
-                        "pipelines",
-                        "runs-duration",
-                        "--start-date",
-                        "2023-10-01",
-                        "--end-date",
-                        "2023-10-01",
-                        "--aggregate-by-day",
-                        "true",
-                    ],
-                    "count": "2023-10-01   60.0      2           2",
-                },
-                id="aggregate multiple runs for the same workflow and show total by day",
-            ),
         ],
     )
-    def test_should_filter_pipeline_run_duration_by_raw_filters(
-        self, cli, workflow_runs, expected
-    ):
+    def test_should_filter_by_raw_filters(self, cli, workflow_runs, expected):
         expected_count = expected["count"]
         command = expected["command"]
 

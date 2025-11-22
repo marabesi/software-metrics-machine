@@ -27,7 +27,7 @@ start_date="2025-08-17"
 end_date="2025-11-17"
 
 start_date="2025-08-17"
-end_date="2025-08-17"
+end_date="2025-08-20"
 
 export SMM_STORE_DATA_AT="$analysis_dir"
 

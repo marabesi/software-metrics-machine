@@ -63,9 +63,9 @@ class TestPipelineRunDuration:
                 return_value={
                     "total": 3,
                     "rows": [
-                        ["CI Pipeline", 5, 10.5, 52.5, 1],
-                        ["Build Pipeline", 3, 15.0, 45.0, 1],
-                        ["Deploy Pipeline", 2, 8.0, 16.0, 1],
+                        ["CI Pipeline", 5, 10.5, 52.5],
+                        ["Build Pipeline", 3, 15.0, 45.0],
+                        ["Deploy Pipeline", 2, 8.0, 16.0],
                     ],
                 }
             )
@@ -107,12 +107,12 @@ class TestPipelineRunDuration:
             if sd == "2025-01-01":
                 return {
                     "total": 2,
-                    "rows": [["P1", 2, 10.0, 20.0, 1], ["P2", 1, 5.0, 5.0, 1]],
+                    "rows": [["P1", 2, 10.0, 20.0], ["P2", 1, 5.0, 5.0]],
                 }
             if sd == "2025-01-02":
                 return {"total": 0, "rows": []}
             if sd == "2025-01-03":
-                return {"total": 1, "rows": [["P3", 1, 30.0, 30.0, 1]]}
+                return {"total": 1, "rows": [["P3", 1, 30.0, 30.0]]}
             return {"total": 0, "rows": []}
 
         with patch(
@@ -176,8 +176,8 @@ class TestPipelineRunDuration:
                 return_value={
                     "total": 2,
                     "rows": [
-                        ["CI Pipeline", 5, 10.0, 50.0, 1],
-                        ["Build Pipeline", 3, 20.0, 60.0, 1],
+                        ["CI Pipeline", 5, 10.0, 50.0],
+                        ["Build Pipeline", 3, 20.0, 60.0],
                     ],
                 }
             )
@@ -214,8 +214,8 @@ class TestPipelineRunDuration:
                 return_value={
                     "total": 2,
                     "rows": [
-                        ["CI Pipeline", 10, 5.0, 50.0, 1],
-                        ["Build Pipeline", 3, 20.0, 60.0, 1],
+                        ["CI Pipeline", 10, 5.0, 50.0],
+                        ["Build Pipeline", 3, 20.0, 60.0],
                     ],
                 }
             )
@@ -252,11 +252,11 @@ class TestPipelineRunDuration:
                 return_value={
                     "total": 5,
                     "rows": [
-                        ["Pipeline A", 1, 10.0, 10.0, 1],
-                        ["Pipeline B", 1, 20.0, 20.0, 1],
-                        ["Pipeline C", 1, 30.0, 30.0, 1],
-                        ["Pipeline D", 1, 40.0, 40.0, 1],
-                        ["Pipeline E", 1, 50.0, 50.0, 1],
+                        ["Pipeline A", 1, 10.0, 10.0],
+                        ["Pipeline B", 1, 20.0, 20.0],
+                        ["Pipeline C", 1, 30.0, 30.0],
+                        ["Pipeline D", 1, 40.0, 40.0],
+                        ["Pipeline E", 1, 50.0, 50.0],
                     ],
                 }
             )
