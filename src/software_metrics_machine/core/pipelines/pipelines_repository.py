@@ -31,17 +31,9 @@ class PipelinesRepository(FileSystemBaseRepository):
         self.all_runs: List[PipelineRun] = []
         self.all_jobs: List[PipelineJob] = []
 
-        self.logger.info("Loading runs")
+        self.logger.debug("Loading runs")
 
-        contents = super().read_file_if_exists(self.pipeline_file)
-        if contents is None:
-            self.logger.debug(
-                f"No workflow file found at {self.pipeline_file}. Please fetch it first."
-            )
-            return
-
-        self.all_runs = json.loads(contents)
-        self.all_runs.sort(key=super().created_at_key_sort)
+        self.__load_runs()
 
         self.logger.debug(f"Loaded {len(self.all_runs)} runs")
 
@@ -293,11 +285,6 @@ class PipelinesRepository(FileSystemBaseRepository):
         }
 
     def get_workflows_run_duration(self, filters=None) -> PipelineComputedDurations:
-        """
-        Duration is computed based on the time start/finished from all jobs
-        :param filters:
-        :return:
-        """
         runs = self.runs(filters)
         groups: dict[str, List[float]] = {}
         for run in runs:
@@ -311,10 +298,10 @@ class PipelinesRepository(FileSystemBaseRepository):
                     continue
                 if edt:
                     dur = (edt - sdt).total_seconds()
+                    name = run.get("path")
+                    groups.setdefault(name, []).append(dur)
                 else:
-                    dur = None
-                name = run.get("path")
-                groups.setdefault(name, []).append(dur)
+                    self.logger.warning(f"No completed_at for job {job.get('id')}")
 
         if not groups:
             return PipelineComputedDurations(len(runs), [])
@@ -368,7 +355,7 @@ class PipelinesRepository(FileSystemBaseRepository):
         list_all.insert(0, "All")
         return list_all
 
-    def __parse_dt(self, v: str):
+    def __parse_dt(self, v: str) -> datetime | None:
         if not v:
             return None
         try:
@@ -379,7 +366,7 @@ class PipelinesRepository(FileSystemBaseRepository):
             except Exception:
                 return None
 
-    def __load_jobs(self):
+    def __load_jobs(self) -> None:
         contents = super().read_file_if_exists(self.jobs_file)
         if contents is None:
             self.logger.debug("No jobs file found at jobs.json. Please fetch it first.")
@@ -400,6 +387,16 @@ class PipelinesRepository(FileSystemBaseRepository):
                 run["jobs"].append(job)
 
         self.logger.debug("Jobs have been associated with their corresponding runs.")
+
+    def __load_runs(self) -> None:
+        contents = super().read_file_if_exists(self.pipeline_file)
+        if contents is None:
+            self.logger.debug(
+                f"No workflow file found at {self.pipeline_file}. Please fetch it first."
+            )
+            return
+        self.all_runs = json.loads(contents)
+        self.all_runs.sort(key=super().created_at_key_sort)
 
     def __is_defined_yaml(self, run_obj: dict) -> bool:
         path = run_obj.get("path")
