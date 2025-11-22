@@ -3,6 +3,7 @@ from software_metrics_machine.core.infrastructure.date_and_time import datetime_
 from software_metrics_machine.core.pipelines.aggregates.pipeline_summary import (
     PipelineRunSummary,
 )
+from software_metrics_machine.core.pipelines.pipelines_types import PipelineRun
 from software_metrics_machine.core.pipelines.pipelines_repository import (
     PipelinesRepository,
 )
@@ -22,6 +23,7 @@ class WorkflowRunSummaryStructure(TypedDict):
     runs_by_workflow: Dict[str, WorkflowRunDetails]
     first_run: Dict
     last_run: Dict
+    most_failed: Optional[str]
 
 
 class WorkflowRunSummary:
@@ -57,6 +59,7 @@ class WorkflowRunSummary:
                 "runs_by_workflow": {},
                 "first_run": {},
                 "last_run": {},
+                "most_failed": None,
             }
 
         # Build structured summary, formatting dates for first/last runs
@@ -71,6 +74,7 @@ class WorkflowRunSummary:
             "runs_by_workflow": runs_by_wf,
             "first_run": self.__build_run_times(summary.get("first_run", {})),
             "last_run": self.__build_run_times(summary.get("last_run", {})),
+            "most_failed": None,
         }
 
         # include 'most_failed' if present
@@ -79,7 +83,7 @@ class WorkflowRunSummary:
 
         return result
 
-    def __build_run_times(self, run: Dict) -> Dict:
+    def __build_run_times(self, run: PipelineRun) -> Dict:
         """Return a dict with formatted time strings for the provided run.
 
         The dict will include 'created_at', 'run_started_at' and 'updated_at'
@@ -88,9 +92,9 @@ class WorkflowRunSummary:
         if not run:
             return {}
 
-        created_at = run.get("created_at")
-        started_at = run.get("run_started_at")
-        updated_at = run.get("updated_at")
+        created_at = run.created_at
+        started_at = run.run_started_at
+        updated_at = run.updated_at
 
         return {
             "created_at": datetime_to_local(created_at) if created_at else None,

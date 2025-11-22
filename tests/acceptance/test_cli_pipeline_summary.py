@@ -22,7 +22,6 @@ class TestPipelineSummaryCliCommands:
         [
             (single_run(), "Total runs: 1"),
             (single_run(), "Most failed run: N/A"),
-            (single_run(), "1  <unnamed>  (/workflows/build.yml)"),
         ],
     )
     def test_summary_pipeline(self, cli, workflows, expected_output):

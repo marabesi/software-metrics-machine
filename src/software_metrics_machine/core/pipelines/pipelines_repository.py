@@ -326,9 +326,9 @@ class PipelinesRepository(FileSystemBaseRepository):
 
         fail_counts = {}
         for run in runs:
-            conclusion = run.get("conclusion")
+            conclusion = run.conclusion
             if conclusion == "failure":
-                path = run.get("path")
+                path = run.path
                 fail_counts[path] = fail_counts.get(path, 0) + 1
 
         sorted_by_key_desc = dict(sorted(fail_counts.items(), reverse=True))

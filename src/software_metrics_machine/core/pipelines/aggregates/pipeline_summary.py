@@ -33,12 +33,6 @@ class PipelineRunSummary:
         self.runs = self.repository.runs(
             {"start_date": start_date, "end_date": end_date}
         )
-
-        """
-        Compute the summary of workflow runs.
-
-        :return: A dictionary containing the summary structure.
-        """
         return self.__create_summary_structure()
 
     def __create_summary_structure(self) -> PipelineRunSummaryStructure:
@@ -61,34 +55,29 @@ class PipelineRunSummary:
         summary["first_run"] = self.runs[0]
         summary["last_run"] = self.runs[-1]
 
-        completed = [r for r in self.runs if r.get("status") == "completed"]
+        completed = [r for r in self.runs if r.status == "completed"]
 
         summary["completed"] = len(completed)
         summary["in_progress"] = len(
-            [r for r in self.runs if r.get("status") == "in_progress"]
+            [r for r in self.runs if r.status == "in_progress"]
         )
-        summary["queued"] = len([r for r in self.runs if r.get("status") == "queued"])
+        summary["queued"] = len([r for r in self.runs if r.status == "queued"])
 
-        workflows = {r.get("name") for r in self.runs if r.get("name")}
+        workflows = {r.name for r in self.runs if r.name}
         summary["unique_workflows"] = len(workflows)
 
         name_counts: Counter[str] = Counter()
         name_paths: dict = {}
         for r in self.runs:
-            name = r.get("name") or "<unnamed>"
+            name = r.name
             name_counts[name] += 1
             # prefer explicit 'path' field if present, else try 'workflow_path' or 'file'
             if name not in name_paths:
-                path = (
-                    r.get("path")
-                    or r.get("workflow_path")
-                    or r.get("file")
-                    or "<no path>"
-                )
-                name_paths[name] = path
+                name_paths[name] = r.path
 
         summary["runs_by_workflow"] = {
-            k: {"count": v, "path": name_paths.get(k)} for k, v in name_counts.items()
+            k: {"count": v, "path": name_paths.get(k) or ""}
+            for k, v in name_counts.items()
         }
 
         most_failed_runs = self.repository.get_pipeline_fails_the_most()
