@@ -16,6 +16,7 @@ class PipelineExecutionDurationResult:
     ylabel: str
     title_metric: str
     rows: List[List]
+    total_grouped_runs: List[dict]
 
 
 class PipelineExecutionDuration(BaseViewer):
@@ -48,6 +49,7 @@ class PipelineExecutionDuration(BaseViewer):
         data = self.repository.get_workflows_run_duration(filters)
 
         rows = data["rows"]
+
         run_count = data["total"]
 
         sort_key = {
@@ -63,6 +65,7 @@ class PipelineExecutionDuration(BaseViewer):
         counts = [r[1] for r in rows]
         avgs = [r[2] for r in rows]
         sums = [r[3] for r in rows]
+        total_grouped_runs = [r[4] for r in rows]
 
         if metric == "sum":
             values = sums
@@ -85,36 +88,30 @@ class PipelineExecutionDuration(BaseViewer):
             title_metric=title_metric,
             rows=rows,
             run_counts=run_count,
+            total_grouped_runs=total_grouped_runs,
         )
 
     def __aggregate_by_day(
         self, start_date: str | None, end_date: str | None, filters: dict, metric: str
     ) -> PipelineExecutionDurationResult:
         if not start_date or not end_date:
-            return PipelineExecutionDurationResult(
-                names=[],
-                values=[],
-                job_counts=[],
-                ylabel="",
-                title_metric="",
-                rows=[],
-                run_counts=0,
+            raise ValueError(
+                "start_date and end_date must be provided when aggregate_by_day is True"
             )
 
-        try:
-            sd = datetime.fromisoformat(start_date).date()
-            ed = datetime.fromisoformat(end_date).date()
-        except Exception:
-            return PipelineExecutionDurationResult(
-                names=[],
-                values=[],
-                job_counts=[],
-                ylabel="",
-                title_metric="",
-                rows=[],
-                run_counts=0,
-            )
-
+        sd = datetime.fromisoformat(start_date).date()
+        ed = datetime.fromisoformat(end_date).date()
+        # except Exception:
+        #     return PipelineExecutionDurationResult(
+        #         names=[],
+        #         values=[],
+        #         job_counts=[],
+        #         ylabel="",
+        #         title_metric="",
+        #         rows=[],
+        #         run_counts=0,
+        #         total_grouped_runs=[],
+        #     )
         days = []
         cur = sd
         while cur <= ed:
@@ -129,6 +126,7 @@ class PipelineExecutionDuration(BaseViewer):
         for day in days:
             day_filters = {**filters, "start_date": day, "end_date": day}
             data = self.repository.get_workflows_run_duration(day_filters)
+
             run_count = data.get("total", 0)
             rows_day = data.get("rows", [])
 
@@ -137,6 +135,7 @@ class PipelineExecutionDuration(BaseViewer):
             total_counts = sum([r[1] for r in rows_day]) if rows_day else 0
             # approximate average across day: total_minutes / max(1, total_counts)
             avg_minutes = (total_minutes / total_counts) if total_counts else 0.0
+            total_grouped_runs = [r[4] for r in rows_day]
 
             if metric == "sum":
                 metric_value = total_minutes
@@ -164,4 +163,5 @@ class PipelineExecutionDuration(BaseViewer):
             title_metric=title_metric,
             rows=rows_per_day,
             run_counts=run_count,
+            total_grouped_runs=total_grouped_runs,
         )

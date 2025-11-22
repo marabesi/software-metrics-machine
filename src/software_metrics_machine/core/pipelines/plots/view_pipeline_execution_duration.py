@@ -49,13 +49,12 @@ class ViewPipelineExecutionRunsDuration(BaseViewer):
         # ylabel = result.ylabel
         title_metric = result.title_metric
         rows = result.rows
-        run_counts = result.run_counts
+        # run_counts = result.run_counts
+        total_grouped = result.total_grouped_runs
         data = []
 
-        for name, val, cnt in zip(names, values, counts):
-            data.append(
-                {"name": name, "value": val, "count": cnt, "total_runs": run_counts}
-            )
+        for name, val, cnt, total in zip(names, values, counts, total_grouped):
+            data.append({"name": name, "value": val, "count": cnt, "total_runs": total})
 
         chart = build_barchart(
             data,

@@ -1,5 +1,5 @@
 from dataclasses import dataclass, field
-from datetime import datetime, timedelta, timezone
+from datetime import datetime, timezone
 from typing import List
 
 
@@ -8,8 +8,8 @@ class JobRun:
     id: int
     name: str
     conclusion: str
-    started_at: datetime
-    finished_at: datetime
+    started_at: str | None
+    completed_at: str | None
 
 
 @dataclass
@@ -20,6 +20,7 @@ class PipelineRun:
     conclusion: str
     status: str
     jobs: List[JobRun] = field(default_factory=list)
+    run_started_at: str | None = None
 
 
 class PipelineBuilder:
@@ -32,6 +33,7 @@ class PipelineBuilder:
             conclusion="success",
             status=status,
             jobs=[],
+            run_started_at=None,
         )
         self._job_counter = 0
         self._base_time = datetime.now(tz=timezone.utc)
@@ -46,6 +48,10 @@ class PipelineBuilder:
 
     def with_updated_at(self, updated_at: str):
         self._pipeline.updated_at = updated_at
+        return self
+
+    def with_run_started_at(self, started_at: str):
+        self._pipeline.run_started_at = started_at
         return self
 
     def with_conclusion(self, conclusion: str):
@@ -64,16 +70,16 @@ class PipelineBuilder:
         self,
         name: str | None = None,
         conclusion: str = "success",
-        duration_minutes: int = 1,
+        started_at: str | None = None,
+        completed_at: str | None = None,
     ):
         self._job_counter += 1
-        start = self._base_time + timedelta(minutes=self._job_counter * 5)
         job = JobRun(
             id=self._job_counter,
             name=name or f"job-{self._job_counter}",
             conclusion=conclusion,
-            started_at=start,
-            finished_at=start + timedelta(minutes=duration_minutes),
+            started_at=started_at,
+            completed_at=completed_at,
         )
         self._pipeline.jobs.append(job)
         return self
@@ -90,18 +96,14 @@ class PipelineJobBuilder:
     """
 
     def __init__(self):
-        from datetime import datetime, timezone
-
         self._job = {
             "id": None,
             "run_id": None,
             "name": "job-1",
             "conclusion": "success",
             "created_at": None,
-            "started_at": datetime.now(tz=timezone.utc).isoformat(),
-            "completed_at": (
-                datetime.now(tz=timezone.utc) + timedelta(minutes=1)
-            ).isoformat(),
+            "started_at": None,
+            "completed_at": None,
             "workflow_path": None,
             "workflow": None,
             "run_name": None,

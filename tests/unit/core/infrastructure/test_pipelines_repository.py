@@ -515,7 +515,7 @@ class TestPipelinesRepository:
             result = loader.get_unique_workflow_paths()
             assert result[0] == "All"
 
-    def test_compute_runs_duration(self):
+    def test_compute_runs_duration_for_a_pipeline_run(self):
         single_run = as_json_string(
             [
                 {
@@ -563,6 +563,61 @@ class TestPipelinesRepository:
             assert 1 == count
             assert 10.0 == avg_min
             assert 10.0 == total_min
+
+    def test_compute_runs_duration_grouped_by_pipeline_run(self):
+        runs = as_json_string(
+            [
+                {
+                    "id": 1,
+                    "path": "/workflows/build.yml",
+                    "status": "completed",
+                    "created_at": "2023-10-01T09:00:00Z",
+                    "run_started_at": "2023-10-01T09:00:00Z",
+                    "updated_at": "2023-10-01T09:10:00Z",
+                },
+                {
+                    "id": 2,
+                    "path": "/workflows/test.yml",
+                    "status": "completed",
+                    "created_at": "2023-10-01T09:00:00Z",
+                    "run_started_at": "2023-10-01T09:00:00Z",
+                    "updated_at": "2023-10-01T09:10:00Z",
+                },
+            ]
+        )
+
+        def mocked_read_file_if_exists(file):
+            if file == "workflows.json":
+                return runs
+            if file == "jobs.json":
+                return as_json_string(
+                    [
+                        PipelineJobBuilder()
+                        .with_run_id(1)
+                        .with_started_at("2023-10-01T09:00:00Z")
+                        .with_completed_at("2023-10-01T09:10:00Z")
+                        .build(),
+                        PipelineJobBuilder()
+                        .with_run_id(2)
+                        .with_started_at("2023-10-01T09:00:00Z")
+                        .with_completed_at("2023-10-01T09:10:00Z")
+                        .build(),
+                    ]
+                )
+            return None
+
+        with patch(
+            "software_metrics_machine.core.infrastructure.file_system_base_repository.FileSystemBaseRepository.read_file_if_exists",
+            side_effect=mocked_read_file_if_exists,
+        ):
+            loader = PipelinesRepository(configuration=InMemoryConfiguration("."))
+
+            data = loader.get_workflows_run_duration()
+            result = data["rows"]
+
+            total_runs = result
+            assert 1 == total_runs[0][1]
+            assert 1 == total_runs[1][1]
 
     @pytest.mark.parametrize(
         "pipeline_runs, expected",

@@ -295,6 +295,7 @@ class PipelinesRepository(FileSystemBaseRepository):
         :return:
         """
         runs = self.runs(filters)
+
         groups = {}
         for run in runs:
             name = run.get("path")
@@ -314,7 +315,8 @@ class PipelinesRepository(FileSystemBaseRepository):
         if not groups:
             return {"total": len(runs), "rows": []}
 
-        # compute aggregated metrics per group
+        total_runs_by_name = {name: len(durs) for name, durs in groups.items()}
+
         rows = []  # (name, count, avg_min, total_min)
         for name, durs in groups.items():
             # consider only durations that are not None
@@ -322,7 +324,10 @@ class PipelinesRepository(FileSystemBaseRepository):
             jobs_count = len(durs)
             total = sum(valid) if valid else 0.0
             avg = (total / len(valid)) if valid else 0.0
-            rows.append((name, jobs_count, avg / 60.0, total / 60.0))
+
+            rows.append(
+                (name, jobs_count, avg / 60.0, total / 60.0, total_runs_by_name[name])
+            )
 
         return {"total": len(runs), "rows": rows}
 
