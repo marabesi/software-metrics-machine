@@ -1,7 +1,6 @@
 from datetime import datetime
 import json
 from typing import List, Iterable
-from dataclasses import dataclass
 
 import pandas as pd
 from software_metrics_machine.core.infrastructure.file_system_base_repository import (
@@ -11,25 +10,15 @@ from software_metrics_machine.core.infrastructure.configuration.configuration im
     Configuration,
 )
 from software_metrics_machine.core.infrastructure.logger import Logger
+from software_metrics_machine.core.pipelines.pipelines_duration_types import (
+    PipelineComputedDurations,
+    PipelineDurationRow,
+)
 from software_metrics_machine.core.pipelines.pipelines_types import (
     DeploymentFrequency,
     PipelineJob,
     PipelineRun,
 )
-
-
-@dataclass
-class PipelineDurationRow:
-    name: str
-    count: int
-    avg_min: float
-    total_min: float
-
-
-@dataclass
-class PipelineComputedDurations:
-    total: int
-    rows: List[PipelineDurationRow]
 
 
 class PipelinesRepository(FileSystemBaseRepository):
@@ -310,7 +299,7 @@ class PipelinesRepository(FileSystemBaseRepository):
         :return:
         """
         runs = self.runs(filters)
-        groups = {}
+        groups: dict[str, List[float]] = {}
         for run in runs:
             name = run.get("path")
             for job in run.get("jobs", []):
