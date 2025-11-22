@@ -3,13 +3,14 @@ from typing import List
 from software_metrics_machine.core.pipelines.pipelines_repository import (
     PipelinesRepository,
 )
+from software_metrics_machine.core.pipelines.pipelines_types import PipelineJob
 
 
 class JobsSummary:
     def __init__(self, repository: PipelinesRepository):
         self.repository = repository
 
-    def summarize_jobs(self, jobs: List[dict]) -> dict:
+    def summarize_jobs(self, jobs: List[PipelineJob]) -> dict:
         summary = {}
         total = len(jobs)
         summary["total_jobs"] = total
@@ -31,12 +32,12 @@ class JobsSummary:
         summary["last_job"] = last
 
         # count conclusions (e.g. success, failure, cancelled, etc.)
-        concl_counter = Counter((j.get("conclusion") or "unknown") for j in jobs)
+        concl_counter = Counter((j.conclusion) for j in jobs)
         summary["conclusions"] = dict(concl_counter)
 
         # build a mapping from run_id -> workflow name by loading runs if available
         runs = self.repository.runs() or []
-        run_id_to_name = {r.get("id"): r.get("name") for r in runs if r.get("id")}
+        run_id_to_name = {r.id: r.name for r in runs if r.id}
 
         # unique composite job names (job.name + workflow name)
         composite_names = set()
@@ -45,11 +46,11 @@ class JobsSummary:
         name_counts = Counter()
         name_runs = {}
         for j in jobs:
-            job_name = j.get("name") or "<unnamed>"
+            job_name = j.name
             # try to obtain workflow/run name from job metadata or lookup by run_id
-            wf_name = j.get("workflow_name") or j.get("workflow") or j.get("run_name")
+            wf_name = j.workflow_name
             if not wf_name:
-                run_id = j.get("run_id") or j.get("runId")
+                run_id = j.run_id
                 wf_name = run_id_to_name.get(run_id)
 
             if wf_name:
@@ -61,7 +62,7 @@ class JobsSummary:
             name_counts[composite] += 1
             # prefer to capture the run_id if available for this composite key
             if composite not in name_runs:
-                run_id = j.get("run_id") or j.get("runId") or None
+                run_id = j.run_id
                 if run_id:
                     name_runs[composite] = run_id
 

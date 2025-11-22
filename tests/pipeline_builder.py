@@ -1,6 +1,7 @@
 from dataclasses import dataclass, field
 from datetime import datetime, timedelta, timezone
 from typing import List
+from software_metrics_machine.core.pipelines.pipelines_types import PipelineJob
 
 
 @dataclass
@@ -70,6 +71,22 @@ class PipelineBuilder:
         self._pipeline.path = status
         return self
 
+    def with_run_started_at(self, run_started_at: str):
+        self._pipeline.run_started_at = run_started_at
+        return self
+
+    def with_head_branch(self, head_branch: str):
+        self._pipeline.head_branch = head_branch
+        return self
+
+    def with_event(self, event: str):
+        self._pipeline.event = event
+        return self
+
+    def with_jobs(self, jobs: List[JobRun]):
+        self._pipeline.jobs = jobs
+        return self
+
     def add_job(
         self,
         name: str | None = None,
@@ -100,29 +117,25 @@ class PipelineJobBuilder:
     """
 
     def __init__(self):
-        from datetime import datetime, timezone
-
         self._job = {
-            "id": None,
-            "run_id": None,
+            "id": 1,
+            "run_id": 1,
             "name": "job-1",
             "conclusion": "success",
-            "created_at": None,
-            "started_at": datetime.now(tz=timezone.utc).isoformat(),
-            "completed_at": (
-                datetime.now(tz=timezone.utc) + timedelta(minutes=1)
-            ).isoformat(),
-            "workflow_path": None,
-            "workflow": None,
-            "run_name": None,
+            "created_at": "2023-10-01T12:00:00Z",
+            "started_at": "2023-10-01T12:00:00Z",
+            "completed_at": "2023-10-01T12:05:00Z",
+            # "workflow_path": "",
+            "workflow_name": "",
+            "steps": [],
         }
 
     def with_run_id(self, run_id: int):
         self._job["run_id"] = run_id
         return self
 
-    def with_id(self, run_id: int):
-        self._job["id"] = run_id
+    def with_id(self, id: int):
+        self._job["id"] = id
         return self
 
     def with_name(self, name: str):
@@ -141,6 +154,10 @@ class PipelineJobBuilder:
         self._job["completed_at"] = completed_iso
         return self
 
+    def with_created_at(self, created_iso: str):
+        self._job["created_at"] = created_iso
+        return self
+
     def with_workflow_path(self, path: str):
         self._job["workflow_path"] = path
         return self
@@ -149,6 +166,10 @@ class PipelineJobBuilder:
         self._job["run_name"] = run_name
         return self
 
-    def build(self) -> dict:
+    def with_steps(self, steps: list[dict]):
+        self._job["steps"] = steps
+        return self
+
+    def build(self) -> PipelineJob:
         # Return a shallow copy to avoid accidental mutation in tests
-        return dict(self._job)
+        return PipelineJob(**self._job)

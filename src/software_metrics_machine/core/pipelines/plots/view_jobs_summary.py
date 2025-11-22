@@ -5,6 +5,7 @@ from software_metrics_machine.core.pipelines.pipelines_repository import (
     PipelinesRepository,
 )
 from software_metrics_machine.core.infrastructure.date_and_time import datetime_to_local
+from software_metrics_machine.core.pipelines.pipelines_types import PipelineJob
 
 
 class JobTimeDetails(TypedDict, total=False):
@@ -74,10 +75,10 @@ class ViewJobsSummary:
 
         return result
 
-    def __build_job_times(self, job) -> JobTimeDetails:
-        created_at = job.get("created_at")
-        started_at = job.get("started_at")
-        ended_at = job.get("completed_at") or job.get("updated_at")
+    def __build_job_times(self, job: PipelineJob) -> JobTimeDetails:
+        created_at = job.created_at
+        started_at = job.started_at
+        ended_at = job.completed_at
 
         return {
             "created_at": datetime_to_local(created_at) if created_at else None,

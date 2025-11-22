@@ -9,7 +9,7 @@ from tests.github_workflow_response import (
     successfull_response_with_single_job,
     successfull_response_with_empty_jobs,
 )
-from tests.pipeline_builder import PipelineBuilder
+from tests.pipeline_builder import PipelineBuilder, PipelineJobBuilder
 
 job_with_single_step_completed_successfully = [
     {
@@ -61,7 +61,6 @@ class TestJobsCliCommands:
         assert "Show this message and exit" in result.output
 
     def test_should_fetch_jobs_for_a_workflow(self, cli, tmp_path):
-
         cli.storage.store_pipelines_with(single_run())
 
         with patch("requests.get") as mock_get:
@@ -88,7 +87,6 @@ class TestJobsCliCommands:
             assert f" → Jobs written to {str(tmp_path)}" in result.output
 
     def test_not_fetch_when_workflow_falls_off_the_start_date_and_end_date(self, cli):
-
         cli.storage.store_pipelines_with(single_run())
 
         result = cli.runner.invoke(
@@ -109,7 +107,6 @@ class TestJobsCliCommands:
         )
 
     def test_fetch_jobs_based_on_raw_filters(self, cli):
-
         single_run = [PipelineBuilder().with_created_at("2023-01-01T12:00:00Z").build()]
         cli.storage.store_pipelines_with(single_run)
 
@@ -149,20 +146,22 @@ class TestJobsCliCommands:
     @pytest.mark.parametrize(
         "jobs",
         [
-            [
-                {
-                    "id": "1",
-                    "run_id": "1",
-                    "started_at": "2023-10-01T09:05:00Z",
-                    "created_at": "2023-10-01T09:05:00Z",
-                    "completed_at": "2023-10-01T09:10:00Z",
-                    "steps": [],
-                },
-            ],
+            pytest.param(
+                [
+                    PipelineJobBuilder()
+                    .with_id(1)
+                    .with_run_id(1)
+                    .with_started_at("2023-10-01T09:05:00Z")
+                    .with_created_at("2023-10-01T09:05:00Z")
+                    .with_completed_at("2023-10-01T09:10:00Z")
+                    .with_steps([])
+                    .build(),
+                ],
+                id="no steps",
+            ),
         ],
     )
     def test_with_stored_data_summary(self, cli, jobs):
-
         cli.storage.store_pipelines_with(single_run())
         cli.storage.store_jobs_with(jobs)
 
@@ -217,7 +216,6 @@ class TestJobsCliCommands:
         assert expected in result.output
 
     def test_plot_jobs_by_status(self, cli):
-
         jobs = [
             {
                 "id": 105,

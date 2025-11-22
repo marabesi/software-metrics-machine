@@ -18,7 +18,7 @@ from pydantic import BaseModel
 StrOrInt = Union[str, int]
 
 
-class PipelineJob(TypedDict, total=False):
+class PipelineJob(BaseModel):
     """A job execution attached to a workflow run.
 
     Fields are optional (total=False) because the JSON collected from different
@@ -32,15 +32,15 @@ class PipelineJob(TypedDict, total=False):
     - workflow_path, workflow, run_name: optional helpers attached during loading
     """
 
-    run_id: Optional[StrOrInt]
-    name: Optional[str]
-    conclusion: Optional[str]
-    created_at: Optional[str]
+    run_id: int
+    name: str
+    conclusion: str
+    created_at: str
     started_at: Optional[str]
     completed_at: Optional[str]
-    workflow_path: Optional[str]
-    workflow: Optional[str]
-    run_name: Optional[str]
+    workflow_name: str
+    # workflow: Optional[str]
+    # run_name: Optional[str]
 
 
 class PipelineRun(BaseModel):

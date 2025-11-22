@@ -373,18 +373,21 @@ class PipelinesRepository(FileSystemBaseRepository):
             self.logger.debug("No jobs file found at jobs.json. Please fetch it first.")
             return
 
-        self.all_jobs = json.loads(contents)
+        all_jobs = json.loads(contents)
+
+        for job in all_jobs:
+            self.all_jobs.append(PipelineJob(**job))
+
         self.logger.debug(f"Loaded {len(self.all_jobs)} jobs")
+
         self.all_jobs.sort(key=super().created_at_key_sort)
 
         run_id_to_run = {run["id"]: run for run in self.all_runs if "id" in run}
 
         for job in self.all_jobs:
-            run_id = job.get("run_id")
+            run_id = job.run_id
             if run_id and run_id in run_id_to_run:
                 run = run_id_to_run[run_id]
-                if "jobs" not in run:
-                    run["jobs"] = []
                 run["jobs"].append(job)
 
         self.logger.debug("Jobs have been associated with their corresponding runs.")
