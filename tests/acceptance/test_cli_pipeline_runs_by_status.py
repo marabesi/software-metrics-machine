@@ -39,7 +39,6 @@ class TestPipelineRunsByStatusCliCommands:
         ],
     )
     def test_should_filter_by_workflow_path(self, cli, workflow_runs, expected):
-
         cli.storage.store_pipelines_with(workflow_runs)
 
         result = cli.runner.invoke(

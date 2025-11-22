@@ -54,7 +54,6 @@ class TestWorkflowsRunsByCliCommands:
 
     def test_should_filter_by_workflow_path(self, cli):
         workflow_runs = github_workflows_data()
-
         cli.storage.store_pipelines_with(workflow_runs)
 
         result = cli.runner.invoke(
@@ -74,7 +73,6 @@ class TestWorkflowsRunsByCliCommands:
         cli,
     ):
         workflow_runs = github_workflows_data()
-
         cli.storage.store_pipelines_with(workflow_runs)
 
         result = cli.runner.invoke(
@@ -114,7 +112,7 @@ class TestWorkflowsRunsByCliCommands:
             ([], {"event": "event=push", "count": 0}),
             (
                 github_workflows_data(),
-                {"event": "status=completed", "count": 2},
+                {"event": "conclusion=success", "count": 3},
             ),
         ],
     )
@@ -143,7 +141,7 @@ class TestWorkflowsRunsByCliCommands:
     @pytest.mark.parametrize(
         "command, expected",
         [
-            (
+            pytest.param(
                 [
                     "pipelines",
                     "runs-by",
@@ -152,13 +150,14 @@ class TestWorkflowsRunsByCliCommands:
                     "--end-date",
                     "2023-10-01",
                     "--raw-filters",
-                    "event=pull_request",
+                    "event=pull_request,conclusion=failure",
                 ],
                 {
                     "count": 0,
                 },
+                id="should_filter_by_pull_requests",
             ),
-            (
+            pytest.param(
                 [
                     "pipelines",
                     "runs-by",
@@ -171,8 +170,9 @@ class TestWorkflowsRunsByCliCommands:
                 {
                     "count": 2,
                 },
+                id="should_filter_by_defined_only",
             ),
-            (
+            pytest.param(
                 [
                     "pipelines",
                     "runs-by",
@@ -182,6 +182,7 @@ class TestWorkflowsRunsByCliCommands:
                 {
                     "count": 1,
                 },
+                id="should_filter_by_conclusion",
             ),
         ],
     )

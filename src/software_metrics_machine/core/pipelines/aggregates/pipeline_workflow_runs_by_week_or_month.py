@@ -60,17 +60,9 @@ class PipelineWorkflowRunsByWekOrMonth(BaseViewer):
         workflow_names = set()
 
         for r in runs:
-            name = (r.get("path") or "<unnamed>").strip()
-            created = r.get("created_at") or r.get("run_started_at") or r.get("created")
-            if not created:
-                continue
-            try:
-                dt = datetime.fromisoformat(created.replace("Z", "+00:00"))
-            except Exception:
-                try:
-                    dt = datetime.strptime(created, "%Y-%m-%dT%H:%M:%SZ")
-                except Exception:
-                    continue
+            name = r.path
+            created = r.created_at
+            dt = datetime.fromisoformat(created.replace("Z", "+00:00"))
 
             if aggregate_by == "week":
                 iso_year, iso_week, _ = dt.isocalendar()
@@ -102,7 +94,6 @@ class PipelineWorkflowRunsByWekOrMonth(BaseViewer):
             row = [counts[p].get(name, 0) for p in periods]
             data_matrix.append(row)
 
-        # representative datetime for each period
         rep_dates = []
         for p in periods:
             try:

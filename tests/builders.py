@@ -61,80 +61,79 @@ def single_run() -> List[PipelineRun]:
 
 def github_workflows_data() -> List[PipelineRun]:
     return [
-        {
-            "id": 1,
-            "path": "/workflows/tests.yml",
-            "status": "success",
-            "conclusion": "success",
-            "created_at": "2023-10-01T12:00:00Z",
-            "run_started_at": "2023-10-01T12:00:00Z",
-            "updated_at": "2023-10-01T13:00:00Z",
-            "head_branch": "main",
-            "event": "push",
-            "jobs": [
-                PipelineJobBuilder()
-                .with_run_id(1)
-                .with_started_at("2023-10-01T12:00:00Z")
-                .with_completed_at("2023-10-01T13:00:00Z")
-                .build()
-            ],
-        },
-        {
-            "id": 2,
-            "path": "/workflows/build.yml",
-            "status": "success",
-            "conclusion": "failed",
-            "created_at": "2023-10-01T12:00:00Z",
-            "run_started_at": "2023-10-01T12:00:00Z",
-            "created_at": "2023-10-10T12:00:00Z",
-            "updated_at": "2023-10-10T13:00:00Z",
-            "head_branch": "master",
-            "event": "pull_request",
-            "jobs": [
-                PipelineJobBuilder()
-                .with_run_id(2)
-                .with_started_at("2023-10-10T12:00:00Z")
-                .with_completed_at("2023-10-10T13:00:00Z")
-                .build()
-            ],
-        },
-        {
-            "id": 3,
-            "path": "dynamic/workflows/dependabot",
-            "status": "completed",
-            "conclusion": "cancelled",
-            "created_at": "2024-12-01T12:00:00Z",
-            "run_started_at": "2024-12-01T12:00:00Z",
-            "updated_at": "2023-12-01T13:00:00Z",
-            "head_branch": "master",
-            "event": "dependabot",
-            "jobs": [
-                PipelineJobBuilder()
-                .with_run_id(3)
-                .with_started_at("2024-12-01T12:00:00Z")
-                .with_completed_at("2024-12-01T13:00:00Z")
-                .build()
-            ],
-        },
-        {
-            "id": 4,
-            "path": "dynamic/workflows/dependabot",
-            "status": "completed",
-            "conclusion": "action_required",
-            "created_at": "2025-02-01T12:00:00Z",
-            "run_started_at": "2025-02-01T12:00:00Z",
-            "updated_at": "2025-02-01T13:00:00Z",
-            "head_branch": "master",
-            "event": "dependabot",
-        },
-        {
-            "id": 5,
-            "path": "dynamic/workflows/dependabot",
-            "conclusion": "failed",
-            "created_at": "2025-06-01T12:00:00Z",
-            "run_started_at": "2025-06-01T12:00:00Z",
-            "updated_at": "2025-06-01T13:00:00Z",
-            "head_branch": "master",
-            "event": "dependabot",
-        },
+        PipelineBuilder()
+        .with_id(1)
+        .with_path("/workflows/tests.yml")
+        .with_status("completed")
+        .with_conclusion("success")
+        .with_created_at("2023-10-01T12:00:00Z")
+        .with_run_started_at("2023-10-01T12:01:00Z")
+        .with_updated_at("2023-10-01T12:10:00Z")
+        .with_event("push")
+        .with_head_branch("main")
+        .with_jobs([
+            PipelineJobBuilder()
+            .with_run_id(1)
+            .with_started_at("2023-10-01T12:00:00Z")
+            .with_completed_at("2023-10-01T13:00:00Z")
+            .build()
+        ])
+        .build(),
+        PipelineBuilder()
+        .with_id(2)
+        .with_path("/workflows/build.yml")
+        .with_status("completed")
+        .with_conclusion("success")
+        .with_created_at("2023-10-01T12:00:00Z")
+        .with_run_started_at("2023-10-01T12:00:00Z")
+        .with_updated_at("2023-10-10T13:00:00Z")
+        .with_event("pull_request")
+        .with_head_branch("master")
+        .with_jobs([
+            PipelineJobBuilder()
+            .with_run_id(2)
+            .with_started_at("2023-10-10T12:00:00Z")
+            .with_completed_at("2023-10-10T13:00:00Z")
+            .build()
+        ])
+        .build(),
+        PipelineBuilder()
+        .with_id(3)
+        .with_path("dynamic/workflows/dependabot")
+        .with_status("completed")
+        .with_conclusion("success")
+        .with_created_at("2023-10-01T12:00:00Z")
+        .with_run_started_at("2023-10-01T12:00:00Z")
+        .with_updated_at("2023-10-01T13:00:00Z")
+        .with_head_branch("master")
+        .with_event("dependabot")
+        .with_jobs([
+            PipelineJobBuilder()
+            .with_run_id(3)
+            .with_started_at("2023-10-01T12:00:00Z")
+            .with_completed_at("2023-10-01T13:00:00Z")
+            .build()
+        ]).build(),
+        PipelineBuilder()
+        .with_id(4)
+        .with_path("dynamic/workflows/dependabot")
+        .with_status("completed")
+        .with_conclusion("action_required")
+        .with_created_at("2025-02-01T12:00:00Z")
+        .with_run_started_at("2025-02-01T12:00:00Z")
+        .with_updated_at("2025-02-01T13:00:00Z")
+        .with_head_branch("master")
+        .with_event("dependabot")
+        .build(),
+        PipelineBuilder()
+        .with_id(5)
+        .with_path("dynamic/workflows/dependabot")
+        .with_status("failed")
+        .with_conclusion("failure")
+        .with_created_at("2025-06-01T12:00:00Z")
+        .with_run_started_at("2025-06-01T12:00:00Z")
+        .with_updated_at("2025-06-01T13:00:00Z")
+        .with_head_branch("master")
+        .with_event("dependabot")
+        .build()
     ]

@@ -1,22 +1,6 @@
-from dataclasses import dataclass, field
 from datetime import datetime, timedelta, timezone
 from typing import List
-from software_metrics_machine.core.pipelines.pipelines_types import PipelineJob
-
-
-@dataclass
-class PipelineRun:
-    id: int
-    name: str
-    path: str
-    conclusion: str
-    status: str
-    event: str
-    head_branch: str
-    run_started_at: str
-    created_at: str
-    updated_at: str
-    jobs: List[PipelineJob] = field(default_factory=list)
+from software_metrics_machine.core.pipelines.pipelines_types import PipelineJob, PipelineRun
 
 
 class PipelineBuilder:
@@ -36,7 +20,6 @@ class PipelineBuilder:
             jobs=[],
         )
         self._job_counter = 0
-        self._base_time = datetime.now(tz=timezone.utc)
 
     def with_id(self, id: int):
         self._pipeline.id = id
@@ -86,17 +69,19 @@ class PipelineBuilder:
         self,
         name: str | None = None,
         conclusion: str = "success",
-        duration_minutes: int = 1,
         run_id: int | None = None,
+        started_at: str | None = None,
+        finished_at: str | None = None,
+        updated_at: str | None = None,
+
     ):
-        self._job_counter += 1
-        start = self._base_time + timedelta(minutes=self._job_counter * 5)
         job = PipelineJob(
-            run_id=self._job_counter,
-            name=name or f"job-{self._job_counter}",
+            run_id=run_id,
+            name=name,
             conclusion=conclusion,
-            started_at=start,
-            finished_at=start + timedelta(minutes=duration_minutes),
+            started_at=started_at,
+            finished_at=finished_at,
+            updated_at=updated_at
         )
         self._pipeline.jobs.append(job)
         return self

@@ -74,7 +74,6 @@ class PipelinesRepository(FileSystemBaseRepository):
         target_branch = filters.get("target_branch")
 
         if target_branch:
-
             def branch_matches(obj: PipelineRun):
                 if target_branch == obj.head_branch:
                     return True
@@ -401,13 +400,13 @@ class PipelinesRepository(FileSystemBaseRepository):
 
         self.all_runs.sort(key=super().created_at_key_sort)
 
-    def __is_defined_yaml(self, run_obj: dict) -> bool:
-        path = run_obj.get("path")
+    def __is_defined_yaml(self, run_obj: PipelineRun) -> bool:
+        path = run_obj.path
 
         if isinstance(path, str) and (
             path.strip().lower().endswith(".yml")
             or path.strip().lower().endswith(".yaml")
         ):
             return True
-        name = run_obj.get("path") or ""
+        name = run_obj.path
         return isinstance(name, str) and name.strip().lower().endswith(".yml")
