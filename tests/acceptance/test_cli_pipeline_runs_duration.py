@@ -8,10 +8,17 @@ from tests.pipeline_builder import PipelineBuilder, PipelineJobBuilder
 class TestWorkflowsRunsDurationCliCommands:
 
     @pytest.mark.parametrize(
-        "workflow_runs, expected",
+        "workflow_runs, jobs, expected",
         [
             (
                 github_workflows_data(),
+                [
+                    PipelineJobBuilder()
+                    .with_run_id(1)
+                    .with_started_at("2023-10-01T12:00:00Z")
+                    .with_completed_at("2023-10-01T13:00:00Z")
+                    .build(),
+                ],
                 {
                     "command": [
                         "pipelines",
@@ -26,6 +33,13 @@ class TestWorkflowsRunsDurationCliCommands:
             ),
             (
                 github_workflows_data(),
+                [
+                    PipelineJobBuilder()
+                    .with_run_id(1)
+                    .with_started_at("2023-10-01T12:00:00Z")
+                    .with_completed_at("2023-10-01T13:00:00Z")
+                    .build(),
+                ],
                 {
                     "command": [
                         "pipelines",
@@ -38,11 +52,14 @@ class TestWorkflowsRunsDurationCliCommands:
             ),
         ],
     )
-    def test_should_run_duration_for_a_workflow(self, cli, workflow_runs, expected):
+    def test_should_run_duration_for_a_workflow(
+        self, cli, workflow_runs, jobs, expected
+    ):
         expected_count = expected["count"]
         command = expected["command"]
 
         cli.storage.store_pipelines_with(workflow_runs)
+        cli.storage.store_jobs_with(jobs)
 
         result = cli.runner.invoke(
             main,
@@ -52,22 +69,36 @@ class TestWorkflowsRunsDurationCliCommands:
         assert expected_count in result.output
 
     @pytest.mark.parametrize(
-        "workflow_runs, expected",
+        "workflow_runs, jobs, expected",
         [
             (
                 github_workflows_data(),
+                [
+                    PipelineJobBuilder()
+                    .with_run_id(5)
+                    .with_started_at("2023-10-01T12:00:00Z")
+                    .with_completed_at("2023-10-01T13:00:00Z")
+                    .build()
+                ],
                 {
                     "command": [
                         "pipelines",
                         "runs-duration",
                         "--raw-filters",
-                        "status=completed",
+                        "status=failed",
                     ],
                     "count": "dynamic/workflows/dependabot   60.0      1",
                 },
             ),
             (
                 github_workflows_data(),
+                [
+                    PipelineJobBuilder()
+                    .with_run_id(1)
+                    .with_started_at("2023-10-01T12:00:00Z")
+                    .with_completed_at("2023-10-01T13:00:00Z")
+                    .build()
+                ],
                 {
                     "command": [
                         "pipelines",
@@ -80,11 +111,12 @@ class TestWorkflowsRunsDurationCliCommands:
             ),
         ],
     )
-    def test_should_filter_by_raw_filters(self, cli, workflow_runs, expected):
+    def test_should_filter_by_raw_filters(self, cli, workflow_runs, jobs, expected):
         expected_count = expected["count"]
         command = expected["command"]
 
         cli.storage.store_pipelines_with(workflow_runs)
+        cli.storage.store_jobs_with(jobs)
 
         result = cli.runner.invoke(
             main,
@@ -155,6 +187,26 @@ class TestWorkflowsRunsDurationCliCommands:
         workflow_runs = github_workflows_data()
 
         cli.storage.store_pipelines_with(workflow_runs)
+
+        cli.storage.store_jobs_with(
+            [
+                PipelineJobBuilder()
+                .with_run_id(1)
+                .with_started_at("2023-10-01T12:00:00Z")
+                .with_completed_at("2023-10-01T13:00:00Z")
+                .build(),
+                PipelineJobBuilder()
+                .with_run_id(2)
+                .with_started_at("2023-10-10T12:00:00Z")
+                .with_completed_at("2023-10-10T13:00:00Z")
+                .build(),
+                PipelineJobBuilder()
+                .with_run_id(3)
+                .with_started_at("2023-10-01T12:00:00Z")
+                .with_completed_at("2023-10-01T13:00:00Z")
+                .build(),
+            ]
+        )
 
         result = cli.runner.invoke(
             main,
