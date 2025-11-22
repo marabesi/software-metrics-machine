@@ -396,7 +396,13 @@ class PipelinesRepository(FileSystemBaseRepository):
                 f"No workflow file found at {self.pipeline_file}. Please fetch it first."
             )
             return
-        self.all_runs = json.loads(contents)
+
+        all_runs = json.loads(contents)
+
+        for run in all_runs:
+            run["jobs"] = []
+            self.all_runs.append(PipelineRun(**run))
+
         self.all_runs.sort(key=super().created_at_key_sort)
 
     def __is_defined_yaml(self, run_obj: dict) -> bool:

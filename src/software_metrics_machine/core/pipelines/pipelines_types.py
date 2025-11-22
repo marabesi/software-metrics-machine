@@ -33,7 +33,6 @@ class PipelineJob(TypedDict, total=False):
     """
 
     run_id: Optional[StrOrInt]
-    runId: Optional[StrOrInt]
     name: Optional[str]
     conclusion: Optional[str]
     created_at: Optional[str]
@@ -63,7 +62,6 @@ class PipelineRun(BaseModel):
     name: str
     created_at: str
     run_started_at: str
-    started_at: str
     updated_at: str
     event: str
     head_branch: str
