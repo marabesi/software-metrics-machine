@@ -217,22 +217,22 @@ class TestJobsCliCommands:
 
     def test_plot_jobs_by_status(self, cli):
         jobs = [
-            {
-                "id": 105,
-                "run_id": 1,
-                "name": "Deploy",
-                "conclusion": "success",
-                "started_at": "2023-10-01T09:05:00Z",
-                "completed_at": "2023-10-01T09:10:00Z",
-            },
-            {
-                "id": 106,
-                "run_id": 1,
-                "name": "Build",
-                "conclusion": "success",
-                "started_at": "2023-10-01T09:05:00Z",
-                "completed_at": "2023-10-01T09:10:00Z",
-            },
+            PipelineJobBuilder()
+            .with_id(105)
+            .with_run_id(1)
+            .with_name("Deploy")
+            .with_conclusion("success")
+            .with_started_at("2023-10-01T09:05:00Z")
+            .with_completed_at("2023-10-01T09:10:00Z")
+            .build(),
+            PipelineJobBuilder()
+            .with_id(106)
+            .with_run_id(1)
+            .with_name("Build")
+            .with_conclusion("success")
+            .with_started_at("2023-10-01T09:05:00Z")
+            .with_completed_at("2023-10-01T09:10:00Z")
+            .build(),
         ]
         cli.storage.store_pipelines_with(single_run())
         cli.storage.store_jobs_with(jobs)
@@ -255,14 +255,14 @@ class TestJobsCliCommands:
             (
                 {
                     "jobs": [
-                        {
-                            "id": 105,
-                            "run_id": 1,
-                            "name": "Deploy",
-                            "conclusion": "success",
-                            "started_at": "2023-10-01T09:05:00Z",
-                            "completed_at": "2023-10-01T09:10:00Z",
-                        },
+                        PipelineJobBuilder()
+                        .with_id(105)
+                        .with_run_id(1)
+                        .with_name("Deploy")
+                        .with_conclusion("success")
+                        .with_started_at("2023-10-01T09:05:00Z")
+                        .with_completed_at("2023-10-01T09:10:00Z")
+                        .build(),
                     ],
                     "job_name": "Deploy",
                 },
@@ -271,14 +271,14 @@ class TestJobsCliCommands:
             (
                 {
                     "jobs": [
-                        {
-                            "id": 101,
-                            "run_id": 1,
-                            "name": "Build",
-                            "conclusion": "failure",
-                            "started_at": "2023-10-01T09:04:00Z",
-                            "completed_at": "2023-10-01T09:05:00Z",
-                        },
+                        PipelineJobBuilder()
+                        .with_id(101)
+                        .with_run_id(1)
+                        .with_name("Build")
+                        .with_conclusion("failure")
+                        .with_started_at("2023-10-01T09:04:00Z")
+                        .with_completed_at("2023-10-01T09:05:00Z")
+                        .build(),
                     ],
                     "job_name": "Build",
                 },
@@ -287,7 +287,6 @@ class TestJobsCliCommands:
         ],
     )
     def test_print_jobs_by_status(self, cli, jobs_with_conclusion, expected):
-
         cli.storage.store_pipelines_with(single_run())
         cli.storage.store_jobs_with(jobs_with_conclusion["jobs"])
 
@@ -303,24 +302,23 @@ class TestJobsCliCommands:
         assert expected in result.output
 
     def test_plot_jobs_by_average_execution_time(self, cli):
-
         jobs = [
-            {
-                "id": 105,
-                "run_id": 1,
-                "name": "Deploy",
-                "conclusion": "success",
-                "started_at": "2023-10-01T09:05:00Z",
-                "completed_at": "2023-10-01T09:10:00Z",
-            },
-            {
-                "id": 106,
-                "run_id": 1,
-                "name": "Build",
-                "conclusion": "success",
-                "started_at": "2023-10-01T09:05:00Z",
-                "completed_at": "2023-10-01T09:10:00Z",
-            },
+            PipelineJobBuilder()
+            .with_id(105)
+            .with_run_id(1)
+            .with_name("Deploy")
+            .with_conclusion("success")
+            .with_started_at("2023-10-01T09:05:00Z")
+            .with_completed_at("2023-10-01T09:10:00Z")
+            .build(),
+            PipelineJobBuilder()
+            .with_id(106)
+            .with_run_id(1)
+            .with_name("Build")
+            .with_conclusion("success")
+            .with_started_at("2023-10-01T09:05:00Z")
+            .with_completed_at("2023-10-01T09:10:00Z")
+            .build(),
         ]
         cli.storage.store_pipelines_with(single_run())
         cli.storage.store_jobs_with(jobs)
@@ -338,24 +336,23 @@ class TestJobsCliCommands:
         assert "Found 1 workflow runs and 1 jobs after filtering" in result.output
 
     def test_plot_jobs_by_average_execution_time_by_raw_filters(self, cli):
-
         jobs = [
-            {
-                "id": 105,
-                "run_id": 1,
-                "name": "Deploy",
-                "conclusion": "success",
-                "started_at": "2023-10-01T09:05:00Z",
-                "completed_at": "2023-10-01T09:10:00Z",
-            },
-            {
-                "id": 106,
-                "run_id": 1,
-                "name": "Build",
-                "conclusion": "success",
-                "started_at": "2023-10-01T09:05:00Z",
-                "completed_at": "2023-10-01T09:10:00Z",
-            },
+            PipelineJobBuilder()
+            .with_id(105)
+            .with_run_id(1)
+            .with_name("Deploy")
+            .with_conclusion("success")
+            .with_started_at("2023-10-01T09:05:00Z")
+            .with_completed_at("2023-10-01T09:10:00Z")
+            .build(),
+            PipelineJobBuilder()
+            .with_id(106)
+            .with_run_id(1)
+            .with_name("Build")
+            .with_conclusion("success")
+            .with_started_at("2023-10-01T09:05:00Z")
+            .with_completed_at("2023-10-01T09:10:00Z")
+            .build(),
         ]
         cli.storage.store_pipelines_with(single_run())
         cli.storage.store_jobs_with(jobs)
@@ -377,27 +374,27 @@ class TestJobsCliCommands:
         [
             (
                 [
-                    {
-                        "id": 105,
-                        "run_id": 1,
-                        "name": "Deploy",
-                        "conclusion": "success",
-                        "started_at": "2023-10-01T09:05:00Z",
-                        "completed_at": "2023-10-01T09:10:00Z",
-                    },
+                    PipelineJobBuilder()
+                    .with_id(105)
+                    .with_run_id(1)
+                    .with_name("Deploy")
+                    .with_conclusion("success")
+                    .with_started_at("2023-10-01T09:05:00Z")
+                    .with_completed_at("2023-10-01T09:10:00Z")
+                    .build(),
                 ],
                 "Deploy  5.0",
             ),
             (
                 [
-                    {
-                        "id": 105,
-                        "run_id": 1,
-                        "name": "Build",
-                        "conclusion": "success",
-                        "started_at": "2023-10-01T09:04:00Z",
-                        "completed_at": "2023-10-01T09:05:00Z",
-                    },
+                    PipelineJobBuilder()
+                    .with_id(105)
+                    .with_run_id(1)
+                    .with_name("Build")
+                    .with_conclusion("success")
+                    .with_started_at("2023-10-01T09:04:00Z")
+                    .with_completed_at("2023-10-01T09:05:00Z")
+                    .build(),
                 ],
                 "Build  1.0",
             ),

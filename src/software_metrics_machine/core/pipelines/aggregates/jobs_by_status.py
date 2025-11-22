@@ -6,7 +6,10 @@ from datetime import datetime
 from software_metrics_machine.core.pipelines.pipelines_repository import (
     PipelinesRepository,
 )
-from software_metrics_machine.core.pipelines.pipelines_types import PipelineRun
+from software_metrics_machine.core.pipelines.pipelines_types import (
+    PipelineRun,
+    PipelineJob,
+)
 
 
 @dataclass
@@ -25,7 +28,7 @@ class JobsByStatus:
     def __init__(self, repository: PipelinesRepository):
         self.repository = repository
 
-    def __count_delivery_by_day(self, jobs, job_name: str):
+    def __count_delivery_by_day(self, jobs: List[PipelineJob], job_name: str):
         """Return (dates, conclusions, matrix) grouping delivery job executions by day and conclusion.
 
         dates: list of YYYY-MM-DD strings (unknown last)
@@ -34,19 +37,13 @@ class JobsByStatus:
         """
         per_day = defaultdict(Counter)
         for j in jobs:
-            name = (j.get("name") or "").strip()
-            if name.lower() != job_name:
+            name = j.name
+            if name != job_name:
                 continue
-            created = j.get("created_at") or j.get("started_at")
-            if created:
-                try:
-                    dt = datetime.fromisoformat(created.replace("Z", "+00:00"))
-                    date_key = dt.date().isoformat()
-                except Exception:
-                    date_key = created
-            else:
-                date_key = "unknown"
-            conclusion = (j.get("conclusion")).lower()
+            created = j.created_at
+            dt = datetime.fromisoformat(created.replace("Z", "+00:00"))
+            date_key = dt.date().isoformat()
+            conclusion = j.conclusion
             per_day[date_key][conclusion] += 1
 
         if not per_day:
@@ -74,28 +71,16 @@ class JobsByStatus:
 
         return dates, ordered, matrix
 
-    def count_delivery_by_week(self, jobs, job_name: str):
-        """Return (weeks, conclusions, matrix) grouping job executions by ISO week and conclusion.
-
-        weeks are strings like YYYY-Www (e.g. 2025-W35)
-        """
-        from collections import defaultdict, Counter
-
+    def count_delivery_by_week(self, jobs: List[PipelineJob], job_name: str):
         per_week = defaultdict(Counter)
         for j in jobs:
-            name = (j.get("name") or "").strip()
+            name = j.name
             if name.lower() != job_name:
                 continue
-            created = j.get("created_at") or j.get("started_at")
-            if created:
-                try:
-                    dt = datetime.fromisoformat(created.replace("Z", "+00:00"))
-                    week_key = f"{dt.isocalendar()[0]}-W{dt.isocalendar()[1]:02d}"
-                except Exception:
-                    week_key = created
-            else:
-                week_key = "unknown"
-            conclusion = (j.get("conclusion") or "unknown").lower()
+            created = j.created_at
+            dt = datetime.fromisoformat(created.replace("Z", "+00:00"))
+            week_key = f"{dt.isocalendar()[0]}-W{dt.isocalendar()[1]:02d}"
+            conclusion = j.conclusion
             per_week[week_key][conclusion] += 1
 
         if not per_week:
@@ -144,12 +129,12 @@ class JobsByStatus:
         # optional filter by workflow name (case-insensitive substring match)
         if workflow_path:
             wf_low = workflow_path.lower()
-            runs = [r for r in runs if (r.get("path") or "").lower().find(wf_low) != -1]
+            runs = [r for r in runs if r.path.find(wf_low) != -1]
 
         if not force_all_jobs:
             # restrict jobs to only those belonging to the selected runs
-            run_ids = {r.get("id") for r in runs if r.get("id") is not None}
-            jobs = [j for j in jobs if j.get("run_id") in run_ids]
+            run_ids = {r.id for r in runs if r.id is not None}
+            jobs = [j for j in jobs if j.run_id in run_ids]
 
         print(f"Found {len(runs)} workflow runs and {len(jobs)} jobs after filtering")
 
@@ -159,26 +144,26 @@ class JobsByStatus:
         # prefer explicit fields on job objects
         for j in jobs:
             if not display_job_name or display_job_name == "<job>":
-                if j.get("name"):
-                    display_job_name = j.get("name")
+                if j.name:
+                    display_job_name = j.name
             if not display_workflow_name:
-                wf = j.get("workflow_path") or j.get("workflow") or j.get("run_name")
+                wf = j.workflow_name
                 if wf:
                     display_workflow_name = wf
             if display_job_name and display_workflow_name:
                 break
         # fallback: try to resolve workflow name via run_id -> run name mapping
         if not display_workflow_name:
-            run_map = {r.get("id"): r.get("path") for r in runs if r.get("id")}
+            run_map = {r.id: r.path for r in runs if r.id}
             for j in jobs:
-                rid = j.get("run_id") or j.get("runId")
+                rid = j.run_id
                 if rid and rid in run_map:
                     display_workflow_name = run_map[rid]
                     break
         if not display_workflow_name:
             display_workflow_name = "<any>"
 
-        status_counts = Counter(job["conclusion"] for job in jobs)
+        status_counts = Counter(job.conclusion for job in jobs)
 
         if aggregate_by_week:
             dates, conclusions, matrix = self.count_delivery_by_week(

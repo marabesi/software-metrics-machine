@@ -42,7 +42,6 @@ class JobsByAverageTimeExecution:
 
         Averages are shown in minutes.
         """
-
         filters = {
             "start_date": start_date,
             "end_date": end_date,
@@ -60,7 +59,7 @@ class JobsByAverageTimeExecution:
 
         if workflow_path:
             wf_low = workflow_path.lower()
-            runs = [r for r in runs if (r.get("path") or "").lower().find(wf_low) != -1]
+            runs = [r for r in runs if r.path.find(wf_low) != -1]
 
         # raw_filters = self.repository.parse_raw_filters(raw_filters)
         # # optional filter by event (e.g. push, pull_request) - accepts comma-separated or single value
@@ -70,8 +69,8 @@ class JobsByAverageTimeExecution:
 
         if not force_all_jobs:
             # restrict jobs to only those belonging to the selected runs
-            run_ids = {r.get("id") for r in runs if r.get("id") is not None}
-            jobs = [j for j in jobs if j.get("run_id") in run_ids]
+            run_ids = {r.id for r in runs if r.id is not None}
+            jobs = [j for j in jobs if j.run_id in run_ids]
 
         # # optional filter by target branch (accepts comma-separated values)
         # if target_vals := raw_filters.get("target_branch"):
@@ -103,16 +102,13 @@ class JobsByAverageTimeExecution:
         sums = defaultdict(float)
         counts = defaultdict(int)
         for job in jobs:
-            name = (job.get("name") or "").strip() or "<unnamed>"
-            started = job.get("started_at") or job.get("created_at")
-            completed = job.get("completed_at")
+            name = job.name
+            started = job.started_at
+            completed = job.completed_at
             if not started or not completed:
                 continue
-            try:
-                dt_start = datetime.fromisoformat(started.replace("Z", "+00:00"))
-                dt_end = datetime.fromisoformat(completed.replace("Z", "+00:00"))
-            except Exception:
-                continue
+            dt_start = datetime.fromisoformat(started.replace("Z", "+00:00"))
+            dt_end = datetime.fromisoformat(completed.replace("Z", "+00:00"))
             secs = (dt_end - dt_start).total_seconds()
             if secs < 0:
                 # ignore negative durations

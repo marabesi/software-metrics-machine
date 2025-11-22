@@ -53,11 +53,11 @@ class PipelinesRepository(FileSystemBaseRepository):
 
         name = filters.get("name")
         if name:
-            runs = [job for job in self.all_jobs if (job.get("name") or "") == name]
+            runs = [job for job in self.all_jobs if job.name == name]
 
         run_id = filters.get("run_id")
         if run_id:
-            runs = [job for job in runs if job.get("run_id") == run_id]
+            runs = [job for job in runs if job.run_id == run_id]
 
         return runs
 
@@ -77,9 +77,8 @@ class PipelinesRepository(FileSystemBaseRepository):
 
         if target_branch:
 
-            def branch_matches(obj):
-                val = obj.get("head_branch")
-                if target_branch == val:
+            def branch_matches(obj: PipelineRun):
+                if target_branch == obj.head_branch:
                     return True
                 return False
 
@@ -87,11 +86,11 @@ class PipelinesRepository(FileSystemBaseRepository):
 
         event = filters.get("event")
         if event:
-            runs = [r for r in runs if (r.get("event") or "") == event]
+            runs = [r for r in runs if r.event == event]
 
         workflow_path = filters.get("workflow_path")
         if workflow_path:
-            runs = [r for r in runs if (r.get("path") or "").lower() == workflow_path]
+            runs = [r for r in runs if r.path == workflow_path]
 
         include_defined_only = filters.get("include_defined_only")
 
@@ -100,15 +99,15 @@ class PipelinesRepository(FileSystemBaseRepository):
 
         status = filters.get("status")
         if status:
-            runs = [r for r in runs if r.get("status") == status]
+            runs = [r for r in runs if r.status == status]
 
         conclusion = filters.get("conclusion")
         if conclusion:
-            runs = [r for r in runs if r.get("conclusion") == conclusion]
+            runs = [r for r in runs if r.conclusion == conclusion]
 
         path = filters.get("path")
         if path:
-            runs = [r for r in runs if r.get("path") == path]
+            runs = [r for r in runs if r.path == path]
 
         return runs
 
