@@ -33,9 +33,7 @@ class PipelinesRepository(FileSystemBaseRepository):
         self.all_jobs: List[PipelineJob] = []
 
         self.logger.debug("Loading runs")
-
         self.__load_runs()
-
         self.logger.debug(f"Loaded {len(self.all_runs)} runs")
 
         self.__load_jobs()
@@ -188,10 +186,9 @@ class PipelinesRepository(FileSystemBaseRepository):
         runs = self.runs(filters)
 
         for run in runs:
-            jobs = run.get("jobs", [])
-            for job in jobs:
-                if job.get("name") == job_name and job.get("conclusion") == "success":
-                    created_at = job.get("completed_at")[:10]
+            for job in run.jobs:
+                if job.name == job_name and job.conclusion == "success":
+                    created_at = job.completed_at[:10]
                     created_at = datetime.fromisoformat(created_at + "T00:00:00+00:00")
                     day_key = str(created_at.date())
                     week_key = f"{created_at.year}-W{created_at.isocalendar()[1]:02d}"
@@ -381,13 +378,10 @@ class PipelinesRepository(FileSystemBaseRepository):
 
         self.all_jobs.sort(key=super().created_at_key_sort)
 
-        run_id_to_run = {run["id"]: run for run in self.all_runs if "id" in run}
-
-        for job in self.all_jobs:
-            run_id = job.run_id
-            if run_id and run_id in run_id_to_run:
-                run = run_id_to_run[run_id]
-                run["jobs"].append(job)
+        for run in self.all_runs:
+            for job in self.all_jobs:
+                if run.id == job.run_id:
+                    run.jobs.append(job)
 
         self.logger.debug("Jobs have been associated with their corresponding runs.")
 

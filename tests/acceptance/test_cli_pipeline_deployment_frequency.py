@@ -2,25 +2,24 @@ from software_metrics_machine.apps.cli import main
 import pytest
 
 from tests.builders import single_deployment_frequency
+from tests.pipeline_builder import PipelineJobBuilder
 
 
 class TestWorkflowsDeploymentFrequencyCliCommands:
 
     @pytest.fixture(autouse=True)
     def setup_data(self, cli):
-
         cli.storage.store_pipelines_with(single_deployment_frequency())
-
         cli.storage.store_jobs_with(
             [
-                {
-                    "id": 105,
-                    "run_id": 1,
-                    "name": "Deploy",
-                    "conclusion": "success",
-                    "started_at": "2023-10-01T09:05:00Z",
-                    "completed_at": "2023-10-01T09:10:00Z",
-                },
+                PipelineJobBuilder()
+                    .with_id(105)
+                    .with_run_id(1)
+                    .with_name("Deploy")
+                    .with_conclusion("success")
+                    .with_started_at("2023-10-01T09:05:00Z")
+                    .with_completed_at("2023-10-01T09:10:00Z")
+                    .build(),
             ],
         )
 

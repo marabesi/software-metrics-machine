@@ -9,6 +9,7 @@ from software_metrics_machine.core.pipelines.pipelines_repository import (
 )
 from tests.builders import as_json_string
 from tests.in_memory_configuration import InMemoryConfiguration
+from tests.pipeline_builder import PipelineBuilder, PipelineJobBuilder
 
 
 class TestJobsByStatus:
@@ -20,13 +21,13 @@ class TestJobsByStatus:
             (
                 [],
                 [
-                    {
-                        "id": 101,
-                        "name": "test",
-                        "run_id": 1,
-                        "conclusion": "success",
-                        "created_at": "2023-01-01T10:00:00Z",
-                    },
+                    PipelineJobBuilder()
+                    .with_id(101)
+                    .with_name("test")
+                    .with_run_id(1)
+                    .with_conclusion("success")
+                    .with_created_at("2023-01-01T10:00:00Z")
+                    .build(),
                 ],
             ),
         ],
@@ -64,46 +65,48 @@ class TestJobsByStatus:
             if file == "workflows.json":
                 return as_json_string(
                     [
-                        {
-                            "id": 1,
-                            "name": "CI",
-                            "path": "/workflows/ci.yml",
-                            "conclusion": "success",
-                            "created_at": "2023-01-01T10:00:00Z",
-                        },
-                        {
-                            "id": 2,
-                            "name": "CI",
-                            "path": "/workflows/ci.yml",
-                            "conclusion": "failure",
-                            "created_at": "2023-01-02T10:00:00Z",
-                        },
+                        PipelineBuilder()
+                        .with_id(1)
+                        .with_name("CI")
+                        .with_path("/workflows/ci.yml")
+                        .with_conclusion("success")
+                        .with_created_at("2023-01-01T10:00:00Z")
+                        .with_run_started_at("2023-01-01T10:00:00Z")
+                        .build(),
+                        PipelineBuilder()
+                        .with_id(2)
+                        .with_name("CI")
+                        .with_path("/workflows/ci.yml")
+                        .with_conclusion("failure")
+                        .with_created_at("2023-01-02T10:00:00Z")
+                        .with_run_started_at("2023-01-02T10:00:00Z")
+                        .build(),
                     ]
                 )
             if file == "jobs.json":
                 return as_json_string(
                     [
-                        {
-                            "id": 101,
-                            "name": "build",
-                            "run_id": 1,
-                            "conclusion": "success",
-                            "created_at": "2023-01-01T10:00:00Z",
-                        },
-                        {
-                            "id": 102,
-                            "name": "build",
-                            "run_id": 1,
-                            "conclusion": "success",
-                            "created_at": "2023-01-01T11:00:00Z",
-                        },
-                        {
-                            "id": 103,
-                            "name": "build",
-                            "run_id": 2,
-                            "conclusion": "failure",
-                            "created_at": "2023-01-02T10:00:00Z",
-                        },
+                        PipelineJobBuilder()
+                        .with_id(101)
+                        .with_name("build")
+                        .with_run_id(1)
+                        .with_conclusion("success")
+                        .with_created_at("2023-01-01T10:00:00Z")
+                        .build(),
+                        PipelineJobBuilder()
+                        .with_id(102)
+                        .with_name("build")
+                        .with_run_id(1)
+                        .with_conclusion("success")
+                        .with_created_at("2023-01-01T11:00:00Z")
+                        .build(),
+                        PipelineJobBuilder()
+                        .with_id(103)
+                        .with_name("build")
+                        .with_run_id(2)
+                        .with_conclusion("failure")
+                        .with_created_at("2023-01-02T10:00:00Z")
+                        .build(),
                     ]
                 )
             return None
@@ -152,44 +155,44 @@ class TestJobsByStatus:
             if file == "workflows.json":
                 return as_json_string(
                     [
-                        {
-                            "id": 1,
-                            "name": "CI",
-                            "conclusion": "success",
-                            "created_at": "2023-01-02T10:00:00Z",  # Week 1
-                        },
-                        {
-                            "id": 2,
-                            "name": "CI",
-                            "conclusion": "success",
-                            "created_at": "2023-01-09T10:00:00Z",  # Week 2
-                        },
+                        PipelineBuilder()
+                        .with_id(1)
+                        .with_name("CI")
+                        .with_conclusion("success")
+                        .with_created_at("2023-01-02T10:00:00Z")  # Week 1
+                        .build(),
+                        PipelineBuilder()
+                        .with_id(2)
+                        .with_name("CI")
+                        .with_conclusion("success")
+                        .with_created_at("2023-01-09T10:00:00Z")  # Week 2
+                        .build(),
                     ]
                 )
             if file == "jobs.json":
                 return as_json_string(
                     [
-                        {
-                            "id": 101,
-                            "name": "deploy",
-                            "run_id": 1,
-                            "conclusion": "success",
-                            "created_at": "2023-01-02T10:00:00Z",
-                        },
-                        {
-                            "id": 102,
-                            "name": "deploy",
-                            "run_id": 1,
-                            "conclusion": "success",
-                            "created_at": "2023-01-03T10:00:00Z",
-                        },
-                        {
-                            "id": 103,
-                            "name": "deploy",
-                            "run_id": 2,
-                            "conclusion": "failure",
-                            "created_at": "2023-01-09T10:00:00Z",
-                        },
+                        PipelineJobBuilder()
+                        .with_id(101)
+                        .with_name("deploy")
+                        .with_run_id(1)
+                        .with_conclusion("success")
+                        .with_created_at("2023-01-02T10:00:00Z")
+                        .build(),
+                        PipelineJobBuilder()
+                        .with_id(102)
+                        .with_name("deploy")
+                        .with_run_id(1)
+                        .with_conclusion("success")
+                        .with_created_at("2023-01-03T10:00:00Z")
+                        .build(),
+                        PipelineJobBuilder()
+                        .with_id(103)
+                        .with_name("deploy")
+                        .with_run_id(2)
+                        .with_conclusion("failure")
+                        .with_created_at("2023-01-09T10:00:00Z")
+                        .build(),
                     ]
                 )
             return None

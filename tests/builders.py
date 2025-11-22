@@ -27,18 +27,18 @@ def as_json_string(object: Any) -> str:
 
 def single_deployment_frequency() -> List[PipelineRun]:
     return [
-        {
-            "id": 1,
-            "path": "/workflows/build.yml",
-            "status": "completed",
-            "conclusion": "success",
-            "created_at": "2023-10-01T12:00:00Z",
-            "run_started_at": "2023-10-01T12:01:00Z",
-            "updated_at": "2023-10-01T12:10:00Z",
-            "event": "push",
-            "head_branch": "main",
-            "jobs": [],
-        },
+        PipelineBuilder()
+        .with_id(1)
+        .with_path("/workflows/build.yml")
+        .with_status("completed")
+        .with_conclusion("success")
+        .with_created_at("2023-10-01T12:00:00Z")
+        .with_run_started_at("2023-10-01T12:01:00Z")
+        .with_updated_at("2023-10-01T12:10:00Z")
+        .with_event("push")
+        .with_head_branch("main")
+        .with_jobs([])
+        .build(),
     ]
 
 

@@ -5,15 +5,6 @@ from software_metrics_machine.core.pipelines.pipelines_types import PipelineJob
 
 
 @dataclass
-class JobRun:
-    id: int
-    name: str
-    conclusion: str
-    started_at: datetime
-    finished_at: datetime
-
-
-@dataclass
 class PipelineRun:
     id: int
     name: str
@@ -25,7 +16,7 @@ class PipelineRun:
     run_started_at: str
     created_at: str
     updated_at: str
-    jobs: List[JobRun] = field(default_factory=list)
+    jobs: List[PipelineJob] = field(default_factory=list)
 
 
 class PipelineBuilder:
@@ -71,6 +62,10 @@ class PipelineBuilder:
         self._pipeline.path = status
         return self
 
+    def with_name(self, name: str):
+        self._pipeline.name = name
+        return self
+
     def with_run_started_at(self, run_started_at: str):
         self._pipeline.run_started_at = run_started_at
         return self
@@ -83,7 +78,7 @@ class PipelineBuilder:
         self._pipeline.event = event
         return self
 
-    def with_jobs(self, jobs: List[JobRun]):
+    def with_jobs(self, jobs: List[PipelineJob]):
         self._pipeline.jobs = jobs
         return self
 
@@ -92,11 +87,12 @@ class PipelineBuilder:
         name: str | None = None,
         conclusion: str = "success",
         duration_minutes: int = 1,
+        run_id: int | None = None,
     ):
         self._job_counter += 1
         start = self._base_time + timedelta(minutes=self._job_counter * 5)
-        job = JobRun(
-            id=self._job_counter,
+        job = PipelineJob(
+            run_id=self._job_counter,
             name=name or f"job-{self._job_counter}",
             conclusion=conclusion,
             started_at=start,
@@ -126,7 +122,7 @@ class PipelineJobBuilder:
             "started_at": "2023-10-01T12:00:00Z",
             "completed_at": "2023-10-01T12:05:00Z",
             # "workflow_path": "",
-            "workflow_name": "",
+            "workflow_name": "builder",
             "steps": [],
         }
 
