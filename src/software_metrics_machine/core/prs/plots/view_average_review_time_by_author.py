@@ -7,6 +7,7 @@ from software_metrics_machine.core.infrastructure.base_viewer import (
 from software_metrics_machine.apps.dashboard.components.barchart_stacked import (
     build_barchart,
 )
+from software_metrics_machine.core.prs.pr_types import PRDetails
 from software_metrics_machine.core.prs.prs_repository import PrsRepository
 from collections import defaultdict
 from typing import List, Tuple
@@ -73,7 +74,7 @@ class ViewAverageReviewTimeByAuthor(BaseViewer):
         return PlotResult(plot=chart, data=df)
 
     def __average_open_time_by_author(
-        self, prs: List[dict], top: int
+        self, prs: List[PRDetails], top: int
     ) -> List[Tuple[str, float]]:
         """Compute average open time in days before merged PRs grouped by author.
 
@@ -82,8 +83,8 @@ class ViewAverageReviewTimeByAuthor(BaseViewer):
         sums = defaultdict(float)
         counts = defaultdict(int)
         for pr in prs:
-            merged = pr.get("merged_at")
-            created = pr.get("created_at")
+            merged = pr.merged_at
+            created = pr.created_at
             if not merged or not created:
                 continue
             try:
@@ -92,14 +93,13 @@ class ViewAverageReviewTimeByAuthor(BaseViewer):
             except Exception:
                 print(
                     "Failed to parse dates for PR: ",
-                    pr.get("html_url"),
+                    pr.html_url,
                     created,
                     merged,
                 )
                 continue
             delta_days = (dt_merged - dt_created).total_seconds() / 86400.0
-            user = pr.get("user") or {}
-            login = user.get("login") if isinstance(user, dict) else str(user)
+            login = pr.user.login
             sums[login] += delta_days
             counts[login] += 1
 

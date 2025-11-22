@@ -4,7 +4,12 @@ from dataclasses import dataclass, field
 from datetime import datetime
 from typing import Any, Dict, List, Optional, Union
 
-from software_metrics_machine.core.prs.pr_types import PRDetails, PrUser, PRComments
+from software_metrics_machine.core.prs.pr_types import (
+    PRDetails,
+    PrUser,
+    PRComments,
+    PRLabels,
+)
 
 
 @dataclass
@@ -32,7 +37,8 @@ class PullRequestBuilder:
     review_comments_url: str = "unknown"
     comments: List[Dict[str, Any]] = field(default_factory=list)
     files_changed: List[str] = field(default_factory=list)
-    labels: List[str] = field(default_factory=list)
+    labels: List[PRLabels] = field(default_factory=list)
+    html_url: str = "https://github.com/org/repo/pull/1"
 
     # builder methods
     def with_number(self, number: int) -> "PullRequestBuilder":
@@ -63,6 +69,10 @@ class PullRequestBuilder:
         self.merged_at = merged_at
         return self
 
+    def with_html_url(self, html_url: str) -> "PullRequestBuilder":
+        self.html_url = html_url
+        return self
+
     def with_review_comments_url(
         self, review_comments_url: str
     ) -> "PullRequestBuilder":
@@ -84,7 +94,7 @@ class PullRequestBuilder:
         self.files_changed.append(path)
         return self
 
-    def with_label(self, label: str) -> "PullRequestBuilder":
+    def with_label(self, label: PRLabels) -> "PullRequestBuilder":
         self.labels.append(label)
         return self
 
@@ -104,7 +114,8 @@ class PullRequestBuilder:
                 "review_comments_url": self.review_comments_url,
                 "comments": comments,
                 # "files_changed": list(self.files_changed),
-                # "labels": list(self.labels),
+                "labels": list(self.labels),
+                "html_url": self.html_url,
             }
         )
         return pr

@@ -132,7 +132,7 @@ class GithubPrsClient:
 
         comments = []
         for pr in prs:
-            review_comments_url = pr.get("review_comments_url")
+            review_comments_url = pr.review_comments_url
             if review_comments_url:
                 print(f"Fetching review comments from {review_comments_url}")
                 params = {

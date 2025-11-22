@@ -19,6 +19,11 @@ class PrUser(BaseModel):
     login: str
 
 
+class PRLabels(BaseModel):
+    id: int
+    name: str
+
+
 class PRDetails(BaseModel):
     number: int
     title: str
@@ -27,6 +32,9 @@ class PRDetails(BaseModel):
     merged_at: Optional[str]
     closed_at: Optional[str]
     comments: List[PRComments]
+    review_comments_url: str
+    labels: List[PRLabels]
+    html_url: str
 
 
 class SummaryResult(TypedDict):

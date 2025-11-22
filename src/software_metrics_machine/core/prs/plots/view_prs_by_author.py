@@ -8,6 +8,7 @@ from software_metrics_machine.core.infrastructure.base_viewer import (
 from software_metrics_machine.apps.dashboard.components.barchart_stacked import (
     build_barchart,
 )
+from software_metrics_machine.core.prs.pr_types import PRDetails
 from software_metrics_machine.core.prs.prs_repository import PrsRepository
 from typing import List, Tuple
 
@@ -65,12 +66,10 @@ class ViewPrsByAuthor(BaseViewer):
         )
         return PlotResult(plot=chart, data=df)
 
-    def top_authors(self, prs: List[dict], top: int) -> List[Tuple[str, int]]:
+    def top_authors(self, prs: List[PRDetails], top: int) -> List[Tuple[str, int]]:
         counts = Counter()
         for pr in prs:
-            user = pr.get("user") or {}
-            login = user.get("login") if isinstance(user, dict) else str(user)
-            if not login:
-                login = "<unknown>"
+            user = pr.user
+            login = user.login
             counts[login] += 1
         return counts.most_common(top)

@@ -1,7 +1,7 @@
 import csv
 
 from software_metrics_machine.core.prs.prs_repository import PrsRepository
-from software_metrics_machine.core.prs.pr_types import SummaryResult
+from software_metrics_machine.core.prs.pr_types import SummaryResult, PRDetails
 
 
 class PrViewSummary:
@@ -93,9 +93,9 @@ class PrViewSummary:
         summary["first_pr"] = first
         summary["last_pr"] = last
 
-        merged = [p for p in self.prs if p.get("merged_at")]
-        closed = [p for p in self.prs if p.get("closed_at")]
-        without = [p for p in self.prs if not p.get("merged_at")]
+        merged = [p for p in self.prs if p.merged_at]
+        closed = [p for p in self.prs if p.closed_at]
+        without = [p for p in self.prs if not p.merged_at]
 
         summary["merged_prs"] = len(merged)
         summary["closed_prs"] = len(closed)
@@ -123,18 +123,13 @@ class PrViewSummary:
         }
         return structured_summary
 
-    def __brief_pr(self, pr: dict) -> str:
-        if not pr:
-            return "<none>"
-        number = pr.get("number") or pr.get("id") or "?"
-        title = pr.get("title") or "<no title>"
-        user = pr.get("user") or {}
-        login = (
-            user.get("login") if isinstance(user, dict) else str(user)
-        ) or "<unknown>"
-        created = pr.get("created_at") or None
-        merged = pr.get("merged_at") or None
-        closed = pr.get("closed_at") or None
+    def __brief_pr(self, pr: PRDetails) -> str:
+        number = pr.number
+        title = pr.title
+        login = pr.user.login
+        created = pr.created_at
+        merged = pr.merged_at or None
+        closed = pr.closed_at or None
 
         return {
             "number": number,

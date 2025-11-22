@@ -181,7 +181,6 @@ class TestCliPrsCommands:
 
     def test_with_stored_data_review_time_by_author(self, cli):
         # does not take into account closed prs, only prs that were merged
-
         pull_requests_data = [
             PullRequestBuilder()
             .with_created_at("2011-01-26T19:01:12Z")
@@ -310,7 +309,6 @@ class TestCliPrsCommands:
         assert f"Total PRs: {expected_count}" in result.output
 
     def test_exports_csv_data(self, cli):
-
         cli.storage.store_prs_with(
             [
                 PullRequestBuilder()

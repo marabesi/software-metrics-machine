@@ -26,26 +26,24 @@ class PrsRepository(FileSystemBaseRepository):
         self.__load()
 
     def merged(self) -> List[PRDetails]:
-        return [pr for pr in self.all_prs if pr.get("merged_at") is not None]
+        return [pr for pr in self.all_prs if pr.merged_at is not None]
 
     def closed(self) -> List[PRDetails]:
         return [
             pr
             for pr in self.all_prs
-            if pr.get("closed_at") is not None and pr.get("merged_at") is None
+            if pr.closed_at is not None and pr.merged_at is None
         ]
 
-    def __pr_open_days(self, pr) -> int:
+    def __pr_open_days(self, pr: PRDetails) -> int:
         """Return how many days the PR was open until merged."""
-        created = datetime.fromisoformat(pr["created_at"].replace("Z", "+00:00"))
-        closed = pr.get("merged_at")
+        created = datetime.fromisoformat(pr.created_at.replace("Z", "+00:00"))
+        closed = pr.merged_at
         if closed:
             closed = datetime.fromisoformat(closed.replace("Z", "+00:00"))
         else:
             # still open – use current UTC time
             closed = datetime.now(timezone.utc)
-            # closed = datetime.fromisoformat(pr["closed_at"].replace("Z", "+00:00"))
-            # return None
 
         return (closed - created).days
 
@@ -83,9 +81,9 @@ class PrsRepository(FileSystemBaseRepository):
 
         self.logger.debug(f"Calculating average open days for {len(all_prs)} PRs")
         for pr in all_prs:
-            if author and pr.get("user", {}).get("login", "").lower() != author.lower():
+            if author and pr.user.login.lower() != author.lower():
                 continue
-            created = datetime.fromisoformat(pr["created_at"].replace("Z", "+00:00"))
+            created = datetime.fromisoformat(pr.created_at.replace("Z", "+00:00"))
             month_key = created.strftime("%Y-%m")
             days = self.__pr_open_days(pr)
             pr_months.setdefault(month_key, []).append(days)
@@ -115,11 +113,11 @@ class PrsRepository(FileSystemBaseRepository):
             f"Calculating average open days for {len(all_prs)} PRs (by week)"
         )
         for pr in all_prs:
-            if pr["merged_at"] is None:
+            if pr.merged_at is None:
                 continue
-            if author and pr.get("user", {}).get("login", "").lower() != author.lower():
+            if author and pr.user.login.lower() != author.lower():
                 continue
-            created = datetime.fromisoformat(pr["created_at"].replace("Z", "+00:00"))
+            created = datetime.fromisoformat(pr.created_at.replace("Z", "+00:00"))
             # isocalendar() may return a tuple; take year and week reliably
             iso = created.isocalendar()
             year = iso[0]
@@ -140,11 +138,9 @@ class PrsRepository(FileSystemBaseRepository):
             return prs
         filtered: List[PRDetails] = []
         for pr in prs:
-            pr_labels = pr.get("labels") or []
+            pr_labels = pr.labels
             names = {
-                (label.get("name") or "").lower()
-                for label in pr_labels
-                if isinstance(label, dict)
+                label.name.lower() for label in pr_labels if isinstance(label, dict)
             }
             if names & labels_set:
                 filtered.append(pr)
@@ -152,7 +148,7 @@ class PrsRepository(FileSystemBaseRepository):
 
     def get_unique_authors(self) -> List[str]:
         """Return a list of unique author names from the PRs."""
-        authors = {pr.get("user", {}).get("login", "") for pr in self.all_prs}
+        authors = {pr.user.login for pr in self.all_prs}
         return sorted(author for author in authors if author)
 
     def prs_with_filters(self, filters=None) -> List[PRDetails]:
@@ -171,10 +167,8 @@ class PrsRepository(FileSystemBaseRepository):
             filtered_authors = []
             author_list = [a.strip().lower() for a in authors.split(",") if a.strip()]
             for pr in filtered:
-                user = pr.get("user") or {}
-                login = user.get("login") if isinstance(user, dict) else str(user)
-                if not login:
-                    login = "<unknown>"
+                user = pr.user
+                login = user.login
                 if login.lower() in author_list:
                     filtered_authors.append(pr)
             filtered = filtered_authors
@@ -185,13 +179,13 @@ class PrsRepository(FileSystemBaseRepository):
         labels_list = []
         labels_count: dict = {}
         for p in self.all_prs:
-            pr_labels = p.get("labels") or []
+            pr_labels = p.labels
             for lbl in pr_labels:
                 if not isinstance(lbl, dict):
                     # fallback when labels are strings
                     name = str(lbl).strip().lower()
                 else:
-                    name = (lbl.get("name") or "").strip().lower()
+                    name = lbl.name.strip().lower()
                 if not name:
                     continue
                 labels_count[name] = labels_count.get(name, 0) + 1
@@ -216,6 +210,7 @@ class PrsRepository(FileSystemBaseRepository):
 
         for pr in all_prs:
             pr["comments"] = []
+            pr["labels"] = []
             self.all_prs.append(PRDetails(**pr))
 
         self.logger.debug(f"Loaded {len(all_prs)} PRs")
@@ -239,7 +234,7 @@ class PrsRepository(FileSystemBaseRepository):
         self.all_prs.sort(key=super().created_at_key_sort)
 
     def __count_comments_before_merge(self, pr: dict) -> int:
-        merged_at = pr.get("merged_at")
+        merged_at = pr.merged_at
         if not merged_at:
             return 0
         try:
@@ -247,10 +242,10 @@ class PrsRepository(FileSystemBaseRepository):
         except Exception:
             return 0
 
-        comments = pr.get("comments") or []
+        comments = pr.comments
         cnt = 0
         for c in comments:
-            c_created = c.get("created_at")
+            c_created = c.created_at
             if not c_created:
                 continue
             try:
@@ -271,7 +266,7 @@ class PrsRepository(FileSystemBaseRepository):
             for pr in merged_prs:
                 try:
                     merged_dt = datetime.fromisoformat(
-                        pr["merged_at"].replace("Z", "+00:00")
+                        pr.merged_at.replace("Z", "+00:00")
                     )
                 except Exception:
                     continue
@@ -314,7 +309,7 @@ class PrsRepository(FileSystemBaseRepository):
             for pr in merged_prs:
                 try:
                     merged_dt = datetime.fromisoformat(
-                        pr["merged_at"].replace("Z", "+00:00")
+                        pr.merged_at.replace("Z", "+00:00")
                     )
                 except Exception:
                     continue
