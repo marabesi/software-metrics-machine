@@ -47,8 +47,8 @@ class PipelineExecutionDuration(BaseViewer):
 
         data = self.repository.get_workflows_run_duration(filters)
 
-        rows = data["rows"]
-        run_count = data["total"]
+        rows = data.rows
+        run_count = data.total
 
         sort_key = {
             "avg": lambda r: r[2],

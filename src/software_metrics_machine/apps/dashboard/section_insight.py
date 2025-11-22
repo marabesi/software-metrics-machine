@@ -43,8 +43,8 @@ def insights_section(repository: PipelinesRepository, date_range_picker):
             "conclusion": "success",
         }
         data = repository.get_workflows_run_duration(filters)
-        result = data["rows"]
-        total = data["total"]
+        result = data.rows
+        total = data.total
         if total == 0:
             return pn.pane.Markdown("No data available", width=200)
         avg_min = result[0][2]

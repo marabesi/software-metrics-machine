@@ -551,7 +551,7 @@ class TestPipelinesRepository:
             loader = PipelinesRepository(configuration=InMemoryConfiguration("."))
 
             data = loader.get_workflows_run_duration()
-            result = data["rows"]
+            result = data.rows
 
             name = result[0][0]
             count = result[0][1]

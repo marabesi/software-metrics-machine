@@ -1,6 +1,7 @@
 from datetime import datetime
 import json
 from typing import List, Iterable
+from dataclasses import dataclass
 
 import pandas as pd
 from software_metrics_machine.core.infrastructure.file_system_base_repository import (
@@ -15,6 +16,20 @@ from software_metrics_machine.core.pipelines.pipelines_types import (
     PipelineJob,
     PipelineRun,
 )
+
+
+@dataclass
+class PipelineDurationRow:
+    name: str
+    count: int
+    avg_min: float
+    total_min: float
+
+
+@dataclass
+class PipelineComputedDurations:
+    total: int
+    rows: List[PipelineDurationRow]
 
 
 class PipelinesRepository(FileSystemBaseRepository):
@@ -288,7 +303,7 @@ class PipelinesRepository(FileSystemBaseRepository):
             "monthly_avg": monthly_avg_values,
         }
 
-    def get_workflows_run_duration(self, filters=None):
+    def get_workflows_run_duration(self, filters=None) -> PipelineComputedDurations:
         """
         Duration is computed based on the time start/finished from all jobs
         :param filters:
@@ -311,20 +326,29 @@ class PipelinesRepository(FileSystemBaseRepository):
                     dur = None
                 name = run.get("path")
                 groups.setdefault(name, []).append(dur)
-        if not groups:
-            return {"total": len(runs), "rows": []}
 
-        # compute aggregated metrics per group
-        rows = []  # (name, count, avg_min, total_min)
+        if not groups:
+            return PipelineComputedDurations(len(runs), [])
+
+        rows_struct: List[PipelineDurationRow] = []
         for name, durs in groups.items():
             # consider only durations that are not None
             valid = [d for d in durs if d is not None and d > 0]
             jobs_count = len(durs)
             total = sum(valid) if valid else 0.0
             avg = (total / len(valid)) if valid else 0.0
-            rows.append((name, jobs_count, avg / 60.0, total / 60.0))
+            rows_struct.append(
+                PipelineDurationRow(
+                    name=name,
+                    count=jobs_count,
+                    avg_min=avg / 60.0,
+                    total_min=total / 60.0,
+                )
+            )
 
-        return {"total": len(runs), "rows": rows}
+        rows = [(r.name, r.count, r.avg_min, r.total_min) for r in rows_struct]
+
+        return PipelineComputedDurations(len(runs), rows)
 
     def get_pipeline_fails_the_most(self, filters=None):
         runs = self.runs(filters)
