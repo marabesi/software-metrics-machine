@@ -132,7 +132,7 @@ class PipelinesRepository(FileSystemBaseRepository):
     def get_unique_workflow_conclusions(self, filters=None) -> List[str]:
         """Return a list of unique workflow conclusions."""
         runs = self.runs(filters)
-        conclusions = {run.get("conclusion", "") for run in runs if "conclusion" in run}
+        conclusions = {run.conclusion for run in runs if "conclusion" in run}
         list_all = list(filter(None, list(conclusions)))
         list_all.sort()
         list_all.insert(0, "All")
@@ -141,7 +141,7 @@ class PipelinesRepository(FileSystemBaseRepository):
     def get_unique_workflow_status(self, filters=None) -> List[str]:
         """Return a list of unique workflow status."""
         runs = self.runs(filters)
-        conclusions = {run.get("status", "") for run in runs if "status" in run}
+        conclusions = {run.status for run in runs if "status" in run}
         list_all = list(filter(None, list(conclusions)))
         list_all.sort()
         list_all.insert(0, "All")
@@ -149,11 +149,11 @@ class PipelinesRepository(FileSystemBaseRepository):
 
     def get_unique_workflow_names(self) -> List[str]:
         """Return a list of unique workflow names."""
-        workflow_names = {run.get("name", "") for run in self.all_runs if "name" in run}
+        workflow_names = {run.name for run in self.all_runs}
         return list(workflow_names)
 
     def get_unique_workflow_paths(self) -> List[str]:
-        workflow_names = {run.get("path", "") for run in self.all_runs if "path" in run}
+        workflow_names = {run.path for run in self.all_runs}
         listWithPaths = list(workflow_names)
         listWithPaths.insert(0, "All")
         return listWithPaths
@@ -165,8 +165,8 @@ class PipelinesRepository(FileSystemBaseRepository):
             ids = []
 
             for run in runs:
-                if run["path"] == filters.get("path"):
-                    ids.append(run.get("id", None))
+                if run.path == filters.get("path"):
+                    ids.append(run.id)
 
             jobs = []
             for id in ids:
@@ -174,7 +174,7 @@ class PipelinesRepository(FileSystemBaseRepository):
         else:
             jobs = self.jobs()
 
-        job_names = {job.get("name", "") for job in jobs if "name" in job}
+        job_names = {job.name for job in jobs}
         list_all = list(job_names)
         list_all.insert(0, "All")
         return list_all
@@ -360,6 +360,9 @@ class PipelinesRepository(FileSystemBaseRepository):
             return
 
         all_jobs = json.loads(contents)
+
+        if all_jobs is None or len(all_jobs) == 0:
+            return
 
         for job in all_jobs:
             self.all_jobs.append(PipelineJob(**job))

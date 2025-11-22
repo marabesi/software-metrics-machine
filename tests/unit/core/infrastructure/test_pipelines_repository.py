@@ -7,7 +7,7 @@ from software_metrics_machine.core.pipelines.pipelines_repository import (
 )
 from tests.builders import as_json_string, github_workflows_data
 from tests.in_memory_configuration import InMemoryConfiguration
-from tests.pipeline_builder import PipelineJobBuilder
+from tests.pipeline_builder import PipelineBuilder
 
 
 class TestPipelinesRepository:
@@ -21,18 +21,34 @@ class TestPipelinesRepository:
             yield mock_exists
 
     def test_get_unique_workflow_names(self):
-        workflows_with_duplicates = as_json_string(
-            [
-                {"name": "Build Workflow", "id": 1},
-                {"name": "Test Workflow", "id": 2},
-                {"name": "Deploy Workflow", "id": 3},
-                {"name": "Build Workflow", "id": 4},  # Duplicate name
-            ]
-        )
+        def mocked_read_file_if_exists(file):
+            if file == "workflows.json":
+                workflows_with_duplicates = as_json_string(
+                    [
+                        PipelineBuilder()
+                        .with_id(1)
+                        .with_name("Build Workflow")
+                        .build(),
+                        PipelineBuilder().with_id(2).with_name("Test Workflow").build(),
+                        PipelineBuilder()
+                        .with_id(3)
+                        .with_name("Deploy Workflow")
+                        .build(),
+                        PipelineBuilder()
+                        .with_id(4)
+                        .with_name("Build Workflow")
+                        .build(),
+                    ]
+                )
+                return workflows_with_duplicates
+            if file == "jobs.json":
+                return as_json_string([])
+            raise FileNotFoundError(f"File {file} not found")
+
         with (
             patch(
                 "software_metrics_machine.core.infrastructure.file_system_base_repository.FileSystemBaseRepository.read_file_if_exists",
-                return_value=workflows_with_duplicates,
+                side_effect=mocked_read_file_if_exists,
             ),
         ):
             loader = PipelinesRepository(configuration=InMemoryConfiguration("."))
@@ -109,11 +125,17 @@ class TestPipelinesRepository:
         ],
     )
     def test_filter_workflows_by(self, filters, expected):
-        workflow_list = as_json_string(github_workflows_data())
+        def mocked_read_file_if_exists(file):
+            if file == "workflows.json":
+                return as_json_string(github_workflows_data())
+            if file == "jobs.json":
+                return as_json_string([])
+            return None
+
         with (
             patch(
                 "software_metrics_machine.core.infrastructure.file_system_base_repository.FileSystemBaseRepository.read_file_if_exists",
-                return_value=workflow_list,
+                side_effect=mocked_read_file_if_exists,
             ),
         ):
             loader = PipelinesRepository(configuration=InMemoryConfiguration("."))
