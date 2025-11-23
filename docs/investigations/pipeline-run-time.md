@@ -35,6 +35,7 @@ smm pipelines runs-duration \
   --start-date 2025-08-17 \
   --end-date 2025-11-17 \
   --workflow-path=".github/workflows/ci.yml" \
+  --raw-filters=status=completed,conclusion=success \
   --aggregate-by-day=true
 ```
 
@@ -65,7 +66,6 @@ The resulting data is the following (value in miuntes):
 1        test  1.020000
 2       build  0.526667
 3    coverage  0.350000
-4    delivery  0.000000
 ```
 
 <!--

@@ -71,13 +71,14 @@ pipeline, excluding skipped jobs.
 smm pipelines runs-duration
 ```
 
-| Option         | Description                          | Example <div style="width:200px"></div> |
-|----------------|--------------------------------------|--------------------------|
-| Start date     | Filter by created after this date.    | `--start-date=2025-01-01`     |
-| End date       | Filter by created before this date.   | `--end-date=2025-12-31`     |
-| Metric         | The type of metric to compute for each execution (avg, sum, count)   | `--metric=sum`     |
-| Aggregate      | Aggregate the data by day, plotting each day computing the desired metric   | `--aggregate-by-day=true`     |
-| Workflow path | Filter by the workflow file path   | `--workflow-path=".github/workflows/ci.yml"`     |
+| Option        | Description                                                                                                             | Example <div style="width:200px"></div> |
+|---------------|-------------------------------------------------------------------------------------------------------------------------|--------------------------|
+| Start date    | Filter by created after this date.                                                                                      | `--start-date=2025-01-01`     |
+| End date      | Filter by created before this date.                                                                                     | `--end-date=2025-12-31`     |
+| Metric        | The type of metric to compute for each execution (avg, sum, count)                                                      | `--metric=sum`     |
+| Aggregate     | Aggregate the data by day, plotting each day computing the desired metric                                               | `--aggregate-by-day=true`     |
+| Raw Filters   | Filters by the fields available by the provider, for example, if using GitHub, you can filters by any filter in the API | `--raw-filters=status=completed,conclusion=success`     |
+| Workflow path | Filter by the workflow file path                                                                                        | `--workflow-path=".github/workflows/ci.yml"`     |
 
 ### Examples - Runs duration
 

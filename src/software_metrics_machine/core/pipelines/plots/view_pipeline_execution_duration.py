@@ -54,7 +54,12 @@ class ViewPipelineExecutionRunsDuration(BaseViewer):
 
         for name, val, cnt in zip(names, values, counts):
             data.append(
-                {"name": name, "value": val, "count": cnt, "total_runs": run_counts}
+                {
+                    "name": name,
+                    "value": val,
+                    "total_jobs": cnt,
+                    "total_runs": run_counts,
+                }
             )
 
         chart = build_barchart(
