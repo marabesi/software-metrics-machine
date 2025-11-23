@@ -8,6 +8,7 @@ from software_metrics_machine.core.pipelines.pipelines_repository import (
 from tests.builders import as_json_string, github_workflows_data
 from tests.in_memory_configuration import InMemoryConfiguration
 from tests.pipeline_builder import PipelineBuilder, PipelineJobBuilder
+from tests.builders import mocked_read_file_if_exists
 
 
 class TestPipelinesRepository:
@@ -216,19 +217,19 @@ class TestPipelinesRepository:
             assert expected["count"] == len(result)
 
     def test_get_unique_workflow_paths(self):
-        workflows_with_duplicated_paths = as_json_string(
-            [
-                {"path": "/workflows/build.yml", "id": 1},
-                {"path": "/workflows/test.yml", "id": 2},
-                {"path": "/workflows/deploy.yml", "id": 3},
-                {"path": "/workflows/build.yml", "id": 4},
-                {"path": "/workflows/build.yml", "id": 5},
-            ]
-        )
+        workflows_with_duplicated_paths = [
+            PipelineBuilder().with_path("/workflows/build.yml").build(),
+            PipelineBuilder().with_path("/workflows/test.yml").build(),
+            PipelineBuilder().with_path("/workflows/deploy.yml").build(),
+            PipelineBuilder().with_path("/workflows/build.yml").build(),
+            PipelineBuilder().with_path("/workflows/build.yml").build(),
+        ]
         with (
             patch(
                 "software_metrics_machine.core.infrastructure.file_system_base_repository.FileSystemBaseRepository.read_file_if_exists",
-                return_value=workflows_with_duplicated_paths,
+                side_effect=lambda file: mocked_read_file_if_exists(
+                    file, workflows_with_duplicated_paths
+                ),
             ),
         ):
             loader = PipelinesRepository(configuration=InMemoryConfiguration("."))
@@ -238,27 +239,16 @@ class TestPipelinesRepository:
 
     def test_get_unique_jobs_name(self):
         jobs_with_duplicated_names = [
-            {
-                "name": "Deploy",
-            },
-            {
-                "name": "Deploy",
-            },
-            {
-                "name": "Build",
-            },
+            PipelineJobBuilder().with_name("Build").build(),
+            PipelineJobBuilder().with_name("Deploy").build(),
+            PipelineJobBuilder().with_name("Deploy").build(),
         ]
-
-        def mocked_read_file_if_exists(file):
-            if file == "workflows.json":
-                return as_json_string(github_workflows_data())
-            elif file == "jobs.json":
-                return as_json_string(jobs_with_duplicated_names)
-            raise FileNotFoundError(f"File {file} not found")
 
         with patch(
             "software_metrics_machine.core.infrastructure.file_system_base_repository.FileSystemBaseRepository.read_file_if_exists",
-            side_effect=mocked_read_file_if_exists,
+            side_effect=lambda file: mocked_read_file_if_exists(
+                file, github_workflows_data(), jobs_with_duplicated_names
+            ),
         ):
             loader = PipelinesRepository(configuration=InMemoryConfiguration("."))
 
@@ -267,33 +257,28 @@ class TestPipelinesRepository:
 
     def test_get_unique_jobs_name_filtered_by_pipeline(self):
         pipelines = github_workflows_data()
-        jobs_with_duplicated_paths = [
-            {
-                "id": 1,
-                "run_id": pipelines[0]["id"],
-                "name": "Build",
-            },
-            {
-                "id": 2,
-                "run_id": pipelines[1]["id"],
-                "name": "Deploy",
-            },
+        jobs_with_duplicated_name = [
+            PipelineJobBuilder()
+            .with_id(1)
+            .with_run_id(pipelines[0].id)
+            .with_name("Build")
+            .build(),
+            PipelineJobBuilder()
+            .with_id(2)
+            .with_run_id(pipelines[1].id)
+            .with_name("Deploy")
+            .build(),
         ]
-
-        def mocked_read_file_if_exists(file):
-            if file == "workflows.json":
-                return as_json_string(pipelines)
-            elif file == "jobs.json":
-                return as_json_string(jobs_with_duplicated_paths)
-            raise FileNotFoundError(f"File {file} not found")
 
         with patch(
             "software_metrics_machine.core.infrastructure.file_system_base_repository.FileSystemBaseRepository.read_file_if_exists",
-            side_effect=mocked_read_file_if_exists,
+            side_effect=lambda file: mocked_read_file_if_exists(
+                file, pipelines, jobs_with_duplicated_name
+            ),
         ):
             loader = PipelinesRepository(configuration=InMemoryConfiguration("."))
 
-            filter_by = pipelines[0]["path"]
+            filter_by = pipelines[0].path
             filters = {"path": filter_by}
 
             result = loader.get_unique_jobs_name(filters=filters)

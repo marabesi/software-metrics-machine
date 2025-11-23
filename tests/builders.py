@@ -4,7 +4,7 @@ from typing import Any, List
 
 from software_metrics_machine.core.pipelines.pipelines_types import PipelineRun
 from tests.pipeline_builder import PipelineJobBuilder
-from tests.pipeline_builder import PipelineBuilder
+from tests.pipeline_builder import PipelineBuilder, PipelineJob
 
 
 class TypedDictEncoder(json.JSONEncoder):
@@ -71,13 +71,15 @@ def github_workflows_data() -> List[PipelineRun]:
         .with_updated_at("2023-10-01T12:10:00Z")
         .with_event("push")
         .with_head_branch("main")
-        .with_jobs([
-            PipelineJobBuilder()
-            .with_run_id(1)
-            .with_started_at("2023-10-01T12:00:00Z")
-            .with_completed_at("2023-10-01T13:00:00Z")
-            .build()
-        ])
+        .with_jobs(
+            [
+                PipelineJobBuilder()
+                .with_run_id(1)
+                .with_started_at("2023-10-01T12:00:00Z")
+                .with_completed_at("2023-10-01T13:00:00Z")
+                .build()
+            ]
+        )
         .build(),
         PipelineBuilder()
         .with_id(2)
@@ -89,13 +91,15 @@ def github_workflows_data() -> List[PipelineRun]:
         .with_updated_at("2023-10-10T13:00:00Z")
         .with_event("pull_request")
         .with_head_branch("master")
-        .with_jobs([
-            PipelineJobBuilder()
-            .with_run_id(2)
-            .with_started_at("2023-10-10T12:00:00Z")
-            .with_completed_at("2023-10-10T13:00:00Z")
-            .build()
-        ])
+        .with_jobs(
+            [
+                PipelineJobBuilder()
+                .with_run_id(2)
+                .with_started_at("2023-10-10T12:00:00Z")
+                .with_completed_at("2023-10-10T13:00:00Z")
+                .build()
+            ]
+        )
         .build(),
         PipelineBuilder()
         .with_id(3)
@@ -107,13 +111,16 @@ def github_workflows_data() -> List[PipelineRun]:
         .with_updated_at("2023-10-01T13:00:00Z")
         .with_head_branch("master")
         .with_event("dependabot")
-        .with_jobs([
-            PipelineJobBuilder()
-            .with_run_id(3)
-            .with_started_at("2023-10-01T12:00:00Z")
-            .with_completed_at("2023-10-01T13:00:00Z")
-            .build()
-        ]).build(),
+        .with_jobs(
+            [
+                PipelineJobBuilder()
+                .with_run_id(3)
+                .with_started_at("2023-10-01T12:00:00Z")
+                .with_completed_at("2023-10-01T13:00:00Z")
+                .build()
+            ]
+        )
+        .build(),
         PipelineBuilder()
         .with_id(4)
         .with_path("dynamic/workflows/dependabot")
@@ -135,5 +142,15 @@ def github_workflows_data() -> List[PipelineRun]:
         .with_updated_at("2025-06-01T13:00:00Z")
         .with_head_branch("master")
         .with_event("dependabot")
-        .build()
+        .build(),
     ]
+
+
+def mocked_read_file_if_exists(
+    file, workflows: List[PipelineRun] = [], jobs: List[PipelineJob] = []
+):
+    if file == "workflows.json":
+        return as_json_string(workflows)
+    if file == "jobs.json":
+        return as_json_string(jobs)
+    raise FileNotFoundError(f"File {file} not found - tests.builders.builder.py")
