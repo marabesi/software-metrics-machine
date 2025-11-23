@@ -18,19 +18,14 @@ from pydantic import BaseModel
 StrOrInt = Union[str, int]
 
 
-class PipelineRun(BaseModel):
-    id: int
-    path: str
+class PipelineJobStep(BaseModel):
+    number: int
     name: str
-    created_at: str
-    run_started_at: str
-    updated_at: str
-    event: str
-    head_branch: str
     status: str
     conclusion: str
-    jobs: List[PipelineJob]
-    html_url: str
+    created_at: str
+    started_at: str
+    completed_at: str
 
 
 class PipelineJob(BaseModel):
@@ -63,17 +58,19 @@ class PipelineJob(BaseModel):
     steps: List[PipelineJobStep]
 
 
-class PipelineJobStep(BaseModel):
-    number: int
+class PipelineRun(BaseModel):
+    id: int
+    path: str
     name: str
+    created_at: str
+    run_started_at: str
+    updated_at: str
+    event: str
+    head_branch: str
     status: str
     conclusion: str
-    created_at: str
-    started_at: str
-    completed_at: str
-
-
-Pipeline = PipelineRun
+    jobs: List[PipelineJob]
+    html_url: str
 
 
 class DeploymentFrequency(TypedDict):
