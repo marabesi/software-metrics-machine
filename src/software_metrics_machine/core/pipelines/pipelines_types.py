@@ -11,6 +11,7 @@ A convenience alias `Pipeline` points to PipelineRun for places that expect a
 single type name called "Pipeline".
 """
 
+from enum import Enum
 from typing import TypedDict, List, Optional, Union
 
 from pydantic import BaseModel
@@ -26,6 +27,16 @@ class PipelineJobStep(BaseModel):
     created_at: str
     started_at: str
     completed_at: str
+
+
+class PipelineJobConclusion(str, Enum):
+    success = "success"
+    failure = "failure"
+    neutral = "neutral"
+    cancelled = "cancelled"
+    skipped = "skipped"
+    timed_out = "timed_out"
+    action_required = "action_required"
 
 
 class PipelineJob(BaseModel):
@@ -46,12 +57,12 @@ class PipelineJob(BaseModel):
     run_id: int
     name: str
     status: str
-    conclusion: str
+    conclusion: Optional[str]
     created_at: str
     started_at: str
-    completed_at: str
+    completed_at: Optional[str]
     workflow_name: str
-    html_url: str
+    html_url: Optional[str]
     head_branch: str
     labels: List[str]
     run_attempt: int
