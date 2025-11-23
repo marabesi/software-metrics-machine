@@ -38,7 +38,7 @@ end_date="2025-08-17"
   --start-date "$start_date" \
   --end-date "$end_date" \
   --workflow-path=".github/workflows/ci.yml" \
-  --metric="count"
+  --metric="sum"
 
 #./run-cli.sh pipelines jobs-by-execution-time \
 #  --start-date $start_date \

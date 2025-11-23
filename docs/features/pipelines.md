@@ -57,7 +57,8 @@ smm pipelines runs-by
 ## Pipeline Runs Duration
 
 Computes the duration of each pipeline run over time and returns a time series plot showing how long each pipeline
-execution took to complete in minutes.
+execution took to complete in minutes. The time taken is calculated based on the sum of all individual jobs executed in the
+pipeline, excluding skipped jobs.
 
 :::tabs key:cli
 == Dashboard

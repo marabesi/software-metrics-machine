@@ -1,6 +1,6 @@
 from datetime import datetime
 import json
-from typing import List, Iterable
+from typing import List, Iterable, Optional
 
 import pandas as pd
 from software_metrics_machine.core.infrastructure.file_system_base_repository import (
@@ -281,12 +281,18 @@ class PipelinesRepository(FileSystemBaseRepository):
             "monthly_avg": monthly_avg_values,
         }
 
-    def get_workflows_run_duration(self, filters=None) -> PipelineComputedDurations:
+    def get_workflows_run_duration(
+        self, filters: Optional[PipelineFilters] = None
+    ) -> PipelineComputedDurations:
         runs = self.runs(filters)
+        total_runs = len(runs)
         groups: dict[str, List[float]] = {}
+
         for run in runs:
             name = run.path
             for job in run.jobs:
+                if job.conclusion == "skipped":
+                    continue
                 start = job.started_at
                 end = job.completed_at
                 sdt = self.__parse_dt(start)
@@ -299,7 +305,7 @@ class PipelinesRepository(FileSystemBaseRepository):
                     self.logger.warning(f"No completed_at for job {job.id}")
 
         if not groups:
-            return PipelineComputedDurations(len(runs), [])
+            return PipelineComputedDurations(total_runs, [])
 
         rows_struct: List[PipelineDurationRow] = []
         for name, durs in groups.items():
@@ -319,7 +325,7 @@ class PipelinesRepository(FileSystemBaseRepository):
 
         rows = [(r.name, r.count, r.avg_min, r.total_min) for r in rows_struct]
 
-        return PipelineComputedDurations(len(runs), rows)
+        return PipelineComputedDurations(total_runs, rows)
 
     def get_pipeline_fails_the_most(self, filters=None):
         runs = self.runs(filters)
