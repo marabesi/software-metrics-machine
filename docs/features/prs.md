@@ -16,15 +16,6 @@ drill down into the data that matters most for your team. This enables you to mo
 
 :::tabs key:cli
 == Dashboard
-![Pull requests timeline](/dashboard/prs/prs_timeline.png)
-
-== CLI
-
-```bash
-smm prs average-open-by
-```
-
-:::
 
 ### Type of Chart
 
@@ -33,6 +24,21 @@ Bar chart (daily breakdown, with separate bars for opened and closed PRs).
 ### Insight Provided
 
 Shows the volume of PRs opened and closed each day. This helps you spot bottlenecks, busy periods, or trends in your team's workflow.
+
+![Pull requests timeline](/dashboard/prs/prs_timeline.png)
+
+== CLI
+
+```bash
+smm prs average-open-by
+```
+
+| Option         | Description                          | Example                  |
+|----------------|--------------------------------------|--------------------------|
+| Start date     | Fetches PRs created after a date.    | `--start-date=2025-01-01`     |
+| End date       | Fetches PRs created before a date.   | `--end-date=2025-12-31`     |
+
+:::
 
 ### Example Usage
 
@@ -51,6 +57,15 @@ For example, if September 25th shows many opened PRs but none closed, it could s
 :::tabs key:cli
 == Dashboard
 
+### Type of Chart
+
+Line chart (trend of average days PRs remain open, aggregated by week or month).
+
+
+### Insight Provided
+
+Tracks how long PRs stay open before merging, revealing your team's velocity and review efficiency.
+
 ![Pull requests open by on average](/dashboard/prs/open_prs_average.png)
 
 == CLI
@@ -61,13 +76,6 @@ smm prs average-open-by
 
 :::
 
-### Type of Chart
-
-Line chart (trend of average days PRs remain open, aggregated by week or month).
-
-### Insight Provided
-
-Tracks how long PRs stay open before merging, revealing your team's velocity and review efficiency.
 
 ### Example Usage
 
@@ -91,6 +99,15 @@ by days.
 
 :::tabs key:cli
 == Dashboard
+
+### Type of Chart
+
+Horizontal bar chart (authors ranked by average PR open time).
+
+### Insight Provided
+
+Highlights which contributors have PRs that remain open the longest, helping identify review bottlenecks or training needs.
+
 ![Pull requests open by author](/dashboard/prs/prs_open_by_author.png)
 
 == CLI
@@ -115,13 +132,6 @@ smm prs review-time-by-author --labels=bug,enhancement --top=5
 :::
 
 
-### Type of Chart
-
-Horizontal bar chart (authors ranked by average PR open time).
-
-### Insight Provided
-
-Highlights which contributors have PRs that remain open the longest, helping identify review bottlenecks or training needs.
 
 ### Example Usage
 
@@ -145,6 +155,14 @@ example, if Alice's PRs average 7 days open while others average 2, you can inve
 :::tabs key:cli
 == Dashboard
 
+### Type of Chart
+
+Horizontal bar chart (authors ranked by number of PRs opened).
+
+### Insight Provided
+
+Shows who is most active in opening PRs, helping you recognize top contributors and balance workload.
+
 == CLI
 
 ```bash
@@ -153,13 +171,6 @@ smm prs by-author
 
 :::
 
-### Type of Chart
-
-Horizontal bar chart (authors ranked by number of PRs opened).
-
-### Insight Provided
-
-Shows who is most active in opening PRs, helping you recognize top contributors and balance workload.
 
 ### Example Usage
 
