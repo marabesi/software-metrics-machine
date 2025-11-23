@@ -61,14 +61,14 @@ class PipelineJob(BaseModel):
 class PipelineRun(BaseModel):
     id: int
     path: str
-    name: str
+    name: Optional[str]
     created_at: str
     run_started_at: str
-    updated_at: str
+    updated_at: Optional[str]
     event: str
-    head_branch: str
-    status: str
-    conclusion: str
+    head_branch: Optional[str]
+    status: Optional[str]
+    conclusion: Optional[str]
     jobs: List[PipelineJob]
     html_url: str
 
