@@ -53,10 +53,7 @@ class JobsSummary:
                 run_id = j.run_id
                 wf_name = run_id_to_name.get(run_id)
 
-            if wf_name:
-                composite = f"{job_name} :: {wf_name}"
-            else:
-                composite = job_name
+            composite = job_name
 
             composite_names.add(composite)
             name_counts[composite] += 1

@@ -32,6 +32,7 @@ class PipelineJob(BaseModel):
     - workflow_path, workflow, run_name: optional helpers attached during loading
     """
 
+    id: int
     run_id: int
     name: str
     conclusion: str

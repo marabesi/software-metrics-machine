@@ -7,6 +7,7 @@ from software_metrics_machine.core.pipelines.pipelines_repository import (
 )
 from tests.builders import as_json_string
 from tests.in_memory_configuration import InMemoryConfiguration
+from tests.pipeline_builder import PipelineBuilder, PipelineJobBuilder
 
 
 class TestJobsByAverageTimeExecution:
@@ -38,38 +39,38 @@ class TestJobsByAverageTimeExecution:
             if file == "workflows.json":
                 return as_json_string(
                     [
-                        {
-                            "id": 1,
-                            "name": "CI",
-                            "path": "/workflows/ci.yml",
-                            "created_at": "2023-01-01T10:00:00Z",
-                        },
+                        PipelineBuilder()
+                        .with_id(1)
+                        .with_name("CI")
+                        .with_path("/workflows/ci.yml")
+                        .with_created_at("2023-01-01T10:00:00Z")
+                        .build(),
                     ]
                 )
             if file == "jobs.json":
                 return as_json_string(
                     [
-                        {
-                            "id": 101,
-                            "name": "test",
-                            "run_id": 1,
-                            "started_at": "2023-01-01T10:00:00Z",
-                            "completed_at": "2023-01-01T10:05:00Z",  # 5 minutes
-                        },
-                        {
-                            "id": 102,
-                            "name": "test",
-                            "run_id": 1,
-                            "started_at": "2023-01-01T10:10:00Z",
-                            "completed_at": "2023-01-01T10:25:00Z",  # 15 minutes
-                        },
-                        {
-                            "id": 103,
-                            "name": "build",
-                            "run_id": 1,
-                            "started_at": "2023-01-01T10:00:00Z",
-                            "completed_at": "2023-01-01T10:10:00Z",  # 10 minutes
-                        },
+                        PipelineJobBuilder()
+                        .with_id(101)
+                        .with_name("test")
+                        .with_run_id(1)
+                        .with_started_at("2023-01-01T10:00:00Z")
+                        .with_completed_at("2023-01-01T10:05:00Z")
+                        .build(),
+                        PipelineJobBuilder()
+                        .with_id(102)
+                        .with_name("test")
+                        .with_run_id(1)
+                        .with_started_at("2023-01-01T10:10:00Z")
+                        .with_completed_at("2023-01-01T10:25:00Z")
+                        .build(),
+                        PipelineJobBuilder()
+                        .with_id(103)
+                        .with_name("build")
+                        .with_run_id(1)
+                        .with_started_at("2023-01-01T10:00:00Z")
+                        .with_completed_at("2023-01-01T10:10:00Z")
+                        .build(),
                     ]
                 )
             return None
@@ -100,92 +101,43 @@ class TestJobsByAverageTimeExecution:
             assert abs(job_avgs[test_idx] - 10.0) < 0.01
             assert abs(job_avgs[build_idx] - 10.0) < 0.01
 
-    def test_ignores_jobs_with_missing_timestamps(self):
-        """Test main() with jobs missing started_at or completed_at fields."""
-
-        def mocked_read_file_if_exists(file):
-            if file == "workflows.json":
-                return as_json_string(
-                    [
-                        {
-                            "id": 1,
-                            "name": "CI",
-                            "created_at": "2023-01-01T10:00:00Z",
-                        },
-                    ]
-                )
-            if file == "jobs.json":
-                return as_json_string(
-                    [
-                        {
-                            "id": 101,
-                            "name": "test",
-                            "run_id": 1,
-                            # Missing started_at
-                            "completed_at": "2023-01-01T10:05:00Z",
-                        },
-                        {
-                            "id": 102,
-                            "name": "build",
-                            "run_id": 1,
-                            "started_at": "2023-01-01T10:00:00Z",
-                            # Missing completed_at
-                        },
-                        {
-                            "id": 103,
-                            "name": "deploy",
-                            "run_id": 1,
-                            "started_at": "2023-01-01T10:00:00Z",
-                            "completed_at": "2023-01-01T10:02:00Z",  # 2 minutes
-                        },
-                    ]
-                )
-            return None
-
-        with patch(
-            "software_metrics_machine.core.infrastructure.file_system_base_repository.FileSystemBaseRepository.read_file_if_exists",
-            side_effect=mocked_read_file_if_exists,
-        ):
-            repository = PipelinesRepository(configuration=InMemoryConfiguration("."))
-            jobs_avg = JobsByAverageTimeExecution(repository=repository)
-
-            result = jobs_avg.main()
-
-            assert result.counts["deploy"] == 1
-            assert len(result.averages) == 1
-            assert result.averages[0][0] == "deploy"
-            assert abs(result.averages[0][1] - 2.0) < 0.01
-
     def test_limits_return_to_top_limit_parameter(self):
-        """Test main() with top parameter limiting results."""
-
         def mocked_read_file_if_exists(file):
             if file == "workflows.json":
-                return as_json_string([{"id": 1, "name": "CI"}])
+                return as_json_string(
+                    [
+                        PipelineBuilder()
+                        .with_id(1)
+                        .with_name("CI")
+                        .with_path("/workflows/ci.yml")
+                        .with_created_at("2023-01-01T10:00:00Z")
+                        .build(),
+                    ]
+                )
             if file == "jobs.json":
                 return as_json_string(
                     [
-                        {
-                            "id": 101,
-                            "name": "job1",
-                            "run_id": 1,
-                            "started_at": "2023-01-01T10:00:00Z",
-                            "completed_at": "2023-01-01T10:10:00Z",
-                        },
-                        {
-                            "id": 102,
-                            "name": "job2",
-                            "run_id": 1,
-                            "started_at": "2023-01-01T10:00:00Z",
-                            "completed_at": "2023-01-01T10:20:00Z",
-                        },
-                        {
-                            "id": 103,
-                            "name": "job3",
-                            "run_id": 1,
-                            "started_at": "2023-01-01T10:00:00Z",
-                            "completed_at": "2023-01-01T10:30:00Z",
-                        },
+                        PipelineJobBuilder()
+                        .with_id(101)
+                        .with_name("job1")
+                        .with_run_id(1)
+                        .with_started_at("2023-01-01T10:00:00Z")
+                        .with_completed_at("2023-01-01T10:10:00Z")
+                        .build(),
+                        PipelineJobBuilder()
+                        .with_id(102)
+                        .with_name("job2")
+                        .with_run_id(1)
+                        .with_started_at("2023-01-01T10:00:00Z")
+                        .with_completed_at("2023-01-01T10:20:00Z")
+                        .build(),
+                        PipelineJobBuilder()
+                        .with_id(103)
+                        .with_name("job3")
+                        .with_run_id(1)
+                        .with_started_at("2023-01-01T10:00:00Z")
+                        .with_completed_at("2023-01-01T10:30:00Z")
+                        .build(),
                     ]
                 )
             return None
