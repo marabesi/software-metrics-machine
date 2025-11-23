@@ -139,9 +139,7 @@ class PrsRepository(FileSystemBaseRepository):
         filtered: List[PRDetails] = []
         for pr in prs:
             pr_labels = pr.labels
-            names = {
-                label.name.lower() for label in pr_labels if isinstance(label, dict)
-            }
+            names = {label.name.lower() for label in pr_labels}
             if names & labels_set:
                 filtered.append(pr)
         return filtered
@@ -181,13 +179,7 @@ class PrsRepository(FileSystemBaseRepository):
         for p in self.all_prs:
             pr_labels = p.labels
             for lbl in pr_labels:
-                if not isinstance(lbl, dict):
-                    # fallback when labels are strings
-                    name = str(lbl).strip().lower()
-                else:
-                    name = lbl.name.strip().lower()
-                if not name:
-                    continue
+                name = lbl.name.strip().lower()
                 labels_count[name] = labels_count.get(name, 0) + 1
 
         for label, count in labels_count.items():
@@ -195,7 +187,7 @@ class PrsRepository(FileSystemBaseRepository):
 
         return labels_list
 
-    def __load(self) -> List[PRDetails]:
+    def __load(self) -> None:
         all_prs = []
         self.logger.debug("Loading PRs")
         contents = super().read_file_if_exists(self.file)

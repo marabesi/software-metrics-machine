@@ -25,6 +25,7 @@ class PRLabels(BaseModel):
 
 
 class PRDetails(BaseModel):
+    id: int
     number: int
     title: str
     user: PrUser

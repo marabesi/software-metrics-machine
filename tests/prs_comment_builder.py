@@ -19,7 +19,7 @@ class PullRequestCommentsBuilder:
         self.body = body
         return self
 
-    def with_number(self, number: str) -> "PullRequestCommentsBuilder":
+    def with_number(self, number: int) -> "PullRequestCommentsBuilder":
         self.number = number
         return self
 

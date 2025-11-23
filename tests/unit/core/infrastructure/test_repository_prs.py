@@ -1,10 +1,12 @@
 import pytest
+
 from software_metrics_machine.core.prs.prs_repository import PrsRepository
 from unittest.mock import patch
 from tests.in_memory_configuration import InMemoryConfiguration
 from tests.builders import as_json_string
 from tests.prs_builder import PullRequestBuilder
 from tests.prs_comment_builder import PullRequestCommentsBuilder
+from tests.prs_label_builder import PullRequestLabelBuilder
 
 
 class TestRepositoryPrs:
@@ -16,8 +18,10 @@ class TestRepositoryPrs:
     def test_load_provided_prs_data_when_exists(self):
         mocked_prs_data = [
             PullRequestBuilder()
+            .with_title("Fix bug")
             .with_created_at("2011-01-26T19:01:12Z")
             .with_closed_at("2011-01-26T19:02:12Z")
+            .with_author("user1")
             .build(),
         ]
 
@@ -29,19 +33,22 @@ class TestRepositoryPrs:
             all_prs = repository.read_file_if_exists("prs.json")
 
             assert len(all_prs) == 1
-            assert all_prs[0]["id"] == 1
-            assert all_prs[0]["title"] == "Fix bug"
-            assert all_prs[0]["author"] == "user1"
-            assert all_prs[0]["created_at"] == "2025-09-20"
+            assert all_prs[0].id == 1
+            assert all_prs[0].title == "Fix bug"
+            assert all_prs[0].user.login == "user1"
+            assert all_prs[0].created_at == "2011-01-26T19:01:12Z"
 
     def test_merged(self):
         self.repository.all_prs = [
-            {"id": 1, "merged_at": "2025-09-20"},
-            {"id": 2, "merged_at": None},
+            PullRequestBuilder()
+            .with_created_at("2025-09-01T00:00:00Z")
+            .mark_merged("2025-09-06T00:00:00Z")
+            .build(),
+            PullRequestBuilder().with_created_at("2025-09-15T00:00:00Z").build(),
         ]
         merged_prs = self.repository.merged()
         assert len(merged_prs) == 1
-        assert merged_prs[0]["id"] == 1
+        assert merged_prs[0].id == 1
 
     @pytest.mark.parametrize(
         "prs, expected_weeks, expected_averages, aggregate_by",
@@ -103,17 +110,30 @@ class TestRepositoryPrs:
 
     def test_closed(self):
         self.repository.all_prs = [
-            {"id": 1, "closed_at": "2025-09-20", "merged_at": None},
-            {"id": 2, "closed_at": None},
+            PullRequestBuilder()
+            .with_id(1)
+            .with_created_at("2025-09-01T00:00:00Z")
+            .with_closed_at("2025-09-20T00:00:00Z")
+            .build(),
+            PullRequestBuilder()
+            .with_id(2)
+            .with_created_at("2025-09-01T00:00:00Z")
+            .build(),
         ]
         closed_prs = self.repository.closed()
         assert len(closed_prs) == 1
-        assert closed_prs[0]["id"] == 1
+        assert closed_prs[0].id == 1
 
     def test_average_by_month(self):
         self.repository.all_prs = [
-            {"created_at": "2025-09-01T00:00:00Z", "merged_at": "2025-09-10T00:00:00Z"},
-            {"created_at": "2025-09-15T00:00:00Z", "merged_at": "2025-09-20T00:00:00Z"},
+            PullRequestBuilder()
+            .with_created_at("2025-09-01T00:00:00Z")
+            .mark_merged("2025-09-10T00:00:00Z")
+            .build(),
+            PullRequestBuilder()
+            .with_created_at("2025-09-15T00:00:00Z")
+            .mark_merged("2025-09-20T00:00:00Z")
+            .build(),
         ]
 
         months, averages = self.repository.average_by(
@@ -125,39 +145,45 @@ class TestRepositoryPrs:
 
     def test_filter_prs_by_labels(self):
         prs = [
-            {"id": 1, "labels": [{"name": "bug"}]},
-            {"id": 2, "labels": [{"name": "enhancement"}]},
+            PullRequestBuilder()
+            .with_label(PullRequestLabelBuilder().with_id(1).with_name("bug").build())
+            .build(),
+            PullRequestBuilder()
+            .with_id(2)
+            .with_label(
+                PullRequestLabelBuilder().with_id(2).with_name("enhancement").build()
+            )
+            .build(),
         ]
 
         filtered = self.repository.filter_prs_by_labels(prs, ["bug"])
 
         assert len(filtered) == 1
-        assert filtered[0]["id"] == 1
+        assert filtered[0].id == 1
 
     def test_get_unique_authors(self):
         self.repository.all_prs = [
-            {"user": {"login": "user1"}},
-            {"user": {"login": "user2"}},
-            {"user": {"login": "user1"}},
+            PullRequestBuilder().with_author("user1").build(),
+            PullRequestBuilder().with_author("user2").build(),
+            PullRequestBuilder().with_author("user1").build(),
         ]
 
         authors = self.repository.get_unique_authors()
 
         assert authors == ["user1", "user2"]
 
-    def test_prs_with_filters_star_date(self):
+    def test_prs_with_filters_start_date(self):
         prs_fetched = as_json_string(
             [
-                {
-                    "id": 1,
-                    "user": {"login": "user1"},
-                    "created_at": "2025-09-01T00:00:00Z",
-                },
-                {
-                    "id": 2,
-                    "user": {"login": "user2"},
-                    "created_at": "2025-09-20T00:00:00Z",
-                },
+                PullRequestBuilder()
+                .with_author("user1")
+                .with_created_at("2025-09-01T00:00:00Z")
+                .build(),
+                PullRequestBuilder().with_author("user2").build(),
+                PullRequestBuilder()
+                .with_author("user1")
+                .with_created_at("2025-09-20T00:00:00Z")
+                .build(),
             ]
         )
         with patch(
@@ -170,21 +196,21 @@ class TestRepositoryPrs:
             filtered = repository.prs_with_filters(filters)
 
             assert len(filtered) == 1
-            assert filtered[0]["id"] == 1
+            assert filtered[0].id == 1
 
     def test_prs_with_filters_end_date(self):
         prs_fetched = as_json_string(
             [
-                {
-                    "id": 1,
-                    "user": {"login": "user1"},
-                    "created_at": "2025-09-01T00:00:00Z",
-                },
-                {
-                    "id": 2,
-                    "user": {"login": "user2"},
-                    "created_at": "2025-09-15T00:00:00Z",
-                },
+                PullRequestBuilder()
+                .with_id(1)
+                .with_author("user1")
+                .with_created_at("2025-09-01T00:00:00Z")
+                .build(),
+                PullRequestBuilder()
+                .with_id(2)
+                .with_author("user2")
+                .with_created_at("2025-09-15T00:00:00Z")
+                .build(),
             ]
         )
         with patch(
@@ -197,12 +223,19 @@ class TestRepositoryPrs:
             filtered = repository.prs_with_filters(filters)
 
             assert len(filtered) == 1
-            assert filtered[0]["id"] == 2
+            assert filtered[0].id == 2
 
     def test_get_unique_labels(self):
         self.repository.all_prs = [
-            {"labels": [{"name": "bug"}, {"name": "enhancement"}]},
-            {"labels": [{"name": "bug"}]},
+            PullRequestBuilder()
+            .with_label(PullRequestLabelBuilder().with_id(1).with_name("bug").build())
+            .build(),
+            PullRequestBuilder()
+            .with_label(PullRequestLabelBuilder().with_id(1).with_name("bug").build())
+            .with_label(
+                PullRequestLabelBuilder().with_id(2).with_name("enhancement").build()
+            )
+            .build(),
         ]
 
         labels = self.repository.get_unique_labels()

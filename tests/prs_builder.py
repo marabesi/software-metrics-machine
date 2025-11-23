@@ -13,19 +13,7 @@ from software_metrics_machine.core.prs.pr_types import (
 
 @dataclass
 class PullRequestBuilder:
-    """Test helper to build pull request dicts used by tests.
-
-    Usage:
-        pr = (
-            PullRequestBuilder()
-            .with_number(42)
-            .with_title("Fix bug")
-            .with_author("alice")
-            .with_comment(author="bob", body="LGTM")
-            .build()
-        )
-    """
-
+    id: int = 1
     number: int = 1
     title: str = ""
     body: str = ""
@@ -39,42 +27,43 @@ class PullRequestBuilder:
     labels: List[PRLabels] = field(default_factory=list)
     html_url: str = "https://github.com/org/repo/pull/1"
 
-    # builder methods
-    def with_number(self, number: int) -> "PullRequestBuilder":
+    def with_id(self, id: int) -> PullRequestBuilder:
+        self.id = id
+        return self
+
+    def with_number(self, number: int) -> PullRequestBuilder:
         self.number = number
         return self
 
-    def with_title(self, title: str) -> "PullRequestBuilder":
+    def with_title(self, title: str) -> PullRequestBuilder:
         self.title = title
         return self
 
-    def with_body(self, body: str) -> "PullRequestBuilder":
+    def with_body(self, body: str) -> PullRequestBuilder:
         self.body = body
         return self
 
-    def with_author(self, author: str) -> "PullRequestBuilder":
+    def with_author(self, author: str) -> PullRequestBuilder:
         self.author = author
         return self
 
-    def with_created_at(self, created_at: str) -> "PullRequestBuilder":
+    def with_created_at(self, created_at: str) -> PullRequestBuilder:
         self.created_at = created_at
         return self
 
-    def with_closed_at(self, closed_at: str) -> "PullRequestBuilder":
+    def with_closed_at(self, closed_at: str) -> PullRequestBuilder:
         self.closed_at = closed_at
         return self
 
-    def mark_merged(self, merged_at: str) -> "PullRequestBuilder":
+    def mark_merged(self, merged_at: str) -> PullRequestBuilder:
         self.merged_at = merged_at
         return self
 
-    def with_html_url(self, html_url: str) -> "PullRequestBuilder":
+    def with_html_url(self, html_url: str) -> PullRequestBuilder:
         self.html_url = html_url
         return self
 
-    def with_review_comments_url(
-        self, review_comments_url: str
-    ) -> "PullRequestBuilder":
+    def with_review_comments_url(self, review_comments_url: str) -> PullRequestBuilder:
         self.review_comments_url = review_comments_url
         return self
 
@@ -89,11 +78,11 @@ class PullRequestBuilder:
         self.comments.append(comment)
         return self
 
-    def with_file_changed(self, path: str) -> "PullRequestBuilder":
+    def with_file_changed(self, path: str) -> PullRequestBuilder:
         self.files_changed.append(path)
         return self
 
-    def with_label(self, label: PRLabels) -> "PullRequestBuilder":
+    def with_label(self, label: PRLabels) -> PullRequestBuilder:
         self.labels.append(label)
         return self
 
@@ -102,10 +91,10 @@ class PullRequestBuilder:
         comments: List[PRComments] = [c for c in self.comments]
         pr = PRDetails(
             **{
+                "id": self.id,
                 "number": self.number,
                 "title": self.title,
                 "body": self.body,
-                "author": self.author,
                 "user": PrUser(**{"login": self.author}),
                 "created_at": self.created_at,
                 "closed_at": self.closed_at,
