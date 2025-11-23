@@ -19,14 +19,20 @@ from pydantic import BaseModel
 StrOrInt = Union[str, int]
 
 
+class PipelineJobStepStatus(str, Enum):
+    queued = "queued"
+    in_progress = "in_progress"
+    completed = "completed"
+
+
 class PipelineJobStep(BaseModel):
     number: int
     name: str
     status: str
-    conclusion: str
+    conclusion: Optional[str]
     created_at: str
-    started_at: str
-    completed_at: str
+    started_at: Optional[str]
+    completed_at: Optional[str]
 
 
 class PipelineJobConclusion(str, Enum):
