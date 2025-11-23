@@ -13,7 +13,7 @@ class TestCodemaatRepository:
         repository = CodemaatRepository(
             configuration=InMemoryConfiguration(store_data=".")
         )
-        return repository.get_code_churn()
+        assert 0 == len(repository.get_code_churn())
 
     def test_get_coupling_empty(self):
         repository = CodemaatRepository(
