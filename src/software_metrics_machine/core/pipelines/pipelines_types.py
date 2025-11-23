@@ -35,29 +35,21 @@ class PipelineJob(BaseModel):
     id: int
     run_id: int
     name: str
+    status: str
     conclusion: str
     created_at: str
     started_at: str
     completed_at: str
     workflow_name: str
+    html_url: str
+    head_branch: str
+    labels: List[str]
+    run_attempt: int
     # workflow: Optional[str]
     # run_name: Optional[str]
 
 
 class PipelineRun(BaseModel):
-    """A workflow run / pipeline entry.
-
-    Common fields used in the codebase:
-    - id: run identifier (used to associate jobs)
-    - path: workflow file path or key (used to filter by workflow_path)
-    - name: human readable workflow name
-    - created_at, run_started_at, started_at, updated_at: ISO timestamps
-    - event: GitHub event that triggered the run (push, pull_request, ...)
-    - head_branch: branch name
-    - status / conclusion: status or final conclusion
-    - jobs: optional list of PipelineJob items
-    """
-
     id: int
     path: str
     name: str
@@ -69,6 +61,7 @@ class PipelineRun(BaseModel):
     status: str
     conclusion: str
     jobs: List[PipelineJob]
+    html_url: str
 
 
 Pipeline = PipelineRun

@@ -29,6 +29,7 @@ job_with_single_step_completed_successfully = [
         "started_at": "2025-09-01T00:37:46Z",
         "completed_at": "2025-09-01T00:38:14Z",
         "name": "build",
+        "labels": [],
         "steps": [
             {
                 "number": 1,
@@ -207,7 +208,6 @@ class TestJobsCliCommands:
     def test_jobs_summary_with_data_available(
         self, cli, jobs_for_test, command, expected
     ):
-
         cli.storage.store_pipelines_with(single_run())
         cli.storage.store_jobs_with(jobs_for_test)
 

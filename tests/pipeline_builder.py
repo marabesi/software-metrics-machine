@@ -20,6 +20,7 @@ class PipelineBuilder:
             created_at="2023-10-01T12:00:00Z",
             updated_at="2023-10-01T12:00:00Z",
             completed_at="2023-10-01T12:00:00Z",
+            html_url="https://github.com/aaa/json-tool/actions/runs/11",
             jobs=[],
         )
         self._job_counter = 0
@@ -84,8 +85,14 @@ class PipelineBuilder:
             started_at=started_at,
             finished_at=finished_at,
             updated_at=updated_at,
+            head_branch=self._pipeline.head_branch,
+            html_url=self._pipeline.html_url,
         )
         self._pipeline.jobs.append(job)
+        return self
+
+    def html_url(self, html_url: str):
+        self._pipeline["html_url"] = html_url
         return self
 
     def build(self) -> PipelineRun:
@@ -93,24 +100,23 @@ class PipelineBuilder:
 
 
 class PipelineJobBuilder:
-    """Test helper to build job dicts compatible with `PipelineJob` TypedDict.
-
-    Usage:
-        job = PipelineJobBuilder().with_id(1).with_name("test").build()
-    """
-
     def __init__(self):
         self._job = {
             "id": 1,
             "run_id": 1,
             "name": "job-1",
             "conclusion": "success",
+            "status": "completed",
             "created_at": "2023-10-01T12:00:00Z",
             "started_at": "2023-10-01T12:00:00Z",
             "completed_at": "2023-10-01T12:05:00Z",
             # "workflow_path": "",
             "workflow_name": "builder",
             "steps": [],
+            "html_url": "https://github.com/aaa/json-tool/actions/runs/11/job/111",
+            "head_branch": "main",
+            "labels": [],
+            "run_attempt": 1,
         }
 
     def with_run_id(self, run_id: int):
@@ -152,6 +158,25 @@ class PipelineJobBuilder:
     def with_steps(self, steps: list[dict]):
         self._job["steps"] = steps
         return self
+
+    def html_url(self, html_url: str):
+        self._job["html_url"] = html_url
+        return self
+
+    def with_status(self, status: str):
+        self._job["status"] = status
+        return self
+
+    def with_head_branch(self, head_branch: str):
+        self._job["head_branch"] = head_branch
+        return self
+
+    def with_label(self, label: str):
+        self._job["labels"].append(label)
+        return self
+
+    def with_run_attempt(self, attempt: int):
+        self._job["run_attempt"] = attempt
 
     def build(self) -> PipelineJob:
         # Return a shallow copy to avoid accidental mutation in tests

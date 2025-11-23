@@ -338,7 +338,8 @@ def pipeline_section(
         "event",
     ]
     pipeline_rows = [
-        {k: run.get(k) for k in pick_pipeline} for run in repository.all_runs
+        {k: run.__getattribute__(k) for k in pick_pipeline}
+        for run in repository.all_runs
     ]
     df_pipelines = pd.DataFrame(pipeline_rows)
 
@@ -349,14 +350,15 @@ def pipeline_section(
         "status",
         "conclusion",
         "created_at",
-        "updated_at",
+        "completed_at",
         "html_url",
         "head_branch",
         "labels",
-        "runner_group_name",
         "run_attempt",
     ]
-    jobs_rows = [{k: run.get(k) for k in pick_jobs} for run in repository.all_jobs]
+    jobs_rows = [
+        {k: run.__getattribute__(k) for k in pick_jobs} for run in repository.all_jobs
+    ]
     jobs_filter_criteria = {
         "id": {"type": "input", "func": "like", "placeholder": "id"},
         "run_id": {"type": "input", "func": "like", "placeholder": ""},
@@ -373,7 +375,6 @@ def pipeline_section(
         },
         "name": {"type": "list", "func": "like", "placeholder": "event"},
         "labels": {"type": "list", "func": "like", "placeholder": "event"},
-        "runner_group_name": {"type": "list", "func": "like", "placeholder": "event"},
     }
     df_jobs = pd.DataFrame(jobs_rows)
 
