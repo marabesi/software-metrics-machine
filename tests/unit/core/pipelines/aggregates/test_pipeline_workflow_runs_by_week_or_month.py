@@ -7,6 +7,7 @@ from software_metrics_machine.core.pipelines.pipelines_repository import (
 )
 from tests.builders import as_json_string
 from tests.in_memory_configuration import InMemoryConfiguration
+from tests.pipeline_builder import PipelineBuilder
 
 
 class TestPipelineWorkflowRunsByWeekOrMonth:
@@ -38,36 +39,34 @@ class TestPipelineWorkflowRunsByWeekOrMonth:
             assert result.runs == []
 
     def test_runs_grouped_by_week(self):
-        """Test main() with runs grouped by week."""
-
         def mocked_read_file_if_exists(file):
             if file == "workflows.json":
                 return as_json_string(
                     [
-                        {
-                            "id": 1,
-                            "name": "CI",
-                            "path": "/workflows/ci.yml",
-                            "created_at": "2023-01-02T10:00:00Z",  # Week 1
-                        },
-                        {
-                            "id": 2,
-                            "name": "CI",
-                            "path": "/workflows/ci.yml",
-                            "created_at": "2023-01-03T10:00:00Z",  # Week 1
-                        },
-                        {
-                            "id": 3,
-                            "name": "Build",
-                            "path": "/workflows/build.yml",
-                            "created_at": "2023-01-09T10:00:00Z",  # Week 2
-                        },
-                        {
-                            "id": 4,
-                            "name": "CI",
-                            "path": "/workflows/ci.yml",
-                            "created_at": "2023-01-10T10:00:00Z",  # Week 2
-                        },
+                        PipelineBuilder()
+                        .with_id(1)
+                        .with_name("CI")
+                        .with_path("/workflows/ci.yml")
+                        .with_created_at("2023-01-02T10:00:00Z")
+                        .build(),
+                        PipelineBuilder()
+                        .with_id(2)
+                        .with_name("CI")
+                        .with_path("/workflows/ci.yml")
+                        .with_created_at("2023-01-02T10:00:00Z")
+                        .build(),
+                        PipelineBuilder()
+                        .with_id(3)
+                        .with_name("Build")
+                        .with_path("/workflows/build.yml")
+                        .with_created_at("2023-01-09T10:00:00Z")
+                        .build(),
+                        PipelineBuilder()
+                        .with_id(4)
+                        .with_name("CI")
+                        .with_path("/workflows/ci.yml")
+                        .with_created_at("2023-01-10T10:00:00Z")
+                        .build(),
                     ]
                 )
             if file == "jobs.json":
@@ -111,42 +110,40 @@ class TestPipelineWorkflowRunsByWeekOrMonth:
             assert result.data_matrix[build_idx][week2_idx] == 1
 
     def test_runs_grouped_by_month(self):
-        """Test main() with runs grouped by month."""
-
         def mocked_read_file_if_exists(file):
             if file == "workflows.json":
                 return as_json_string(
                     [
-                        {
-                            "id": 1,
-                            "name": "CI",
-                            "path": "/workflows/ci.yml",
-                            "created_at": "2023-01-15T10:00:00Z",
-                        },
-                        {
-                            "id": 2,
-                            "name": "CI",
-                            "path": "/workflows/ci.yml",
-                            "created_at": "2023-01-20T10:00:00Z",
-                        },
-                        {
-                            "id": 3,
-                            "name": "Build",
-                            "path": "/workflows/build.yml",
-                            "created_at": "2023-02-10T10:00:00Z",
-                        },
-                        {
-                            "id": 4,
-                            "name": "CI",
-                            "path": "/workflows/ci.yml",
-                            "created_at": "2023-02-15T10:00:00Z",
-                        },
-                        {
-                            "id": 5,
-                            "name": "Build",
-                            "path": "/workflows/build.yml",
-                            "created_at": "2023-02-20T10:00:00Z",
-                        },
+                        PipelineBuilder()
+                        .with_id(1)
+                        .with_name("CI")
+                        .with_path("/workflows/ci.yml")
+                        .with_created_at("2023-01-15T10:00:00Z")
+                        .build(),
+                        PipelineBuilder()
+                        .with_id(2)
+                        .with_name("CI")
+                        .with_path("/workflows/ci.yml")
+                        .with_created_at("2023-01-20T10:00:00Z")
+                        .build(),
+                        PipelineBuilder()
+                        .with_id(3)
+                        .with_name("Build")
+                        .with_path("/workflows/build.yml")
+                        .with_created_at("2023-02-10T10:00:00Z")
+                        .build(),
+                        PipelineBuilder()
+                        .with_id(4)
+                        .with_name("CI")
+                        .with_path("/workflows/ci.yml")
+                        .with_created_at("2023-02-15T10:00:00Z")
+                        .build(),
+                        PipelineBuilder()
+                        .with_id(5)
+                        .with_name("Build")
+                        .with_path("/workflows/build.yml")
+                        .with_created_at("2023-02-20T10:00:00Z")
+                        .build(),
                     ]
                 )
             if file == "jobs.json":
@@ -186,38 +183,33 @@ class TestPipelineWorkflowRunsByWeekOrMonth:
             assert result.data_matrix[build_idx][feb_idx] == 2
 
     def test_runs_with_filters(self):
-        """Test main() with various filters (event, status, conclusion)."""
-
         def mocked_read_file_if_exists(file):
             if file == "workflows.json":
                 return as_json_string(
                     [
-                        {
-                            "id": 1,
-                            "name": "CI",
-                            "path": "/workflows/ci.yml",
-                            "event": "push",
-                            "status": "completed",
-                            "conclusion": "success",
-                            "created_at": "2023-01-15T10:00:00Z",
-                        },
-                        {
-                            "id": 2,
-                            "name": "CI",
-                            "path": "/workflows/ci.yml",
-                            "event": "pull_request",
-                            "status": "completed",
-                            "conclusion": "failure",
-                            "created_at": "2023-01-20T10:00:00Z",
-                        },
-                        {
-                            "id": 3,
-                            "name": "Build",
-                            "path": "/workflows/build.yml",
-                            "event": "push",
-                            "status": "in_progress",
-                            "created_at": "2023-02-10T10:00:00Z",
-                        },
+                        PipelineBuilder()
+                        .with_id(1)
+                        .with_name("CI")
+                        .with_path("/workflows/ci.yml")
+                        .with_created_at("2023-01-15T10:00:00Z")
+                        .with_event("push")
+                        .build(),
+                        PipelineBuilder()
+                        .with_id(2)
+                        .with_name("CI")
+                        .with_path("/workflows/ci.yml")
+                        .with_created_at("2023-01-20T10:00:00Z")
+                        .with_event("pull_request")
+                        .with_conclusion("failure")
+                        .build(),
+                        PipelineBuilder()
+                        .with_id(3)
+                        .with_name("Build")
+                        .with_path("/workflows/build.yml")
+                        .with_created_at("2023-02-10T10:00:00Z")
+                        .with_event("push")
+                        .with_status("in_progress")
+                        .build(),
                     ]
                 )
             if file == "jobs.json":
