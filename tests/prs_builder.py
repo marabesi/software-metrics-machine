@@ -1,8 +1,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass, field
-from datetime import datetime
-from typing import Any, Dict, List, Optional, Union
+from typing import Any, Dict, List, Optional
 
 from software_metrics_machine.core.prs.pr_types import (
     PRDetails,
@@ -80,7 +79,7 @@ class PullRequestBuilder:
         return self
 
     def with_comment(
-        self, author: str, body: str, created_at: str = None
+        self, author: str, body: str, created_at: str
     ) -> "PullRequestBuilder":
         comment = {
             "author": author,

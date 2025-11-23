@@ -1,5 +1,5 @@
 from pydantic import BaseModel
-from typing import TypedDict, List, Union, Optional
+from typing import TypedDict, List, Optional
 
 
 class LabelSummary(TypedDict):

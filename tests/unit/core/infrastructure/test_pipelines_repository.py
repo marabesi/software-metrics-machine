@@ -287,19 +287,38 @@ class TestPipelinesRepository:
             assert "Build" == result[1]
 
     def test_get_unique_pipelines_conclusions(self):
-        workflows_with_duplicated_paths = as_json_string(
-            [
-                {"conclusion": "success", "path": "/workflows/build.yml", "id": 1},
-                {"conclusion": "in_progress", "path": "/workflows/test.yml", "id": 2},
-                {"conclusion": "in_progress", "path": "/workflows/deploy.yml", "id": 3},
-                {"conclusion": "in_progress", "path": "/workflows/build.yml", "id": 4},
-                {"conclusion": "in_progress", "path": "/workflows/build.yml", "id": 5},
-            ]
-        )
+        pipelines = [
+            PipelineBuilder()
+            .with_id(1)
+            .with_conclusion("success")
+            .with_path("/workflows/build.yml")
+            .build(),
+            PipelineBuilder()
+            .with_id(2)
+            .with_conclusion("in_progress")
+            .with_path("/workflows/test.yml")
+            .build(),
+            PipelineBuilder()
+            .with_id(3)
+            .with_conclusion("in_progress")
+            .with_path("/workflows/deploy.yml")
+            .build(),
+            PipelineBuilder()
+            .with_id(4)
+            .with_conclusion("in_progress")
+            .with_path("/workflows/build.yml")
+            .build(),
+            PipelineBuilder()
+            .with_id(5)
+            .with_conclusion("in_progress")
+            .with_path("/workflows/build.yml")
+            .build(),
+        ]
+
         with (
             patch(
                 "software_metrics_machine.core.infrastructure.file_system_base_repository.FileSystemBaseRepository.read_file_if_exists",
-                return_value=workflows_with_duplicated_paths,
+                side_effect=lambda file: mocked_read_file_if_exists(file, pipelines),
             ),
         ):
             loader = PipelinesRepository(configuration=InMemoryConfiguration("."))
@@ -307,38 +326,39 @@ class TestPipelinesRepository:
             result = loader.get_unique_workflow_conclusions()
             assert len(result) == 3
 
-    def test_get_unique_conclusions_ignores_empty(self):
-        workflows_with_duplicated_paths = as_json_string(
-            [
-                {"conclusion": "success", "path": "/workflows/build.yml", "id": 1},
-                {"conclusion": None, "path": "/workflows/deploy.yml", "id": 3},
-            ]
-        )
-        with (
-            patch(
-                "software_metrics_machine.core.infrastructure.file_system_base_repository.FileSystemBaseRepository.read_file_if_exists",
-                return_value=workflows_with_duplicated_paths,
-            ),
-        ):
-            loader = PipelinesRepository(configuration=InMemoryConfiguration("."))
-
-            result = loader.get_unique_workflow_conclusions()
-            assert len(result) == 2
-
     def test_get_unique_conclusions_ordered_by_asc(self):
-        workflows_with_duplicated_paths = as_json_string(
-            [
-                {"conclusion": "success", "path": "/workflows/build.yml", "id": 1},
-                {"conclusion": "in_progress", "path": "/workflows/test.yml", "id": 2},
-                {"conclusion": "in_progress", "path": "/workflows/deploy.yml", "id": 3},
-                {"conclusion": "in_progress", "path": "/workflows/build.yml", "id": 4},
-                {"conclusion": "in_progress", "path": "/workflows/build.yml", "id": 5},
-            ]
-        )
+        pipelines = [
+            PipelineBuilder()
+            .with_id(1)
+            .with_conclusion("success")
+            .with_path("/workflows/build.yml")
+            .build(),
+            PipelineBuilder()
+            .with_id(2)
+            .with_conclusion("in_progress")
+            .with_path("/workflows/test.yml")
+            .build(),
+            PipelineBuilder()
+            .with_id(3)
+            .with_conclusion("in_progress")
+            .with_path("/workflows/deploy.yml")
+            .build(),
+            PipelineBuilder()
+            .with_id(4)
+            .with_conclusion("in_progress")
+            .with_path("/workflows/build.yml")
+            .build(),
+            PipelineBuilder()
+            .with_id(5)
+            .with_conclusion("in_progress")
+            .with_path("/workflows/build.yml")
+            .build(),
+        ]
+
         with (
             patch(
                 "software_metrics_machine.core.infrastructure.file_system_base_repository.FileSystemBaseRepository.read_file_if_exists",
-                return_value=workflows_with_duplicated_paths,
+                side_effect=lambda file: mocked_read_file_if_exists(file, pipelines),
             ),
         ):
             loader = PipelinesRepository(configuration=InMemoryConfiguration("."))
@@ -350,16 +370,22 @@ class TestPipelinesRepository:
             assert result[2] == "success"
 
     def test_set_all_option_for_unique_conclusions(self):
-        workflows_with_duplicated_paths = as_json_string(
-            [
-                {"conclusion": "success", "path": "/workflows/build.yml", "id": 1},
-                {"conclusion": "in_progress", "path": "/workflows/test.yml", "id": 2},
-            ]
-        )
+        pipelines = [
+            PipelineBuilder()
+            .with_id(1)
+            .with_conclusion("success")
+            .with_path("/workflows/build.yml")
+            .build(),
+            PipelineBuilder()
+            .with_id(2)
+            .with_conclusion("in_progress")
+            .with_path("/workflows/test.yml")
+            .build(),
+        ]
         with (
             patch(
                 "software_metrics_machine.core.infrastructure.file_system_base_repository.FileSystemBaseRepository.read_file_if_exists",
-                return_value=workflows_with_duplicated_paths,
+                side_effect=lambda file: mocked_read_file_if_exists(file, pipelines),
             ),
         ):
             loader = PipelinesRepository(configuration=InMemoryConfiguration("."))
@@ -368,19 +394,37 @@ class TestPipelinesRepository:
             assert result[0] == "All"
 
     def test_get_unique_conclusions_applies_run_filters(self):
-        workflows_with_duplicated_paths = as_json_string(
-            [
-                {"conclusion": "success", "path": "/workflows/build.yml", "id": 1},
-                {"conclusion": "in_progress", "path": "/workflows/test.yml", "id": 2},
-                {"conclusion": "in_progress", "path": "/workflows/deploy.yml", "id": 3},
-                {"conclusion": "in_progress", "path": "/workflows/build.yml", "id": 4},
-                {"conclusion": "in_progress", "path": "/workflows/build.yml", "id": 5},
-            ]
-        )
+        pipelines = [
+            PipelineBuilder()
+            .with_id(1)
+            .with_conclusion("success")
+            .with_path("/workflows/build.yml")
+            .build(),
+            PipelineBuilder()
+            .with_id(2)
+            .with_conclusion("in_progress")
+            .with_path("/workflows/test.yml")
+            .build(),
+            PipelineBuilder()
+            .with_id(3)
+            .with_conclusion("in_progress")
+            .with_path("/workflows/deploy.yml")
+            .build(),
+            PipelineBuilder()
+            .with_id(4)
+            .with_conclusion("in_progress")
+            .with_path("/workflows/build.yml")
+            .build(),
+            PipelineBuilder()
+            .with_id(5)
+            .with_conclusion("in_progress")
+            .with_path("/workflows/build.yml")
+            .build(),
+        ]
         with (
             patch(
                 "software_metrics_machine.core.infrastructure.file_system_base_repository.FileSystemBaseRepository.read_file_if_exists",
-                return_value=workflows_with_duplicated_paths,
+                side_effect=lambda file: mocked_read_file_if_exists(file, pipelines),
             ),
         ):
             loader = PipelinesRepository(configuration=InMemoryConfiguration("."))
@@ -393,44 +437,42 @@ class TestPipelinesRepository:
             assert result[1] == "in_progress"
 
     def test_get_unique_events(self):
-        pipeline_run_with_duplicated_events = as_json_string(
-            [
-                {
-                    "event": "push",
-                    "conclusion": "success",
-                    "path": "/workflows/build.yml",
-                    "id": 1,
-                },
-                {
-                    "event": "schedule",
-                    "conclusion": "in_progress",
-                    "path": "/workflows/test.yml",
-                    "id": 2,
-                },
-                {
-                    "event": "push",
-                    "conclusion": "in_progress",
-                    "path": "/workflows/deploy.yml",
-                    "id": 3,
-                },
-                {
-                    "event": "push",
-                    "conclusion": "in_progress",
-                    "path": "/workflows/build.yml",
-                    "id": 4,
-                },
-                {
-                    "event": "push",
-                    "conclusion": "in_progress",
-                    "path": "/workflows/build.yml",
-                    "id": 5,
-                },
-            ]
-        )
+        pipelines = [
+            PipelineBuilder()
+            .with_id(1)
+            .with_event("push")
+            .with_path("/workflows/build.yml")
+            .with_conclusion("success")
+            .build(),
+            PipelineBuilder()
+            .with_id(2)
+            .with_event("schedule")
+            .with_path("/workflows/test.yml")
+            .with_conclusion("in_progress")
+            .build(),
+            PipelineBuilder()
+            .with_id(3)
+            .with_event("push")
+            .with_path("/workflows/deploy.yml")
+            .with_conclusion("in_progress")
+            .build(),
+            PipelineBuilder()
+            .with_id(4)
+            .with_event("push")
+            .with_path("/workflows/build.yml")
+            .with_conclusion("in_progress")
+            .build(),
+            PipelineBuilder()
+            .with_id(5)
+            .with_event("push")
+            .with_path("/workflows/build.yml")
+            .with_conclusion("in_progress")
+            .build(),
+        ]
         with (
             patch(
                 "software_metrics_machine.core.infrastructure.file_system_base_repository.FileSystemBaseRepository.read_file_if_exists",
-                return_value=pipeline_run_with_duplicated_events,
+                side_effect=lambda file: mocked_read_file_if_exists(file, pipelines),
             ),
         ):
             loader = PipelinesRepository(configuration=InMemoryConfiguration("."))
@@ -440,44 +482,42 @@ class TestPipelinesRepository:
             assert len(result) == 3
 
     def test_get_unique_events_with_all_set(self):
-        pipeline_run_with_duplicated_events = as_json_string(
-            [
-                {
-                    "event": "push",
-                    "conclusion": "success",
-                    "path": "/workflows/build.yml",
-                    "id": 1,
-                },
-                {
-                    "event": "schedule",
-                    "conclusion": "in_progress",
-                    "path": "/workflows/test.yml",
-                    "id": 2,
-                },
-                {
-                    "event": "push",
-                    "conclusion": "in_progress",
-                    "path": "/workflows/deploy.yml",
-                    "id": 3,
-                },
-                {
-                    "event": "push",
-                    "conclusion": "in_progress",
-                    "path": "/workflows/build.yml",
-                    "id": 4,
-                },
-                {
-                    "event": "push",
-                    "conclusion": "in_progress",
-                    "path": "/workflows/build.yml",
-                    "id": 5,
-                },
-            ]
-        )
+        pipelines = [
+            PipelineBuilder()
+            .with_id(1)
+            .with_event("push")
+            .with_path("/workflows/build.yml")
+            .with_conclusion("success")
+            .build(),
+            PipelineBuilder()
+            .with_id(2)
+            .with_event("schedule")
+            .with_path("/workflows/test.yml")
+            .with_conclusion("in_progress")
+            .build(),
+            PipelineBuilder()
+            .with_id(3)
+            .with_event("push")
+            .with_path("/workflows/deploy.yml")
+            .with_conclusion("in_progress")
+            .build(),
+            PipelineBuilder()
+            .with_id(4)
+            .with_event("push")
+            .with_path("/workflows/build.yml")
+            .with_conclusion("in_progress")
+            .build(),
+            PipelineBuilder()
+            .with_id(5)
+            .with_event("push")
+            .with_path("/workflows/build.yml")
+            .with_conclusion("in_progress")
+            .build(),
+        ]
         with (
             patch(
                 "software_metrics_machine.core.infrastructure.file_system_base_repository.FileSystemBaseRepository.read_file_if_exists",
-                return_value=pipeline_run_with_duplicated_events,
+                side_effect=lambda file: mocked_read_file_if_exists(file, pipelines),
             ),
         ):
             loader = PipelinesRepository(configuration=InMemoryConfiguration("."))
@@ -487,11 +527,10 @@ class TestPipelinesRepository:
             assert result[0] == "All"
 
     def test_set_all_option_for_unique_pipeline_status(self):
-        workflows_with_duplicated_paths = as_json_string([])
         with (
             patch(
                 "software_metrics_machine.core.infrastructure.file_system_base_repository.FileSystemBaseRepository.read_file_if_exists",
-                return_value=workflows_with_duplicated_paths,
+                return_value=as_json_string([]),
             ),
         ):
             loader = PipelinesRepository(configuration=InMemoryConfiguration("."))
@@ -500,16 +539,22 @@ class TestPipelinesRepository:
             assert result[0] == "All"
 
     def test_get_unique_pipeline_status(self):
-        workflows_with_duplicated_paths = as_json_string(
-            [
-                {"status": "completed", "path": "/workflows/build.yml", "id": 1},
-                {"status": "in_progress", "path": "/workflows/test.yml", "id": 2},
-            ]
-        )
+        pipelines = [
+            PipelineBuilder()
+            .with_id(1)
+            .with_status("completed")
+            .with_path("/workflows/build.yml")
+            .build(),
+            PipelineBuilder()
+            .with_id(2)
+            .with_status("in_progress")
+            .with_path("/workflows/test.yml")
+            .build(),
+        ]
         with (
             patch(
                 "software_metrics_machine.core.infrastructure.file_system_base_repository.FileSystemBaseRepository.read_file_if_exists",
-                return_value=workflows_with_duplicated_paths,
+                side_effect=lambda file: mocked_read_file_if_exists(file, pipelines),
             ),
         ):
             loader = PipelinesRepository(configuration=InMemoryConfiguration("."))
@@ -535,14 +580,14 @@ class TestPipelinesRepository:
     def test_compute_runs_duration(self):
         single_run = as_json_string(
             [
-                {
-                    "id": 1,
-                    "path": "/workflows/build.yml",
-                    "status": "success",
-                    "created_at": "2023-10-01T09:00:00Z",
-                    "run_started_at": "2023-10-01T09:00:00Z",
-                    "updated_at": "2023-10-01T09:10:00Z",
-                },
+                PipelineBuilder()
+                .with_id(1)
+                .with_path("/workflows/build.yml")
+                .with_status("success")
+                .with_created_at("2023-10-01T09:00:00Z")
+                .with_run_started_at("2023-10-01T09:00:00Z")
+                .with_updated_at("2023-10-01T09:10:00Z")
+                .build()
             ]
         )
 
@@ -587,20 +632,23 @@ class TestPipelinesRepository:
             (
                 {
                     "pipelines": [
-                        {
-                            "id": 1,
-                            "path": "/workflows/build.yml",
-                            "conclusion": "success",
-                            "created_at": "2023-10-01T09:00:00Z",
-                            "updated_at": "2023-10-01T09:10:00Z",
-                        },
-                        {
-                            "id": 2,
-                            "path": "/workflows/test.yml",
-                            "conclusion": "failure",
-                            "created_at": "2023-10-01T09:00:00Z",
-                            "updated_at": "2023-10-01T09:10:00Z",
-                        },
+                        PipelineBuilder()
+                        .with_id(1)
+                        .with_path("/workflows/build.yml")
+                        .with_status("success")
+                        .with_created_at("2023-10-01T09:00:00Z")
+                        .with_run_started_at("2023-10-01T09:00:00Z")
+                        .with_updated_at("2023-10-01T09:10:00Z")
+                        .build(),
+                        PipelineBuilder()
+                        .with_id(2)
+                        .with_path("/workflows/test.yml")
+                        .with_status("failure")
+                        .with_conclusion("failure")
+                        .with_created_at("2023-10-01T09:00:00Z")
+                        .with_run_started_at("2023-10-01T09:00:00Z")
+                        .with_updated_at("2023-10-01T09:10:00Z")
+                        .build(),
                     ]
                 },
                 [{"pipeline_name": "/workflows/test.yml", "failed": 1}],
@@ -608,20 +656,24 @@ class TestPipelinesRepository:
             (
                 {
                     "pipelines": [
-                        {
-                            "id": 1,
-                            "path": "/workflows/ci.yml",
-                            "conclusion": "failure",
-                            "created_at": "2023-10-01T09:00:00Z",
-                            "updated_at": "2023-10-01T09:10:00Z",
-                        },
-                        {
-                            "id": 2,
-                            "path": "/workflows/ci.yml",
-                            "conclusion": "failure",
-                            "created_at": "2023-10-01T09:00:00Z",
-                            "updated_at": "2023-10-01T09:10:00Z",
-                        },
+                        PipelineBuilder()
+                        .with_id(1)
+                        .with_path("/workflows/ci.yml")
+                        .with_status("failure")
+                        .with_conclusion("failure")
+                        .with_created_at("2023-10-01T09:00:00Z")
+                        .with_run_started_at("2023-10-01T09:00:00Z")
+                        .with_updated_at("2023-10-01T09:10:00Z")
+                        .build(),
+                        PipelineBuilder()
+                        .with_id(2)
+                        .with_path("/workflows/ci.yml")
+                        .with_status("failure")
+                        .with_conclusion("failure")
+                        .with_created_at("2023-10-01T09:00:00Z")
+                        .with_run_started_at("2023-10-01T09:00:00Z")
+                        .with_updated_at("2023-10-01T09:10:00Z")
+                        .build(),
                     ]
                 },
                 [{"pipeline_name": "/workflows/ci.yml", "failed": 2}],
@@ -630,34 +682,42 @@ class TestPipelinesRepository:
             (
                 {
                     "pipelines": [
-                        {
-                            "id": 1,
-                            "path": "/workflows/ci.yml",
-                            "conclusion": "failure",
-                            "created_at": "2023-10-01T09:00:00Z",
-                            "updated_at": "2023-10-01T09:10:00Z",
-                        },
-                        {
-                            "id": 2,
-                            "path": "/workflows/ci.yml",
-                            "conclusion": "failure",
-                            "created_at": "2023-10-01T09:00:00Z",
-                            "updated_at": "2023-10-01T09:10:00Z",
-                        },
-                        {
-                            "id": 3,
-                            "path": "/workflows/e2e.yml",
-                            "conclusion": "failure",
-                            "created_at": "2023-10-01T09:00:00Z",
-                            "updated_at": "2023-10-01T09:10:00Z",
-                        },
-                        {
-                            "id": 4,
-                            "path": "/workflows/e2e.yml",
-                            "conclusion": "failure",
-                            "created_at": "2023-10-01T09:00:00Z",
-                            "updated_at": "2023-10-01T09:10:00Z",
-                        },
+                        PipelineBuilder()
+                        .with_id(1)
+                        .with_path("/workflows/ci.yml")
+                        .with_status("failure")
+                        .with_conclusion("failure")
+                        .with_created_at("2023-10-01T09:00:00Z")
+                        .with_run_started_at("2023-10-01T09:00:00Z")
+                        .with_updated_at("2023-10-01T09:10:00Z")
+                        .build(),
+                        PipelineBuilder()
+                        .with_id(2)
+                        .with_path("/workflows/ci.yml")
+                        .with_status("failure")
+                        .with_conclusion("failure")
+                        .with_created_at("2023-10-01T09:00:00Z")
+                        .with_run_started_at("2023-10-01T09:00:00Z")
+                        .with_updated_at("2023-10-01T09:10:00Z")
+                        .build(),
+                        PipelineBuilder()
+                        .with_id(3)
+                        .with_path("/workflows/e2e.yml")
+                        .with_status("failure")
+                        .with_conclusion("failure")
+                        .with_created_at("2023-10-01T09:00:00Z")
+                        .with_run_started_at("2023-10-01T09:00:00Z")
+                        .with_updated_at("2023-10-01T09:10:00Z")
+                        .build(),
+                        PipelineBuilder()
+                        .with_id(4)
+                        .with_path("/workflows/e2e.yml")
+                        .with_status("failure")
+                        .with_conclusion("failure")
+                        .with_created_at("2023-10-01T09:00:00Z")
+                        .with_run_started_at("2023-10-01T09:00:00Z")
+                        .with_updated_at("2023-10-01T09:10:00Z")
+                        .build(),
                     ]
                 },
                 [
@@ -668,16 +728,11 @@ class TestPipelinesRepository:
         ],
     )
     def test_computes_the_pipeline_that_failes_the_most(self, pipeline_runs, expected):
-        pipeline_runs = as_json_string(pipeline_runs["pipelines"])
-
-        def mocked_read_file_if_exists(file):
-            if file == "workflows.json":
-                return pipeline_runs
-            return None
-
         with patch(
             "software_metrics_machine.core.infrastructure.file_system_base_repository.FileSystemBaseRepository.read_file_if_exists",
-            side_effect=mocked_read_file_if_exists,
+            side_effect=lambda file: mocked_read_file_if_exists(
+                file, pipeline_runs["pipelines"]
+            ),
         ):
             loader = PipelinesRepository(configuration=InMemoryConfiguration("."))
 

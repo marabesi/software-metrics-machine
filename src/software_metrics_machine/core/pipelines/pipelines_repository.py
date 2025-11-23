@@ -132,7 +132,7 @@ class PipelinesRepository(FileSystemBaseRepository):
     def get_unique_workflow_conclusions(self, filters=None) -> List[str]:
         """Return a list of unique workflow conclusions."""
         runs = self.runs(filters)
-        conclusions = {run.conclusion for run in runs if "conclusion" in run}
+        conclusions = {run.conclusion for run in runs}
         list_all = list(filter(None, list(conclusions)))
         list_all.sort()
         list_all.insert(0, "All")
@@ -141,7 +141,7 @@ class PipelinesRepository(FileSystemBaseRepository):
     def get_unique_workflow_status(self, filters=None) -> List[str]:
         """Return a list of unique workflow status."""
         runs = self.runs(filters)
-        conclusions = {run.status for run in runs if "status" in run}
+        conclusions = {run.status for run in runs}
         list_all = list(filter(None, list(conclusions)))
         list_all.sort()
         list_all.insert(0, "All")
@@ -344,7 +344,7 @@ class PipelinesRepository(FileSystemBaseRepository):
 
     def get_unique_pipeline_trigger_events(self, filters=None) -> List[str]:
         runs = self.runs(filters)
-        events = {run.get("event", "") for run in runs if "event" in run}
+        events = {run.event for run in runs}
         list_all = list(filter(None, list(events)))
         list_all.sort()
         list_all.insert(0, "All")
