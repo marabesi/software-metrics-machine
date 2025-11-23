@@ -7,16 +7,17 @@ from software_metrics_machine.core.pipelines.pipelines_repository import (
 )
 from tests.builders import as_json_string
 from tests.in_memory_configuration import InMemoryConfiguration
+from tests.pipeline_builder import PipelineBuilder, PipelineJobBuilder
+from tests.builders import mocked_read_file_if_exists
 
 single_completed_pipeline_run = as_json_string(
     [
-        {
-            "id": 1,
-            "path": "/workflows/build.yml",
-            "status": "completed",
-            "conclusion": "success",
-            "created_at": "2023-10-01T09:00:00Z",
-        },
+        PipelineBuilder()
+        .with_id(1)
+        .with_path("/workflows/build.yml")
+        .with_status("completed")
+        .with_conclusion("success")
+        .with_created_at("2023-10-01T09:00:00Z")
     ]
 )
 
@@ -27,6 +28,27 @@ def pipeline_run_completed_with_success(file, jobs):
     elif file == "jobs.json":
         return as_json_string(jobs)
     return None
+
+
+jobs = [
+    PipelineJobBuilder()
+    .with_id(105)
+    .with_run_id(1)
+    .with_name("Deploy")
+    .with_conclusion("success")
+    .with_started_at("2023-10-01T09:05:00Z")
+    .with_completed_at("2023-10-01T09:10:00Z")
+    .build(),
+]
+pipeline = [
+    PipelineBuilder()
+    .with_id(1)
+    .with_path("/workflows/build.yml")
+    .with_status("completed")
+    .with_conclusion("success")
+    .with_created_at("2023-10-01T09:00:00Z")
+    .build()
+]
 
 
 class TestPipelinesRepositoryDeploymentFrequency:
@@ -58,22 +80,9 @@ class TestPipelinesRepositoryDeploymentFrequency:
             assert 0 == len(result["monthly_counts"])
 
     def test_deployment_frequency(self):
-        jobs = [
-            {
-                "id": 105,
-                "run_id": 1,
-                "name": "Deploy",
-                "conclusion": "success",
-                "started_at": "2023-10-01T09:05:00Z",
-                "completed_at": "2023-10-01T09:10:00Z",
-            },
-        ]
-
         with patch(
             "software_metrics_machine.core.infrastructure.file_system_base_repository.FileSystemBaseRepository.read_file_if_exists",
-            side_effect=lambda file: pipeline_run_completed_with_success(
-                file=file, jobs=jobs
-            ),
+            side_effect=lambda file: mocked_read_file_if_exists(file, pipeline, jobs),
         ):
             loader = PipelinesRepository(configuration=InMemoryConfiguration("."))
 
@@ -84,38 +93,9 @@ class TestPipelinesRepositoryDeploymentFrequency:
             assert "2023-W39" in result["weeks"]
 
     def test_deployment_frequency_return_the_day_which_deployment_was_done(self):
-        single_deployment = as_json_string(
-            [
-                {
-                    "id": 1,
-                    "path": "/workflows/build.yml",
-                    "status": "success",
-                    "created_at": "2023-10-01T09:00:00Z",
-                },
-            ]
-        )
-
-        def mocked_read_file_if_exists(file):
-            if file == "workflows.json":
-                return single_deployment
-            elif file == "jobs.json":
-                return as_json_string(
-                    [
-                        {
-                            "id": 105,
-                            "run_id": 1,
-                            "name": "Deploy",
-                            "conclusion": "success",
-                            "started_at": "2023-10-01T09:05:00Z",
-                            "completed_at": "2023-10-01T09:10:00Z",
-                        },
-                    ]
-                )
-            return None
-
         with patch(
             "software_metrics_machine.core.infrastructure.file_system_base_repository.FileSystemBaseRepository.read_file_if_exists",
-            side_effect=mocked_read_file_if_exists,
+            side_effect=lambda file: mocked_read_file_if_exists(file, pipeline, jobs),
         ):
             loader = PipelinesRepository(configuration=InMemoryConfiguration("."))
 
@@ -125,38 +105,22 @@ class TestPipelinesRepositoryDeploymentFrequency:
             assert "2023-10-01" in result["days"]
 
     def test_should_not_compute_when_job_failed(self):
-        single_deployment = as_json_string(
-            [
-                {
-                    "id": 1,
-                    "path": "/workflows/build.yml",
-                    "status": "success",
-                    "created_at": "2023-10-01T09:00:00Z",
-                },
-            ]
-        )
-
-        def mocked_read_file_if_exists(file):
-            if file == "workflows.json":
-                return single_deployment
-            elif file == "jobs.json":
-                return as_json_string(
-                    [
-                        {
-                            "id": 105,
-                            "run_id": 1,
-                            "name": "Deploy",
-                            "conclusion": "fail",
-                            "started_at": "2023-10-01T09:05:00Z",
-                            "completed_at": "2023-10-01T09:10:00Z",
-                        },
-                    ]
-                )
-            return None
+        failed_jobs = [
+            PipelineJobBuilder()
+            .with_id(105)
+            .with_run_id(1)
+            .with_name("Deploy")
+            .with_conclusion("fail")
+            .with_started_at("2023-10-01T09:05:00Z")
+            .with_completed_at("2023-10-01T09:10:00Z")
+            .build(),
+        ]
 
         with patch(
             "software_metrics_machine.core.infrastructure.file_system_base_repository.FileSystemBaseRepository.read_file_if_exists",
-            side_effect=mocked_read_file_if_exists,
+            side_effect=lambda file: mocked_read_file_if_exists(
+                file, pipeline, failed_jobs
+            ),
         ):
             loader = PipelinesRepository(configuration=InMemoryConfiguration("."))
 
