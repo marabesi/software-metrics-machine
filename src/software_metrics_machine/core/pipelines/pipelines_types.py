@@ -103,7 +103,7 @@ class PipelineFilters(TypedDict):
     end_date: Optional[str]
     target_branch: Optional[str]
     event: Optional[str]
-    workflow_paths: Optional[str]
+    workflow_path: Optional[str]
     include_defined_only: Optional[bool]
     status: Optional[str]
     conclusions: Optional[str]

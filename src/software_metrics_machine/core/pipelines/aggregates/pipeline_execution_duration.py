@@ -5,6 +5,7 @@ from software_metrics_machine.core.infrastructure.base_viewer import BaseViewer
 from software_metrics_machine.core.pipelines.pipelines_repository import (
     PipelinesRepository,
 )
+from software_metrics_machine.core.pipelines.pipelines_types import PipelineFilters
 
 
 @dataclass
@@ -33,11 +34,13 @@ class PipelineExecutionDuration(BaseViewer):
         raw_filters: str | None = None,
         aggregate_by_day: bool = False,
     ) -> PipelineExecutionDurationResult:
-        filters = {
-            "start_date": start_date,
-            "end_date": end_date,
-            "workflow_path": workflow_path,
-        }
+        filters = PipelineFilters(
+            **{
+                "start_date": start_date,
+                "end_date": end_date,
+                "workflow_path": workflow_path,
+            }
+        )
 
         if raw_filters:
             filters = {**filters, **self.repository.parse_raw_filters(raw_filters)}
