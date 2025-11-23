@@ -12,8 +12,6 @@ from tests.in_memory_configuration import InMemoryConfiguration
 class TestJobsByAverageTimeExecution:
 
     def test_empty_jobs(self):
-        """Test main() with empty jobs and runs."""
-
         def mocked_read_file_if_exists(file):
             if file == "workflows.json":
                 return as_json_string([])
@@ -36,8 +34,6 @@ class TestJobsByAverageTimeExecution:
             assert result.counts == {}
 
     def test_jobs_with_valid_execution_times(self):
-        """Test main() with jobs having valid started_at and completed_at times."""
-
         def mocked_read_file_if_exists(file):
             if file == "workflows.json":
                 return as_json_string(

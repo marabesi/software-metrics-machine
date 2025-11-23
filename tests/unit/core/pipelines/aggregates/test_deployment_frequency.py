@@ -10,6 +10,9 @@ from software_metrics_machine.core.pipelines.pipelines_repository import (
 from tests.builders import as_json_string, github_workflows_data
 from tests.in_memory_configuration import InMemoryConfiguration
 
+from tests.pipeline_builder import PipelineBuilder, PipelineJobBuilder
+from tests.builders import mocked_read_file_if_exists
+
 
 class TestDeploymentFrequency:
 
@@ -27,22 +30,20 @@ class TestDeploymentFrequency:
                 {
                     "pipelines": github_workflows_data(),
                     "jobs": [
-                        {
-                            "id": 105,
-                            "run_id": 1,
-                            "name": "Deploy",
-                            "conclusion": "success",
-                            "started_at": "2023-10-01T09:05:00Z",
-                            "completed_at": "2023-10-01T09:10:00Z",
-                        },
-                        {
-                            "id": 107,
-                            "run_id": 1,
-                            "name": "Build",
-                            "conclusion": "failed",
-                            "started_at": "2023-01-01T09:05:00Z",
-                            "completed_at": "2023-01-01T09:10:00Z",
-                        },
+                        PipelineJobBuilder()
+                        .with_run_id(1)
+                        .with_name("Deploy")
+                        .with_conclusion("success")
+                        .with_started_at("2023-10-01T09:05:00Z")
+                        .with_completed_at("2023-10-01T09:10:00Z")
+                        .build(),
+                        PipelineJobBuilder()
+                        .with_run_id(1)
+                        .with_name("Build")
+                        .with_conclusion("failed")
+                        .with_started_at("2023-01-01T09:05:00Z")
+                        .with_completed_at("2023-01-01T09:10:00Z")
+                        .build(),
                     ],
                 },
                 None,
@@ -51,22 +52,20 @@ class TestDeploymentFrequency:
                 {
                     "pipelines": github_workflows_data(),
                     "jobs": [
-                        {
-                            "id": 105,
-                            "run_id": 1,
-                            "name": "Deploy",
-                            "conclusion": "success",
-                            "started_at": "2023-10-01T09:05:00Z",
-                            "completed_at": "2023-10-01T09:10:00Z",
-                        },
-                        {
-                            "id": 107,
-                            "run_id": 1,
-                            "name": "Build",
-                            "conclusion": "failed",
-                            "started_at": "2023-01-01T09:05:00Z",
-                            "completed_at": "2023-01-01T09:10:00Z",
-                        },
+                        PipelineJobBuilder()
+                        .with_run_id(1)
+                        .with_name("Deploy")
+                        .with_conclusion("success")
+                        .with_started_at("2023-10-01T09:05:00Z")
+                        .with_completed_at("2023-10-01T09:10:00Z")
+                        .build(),
+                        PipelineJobBuilder()
+                        .with_run_id(1)
+                        .with_name("Build")
+                        .with_conclusion("failed")
+                        .with_started_at("2023-01-01T09:05:00Z")
+                        .with_completed_at("2023-01-01T09:10:00Z")
+                        .build(),
                     ],
                 },
                 "NonExistentJob",
@@ -77,15 +76,9 @@ class TestDeploymentFrequency:
         pipelines = data["pipelines"]
         jobs = data["jobs"]
 
-        def mocked_read_file_if_exists(file):
-            if file == "workflows.json":
-                return as_json_string(pipelines)
-            if file == "jobs.json":
-                return as_json_string(jobs)
-
         with patch(
             "software_metrics_machine.core.infrastructure.file_system_base_repository.FileSystemBaseRepository.read_file_if_exists",
-            side_effect=mocked_read_file_if_exists,
+            side_effect=lambda file: mocked_read_file_if_exists(file, pipelines, jobs),
         ):
             repository = PipelinesRepository(configuration=InMemoryConfiguration("."))
 
@@ -99,30 +92,26 @@ class TestDeploymentFrequency:
             assert [] == result["monthly_counts"]
 
     def test_no_compute_with_missing_workflow(self):
-        """If no workflow_path and no job_name are provided, do not compute deployment frequency."""
-
         def mocked_read_file_if_exists(file):
             if file == "workflows.json":
                 return as_json_string(github_workflows_data())
             if file == "jobs.json":
                 return as_json_string(
                     [
-                        {
-                            "id": 105,
-                            "run_id": 1,
-                            "name": "Deploy",
-                            "conclusion": "success",
-                            "started_at": "2023-10-01T09:05:00Z",
-                            "completed_at": "2023-10-01T09:10:00Z",
-                        },
-                        {
-                            "id": 107,
-                            "run_id": 1,
-                            "name": "Build",
-                            "conclusion": "failed",
-                            "started_at": "2023-01-01T09:05:00Z",
-                            "completed_at": "2023-01-01T09:10:00Z",
-                        },
+                        PipelineJobBuilder()
+                        .with_run_id(1)
+                        .with_name("Deploy")
+                        .with_conclusion("success")
+                        .with_started_at("2023-10-01T09:05:00Z")
+                        .with_completed_at("2023-10-01T09:10:00Z")
+                        .build(),
+                        PipelineJobBuilder()
+                        .with_run_id(1)
+                        .with_name("Build")
+                        .with_conclusion("failed")
+                        .with_started_at("2023-01-01T09:05:00Z")
+                        .with_completed_at("2023-01-01T09:10:00Z")
+                        .build(),
                     ]
                 )
 
@@ -186,24 +175,22 @@ class TestDeploymentFrequency:
             assert result["daily_counts"] == []
 
     def test_runs_with_workflow_path_filter(self):
-        """Test execute() with workflow path filter."""
-
         def mocked_read_file_if_exists(file):
             if file == "workflows.json":
                 return as_json_string(
                     [
-                        {
-                            "id": 1,
-                            "name": "Deploy",
-                            "path": "/workflows/deploy.yml",
-                            "created_at": "2023-01-01T10:00:00Z",
-                        },
-                        {
-                            "id": 2,
-                            "name": "Build",
-                            "path": "/workflows/build.yml",
-                            "created_at": "2023-01-02T10:00:00Z",
-                        },
+                        PipelineBuilder()
+                        .with_id(1)
+                        .with_name("Deploy")
+                        .with_conclusion("success")
+                        .with_created_at("2023-01-01T10:00:00Z")
+                        .build(),
+                        PipelineBuilder()
+                        .with_id(2)
+                        .with_name("Build")
+                        .with_conclusion("success")
+                        .with_created_at("2023-01-02T10:00:00Z")
+                        .build(),
                     ]
                 )
             if file == "jobs.json":
@@ -244,18 +231,18 @@ class TestDeploymentFrequency:
             if file == "workflows.json":
                 return as_json_string(
                     [
-                        {
-                            "id": 1,
-                            "name": "Deploy",
-                            "path": "/workflows/deploy.yml",
-                            "created_at": "2023-01-15T10:00:00Z",
-                        },
-                        {
-                            "id": 2,
-                            "name": "Deploy",
-                            "path": "/workflows/deploy.yml",
-                            "created_at": "2023-02-15T10:00:00Z",
-                        },
+                        PipelineBuilder()
+                        .with_id(1)
+                        .with_name("Deploy")
+                        .with_conclusion("success")
+                        .with_created_at("2023-01-01T10:00:00Z")
+                        .build(),
+                        PipelineBuilder()
+                        .with_id(2)
+                        .with_name("Deploy")
+                        .with_conclusion("success")
+                        .with_created_at("2023-01-02T10:00:00Z")
+                        .build(),
                     ]
                 )
             if file == "jobs.json":
