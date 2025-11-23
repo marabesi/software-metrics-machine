@@ -1,7 +1,8 @@
 from typing import List
 from software_metrics_machine.core.pipelines.pipelines_types import (
-    PipelineJob,
     PipelineRun,
+    PipelineJob,
+    PipelineJobStep,
 )
 
 
@@ -110,7 +111,6 @@ class PipelineJobBuilder:
             "created_at": "2023-10-01T12:00:00Z",
             "started_at": "2023-10-01T12:00:00Z",
             "completed_at": "2023-10-01T12:05:00Z",
-            # "workflow_path": "",
             "workflow_name": "builder",
             "steps": [],
             "html_url": "https://github.com/aaa/json-tool/actions/runs/11/job/111",
@@ -147,8 +147,8 @@ class PipelineJobBuilder:
         self._job["created_at"] = created_iso
         return self
 
-    def with_workflow_path(self, path: str):
-        self._job["workflow_path"] = path
+    def with_workflow_name(self, path: str):
+        self._job["workflow_name"] = path
         return self
 
     def with_run_name(self, run_name: str):
@@ -175,9 +175,58 @@ class PipelineJobBuilder:
         self._job["labels"].append(label)
         return self
 
+    def with_html_url(self, html_url: str):
+        self._job["html_url"] = html_url
+        return self
+
     def with_run_attempt(self, attempt: int):
         self._job["run_attempt"] = attempt
+        return self
 
     def build(self) -> PipelineJob:
         # Return a shallow copy to avoid accidental mutation in tests
         return PipelineJob(**self._job)
+
+
+class PipelineJobStepBuilder:
+    def __init__(self):
+        self._job_step = {
+            "number": 1,
+            "name": "step-1",
+            "conclusion": "success",
+            "status": "completed",
+            "created_at": "2023-10-01T12:00:00Z",
+            "started_at": "2023-10-01T12:00:00Z",
+            "completed_at": "2023-10-01T12:05:00Z",
+        }
+
+    def with_number(self, number: int):
+        self._job_step["number"] = number
+        return self
+
+    def with_name(self, name: str):
+        self._job_step["name"] = name
+        return self
+
+    def with_conclusion(self, conclusion: str):
+        self._job_step["conclusion"] = conclusion
+        return self
+
+    def with_started_at(self, started_iso: str):
+        self._job_step["started_at"] = started_iso
+        return self
+
+    def with_completed_at(self, completed_iso: str):
+        self._job_step["completed_at"] = completed_iso
+        return self
+
+    def with_created_at(self, created_iso: str):
+        self._job_step["created_at"] = created_iso
+        return self
+
+    def with_status(self, status: str):
+        self._job_step["status"] = status
+        return self
+
+    def build(self) -> PipelineJobStep:
+        return PipelineJobStep(**self._job_step)

@@ -9,39 +9,37 @@ from tests.github_workflow_response import (
     successfull_response_with_single_job,
     successfull_response_with_empty_jobs,
 )
-from tests.pipeline_builder import PipelineBuilder, PipelineJobBuilder
+from tests.pipeline_builder import (
+    PipelineBuilder,
+    PipelineJobBuilder,
+    PipelineJobStepBuilder,
+)
 
 job_with_single_step_completed_successfully = [
-    {
-        "id": "1",
-        "run_id": "1",
-        "workflow_name": "Node CI",
-        "head_branch": "main",
-        "run_url": "https://api.github.com/repos/marabesi/json-tool/actions/runs/17364448040",
-        "run_attempt": 1,
-        "node_id": "CR_kwDOF2CqAc8AAAALeduliQ",
-        "head_sha": "d5fe25480e3f21d1fcb1eb34e523382d478ed950",
-        "url": "https://api.github.com/repos/marabesi/json-tool/actions/jobs/49289078153",
-        "html_url": "https://github.com/marabesi/json-tool/actions/runs/17364448040/job/49289078153",
-        "status": "completed",
-        "conclusion": "success",
-        "created_at": "2025-09-01T00:37:44Z",
-        "started_at": "2025-09-01T00:37:46Z",
-        "completed_at": "2025-09-01T00:38:14Z",
-        "name": "build",
-        "labels": [],
-        "steps": [
-            {
-                "number": 1,
-                "name": "Set up job",
-                "status": "completed",
-                "conclusion": "success",
-                "created_at": "2025-09-01T00:37:47Z",
-                "started_at": "2025-09-01T00:37:47Z",
-                "completed_at": "2025-09-01T00:37:48Z",
-            },
-        ],
-    },
+    PipelineJobBuilder()
+    .with_id(1)
+    .with_run_id(1)
+    .with_steps(
+        [
+            PipelineJobStepBuilder()
+            .with_number(1)
+            .with_name("Set up job")
+            .with_status("completed")
+            .with_conclusion("success")
+            .with_created_at("2025-09-01T00:37:47Z")
+            .with_started_at("2025-09-01T00:37:47Z")
+            .with_completed_at("2025-09-01T00:37:48Z")
+            .build()
+        ]
+    )
+    .with_workflow_name("Node CI")
+    .with_head_branch("main")
+    .with_run_attempt(1)
+    .with_html_url("https://github.com/marabesi/json-tool/actions/runs/17364448040")
+    .with_status("completed")
+    .with_conclusion("success")
+    .with_name("build")
+    .build(),
 ]
 
 

@@ -18,6 +18,21 @@ from pydantic import BaseModel
 StrOrInt = Union[str, int]
 
 
+class PipelineRun(BaseModel):
+    id: int
+    path: str
+    name: str
+    created_at: str
+    run_started_at: str
+    updated_at: str
+    event: str
+    head_branch: str
+    status: str
+    conclusion: str
+    jobs: List[PipelineJob]
+    html_url: str
+
+
 class PipelineJob(BaseModel):
     """A job execution attached to a workflow run.
 
@@ -45,23 +60,17 @@ class PipelineJob(BaseModel):
     head_branch: str
     labels: List[str]
     run_attempt: int
-    # workflow: Optional[str]
-    # run_name: Optional[str]
+    steps: List[PipelineJobStep]
 
 
-class PipelineRun(BaseModel):
-    id: int
-    path: str
+class PipelineJobStep(BaseModel):
+    number: int
     name: str
-    created_at: str
-    run_started_at: str
-    updated_at: str
-    event: str
-    head_branch: str
     status: str
     conclusion: str
-    jobs: List[PipelineJob]
-    html_url: str
+    created_at: str
+    started_at: str
+    completed_at: str
 
 
 Pipeline = PipelineRun
