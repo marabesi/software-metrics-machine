@@ -17,6 +17,7 @@ from software_metrics_machine.core.pipelines.pipelines_duration_types import (
 from software_metrics_machine.core.pipelines.pipelines_types import (
     DeploymentFrequency,
     PipelineJob,
+    PipelineJobConclusion,
     PipelineRun,
     PipelineFilters,
 )
@@ -180,14 +181,17 @@ class PipelinesRepository(FileSystemBaseRepository):
         return list_all
 
     def get_deployment_frequency_for_job(
-        self, job_name: str, filters=None
+        self, job_name: str, filters: Optional[PipelineFilters]
     ) -> DeploymentFrequency:
         deployments = {}
         runs = self.runs(filters)
 
         for run in runs:
             for job in run.jobs:
-                if job.name == job_name and job.conclusion == "success":
+                if (
+                    job.name == job_name
+                    and job.conclusion == PipelineJobConclusion.success
+                ):
                     created_at = job.completed_at[:10]
                     created_at = datetime.fromisoformat(created_at + "T00:00:00+00:00")
                     day_key = str(created_at.date())

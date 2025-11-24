@@ -3,6 +3,7 @@ from software_metrics_machine.core.pipelines.pipelines_repository import (
 )
 from software_metrics_machine.core.pipelines.pipelines_types import (
     DeploymentFrequency as DeploymentFrequencyType,
+    PipelineFilters,
 )
 
 
@@ -17,11 +18,13 @@ class DeploymentFrequency:
         start_date: str | None = None,
         end_date: str | None = None,
     ) -> DeploymentFrequencyType:
-        filters = {
-            "start_date": start_date,
-            "end_date": end_date,
-            "path": workflow_path,
-        }
+        filters = PipelineFilters(
+            **{
+                "start_date": start_date,
+                "end_date": end_date,
+                "path": workflow_path,
+            }
+        )
         runs = self.repository.runs(filters)
 
         print(f"Filtered to {len(runs)} runs after applying workflow path filter")
