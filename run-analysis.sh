@@ -22,8 +22,8 @@ export SMM_STORE_DATA_AT="$analysis_dir"
 
 echo $analysis_dir
 
-start_date="2025-08-17"
-end_date="2025-08-17"
+start_date="2025-08-20"
+end_date="2025-08-20"
 
 
 #./run-cli.sh pipelines summary
@@ -34,18 +34,28 @@ end_date="2025-08-17"
 #  --end-date "$end_date" \
 #  --workflow-path=".github/workflows/ci.yml"
 
-./run-cli.sh pipelines runs-duration \
-  --start-date "$start_date" \
-  --end-date "$end_date" \
-  --workflow-path=".github/workflows/ci.yml" \
-  --raw-filters="status=completed,conclusion=success" \
-  --metric="count"
+# run only when $1 is pipeline
+
+if [ "$1" == "pipeline" ]; then
+  ./run-cli.sh pipelines runs-duration \
+    --start-date "$start_date" \
+    --end-date "$end_date" \
+    --workflow-path=".github/workflows/ci.yml" \
+    --raw-filters="status=completed,conclusion=success" \
+    --metric="count"
 
 #./run-cli.sh pipelines jobs-by-execution-time \
 #  --start-date $start_date \
 #  --end-date $end_date \
 #  --workflow-path=".github/workflows/ci.yml"
+  exit
+fi 
 
+# if [ "$1" == "pr" ]; then
+  ./run-cli.sh prs through-time \
+    --start-date "$start_date" \
+    --end-date "$end_date"
+# fi 
 
 # current="$start_date"
 

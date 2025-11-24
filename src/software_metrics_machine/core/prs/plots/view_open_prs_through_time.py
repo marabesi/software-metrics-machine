@@ -27,11 +27,12 @@ class ViewOpenPrsThroughTime(BaseViewer):
         )
 
         if not prs:
-            # return an empty hv.Text so callers can render the message
             empty = hv.Text(0, 0, "No PRs to plot for prs through time").opts(
                 height=super().get_chart_height()
             )
-            return PlotResult(plot=empty, data=pd.DataFrame())
+            return PlotResult(
+                plot=empty, data="No data available for the given period."
+            )
 
         timeline: dict[str, dict] = {}
 

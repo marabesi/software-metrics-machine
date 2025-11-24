@@ -3,6 +3,7 @@ from typing import List, Iterable
 from datetime import datetime, timezone
 
 import pandas as pd
+from pyparsing import Optional
 from software_metrics_machine.core.infrastructure.file_system_base_repository import (
     FileSystemBaseRepository,
 )
@@ -14,6 +15,7 @@ from software_metrics_machine.core.prs.pr_types import (
     LabelSummary,
     PRDetails,
     PRComments,
+    PRFilters,
 )
 
 
@@ -149,7 +151,7 @@ class PrsRepository(FileSystemBaseRepository):
         authors = {pr.user.login for pr in self.all_prs}
         return sorted(author for author in authors if author)
 
-    def prs_with_filters(self, filters=None) -> List[PRDetails]:
+    def prs_with_filters(self, filters: Optional[PRFilters] = None) -> List[PRDetails]:
         if not filters:
             return self.all_prs
 

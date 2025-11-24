@@ -33,6 +33,17 @@ class TestCliPrThroughTimeCommands:
                 ],
                 "2011-01-26  Closed      1",
             ),
+            (
+                [
+                    "prs",
+                    "through-time",
+                    "--start-date",
+                    "2011-01-25",
+                    "--end-date",
+                    "2011-01-25",
+                ],
+                "No data available for the given period.",
+            ),
         ],
     )
     def test_show_all_prs_available(self, cli, command, expected_in_output):

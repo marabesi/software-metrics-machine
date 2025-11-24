@@ -48,3 +48,10 @@ class SummaryResult(TypedDict):
     labels: List[LabelSummary]
     first_pr: PRDetails
     last_pr: PRDetails
+
+
+class PRFilters(BaseModel):
+    start_date: Optional[str] = None
+    end_date: Optional[str] = None
+    authors: Optional[str] = None
+    labels: Optional[List[str]] = None
