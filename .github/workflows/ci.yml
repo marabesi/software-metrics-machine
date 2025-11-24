@@ -7,7 +7,7 @@ on:
       - "docs/**"
 
 env:
-  PYTHON_VERSION: 3.13.7
+  PYTHON_VERSION: 3.14.0
 
 jobs:
   code-quality:
