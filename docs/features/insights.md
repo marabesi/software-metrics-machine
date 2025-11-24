@@ -19,8 +19,16 @@ processes. Those come from your pipelines. However, pairing index comes from you
 Deployment Frequency measures how often code is deployed to production. A higher deployment frequency indicates a more
 agile and responsive development process.
 
+The deployment frequency is calculated by dividing the number of deployments by the number of deployments in a given
+time period. To track the deployment frequency, Smm requires a pipeline that deploys to production.
+
 :::tabs key:cli
 == Dashboard
+
+This is configured
+in the [configuration file](./configuration.md). You need to specify the pipeline and the job that deploys
+to production.
+
 ![Insights Deployment Frequency](/dashboard/insights-deployment-frequency.png)
 
 == CLI
@@ -28,6 +36,8 @@ agile and responsive development process.
 ```bash
 smm pipelines deployment-frequency
 ```
+
+For CLI execution, you need to specify the pipeline and the job that deploys to production.
 
 | Option         | Description                          | Example                  |
 |----------------|--------------------------------------|--------------------------|
