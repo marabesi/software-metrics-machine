@@ -30,7 +30,7 @@ class PipelineJobStep(BaseModel):
     name: str
     status: str
     conclusion: Optional[str]
-    created_at: str
+    created_at: Optional[str] = None
     started_at: Optional[str]
     completed_at: Optional[str]
 
