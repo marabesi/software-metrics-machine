@@ -12,7 +12,9 @@ single type name called "Pipeline".
 """
 
 from enum import Enum
-from typing import TypedDict, List, Optional, Union
+from typing import List, Optional, Union
+from typing_extensions import TypedDict
+
 
 from pydantic import BaseModel
 
@@ -25,12 +27,12 @@ class PipelineJobStepStatus(str, Enum):
     completed = "completed"
 
 
-class PipelineJobStep(BaseModel):
+class PipelineJobStep(TypedDict, total=False):
     number: int
     name: str
     status: str
     conclusion: Optional[str]
-    created_at: Optional[str] = None
+    created_at: Optional[str]
     started_at: Optional[str]
     completed_at: Optional[str]
 
