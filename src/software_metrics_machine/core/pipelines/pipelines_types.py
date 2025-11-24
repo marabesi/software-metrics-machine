@@ -72,7 +72,7 @@ class PipelineJob(BaseModel):
     head_branch: str
     labels: List[str]
     run_attempt: int
-    steps: List[PipelineJobStep]
+    steps: List[PipelineJobStep] = []
 
 
 class PipelineRun(BaseModel):
@@ -86,7 +86,7 @@ class PipelineRun(BaseModel):
     head_branch: Optional[str]
     status: Optional[str]
     conclusion: Optional[str]
-    jobs: List[PipelineJob]
+    jobs: List[PipelineJob] = []
     html_url: str
 
 

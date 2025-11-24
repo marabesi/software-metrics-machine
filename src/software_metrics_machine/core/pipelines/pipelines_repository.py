@@ -1,8 +1,8 @@
 from datetime import datetime
-import json
 from typing import List, Iterable, Optional
 
 import pandas as pd
+from pydantic import TypeAdapter
 from software_metrics_machine.core.infrastructure.file_system_base_repository import (
     FileSystemBaseRepository,
 )
@@ -369,13 +369,8 @@ class PipelinesRepository(FileSystemBaseRepository):
             self.logger.debug("No jobs file found at jobs.json. Please fetch it first.")
             return
 
-        all_jobs = json.loads(contents)
-
-        if all_jobs is None or len(all_jobs) == 0:
-            return
-
-        for job in all_jobs:
-            self.all_jobs.append(PipelineJob(**job))
+        list_adapter_jobs = TypeAdapter(list[PipelineJob])
+        self.all_jobs = list_adapter_jobs.validate_json(contents)
 
         self.logger.debug(f"Loaded {len(self.all_jobs)} jobs")
 
@@ -396,11 +391,8 @@ class PipelinesRepository(FileSystemBaseRepository):
             )
             return
 
-        all_runs = json.loads(contents)
-
-        for run in all_runs:
-            run["jobs"] = []
-            self.all_runs.append(PipelineRun(**run))
+        list_adapter_pipeline = TypeAdapter(list[PipelineRun])
+        self.all_runs = list_adapter_pipeline.validate_json(contents)
 
         self.all_runs.sort(key=super().created_at_key_sort)
 
