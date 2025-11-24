@@ -9,7 +9,7 @@ from software_metrics_machine.core.prs.pr_types import PRComments
 @dataclass
 class PullRequestCommentsBuilder:
     id: int = 1
-    number: str = ""
+    number: int = 1
     body: str = ""
     created_at: str = field(default="")
     updated_at: Optional[str] = field(default="")
