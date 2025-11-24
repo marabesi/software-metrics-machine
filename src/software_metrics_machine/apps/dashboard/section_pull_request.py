@@ -1,8 +1,4 @@
-import pandas as pd
 import panel as pn
-from software_metrics_machine.apps.dashboard.components.tabulator import (
-    TabulatorComponent,
-)
 from software_metrics_machine.core.prs.plots.view_average_comments_per_pr import (
     ViewAverageCommentsPerPullRequest,
 )
@@ -239,21 +235,21 @@ def prs_section(
         ),
     )
 
-    pr_filter_criteria = {
-        "html_url": {"type": "input", "func": "like", "placeholder": "Enter url"},
-        "title": {"type": "input", "func": "like", "placeholder": "Title"},
-        "state": {"type": "list", "func": "like", "placeholder": "Select state"},
-    }
-    table = TabulatorComponent(
-        df=pd.DataFrame(repository.all_prs),
-        header_filters=pr_filter_criteria,
-        filename="prs",
-    )
+    # pr_filter_criteria = {
+    #     "html_url": {"type": "input", "func": "like", "placeholder": "Enter url"},
+    #     "title": {"type": "input", "func": "like", "placeholder": "Title"},
+    #     "state": {"type": "list", "func": "like", "placeholder": "Select state"},
+    # }
+    # table = TabulatorComponent(
+    #     df=pd.DataFrame(repository.all_prs),
+    #     header_filters=pr_filter_criteria,
+    #     filename="prs",
+    # )
 
     data = pn.Column(
         "## Data Section",
         "Explore your PR data with advanced filtering options and download capabilities.",
-        pn.Row(table),
+        pn.Row(""),
         sizing_mode="stretch_width",
     )
 
