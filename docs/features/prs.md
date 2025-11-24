@@ -30,7 +30,7 @@ Shows the volume of PRs opened and closed each day. This helps you spot bottlene
 == CLI
 
 ```bash
-smm prs average-open-by
+smm prs through-time
 ```
 
 | Option         | Description                          | Example                  |

@@ -18,7 +18,6 @@ class ViewOpenPrsThroughTime(BaseViewer):
     def main(
         self,
         title: str,
-        out_file: str | None = None,
         start_date: str | None = None,
         end_date: str | None = None,
         authors: str | None = None,
@@ -37,8 +36,8 @@ class ViewOpenPrsThroughTime(BaseViewer):
         timeline: dict[str, dict] = {}
 
         for pr in prs:
-            created_at = pr.get("created_at")[:10]  # Extract date only
-            closed_at = pr.get("closed_at")
+            created_at = pr.created_at[:10]
+            closed_at = pr.closed_at
 
             if created_at not in timeline:
                 timeline[created_at] = {"opened": 0, "closed": 0}
@@ -69,7 +68,6 @@ class ViewOpenPrsThroughTime(BaseViewer):
             title=title,
             xrotation=45,
             label_generator=super().build_labels_above_bars,
-            out_file=out_file,
             tools=super().get_tools(),
             color=super().get_color(),
         )

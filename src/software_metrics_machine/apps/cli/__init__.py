@@ -28,6 +28,7 @@ module_groups = {
     "prs": [
         "software_metrics_machine.apps.cli.github_fetch_prs",
         "software_metrics_machine.apps.cli.github_fetch_prs_comments",
+        "software_metrics_machine.apps.cli.pull_request_through_time",
         "software_metrics_machine.apps.cli.pull_request_average_of_prs_open_by",
         "software_metrics_machine.apps.cli.pull_request_view_average_review_time_by_author",
         "software_metrics_machine.apps.cli.pull_request_view_prs_by_author",
