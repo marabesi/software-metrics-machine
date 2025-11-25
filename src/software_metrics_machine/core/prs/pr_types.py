@@ -32,9 +32,9 @@ class PRDetails(BaseModel):
     created_at: str
     merged_at: Optional[str]
     closed_at: Optional[str]
-    comments: List[PRComments]
+    comments: List[PRComments] = []
     review_comments_url: str
-    labels: List[PRLabels]
+    labels: List[PRLabels] = []
     html_url: str
 
 

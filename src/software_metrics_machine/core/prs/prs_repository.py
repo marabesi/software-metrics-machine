@@ -199,9 +199,8 @@ class PrsRepository(FileSystemBaseRepository):
         all_prs = json.loads(contents)
 
         for pr in all_prs:
-            pr["comments"] = []
-            pr["labels"] = []
-            self.all_prs.append(PRDetails(**pr))
+            pr_details = PRDetails(**pr)
+            self.all_prs.append(pr_details)
 
         self.logger.debug(f"Loaded {len(all_prs)} PRs")
 

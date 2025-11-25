@@ -2,6 +2,7 @@ import pytest
 from software_metrics_machine.apps.cli import main
 from unittest.mock import patch
 from tests.prs_builder import PullRequestBuilder
+from software_metrics_machine.core.prs.pr_types import PRLabels
 
 
 class TestCliPrsSummaryCommands:
@@ -173,3 +174,38 @@ class TestCliPrsSummaryCommands:
         assert "Title: Add Repository Tree Navigation Tool" in result.output
         assert "Author: natagdunbar" in result.output
         assert "Created: 2025-09-30T19:12:17Z" in result.output
+
+    def test_pr_labels_are_listed_with_counts(self, cli):
+        prs = [
+            PullRequestBuilder()
+            .with_number(1)
+            .with_title("Fix issue")
+            .with_author("alice")
+            .with_created_at("2025-10-01T00:00:00Z")
+            .with_label(PRLabels(id=1, name="bug"))
+            .build(),
+            PullRequestBuilder()
+            .with_number(2)
+            .with_title("Add feature")
+            .with_author("bob")
+            .with_created_at("2025-10-02T00:00:00Z")
+            .with_label(PRLabels(id=2, name="enhancement"))
+            .with_label(PRLabels(id=1, name="bug"))
+            .build(),
+        ]
+
+        cli.storage.store_prs_with(prs)
+
+        result = cli.runner.invoke(
+            main,
+            [
+                "prs",
+                "summary",
+                "--output",
+                "text",
+            ],
+        )
+
+        assert "Unique Labels: 2" in result.output
+        assert "- bug: 2 PRs" in result.output
+        assert "- enhancement: 1 PRs" in result.output
