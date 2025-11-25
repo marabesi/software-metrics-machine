@@ -41,7 +41,6 @@ from software_metrics_machine.providers.codemaat.plots.entity_ownership import (
     help="Optional comma-separated glob patterns to include only (e.g. '*.py,**/**/*.js')",
 )
 def entity_ownership(out_file, top, ignore_files, authors, include_only):
-    """Plot entity (File) ownership."""
     df_repo = create_codemaat_repository()
     viewer = EntityOnershipViewer(repository=df_repo)
     result = viewer.render(

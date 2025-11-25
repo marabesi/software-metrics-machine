@@ -33,12 +33,6 @@ class ViewJobsSummary:
         start_date: str | None = None,
         end_date: str | None = None,
     ) -> JobsSummaryResult:
-        """
-        Build and return a structured summary of jobs instead of printing it.
-
-        Returns:
-            JobsSummaryResult: Typed dict containing summary fields.
-        """
         self.jobs = self.repository.jobs(
             {"start_date": start_date, "end_date": end_date}
         )

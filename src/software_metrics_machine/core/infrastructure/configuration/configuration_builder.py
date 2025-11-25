@@ -16,9 +16,6 @@ class Driver(Enum):
 
 
 class ConfigurationBuilder:
-    """
-    A builder class to create Configuration objects.
-    """
 
     def __init__(
         self,

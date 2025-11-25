@@ -10,11 +10,6 @@ pn.extension("tabulator")
 def configuration_section(configuration: Configuration):
 
     def form_section():
-        """
-        Create a form section displaying all configuration values.
-
-        :return: A Panel layout containing the form.
-        """
         fields = []
 
         for key, value in configuration.__dict__.items():

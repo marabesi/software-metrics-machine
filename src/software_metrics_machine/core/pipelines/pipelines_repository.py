@@ -113,11 +113,6 @@ class PipelinesRepository(FileSystemBaseRepository):
     def filter_by_job_name(
         self, jobs: List[PipelineJob], job_name: Iterable[str]
     ) -> List[PipelineJob]:
-        """Return jobs excluding any whose name matches one of the provided job_name values.
-
-        Matching is case-insensitive and uses substring matching: if any provided token
-        appears in the job's name, that job is excluded.
-        """
         job_name_set = {str(job).strip().lower() for job in (job_name or []) if job}
         if not job_name_set:
             return jobs
@@ -131,7 +126,6 @@ class PipelinesRepository(FileSystemBaseRepository):
         return filtered
 
     def get_unique_workflow_conclusions(self, filters=None) -> List[str]:
-        """Return a list of unique workflow conclusions."""
         runs = self.runs(filters)
         conclusions = {run.conclusion for run in runs}
         list_all = list(filter(None, list(conclusions)))
@@ -140,7 +134,6 @@ class PipelinesRepository(FileSystemBaseRepository):
         return list_all
 
     def get_unique_workflow_status(self, filters=None) -> List[str]:
-        """Return a list of unique workflow status."""
         runs = self.runs(filters)
         conclusions = {run.status for run in runs}
         list_all = list(filter(None, list(conclusions)))
@@ -149,7 +142,6 @@ class PipelinesRepository(FileSystemBaseRepository):
         return list_all
 
     def get_unique_workflow_names(self) -> List[str]:
-        """Return a list of unique workflow names."""
         workflow_names = {run.name for run in self.all_runs}
         return list(workflow_names)
 
@@ -376,10 +368,11 @@ class PipelinesRepository(FileSystemBaseRepository):
 
         self.all_jobs.sort(key=super().created_at_key_sort)
 
-        for run in self.all_runs:
-            for job in self.all_jobs:
-                if run.id == job.run_id:
-                    run.jobs.append(job)
+        run_map = {run.id: run for run in self.all_runs}
+        for job in self.all_jobs:
+            run = run_map.get(job.run_id)
+            if run is not None:
+                run.jobs.append(job)
 
         self.logger.debug("Jobs have been associated with their corresponding runs.")
 

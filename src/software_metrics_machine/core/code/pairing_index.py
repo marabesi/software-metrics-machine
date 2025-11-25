@@ -26,9 +26,6 @@ class PairingIndex:
         end_date: str | None = None,
         authors: str | None = None,
     ) -> PairingIndexResult:
-        """Compute pairing index, optionally filtering commits to only those by
-        `selected_authors` (name or email, case-insensitive)."""
-
         if authors:
             parsed = [a.strip() for a in authors.split(",") if a.strip()]
             if parsed:

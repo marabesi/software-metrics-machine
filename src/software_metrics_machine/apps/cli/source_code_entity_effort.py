@@ -35,7 +35,6 @@ from software_metrics_machine.providers.codemaat.plots.entity_effort import (
     help="Optional comma-separated glob patterns to include only (e.g. '*.py,**/**/*.js')",
 )
 def entity_effort(out_file, top, ignore_files, include_only):
-    """Plot entity (File) effort."""
     df_repo = create_codemaat_repository()
     viewer = EntityEffortViewer(repository=df_repo)
     result = viewer.render_treemap(

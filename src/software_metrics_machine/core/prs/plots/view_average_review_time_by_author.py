@@ -29,8 +29,6 @@ class ViewAverageReviewTimeByAuthor(BaseViewer):
         end_date: str | None = None,
         authors: str | None = None,
     ) -> PlotResult:
-        """pairs: list of (author, avg_days)"""
-
         pairs = self.repository.prs_with_filters(
             {"start_date": start_date, "end_date": end_date, "authors": authors}
         )
@@ -76,10 +74,6 @@ class ViewAverageReviewTimeByAuthor(BaseViewer):
     def __average_open_time_by_author(
         self, prs: List[PRDetails], top: int
     ) -> List[Tuple[str, float]]:
-        """Compute average open time in days before merged PRs grouped by author.
-
-        Returns top authors sorted by average descending.
-        """
         sums = defaultdict(float)
         counts = defaultdict(int)
         for pr in prs:

@@ -39,7 +39,6 @@ class PrsRepository(FileSystemBaseRepository):
         ]
 
     def __pr_open_days(self, pr: PRDetails) -> int:
-        """Return how many days the PR was open until merged."""
         created = datetime.fromisoformat(pr.created_at.replace("Z", "+00:00"))
         closed = pr.merged_at
         if closed:
@@ -53,11 +52,6 @@ class PrsRepository(FileSystemBaseRepository):
     def average_by(
         self, by: str, labels: str | None = None, prs=[]
     ) -> tuple[List[str], List[float]]:
-        """Calculate average open days grouped by month or week.
-
-        labels are comma-separated string.
-        Matching is case-insensitive.
-        """
         if by == "month":
             return self.__average_by_month(labels=labels, prs=prs)
         elif by == "week":
@@ -68,11 +62,6 @@ class PrsRepository(FileSystemBaseRepository):
     def __average_by_month(
         self, labels: str | None = None, prs=[]
     ) -> tuple[List[str], List[float]]:
-        """Calculate average open days grouped by month.
-
-        labels are comma-separated string.
-        Matching is case-insensitive.
-        """
         pr_months = {}
 
         all_prs = prs
@@ -96,11 +85,6 @@ class PrsRepository(FileSystemBaseRepository):
     def __average_by_week(
         self, labels: str | None = None, prs=[]
     ) -> tuple[List[str], List[float]]:
-        """Calculate average open days grouped by ISO week (YYYY-Www).
-
-        labels may be None, or a comma-separated string.
-        Matching is case-insensitive.
-        """
         pr_weeks = {}
 
         all_prs = prs
@@ -144,7 +128,6 @@ class PrsRepository(FileSystemBaseRepository):
         return filtered
 
     def get_unique_authors(self) -> List[str]:
-        """Return a list of unique author names from the PRs."""
         authors = {pr.user.login for pr in self.all_prs}
         return sorted(author for author in authors if author)
 

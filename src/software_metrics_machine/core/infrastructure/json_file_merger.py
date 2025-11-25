@@ -5,19 +5,7 @@ from software_metrics_machine.core.infrastructure.file_system_base_repository im
 
 
 class JsonFileMerger:
-    """
-    A utility class to merge multiple JSON files containing lists of objects,
-    and save the result after removing duplicates based on a unique key.
-    """
-
     def __init__(self, repository: FileSystemBaseRepository):
-        """
-        Initializes the merger with a repository object to handle file I/O.
-
-        Args:
-            repository: An instance of a repository class (e.g., PipelinesRepository)
-                        that provides 'read_file_if_exists' and 'store_file' methods.
-        """
         self.repository = repository
 
     def merge_files(
@@ -26,18 +14,6 @@ class JsonFileMerger:
         output_path: str,
         unique_key: str = "id",
     ) -> list:
-        """
-        Reads multiple JSON files, merges their contents, removes duplicates, and saves the result.
-
-        Args:
-            input_file_paths (list[str]): A list of paths to the JSON files to merge.
-            output_path (str): The path where the merged and deduplicated JSON file will be saved.
-            unique_key (str): The key within each JSON object to use for identifying duplicates.
-                               Defaults to "id".
-
-        Returns:
-            list: The final list of deduplicated items.
-        """
         if not input_file_paths or len(input_file_paths) < 2:
             raise ValueError("At least two input file paths are required for a merge.")
 

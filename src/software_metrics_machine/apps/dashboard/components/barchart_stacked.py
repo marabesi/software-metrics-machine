@@ -20,19 +20,6 @@ def build_barchart(
     tools: list[str] | None = None,
     color: str | None = None,
 ):
-    """Build a Holoviews Bar chart (stacked or not) and optionally overlay labels.
-
-    - data: iterable of dicts containing x, y and optional group keys
-    - x: x axis key
-    - y: y axis key
-    - group: optional grouping key for stacked bars
-    - stacked: True to produce stacked bars (requires group)
-    - label_generator: optional callable that returns hv.Labels for given data
-    - out_file: optional path to save the chart (hv.save)
-
-    Returns: hv.Overlay or hv.Element (chart with optional labels)
-    """
-
     df = pd.DataFrame(list(data))
     if df.empty:
         # return an empty placeholder so callers can safely render

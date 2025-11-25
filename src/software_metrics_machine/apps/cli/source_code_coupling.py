@@ -27,7 +27,6 @@ from software_metrics_machine.providers.codemaat.plots.coupling import CouplingV
     help="Optional comma-separated glob patterns to include only (e.g. '*.py,**/**/*.js')",
 )
 def coupling(ignore_files, out_file, include_only):
-    """Plot coupling graph."""
     result = CouplingViewer(repository=create_codemaat_repository()).render(
         out_file=out_file,
         ignore_files=ignore_files,

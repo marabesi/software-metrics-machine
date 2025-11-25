@@ -38,10 +38,6 @@ class JobsByAverageTimeExecution:
         pipeline_raw_filters: Optional[str] = None,
         metric: str = "avg",
     ) -> JobsAverageTimeExecutionResult:
-        """Compute average job execution time (completed_at - started_at) grouped by job name and plot top-N.
-
-        Averages are shown in minutes.
-        """
         filters = {
             "start_date": start_date,
             "end_date": end_date,

@@ -13,7 +13,6 @@ def add_commands_from_groups(module_groups):
 
         @click.group(name=group_name)
         def group():
-            """Group for {} commands.""".format(group_name)
             pass
 
         for module_path in module_paths:

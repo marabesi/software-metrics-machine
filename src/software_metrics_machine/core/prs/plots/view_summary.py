@@ -141,12 +141,6 @@ class PrViewSummary:
         }
 
     def print_text_summary(self, structured_summary):
-        """
-        Print the structured summary in a readable text format.
-
-        Args:
-            structured_summary (dict): The structured summary object.
-        """
         # This helper used to print text; keep it for callers that want a
         # textual representation, but return the string instead of printing.
         lines = []

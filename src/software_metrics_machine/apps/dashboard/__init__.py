@@ -1,9 +1,3 @@
-"""Dashboard application entrypoint.
-
-This module exposes a `main()` function used by the `smm-dashboard` script.
-It delegates to the `panel` CLI the same way the previous script did.
-"""
-
 import os
 import sys
 import subprocess

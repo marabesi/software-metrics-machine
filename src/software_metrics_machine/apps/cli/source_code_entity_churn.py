@@ -35,7 +35,6 @@ from software_metrics_machine.providers.codemaat.plots.entity_churn import (
     help="Optional comma-separated glob patterns to include only (e.g. '*.py,**/**/*.js')",
 )
 def entity_churn(out_file, top, ignore_files, include_only):
-    """Plot entity churn graph."""
     df_repo = create_codemaat_repository()
     viewer = EntityChurnViewer(repository=df_repo)
     result = viewer.render(

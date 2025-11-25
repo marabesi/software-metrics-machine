@@ -45,7 +45,6 @@ from software_metrics_machine.core.prs.plots.view_average_of_prs_open_by import 
     help="Filter PRs created on or before this date (ISO 8601)",
 )
 def average_open_by(authors, labels, aggregate_by, start_date, end_date):
-    """Plot average PR open."""
     result = ViewAverageOfPrsOpenBy(repository=create_prs_repository()).main(
         authors=authors,
         labels=labels,

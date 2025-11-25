@@ -193,7 +193,6 @@ class CouplingViewer(BaseViewer, Viewable):
     def __circular_layout(
         self, nodes: List[str], radius: float = 1.0
     ) -> Dict[str, tuple]:
-        """Assign nodes to equally spaced points on a circle."""
         layout: Dict[str, tuple] = {}
         n = len(nodes)
         for i, node in enumerate(nodes):

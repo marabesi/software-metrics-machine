@@ -3,14 +3,6 @@ import param
 
 
 class Settings(param.Parameterized):
-    """Central settings object that mirrors user inputs and is synced to the URL.
-
-    Each attribute is stored as a simple serializable type (str/int) so it can
-    be persisted in the query string. Complex widget values are converted to
-    and from these serializable representations in the watcher callbacks.
-    """
-
-    # UI state
     tab = param.Integer(default=0)
     focused = param.Integer(default=0)
 

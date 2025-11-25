@@ -29,12 +29,6 @@ class JobsByStatus:
         self.repository = repository
 
     def __count_delivery_by_day(self, jobs: List[PipelineJob], job_name: str):
-        """Return (dates, conclusions, matrix) grouping delivery job executions by day and conclusion.
-
-        dates: list of YYYY-MM-DD strings (unknown last)
-        conclusions: ordered list of conclusion keys (e.g. ['success','failure',...])
-        matrix: list of rows where each row corresponds to a conclusion and contains counts per date
-        """
         per_day = defaultdict(Counter)
         for j in jobs:
             name = j.name

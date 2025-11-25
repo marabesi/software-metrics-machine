@@ -37,12 +37,6 @@ class WorkflowRunSummary:
         end_date: Optional[str] = None,
         output_format: Optional[str] = None,
     ) -> WorkflowRunSummaryStructure:
-        """
-        Build and return the summary of workflow runs as a structured dict.
-
-        The function no longer prints output. Callers (for example CLI) should
-        format or pretty-print the returned structure.
-        """
         summary = self.summary.compute_summary(start_date=start_date, end_date=end_date)
 
         if output_format and output_format not in ["text", "json"]:
@@ -84,11 +78,6 @@ class WorkflowRunSummary:
         return result
 
     def __build_run_times(self, run: PipelineRun) -> Dict:
-        """Return a dict with formatted time strings for the provided run.
-
-        The dict will include 'created_at', 'run_started_at' and 'updated_at'
-        formatted via datetime_to_local when values are present.
-        """
         if not run:
             return {}
 

@@ -10,7 +10,6 @@ from pydriller.metrics.process.change_set import ChangeSet
 
 @click.command()
 def change_set():
-    """Plot change set from pydriller"""
     configuration = ConfigurationBuilder(Driver.JSON).build()
 
     since_str = configuration.dashboard_start_date

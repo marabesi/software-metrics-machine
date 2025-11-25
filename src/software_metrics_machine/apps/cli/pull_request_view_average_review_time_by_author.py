@@ -44,8 +44,6 @@ from software_metrics_machine.core.prs.plots.view_average_review_time_by_author 
     help="Filter PRs created on or before this date (ISO 8601)",
 )
 def review_time_by_author(top, labels, out_file, start_date, end_date):
-    """Plot average PR open time by author."""
-
     result = ViewAverageReviewTimeByAuthor(
         repository=create_prs_repository()
     ).plot_average_open_time(

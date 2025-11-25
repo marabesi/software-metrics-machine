@@ -37,7 +37,6 @@ DATA_PATH = st.sidebar.text_input(
 
 @st.cache_resource(show_spinner="Setting up RAG pipeline...")
 def setup_rag_pipeline(folder_path, embedding_model):
-    """Loads data, creates embeddings, and sets up the retriever."""
     if not os.path.isdir(folder_path):
         st.error(
             f"The provided path '{folder_path}' is not a valid directory. Please update the path."

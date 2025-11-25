@@ -87,7 +87,6 @@ class PullRequestBuilder:
         return self
 
     def build(self) -> Dict[str, Any]:
-        """Return a dictionary representing the pull request similar to stored shape."""
         comments: List[PRComments] = [c for c in self.comments]
         pr = PRDetails(
             **{
@@ -101,7 +100,6 @@ class PullRequestBuilder:
                 "merged_at": self.merged_at,
                 "review_comments_url": self.review_comments_url,
                 "comments": comments,
-                # "files_changed": list(self.files_changed),
                 "labels": list(self.labels),
                 "html_url": self.html_url,
             }
@@ -110,5 +108,4 @@ class PullRequestBuilder:
 
 
 def pull_request_builder() -> PullRequestBuilder:
-    """Convenience factory used by tests for readability."""
     return PullRequestBuilder()

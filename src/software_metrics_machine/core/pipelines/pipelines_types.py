@@ -1,16 +1,3 @@
-"""Typed definitions for GitHub workflow runs and jobs used by pipelines_repository.py
-
-This module declares TypedDicts that document the fields accessed across
-`providers/github/workflows/pipelines_repository.py` and related viewers.
-
-Two primary types are provided:
-- PipelineRun: represents a workflow run (often called "run" or "workflow")
-- PipelineJob: represents a job execution attached to a run
-
-A convenience alias `Pipeline` points to PipelineRun for places that expect a
-single type name called "Pipeline".
-"""
-
 from enum import Enum
 from typing import List, Optional, Union
 from typing_extensions import TypedDict
@@ -48,19 +35,6 @@ class PipelineJobConclusion(str, Enum):
 
 
 class PipelineJob(BaseModel):
-    """A job execution attached to a workflow run.
-
-    Fields are optional (total=False) because the JSON collected from different
-    providers or fetchers may omit some fields.
-
-    Common fields used in the codebase:
-    - run_id / runId: identifier referencing the parent run
-    - name: job name
-    - conclusion: outcome such as 'success' or 'failure'
-    - created_at / started_at / completed_at: ISO timestamp strings
-    - workflow_path, workflow, run_name: optional helpers attached during loading
-    """
-
     id: int
     run_id: int
     name: str

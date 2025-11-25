@@ -19,15 +19,6 @@ def build_barchart_with_lines(
     out_file: str | None = None,
     tools: list[str] | None = None,
 ):
-    """Build a line+points Holoviews chart and optionally overlay vertical lines and extra labels.
-
-    - data: iterable of dicts with x and y keys
-    - x: x key (datetime or categorical)
-    - y: y key (numeric)
-    - vlines: list of x positions (datetimes) where to draw vertical lines
-    - extra_labels: list of dicts with keys x,y,text for extra annotation labels
-    """
-
     df = pd.DataFrame(list(data))
     if df.empty:
         return hv.Text(0.5, 0.5, "No data available")

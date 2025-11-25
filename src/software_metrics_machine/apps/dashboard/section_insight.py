@@ -69,12 +69,6 @@ def insights_section(repository: PipelinesRepository, date_range_picker):
         )
 
     def render_pairing_index_card(date_range_picker, authors: str | None = None):
-        """Render a small card showing the pairing index and the last 20 commits.
-
-        The commit list prefers commits whose message contains the exact phrase
-        'implemented the feature in the cli' (case-insensitive). If none match,
-        the card falls back to the last 20 commits in the repository.
-        """
         pi = PairingIndex(repository=repository)
         result = pi.get_pairing_index(
             start_date=date_range_picker[0],

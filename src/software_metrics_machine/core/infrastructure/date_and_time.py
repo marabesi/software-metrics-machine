@@ -3,7 +3,6 @@ import locale as pylocale
 
 
 def datetime_to_local(date: str, locale: str = "en_US.UTF-8") -> str:
-    """ "Convert %Y-%m-%dT%H:%M:%SZ string to local timezone and format it according to locale."""
     try:
         pylocale.setlocale(pylocale.LC_TIME, locale)
     except Exception as e:

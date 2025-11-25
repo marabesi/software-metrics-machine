@@ -21,12 +21,6 @@ from software_metrics_machine.core.infrastructure.repository_factory import (
     help="Field name to use as unique key for deduplication (default: id)",
 )
 def json_merger(input_file_paths: str, output_path: str, unique_key: str):
-    """Merge multiple JSON files containing lists of objects, deduplicate by UNIQUE_KEY, and save to OUTPUT_PATH.
-
-    INPUT_FILE_PATHS: one or more JSON files to merge
-    OUTPUT_PATH: path where merged JSON will be written
-    """
-
     repository = create_file_system_repository()
     exploded_file_paths = input_file_paths.split(",")
     merger = JsonFileMerger(repository=repository)

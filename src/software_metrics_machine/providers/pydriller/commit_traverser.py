@@ -19,14 +19,6 @@ class CommitTraverser:
         start_date: Optional[str] = None,
         end_date: Optional[str] = None,
     ) -> TraverserResult:
-        """Analyzes a Git repository to calculate a "pairing index".
-
-        If selected_authors is provided, only commits authored by those authors
-        (matching by name or email, case-insensitive) will be considered. If
-        include_coauthors=True then a commit is included if any co-author matches
-        the selected authors as well.
-        """
-        # Prepare the set of normalized author keys for fast membership checks
         selected_keys = None
         if selected_authors:
             selected_keys = {
@@ -98,16 +90,9 @@ class CommitTraverser:
         )
 
     def _normalize_author_key(self, name: str, email: str) -> str:
-        # Use lowercase email if present, otherwise lowercase name
         return (email or name).strip().lower()
 
     def __parse_co_author(self, trailer_line: str) -> Optional[Tuple[str, str]]:
-        """Parse a 'Co-authored-by:' trailer line and return (name, email).
-
-        Returns None if parsing fails.
-        """
-        # Expected formats (case-insensitive):
-        # Co-authored-by: Name <email>
         m = re.search(r"co-authored-by:\s*(.+?)\s*<([^>]+)>", trailer_line, flags=re.I)
         if not m:
             return None
