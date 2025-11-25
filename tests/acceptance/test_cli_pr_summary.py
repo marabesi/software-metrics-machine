@@ -7,12 +7,6 @@ from software_metrics_machine.core.prs.pr_types import PRLabels
 
 class TestCliPrsSummaryCommands:
 
-    @pytest.fixture(scope="class", autouse=True)
-    def reset_mock_get(self):
-        with patch("requests.get") as mock_get:
-            mock_get.reset_mock()
-            yield mock_get
-
     @pytest.mark.parametrize(
         "prs, expected_count",
         [
