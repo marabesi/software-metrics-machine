@@ -150,7 +150,24 @@ def insights_section(repository: PipelinesRepository, date_range_picker):
         ),
         pn.layout.Divider(),
         pn.Row(
-            pn.Column(pn.bind(workflow_run_duration, date_range_picker.param.value)),
+            pn.Column(
+                "## Pipeline Run Duration",
+                pn.bind(workflow_run_duration, date_range_picker.param.value),
+                pn.pane.HTML(
+                    """
+                <details style="cursor: pointer;">
+                <summary>
+                    The average time it takes for your pipeline to run from start to finish.
+                </summary>
+                <div>
+                    This metric takes the data range selected and filters the pipeline runs that were successful
+                    (with completed status and "success" conclusion). It then calculates the average duration
+                    in minutes.
+                </div>
+                </details>
+                    """
+                ),
+            ),
         ),
         pn.Row(
             pn.Column(
