@@ -1,6 +1,7 @@
 import json
 from typing import List, Iterable
 from datetime import datetime, timezone
+from pydantic import TypeAdapter
 
 import pandas as pd
 from pyparsing import Optional
@@ -196,11 +197,8 @@ class PrsRepository(FileSystemBaseRepository):
             )
             return
 
-        all_prs = json.loads(contents)
-
-        for pr in all_prs:
-            pr_details = PRDetails(**pr)
-            self.all_prs.append(pr_details)
+        list_adapter_prs = TypeAdapter(list[PRDetails])
+        self.all_prs = list_adapter_prs.validate_json(contents)
 
         self.logger.debug(f"Loaded {len(all_prs)} PRs")
 
