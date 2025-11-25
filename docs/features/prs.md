@@ -35,12 +35,22 @@ smm prs through-time
 
 | Option         | Description                          | Example                  |
 |----------------|--------------------------------------|--------------------------|
-| Start date     | Fetches PRs created after a date.    | `--start-date=2025-01-01`     |
-| End date       | Fetches PRs created before a date.   | `--end-date=2025-12-31`     |
+| Start date     | Fetches PRs created after a date.    | `--start-date=2025-01-01`|
+| End date       | Fetches PRs created before a date.   | `--end-date=2025-12-31`  |
+| Authors        | Filters PRs by the authors who created them. Multiple authors can be provided separated by commas. This is the author who opened the PR  | `--authors=author1,author2`     |
+
+### Examples - Open PRs Through Time
+
+Computes the number of opened and closed PRs over time for a specific author:
+
+```bash
+smm prs through-time \
+  --start-date=2025-01-01 \
+  --end-date=2025-06-30 \
+  --authors=author1,author2
+```
 
 :::
-
-### Example Usage
 
 If you notice a spike in opened PRs but few closed ones, it may indicate the start of a new sprint or a backlog forming.
 For example, if September 25th shows many opened PRs but none closed, it could signal a need to focus on reviews.
@@ -51,6 +61,15 @@ For example, if September 25th shows many opened PRs but none closed, it could s
 2. Filters by date range (start/end date) - the date used in the prs are the created_at.
 3. Data is processed to count opened and closed PRs per day.
 4. You can filter the chart to focus on specific periods, such as a sprint or release window.
+
+
+
+
+
+
+
+
+
 
 ## Average PR Open
 
@@ -74,13 +93,21 @@ Tracks how long PRs stay open before merging, revealing your team's velocity and
 smm prs average-open-by
 ```
 
-:::
+| Option         | Description                          | Example                  |
+|----------------|--------------------------------------|--------------------------|
+| Start date     | Fetches PRs created after a date.    | `--start-date=2025-01-01`|
+| End date       | Fetches PRs created before a date.   | `--end-date=2025-12-31`  |
+| Authors        | Filters PRs by the authors who created them. Multiple authors can be provided separated by commas. This is the author who opened the PR  | `--authors=author1,author2`     |
 
 
 ### Example Usage
 
 A downward trend in average open days means your team is merging PRs faster, indicating improved workflow. For instance,
 if the average drops from 5 to 2 days over several weeks, your review process is getting more efficient.
+
+:::
+
+
 
 ### How It Computes and Filters
 

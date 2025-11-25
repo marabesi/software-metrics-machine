@@ -12,13 +12,6 @@ from software_metrics_machine.core.prs.plots.view_average_of_prs_open_by import 
     name="average-open-by", help="Plot average of PRs open by author or labels"
 )
 @click.option(
-    "--out-file",
-    "-o",
-    type=str,
-    default=None,
-    help="Optional path to save the plot image",
-)
-@click.option(
     "--author",
     "-a",
     type=str,
@@ -51,10 +44,9 @@ from software_metrics_machine.core.prs.plots.view_average_of_prs_open_by import 
     default=None,
     help="Filter PRs created on or before this date (ISO 8601)",
 )
-def average_open_by(out_file, author, labels, aggregate_by, start_date, end_date):
+def average_open_by(author, labels, aggregate_by, start_date, end_date):
     """Plot average PR open."""
     result = ViewAverageOfPrsOpenBy(repository=create_prs_repository()).main(
-        out_file=out_file,
         author=author,
         labels=labels,
         aggregate_by=aggregate_by,

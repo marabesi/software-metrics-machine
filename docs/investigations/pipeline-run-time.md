@@ -49,7 +49,8 @@ The resulting data is the following (value in minutes):
 3  2025-08-20  3.272222      3
 ```
 
-Next step is to visualize the data from the jobs run duration analysis. The following CLI command was used to generate the visualization:
+Next step is to visualize the data from the jobs run duration analysis. The following CLI command was used to generate
+the visualization:
 
 ```bash
 smm pipelines jobs-by-execution-time \

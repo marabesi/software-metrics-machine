@@ -14,17 +14,20 @@ GITHUB_TOKEN=$1
 project="marabesi"
 github_repo="marabesi/json-tool"
 
+project="vercel"
+github_repo="vercel/next.js"
+
 repo_url="https://github.com/$github_repo.git"
 
 base_dir="$(pwd)"
 clone_dir="$base_dir/downloads/$project"
-analysis_dir="$base_dir/downloads/analysis"
+analysis_dir="$base_dir/downloads/${project}_analysis"
 
 rm -rf "$analysis_dir"
 mkdir -p "$analysis_dir"
 
-start_date="2025-08-17"
-end_date="2025-11-17"
+start_date="2025-11-01"
+end_date="2025-11-05"
 
 export SMM_STORE_DATA_AT="$analysis_dir"
 

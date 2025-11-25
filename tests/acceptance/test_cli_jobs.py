@@ -399,7 +399,6 @@ class TestJobsCliCommands:
         ],
     )
     def test_print_pipelines_by_execution_time_in_minutes(self, cli, jobs, expected):
-
         cli.storage.store_pipelines_with(single_run())
         cli.storage.store_jobs_with(jobs)
 

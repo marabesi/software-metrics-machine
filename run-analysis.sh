@@ -22,8 +22,8 @@ export SMM_STORE_DATA_AT="$analysis_dir"
 
 echo $analysis_dir
 
-start_date="2025-08-20"
-end_date="2025-08-20"
+start_date="2025-11-01"
+end_date="2025-11-05"
 
 
 #./run-cli.sh pipelines summary
@@ -53,6 +53,11 @@ fi
 
 # if [ "$1" == "pr" ]; then
   ./run-cli.sh prs through-time \
+    --start-date "$start_date" \
+    --end-date "$end_date" \
+    --authors="icyJoseph"
+
+  ./run-cli.sh prs summary \
     --start-date "$start_date" \
     --end-date "$end_date"
 # fi 

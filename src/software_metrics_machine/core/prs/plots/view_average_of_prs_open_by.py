@@ -20,7 +20,6 @@ class ViewAverageOfPrsOpenBy(BaseViewer):
 
     def main(
         self,
-        out_file: str | None = None,
         author: str | None = None,
         authors: str | None = None,
         labels: str | None = None,
@@ -112,7 +111,6 @@ class ViewAverageOfPrsOpenBy(BaseViewer):
             label_generator=super().build_labels_above_bars,
             vlines=vlines,
             extra_labels=extra_labels,
-            out_file=out_file,
             tools=super().get_tools(),
         )
 

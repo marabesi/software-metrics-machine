@@ -47,6 +47,8 @@ def insights_section(repository: PipelinesRepository, date_range_picker):
         total = data.total
         if total == 0:
             return pn.pane.Markdown("No data available", width=200)
+        if result is None or len(result) == 0:
+            return pn.pane.Markdown("No data available", width=200)
         avg_min = result[0][2]
         formatted_avg_min = "{:.1f}".format(avg_min)
         return pn.Card(
