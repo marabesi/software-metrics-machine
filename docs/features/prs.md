@@ -12,6 +12,36 @@ charts, each designed to highlight different aspects of PR management and team d
 Each chart in the dashboard is interactive and supports filtering by author, labels, and date range, allowing you to
 drill down into the data that matters most for your team. This enables you to monitor team flow and identify bottlenecks.
 
+## Summary PRs data
+
+Show a summary of the PRs fetched from the repository, including total PRs, average open time, and other key metrics.
+
+:::tabs key:cli
+== Dashboard
+
+Not available yet.
+
+
+== CLI
+
+```bash
+smm prs summary
+```
+
+| Option         | Description                          | Example                  |
+|----------------|--------------------------------------|--------------------------|
+| Start date     | Fetches PRs created after a date.    | `--start-date=2025-01-01`|
+| End date       | Fetches PRs created before a date.   | `--end-date=2025-12-31`  |
+| Export         | Exports the data as csv to a given file path   | `--csv=my_export.csv`  |
+| Output        | Defines the output format, either text or json. Defaults to text.  | `--output=json`     |
+
+:::
+
+
+
+
+
+
 ## Open PRs Through Time
 
 Shows the volume of PRs opened and closed each day. This helps you spot bottlenecks, busy periods, or trends in your team's workflow.
