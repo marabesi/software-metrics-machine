@@ -20,14 +20,12 @@ class ViewAverageCommentsPerPullRequest(BaseViewer):
 
     def main(
         self,
-        author: str | None = None,
         authors: str | None = None,
         labels: str | None = None,
         aggregate_by: str = "week",
         start_date: str | None = None,
         end_date: str | None = None,
     ) -> PlotResult:
-        # Delegate data processing to the repository
         df = self.repository.average_comments(
             filters={
                 "start_date": start_date,

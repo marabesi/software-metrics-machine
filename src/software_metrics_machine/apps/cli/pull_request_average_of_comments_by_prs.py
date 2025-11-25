@@ -12,7 +12,7 @@ from software_metrics_machine.core.prs.plots.view_average_comments_per_pr import
     name="average-comments-by", help="Plot average of comments a PR receives"
 )
 @click.option(
-    "--author",
+    "--authors",
     "-a",
     type=str,
     default=None,
@@ -44,9 +44,9 @@ from software_metrics_machine.core.prs.plots.view_average_comments_per_pr import
     default=None,
     help="Filter PRs created on or before this date (ISO 8601)",
 )
-def average_prs_comment(author, labels, aggregate_by, start_date, end_date):
+def average_prs_comment(authors, labels, aggregate_by, start_date, end_date):
     result = ViewAverageCommentsPerPullRequest(repository=create_prs_repository()).main(
-        author=author,
+        authors=authors,
         labels=labels,
         aggregate_by=aggregate_by,
         start_date=start_date,
