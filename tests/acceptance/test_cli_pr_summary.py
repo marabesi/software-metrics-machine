@@ -1,6 +1,5 @@
 import pytest
 from software_metrics_machine.apps.cli import main
-from unittest.mock import patch
 from tests.prs_builder import PullRequestBuilder
 from software_metrics_machine.core.prs.pr_types import PRLabels
 

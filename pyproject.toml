@@ -1,7 +1,7 @@
 [project]
 name = "software-metrics-machine"
 description = "A data-driven approach to software measurament for high-performing teams"
-version = "0.1.10"
+version = "0.1.11"
 readme = "README.md"
 requires-python = ">=3.11,<4.0"
 dependencies = [
