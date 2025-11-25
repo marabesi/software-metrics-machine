@@ -41,7 +41,6 @@ def jobs_summary(max_jobs, start_date, end_date):
         max_jobs=max_jobs, start_date=start_date, end_date=end_date
     )
 
-    # Print formatted summary using click.echo
     if not result or result.get("total_jobs", 0) == 0:
         click.echo("No job executions available.")
         return result
