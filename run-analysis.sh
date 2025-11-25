@@ -12,11 +12,14 @@
 project="marabesi"
 github_repo="marabesi/json-tool"
 
+project="vercel"
+github_repo="vercel/next.js"
+
 repo_url="https://github.com/$github_repo.git"
 
 base_dir="$(pwd)"
 clone_dir="$base_dir/downloads/$project"
-analysis_dir="$base_dir/downloads/analysis"
+analysis_dir="$base_dir/downloads/${project}_analysis"
 
 export SMM_STORE_DATA_AT="$analysis_dir"
 
@@ -52,14 +55,18 @@ if [ "$1" == "pipeline" ]; then
 fi 
 
 # if [ "$1" == "pr" ]; then
-  ./run-cli.sh prs through-time \
-    --start-date "$start_date" \
-    --end-date "$end_date" \
-    --authors="icyJoseph"
+  # ./run-cli.sh prs through-time \
+  #   --start-date "$start_date" \
+  #   --end-date "$end_date" \
+  #   --authors="icyJoseph"
 
   ./run-cli.sh prs summary \
     --start-date "$start_date" \
     --end-date "$end_date"
+
+  ./run-cli.sh prs average-open-by \
+  --start-date="$start_date" \
+  --end-date="$end_date"
 # fi 
 
 # current="$start_date"

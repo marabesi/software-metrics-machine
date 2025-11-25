@@ -20,7 +20,6 @@ class ViewAverageOfPrsOpenBy(BaseViewer):
 
     def main(
         self,
-        author: str | None = None,
         authors: str | None = None,
         labels: str | None = None,
         aggregate_by: str = "week",
@@ -35,7 +34,7 @@ class ViewAverageOfPrsOpenBy(BaseViewer):
         print(f"Filtered PRs count: {len(prs)}")
 
         x_vals, y_vals = self.repository.average_by(
-            by=aggregate_by, author=author, labels=labels, prs=prs
+            by=aggregate_by, labels=labels, prs=prs
         )
 
         if aggregate_by == "week":

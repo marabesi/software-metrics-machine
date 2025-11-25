@@ -50,7 +50,7 @@ class PrsRepository(FileSystemBaseRepository):
         return (closed - created).days
 
     def average_by(
-        self, by: str, author: str | None = None, labels: str | None = None, prs=[]
+        self, by: str, labels: str | None = None, prs=[]
     ) -> tuple[List[str], List[float]]:
         """Calculate average open days grouped by month or week.
 
@@ -58,14 +58,14 @@ class PrsRepository(FileSystemBaseRepository):
         Matching is case-insensitive.
         """
         if by == "month":
-            return self.__average_by_month(author=author, labels=labels, prs=prs)
+            return self.__average_by_month(labels=labels, prs=prs)
         elif by == "week":
-            return self.__average_by_week(author=author, labels=labels, prs=prs)
+            return self.__average_by_week(labels=labels, prs=prs)
         else:
             raise ValueError(f"Unsupported 'by' value: {by}")
 
     def __average_by_month(
-        self, author: str | None = None, labels: str | None = None, prs=[]
+        self, labels: str | None = None, prs=[]
     ) -> tuple[List[str], List[float]]:
         """Calculate average open days grouped by month.
 
@@ -83,8 +83,6 @@ class PrsRepository(FileSystemBaseRepository):
 
         self.logger.debug(f"Calculating average open days for {len(all_prs)} PRs")
         for pr in all_prs:
-            if author and pr.user.login.lower() != author.lower():
-                continue
             created = datetime.fromisoformat(pr.created_at.replace("Z", "+00:00"))
             month_key = created.strftime("%Y-%m")
             days = self.__pr_open_days(pr)
@@ -95,7 +93,7 @@ class PrsRepository(FileSystemBaseRepository):
         return months, avg_by_month
 
     def __average_by_week(
-        self, author: str | None = None, labels: str | None = None, prs=[]
+        self, labels: str | None = None, prs=[]
     ) -> tuple[List[str], List[float]]:
         """Calculate average open days grouped by ISO week (YYYY-Www).
 
@@ -116,8 +114,6 @@ class PrsRepository(FileSystemBaseRepository):
         )
         for pr in all_prs:
             if pr.merged_at is None:
-                continue
-            if author and pr.user.login.lower() != author.lower():
                 continue
             created = datetime.fromisoformat(pr.created_at.replace("Z", "+00:00"))
             # isocalendar() may return a tuple; take year and week reliably

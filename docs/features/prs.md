@@ -14,6 +14,8 @@ drill down into the data that matters most for your team. This enables you to mo
 
 ## Open PRs Through Time
 
+Shows the volume of PRs opened and closed each day. This helps you spot bottlenecks, busy periods, or trends in your team's workflow.
+
 :::tabs key:cli
 == Dashboard
 
@@ -73,6 +75,8 @@ For example, if September 25th shows many opened PRs but none closed, it could s
 
 ## Average PR Open
 
+Tracks how long PRs stay open before merging. It uses weekly or monthly aggregation to show trends in review speed.
+
 :::tabs key:cli
 == Dashboard
 
@@ -83,7 +87,6 @@ Line chart (trend of average days PRs remain open, aggregated by week or month).
 
 ### Insight Provided
 
-Tracks how long PRs stay open before merging, revealing your team's velocity and review efficiency.
 
 ![Pull requests open by on average](/dashboard/prs/open_prs_average.png)
 
@@ -97,13 +100,26 @@ smm prs average-open-by
 |----------------|--------------------------------------|--------------------------|
 | Start date     | Fetches PRs created after a date.    | `--start-date=2025-01-01`|
 | End date       | Fetches PRs created before a date.   | `--end-date=2025-12-31`  |
-| Authors        | Filters PRs by the authors who created them. Multiple authors can be provided separated by commas. This is the author who opened the PR  | `--authors=author1,author2`     |
+| Authors        | Filters PRs by the authors who created them. Multiple authors can be provided separated by commas. Thisis the author who opened the PR  | `--authors=author1,author2`     |
+| Aggregate by   | Defines the aggregation period, either by week or month. Defaults to week.  | `--aggregate-by=month`     |
+| Labels         | Filters PRs by the labels attached to it. Multiple labels can be provided separated by commas.  | `--labels=my_label,another_label`     |
 
-
-### Example Usage
+### Examples - Average PR Open
 
 A downward trend in average open days means your team is merging PRs faster, indicating improved workflow. For instance,
 if the average drops from 5 to 2 days over several weeks, your review process is getting more efficient.
+
+Computes the number of opened and closed PRs over time for a specific author:
+
+```bash
+smm prs average-open-by \
+  --start-date=2025-01-01 \
+  --end-date=2025-06-30 \
+  --authors=author1,author2 \
+  --aggregate-by=month \
+  --labels=bug,enhancement
+```
+
 
 :::
 
