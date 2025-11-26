@@ -87,6 +87,13 @@ def summary(csv, start_date, end_date, output, labels):
     parts.append(f"  Merged: {last.get('merged')}")
     parts.append(f"  Closed: {last.get('closed')}")
 
+    parts.append("\nMost commented PR:")
+    most = (result or {}).get("most_commented_pr") or {}
+    parts.append(f"  Number: {most.get('number')}")
+    parts.append(f"  Title: {most.get('title')}")
+    parts.append(f"  Author: {most.get('login')}")
+    parts.append(f"  Comments: {most.get('comments_count')}")
+
     click.echo("\n".join(str(p) for p in parts))
 
     if csv:

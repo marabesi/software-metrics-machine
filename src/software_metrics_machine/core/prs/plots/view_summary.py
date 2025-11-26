@@ -106,6 +106,29 @@ class PrViewSummary:
 
         summary["avg_comments_per_pr"] = comments_count / num_prs
 
+        most_commented = None
+        most_comments_count = 0
+        for p in self.prs:
+            cnt = len(p.comments) if getattr(p, "comments", None) is not None else 0
+            if cnt > most_comments_count:
+                most_comments_count = cnt
+                most_commented = p
+
+        if most_commented:
+            summary["most_commented_pr"] = {
+                "number": most_commented.number,
+                "title": most_commented.title,
+                "login": most_commented.user.login,
+                "comments_count": most_comments_count,
+            }
+        else:
+            summary["most_commented_pr"] = {
+                "number": None,
+                "title": None,
+                "login": None,
+                "comments_count": 0,
+            }
+
         return summary
 
     def __get_structured_summary(self, summary) -> SummaryResult:
@@ -120,6 +143,7 @@ class PrViewSummary:
             "labels": summary.get("labels", []),
             "first_pr": self.__brief_pr(summary.get("first_pr")),
             "last_pr": self.__brief_pr(summary.get("last_pr")),
+            "most_commented_pr": summary.get("most_commented_pr", {}),
         }
         return structured_summary
 
