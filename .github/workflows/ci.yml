@@ -187,7 +187,6 @@ jobs:
 
   send_docker_image_to_hub:
     needs: [code-quality, pytest, e2e]
-    if: github.ref == 'refs/heads/main' && contains(github.event.head_commit.message, 'tagged version')
     runs-on: ubuntu-24.04
     steps:
     - uses: actions/checkout@v4
@@ -201,7 +200,7 @@ jobs:
         docker login -u $username -p $password docker.io
     - name: Build Docker Image
       run: |
-        cd cli && docker build -t ${{secrets.DOCKERHUB_USERNAME}}/software-metrics-machine .
+        docker build -t ${{secrets.DOCKERHUB_USERNAME}}/software-metrics-machine .
     - name: Push Docker Image
       run: |
         docker push ${{secrets.DOCKERHUB_USERNAME}}/software-metrics-machine:latest
