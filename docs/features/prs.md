@@ -35,6 +35,64 @@ smm prs summary
 | Export         | Exports the data as csv to a given file path   | `--csv=my_export.csv`  |
 | Output        | Defines the output format, either text or json. Defaults to text.  | `--output=json`     |
 
+### Examples - Summary PRs data
+
+```bash
+smm prs summary \
+  --start-date=2025-01-01 \
+  --end-date=2025-06-30 \
+  --output=text
+```
+
+Output:
+
+```textplain
+PRs Summary:
+
+Total PRs: 876
+Merged PRs: 589
+Closed PRs: 743
+PRs Without Conclusion: 287
+Unique Authors: 146
+Unique Labels: 17
+Average of comments per PR: 1.711187214611872
+
+Labels:
+  - created-by: next.js team: 350 PRs
+  - locked: 705 PRs
+  - tests: 375 PRs
+  - documentation: 152 PRs
+  - ci approved: 45 PRs
+  - run-react-18-tests: 97 PRs
+  - type: next: 396 PRs
+  - created-by: turbopack team: 188 PRs
+  - turbopack: 181 PRs
+  - type: react-sync: 37 PRs
+  - examples: 21 PRs
+  - create-next-app: 24 PRs
+  - created-by: next.js devex team: 44 PRs
+  - font (next/font): 25 PRs
+  - hacktoberfest-accepted: 5 PRs
+  - ci bypass graphite optimization: 10 PRs
+  - rspack: 6 PRs
+
+First PR:
+  Number: 84395
+  Title: Update failing e2e deploy tests
+  Author: ijjk
+  Created: 2025-10-01T01:09:44Z
+  Merged: 2025-10-01T02:18:18Z
+  Closed: 2025-10-01T02:18:18Z
+
+Last PR:
+  Number: 85953
+  Title: Update authentication.mdx: Fix `Auth0` Link
+  Author: georgesfarah
+  Created: 2025-11-09T23:07:38Z
+  Merged: 2025-11-11T09:09:20Z
+  Closed: 2025-11-11T09:09:20Z
+```
+
 :::
 
 
@@ -275,6 +333,9 @@ Plot the average number of comments a PR receives before it is merged, aggregate
 
 :::tabs key:cli
 == Dashboard
+
+
+![Comments made in prs averaged](/dashboard/prs/prs_comments_average.png)
 
 == CLI
 
