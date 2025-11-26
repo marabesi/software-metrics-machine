@@ -1,10 +1,9 @@
 import json
-from typing import List, Iterable
+from typing import List, Iterable, Optional
 from datetime import datetime, timezone
 from pydantic import TypeAdapter
 
 import pandas as pd
-from pyparsing import Optional
 from software_metrics_machine.core.infrastructure.file_system_base_repository import (
     FileSystemBaseRepository,
 )

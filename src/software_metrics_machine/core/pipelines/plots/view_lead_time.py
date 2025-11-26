@@ -1,5 +1,4 @@
 from datetime import datetime
-import matplotlib.pyplot as plt
 import pandas as pd
 
 from software_metrics_machine.core.infrastructure.base_viewer import (
@@ -40,36 +39,4 @@ class ViewLeadTime(BaseViewer):
             lead_times, columns=["start_time", "end_time", "lead_time_seconds"]
         )
 
-        # Add week and month columns
-        df["week"] = df["start_time"].dt.to_period("W").astype(str)
-        df["month"] = df["start_time"].dt.to_period("M").astype(str)
-
-        # Calculate weekly and monthly averages
-        weekly_avg = df.groupby("week")["lead_time_seconds"].mean().reset_index()
-        monthly_avg = df.groupby("month")["lead_time_seconds"].mean().reset_index()
-
-        # Plot the data
-        fig, ax = plt.subplots(2, 1, figsize=(10, 8))
-
-        # Weekly plot
-        ax[0].plot(weekly_avg["week"], weekly_avg["lead_time_seconds"], marker="o")
-        ax[0].set_title(f"Weekly Average Lead Time for {job_name}")
-        ax[0].set_xlabel("Week")
-        ax[0].set_ylabel("Lead Time (seconds)")
-        ax[0].tick_params(axis="x", rotation=45)
-
-        # Monthly plot
-        ax[1].plot(
-            monthly_avg["month"],
-            monthly_avg["lead_time_seconds"],
-            marker="o",
-            color="orange",
-        )
-        ax[1].set_title(f"Monthly Average Lead Time for {job_name}")
-        ax[1].set_xlabel("Month")
-        ax[1].set_ylabel("Lead Time (seconds)")
-        ax[1].tick_params(axis="x", rotation=45)
-
-        plt.tight_layout()
-
-        return PlotResult(plot=fig, data=df).plot
+        return PlotResult(plot=None, data=df).plot

@@ -1,4 +1,4 @@
-from matplotlib import typing
+import typing
 import panel as pn
 from software_metrics_machine.core.code.pairing_index import PairingIndex
 from software_metrics_machine.core.pipelines.aggregates.pipeline_summary import (
