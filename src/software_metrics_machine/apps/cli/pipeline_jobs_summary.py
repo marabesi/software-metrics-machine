@@ -53,9 +53,10 @@ def jobs_summary(max_jobs, start_date, end_date):
         click.echo("")
         click.echo("Conclusions:")
         for k, v in sorted(concls.items(), key=lambda x: x[1], reverse=True):
-            click.echo(f"  {k:9s}: {v}")
+            click.echo(f" {k}  : {v}")
 
-    click.echo(f"  Unique job names: {result.get('unique_jobs')}")
+    click.echo("")
+    click.echo(f"Unique job names: {result.get('unique_jobs')}")
 
     jobs_by_name = result.get("jobs_by_name") or {}
     if jobs_by_name:
