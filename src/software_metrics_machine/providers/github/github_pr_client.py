@@ -5,7 +5,7 @@ from software_metrics_machine.core.infrastructure.configuration.configuration im
     Configuration,
 )
 from software_metrics_machine.core.prs.prs_repository import PrsRepository
-from tests.builders import as_json_string
+from software_metrics_machine.core.infrastructure.json import as_json_string
 
 
 class GithubPrsClient:

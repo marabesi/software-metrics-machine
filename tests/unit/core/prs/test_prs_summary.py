@@ -33,7 +33,7 @@ class TestPrsSummary:
     @pytest.mark.parametrize(
         "prs,comments,expected_avg",
         [
-            # ([], 0),
+            ([], [], 0),
             (
                 [
                     PullRequestBuilder()

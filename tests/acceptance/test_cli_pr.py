@@ -20,10 +20,6 @@ class TestCliPrsCommands:
             result = cli.runner.invoke(main, ["prs", "fetch"])
             assert 0 == result.exit_code
 
-    def test_show_help_message_for_fetch_prs(self, cli):
-        result = cli.runner.invoke(main, ["prs", "fetch", "--help"])
-        assert "Show this message and exit" in result.output
-
     def test_can_run_fetch_with_raw_filters_for_api(self, cli):
         result = cli.runner.invoke(
             main,

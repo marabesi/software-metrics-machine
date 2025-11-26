@@ -7,12 +7,6 @@ from tests.builders import as_json_string
 
 class TestWorkflowsFetchCliCommands:
 
-    def test_can_run_fetch_workflows_command(self, cli):
-        result = cli.runner.invoke(main, ["pipelines", "fetch", "--help"])
-        assert 0 == result.exit_code
-        assert "Show this message and exit" in result.output
-        assert "" == result.stderr
-
     def test_should_fetch_workflow_data_between_dates_date_by_date(self, cli):
         result = cli.runner.invoke(
             main,

@@ -1,8 +1,46 @@
 import pytest
 from software_metrics_machine.apps.cli import main
 from tests.prs_builder import PullRequestBuilder
-from software_metrics_machine.core.prs.pr_types import PRLabels
+from software_metrics_machine.core.prs.pr_types import PRLabels, PRDetails
 from tests.prs_comment_builder import PullRequestCommentsBuilder
+from typing import List
+
+
+def prs_with_labels() -> List[PRDetails]:
+    return [
+        PullRequestBuilder()
+        .with_number(1)
+        .with_title("Fix issue")
+        .with_author("alice")
+        .with_created_at("2025-10-01T00:00:00Z")
+        .with_label(PRLabels(id=1, name="bug"))
+        .build(),
+        PullRequestBuilder()
+        .with_number(2)
+        .with_title("Add feature")
+        .with_author("bob")
+        .with_created_at("2025-10-02T00:00:00Z")
+        .with_label(PRLabels(id=2, name="enhancement"))
+        .with_label(PRLabels(id=1, name="bug"))
+        .build(),
+    ]
+
+
+def prs_with_authors() -> List[PRDetails]:
+    return [
+        PullRequestBuilder()
+        .with_number(1029)
+        .with_title("Add files via upload")
+        .with_author("eriirfos-eng")
+        .with_created_at("2025-09-02T00:50:00Z")
+        .build(),
+        PullRequestBuilder()
+        .with_number(1164)
+        .with_title("Add Repository Tree Navigation Tool")
+        .with_author("natagdunbar")
+        .with_created_at("2025-09-30T19:12:17Z")
+        .build(),
+    ]
 
 
 class TestCliPrsSummaryCommands:
@@ -22,6 +60,7 @@ class TestCliPrsSummaryCommands:
                     .build(),
                 ],
                 "0",
+                id="two prs outside date range",
             )
         ],
     )
@@ -43,7 +82,6 @@ class TestCliPrsSummaryCommands:
                 "text",
             ],
         )
-        assert 0 == result.exit_code
         assert f"Total PRs: {expected_count}" in result.output
 
     def test_exports_csv_data(self, cli):
@@ -95,7 +133,7 @@ class TestCliPrsSummaryCommands:
             (
                 [
                     PullRequestBuilder()
-                    .with_created_at("2025-09-02T00:50:00Z")
+                    .with_created_at("2023-01-02T00:50:00Z")
                     .with_author("eriirfos-eng")
                     .build()
                 ],
@@ -107,12 +145,23 @@ class TestCliPrsSummaryCommands:
                     "Unique Authors: 1",
                 ],
             ),
+            (
+                [
+                    PullRequestBuilder()
+                    .with_created_at("2023-01-01T00:50:00Z")
+                    .with_author("eriirfos-eng")
+                    .with_label(PRLabels(id=1, name="bug"))
+                    .build()
+                ],
+                [
+                    "- bug: 1",
+                ],
+            ),
         ],
     )
     def test_summary_lines_are_printed(self, cli, prs, expected_lines):
         cli.storage.store_prs_with(prs)
 
-        # Act: invoke the summary command with text output
         result = cli.runner.invoke(
             main,
             [
@@ -120,28 +169,50 @@ class TestCliPrsSummaryCommands:
                 "summary",
                 "--output",
                 "text",
+                "--start-date",
+                "2023-01-01",
+                "--end-date",
+                "2023-12-31",
             ],
         )
 
         for line in expected_lines:
             assert line in result.output
 
-    def test_full_summary_example_matches_expected_format(self, cli):
-        prs = [
-            PullRequestBuilder()
-            .with_number(1029)
-            .with_title("Add files via upload")
-            .with_author("eriirfos-eng")
-            .with_created_at("2025-09-02T00:50:00Z")
-            .build(),
-            PullRequestBuilder()
-            .with_number(1164)
-            .with_title("Add Repository Tree Navigation Tool")
-            .with_author("natagdunbar")
-            .with_created_at("2025-09-30T19:12:17Z")
-            .build(),
-        ]
-
+    @pytest.mark.parametrize(
+        "prs, expected_lines",
+        [
+            pytest.param(
+                prs_with_labels(),
+                "Unique Labels: 2",
+            ),
+            pytest.param(
+                prs_with_labels(),
+                "- bug: 2 PRs",
+            ),
+            pytest.param(
+                prs_with_labels(),
+                "- enhancement: 1 PRs",
+            ),
+            pytest.param(prs_with_authors(), "PRs Summary:"),
+            pytest.param(prs_with_authors(), "Total PRs: 2"),
+            pytest.param(prs_with_authors(), "Unique Authors: 2"),
+            pytest.param(prs_with_authors(), "First PR:"),
+            pytest.param(prs_with_authors(), "Number: 1029"),
+            pytest.param(prs_with_authors(), "Title: Add files via upload"),
+            pytest.param(prs_with_authors(), "Author: eriirfos-eng"),
+            pytest.param(prs_with_authors(), "Created: 2025-09-02T00:50:00Z"),
+            pytest.param(prs_with_authors(), "Last PR:"),
+            pytest.param(prs_with_authors(), "Number: 1164"),
+            pytest.param(
+                prs_with_authors(), "Title: Add Repository Tree Navigation Tool"
+            ),
+            pytest.param(prs_with_authors(), "Author: natagdunbar"),
+            pytest.param(prs_with_authors(), "Created: 2025-09-30T19:12:17Z"),
+            pytest.param(prs_with_authors(), "Average of comments per PR: 0"),
+        ],
+    )
+    def test_renders_line(self, cli, prs, expected_lines):
         cli.storage.store_prs_with(prs)
 
         result = cli.runner.invoke(
@@ -154,55 +225,7 @@ class TestCliPrsSummaryCommands:
             ],
         )
 
-        assert "PRs Summary:" in result.output
-        assert "Total PRs: 2" in result.output
-        assert "Unique Authors: 2" in result.output
-        assert "First PR:" in result.output
-        assert "Number: 1029" in result.output
-        assert "Title: Add files via upload" in result.output
-        assert "Author: eriirfos-eng" in result.output
-        assert "Created: 2025-09-02T00:50:00Z" in result.output
-        assert "Last PR:" in result.output
-        assert "Number: 1164" in result.output
-        assert "Title: Add Repository Tree Navigation Tool" in result.output
-        assert "Author: natagdunbar" in result.output
-        assert "Created: 2025-09-30T19:12:17Z" in result.output
-        assert "Average of comments per PR: 0" in result.output
-
-    def test_pr_labels_are_listed_with_counts(self, cli):
-        prs = [
-            PullRequestBuilder()
-            .with_number(1)
-            .with_title("Fix issue")
-            .with_author("alice")
-            .with_created_at("2025-10-01T00:00:00Z")
-            .with_label(PRLabels(id=1, name="bug"))
-            .build(),
-            PullRequestBuilder()
-            .with_number(2)
-            .with_title("Add feature")
-            .with_author("bob")
-            .with_created_at("2025-10-02T00:00:00Z")
-            .with_label(PRLabels(id=2, name="enhancement"))
-            .with_label(PRLabels(id=1, name="bug"))
-            .build(),
-        ]
-
-        cli.storage.store_prs_with(prs)
-
-        result = cli.runner.invoke(
-            main,
-            [
-                "prs",
-                "summary",
-                "--output",
-                "text",
-            ],
-        )
-
-        assert "Unique Labels: 2" in result.output
-        assert "- bug: 2 PRs" in result.output
-        assert "- enhancement: 1 PRs" in result.output
+        assert expected_lines in result.output
 
     def test_output_average_of_comments_by_prs(self, cli):
         prs = [

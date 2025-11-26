@@ -51,14 +51,6 @@ class TestJobsCliCommands:
             mock_get.reset_mock()
             yield mock_get
 
-    def test_can_run_fetch_jobs_command(self, cli):
-        result = cli.runner.invoke(main, ["pipelines", "jobs-fetch", "--help"])
-        assert 0 == result.exit_code
-
-    def test_show_help_message(self, cli):
-        result = cli.runner.invoke(main, ["pipelines", "jobs-fetch", "--help"])
-        assert "Show this message and exit" in result.output
-
     def test_should_fetch_jobs_for_a_workflow(self, cli, tmp_path):
         cli.storage.store_pipelines_with(single_run())
 

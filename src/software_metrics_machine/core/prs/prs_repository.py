@@ -126,8 +126,8 @@ class PrsRepository(FileSystemBaseRepository):
                 filtered.append(pr)
         return filtered
 
-    def get_unique_authors(self) -> List[str]:
-        authors = {pr.user.login for pr in self.all_prs}
+    def get_unique_authors(self, filters: Optional[PRFilters] = None) -> List[str]:
+        authors = {pr.user.login for pr in self.prs_with_filters(filters=filters)}
         return sorted(author for author in authors if author)
 
     def prs_with_filters(self, filters: Optional[PRFilters] = None) -> List[PRDetails]:
@@ -154,10 +154,12 @@ class PrsRepository(FileSystemBaseRepository):
 
         return filtered
 
-    def get_unique_labels(self) -> List[LabelSummary]:
+    def get_unique_labels(
+        self, filters: Optional[PRFilters] = None
+    ) -> List[LabelSummary]:
         labels_list = []
         labels_count: dict = {}
-        for p in self.all_prs:
+        for p in self.prs_with_filters(filters=filters):
             pr_labels = p.labels
             for lbl in pr_labels:
                 name = lbl.name.strip().lower()
@@ -168,68 +170,11 @@ class PrsRepository(FileSystemBaseRepository):
 
         return labels_list
 
-    def get_total_comments_count(self) -> int:
+    def get_total_comments_count(self, filters: Optional[PRFilters] = None) -> int:
         total_comments = 0
-        for pr in self.all_prs:
+        for pr in self.prs_with_filters(filters=filters):
             total_comments += len(pr.comments)
         return total_comments
-
-    def __load(self) -> None:
-        all_prs = []
-        self.logger.debug("Loading PRs")
-        contents = super().read_file_if_exists(self.file)
-
-        if contents is None:
-            self.logger.debug(
-                f"No PRs file found at {self.file}. Please run fetch_prs first."
-            )
-            return
-
-        list_adapter_prs = TypeAdapter(list[PRDetails])
-        self.all_prs = list_adapter_prs.validate_json(contents)
-
-        self.logger.debug(f"Loaded {len(all_prs)} PRs")
-
-        contents_comments = super().read_file_if_exists("prs_review_comments.json")
-
-        if contents_comments:
-            all_prs_comment = json.loads(contents_comments)
-            if all_prs_comment:
-                self.logger.debug("Associating PRs with comments")
-                total = 1
-                for pr in self.all_prs:
-                    for comment in all_prs_comment:
-                        if "pull_request_url" in comment and comment[
-                            "pull_request_url"
-                        ].endswith(f"/{pr.number}"):
-                            pr.comments.append(PRComments(**comment))
-                            total += 1
-                self.logger.debug(f"Associated PRs with {total} comments")
-
-        self.all_prs.sort(key=super().created_at_key_sort)
-
-    def __count_comments_before_merge(self, pr: dict) -> int:
-        merged_at = pr.merged_at
-        if not merged_at:
-            return 0
-        try:
-            merged_dt = datetime.fromisoformat(merged_at.replace("Z", "+00:00"))
-        except Exception:
-            return 0
-
-        comments = pr.comments
-        cnt = 0
-        for c in comments:
-            c_created = c.created_at
-            if not c_created:
-                continue
-            try:
-                c_dt = datetime.fromisoformat(c_created.replace("Z", "+00:00"))
-            except Exception:
-                continue
-            if c_dt <= merged_dt:
-                cnt += 1
-        return cnt
 
     def average_comments(self, filters: None = None, aggregate_by: str = "week"):
         prs = self.prs_with_filters(filters=filters)
@@ -303,6 +248,40 @@ class PrsRepository(FileSystemBaseRepository):
 
         return {"x": x, "y": y, "period": periods}
 
+    def __load(self) -> None:
+        all_prs = []
+        self.logger.debug("Loading PRs")
+        contents = super().read_file_if_exists(self.file)
+
+        if contents is None:
+            self.logger.debug(
+                f"No PRs file found at {self.file}. Please run fetch_prs first."
+            )
+            return
+
+        list_adapter_prs = TypeAdapter(list[PRDetails])
+        self.all_prs = list_adapter_prs.validate_json(contents)
+
+        self.logger.debug(f"Loaded {len(all_prs)} PRs")
+
+        contents_comments = super().read_file_if_exists("prs_review_comments.json")
+
+        if contents_comments:
+            all_prs_comment = json.loads(contents_comments)
+            if all_prs_comment:
+                self.logger.debug("Associating PRs with comments")
+                total = 1
+                for pr in self.all_prs:
+                    for comment in all_prs_comment:
+                        if "pull_request_url" in comment and comment[
+                            "pull_request_url"
+                        ].endswith(f"/{pr.number}"):
+                            pr.comments.append(PRComments(**comment))
+                            total += 1
+                self.logger.debug(f"Associated PRs with {total} comments")
+
+        self.all_prs.sort(key=super().created_at_key_sort)
+
     def __normalize_labels(self, labels: str | None) -> List[str]:
         # normalize labels argument into a list of lowercase names
         labels_list: List[str] = []
@@ -316,3 +295,26 @@ class PrsRepository(FileSystemBaseRepository):
             else:
                 labels_list = [str(label).strip().lower() for label in labels]
         return labels_list
+
+    def __count_comments_before_merge(self, pr: dict) -> int:
+        merged_at = pr.merged_at
+        if not merged_at:
+            return 0
+        try:
+            merged_dt = datetime.fromisoformat(merged_at.replace("Z", "+00:00"))
+        except Exception:
+            return 0
+
+        comments = pr.comments
+        cnt = 0
+        for c in comments:
+            c_created = c.created_at
+            if not c_created:
+                continue
+            try:
+                c_dt = datetime.fromisoformat(c_created.replace("Z", "+00:00"))
+            except Exception:
+                continue
+            if c_dt <= merged_dt:
+                cnt += 1
+        return cnt

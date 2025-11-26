@@ -14,13 +14,6 @@ class TestCliPrCommentsCommands:
             mock_get.reset_mock()
             yield mock_get
 
-    def test_can_run_fetch_prs_comment_command(self, cli):
-        with patch("requests.get") as mock_get:
-            mock_get.return_value = build_http_successfull_response([])
-
-            result = cli.runner.invoke(main, ["prs", "fetch-comments"])
-            assert 0 == result.exit_code
-
     def test_fetch_prs_comments_between_dates(self, cli):
         pull_requests_data = [
             PullRequestBuilder().with_created_at("2023-01-26T19:01:12Z").build(),

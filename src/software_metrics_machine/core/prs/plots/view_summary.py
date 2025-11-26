@@ -7,21 +7,18 @@ from software_metrics_machine.core.prs.pr_types import SummaryResult, PRDetails
 class PrViewSummary:
     def __init__(self, repository: PrsRepository):
         self.repository = repository
-        self.prs = repository.all_prs
 
     def main(
         self, csv=None, start_date=None, end_date=None, output_format=None
-    ) -> SummaryResult | None:
+    ) -> SummaryResult:
         self.csv = csv
         self.start_date = start_date
         self.end_date = end_date
+        self.filters = {"start_date": self.start_date, "end_date": self.end_date}
 
-        self.prs = self.repository.prs_with_filters(
-            {"start_date": self.start_date, "end_date": self.end_date}
-        )
+        self.prs = self.repository.prs_with_filters(self.filters)
 
         if len(self.prs) == 0:
-            # No PRs to summarize; return an empty structured summary
             return {
                 "avg_comments_per_pr": 0,
                 "total_prs": 0,
@@ -51,14 +48,11 @@ class PrViewSummary:
 
         summary = self.__summarize_prs()
 
-        # Export CSV if requested (write to file), return structured data always
         if self.csv:
             self.__export_summary_to_csv(summary)
 
         structured_summary = self.__get_structured_summary(summary)
 
-        # For backward compatibility, preserve output_format options by returning
-        # the structured summary. The caller can format as needed (text/json/etc.).
         return structured_summary
 
     def __export_summary_to_csv(self, summary):
@@ -74,20 +68,6 @@ class PrViewSummary:
         summary = {}
         total = len(self.prs)
         summary["total_prs"] = total
-        if total == 0:
-            summary.update(
-                {
-                    "first_pr": None,
-                    "last_pr": None,
-                    "closed_prs": 0,
-                    "merged_prs": 0,
-                    "without_conclusion": 0,
-                    "unique_authors": 0,
-                    "unique_labels": 0,
-                    "labels": [],
-                }
-            )
-            return summary
 
         first = self.prs[0]
         last = self.prs[-1]
@@ -102,14 +82,16 @@ class PrViewSummary:
         summary["closed_prs"] = len(closed)
         summary["without_conclusion"] = len(without)
 
-        summary["unique_authors"] = len(self.repository.get_unique_authors())
+        summary["unique_authors"] = len(
+            self.repository.get_unique_authors(self.filters)
+        )
 
-        labels_list = self.repository.get_unique_labels()
+        labels_list = self.repository.get_unique_labels(self.filters)
 
         summary["labels"] = labels_list
         summary["unique_labels"] = len(labels_list)
 
-        comments_count = self.repository.get_total_comments_count()
+        comments_count = self.repository.get_total_comments_count(self.filters)
         num_prs = len(self.prs)
 
         summary["avg_comments_per_pr"] = comments_count / num_prs
@@ -131,7 +113,7 @@ class PrViewSummary:
         }
         return structured_summary
 
-    def __brief_pr(self, pr: PRDetails) -> str:
+    def __brief_pr(self, pr: PRDetails) -> PRDetails:
         number = pr.number
         title = pr.title
         login = pr.user.login

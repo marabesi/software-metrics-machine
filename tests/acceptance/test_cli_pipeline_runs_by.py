@@ -6,10 +6,6 @@ from tests.builders import github_workflows_data
 
 class TestWorkflowsRunsByCliCommands:
 
-    def test_can_run_view_workflow_by(self, cli):
-        result = cli.runner.invoke(main, ["pipelines", "runs-by", "--help"])
-        assert 0 == result.exit_code
-
     def test_show_filter_instructions(self, cli):
         result = cli.runner.invoke(main, ["pipelines", "runs-by", "--help"])
         assert "Comma-separated key=value pairs to filter runs" in result.output

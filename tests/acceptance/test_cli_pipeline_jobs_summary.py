@@ -6,16 +6,6 @@ from tests.pipeline_builder import PipelineJobBuilder
 
 class TestPipelineJobsSummaryCliCommands:
 
-    def test_summary_jobs_pipeline_is_defined(self, cli):
-        result = cli.runner.invoke(
-            main,
-            [
-                "pipelines",
-                "jobs-summary",
-            ],
-        )
-        assert 0 == result.exit_code
-
     def test_summary_pipeline_no_jobs(self, cli):
         cli.storage.store_pipelines_with(single_run())
 

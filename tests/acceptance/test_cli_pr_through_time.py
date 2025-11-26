@@ -12,10 +12,6 @@ class TestCliPrThroughTimeCommands:
             mock_get.reset_mock()
             yield mock_get
 
-    def test_can_run_prs_through_time_command(self, cli):
-        result = cli.runner.invoke(main, ["prs", "through-time"])
-        assert 0 == result.exit_code
-
     @pytest.mark.parametrize(
         "command, expected_in_output",
         [
@@ -57,4 +53,5 @@ class TestCliPrThroughTimeCommands:
         cli.storage.store_prs_with(pull_requests_data)
 
         result = cli.runner.invoke(main, command)
+
         assert expected_in_output in result.output

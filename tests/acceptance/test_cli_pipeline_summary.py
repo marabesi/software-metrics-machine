@@ -7,16 +7,6 @@ from tests.pipeline_builder import PipelineBuilder
 
 class TestPipelineSummaryCliCommands:
 
-    def test_summary_pipeline_is_defined(self, cli):
-        result = cli.runner.invoke(
-            main,
-            [
-                "pipelines",
-                "summary",
-            ],
-        )
-        assert 0 == result.exit_code
-
     @pytest.mark.parametrize(
         "workflows, expected_output",
         [

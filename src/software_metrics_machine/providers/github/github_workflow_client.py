@@ -12,7 +12,7 @@ from software_metrics_machine.core.infrastructure.configuration.configuration im
 from software_metrics_machine.core.prs.prs_repository import PrsRepository
 
 from software_metrics_machine.core.infrastructure.logger import Logger
-from tests.builders import as_json_string
+from software_metrics_machine.core.infrastructure.json import as_json_string
 
 
 class FetchPipelinesResult(TypedDict):
