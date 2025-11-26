@@ -27,15 +27,25 @@ from software_metrics_machine.core.prs.plots.view_summary import PrViewSummary
     help="Filter PRs created on or before this date (ISO 8601)",
 )
 @click.option(
+    "--labels",
+    type=str,
+    default=None,
+    help="Comma-separated list of label names to filter PRs by (e.g. bug,enhancement)",
+)
+@click.option(
     "--output",
     type=str,
     default="text",
     help="Either 'text' or 'json' to specify the output format",
 )
-def summary(csv, start_date, end_date, output):
+def summary(csv, start_date, end_date, output, labels):
     view = PrViewSummary(repository=create_prs_repository())
     result = view.main(
-        csv=csv, start_date=start_date, end_date=end_date, output_format=output
+        csv=csv,
+        start_date=start_date,
+        end_date=end_date,
+        output_format=output,
+        labels=labels,
     )
 
     if output == "json":

@@ -34,6 +34,7 @@ smm prs summary
 | End date       | Fetches PRs created before a date.   | `--end-date=2025-12-31`  |
 | Export         | Exports the data as csv to a given file path   | `--csv=my_export.csv`  |
 | Output        | Defines the output format, either text or json. Defaults to text.  | `--output=json`     |
+| Labels         | Filters PRs by attached labels. Multiple labels can be provided separated by commas. | `--labels=bug,enhancement` |
 
 ### Examples - Summary PRs data
 
@@ -41,7 +42,8 @@ smm prs summary
 smm prs summary \
   --start-date=2025-01-01 \
   --end-date=2025-06-30 \
-  --output=text
+  --output=text \
+  --labels=bug,enhancement
 ```
 
 Output:

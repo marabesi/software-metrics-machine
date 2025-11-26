@@ -9,12 +9,22 @@ class PrViewSummary:
         self.repository = repository
 
     def main(
-        self, csv=None, start_date=None, end_date=None, output_format=None
+        self,
+        csv=None,
+        start_date=None,
+        end_date=None,
+        output_format=None,
+        labels: str | None = None,
     ) -> SummaryResult:
         self.csv = csv
         self.start_date = start_date
         self.end_date = end_date
-        self.filters = {"start_date": self.start_date, "end_date": self.end_date}
+        self.labels = labels
+        self.filters = {
+            "start_date": self.start_date,
+            "end_date": self.end_date,
+            "labels": self.labels,
+        }
 
         self.prs = self.repository.prs_with_filters(self.filters)
 

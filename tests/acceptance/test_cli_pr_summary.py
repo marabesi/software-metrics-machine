@@ -270,3 +270,23 @@ class TestCliPrsSummaryCommands:
         )
 
         assert "Average of comments per PR: 1" in result.output
+
+    def test_summary_filters_by_labels(self, cli):
+        prs = prs_with_labels()
+        cli.storage.store_prs_with(prs)
+
+        # filter by 'enhancement' label: only one PR has that label
+        result = cli.runner.invoke(
+            main,
+            [
+                "prs",
+                "summary",
+                "--output",
+                "text",
+                "--labels",
+                "enhancement",
+            ],
+        )
+
+        assert "Total PRs: 1" in result.output
+        assert "- enhancement: 1 PRs" in result.output
