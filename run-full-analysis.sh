@@ -11,8 +11,8 @@ GITHUB_TOKEN=$1
 #project="smelly-test"
 #github_repo="marabesi/smelly-test"
 
-project="marabesi"
-github_repo="marabesi/json-tool"
+# project="marabesi"
+# github_repo="marabesi/software-metrics-machine"
 
 project="vercel"
 github_repo="vercel/next.js"
@@ -26,8 +26,8 @@ analysis_dir="$base_dir/downloads/${project}_analysis"
 rm -rf "$analysis_dir"
 mkdir -p "$analysis_dir"
 
-start_date="2025-11-01"
-end_date="2025-11-05"
+start_date="2025-10-01"
+end_date="2025-11-10"
 
 export SMM_STORE_DATA_AT="$analysis_dir"
 
@@ -55,10 +55,10 @@ echo "$TEMPLATE" > "$analysis_dir/smm_config.json"
 ./run-cli.sh code fetch --start-date "$start_date" --end-date "$end_date"
 ./run-cli.sh prs fetch --start-date "$start_date" --end-date "$end_date"
 ./run-cli.sh prs fetch-comments --start-date "$start_date" --end-date "$end_date"
-./run-cli.sh pipelines fetch --start-date "$start_date" --end-date "$end_date"
-./run-cli.sh pipelines jobs-fetch --start-date "$start_date" --end-date "$end_date"
+# ./run-cli.sh pipelines fetch --start-date "$start_date" --end-date "$end_date"
+# ./run-cli.sh pipelines jobs-fetch --start-date "$start_date" --end-date "$end_date"
 
-./run-cli.sh pipelines summary
-./run-cli.sh prs summary
+# ./run-cli.sh pipelines summary
+# ./run-cli.sh prs summary
 
-./run-dashboard.sh
+# ./run-dashboard.sh

@@ -185,6 +185,26 @@ jobs:
       - name: "Run test"
         run: "./lib/bashunit tests/e2e"
 
+  send_docker_image_to_hub:
+    needs: [code-quality, pytest, e2e]
+    if: github.ref == 'refs/heads/main' && contains(github.event.head_commit.message, 'tagged version')
+    runs-on: ubuntu-24.04
+    steps:
+    - uses: actions/checkout@v4
+    - name: login to docker hub
+      id: docker-hub
+      env:
+        username: ${{secrets.DOCKERHUB_USERNAME}}
+        password: ${{secrets.DOCKERHUB_TOKEN}}
+      run: |
+        docker logout
+        docker login -u $username -p $password docker.io
+    - name: Build Docker Image
+      run: |
+        cd cli && docker build -t ${{secrets.DOCKERHUB_USERNAME}}/software-metrics-machine .
+    - name: Push Docker Image
+      run: |
+        docker push ${{secrets.DOCKERHUB_USERNAME}}/software-metrics-machine:latest
 
   delivery-test:
     permissions:

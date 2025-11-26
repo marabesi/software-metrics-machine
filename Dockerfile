@@ -1,4 +1,4 @@
-FROM python:3.13-slim
+FROM python:3.14-slim
 
 ENV DEBIAN_FRONTEND=noninteractive
 WORKDIR /app
