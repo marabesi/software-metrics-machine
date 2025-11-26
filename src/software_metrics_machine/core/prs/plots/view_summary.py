@@ -23,6 +23,7 @@ class PrViewSummary:
         if len(self.prs) == 0:
             # No PRs to summarize; return an empty structured summary
             return {
+                "avg_comments_per_pr": 0,
                 "total_prs": 0,
                 "merged_prs": 0,
                 "closed_prs": 0,
@@ -107,10 +108,17 @@ class PrViewSummary:
 
         summary["labels"] = labels_list
         summary["unique_labels"] = len(labels_list)
+
+        comments_count = self.repository.get_total_comments_count()
+        num_prs = len(self.prs)
+
+        summary["avg_comments_per_pr"] = comments_count / num_prs
+
         return summary
 
     def __get_structured_summary(self, summary) -> SummaryResult:
         structured_summary = {
+            "avg_comments_per_pr": summary.get("avg_comments_per_pr", 0),
             "total_prs": summary.get("total_prs", 0),
             "merged_prs": summary.get("merged_prs", 0),
             "closed_prs": summary.get("closed_prs", 0),
@@ -145,6 +153,9 @@ class PrViewSummary:
         # textual representation, but return the string instead of printing.
         lines = []
         lines.append("\nPRs Summary:\n")
+        lines.append(
+            f"Average of comments per PR: {structured_summary['avg_comments_per_pr']}"
+        )
         lines.append(f"Total PRs: {structured_summary['total_prs']}")
         lines.append(f"Merged PRs: {structured_summary['merged_prs']}")
         lines.append(f"Closed PRs: {structured_summary['closed_prs']}")

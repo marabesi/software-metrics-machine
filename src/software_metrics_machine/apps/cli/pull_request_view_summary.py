@@ -50,6 +50,7 @@ def summary(csv, start_date, end_date, output):
     parts.append(f"PRs Without Conclusion: {(result or {}).get('without_conclusion')}")
     parts.append(f"Unique Authors: {(result or {}).get('unique_authors')}")
     parts.append(f"Unique Labels: {(result or {}).get('unique_labels')}")
+    parts.append(f"Average of comments per PR: {result.get('avg_comments_per_pr')}")
 
     parts.append("\nLabels:")
     labels = (result or {}).get("labels") or []

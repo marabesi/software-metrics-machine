@@ -169,6 +169,12 @@ class PrsRepository(FileSystemBaseRepository):
 
         return labels_list
 
+    def get_total_comments_count(self) -> int:
+        total_comments = 0
+        for pr in self.all_prs:
+            total_comments += len(pr.comments)
+        return total_comments
+
     def __load(self) -> None:
         all_prs = []
         self.logger.debug("Loading PRs")

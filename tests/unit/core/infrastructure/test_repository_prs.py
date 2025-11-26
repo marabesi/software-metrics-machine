@@ -265,7 +265,6 @@ class TestRepositoryPrs:
                         PullRequestCommentsBuilder()
                         .with_number(101)
                         .with_body("Looks good")
-                        .with_pull_request_url("/101")
                         .build(),
                     ],
                 },
@@ -274,7 +273,6 @@ class TestRepositoryPrs:
         ],
     )
     def test_associate_pull_requests_with_comments(self, prs_data, expected_count):
-
         def mocked_read_file_if_exists(file):
             if file == "prs.json":
                 return as_json_string(prs_data["prs"])
@@ -292,3 +290,42 @@ class TestRepositoryPrs:
             prs_with_comments = repository.prs_with_filters()
 
             assert expected_count == len(prs_with_comments[0].comments)
+
+    def test_get_total_comments_count(self):
+        def mocked_read_file_if_exists(file):
+            if file == "prs.json":
+                return as_json_string(
+                    [
+                        PullRequestBuilder().with_number(101).build(),
+                        PullRequestBuilder().with_number(102).build(),
+                    ]
+                )
+            if file == "prs_review_comments.json":
+                return as_json_string(
+                    [
+                        PullRequestCommentsBuilder()
+                        .with_number(101)
+                        .with_body("Looks good")
+                        .build(),
+                        PullRequestCommentsBuilder()
+                        .with_number(101)
+                        .with_body("Please fix the issues")
+                        .build(),
+                        PullRequestCommentsBuilder()
+                        .with_number(102)
+                        .with_body("Great work!")
+                        .build(),
+                    ]
+                )
+            raise FileNotFoundError(f"File {file} not found")
+
+        with patch(
+            "software_metrics_machine.core.infrastructure.file_system_base_repository.FileSystemBaseRepository.read_file_if_exists",
+            side_effect=mocked_read_file_if_exists,
+        ):
+            configuration = InMemoryConfiguration(".")
+            repository = PrsRepository(configuration=configuration)
+
+            total_comments = repository.get_total_comments_count()
+
+            assert total_comments == 3

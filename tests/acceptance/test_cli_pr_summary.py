@@ -2,6 +2,7 @@ import pytest
 from software_metrics_machine.apps.cli import main
 from tests.prs_builder import PullRequestBuilder
 from software_metrics_machine.core.prs.pr_types import PRLabels
+from tests.prs_comment_builder import PullRequestCommentsBuilder
 
 
 class TestCliPrsSummaryCommands:
@@ -126,7 +127,6 @@ class TestCliPrsSummaryCommands:
             assert line in result.output
 
     def test_full_summary_example_matches_expected_format(self, cli):
-        # Build a realistic dataset matching the example in the request
         prs = [
             PullRequestBuilder()
             .with_number(1029)
@@ -167,6 +167,7 @@ class TestCliPrsSummaryCommands:
         assert "Title: Add Repository Tree Navigation Tool" in result.output
         assert "Author: natagdunbar" in result.output
         assert "Created: 2025-09-30T19:12:17Z" in result.output
+        assert "Average of comments per PR: 0" in result.output
 
     def test_pr_labels_are_listed_with_counts(self, cli):
         prs = [
@@ -202,3 +203,47 @@ class TestCliPrsSummaryCommands:
         assert "Unique Labels: 2" in result.output
         assert "- bug: 2 PRs" in result.output
         assert "- enhancement: 1 PRs" in result.output
+
+    def test_output_average_of_comments_by_prs(self, cli):
+        prs = [
+            PullRequestBuilder()
+            .with_number(1029)
+            .with_title("Add files via upload")
+            .with_author("eriirfos-eng")
+            .with_created_at("2025-09-02T00:50:00Z")
+            .build(),
+            PullRequestBuilder()
+            .with_number(1164)
+            .with_title("Add Repository Tree Navigation Tool")
+            .with_author("natagdunbar")
+            .with_created_at("2025-09-30T19:12:17Z")
+            .build(),
+        ]
+
+        prs_comments = [
+            PullRequestCommentsBuilder()
+            .with_number(1029)
+            .with_id(1)
+            .with_body("Looks good to me!")
+            .build(),
+            PullRequestCommentsBuilder()
+            .with_number(1164)
+            .with_id(2)
+            .with_body("Please address the comments.")
+            .build(),
+        ]
+
+        cli.storage.store_prs_with(prs)
+        cli.storage.store_prs_comment_with(prs_comments)
+
+        result = cli.runner.invoke(
+            main,
+            [
+                "prs",
+                "summary",
+                "--output",
+                "text",
+            ],
+        )
+
+        assert "Average of comments per PR: 1" in result.output

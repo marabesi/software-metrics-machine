@@ -39,6 +39,7 @@ class PRDetails(BaseModel):
 
 
 class SummaryResult(TypedDict):
+    avg_comments_per_pr: float
     total_prs: int
     merged_prs: int
     closed_prs: int
