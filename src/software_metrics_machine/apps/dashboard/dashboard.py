@@ -79,7 +79,24 @@ start_end_date_picker = pn.widgets.DateRangePicker(
     name="Select Date Range", value=(start_date, end_date)
 )
 
-workflow_names = pipeline_repository.get_unique_workflow_paths()
+
+def _set_filters_for_options():
+    sd, ed = start_end_date_picker.value or (None, None)
+    filters = {"start_date": sd, "end_date": ed}
+    options = pipeline_repository.get_unique_workflow_paths(filters=filters)
+
+    # preserve current selection when possible, otherwise pick a sensible default
+    current_value = (
+        getattr(workflow_selector, "value", None)
+        if "workflow_selector" in globals()
+        else None
+    )
+    workflow_selector.options = options
+    if current_value and current_value in options:
+        workflow_selector.value = current_value
+    else:
+        workflow_selector.value = configuration.deployment_frequency_target_pipeline
+
 
 workflow_selector = pn.widgets.AutocompleteInput(
     name="Select pipeline",
@@ -88,9 +105,13 @@ workflow_selector = pn.widgets.AutocompleteInput(
     restrict=False,
     case_sensitive=False,
     min_characters=0,
-    options=workflow_names,
-    value=configuration.deployment_frequency_target_pipeline,
+    options=[],
+    value=None,
 )
+
+_set_filters_for_options()
+
+start_end_date_picker.param.watch(lambda ev: _set_filters_for_options(), "value")
 
 jobs_selector = pn.widgets.AutocompleteInput(
     name="Select job",
