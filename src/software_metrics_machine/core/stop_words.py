@@ -502,8 +502,6 @@ STOPWORDS = {
     "ci",
     "dev",
     "build",
-    "test",
-    "tests",
     "coverage",
     "workflow",
     "workflows",
