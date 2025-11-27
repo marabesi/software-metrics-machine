@@ -1,7 +1,9 @@
+import pytest
 from software_metrics_machine.apps.cli import main
 from tests.builders import single_run
 
 from tests.pipeline_builder import PipelineJobBuilder
+from tests.builders import job_with_single_step_completed_successfully
 
 
 class TestPipelineJobsSummaryCliCommands:
@@ -72,3 +74,74 @@ class TestPipelineJobsSummaryCliCommands:
         assert "Created at: 01 Oct 2024, 09:05" in result.output
         assert "Started at: 01 Oct 2024, 09:05" in result.output
         assert "Completed/Updated at: 01 Oct 2024, 09:10" in result.output
+
+    @pytest.mark.parametrize(
+        "jobs",
+        [
+            pytest.param(
+                [
+                    PipelineJobBuilder()
+                    .with_id(1)
+                    .with_run_id(1)
+                    .with_started_at("2023-10-01T09:05:00Z")
+                    .with_created_at("2023-10-01T09:05:00Z")
+                    .with_completed_at("2023-10-01T09:10:00Z")
+                    .with_steps([])
+                    .build(),
+                ],
+                id="no steps",
+            ),
+        ],
+    )
+    def test_with_stored_data_summary(self, cli, jobs):
+        cli.storage.store_pipelines_with(single_run())
+        cli.storage.store_jobs_with(jobs)
+
+        result = cli.runner.invoke(
+            main,
+            [
+                "pipelines",
+                "jobs-summary",
+            ],
+        )
+        assert 0 == result.exit_code
+        assert "Jobs summary" in result.output
+
+    @pytest.mark.parametrize(
+        "jobs_for_test, command, expected",
+        [
+            (
+                job_with_single_step_completed_successfully,
+                [
+                    "pipelines",
+                    "jobs-summary",
+                    "--start-date",
+                    "2021-09-01",
+                    "--end-date",
+                    "2026-09-01",
+                ],
+                "Unique job names: 1",
+            ),
+            (
+                job_with_single_step_completed_successfully,
+                [
+                    "pipelines",
+                    "jobs-summary",
+                    "--start-date",
+                    "2021-09-01",
+                    "--end-date",
+                    "2021-09-01",
+                ],
+                "No job executions available.",
+            ),
+        ],
+    )
+    def test_jobs_summary_with_data_available(
+        self, cli, jobs_for_test, command, expected
+    ):
+        cli.storage.store_pipelines_with(single_run())
+        cli.storage.store_jobs_with(jobs_for_test)
+
+        result = cli.runner.invoke(main, command)
+
+        assert expected in result.output

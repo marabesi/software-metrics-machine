@@ -12,35 +12,7 @@ from tests.github_workflow_response import (
 from tests.pipeline_builder import (
     PipelineBuilder,
     PipelineJobBuilder,
-    PipelineJobStepBuilder,
 )
-
-job_with_single_step_completed_successfully = [
-    PipelineJobBuilder()
-    .with_id(1)
-    .with_run_id(1)
-    .with_steps(
-        [
-            PipelineJobStepBuilder()
-            .with_number(1)
-            .with_name("Set up job")
-            .with_status("completed")
-            .with_conclusion("success")
-            .with_created_at("2025-09-01T00:37:47Z")
-            .with_started_at("2025-09-01T00:37:47Z")
-            .with_completed_at("2025-09-01T00:37:48Z")
-            .build()
-        ]
-    )
-    .with_workflow_name("Node CI")
-    .with_head_branch("main")
-    .with_run_attempt(1)
-    .with_html_url("https://github.com/marabesi/json-tool/actions/runs/17364448040")
-    .with_status("completed")
-    .with_conclusion("success")
-    .with_name("build")
-    .build(),
-]
 
 
 class TestJobsCliCommands:
@@ -133,77 +105,6 @@ class TestJobsCliCommands:
                 },
                 params={"owner": "random"},
             )
-
-    @pytest.mark.parametrize(
-        "jobs",
-        [
-            pytest.param(
-                [
-                    PipelineJobBuilder()
-                    .with_id(1)
-                    .with_run_id(1)
-                    .with_started_at("2023-10-01T09:05:00Z")
-                    .with_created_at("2023-10-01T09:05:00Z")
-                    .with_completed_at("2023-10-01T09:10:00Z")
-                    .with_steps([])
-                    .build(),
-                ],
-                id="no steps",
-            ),
-        ],
-    )
-    def test_with_stored_data_summary(self, cli, jobs):
-        cli.storage.store_pipelines_with(single_run())
-        cli.storage.store_jobs_with(jobs)
-
-        result = cli.runner.invoke(
-            main,
-            [
-                "pipelines",
-                "jobs-summary",
-            ],
-        )
-        assert 0 == result.exit_code
-        assert "Jobs summary" in result.output
-
-    @pytest.mark.parametrize(
-        "jobs_for_test, command, expected",
-        [
-            (
-                job_with_single_step_completed_successfully,
-                [
-                    "pipelines",
-                    "jobs-summary",
-                    "--start-date",
-                    "2021-09-01",
-                    "--end-date",
-                    "2026-09-01",
-                ],
-                "Unique job names: 1",
-            ),
-            (
-                job_with_single_step_completed_successfully,
-                [
-                    "pipelines",
-                    "jobs-summary",
-                    "--start-date",
-                    "2021-09-01",
-                    "--end-date",
-                    "2021-09-01",
-                ],
-                "No job executions available.",
-            ),
-        ],
-    )
-    def test_jobs_summary_with_data_available(
-        self, cli, jobs_for_test, command, expected
-    ):
-        cli.storage.store_pipelines_with(single_run())
-        cli.storage.store_jobs_with(jobs_for_test)
-
-        result = cli.runner.invoke(main, command)
-
-        assert expected in result.output
 
     def test_plot_jobs_by_status(self, cli):
         jobs = [

@@ -3,7 +3,12 @@ import json
 from typing import Any, List
 
 from software_metrics_machine.core.pipelines.pipelines_types import PipelineRun
-from tests.pipeline_builder import PipelineBuilder, PipelineJob
+from tests.pipeline_builder import (
+    PipelineBuilder,
+    PipelineJob,
+    PipelineJobBuilder,
+    PipelineJobStepBuilder,
+)
 
 
 class TypedDictEncoder(json.JSONEncoder):
@@ -126,3 +131,31 @@ def mocked_read_file_if_exists(
     if file == "jobs.json":
         return as_json_string(jobs)
     raise FileNotFoundError(f"File {file} not found - tests.builders.builder.py")
+
+
+job_with_single_step_completed_successfully = [
+    PipelineJobBuilder()
+    .with_id(1)
+    .with_run_id(1)
+    .with_steps(
+        [
+            PipelineJobStepBuilder()
+            .with_number(1)
+            .with_name("Set up job")
+            .with_status("completed")
+            .with_conclusion("success")
+            .with_created_at("2025-09-01T00:37:47Z")
+            .with_started_at("2025-09-01T00:37:47Z")
+            .with_completed_at("2025-09-01T00:37:48Z")
+            .build()
+        ]
+    )
+    .with_workflow_name("Node CI")
+    .with_head_branch("main")
+    .with_run_attempt(1)
+    .with_html_url("https://github.com/marabesi/json-tool/actions/runs/17364448040")
+    .with_status("completed")
+    .with_conclusion("success")
+    .with_name("build")
+    .build(),
+]
