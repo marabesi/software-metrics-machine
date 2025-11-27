@@ -13,6 +13,7 @@ class PullRequestCommentsBuilder:
     body: str = ""
     created_at: str = field(default="")
     updated_at: Optional[str] = field(default="")
+    user_login: Optional[str] = field(default=None)
 
     def with_id(self, id: int) -> PullRequestCommentsBuilder:
         self.id = id
@@ -34,14 +35,20 @@ class PullRequestCommentsBuilder:
         self.updated_at = updated_at
         return self
 
+    def with_user(self, login: str) -> PullRequestCommentsBuilder:
+        self.user_login = login
+        return self
+
     def build(self) -> Dict[str, Any]:
-        comments = PRComments(
-            **{
-                "id": self.id,
-                "body": self.body,
-                "created_at": self.created_at,
-                "updated_at": self.updated_at,
-                "pull_request_url": f"/{self.number}",
-            }
-        )
+        payload = {
+            "id": self.id,
+            "body": self.body,
+            "created_at": self.created_at,
+            "updated_at": self.updated_at,
+            "pull_request_url": f"/{self.number}",
+        }
+        if self.user_login:
+            payload["user"] = {"login": self.user_login}
+
+        comments = PRComments(**payload)
         return comments

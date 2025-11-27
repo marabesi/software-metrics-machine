@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from pydantic import BaseModel
 from typing import TypedDict, List, Optional
 
@@ -13,6 +15,7 @@ class PRComments(BaseModel):
     created_at: str
     updated_at: str
     pull_request_url: str
+    user: PrUser | None = None
 
 
 class PrUser(BaseModel):

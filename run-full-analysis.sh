@@ -2,8 +2,8 @@
 
 GITHUB_TOKEN=$1
 
-# project="ollama"
-# github_repo="ollama/ollama"
+project="ollama"
+github_repo="ollama/ollama"
 
 # project="vitepress"
 # github_repo="vuejs/vitepress"
@@ -14,8 +14,8 @@ GITHUB_TOKEN=$1
 # project="marabesi"
 # github_repo="marabesi/software-metrics-machine"
 
-project="vercel"
-github_repo="vercel/next.js"
+# project="vercel"
+# github_repo="vercel/next.js"
 
 repo_url="https://github.com/$github_repo.git"
 
@@ -23,19 +23,29 @@ base_dir="$(pwd)"
 clone_dir="$base_dir/downloads/$project"
 analysis_dir="$base_dir/downloads/${project}_analysis"
 
-rm -rf "$analysis_dir"
-mkdir -p "$analysis_dir"
-
 start_date="2025-10-01"
 end_date="2025-11-10"
 
 export SMM_STORE_DATA_AT="$analysis_dir"
+
+if [ "$1" == "d" ]; then
+  ./run-dashboard.sh
+  exit
+fi
+
+if [ "$1" != "" ]; then
+  ./run-cli.sh "$@"
+  exit
+fi
 
 if [ ! -d "$clone_dir" ]; then
   git clone "$repo_url" "$clone_dir"
 else
   echo "Repository already cloned at $clone_dir"
 fi
+
+rm -rf "$analysis_dir"
+mkdir -p "$analysis_dir"
 
 TEMPLATE=$(cat <<EOF
   {
@@ -55,10 +65,10 @@ echo "$TEMPLATE" > "$analysis_dir/smm_config.json"
 ./run-cli.sh code fetch --start-date "$start_date" --end-date "$end_date"
 ./run-cli.sh prs fetch --start-date "$start_date" --end-date "$end_date"
 ./run-cli.sh prs fetch-comments --start-date "$start_date" --end-date "$end_date"
-# ./run-cli.sh pipelines fetch --start-date "$start_date" --end-date "$end_date"
-# ./run-cli.sh pipelines jobs-fetch --start-date "$start_date" --end-date "$end_date"
+./run-cli.sh pipelines fetch --start-date "$start_date" --end-date "$end_date"
+./run-cli.sh pipelines jobs-fetch --start-date "$start_date" --end-date "$end_date"
 
-# ./run-cli.sh pipelines summary
-# ./run-cli.sh prs summary
+./run-cli.sh pipelines summary
+./run-cli.sh prs summary
 
 # ./run-dashboard.sh

@@ -128,6 +128,30 @@ class PrViewSummary:
                 "login": None,
                 "comments_count": 0,
             }
+        # Determine the author who commented the most across all PRs
+        commenter_counts: dict = {}
+        for p in self.prs:
+            for c in getattr(p, "comments", []) or []:
+                # comment may have optional user info
+                user = getattr(c, "user", None)
+                if user and getattr(user, "login", None):
+                    login = user.login
+                    commenter_counts[login] = commenter_counts.get(login, 0) + 1
+
+        top_commenter = None
+        top_commenter_count = 0
+        for login, cnt in commenter_counts.items():
+            if cnt > top_commenter_count:
+                top_commenter_count = cnt
+                top_commenter = login
+
+        if top_commenter:
+            summary["top_commenter"] = {
+                "login": top_commenter,
+                "comments_count": top_commenter_count,
+            }
+        else:
+            summary["top_commenter"] = {"login": None, "comments_count": 0}
 
         return summary
 
@@ -144,6 +168,7 @@ class PrViewSummary:
             "first_pr": self.__brief_pr(summary.get("first_pr")),
             "last_pr": self.__brief_pr(summary.get("last_pr")),
             "most_commented_pr": summary.get("most_commented_pr", {}),
+            "top_commenter": summary.get("top_commenter", {}),
         }
         return structured_summary
 
@@ -202,5 +227,10 @@ class PrViewSummary:
         lines.append(f"  Created: {last_pr['created']}")
         lines.append(f"  Merged: {last_pr['merged']}")
         lines.append(f"  Closed: {last_pr['closed']}")
+
+        top = structured_summary.get("top_commenter") or {}
+        lines.append("\nTop commenter:")
+        lines.append(f"  Login: {top.get('login')}")
+        lines.append(f"  Comments: {top.get('comments_count')}")
 
         return "\n".join(lines)

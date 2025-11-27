@@ -94,6 +94,11 @@ def summary(csv, start_date, end_date, output, labels):
     parts.append(f"  Author: {most.get('login')}")
     parts.append(f"  Comments: {most.get('comments_count')}")
 
+    parts.append("\nTop commenter:")
+    top = (result or {}).get("top_commenter") or {}
+    parts.append(f"  Login: {top.get('login')}")
+    parts.append(f"  Comments: {top.get('comments_count')}")
+
     click.echo("\n".join(str(p) for p in parts))
 
     if csv:
