@@ -145,8 +145,11 @@ class PipelinesRepository(FileSystemBaseRepository):
         workflow_names = {run.name for run in self.all_runs}
         return list(workflow_names)
 
-    def get_unique_workflow_paths(self) -> List[str]:
-        workflow_names = {run.path for run in self.all_runs}
+    def get_unique_workflow_paths(
+        self, filters: Optional[PipelineFilters] = None
+    ) -> List[str]:
+        runs = self.runs(filters)
+        workflow_names = {run.path for run in runs}
         listWithPaths = list(workflow_names)
         listWithPaths.insert(0, "All")
         return listWithPaths

@@ -237,6 +237,13 @@ class TestPipelinesRepository:
             result = loader.get_unique_workflow_paths()
             assert len(result) == 4
 
+            # ensure filtering by runs is supported
+            filtered = loader.get_unique_workflow_paths(
+                filters={"path": "/workflows/build.yml"}
+            )
+            assert len(filtered) == 2
+            assert filtered[1] == "/workflows/build.yml"
+
     def test_get_unique_jobs_name(self):
         jobs_with_duplicated_names = [
             PipelineJobBuilder().with_name("Build").build(),
@@ -255,7 +262,26 @@ class TestPipelinesRepository:
             result = loader.get_unique_jobs_name()
             assert len(result) == 3
 
-    def test_get_unique_jobs_name_filtered_by_pipeline(self):
+    @pytest.mark.parametrize(
+        "filters, expected",
+        [
+            (
+                {"path": "/workflows/tests.yml"},
+                {
+                    "count": 2,  # adds the "All" option
+                    "job_name": "Build",
+                },
+            ),
+            pytest.param(
+                None,
+                {
+                    "count": 3,  # adds the "All" option
+                    "job_name": "Build",
+                },
+            ),
+        ],
+    )
+    def test_get_unique_jobs_name_filtered_by_pipeline(self, filters, expected):
         pipelines = github_workflows_data()
         jobs_with_duplicated_name = [
             PipelineJobBuilder()
@@ -278,13 +304,10 @@ class TestPipelinesRepository:
         ):
             loader = PipelinesRepository(configuration=InMemoryConfiguration("."))
 
-            filter_by = pipelines[0].path
-            filters = {"path": filter_by}
-
             result = loader.get_unique_jobs_name(filters=filters)
 
-            assert len(result) == 2
-            assert "Build" == result[1]
+            assert expected["count"] == len(result)
+            assert expected["job_name"] == result[1]
 
     def test_get_unique_pipelines_conclusions(self):
         pipelines = [
