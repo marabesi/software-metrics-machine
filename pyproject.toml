@@ -1,9 +1,9 @@
 [project]
 name = "software-metrics-machine"
 description = "A data-driven approach to software measurament for high-performing teams"
-version = "0.1.13"
+version = "0.1.14"
 readme = "README.md"
-requires-python = ">=3.11,<4.0"
+requires-python = ">=3.14,<4.0"
 dependencies = [
     "pandas (>=2.3.2,<3.0.0)",
     "requests (>=2.32.5,<3.0.0)",
