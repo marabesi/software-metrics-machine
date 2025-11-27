@@ -1,6 +1,6 @@
 import pytest
 from software_metrics_machine.apps.cli import main
-from tests.builders import single_run
+from tests.builders import single_run, github_workflows_data
 
 from tests.pipeline_builder import PipelineJobBuilder
 from tests.builders import job_with_single_step_completed_successfully
@@ -145,3 +145,42 @@ class TestPipelineJobsSummaryCliCommands:
         result = cli.runner.invoke(main, command)
 
         assert expected in result.output
+
+    def test_jobs_summary_filters_by_pipeline(self, cli):
+        pipelines = github_workflows_data()
+        cli.storage.store_pipelines_with(pipelines)
+
+        job1 = (
+            PipelineJobBuilder()
+            .with_id(1)
+            .with_run_id(1)
+            .with_workflow_name("Node CI")
+            .with_started_at("2023-10-01T09:05:00Z")
+            .with_created_at("2023-10-01T09:05:00Z")
+            .with_completed_at("2023-10-01T09:10:00Z")
+            .build()
+        )
+        job2 = (
+            PipelineJobBuilder()
+            .with_id(2)
+            .with_run_id(2)
+            .with_workflow_name("deploy")
+            .with_started_at("2023-10-01T09:05:00Z")
+            .with_created_at("2023-10-01T09:05:00Z")
+            .with_completed_at("2023-10-01T09:10:00Z")
+            .build()
+        )
+
+        cli.storage.store_jobs_with([job1, job2])
+
+        result = cli.runner.invoke(
+            main,
+            [
+                "pipelines",
+                "jobs-summary",
+                "--pipeline",
+                "Node CI",
+            ],
+        )
+
+        assert "Total job executions: 1" in result.output

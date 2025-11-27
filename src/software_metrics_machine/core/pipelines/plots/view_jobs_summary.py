@@ -32,9 +32,10 @@ class ViewJobsSummary:
         max_jobs: int = 10,
         start_date: str | None = None,
         end_date: str | None = None,
+        pipeline: str | None = None,
     ) -> JobsSummaryResult:
         self.jobs = self.repository.jobs(
-            {"start_date": start_date, "end_date": end_date}
+            {"start_date": start_date, "end_date": end_date, "pipeline": pipeline}
         )
 
         self.jobs_summary = JobsSummary(repository=self.repository)

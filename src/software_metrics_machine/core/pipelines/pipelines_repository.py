@@ -52,7 +52,11 @@ class PipelinesRepository(FileSystemBaseRepository):
 
         name = filters.get("name")
         if name:
-            runs = [job for job in self.all_jobs if job.name == name]
+            runs = [job for job in runs if job.name == name]
+
+        pipeline = filters.get("pipeline")
+        if pipeline:
+            runs = [job for job in runs if job.workflow_name == pipeline]
 
         run_id = filters.get("run_id")
         if run_id:

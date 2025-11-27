@@ -26,8 +26,8 @@ statuses run for the pipelines, and second, on the time it takes to run them.
 smm pipelines pipeline-by-status
 ```
 
-| Option         | Description                          | Example <div style="width:200px"></div> |
-|----------------|--------------------------------------|--------------------------|
+| Option         | Description                          | Example |
+|----------------|--------------------------------------|---------|
 | Start date     | Filter by created after this date.   | `--start-date=2025-01-01`     |
 | End date       | Filter by created before this date.  | `--end-date=2025-12-31`     |
 | Workflow path | Filter by the workflow file path      | `--workflow-path=".github/workflows/ci.yml"`     |
@@ -166,6 +166,25 @@ smm pipelines jobs-by-status
 ```bash
 smm pipelines jobs-summary
 ```
+
+:::tabs key:cli
+== Dashboard
+
+Not available yet.
+
+== CLI
+
+```bash
+smm pipelines jobs-summary
+```
+
+| Option         | Description                          | Example <div style="width:200px"></div> |
+|----------------|--------------------------------------|--------------------------|
+| Start date     | Filter by created after this date.   | `--start-date=2025-01-01`     |
+| End date       | Filter by created before this date.  | `--end-date=2025-12-31`     |
+| Pipeline       | Filter jobs by pipeline name (not the path) | `--pipeline="Name of the pipeline"`     |
+
+:::
 
 
 

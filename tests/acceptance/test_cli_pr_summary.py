@@ -321,7 +321,6 @@ class TestCliPrsSummaryCommands:
         prs = prs_with_labels()
         cli.storage.store_prs_with(prs)
 
-        # filter by 'enhancement' label: only one PR has that label
         result = cli.runner.invoke(
             main,
             [

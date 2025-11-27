@@ -34,11 +34,18 @@ from software_metrics_machine.core.pipelines.plots.view_jobs_summary import (
     default=None,
     help="End date (inclusive) in YYYY-MM-DD",
 )
-def jobs_summary(max_jobs, start_date, end_date):
+@click.option(
+    "--pipeline",
+    type=str,
+    required=False,
+    default=None,
+    help='Filter jobs by pipeline path or filename (e.g. "/workflows/a.yml" or "a.yml")',
+)
+def jobs_summary(max_jobs, start_date, end_date, pipeline):
     repository = create_pipelines_repository(driver=Driver.CLI)
     view = ViewJobsSummary(repository=repository)
     result = view.print_summary(
-        max_jobs=max_jobs, start_date=start_date, end_date=end_date
+        max_jobs=max_jobs, start_date=start_date, end_date=end_date, pipeline=pipeline
     )
 
     if not result or result.get("total_jobs", 0) == 0:
