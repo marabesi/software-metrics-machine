@@ -186,6 +186,7 @@ jobs:
         run: "./lib/bashunit tests/e2e"
 
   send_docker_image_to_hub:
+    if: github.ref == 'refs/heads/main' && contains(github.event.head_commit.message, 'DISABLED-DockerHub')
     needs: [code-quality, pytest, e2e]
     runs-on: ubuntu-24.04
     steps:
