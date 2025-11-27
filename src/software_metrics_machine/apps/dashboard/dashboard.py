@@ -63,7 +63,7 @@ def sanitize_all_argument(selected_value):
 
 
 configuration = create_configuration(Driver.JSON)
-workflow_repository = PipelinesRepository(configuration=configuration)
+pipeline_repository = PipelinesRepository(configuration=configuration)
 prs_repository = PrsRepository(configuration=configuration)
 codemaat_repository = CodemaatRepository(configuration=configuration)
 
@@ -79,7 +79,7 @@ start_end_date_picker = pn.widgets.DateRangePicker(
     name="Select Date Range", value=(start_date, end_date)
 )
 
-workflow_names = workflow_repository.get_unique_workflow_paths()
+workflow_names = pipeline_repository.get_unique_workflow_paths()
 
 workflow_selector = pn.widgets.AutocompleteInput(
     name="Select pipeline",
@@ -112,7 +112,7 @@ branch = pn.widgets.TextInput(
 event = pn.widgets.AutocompleteInput(
     name="Event",
     placeholder="Filter runs by event (e.g., push)",
-    options=workflow_repository.get_unique_pipeline_trigger_events(),
+    options=pipeline_repository.get_unique_pipeline_trigger_events(),
     search_strategy="includes",
     restrict=False,
     case_sensitive=False,
@@ -121,7 +121,7 @@ event = pn.widgets.AutocompleteInput(
 
 
 def _update_jobs_selector_for_workflow(path):
-    options = workflow_repository.get_unique_jobs_name(
+    options = pipeline_repository.get_unique_jobs_name(
         {"path": sanitize_all_argument(path)}
     )
 
@@ -141,7 +141,7 @@ workflow_selector.param.watch(
     lambda ev: _update_jobs_selector_for_workflow(ev.new), "value"
 )
 
-workflow_conclusions = workflow_repository.get_unique_workflow_conclusions(
+workflow_conclusions = pipeline_repository.get_unique_workflow_conclusions(
     {"path": sanitize_all_argument(workflow_selector.value)}
 )
 selected_conclusion = None
@@ -156,7 +156,7 @@ workflow_conclusions = pn.widgets.Select(
     value=selected_conclusion,
 )
 
-workflow_status = workflow_repository.get_unique_workflow_status(
+workflow_status = pipeline_repository.get_unique_workflow_status(
     {"path": sanitize_all_argument(workflow_selector.value)}
 )
 selected_status = None
@@ -175,7 +175,7 @@ header_section_prs = pn.Row()
 header_section_pipeline = pn.Row()
 
 insights_section = insights_section(
-    repository=workflow_repository, date_range_picker=start_end_date_picker
+    repository=pipeline_repository, date_range_picker=start_end_date_picker
 )
 pipeline_section = pipeline_section(
     date_range_picker=start_end_date_picker,
@@ -185,7 +185,7 @@ pipeline_section = pipeline_section(
     workflow_conclusions=workflow_conclusions,
     branch=branch,
     event=event,
-    repository=workflow_repository,
+    repository=pipeline_repository,
 )
 configuration_section = configuration_section(configuration)
 
