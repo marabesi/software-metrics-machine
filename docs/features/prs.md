@@ -345,5 +345,12 @@ Plot the average number of comments a PR receives before it is merged, aggregate
 smm prs average-comments-by --aggregate-by=week
 ```
 
+| Option         | Description                          | Example                  |
+|----------------|--------------------------------------|--------------------------|
+| Start date     | Filter PRs created on or after this date.    | `--start-date=2025-01-01`|
+| End date       | Filter PRs created on or before this date.   | `--end-date=2025-12-31`  |
+| Authors        | Filter PRs by the authors who created them. Multiple authors can be provided separated by commas. | `--authors=alice,bob`     |
+| Labels         | Filter PRs by attached labels. Multiple labels can be provided separated by commas. | `--labels=bug,enhancement` |
+
 :::
 

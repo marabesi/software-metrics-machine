@@ -1,3 +1,4 @@
+from software_metrics_machine.core.infrastructure.logger import Logger
 from software_metrics_machine.core.pipelines.pipelines_repository import (
     PipelinesRepository,
 )
@@ -9,6 +10,7 @@ from software_metrics_machine.core.pipelines.pipelines_types import (
 
 class DeploymentFrequency:
     def __init__(self, repository: PipelinesRepository):
+        self.logger = Logger(configuration=repository.configuration).get_logger()
         self.repository = repository
 
     def execute(
@@ -27,7 +29,9 @@ class DeploymentFrequency:
         )
         runs = self.repository.runs(filters)
 
-        print(f"Filtered to {len(runs)} runs after applying workflow path filter")
+        self.logger.debug(
+            f"Filtered to {len(runs)} runs after applying workflow path filter"
+        )
 
         return self.repository.get_deployment_frequency_for_job(
             job_name=job_name, filters=filters

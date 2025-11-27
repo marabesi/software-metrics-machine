@@ -31,6 +31,7 @@ class ViewAverageCommentsPerPullRequest(BaseViewer):
                 "start_date": start_date,
                 "end_date": end_date,
                 "authors": authors,
+                "labels": labels,
             },
             aggregate_by=aggregate_by,
         )
