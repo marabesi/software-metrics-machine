@@ -1,8 +1,7 @@
-import dataclasses
+from pydantic import BaseModel
 
 
-@dataclasses.dataclass
-class CodeChurn:
+class CodeChurn(BaseModel):
     date: str
     added: int
     deleted: int
