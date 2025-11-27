@@ -107,3 +107,63 @@ class TestPrsSummary:
             s = ps.main()
 
             assert s["avg_comments_per_pr"] == expected_avg
+
+    def test_top_themes_in_summary(self):
+        # two PRs and a set of comments where 'tests' is the most frequent token
+        prs = [
+            PullRequestBuilder()
+            .with_number(101)
+            .with_title("Improve CI")
+            .with_author("alice")
+            .with_created_at("2025-09-01T00:00:00Z")
+            .build(),
+            PullRequestBuilder()
+            .with_number(102)
+            .with_title("Refactor module")
+            .with_author("bob")
+            .with_created_at("2025-09-02T00:00:00Z")
+            .build(),
+        ]
+
+        comments = [
+            PullRequestCommentsBuilder()
+            .with_number(101)
+            .with_id(1)
+            .with_body("These tests are flaky, we should add more tests")
+            .build(),
+            PullRequestCommentsBuilder()
+            .with_number(101)
+            .with_id(2)
+            .with_body("Also consider a refactor of the module, and add tests")
+            .build(),
+            PullRequestCommentsBuilder()
+            .with_number(102)
+            .with_id(3)
+            .with_body("Refactor completed, running tests locally")
+            .build(),
+            PullRequestCommentsBuilder()
+            .with_number(102)
+            .with_id(4)
+            .with_body("Minor typo fixed")
+            .build(),
+        ]
+
+        def mocked_read_file_if_exists(file):
+            if file == "prs.json":
+                return as_json_string(prs)
+            if file == "prs_review_comments.json":
+                return as_json_string(comments)
+            return None
+
+        with patch(
+            "software_metrics_machine.core.infrastructure.file_system_base_repository.FileSystemBaseRepository.read_file_if_exists",
+            side_effect=mocked_read_file_if_exists,
+        ):
+            loader = PrsRepository(configuration=InMemoryConfiguration("."))
+            ps = PrViewSummary(repository=loader)
+
+            s = ps.main()
+
+            top = s["top_themes"]
+            assert top[0]["theme"] == "tests"
+            assert top[0]["count"] == 4

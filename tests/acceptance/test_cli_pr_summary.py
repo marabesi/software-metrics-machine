@@ -366,6 +366,51 @@ class TestCliPrsSummaryCommands:
         assert "Login: alice" in result.output
         assert "Comments: 2" in result.output
 
+    def test_top_themes_in_summary(self, cli):
+        prs = [
+            PullRequestBuilder()
+            .with_number(1029)
+            .with_title("Add files via upload")
+            .with_author("eriirfos-eng")
+            .with_created_at("2025-09-02T00:50:00Z")
+            .build(),
+            PullRequestBuilder()
+            .with_number(1164)
+            .with_title("Add Repository Tree Navigation Tool")
+            .with_author("natagdunbar")
+            .with_created_at("2025-09-30T19:12:17Z")
+            .build(),
+        ]
+
+        prs_comments = [
+            PullRequestCommentsBuilder()
+            .with_number(1029)
+            .with_id(1)
+            .with_body("This improves performance significantly")
+            .build(),
+            PullRequestCommentsBuilder()
+            .with_number(1029)
+            .with_id(2)
+            .with_body("We should refactor this for performance")
+            .build(),
+            PullRequestCommentsBuilder()
+            .with_number(1164)
+            .with_id(3)
+            .with_body("This is a bug, please fix")
+            .build(),
+        ]
+
+        cli.storage.store_prs_with(prs)
+        cli.storage.store_prs_comment_with(prs_comments)
+
+        result = cli.runner.invoke(
+            main,
+            ["prs", "summary", "--output", "text"],
+        )
+
+        assert "Top themes:" in result.output
+        assert "performance: 2" in result.output
+
     def test_summary_filters_by_labels(self, cli):
         prs = prs_with_labels()
         cli.storage.store_prs_with(prs)

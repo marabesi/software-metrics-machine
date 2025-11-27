@@ -1,7 +1,10 @@
 import csv
+import re
+from collections import Counter
 
 from software_metrics_machine.core.prs.prs_repository import PrsRepository
 from software_metrics_machine.core.prs.pr_types import SummaryResult, PRDetails
+from software_metrics_machine.core.stop_words import STOPWORDS
 
 
 class PrViewSummary:
@@ -153,6 +156,26 @@ class PrViewSummary:
         else:
             summary["top_commenter"] = {"login": None, "comments_count": 0}
 
+        word_counts: Counter[str] = Counter()
+        for p in self.prs:
+            for c in getattr(p, "comments", []) or []:
+                body = getattr(c, "body", "") or ""
+                # tokenise words, consider only alphabetic tokens
+                tokens = re.findall(r"\w+", body.lower())
+                for t in tokens:
+                    if len(t) <= 2:
+                        continue
+                    if t in STOPWORDS:
+                        continue
+                    word_counts[t] += 1
+
+        top_themes = []
+        if word_counts:
+            for theme, cnt in word_counts.most_common(5):
+                top_themes.append({"theme": theme, "count": cnt})
+
+        summary["top_themes"] = top_themes
+
         return summary
 
     def __get_structured_summary(self, summary) -> SummaryResult:
@@ -169,6 +192,7 @@ class PrViewSummary:
             "last_pr": self.__brief_pr(summary.get("last_pr")),
             "most_commented_pr": summary.get("most_commented_pr", {}),
             "top_commenter": summary.get("top_commenter", {}),
+            "top_themes": summary.get("top_themes", []),
         }
         return structured_summary
 
@@ -232,5 +256,9 @@ class PrViewSummary:
         lines.append("\nTop commenter:")
         lines.append(f"  Login: {top.get('login')}")
         lines.append(f"  Comments: {top.get('comments_count')}")
+
+        lines.append("\nTop themes:")
+        for theme in structured_summary.get("top_themes", []):
+            lines.append(f"  - {theme.get('theme')}: {theme.get('count')}")
 
         return "\n".join(lines)

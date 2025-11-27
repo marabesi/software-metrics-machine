@@ -98,6 +98,18 @@ def summary(csv, start_date, end_date, output, labels):
     top = (result or {}).get("top_commenter") or {}
     parts.append(f"  Login: {top.get('login')}")
     parts.append(f"  Comments: {top.get('comments_count')}")
+    # Top themes section (show most discussed themes across PR comments)
+    parts.append("\nTop themes:")
+    top_themes = (result or {}).get("top_themes") or []
+
+    for theme in top_themes:
+        if isinstance(theme, dict):
+            name = theme.get("theme") or theme.get("label") or str(theme)
+            count = theme.get("count") or theme.get("prs_count") or "?"
+        else:
+            name = str(theme)
+            count = "?"
+        parts.append(f"  {name}: {count}")
 
     click.echo("\n".join(str(p) for p in parts))
 
