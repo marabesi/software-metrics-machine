@@ -1,5 +1,6 @@
 import json
-from typing import List, Iterable, Optional, Dict, Tuple
+import re
+from typing import Counter, List, Iterable, Optional, Dict, Tuple
 from datetime import datetime, timezone
 from pydantic import TypeAdapter
 
@@ -17,6 +18,7 @@ from software_metrics_machine.core.prs.pr_types import (
     PRComments,
     PRFilters,
 )
+from software_metrics_machine.core.stop_words import STOPWORDS
 
 
 class PrsRepository(FileSystemBaseRepository):
@@ -348,6 +350,26 @@ class PrsRepository(FileSystemBaseRepository):
             }
 
         return {"login": None, "comments_count": 0}
+
+    def get_top_themes(self, filters: Optional[PRFilters] = None) -> List[dict]:
+        word_counts: Counter[str] = Counter()
+        for p in self.prs_with_filters(filters=filters):
+            for c in getattr(p, "comments", []) or []:
+                body = getattr(c, "body", "") or ""
+                tokens = re.findall(r"\w+", body.lower())
+                for t in tokens:
+                    if len(t) <= 2:
+                        continue
+                    if t in STOPWORDS:
+                        continue
+                    word_counts[t] += 1
+
+        top_themes = []
+        if word_counts:
+            for theme, cnt in word_counts.most_common(5):
+                top_themes.append({"theme": theme, "count": cnt})
+
+        return top_themes
 
     def __count_comments_before_merge(self, pr: PRDetails) -> int:
         merged_at = pr.merged_at

@@ -1,10 +1,7 @@
 import csv
-import re
-from collections import Counter
 
 from software_metrics_machine.core.prs.prs_repository import PrsRepository
 from software_metrics_machine.core.prs.pr_types import SummaryResult, PRDetails
-from software_metrics_machine.core.stop_words import STOPWORDS
 
 
 class PrViewSummary:
@@ -115,25 +112,7 @@ class PrViewSummary:
 
         summary["top_commenter"] = self.repository.get_top_commenter(self.filters)
 
-        word_counts: Counter[str] = Counter()
-        for p in self.prs:
-            for c in getattr(p, "comments", []) or []:
-                body = getattr(c, "body", "") or ""
-                # tokenise words, consider only alphabetic tokens
-                tokens = re.findall(r"\w+", body.lower())
-                for t in tokens:
-                    if len(t) <= 2:
-                        continue
-                    if t in STOPWORDS:
-                        continue
-                    word_counts[t] += 1
-
-        top_themes = []
-        if word_counts:
-            for theme, cnt in word_counts.most_common(5):
-                top_themes.append({"theme": theme, "count": cnt})
-
-        summary["top_themes"] = top_themes
+        summary["top_themes"] = self.repository.get_top_themes(self.filters)
 
         return summary
 
