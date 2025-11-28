@@ -301,6 +301,30 @@ class PrsRepository(FileSystemBaseRepository):
                 labels_list = [str(label).strip().lower() for label in labels]
         return labels_list
 
+    def get_most_commented_pr(self, filters: Optional[PRFilters] = None) -> dict:
+        most_commented = None
+        most_comments_count = 0
+        for p in self.prs_with_filters(filters=filters):
+            cnt = len(p.comments) if getattr(p, "comments", None) is not None else 0
+            if cnt > most_comments_count:
+                most_comments_count = cnt
+                most_commented = p
+
+        if most_commented:
+            return {
+                "number": most_commented.number,
+                "title": most_commented.title,
+                "login": most_commented.user.login,
+                "comments_count": most_comments_count,
+            }
+        else:
+            return {
+                "number": None,
+                "title": None,
+                "login": None,
+                "comments_count": 0,
+            }
+
     def __count_comments_before_merge(self, pr: dict) -> int:
         merged_at = pr.merged_at
         if not merged_at:

@@ -109,29 +109,10 @@ class PrViewSummary:
 
         summary["avg_comments_per_pr"] = comments_count / num_prs
 
-        most_commented = None
-        most_comments_count = 0
-        for p in self.prs:
-            cnt = len(p.comments) if getattr(p, "comments", None) is not None else 0
-            if cnt > most_comments_count:
-                most_comments_count = cnt
-                most_commented = p
+        summary["most_commented_pr"] = self.repository.get_most_commented_pr(
+            self.filters
+        )
 
-        if most_commented:
-            summary["most_commented_pr"] = {
-                "number": most_commented.number,
-                "title": most_commented.title,
-                "login": most_commented.user.login,
-                "comments_count": most_comments_count,
-            }
-        else:
-            summary["most_commented_pr"] = {
-                "number": None,
-                "title": None,
-                "login": None,
-                "comments_count": 0,
-            }
-        # Determine the author who commented the most across all PRs
         commenter_counts: dict = {}
         for p in self.prs:
             for c in getattr(p, "comments", []) or []:
