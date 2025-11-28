@@ -325,6 +325,30 @@ class PrsRepository(FileSystemBaseRepository):
                 "comments_count": 0,
             }
 
+    def get_top_commenter(self, filters: Optional[PRFilters] = None) -> dict:
+        commenter_counts: dict = {}
+        for p in self.prs_with_filters(filters=filters):
+            for c in getattr(p, "comments", []) or []:
+                user = getattr(c, "user", None)
+                if user and getattr(user, "login", None):
+                    login = user.login
+                    commenter_counts[login] = commenter_counts.get(login, 0) + 1
+
+        top_commenter = None
+        top_commenter_count = 0
+        for login, cnt in commenter_counts.items():
+            if cnt > top_commenter_count:
+                top_commenter_count = cnt
+                top_commenter = login
+
+        if top_commenter:
+            return {
+                "login": top_commenter,
+                "comments_count": top_commenter_count,
+            }
+
+        return {"login": None, "comments_count": 0}
+
     def __count_comments_before_merge(self, pr: PRDetails) -> int:
         merged_at = pr.merged_at
         if not merged_at:

@@ -113,29 +113,7 @@ class PrViewSummary:
             self.filters
         )
 
-        commenter_counts: dict = {}
-        for p in self.prs:
-            for c in getattr(p, "comments", []) or []:
-                # comment may have optional user info
-                user = getattr(c, "user", None)
-                if user and getattr(user, "login", None):
-                    login = user.login
-                    commenter_counts[login] = commenter_counts.get(login, 0) + 1
-
-        top_commenter = None
-        top_commenter_count = 0
-        for login, cnt in commenter_counts.items():
-            if cnt > top_commenter_count:
-                top_commenter_count = cnt
-                top_commenter = login
-
-        if top_commenter:
-            summary["top_commenter"] = {
-                "login": top_commenter,
-                "comments_count": top_commenter_count,
-            }
-        else:
-            summary["top_commenter"] = {"login": None, "comments_count": 0}
+        summary["top_commenter"] = self.repository.get_top_commenter(self.filters)
 
         word_counts: Counter[str] = Counter()
         for p in self.prs:
