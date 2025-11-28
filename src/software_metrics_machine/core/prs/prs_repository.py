@@ -1,5 +1,5 @@
 import json
-from typing import List, Iterable, Optional
+from typing import List, Iterable, Optional, Dict, Tuple
 from datetime import datetime, timezone
 from pydantic import TypeAdapter
 
@@ -61,7 +61,7 @@ class PrsRepository(FileSystemBaseRepository):
     def __average_by_month(
         self, labels: str | None = None, prs=[]
     ) -> tuple[List[str], List[float]]:
-        pr_months = {}
+        pr_months: Dict[str, List[int]] = {}
 
         all_prs = prs
 
@@ -84,7 +84,7 @@ class PrsRepository(FileSystemBaseRepository):
     def __average_by_week(
         self, labels: str | None = None, prs=[]
     ) -> tuple[List[str], List[float]]:
-        pr_weeks = {}
+        pr_weeks: Dict[str, List[int]] = {}
 
         all_prs = prs
 
@@ -187,7 +187,7 @@ class PrsRepository(FileSystemBaseRepository):
         merged_prs = prs
 
         if aggregate_by == "week":
-            buckets: dict = {}
+            week_buckets: Dict[str, List[Tuple[int, datetime]]] = {}
             for pr in merged_prs:
                 try:
                     merged_dt = datetime.fromisoformat(
@@ -200,11 +200,12 @@ class PrsRepository(FileSystemBaseRepository):
                 week = iso[1]
                 week_key = f"{year}-W{week:02d}"
                 cnt = self.__count_comments_before_merge(pr)
-                buckets.setdefault(week_key, []).append((cnt, merged_dt))
+                week_buckets.setdefault(week_key, []).append((cnt, merged_dt))
 
-            weeks = sorted(buckets.keys())
+            weeks = sorted(week_buckets.keys())
             avg_vals = [
-                sum([c for c, _ in buckets[w]]) / len(buckets[w]) for w in weeks
+                sum([c for c, _ in week_buckets[w]]) / len(week_buckets[w])
+                for w in weeks
             ]
 
             # convert week keys to datetime (Monday of that ISO week)
@@ -212,9 +213,9 @@ class PrsRepository(FileSystemBaseRepository):
             for wk in weeks:
                 try:
                     parts = wk.split("-W")
-                    y = int(parts[0])
-                    w = int(parts[1])
-                    wd = datetime.fromisocalendar(y, w, 1)
+                    y_part = int(parts[0])
+                    w_part = int(parts[1])
+                    wd = datetime.fromisocalendar(y_part, w_part, 1)
                     week_dates.append(wd)
                 except Exception:
                     # fallback: try to parse as iso datetime string
@@ -224,13 +225,12 @@ class PrsRepository(FileSystemBaseRepository):
                     except Exception:
                         continue
 
-            x = [pd.to_datetime(dt) for dt in week_dates]
-            y = avg_vals
+            x: List[pd.Timestamp] = [pd.to_datetime(dt) for dt in week_dates]
+            y: List[float] = avg_vals
             periods = weeks
-
         else:
             # aggregate by month
-            buckets: dict = {}
+            month_buckets: Dict[str, List[Tuple[int, datetime]]] = {}
             for pr in merged_prs:
                 try:
                     merged_dt = datetime.fromisoformat(
@@ -240,11 +240,12 @@ class PrsRepository(FileSystemBaseRepository):
                     continue
                 month_key = merged_dt.strftime("%Y-%m")
                 cnt = self.__count_comments_before_merge(pr)
-                buckets.setdefault(month_key, []).append((cnt, merged_dt))
+                month_buckets.setdefault(month_key, []).append((cnt, merged_dt))
 
-            months = sorted(buckets.keys())
+            months = sorted(month_buckets.keys())
             avg_vals = [
-                sum([c for c, _ in buckets[m]]) / len(buckets[m]) for m in months
+                sum([c for c, _ in month_buckets[m]]) / len(month_buckets[m])
+                for m in months
             ]
 
             x = [pd.to_datetime(v) for v in months]
@@ -254,7 +255,6 @@ class PrsRepository(FileSystemBaseRepository):
         return {"x": x, "y": y, "period": periods}
 
     def __load(self) -> None:
-        all_prs = []
         self.logger.debug("Loading PRs")
         contents = super().read_file_if_exists(self.file)
 
@@ -267,7 +267,7 @@ class PrsRepository(FileSystemBaseRepository):
         list_adapter_prs = TypeAdapter(list[PRDetails])
         self.all_prs = list_adapter_prs.validate_json(contents)
 
-        self.logger.debug(f"Loaded {len(all_prs)} PRs")
+        self.logger.debug(f"Loaded {len(self.all_prs)} PRs")
 
         contents_comments = super().read_file_if_exists("prs_review_comments.json")
 
@@ -275,7 +275,7 @@ class PrsRepository(FileSystemBaseRepository):
             all_prs_comment = json.loads(contents_comments)
             if all_prs_comment:
                 self.logger.debug("Associating PRs with comments")
-                total = 1
+                total = 0
                 for pr in self.all_prs:
                     for comment in all_prs_comment:
                         if "pull_request_url" in comment and comment[
@@ -325,7 +325,7 @@ class PrsRepository(FileSystemBaseRepository):
                 "comments_count": 0,
             }
 
-    def __count_comments_before_merge(self, pr: dict) -> int:
+    def __count_comments_before_merge(self, pr: PRDetails) -> int:
         merged_at = pr.merged_at
         if not merged_at:
             return 0
