@@ -1,5 +1,5 @@
 import json
-from traitlets import Any
+from typing import Any
 
 
 class TypedDictEncoder(json.JSONEncoder):
