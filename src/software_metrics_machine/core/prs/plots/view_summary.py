@@ -1,4 +1,6 @@
 import csv
+from datetime import datetime
+import statistics
 
 from software_metrics_machine.core.prs.prs_repository import PrsRepository
 from software_metrics_machine.core.prs.pr_types import SummaryResult, PRDetails
@@ -114,6 +116,64 @@ class PrViewSummary:
 
         summary["top_themes"] = self.repository.get_top_themes(self.filters)
 
+        # Time to first comment: compute, in hours, per PR that has at least one comment
+        first_comment_deltas_hours = []
+        prs_with_no_comments = 0
+        for p in self.prs:
+            try:
+                created = datetime.fromisoformat(p.created_at.replace("Z", "+00:00"))
+            except Exception:
+                # If parsing fails, consider as no comment data available
+                prs_with_no_comments += 1
+                continue
+
+            # Find earliest comment for this PR
+            if not getattr(p, "comments", None):
+                prs_with_no_comments += 1
+                continue
+
+            comment_times = []
+            for c in p.comments:
+                c_created = getattr(c, "created_at", None)
+                if not c_created:
+                    continue
+                try:
+                    c_dt = datetime.fromisoformat(c_created.replace("Z", "+00:00"))
+                    comment_times.append(c_dt)
+                except Exception:
+                    continue
+
+            if not comment_times:
+                prs_with_no_comments += 1
+                continue
+
+            first_comment = min(comment_times)
+            delta = first_comment - created
+            # convert to hours
+            delta_hours = delta.total_seconds() / 3600.0
+            # only consider non-negative deltas
+            if delta_hours >= 0:
+                first_comment_deltas_hours.append(delta_hours)
+
+        if first_comment_deltas_hours:
+            summary["first_comment_time_stats"] = {
+                "avg_hours": round(statistics.mean(first_comment_deltas_hours), 2),
+                "median_hours": round(statistics.median(first_comment_deltas_hours), 2),
+                "min_hours": round(min(first_comment_deltas_hours), 2),
+                "max_hours": round(max(first_comment_deltas_hours), 2),
+                "prs_with_comment": len(first_comment_deltas_hours),
+                "prs_without_comment": prs_with_no_comments,
+            }
+        else:
+            summary["first_comment_time_stats"] = {
+                "avg_hours": None,
+                "median_hours": None,
+                "min_hours": None,
+                "max_hours": None,
+                "prs_with_comment": 0,
+                "prs_without_comment": prs_with_no_comments,
+            }
+
         return summary
 
     def __get_structured_summary(self, summary) -> SummaryResult:
@@ -131,6 +191,7 @@ class PrViewSummary:
             "most_commented_pr": summary.get("most_commented_pr", {}),
             "top_commenter": summary.get("top_commenter", {}),
             "top_themes": summary.get("top_themes", []),
+            "first_comment_time_stats": summary.get("first_comment_time_stats", {}),
         }
         return structured_summary
 
@@ -198,5 +259,15 @@ class PrViewSummary:
         lines.append("\nTop themes:")
         for theme in structured_summary.get("top_themes", []):
             lines.append(f"  - {theme.get('theme')}: {theme.get('count')}")
+
+        # Time to first comment stats
+        fstats = structured_summary.get("first_comment_time_stats") or {}
+        lines.append("\nTime to first comment (hours):")
+        lines.append(f"  Average: {fstats.get('avg_hours')}")
+        lines.append(f"  Median: {fstats.get('median_hours')}")
+        lines.append(f"  Min: {fstats.get('min_hours')}")
+        lines.append(f"  Max: {fstats.get('max_hours')}")
+        lines.append(f"  PRs with comment: {fstats.get('prs_with_comment')}")
+        lines.append(f"  PRs without comment: {fstats.get('prs_without_comment')}")
 
         return "\n".join(lines)

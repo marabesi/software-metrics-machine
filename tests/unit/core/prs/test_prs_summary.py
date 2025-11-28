@@ -167,3 +167,65 @@ class TestPrsSummary:
             top = s["top_themes"]
             assert top[0]["theme"] == "tests"
             assert top[0]["count"] == 4
+
+    def test_time_to_first_comment_stats(self):
+        # three PRs: two have first comments at 2h and 14h after creation, one has no comments
+        prs = [
+            PullRequestBuilder()
+            .with_number(201)
+            .with_title("PR One")
+            .with_author("alice")
+            .with_created_at("2025-09-01T00:00:00Z")
+            .build(),
+            PullRequestBuilder()
+            .with_number(202)
+            .with_title("PR Two")
+            .with_author("bob")
+            .with_created_at("2025-09-01T00:00:00Z")
+            .build(),
+            PullRequestBuilder()
+            .with_number(203)
+            .with_title("PR Three")
+            .with_author("carol")
+            .with_created_at("2025-09-01T00:00:00Z")
+            .build(),
+        ]
+
+        comments = [
+            PullRequestCommentsBuilder()
+            .with_number(201)
+            .with_id(1)
+            .with_created_at("2025-09-01T02:00:00Z")
+            .with_body("First comment")
+            .build(),
+            PullRequestCommentsBuilder()
+            .with_number(202)
+            .with_id(2)
+            .with_created_at("2025-09-01T14:00:00Z")
+            .with_body("Another comment")
+            .build(),
+        ]
+
+        def mocked_read_file_if_exists(file):
+            if file == "prs.json":
+                return as_json_string(prs)
+            if file == "prs_review_comments.json":
+                return as_json_string(comments)
+            return None
+
+        with patch(
+            "software_metrics_machine.core.infrastructure.file_system_base_repository.FileSystemBaseRepository.read_file_if_exists",
+            side_effect=mocked_read_file_if_exists,
+        ):
+            loader = PrsRepository(configuration=InMemoryConfiguration("."))
+            ps = PrViewSummary(repository=loader)
+
+            s = ps.main()
+
+            fstats = s.get("first_comment_time_stats") or {}
+            assert fstats.get("prs_with_comment") == 2
+            assert fstats.get("prs_without_comment") == 1
+            assert fstats.get("avg_hours") == 8.0
+            assert fstats.get("median_hours") == 8.0
+            assert fstats.get("min_hours") == 2.0
+            assert fstats.get("max_hours") == 14.0

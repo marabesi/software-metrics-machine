@@ -111,6 +111,16 @@ def summary(csv, start_date, end_date, output, labels):
             count = "?"
         parts.append(f"  {name}: {count}")
 
+    # Time to first comment statistics
+    parts.append("\nTime to first comment (hours):")
+    fstats = (result or {}).get("first_comment_time_stats") or {}
+    parts.append(f"  Average: {fstats.get('avg_hours')}")
+    parts.append(f"  Median: {fstats.get('median_hours')}")
+    parts.append(f"  Min: {fstats.get('min_hours')}")
+    parts.append(f"  Max: {fstats.get('max_hours')}")
+    parts.append(f"  PRs with comment: {fstats.get('prs_with_comment')}")
+    parts.append(f"  PRs without comment: {fstats.get('prs_without_comment')}")
+
     click.echo("\n".join(str(p) for p in parts))
 
     if csv:
