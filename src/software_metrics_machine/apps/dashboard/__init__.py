@@ -427,4 +427,4 @@ on_tab_change(type("E", (), {"new": tabs.active}))
 
 
 def main():
-    template.show(port=5006)
+    template.show(port=5006, verbose=True, address="0.0.0.0", open=False)

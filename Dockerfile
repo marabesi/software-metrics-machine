@@ -9,4 +9,4 @@ RUN apt-get update \
 
 RUN python -m pip install --upgrade pip
 
-RUN python -m pip install software-metrics-machine==0.1.17
+RUN python -m pip install software-metrics-machine==0.1.19
