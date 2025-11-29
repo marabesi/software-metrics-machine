@@ -19,7 +19,7 @@ The command will hang the terminal and start a local server on port 5006.
 
 ### Accessing the Dashboard
 
-The dashboard, is available under the local url `http://localhost:5006/dashboard` in your web browser.
+The dashboard, is available under the local url `http://localhost:5006` in your web browser.
 
 ![Dashboard Overview](/dashboard/dashboard.png)
 

@@ -124,7 +124,7 @@ Machine. To start the dashboard, run the following command:
 smm-dashboard
 ```
 
-This will start a local server, and you can access the dashboard by navigating to `http://localhost:5006/dashboard` in
+This will start a local server, and you can access the dashboard by navigating to `http://localhost:5006` in
 your web browser.
 
 [Happy exploring!](features.md)
