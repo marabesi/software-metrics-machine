@@ -28,7 +28,7 @@ smm-rest = "software_metrics_machine.apps.rest:main"
 
 [project.scripts]
 smm = "software_metrics_machine.apps.cli:main"
-smm-dashboard = "bokeh server software_metrics_machine.apps.dashboard:main"
+smm-dashboard = "software_metrics_machine.apps.dashboard:main"
 smm-rest = "software_metrics_machine.apps.rest:main"
 
 [tool.poetry]

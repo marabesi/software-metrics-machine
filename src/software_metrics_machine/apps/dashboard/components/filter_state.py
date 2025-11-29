@@ -32,7 +32,11 @@ class FilterState:
         self.settings = self.__read_initial_query_params()
 
     def __read_initial_query_params(self) -> Settings:
-        qp = pn.state.location.query_params or {}
+        location = pn.state.location
+        if not location:
+            return Settings()
+
+        qp = location.query_params or {}
         s = Settings()
 
         # helper to pick a scalar value if list provided
@@ -73,7 +77,10 @@ class FilterState:
         return settings
 
     def __sync(self, settings: Settings):
-        pn.state.location.sync(settings)
+        location = pn.state.location
+        if not location:
+            return
+        location.sync(settings)
 
     def get_settings(self) -> Settings:
         return self.settings
