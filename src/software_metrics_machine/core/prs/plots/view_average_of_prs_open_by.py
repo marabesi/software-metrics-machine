@@ -6,7 +6,7 @@ from software_metrics_machine.core.infrastructure.base_viewer import (
     PlotResult,
 )
 from software_metrics_machine.core.prs.prs_repository import PrsRepository
-from software_metrics_machine.apps.dashboard.components.barchart_with_lines import (
+from software_metrics_machine.apps.components.barchart_with_lines import (
     build_barchart_with_lines,
 )
 import holoviews as hv

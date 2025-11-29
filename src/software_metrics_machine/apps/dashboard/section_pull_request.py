@@ -1,6 +1,6 @@
 import pandas as pd
 import panel as pn
-from software_metrics_machine.apps.dashboard.components.tabulator import (
+from software_metrics_machine.apps.components.tabulator import (
     TabulatorComponent,
 )
 from software_metrics_machine.core.prs.plots.view_average_comments_per_pr import (

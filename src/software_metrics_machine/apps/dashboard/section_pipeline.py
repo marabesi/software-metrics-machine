@@ -1,10 +1,10 @@
 import pandas as pd
 import panel as pn
-from software_metrics_machine.apps.dashboard.components.aggregate_by_select import (
+from software_metrics_machine.apps.components.aggregate_by_select import (
     aggregate_by_metric_select,
     aggregate_by_select,
 )
-from software_metrics_machine.apps.dashboard.components.tabulator import (
+from software_metrics_machine.apps.components.tabulator import (
     TabulatorComponent,
 )
 from software_metrics_machine.core.pipelines.plots.view_jobs_by_status import (

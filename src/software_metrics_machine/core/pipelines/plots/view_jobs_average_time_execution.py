@@ -5,7 +5,7 @@ from software_metrics_machine.core.infrastructure.base_viewer import (
     BaseViewer,
     PlotResult,
 )
-from software_metrics_machine.apps.dashboard.components.barchart_stacked import (
+from software_metrics_machine.apps.components.barchart_stacked import (
     build_barchart,
 )
 from software_metrics_machine.core.pipelines.aggregates.jobs_average_time_execution import (

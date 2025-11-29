@@ -4,7 +4,7 @@ import panel as pn
 import panel.pane.holoviews as _ph
 from panel.template import FastListTemplate
 
-from software_metrics_machine.apps.dashboard.components.filter_state import FilterState
+from software_metrics_machine.apps.components.filter_state import FilterState
 from software_metrics_machine.apps.dashboard.section_configuration import (
     configuration_section,
 )
