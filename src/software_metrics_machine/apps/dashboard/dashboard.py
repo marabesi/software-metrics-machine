@@ -425,4 +425,8 @@ pn.Param(settings)
 # initialize visibility for the current active tab
 on_tab_change(type("E", (), {"new": tabs.active}))
 
-template.servable()
+if pn.state.served:
+    template.servable()
+
+elif __name__ == "__main__":
+    template.show(port=5007)

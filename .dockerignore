@@ -6,3 +6,4 @@ lib/
 taget/
 downloads/
 dist/
+.mypy_cache/
