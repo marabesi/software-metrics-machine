@@ -427,4 +427,9 @@ on_tab_change(type("E", (), {"new": tabs.active}))
 
 
 def main():
+    # this is the entry point for the shipped app
     template.show(port=5006, verbose=True, address="0.0.0.0", open=False)
+
+
+# this is the entry point for development
+template.servable()
