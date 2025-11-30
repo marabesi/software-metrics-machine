@@ -1,6 +1,9 @@
 FROM python:3.14-slim
 
 ENV DEBIAN_FRONTEND=noninteractive
+# why buffered? https://stackoverflow.com/questions/29663459/why-doesnt-python-app-print-anything-when-run-in-a-detached-docker-container
+ENV PYTHONUNBUFFERED=1
+
 WORKDIR /app
 
 RUN apt-get update \
