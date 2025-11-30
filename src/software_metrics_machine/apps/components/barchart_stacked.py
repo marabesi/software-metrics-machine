@@ -21,80 +21,36 @@ def build_barchart(
 ):
     df = pd.DataFrame(list(data))
     if df.empty:
-        # return an empty placeholder so callers can safely render
         return hv.Text(0.5, 0.5, "No data available")
 
     # Hook to remove borders around bars by modifying the underlying Bokeh glyphs
     def _remove_bar_borders(plot, element):
-        try:
-            renderers = getattr(plot.state, "renderers", [])
-            for r in renderers:
-                glyph = getattr(r, "glyph", None)
-                if glyph is not None:
-                    # bokeh glyphs use line_color for borders
-                    if hasattr(glyph, "line_color"):
-                        glyph.line_color = None
-        except Exception:
-            # don't fail plotting if hook can't run
-            pass
+        renderers = getattr(plot.state, "renderers", [])
+        for r in renderers:
+            glyph = getattr(r, "glyph", None)
+            if glyph is not None:
+                # bokeh glyphs use line_color for borders
+                if hasattr(glyph, "line_color"):
+                    glyph.line_color = None
 
-    # Hook to ensure hover tooltips contain the data columns being plotted
-    def _ensure_hover_tooltips(plot, element):
-        state = getattr(plot, "state", None)
-        if state is None:
-            return
+    desired_hover = []
+    # show full entity if available
+    if "entity" in df.columns:
+        desired_hover.append(("entity", "@entity"))
 
-        # desired tooltips based on the dataframe and provided keys
-        desired = []
-        # show full entity if available
-        if "entity" in df.columns:
-            desired.append(("entity", "@entity"))
-        # always show the x field (could be 'short_entity')
-        if x:
-            desired.append((str(x), "@" + str(x)))
-        # include the grouping column when present
-        if group:
-            desired.append((str(group), "@" + str(group)))
-        # show the y field
-        if y:
-            desired.append((str(y), "@" + str(y)))
+    if "count" in df.columns:
+        desired_hover.append(("count", "@count"))
+    # always show the x field (could be 'short_entity')
+    if x:
+        desired_hover.append((str(x), "@" + str(x)))
+    # include the grouping column when present
+    if group:
+        desired_hover.append((str(group), "@" + str(group)))
+    # show the y field
+    if y:
+        desired_hover.append((str(y), "@" + str(y)))
 
-        # find existing HoverTool(s)
-        tools = getattr(state, "tools", []) or []
-        hover_tools = [t for t in tools if isinstance(t, HoverTool)]
-
-        if not hover_tools:
-            # create a new HoverTool with our desired tooltips
-            hover = HoverTool(tooltips=desired)
-            tools.append(hover)
-            return
-
-        # merge desired tooltips into the primary HoverTool, preserving existing extras
-        primary = hover_tools[0]
-        existing = getattr(primary, "tooltips", []) or []
-        # normalize existing into list of tuples
-        if isinstance(existing, dict):
-            existing_items = list(existing.items())
-        else:
-            existing_items = list(existing)
-
-        merged = []
-        seen = set()
-        for k, v in desired:
-            ident = (str(k), str(v))
-            if ident in seen:
-                continue
-            merged.append((k, v))
-            seen.add(ident)
-
-        for k, v in existing_items:
-            ident = (str(k), str(v))
-            if ident in seen:
-                continue
-            merged.append((k, v))
-            seen.add(ident)
-
-        primary.tooltips = merged
+    hover = HoverTool(tooltips=desired_hover)
 
     if group and stacked:
         bars = hv.Bars(df, [x, group], y).opts(
@@ -103,24 +59,17 @@ def build_barchart(
             height=height or 400,
             xrotation=xrotation,
             title=title or "",
-            hooks=[_remove_bar_borders, _ensure_hover_tooltips],
-            tools=tools,
+            hooks=[_remove_bar_borders],
+            tools=[hover],
         )
     else:
         bars = hv.Bars(df, x, y).opts(
             height=height or 400,
             xrotation=xrotation,
             title=title or "",
-            hooks=[_remove_bar_borders, _ensure_hover_tooltips],
-            tools=tools,
+            hooks=[_remove_bar_borders],
+            tools=[hover],
             color=color,
         )
 
-    labels = None
-    # if label_generator is not None:
-    #     # label_generator should accept (data_list, x_key, y_key) and return hv.Labels
-    #     labels = label_generator(df.to_dict(orient="records"), x, y)
-
-    chart = bars * labels if labels is not None else bars
-
-    return chart
+    return bars
