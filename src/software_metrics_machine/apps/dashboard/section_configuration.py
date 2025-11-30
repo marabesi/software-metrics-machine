@@ -34,6 +34,6 @@ def configuration_section(configuration: Configuration):
         return pn.Column(*fields)
 
     return pn.Column(
-        "## Configuration section",
+        "## Configuration",
         pn.Row(form_section()),
     )

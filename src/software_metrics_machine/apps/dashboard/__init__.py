@@ -332,11 +332,6 @@ TAB_DEFINITIONS = [
             "top_entries",
         ],
     },
-    {
-        "title": "Configuration",
-        "view": wrap_tabs(configuration_section),
-        "show": [],
-    },
 ]
 
 # Helper map of widget name -> widget instance used by the visibility controller
@@ -396,8 +391,10 @@ header_section = pn.Column(
 template = FastListTemplate(
     title=f"{configuration.github_repository} - {configuration.git_provider.title()}",
     right_sidebar=[header_section],
+    sidebar=[configuration_section],
     accent=configuration.dashboard_color,
     collapsed_right_sidebar=False,
+    collapsed_sidebar=True,
 )
 
 template.main.append(tabs)
