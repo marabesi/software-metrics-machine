@@ -84,7 +84,7 @@ class EntityOnershipViewer(BaseViewer, Viewable):
         bars_added = build_barchart(
             data_added,
             x="entity_short",
-            y="value",
+            y=["value", "entity"],
             group="author",
             stacked=True,
             height=super().get_chart_height(),
