@@ -37,13 +37,14 @@ def build_barchart(
     for c in df.columns:
         desired_hover.append((str(c), f"@{c}"))
 
-    # if group:
-    #     desired_hover.append((str(group), "@" + str(group)))
-
     hover = HoverTool(tooltips=desired_hover)
 
     if group and stacked:
-        bars = hv.Bars(df, [x, group], y).opts(
+        vdim = [y]
+        if "entity" in df.columns:
+            vdim.append("entity")
+
+        bars = hv.Bars(df, [x, group], vdim).opts(
             stacked=True,
             legend_position="right",
             height=height or 400,
