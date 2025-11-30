@@ -45,7 +45,7 @@ class EntityOnershipViewer(BaseViewer, Viewable):
         df = repo.apply_ignore_file_patterns(df, ignore_files)
 
         ownership = (
-            df.groupby(["entity", "short_entity", "author"])[["added", "deleted"]]
+            df.groupby(["entity", "entity_short", "author"])[["added", "deleted"]]
             .sum()
             .reset_index()
         )
@@ -66,7 +66,7 @@ class EntityOnershipViewer(BaseViewer, Viewable):
             data_added.append(
                 {
                     "entity": row["entity"],
-                    "short_entity": row.get("short_entity"),
+                    "entity_short": row.get("entity_short"),
                     "author": row["author"],
                     "value": row.get("added", 0),
                 }
@@ -74,7 +74,7 @@ class EntityOnershipViewer(BaseViewer, Viewable):
             data_deleted.append(
                 {
                     "entity": row["entity"],
-                    "short_entity": row.get("short_entity"),
+                    "entity_short": row.get("entity_short"),
                     "author": row["author"],
                     "value": row.get("deleted", 0),
                 }
@@ -83,7 +83,7 @@ class EntityOnershipViewer(BaseViewer, Viewable):
         # Build stacked bars for added (stacked by author)
         bars_added = build_barchart(
             data_added,
-            x="short_entity",
+            x="entity_short",
             y="value",
             group="author",
             stacked=True,
@@ -98,7 +98,7 @@ class EntityOnershipViewer(BaseViewer, Viewable):
         # Build stacked bars for deleted and overlay with transparency
         bars_deleted = build_barchart(
             data_deleted,
-            x="short_entity",
+            x="entity_short",
             y="value",
             group="author",
             stacked=True,

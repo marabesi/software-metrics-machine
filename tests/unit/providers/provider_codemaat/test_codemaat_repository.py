@@ -78,9 +78,9 @@ class TestCodemaatRepository:
             )
             df = repository.get_entity_churn()
 
-            assert "mponents/my-file.tsx" == df.iloc[0]["short_entity"]
-            assert "file2.txt" == df.iloc[1]["short_entity"]
-            assert "file3.txt" == df.iloc[2]["short_entity"]
+            assert "mponents/my-file.tsx" == df.iloc[0]["entity_short"]
+            assert "file2.txt" == df.iloc[1]["entity_short"]
+            assert "file3.txt" == df.iloc[2]["entity_short"]
 
     def test_filter_code_churn_between_dates(self):
         mock_df = pd.DataFrame(
@@ -190,9 +190,9 @@ class TestCodemaatRepository:
             )
             df = repository.get_entity_ownership()
 
-            assert "mponents/my-file.tsx" == df.iloc[0]["short_entity"]
-            assert "file2.txt" == df.iloc[1]["short_entity"]
-            assert "file3.txt" == df.iloc[2]["short_entity"]
+            assert "mponents/my-file.tsx" == df.iloc[0]["entity_short"]
+            assert "file2.txt" == df.iloc[1]["entity_short"]
+            assert "file3.txt" == df.iloc[2]["entity_short"]
 
     def test_should_return_all_items_when_empty_authors_is_given(self):
         mock_df = pd.DataFrame(

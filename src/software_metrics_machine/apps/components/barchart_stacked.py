@@ -23,7 +23,6 @@ def build_barchart(
     if df.empty:
         return hv.Text(0.5, 0.5, "No data available")
 
-    # Hook to remove borders around bars by modifying the underlying Bokeh glyphs
     def _remove_bar_borders(plot, element):
         renderers = getattr(plot.state, "renderers", [])
         for r in renderers:
@@ -34,21 +33,12 @@ def build_barchart(
                     glyph.line_color = None
 
     desired_hover = []
-    # show full entity if available
-    if "entity" in df.columns:
-        desired_hover.append(("entity", "@entity"))
 
-    if "count" in df.columns:
-        desired_hover.append(("count", "@count"))
-    # always show the x field (could be 'short_entity')
-    if x:
-        desired_hover.append((str(x), "@" + str(x)))
-    # include the grouping column when present
-    if group:
-        desired_hover.append((str(group), "@" + str(group)))
-    # show the y field
-    if y:
-        desired_hover.append((str(y), "@" + str(y)))
+    for c in df.columns:
+        desired_hover.append((str(c), f"@{c}"))
+
+    # if group:
+    #     desired_hover.append((str(group), "@" + str(group)))
 
     hover = HoverTool(tooltips=desired_hover)
 

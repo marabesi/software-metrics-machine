@@ -77,7 +77,7 @@ class CodemaatRepository(FileSystemBaseRepository):
         data = self.__parse_csv(file_path)
 
         if "entity" in data.columns:
-            data["short_entity"] = data["entity"].apply(self.__short_ent)
+            data["entity_short"] = data["entity"].apply(self.__short_ent)
 
         if ignore_files:
             data = self.apply_ignore_file_patterns(data, ignore_files)
@@ -119,7 +119,7 @@ class CodemaatRepository(FileSystemBaseRepository):
         data = self.__parse_csv(file_path)
 
         if "entity" in data.columns:
-            data["short_entity"] = data["entity"].apply(self.__short_ent)
+            data["entity_short"] = data["entity"].apply(self.__short_ent)
 
         print(f"Found {len(data)} row for entity ownership")
 
