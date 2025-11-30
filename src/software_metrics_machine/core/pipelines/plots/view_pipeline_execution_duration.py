@@ -65,7 +65,7 @@ class ViewPipelineExecutionRunsDuration(BaseViewer):
         chart = build_barchart(
             data,
             x="name",
-            y="value",
+            y=["value", "total_jobs", "total_runs"],
             stacked=False,
             height=super().get_chart_height(),
             title=f"Runs aggregated by name - {title_metric} ({len(rows)} items)",

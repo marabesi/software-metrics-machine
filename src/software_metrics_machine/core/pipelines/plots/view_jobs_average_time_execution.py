@@ -80,7 +80,7 @@ class ViewJobsByAverageTimeExecution(BaseViewer):
         chart = build_barchart(
             data,
             x=x,
-            y=y,
+            y=[y, count],
             stacked=False,
             height=super().get_chart_height(),
             title=title,

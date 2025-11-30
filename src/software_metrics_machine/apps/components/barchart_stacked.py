@@ -40,11 +40,7 @@ def build_barchart(
     hover = HoverTool(tooltips=desired_hover)
 
     if group and stacked:
-        vdim = [y]
-        if "entity" in df.columns:
-            vdim.append("entity")
-
-        bars = hv.Bars(df, [x, group], vdim).opts(
+        bars = hv.Bars(df, [x, group], y).opts(
             stacked=True,
             legend_position="right",
             height=height or 400,
