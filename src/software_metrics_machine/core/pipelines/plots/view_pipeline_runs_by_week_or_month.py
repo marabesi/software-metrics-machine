@@ -75,9 +75,8 @@ class ViewWorkflowRunsByWeekOrMonth(BaseViewer):
                     val = data_matrix[i][j]
                 except Exception:
                     val = 0
-                data.append(
-                    {"Time": j, "Period": period, "Workflow": name, "Runs": val}
-                )
+                # print(period, "    00000000000 ")
+                data.append({"Period": period, "Workflow": name, "Runs": val})
 
         # guard: if all Runs are zero, avoid stacked bars with empty stacks
         total_runs = sum(d["Runs"] for d in data)
@@ -88,23 +87,19 @@ class ViewWorkflowRunsByWeekOrMonth(BaseViewer):
             )
             return PlotResult(placeholder, df)
 
-        # choose tick step to avoid overcrowding (every 4 periods for weekly view by default)
-        if aggregate_by == "week":
-            tick_step = 4
-        else:
-            # for monthly view show every month
-            tick_step = 1
+        stacked = True
+        x = "Period"
+        y = "Runs"
 
-        xticks = [(i, periods[i]) for i in range(0, len(periods), max(1, tick_step))]
+        group = "Workflow"
 
-        # use the shared barchart builder for stacked bars
         title = f"Workflow runs per {'week' if aggregate_by == 'week' else 'month'} by workflow name ({total_runs} in total)"  # noqa
         plot = build_barchart(
             data,
-            x="Time",
-            y="Runs",
-            group="Workflow",
-            stacked=True,
+            x=x,
+            y=y,
+            group=group,
+            stacked=stacked,
             height=super().get_chart_height(),
             title=title,
             xrotation=45,
@@ -112,12 +107,6 @@ class ViewWorkflowRunsByWeekOrMonth(BaseViewer):
             tools=super().get_tools(),
         )
 
-        # apply xticks and other display options
-        try:
-            plot = plot.opts(xticks=xticks, line_color=None, tools=super().get_tools())
-        except Exception:
-            # some hv types may not accept those opts directly; ignore if not applicable
-            pass
         if aggregate_by == "week" and rep_dates and len(rep_dates) > 1:
             month_boundaries = []
             last_month = rep_dates[0].month
@@ -128,8 +117,8 @@ class ViewWorkflowRunsByWeekOrMonth(BaseViewer):
                     month_boundaries.append(k - 0.5)
                     last_month = cur.month
 
-            for x in month_boundaries:
-                plot = plot * hv.VLine(x).opts(
+            for x_plot in month_boundaries:
+                plot = plot * hv.VLine(x_plot).opts(
                     color="gray", line_dash="dotted", line_width=1, alpha=0.6
                 )
 
