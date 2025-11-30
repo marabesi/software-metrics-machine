@@ -86,7 +86,7 @@ class EntityChurnViewer(BaseViewer, Viewable):
         chart = build_barchart(
             data,
             x="entity_short",
-            y="value",
+            y=["value", "entity"],
             group="type",
             stacked=True,
             height=super().get_chart_height(),
