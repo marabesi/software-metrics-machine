@@ -14,8 +14,6 @@ from software_metrics_machine.providers.pydriller.commit_traverser import (
     CommitTraverser,
 )
 
-pn.extension("tabulator")
-
 
 def insights_section(repository: PipelinesRepository, date_range_picker):
     authors_text = pn.widgets.TextInput(
@@ -96,11 +94,7 @@ def insights_section(repository: PipelinesRepository, date_range_picker):
         try:
             traverser = CommitTraverser(configuration=repository.configuration)
             traverse_result = traverser.traverse_commits()
-            commits_iter = (
-                traverse_result.get("commits")
-                if isinstance(traverse_result, dict)
-                else traverse_result
-            )
+            commits_iter = traverse_result.get("commits")
             commits_list = list(commits_iter)
 
             # Filter by explicit phrase first

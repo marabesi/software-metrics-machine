@@ -21,8 +21,6 @@ from software_metrics_machine.core.prs.plots.view_prs_by_author import (
 
 from software_metrics_machine.core.prs.prs_repository import PrsRepository
 
-pn.extension("tabulator")
-
 
 def prs_section(
     date_range_picker, author_select, label_selector, repository: PrsRepository

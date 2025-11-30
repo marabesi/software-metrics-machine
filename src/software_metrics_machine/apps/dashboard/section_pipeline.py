@@ -26,10 +26,6 @@ from software_metrics_machine.core.pipelines.pipelines_repository import (
     PipelinesRepository,
 )
 
-pn.extension(
-    "tabulator",
-)
-
 
 def pipeline_section(
     date_range_picker,

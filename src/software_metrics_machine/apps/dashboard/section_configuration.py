@@ -4,8 +4,6 @@ from software_metrics_machine.core.infrastructure.configuration.configuration im
     Configuration,
 )
 
-pn.extension("tabulator")
-
 
 def configuration_section(configuration: Configuration):
 

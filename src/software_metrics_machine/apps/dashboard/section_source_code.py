@@ -14,8 +14,6 @@ from software_metrics_machine.providers.codemaat.codemaat_repository import (
     CodemaatRepository,
 )
 
-pn.extension("tabulator")
-
 
 def source_code_section(
     repository: CodemaatRepository,
