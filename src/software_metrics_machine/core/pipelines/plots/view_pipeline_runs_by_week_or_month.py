@@ -28,7 +28,6 @@ class ViewWorkflowRunsByWeekOrMonth(BaseViewer):
         self,
         aggregate_by: str,
         workflow_path: str | None = None,
-        out_file: str | None = None,
         raw_filters: str | None = None,
         include_defined_only: bool = False,
         start_date: str | None = None,
@@ -110,7 +109,6 @@ class ViewWorkflowRunsByWeekOrMonth(BaseViewer):
             title=title,
             xrotation=45,
             label_generator=None,
-            out_file=None,
             tools=super().get_tools(),
         )
 
@@ -134,11 +132,5 @@ class ViewWorkflowRunsByWeekOrMonth(BaseViewer):
                 plot = plot * hv.VLine(x).opts(
                     color="gray", line_dash="dotted", line_width=1, alpha=0.6
                 )
-
-        if out_file:
-            try:
-                hv.save(plot, out_file)
-            except Exception:
-                pass
 
         return PlotResult(plot, df)

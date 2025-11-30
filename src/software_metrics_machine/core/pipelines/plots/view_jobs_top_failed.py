@@ -20,7 +20,6 @@ class ViewJobsTopFailed(BaseViewer):
 
     def main(
         self,
-        out_file: str | None = None,
         start_date: str | None = None,
         end_date: str | None = None,
         raw_filters: dict = {},
@@ -60,8 +59,5 @@ class ViewJobsTopFailed(BaseViewer):
             xrotation=45,
             title="Top Failed Jobs Over Time (stacked by job)",
         )
-
-        if out_file:
-            hv.save(bars, out_file)
 
         return PlotResult(bars, pd.DataFrame(data))

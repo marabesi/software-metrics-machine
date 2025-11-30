@@ -23,13 +23,6 @@ from software_metrics_machine.core.pipelines.plots.view_jobs_by_status import (
     help="Optional workflow path (case-insensitive substring) to filter runs and jobs",
 )
 @click.option(
-    "--out-file",
-    "-o",
-    type=str,
-    default=None,
-    help="Optional path to save the plot image",
-)
-@click.option(
     "--with-pipeline",
     type=str,
     help="Show workflow summary alongside job chart",
@@ -71,7 +64,6 @@ from software_metrics_machine.core.pipelines.plots.view_jobs_by_status import (
 def jobs_by_status(
     job_name,
     workflow_path,
-    out_file,
     with_pipeline,
     aggregate_by_week,
     event,
@@ -83,7 +75,6 @@ def jobs_by_status(
     result = ViewJobsByStatus(repository=create_pipelines_repository()).main(
         job_name=job_name,
         workflow_path=workflow_path,
-        out_file=out_file,
         with_pipeline=with_pipeline,
         aggregate_by_week=aggregate_by_week,
         raw_filters=f"event={event},target_branch={target_branch}",

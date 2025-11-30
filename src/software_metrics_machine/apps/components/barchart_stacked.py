@@ -16,7 +16,6 @@ def build_barchart(
     title: str | None = None,
     xrotation: int = 45,
     label_generator: Callable[[list[dict], str, str], hv.Labels] | None = None,
-    out_file: str | None = None,
     tools: list[str] | None = None,
     color: str | None = None,
 ):
@@ -123,11 +122,5 @@ def build_barchart(
     #     labels = label_generator(df.to_dict(orient="records"), x, y)
 
     chart = bars * labels if labels is not None else bars
-
-    if out_file:
-        try:
-            hv.save(chart, out_file)
-        except Exception:
-            pass
 
     return chart

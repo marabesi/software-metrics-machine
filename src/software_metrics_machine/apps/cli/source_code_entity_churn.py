@@ -10,13 +10,6 @@ from software_metrics_machine.providers.codemaat.plots.entity_churn import (
 
 @click.command(name="entity-churn", help="Plot entity churn graph")
 @click.option(
-    "--out-file",
-    "-o",
-    type=str,
-    default=None,
-    help="Optional path to save the plot image",
-)
-@click.option(
     "--top",
     type=int,
     default=None,
@@ -34,13 +27,12 @@ from software_metrics_machine.providers.codemaat.plots.entity_churn import (
     default=None,
     help="Optional comma-separated glob patterns to include only (e.g. '*.py,**/**/*.js')",
 )
-def entity_churn(out_file, top, ignore_files, include_only):
+def entity_churn(top, ignore_files, include_only):
     df_repo = create_codemaat_repository()
     viewer = EntityChurnViewer(repository=df_repo)
     result = viewer.render(
         top_n=top,
         ignore_files=ignore_files,
-        out_file=out_file,
         include_only=include_only,
     )
     click.echo(result.data)

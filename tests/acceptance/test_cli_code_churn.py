@@ -31,8 +31,6 @@ class TestCliCodeCommands:
             [
                 "code",
                 "code-churn",
-                "--out-file",
-                "code_churn.png",
                 "--start-date",
                 "2025-01-01",
                 "--end-date",
@@ -61,7 +59,7 @@ class TestCliCodeCommands:
 
         result = cli.runner.invoke(
             main,
-            ["code", "code-churn", "--out-file", "code_churn.png"],
+            ["code", "code-churn"],
         )
         assert expected in result.output
 
@@ -80,8 +78,6 @@ class TestCliCodeCommands:
                 "2025-01-01",
                 "--end-date",
                 "2025-01-01",
-                "--out-file",
-                "code_churn.png",
             ],
         )
         assert "No code churn data available to plot" in result.output

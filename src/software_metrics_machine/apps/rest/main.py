@@ -1,4 +1,5 @@
 from fastapi import FastAPI
+from enum import Enum
 from fastapi import Query
 from fastapi.responses import JSONResponse
 from typing import Optional
@@ -49,7 +50,7 @@ from software_metrics_machine.core.prs.plots.view_summary import PrViewSummary
 app = FastAPI()
 
 
-source_code_tags: list[str] = ["Source code"]
+source_code_tags: list[str | Enum] = ["Source code"]
 pipeline_tags: list[str] = ["Pipeline"]
 pull_request_tags: list[str] = ["Pull Requests"]
 
@@ -73,7 +74,6 @@ def entity_churn(
 ):
     viewer = EntityChurnViewer(repository=create_codemaat_repository())
     result = viewer.render(
-        out_file=None,
         top_n=None,
         ignore_files=None,
         include_only=None,
@@ -88,7 +88,7 @@ def code_churn(
     start_date: Optional[str] = Query(None), end_date: Optional[str] = Query(None)
 ):
     result = CodeChurnViewer(repository=create_codemaat_repository()).render(
-        out_file=None, start_date=start_date, end_date=end_date
+        start_date=start_date, end_date=end_date
     )
     return JSONResponse(result.data.to_dict(orient="records"))
 
@@ -98,7 +98,7 @@ def code_coupling(
     start_date: Optional[str] = Query(None), end_date: Optional[str] = Query(None)
 ):
     result = CouplingViewer(repository=create_codemaat_repository()).render(
-        out_file=None, ignore_files=None, include_only=None
+        ignore_files=None, include_only=None
     )
     return JSONResponse(result.data.to_dict(orient="records"))
 
@@ -108,9 +108,7 @@ def entity_effort(
     start_date: Optional[str] = Query(None), end_date: Optional[str] = Query(None)
 ):
     viewer = EntityEffortViewer(repository=create_codemaat_repository())
-    result = viewer.render_treemap(
-        top_n=30, ignore_files=None, out_file=None, include_only=None
-    )
+    result = viewer.render_treemap(top_n=30, ignore_files=None, include_only=None)
     return JSONResponse(result.data.to_dict(orient="records"))
 
 
@@ -120,7 +118,7 @@ def entity_ownership(
 ):
     viewer = EntityOnershipViewer(repository=create_codemaat_repository())
     result = viewer.render(
-        top_n=None, ignore_files=None, out_file=None, authors=None, include_only=None
+        top_n=None, ignore_files=None, authors=None, include_only=None
     )
     return JSONResponse(result.data.to_dict(orient="records"))
 
@@ -130,9 +128,7 @@ def pipelines_by_status(
     start_date: Optional[str] = Query(None), end_date: Optional[str] = Query(None)
 ):
     view = ViewPipelineByStatus(repository=create_pipelines_repository())
-    result = view.main(
-        out_file=None, workflow_path=None, start_date=start_date, end_date=end_date
-    )
+    result = view.main(workflow_path=None, start_date=start_date, end_date=end_date)
     return JSONResponse(result.data.to_dict(orient="records"))
 
 
@@ -144,7 +140,6 @@ def pipeline_jobs_by_status(
     result = view.main(
         job_name=None,
         workflow_path=None,
-        out_file=None,
         with_pipeline=None,
         aggregate_by_week=None,
         raw_filters=None,
@@ -176,7 +171,6 @@ def pipeline_runs_duration(
 ):
     view = ViewPipelineExecutionRunsDuration(repository=create_pipelines_repository())
     result = view.main(
-        out_file=None,
         workflow_path=None,
         start_date=start_date,
         end_date=end_date,
@@ -192,7 +186,6 @@ def pipeline_deployment_frequency(
 ):
     view = ViewDeploymentFrequency(repository=create_pipelines_repository())
     result = view.plot(
-        out_file=None,
         workflow_path=None,
         job_name=None,
         start_date=start_date,
@@ -208,7 +201,6 @@ def pipeline_runs_by(
     view = ViewWorkflowRunsByWeekOrMonth(repository=create_pipelines_repository())
     result = view.main(
         aggregate_by="week",
-        out_file=None,
         workflow_path=None,
         start_date=start_date,
         end_date=end_date,
@@ -225,7 +217,6 @@ def pipeline_jobs_average_time(
     view = ViewJobsByAverageTimeExecution(repository=create_pipelines_repository())
     result = view.main(
         workflow_path=None,
-        out_file=None,
         raw_filters=None,
         top=20,
         exclude_jobs=None,

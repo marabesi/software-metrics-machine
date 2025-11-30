@@ -32,7 +32,6 @@ class CouplingViewer(BaseViewer, Viewable):
         self,
         ignore_files: str | None = None,
         top: int = 20,
-        out_file: str | None = None,
         include_only: str | None = None,
     ) -> PlotResult:
         filters = {"include_only": include_only}

@@ -22,7 +22,6 @@ class ViewPrsByAuthor(BaseViewer):
         title: str,
         top: int = 10,
         labels: List[str] | None = None,
-        out_file: str | None = None,
         start_date: str | None = None,
         end_date: str | None = None,
     ) -> PlotResult:
@@ -54,7 +53,6 @@ class ViewPrsByAuthor(BaseViewer):
             title=title,
             xrotation=0,
             label_generator=super().build_labels_above_bars,
-            out_file=out_file,
             tools=super().get_tools(),
             color=super().get_color(),
         )

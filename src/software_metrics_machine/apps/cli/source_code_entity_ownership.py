@@ -10,13 +10,6 @@ from software_metrics_machine.providers.codemaat.plots.entity_ownership import (
 
 @click.command(name="entity-ownership", help="Plot entity churn graph")
 @click.option(
-    "--out-file",
-    "-o",
-    type=str,
-    default=None,
-    help="Optional path to save the plot image",
-)
-@click.option(
     "--top",
     type=int,
     default=None,
@@ -40,13 +33,12 @@ from software_metrics_machine.providers.codemaat.plots.entity_ownership import (
     default=None,
     help="Optional comma-separated glob patterns to include only (e.g. '*.py,**/**/*.js')",
 )
-def entity_ownership(out_file, top, ignore_files, authors, include_only):
+def entity_ownership(top, ignore_files, authors, include_only):
     df_repo = create_codemaat_repository()
     viewer = EntityOnershipViewer(repository=df_repo)
     result = viewer.render(
         top_n=top,
         ignore_files=ignore_files,
-        out_file=out_file,
         authors=authors,
         include_only=include_only,
     )

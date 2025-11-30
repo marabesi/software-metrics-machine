@@ -1,6 +1,5 @@
 import pandas as pd
 import squarify
-from typing import Optional
 
 from bokeh.plotting import figure
 from bokeh.models import ColumnDataSource, HoverTool
@@ -25,7 +24,6 @@ class EntityEffortViewer(BaseViewer):
         top_n: int | None = 30,
         ignore_files: str | None = None,
         include_only: str | None = None,
-        out_file: Optional[str] = None,
     ) -> PlotResult:
         repo = self.repository
         df = repo.get_entity_effort(filters={"include_only": include_only})

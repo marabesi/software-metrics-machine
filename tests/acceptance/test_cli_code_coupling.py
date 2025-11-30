@@ -28,7 +28,7 @@ class TestCliCodeCouplingCommands:
     def test_can_run_coupling_without_data_available(self, cli):
         result = cli.runner.invoke(
             main,
-            ["code", "coupling", "--out-file", "coupling.png"],
+            ["code", "coupling"],
         )
         assert "No coupling data available to plot" in result.output
 

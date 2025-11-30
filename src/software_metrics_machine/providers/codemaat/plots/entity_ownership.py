@@ -24,7 +24,6 @@ class EntityOnershipViewer(BaseViewer, Viewable):
         self,
         top_n: int = 30,
         ignore_files: str | None = None,
-        out_file: str | None = None,
         authors: str | None = None,
         type_churn: str | None = "added",
         include_only: str | None = None,
@@ -92,7 +91,6 @@ class EntityOnershipViewer(BaseViewer, Viewable):
             title="Entity Ownership: Lines Added per Author",
             xrotation=45,
             label_generator=super().build_labels_above_bars,
-            out_file=out_file,
             tools=super().get_tools(),
             color=super().get_color(),
         )
@@ -108,7 +106,6 @@ class EntityOnershipViewer(BaseViewer, Viewable):
             title="Entity Ownership: Lines Deleted per Author",
             xrotation=45,
             label_generator=None,
-            out_file=out_file,
             tools=super().get_tools(),
             color=super().get_color(),
         )

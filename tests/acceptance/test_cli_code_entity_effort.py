@@ -19,7 +19,7 @@ class TestCliCodeEntityOwnershipCommands:
     def test_can_run_entity_effort_without_data_available(self, cli):
         result = cli.runner.invoke(
             main,
-            ["code", "entity-effort", "--out-file", "entity_effort.png"],
+            ["code", "entity-effort"],
         )
         assert "No entity effort data available to plot" in result.output
 

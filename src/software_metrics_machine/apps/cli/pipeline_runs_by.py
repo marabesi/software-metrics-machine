@@ -17,13 +17,6 @@ from software_metrics_machine.core.pipelines.plots.view_pipeline_runs_by_week_or
     help="Optional workflow path (case-insensitive substring) to filter runs",
 )
 @click.option(
-    "--out-file",
-    "-o",
-    type=str,
-    default=None,
-    help="Optional path to save the plot image",
-)
-@click.option(
     "--include-defined-only",
     is_flag=True,
     help="If set, include only workflows that are defined as .yml or .yaml, excluding those that are automated by GitHub (e.g., dependabot).",  # noqa: E501
@@ -52,7 +45,6 @@ from software_metrics_machine.core.pipelines.plots.view_pipeline_runs_by_week_or
 )
 def workflow_runs_by(
     workflow_path,
-    out_file,
     include_defined_only,
     aggregate_by,
     start_date,
@@ -61,7 +53,6 @@ def workflow_runs_by(
 ):
     return ViewWorkflowRunsByWeekOrMonth(repository=create_pipelines_repository()).main(
         aggregate_by=aggregate_by,
-        out_file=out_file,
         workflow_path=workflow_path,
         start_date=start_date,
         end_date=end_date,

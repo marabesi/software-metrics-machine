@@ -71,7 +71,6 @@ class ViewPipelineExecutionRunsDuration(BaseViewer):
             title=f"Runs aggregated by name - {title_metric} ({len(rows)} items)",
             xrotation=45,
             label_generator=super().build_labels_above_bars,
-            out_file=None,
             tools=super().get_tools(),
             color=super().get_color(),
         )

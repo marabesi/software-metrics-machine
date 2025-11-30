@@ -27,7 +27,7 @@ class TestCliCodeEntityChurnCommands:
     def test_can_run_entity_churn_without_data_available(self, cli):
         result = cli.runner.invoke(
             main,
-            ["code", "entity-churn", "--out-file", "entity_churn.png"],
+            ["code", "entity-churn"],
         )
         assert "No entity churn data available to plot" in result.output
 

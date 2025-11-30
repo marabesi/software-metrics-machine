@@ -24,7 +24,6 @@ class CodeChurnViewer(BaseViewer, Viewable):
 
     def render(
         self,
-        out_file: str | None = None,
         start_date: str | None = None,
         end_date: str | None = None,
     ) -> PlotResult[List[CodeChurn]]:
@@ -58,7 +57,6 @@ class CodeChurnViewer(BaseViewer, Viewable):
             title="Code Churn: Lines Added and Deleted per Date",
             xrotation=45,
             label_generator=super().build_labels_above_bars,
-            out_file=out_file,
             tools=super().get_tools(),
             color=super().get_color(),
         )

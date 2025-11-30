@@ -133,16 +133,7 @@ class TestCliPrsCommands:
 
         result = cli.runner.invoke(
             main,
-            [
-                "prs",
-                "by-author",
-                "--top",
-                "5",
-                "--labels",
-                "bug",
-                "--out-file",
-                "output.png",
-            ],
+            ["prs", "by-author", "--top", "5", "--labels", "bug"],
         )
         assert 0 == result.exit_code
         assert "No PRs to plot after filtering" in result.output
@@ -190,8 +181,6 @@ class TestCliPrsCommands:
                 "review-time-by-author",
                 "--top",
                 "5",
-                "--out-file",
-                "output.png",
             ],
         )
         assert 0 == result.exit_code

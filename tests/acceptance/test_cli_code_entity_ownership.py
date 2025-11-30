@@ -20,7 +20,7 @@ class TestCliCodeEntityOwnershipCommands:
     def test_can_run_entity_ownership_without_data_available(self, cli):
         result = cli.runner.invoke(
             main,
-            ["code", "entity-ownership", "--out-file", "entity_ownership.png"],
+            ["code", "entity-ownership"],
         )
         assert "No entity ownership data available to plot" in result.output
 
@@ -32,7 +32,7 @@ file.txt,John,10,2"""
 
         result = cli.runner.invoke(
             main,
-            ["code", "entity-ownership", "--out-file", "entity_ownership.png"],
+            ["code", "entity-ownership"],
         )
 
         assert "Found 1 row for entity ownership" in result.output
@@ -48,8 +48,6 @@ file.txt,John,10,2"""
             [
                 "code",
                 "entity-ownership",
-                "--out-file",
-                "entity_ownership.png",
                 "--authors",
                 "Jane",
             ],

@@ -27,7 +27,6 @@ class ViewJobsByStatus(BaseViewer):
         self,
         job_name: str,
         workflow_path: str | None = None,
-        out_file: str | None = None,
         with_pipeline: bool = False,
         aggregate_by_week: bool = False,
         raw_filters: str | None = None,
@@ -104,11 +103,5 @@ class ViewJobsByStatus(BaseViewer):
             chart = timeline_bars
 
         df = pd.DataFrame(status_data)
-
-        if out_file:
-            try:
-                hv.save(chart, out_file)
-            except Exception:
-                pass
 
         return PlotResult(chart, df)

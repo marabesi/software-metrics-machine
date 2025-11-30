@@ -16,7 +16,6 @@ def build_barchart_with_lines(
     vlines: list | None = None,
     vline_opts: dict | None = None,
     extra_labels: list[dict] | None = None,
-    out_file: str | None = None,
     tools: list[str] | None = None,
 ):
     df = pd.DataFrame(list(data))
@@ -65,12 +64,6 @@ def build_barchart_with_lines(
             overlay = overlay.opts(tools=tools)
         except Exception:
             # some overlays/elements may not accept tools; ignore safe-fail
-            pass
-
-    if out_file:
-        try:
-            hv.save(overlay, out_file)
-        except Exception:
             pass
 
     return overlay

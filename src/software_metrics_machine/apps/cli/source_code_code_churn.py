@@ -8,13 +8,6 @@ from software_metrics_machine.providers.codemaat.plots.code_churn import CodeChu
 
 @click.command(name="code-churn", help="Plot the code churn rate over time")
 @click.option(
-    "--out-file",
-    "-o",
-    type=str,
-    default=None,
-    help="Optional path to save the plot image",
-)
-@click.option(
     "--start-date",
     type=str,
     default=None,
@@ -26,9 +19,8 @@ from software_metrics_machine.providers.codemaat.plots.code_churn import CodeChu
     default=None,
     help="Filter code churn data on or before this date (ISO 8601)",
 )
-def code_churn(out_file, start_date, end_date):
+def code_churn(start_date, end_date):
     result = CodeChurnViewer(repository=create_codemaat_repository()).render(
-        out_file=out_file,
         start_date=start_date,
         end_date=end_date,
     )

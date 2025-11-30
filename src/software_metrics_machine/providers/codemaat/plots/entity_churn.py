@@ -25,7 +25,6 @@ class EntityChurnViewer(BaseViewer, Viewable):
         self,
         top_n: int = 30,
         ignore_files: str | None = None,
-        out_file: str | None = None,
         include_only: str | None = None,
         start_date: str | None = None,
         end_date: str | None = None,
@@ -94,7 +93,6 @@ class EntityChurnViewer(BaseViewer, Viewable):
             title="Code Entity Churn: Lines Added and Deleted",
             xrotation=45,
             label_generator=super().build_labels_above_bars,
-            out_file=out_file,
             tools=super().get_tools(),
             color=super().get_color(),
         )
