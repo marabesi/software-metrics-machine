@@ -1,6 +1,7 @@
 [![CI](https://github.com/marabesi/software-metrics-machine/actions/workflows/ci.yml/badge.svg)](https://github.com/marabesi/software-metrics-machine/actions/workflows/ci.yml)
 [![Coverage Status](https://coveralls.io/repos/github/marabesi/software-metrics-machine/badge.svg?branch=main)](https://coveralls.io/github/marabesi/software-metrics-machine?branch=main)
 [![Docs](https://github.com/marabesi/software-metrics-machine/actions/workflows/static.yml/badge.svg)](https://github.com/marabesi/software-metrics-machine/actions/workflows/static.yml)
+[![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=marabesi_software-metrics-machine&metric=alert_status)](https://sonarcloud.io/summary/new_code?id=marabesi_software-metrics-machine)
 [![PyPI version](https://badge.fury.io/py/software-metrics-machine.svg)](https://badge.fury.io/py/software-metrics-machine)
 ![PyPI - Downloads](https://img.shields.io/pypi/dm/software-metrics-machine)
 
