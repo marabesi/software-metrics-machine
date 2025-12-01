@@ -37,4 +37,6 @@ def create_file_system_repository(
     driver: Driver = Driver.CLI,
 ) -> FileSystemBaseRepository:
     configuration = create_configuration(driver=driver)
-    return FileSystemBaseRepository(configuration=configuration)
+    return FileSystemBaseRepository(
+        configuration=configuration, target_subfolder=configuration.git_provider
+    )

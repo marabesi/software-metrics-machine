@@ -2,6 +2,7 @@ import json
 from software_metrics_machine.core.infrastructure.file_system_base_repository import (
     FileSystemBaseRepository,
 )
+from software_metrics_machine.core.infrastructure.json import as_json_string
 
 
 class JsonFileMerger:
@@ -66,7 +67,7 @@ class JsonFileMerger:
         print(f"  → Final item count: {total_items_after_dedupe}.")
 
         # 3. Store the final result
-        self.repository.store_file(output_path, deduplicated_list)
+        self.repository.store_file(output_path, as_json_string(deduplicated_list))
         print(f"✅ Successfully saved merged data to '{output_path}'.")
 
         return deduplicated_list

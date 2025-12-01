@@ -1,6 +1,5 @@
 from typing import List, Optional
 from pathlib import Path
-import json
 
 from software_metrics_machine.core.infrastructure.configuration.configuration import (
     Configuration,
@@ -41,13 +40,8 @@ class FileHandlerForTesting:
             "prs_review_comments.json", as_json_string(data)
         )
 
-    def store_json_file(self, file: str, data: str) -> bool:
-        final_path = self.default_dir + "/" + file
-        p = Path(final_path)
-
-        with p.open("w", encoding="utf-8") as f:
-            json.dump(data, f, indent=2)
-        print(f"  → Data written to {p}")
+    def store_json_file(self, file: str, data: List) -> bool:
+        self.file_system_handler.store_file(file, as_json_string(data))
         return True
 
     def store_file(self, file: str, data: str) -> bool:
