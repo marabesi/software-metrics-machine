@@ -106,4 +106,10 @@ class ViewDeploymentFrequency(BaseViewer):
         # Wrap layout in a Panel Bokeh pane so callers expecting a pane get a renderable object
         pane = pn.pane.Bokeh(layout)
 
-        return PlotResult(plot=pane, data=pd.DataFrame(aggregated))
+        try:
+            return PlotResult(plot=pane, data=pd.DataFrame(aggregated))
+        except Exception:
+            print(
+                "  → Warning: Could not convert deployment frequency data to DataFrame."
+            )
+            return PlotResult(plot=pane, data=pd.DataFrame())
