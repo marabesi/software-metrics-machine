@@ -1,0 +1,28 @@
+version: '3.8'
+
+services:
+  sonarqube:
+    image: sonarqube:10-community
+    ports:
+      - '9000:9000'
+    volumes:
+      - sonar_data:/opt/sonarqube/data
+      - sonar_extensions:/opt/sonarqube/extensions
+      - sonar_logs:/opt/sonarqube/logs
+    networks:
+      - sonarnet
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:9000/api/system/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 10
+
+volumes:
+  sonar_db_data:
+  sonar_data:
+  sonar_extensions:
+  sonar_logs:
+
+networks:
+  sonarnet:
+    driver: bridge
