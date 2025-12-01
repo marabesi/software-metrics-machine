@@ -232,3 +232,7 @@ tests/e2e/target
 .run/
 
 mutants/
+
+sonar_data/
+sonar_extensions/
+sonar_logs/

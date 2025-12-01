@@ -6,9 +6,9 @@ services:
     ports:
       - '9000:9000'
     volumes:
-      - sonar_data:/opt/sonarqube/data
-      - sonar_extensions:/opt/sonarqube/extensions
-      - sonar_logs:/opt/sonarqube/logs
+      - ./sonar_data:/opt/sonarqube/data
+      - ./sonar_extensions:/opt/sonarqube/extensions
+      - ./sonar_logs:/opt/sonarqube/logs
     networks:
       - sonarnet
     healthcheck:
@@ -16,12 +16,6 @@ services:
       interval: 30s
       timeout: 10s
       retries: 10
-
-volumes:
-  sonar_db_data:
-  sonar_data:
-  sonar_extensions:
-  sonar_logs:
 
 networks:
   sonarnet:
