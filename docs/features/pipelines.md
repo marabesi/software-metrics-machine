@@ -148,6 +148,7 @@ smm pipelines jobs-by-execution-time
 | Filtering      | Include setup jobs used by GitHub actions,such as 'Set up job' or 'Checkout code'  | `--force-all-job` |
 | Filtering      | Filters jobs based on their pipeline  | `--pipeline-raw-filters=target_branch=main` |
 | Job name       | Optional job name substring to filter jobs | `--job-name=test` |
+| Metric         | Optional metric to compute the job duration. Defaults to "avg" | `--metric=sum` |
 
 
 :::
