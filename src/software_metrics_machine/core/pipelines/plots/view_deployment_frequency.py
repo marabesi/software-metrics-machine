@@ -103,13 +103,8 @@ class ViewDeploymentFrequency(BaseViewer):
 
         layout = column(daily_fig, weekly_fig, monthly_fig, sizing_mode="stretch_width")
 
-        # Wrap layout in a Panel Bokeh pane so callers expecting a pane get a renderable object
         pane = pn.pane.Bokeh(layout)
 
-        try:
-            return PlotResult(plot=pane, data=pd.DataFrame(aggregated))
-        except Exception:
-            print(
-                "  → Warning: Could not convert deployment frequency data to DataFrame."
-            )
-            return PlotResult(plot=pane, data=pd.DataFrame())
+        handles_different_array_sizes = {k: pd.Series(v) for k, v in aggregated.items()}
+
+        return PlotResult(plot=pane, data=pd.DataFrame(handles_different_array_sizes))

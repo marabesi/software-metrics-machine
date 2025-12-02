@@ -216,17 +216,13 @@ class TestDeploymentFrequency:
                 workflow_path="/workflows/deploy.yml", job_name="deploy"
             )
 
-            # Verify that path filter was applied
             call_kwargs = repository.get_deployment_frequency_for_job.call_args[1]
             assert call_kwargs["filters"]["path"] == "/workflows/deploy.yml"
 
-            # Verify result structure
             assert result["frequency"] == 1
             assert len(result["deployments"]) == 1
 
     def test_runs_with_date_range_filter(self):
-        """Test execute() with start_date and end_date filters."""
-
         def mocked_read_file_if_exists(file):
             if file == "workflows.json":
                 return as_json_string(
@@ -271,11 +267,9 @@ class TestDeploymentFrequency:
                 end_date="2023-01-31",
             )
 
-            # Verify that date filters were applied
             call_kwargs = repository.get_deployment_frequency_for_job.call_args[1]
             assert call_kwargs["filters"]["start_date"] == "2023-01-01"
             assert call_kwargs["filters"]["end_date"] == "2023-01-31"
             assert call_kwargs["filters"]["path"] == "/workflows/deploy.yml"
 
-            # Verify result
             assert result["frequency"] == 1
