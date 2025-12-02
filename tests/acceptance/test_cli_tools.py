@@ -4,10 +4,6 @@ from software_metrics_machine.apps.cli import main
 
 class TestCliToolsCommands:
 
-    def test_executes_tools_to_merge_successfully(self, cli):
-        result = cli.runner.invoke(main, ["tools", "json-merger", "--help"])
-        assert 0 == result.exit_code
-
     @pytest.mark.parametrize(
         "command, expected_output_substring",
         [

@@ -127,7 +127,6 @@ class TestWorkflowsFetchCliCommands:
             )
 
     def test_not_fetch_if_already_exists(self, cli):
-
         cli.storage.store_pipelines_with([])
 
         result = cli.runner.invoke(

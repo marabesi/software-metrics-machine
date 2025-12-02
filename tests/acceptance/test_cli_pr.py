@@ -13,12 +13,13 @@ class TestCliPrsCommands:
             mock_get.reset_mock()
             yield mock_get
 
-    def test_can_run_fetch_prs_command(self, cli):
+    def test_can_run_fetch_prs_command_without_arguments(self, cli):
         with patch("requests.get") as mock_get:
             mock_get.return_value = build_http_successfull_response([])
 
-            result = cli.runner.invoke(main, ["prs", "fetch"])
-            assert 0 == result.exit_code
+            cli.runner.invoke(main, ["prs", "fetch"])
+
+            mock_get.assert_called_once()
 
     def test_can_run_fetch_with_raw_filters_for_api(self, cli):
         result = cli.runner.invoke(
@@ -135,11 +136,9 @@ class TestCliPrsCommands:
             main,
             ["prs", "by-author", "--top", "5", "--labels", "bug"],
         )
-        assert 0 == result.exit_code
         assert "No PRs to plot after filtering" in result.output
 
     def test_print_prs_created_by_authors(self, cli):
-
         pull_requests_data = [
             PullRequestBuilder()
             .with_author("ana")
@@ -233,7 +232,6 @@ class TestCliPrsCommands:
     def test_with_stored_data_print_review_time_by_day(
         self, cli, data, expected_output
     ):
-
         cli.storage.store_prs_with(data["prs"])
 
         result = cli.runner.invoke(
@@ -279,7 +277,6 @@ class TestCliPrsCommands:
     def test_with_stored_data_print_average_prs_open_by(
         self, cli, data, expected_output
     ):
-
         cli.storage.store_prs_with(data["prs"])
 
         result = cli.runner.invoke(

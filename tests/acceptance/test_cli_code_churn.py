@@ -64,7 +64,6 @@ class TestCliCodeCommands:
         assert expected in result.output
 
     def test_renders_code_churn_by_date(self, cli):
-
         csv_data = """date,added,deleted,commits
 2022-06-17,10,10,2"""
         cli.storage.store_csv_file("abs-churn.csv", csv_data)
