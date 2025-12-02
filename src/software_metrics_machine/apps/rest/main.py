@@ -90,7 +90,7 @@ def code_churn(
     result = CodeChurnViewer(repository=create_codemaat_repository()).render(
         start_date=start_date, end_date=end_date
     )
-    return JSONResponse(result.data.to_dict(orient="records"))
+    return JSONResponse(result.data)
 
 
 @app.get("/code/coupling", tags=source_code_tags)
@@ -162,7 +162,7 @@ def pipeline_summary(
         end_date=end_date,
         output_format="json",
     )
-    return JSONResponse(result.data.to_dict(orient="records"))
+    return JSONResponse(result)
 
 
 @app.get("/pipelines/runs-duration", tags=pipeline_tags)

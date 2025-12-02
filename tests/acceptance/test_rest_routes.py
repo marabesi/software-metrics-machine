@@ -51,3 +51,37 @@ class TestRestRoutes:
                 "total_churn": 12,
             },
         ]
+
+    def test_code_churn_route(self, cli):
+        csv_data = """date,added,deleted,commits
+2022-06-17,10,10,2"""
+        cli.storage.store_csv_file("abs-churn.csv", csv_data)
+        resp = client.get("/code/code-churn")
+        assert resp.status_code == 200
+        assert resp.json() == [
+            {
+                "date": "2022-06-17",
+                "type": "Added",
+                "value": 10,
+            },
+            {
+                "date": "2022-06-17",
+                "type": "Deleted",
+                "value": 10,
+            },
+        ]
+
+    def test_pipeline_summary_route(self):
+        resp = client.get("/pipelines/summary")
+        assert resp.status_code == 200
+        assert resp.json() == {
+            "completed": 0,
+            "first_run": {},
+            "in_progress": 0,
+            "last_run": {},
+            "most_failed": None,
+            "queued": 0,
+            "runs_by_workflow": {},
+            "total_runs": 0,
+            "unique_workflows": 0,
+        }
