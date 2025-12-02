@@ -35,6 +35,7 @@ class ViewJobsByAverageTimeExecution(BaseViewer):
         force_all_jobs: bool = False,
         job_name: Optional[str] = None,
         pipeline_raw_filters: Optional[str] = None,
+        metric: str = "avg",
     ) -> PlotResult:
         result = JobsByAverageTimeExecution(repository=self.repository).main(
             top=top,
@@ -46,11 +47,13 @@ class ViewJobsByAverageTimeExecution(BaseViewer):
             force_all_jobs=force_all_jobs,
             job_name=job_name,
             pipeline_raw_filters=pipeline_raw_filters,
+            metric=metric,
         )
         averages = result.averages
         runs = result.runs
         jobs = result.jobs
         counts = result.counts
+        sums = result.sums
         total_runs = len(runs)
         total_jobs = len(jobs)
 
@@ -91,5 +94,8 @@ class ViewJobsByAverageTimeExecution(BaseViewer):
         )
 
         df = pd.DataFrame(averages)
+
+        if metric == "sum":
+            df = pd.DataFrame(sums)
 
         return PlotResult(chart, df)

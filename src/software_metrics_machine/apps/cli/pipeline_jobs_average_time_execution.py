@@ -68,6 +68,13 @@ from software_metrics_machine.core.pipelines.plots.view_jobs_average_time_execut
     default=None,
     help="Comma-separated key=value pairs to filter runs (e.g., event=push,target_branch=main)",
 )
+@click.option(
+    "--metric",
+    type=str,
+    help=(
+        "Metric to plot: 'avg' for average duration, 'sum' for total duration and 'count', 'default: 'avg'"
+    ),
+)
 def jobs_by_execution_time(
     workflow_path,
     top,
@@ -79,6 +86,7 @@ def jobs_by_execution_time(
     force_all_jobs,
     job_name,
     pipeline_raw_filters,
+    metric,
 ):
     result = ViewJobsByAverageTimeExecution(
         repository=create_pipelines_repository()
@@ -92,6 +100,7 @@ def jobs_by_execution_time(
         force_all_jobs=force_all_jobs,
         job_name=job_name,
         pipeline_raw_filters=pipeline_raw_filters,
+        metric=metric,
     )
     click.echo(result.data)
 

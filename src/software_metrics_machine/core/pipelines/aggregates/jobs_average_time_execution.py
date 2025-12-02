@@ -17,6 +17,7 @@ class JobsAverageTimeExecutionResult:
     runs: List[PipelineRun]
     jobs: List[PipelineJob]
     averages: List[float]
+    sums: List[float]
     counts: dict
 
 
@@ -115,10 +116,13 @@ class JobsByAverageTimeExecution:
         averages = [
             (name, (sums[name] / counts[name]) / 60.0) for name in counts.keys()
         ]  # minutes
+
+        sums = [(name, sums[name] / 60.0) for name in counts.keys()]
+
         # sort by average descending (longest first)
         averages.sort(key=lambda x: x[1], reverse=True)
         averages = averages[:top]
 
         return JobsAverageTimeExecutionResult(
-            runs=runs, jobs=jobs, averages=averages, counts=counts
+            runs=runs, jobs=jobs, averages=averages, counts=counts, sums=sums
         )
