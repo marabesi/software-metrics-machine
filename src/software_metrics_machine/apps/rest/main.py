@@ -14,6 +14,9 @@ from software_metrics_machine.core.code.pairing_index import PairingIndex
 from software_metrics_machine.core.pipelines.plots.view_pipeline_summary import (
     WorkflowRunSummary,
 )
+from software_metrics_machine.core.prs.plots.view_open_prs_through_time import (
+    ViewOpenPrsThroughTime,
+)
 from software_metrics_machine.providers.codemaat.plots.entity_churn import (
     EntityChurnViewer,
 )
@@ -335,3 +338,18 @@ def pull_request_summary(
         csv=None, start_date=start_date, end_date=end_date, output_format="json"
     )
     return JSONResponse(content={"result": result})
+
+
+@app.get("/pull-requests/through-time", tags=pull_request_tags)
+def pull_request_through_time(
+    start_date: Optional[str] = Query(None),
+    end_date: Optional[str] = Query(None),
+    authors: Optional[str] = Query(None),
+):
+    result = ViewOpenPrsThroughTime(repository=create_prs_repository()).main(
+        title="Open Pull Requests Through Time",
+        authors=authors,
+        start_date=start_date,
+        end_date=end_date,
+    )
+    return JSONResponse(content={"result": result.data.to_dict(orient="records")})

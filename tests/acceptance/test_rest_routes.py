@@ -420,3 +420,47 @@ class TestRestRoutes:
                 "without_conclusion": 2,
             },
         }
+
+    def test_pull_request_through_time_route(self, cli):
+        cli.storage.store_prs_with(
+            [
+                PullRequestBuilder()
+                .with_number(1029)
+                .with_title("Add files via upload")
+                .with_author("eriirfos-eng")
+                .with_created_at("2025-09-02T00:50:00Z")
+                .build(),
+                PullRequestBuilder()
+                .with_number(1164)
+                .with_title("Add Repository Tree Navigation Tool")
+                .with_author("natagdunbar")
+                .with_created_at("2025-09-30T19:12:17Z")
+                .build(),
+            ]
+        )
+        resp = client.get("/pull-requests/through-time")
+        assert resp.status_code == 200
+        assert resp.json() == {
+            "result": [
+                {
+                    "count": 1,
+                    "date": "2025-09-02",
+                    "kind": "Opened",
+                },
+                {
+                    "count": 0,
+                    "date": "2025-09-02",
+                    "kind": "Closed",
+                },
+                {
+                    "count": 1,
+                    "date": "2025-09-30",
+                    "kind": "Opened",
+                },
+                {
+                    "count": 0,
+                    "date": "2025-09-30",
+                    "kind": "Closed",
+                },
+            ],
+        }
