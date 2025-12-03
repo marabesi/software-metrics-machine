@@ -47,12 +47,15 @@ from software_metrics_machine.core.pipelines.plots.view_jobs_average_time_execut
 
 from software_metrics_machine.core.prs.plots.view_summary import PrViewSummary
 
-app = FastAPI()
+app = FastAPI(
+    title="Software Metrics Machine REST API",
+    description="A Data-Driven Approach to High-Performing Teams - See your software development process through data. Everything runs locally.",
+)
 
 
 source_code_tags: list[str | Enum] = ["Source code"]
-pipeline_tags: list[str] = ["Pipeline"]
-pull_request_tags: list[str] = ["Pull Requests"]
+pipeline_tags: list[str | Enum] = ["Pipeline"]
+pull_request_tags: list[str | Enum] = ["Pull Requests"]
 
 
 @app.get("/code/pairing-index", tags=source_code_tags)
@@ -95,57 +98,86 @@ def code_churn(
 
 @app.get("/code/coupling", tags=source_code_tags)
 def code_coupling(
-    start_date: Optional[str] = Query(None), end_date: Optional[str] = Query(None)
+    start_date: Optional[str] = Query(None),
+    end_date: Optional[str] = Query(None),
+    ignore_files: Optional[str] = Query(None),
+    include_only: Optional[str] = Query(None),
+    top: Optional[int] = Query(20),
 ):
     result = CouplingViewer(repository=create_codemaat_repository()).render(
-        ignore_files=None, include_only=None
+        ignore_files=ignore_files, include_only=include_only, top=top
     )
     return JSONResponse(result.data.to_dict(orient="records"))
 
 
 @app.get("/code/entity-effort", tags=source_code_tags)
 def entity_effort(
-    start_date: Optional[str] = Query(None), end_date: Optional[str] = Query(None)
+    start_date: Optional[str] = Query(None),
+    end_date: Optional[str] = Query(None),
+    top_n: Optional[int] = Query(30),
+    ignore_files: Optional[str] = Query(None),
+    include_only: Optional[str] = Query(None),
 ):
     viewer = EntityEffortViewer(repository=create_codemaat_repository())
-    result = viewer.render_treemap(top_n=30, ignore_files=None, include_only=None)
+    result = viewer.render_treemap(
+        top_n=top_n, ignore_files=ignore_files, include_only=include_only
+    )
     return JSONResponse(result.data.to_dict(orient="records"))
 
 
 @app.get("/code/entity-ownership", tags=source_code_tags)
 def entity_ownership(
-    start_date: Optional[str] = Query(None), end_date: Optional[str] = Query(None)
+    start_date: Optional[str] = Query(None),
+    end_date: Optional[str] = Query(None),
+    top_n: Optional[int] = Query(None),
+    ignore_files: Optional[str] = Query(None),
+    authors: Optional[str] = Query(None),
+    include_only: Optional[str] = Query(None),
 ):
     viewer = EntityOnershipViewer(repository=create_codemaat_repository())
     result = viewer.render(
-        top_n=None, ignore_files=None, authors=None, include_only=None
+        top_n=top_n,
+        ignore_files=ignore_files,
+        authors=authors,
+        include_only=include_only,
     )
     return JSONResponse(result.data.to_dict(orient="records"))
 
 
 @app.get("/pipelines/by-status", tags=pipeline_tags)
 def pipelines_by_status(
-    start_date: Optional[str] = Query(None), end_date: Optional[str] = Query(None)
+    start_date: Optional[str] = Query(None),
+    end_date: Optional[str] = Query(None),
+    workflow_path: Optional[str] = Query(None),
 ):
     view = ViewPipelineByStatus(repository=create_pipelines_repository())
-    result = view.main(workflow_path=None, start_date=start_date, end_date=end_date)
+    result = view.main(
+        workflow_path=workflow_path, start_date=start_date, end_date=end_date
+    )
     return JSONResponse(result.data.to_dict(orient="records"))
 
 
 @app.get("/pipelines/jobs-by-status", tags=pipeline_tags)
 def pipeline_jobs_by_status(
-    start_date: Optional[str] = Query(None), end_date: Optional[str] = Query(None)
+    start_date: Optional[str] = Query(None),
+    end_date: Optional[str] = Query(None),
+    job_name: Optional[str] = Query(None),
+    workflow_path: Optional[str] = Query(None),
+    with_pipeline: Optional[bool] = Query(False),
+    aggregate_by_week: Optional[bool] = Query(False),
+    raw_filters: Optional[str] = Query(None),
+    force_all_jobs: Optional[bool] = Query(False),
 ):
     view = ViewJobsByStatus(repository=create_pipelines_repository())
     result = view.main(
-        job_name=None,
-        workflow_path=None,
-        with_pipeline=None,
-        aggregate_by_week=None,
-        raw_filters=None,
+        job_name=job_name,
+        workflow_path=workflow_path,
+        with_pipeline=with_pipeline,
+        aggregate_by_week=aggregate_by_week,
+        raw_filters=raw_filters,
         start_date=start_date,
         end_date=end_date,
-        force_all_jobs=False,
+        force_all_jobs=force_all_jobs,
     )
     return JSONResponse(result.data.to_dict(orient="records"))
 
@@ -155,7 +187,6 @@ def pipeline_summary(
     start_date: Optional[str] = Query(None), end_date: Optional[str] = Query(None)
 ):
     view = WorkflowRunSummary(repository=create_pipelines_repository())
-    # print_summary prints to stdout; call method and return ok
     result = view.print_summary(
         max_workflows=None,
         start_date=start_date,
@@ -167,15 +198,19 @@ def pipeline_summary(
 
 @app.get("/pipelines/runs-duration", tags=pipeline_tags)
 def pipeline_runs_duration(
-    start_date: Optional[str] = Query(None), end_date: Optional[str] = Query(None)
+    start_date: Optional[str] = Query(None),
+    end_date: Optional[str] = Query(None),
+    workflow_path: Optional[str] = Query(None),
+    max_runs: Optional[int] = Query(100),
+    raw_filters: Optional[str] = Query(None),
 ):
     view = ViewPipelineExecutionRunsDuration(repository=create_pipelines_repository())
     result = view.main(
-        workflow_path=None,
+        workflow_path=workflow_path,
         start_date=start_date,
         end_date=end_date,
-        max_runs=100,
-        raw_filters=None,
+        max_runs=max_runs,
+        raw_filters=raw_filters,
     )
     return JSONResponse(result.data.to_dict(orient="records"))
 
@@ -199,35 +234,48 @@ def pipeline_deployment_frequency(
 
 @app.get("/pipelines/runs-by", tags=pipeline_tags)
 def pipeline_runs_by(
-    start_date: Optional[str] = Query(None), end_date: Optional[str] = Query(None)
+    start_date: Optional[str] = Query(None),
+    end_date: Optional[str] = Query(None),
+    aggregate_by: Optional[str] = Query("week"),
+    workflow_path: Optional[str] = Query(None),
+    raw_filters: Optional[str] = Query(None),
+    include_defined_only: Optional[bool] = Query(False),
 ):
     view = ViewWorkflowRunsByWeekOrMonth(repository=create_pipelines_repository())
     result = view.main(
-        aggregate_by="week",
-        workflow_path=None,
+        aggregate_by=aggregate_by,
+        workflow_path=workflow_path,
         start_date=start_date,
         end_date=end_date,
-        raw_filters=None,
-        include_defined_only=False,
+        raw_filters=raw_filters,
+        include_defined_only=include_defined_only,
     )
     return JSONResponse(result.data.to_dict(orient="records"))
 
 
 @app.get("/pipelines/jobs-average-time", tags=pipeline_tags)
 def pipeline_jobs_average_time(
-    start_date: Optional[str] = Query(None), end_date: Optional[str] = Query(None)
+    start_date: Optional[str] = Query(None),
+    end_date: Optional[str] = Query(None),
+    workflow_path: Optional[str] = Query(None),
+    raw_filters: Optional[str] = Query(None),
+    top: Optional[int] = Query(20),
+    exclude_jobs: Optional[str] = Query(None),
+    force_all_jobs: Optional[bool] = Query(False),
+    job_name: Optional[str] = Query(None),
+    pipeline_raw_filters: Optional[str] = Query(None),
 ):
     view = ViewJobsByAverageTimeExecution(repository=create_pipelines_repository())
     result = view.main(
-        workflow_path=None,
-        raw_filters=None,
-        top=20,
-        exclude_jobs=None,
+        workflow_path=workflow_path,
+        raw_filters=raw_filters,
+        top=top,
+        exclude_jobs=exclude_jobs,
         start_date=start_date,
         end_date=end_date,
-        force_all_jobs=False,
-        job_name=None,
-        pipeline_raw_filters=None,
+        force_all_jobs=force_all_jobs,
+        job_name=job_name,
+        pipeline_raw_filters=pipeline_raw_filters,
     )
     return JSONResponse(content={"result": result.data.to_dict(orient="records")})
 
