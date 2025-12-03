@@ -214,6 +214,16 @@ def prs_section(
         pn.Row(
             pn.Column(
                 "### Comments by PR",
+                pn.pane.HTML(
+                    """
+                    This view displays the average number of comments received by pull requests over time. It helps to
+                    understand the level of engagement and feedback that pull requests are receiving from reviewers.
+
+                    The average is calculated by dividing the total number of comments on PRs by the total number of PRs
+                    within each time period (week or month). This provides insights into how actively PRs are being
+                    discussed and reviewed.
+                    """
+                ),
                 pn.panel(
                     pn.bind(
                         plot_average_pr_comments,
