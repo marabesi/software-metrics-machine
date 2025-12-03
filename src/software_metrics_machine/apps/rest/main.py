@@ -64,6 +64,9 @@ def pairing_index(
     end_date: Optional[str] = Query(None),
     authors: Optional[str] = Query(None),
 ):
+    """
+    Compute the pairing index for the repository.
+    """
     pi = PairingIndex(repository=create_codemaat_repository())
     result = pi.get_pairing_index(
         start_date=start_date, end_date=end_date, authors=authors
@@ -73,13 +76,20 @@ def pairing_index(
 
 @app.get("/code/entity-churn", tags=source_code_tags)
 def entity_churn(
-    start_date: Optional[str] = Query(None), end_date: Optional[str] = Query(None)
+    start_date: Optional[str] = Query(None),
+    end_date: Optional[str] = Query(None),
+    ignore_files: Optional[str] = Query(None),
+    include_only: Optional[str] = Query(None),
+    top: Optional[int] = Query(None),
 ):
+    """
+    Return per-entity churn metrics (added, deleted, commits).
+    """
     viewer = EntityChurnViewer(repository=create_codemaat_repository())
     result = viewer.render(
-        top_n=None,
-        ignore_files=None,
-        include_only=None,
+        top_n=top,
+        ignore_files=ignore_files,
+        include_only=include_only,
         start_date=start_date,
         end_date=end_date,
     )
@@ -90,6 +100,9 @@ def entity_churn(
 def code_churn(
     start_date: Optional[str] = Query(None), end_date: Optional[str] = Query(None)
 ):
+    """
+    Return code churn time series. Each record contains `date`, `type`, and `value`.
+    """
     result = CodeChurnViewer(repository=create_codemaat_repository()).render(
         start_date=start_date, end_date=end_date
     )
@@ -104,6 +117,9 @@ def code_coupling(
     include_only: Optional[str] = Query(None),
     top: Optional[int] = Query(20),
 ):
+    """
+    Return coupling pairs ranked by coupling degree.
+    """
     result = CouplingViewer(repository=create_codemaat_repository()).render(
         ignore_files=ignore_files, include_only=include_only, top=top
     )
@@ -118,6 +134,9 @@ def entity_effort(
     ignore_files: Optional[str] = Query(None),
     include_only: Optional[str] = Query(None),
 ):
+    """
+    Return entity effort (lines changed) as a treemap-friendly list.
+    """
     viewer = EntityEffortViewer(repository=create_codemaat_repository())
     result = viewer.render_treemap(
         top_n=top_n, ignore_files=ignore_files, include_only=include_only
@@ -134,6 +153,9 @@ def entity_ownership(
     authors: Optional[str] = Query(None),
     include_only: Optional[str] = Query(None),
 ):
+    """
+    Return ownership breakdown per entity and author.
+    """
     viewer = EntityOnershipViewer(repository=create_codemaat_repository())
     result = viewer.render(
         top_n=top_n,
@@ -150,6 +172,9 @@ def pipelines_by_status(
     end_date: Optional[str] = Query(None),
     workflow_path: Optional[str] = Query(None),
 ):
+    """
+    Return counts of pipeline runs grouped by status.
+    """
     view = ViewPipelineByStatus(repository=create_pipelines_repository())
     result = view.main(
         workflow_path=workflow_path, start_date=start_date, end_date=end_date
@@ -168,6 +193,9 @@ def pipeline_jobs_by_status(
     raw_filters: Optional[str] = Query(None),
     force_all_jobs: Optional[bool] = Query(False),
 ):
+    """
+    Return job status summary for pipeline jobs.
+    """
     view = ViewJobsByStatus(repository=create_pipelines_repository())
     result = view.main(
         job_name=job_name,
@@ -186,6 +214,9 @@ def pipeline_jobs_by_status(
 def pipeline_summary(
     start_date: Optional[str] = Query(None), end_date: Optional[str] = Query(None)
 ):
+    """
+    Return a summary of pipeline runs (counts, first/last run, in-progress, queued, etc.).
+    """
     view = WorkflowRunSummary(repository=create_pipelines_repository())
     result = view.print_summary(
         max_workflows=None,
@@ -204,6 +235,9 @@ def pipeline_runs_duration(
     max_runs: Optional[int] = Query(100),
     raw_filters: Optional[str] = Query(None),
 ):
+    """
+    Return average/total durations for pipeline runs (per workflow).
+    """
     view = ViewPipelineExecutionRunsDuration(repository=create_pipelines_repository())
     result = view.main(
         workflow_path=workflow_path,
@@ -222,6 +256,9 @@ def pipeline_deployment_frequency(
     workflow_path: Optional[str] = Query(None),
     job_name: Optional[str] = Query(None),
 ):
+    """
+    Return deployment frequency counts (daily/weekly/monthly) for a job or workflow.
+    """
     view = ViewDeploymentFrequency(repository=create_pipelines_repository())
     result = view.plot(
         workflow_path=workflow_path,
@@ -241,6 +278,9 @@ def pipeline_runs_by(
     raw_filters: Optional[str] = Query(None),
     include_defined_only: Optional[bool] = Query(False),
 ):
+    """
+    Return runs aggregated by period (week or month).
+    """
     view = ViewWorkflowRunsByWeekOrMonth(repository=create_pipelines_repository())
     result = view.main(
         aggregate_by=aggregate_by,
@@ -265,6 +305,9 @@ def pipeline_jobs_average_time(
     job_name: Optional[str] = Query(None),
     pipeline_raw_filters: Optional[str] = Query(None),
 ):
+    """
+    Return average execution time for jobs. Result returned under `result` key.
+    """
     view = ViewJobsByAverageTimeExecution(repository=create_pipelines_repository())
     result = view.main(
         workflow_path=workflow_path,
@@ -284,6 +327,9 @@ def pipeline_jobs_average_time(
 def pull_request_summary(
     start_date: Optional[str] = Query(None), end_date: Optional[str] = Query(None)
 ):
+    """
+    Return a summary of pull request metrics.
+    """
     view = PrViewSummary(repository=create_prs_repository())
     result = view.main(
         csv=None, start_date=start_date, end_date=end_date, output_format="json"
