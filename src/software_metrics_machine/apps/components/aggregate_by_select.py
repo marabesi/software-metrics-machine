@@ -9,5 +9,5 @@ def aggregate_by_select():
 
 def aggregate_by_metric_select():
     return pn.widgets.Select(
-        name="Metric", options=["avg", "sum", "count"], value="avg"
+        name="Metric", options=["avg", "sum", "count", "min", "max"], value="avg"
     )

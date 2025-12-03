@@ -199,7 +199,7 @@ def pipeline_section(
                     <div>
                         <br />
                         This view helps you understand the frequency and patterns of pipeline executions over time,
-                        allowing you to identify trends, spikes, or periods of low activity.
+                        allowing you to identify trends, spikes, or periods of high/low activity.
                     </div>
                     </details>
                     """
@@ -236,6 +236,23 @@ def pipeline_section(
                         <br />
                         This view provides insights into the performance and efficiency of your pipelines, helping you
                         identify potential bottlenecks and areas for optimization.
+                        <ul>
+                            <li>
+                                avg: The simple average. It computes the time taken by all pipeline runs and divides it by the number of runs.
+                            </li>
+                            <li>
+                                count: ???
+                            </li>
+                            <li>
+                                sum: Total time taken by all pipeline.
+                            </li>
+                            <li>
+                                max: The longest time taken by a single pipeline run.
+                            </li>
+                            <li>
+                                min: The shortest time taken by a single pipeline run.
+                            </li>
+                        </ul>
                     </div>
                     </details>
                     """
@@ -269,6 +286,13 @@ def pipeline_section(
         pn.Row(
             pn.Column(
                 "### Distribution of jobs by execution time",
+                pn.pane.HTML(
+                    """
+                    This view depicts the time taken for individual jobs within your pipelines to execute. By analyzing job execution times,
+                    you can identify specific tasks that may be causing delays in your CI or track potential improvements
+                    regarding time execution, for example, time tests take to run.
+                    """
+                ),
                 pn.panel(
                     pn.bind(
                         plot_view_jobs_by_execution_time,
@@ -289,6 +313,13 @@ def pipeline_section(
         pn.Row(
             pn.Column(
                 "### Distribution of jobs execution by status",
+                pn.pane.HTML(
+                    """
+                        This view provides insights into the performance and reliability of individual jobs within your
+                        pipelines. By analyzing job statuses, you can identify specific tasks that may be causing delays
+                        or failures in your CI/CD processes, allowing for targeted improvements and optimizations.
+                    """
+                ),
                 pn.panel(
                     pn.bind(
                         plot_jobs_by_status,
