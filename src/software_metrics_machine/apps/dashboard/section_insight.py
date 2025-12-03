@@ -48,15 +48,29 @@ def insights_section(repository: PipelinesRepository, date_range_picker):
         if result is None or len(result) == 0:
             return pn.pane.Markdown("No data available", width=200)
         avg_min = result[0][2]
+        total_min = result[0][1]
         formatted_avg_min = "{:.1f}".format(avg_min)
-        return pn.Card(
-            pn.indicators.Number(
-                value=42,
-                name="Your software takes this time to reach production",
-                format=f"{formatted_avg_min}min",
+        formatted_total_min = "{:.1f}".format(total_min)
+        return pn.Row(
+            pn.Card(
+                pn.indicators.Number(
+                    value=42,
+                    name="Your software takes this time to reach production (Average)",
+                    format=f"{formatted_avg_min}min",
+                ),
+                hide_header=True,
+                width=250,
             ),
-            hide_header=True,
-            width=250,
+            pn.Spacer(width=10),
+            pn.Card(
+                pn.indicators.Number(
+                    value=42,
+                    name="Total run time",
+                    format=f"{formatted_total_min}min",
+                ),
+                hide_header=True,
+                width=250,
+            ),
         )
 
     def plot_failed_pipelines(date_range_picker):
