@@ -182,12 +182,15 @@ def pipeline_runs_duration(
 
 @app.get("/pipelines/deployment-frequency", tags=pipeline_tags)
 def pipeline_deployment_frequency(
-    start_date: Optional[str] = Query(None), end_date: Optional[str] = Query(None)
+    start_date: Optional[str] = Query(None),
+    end_date: Optional[str] = Query(None),
+    workflow_path: Optional[str] = Query(None),
+    job_name: Optional[str] = Query(None),
 ):
     view = ViewDeploymentFrequency(repository=create_pipelines_repository())
     result = view.plot(
-        workflow_path=None,
-        job_name=None,
+        workflow_path=workflow_path,
+        job_name=job_name,
         start_date=start_date,
         end_date=end_date,
     )
@@ -226,7 +229,7 @@ def pipeline_jobs_average_time(
         job_name=None,
         pipeline_raw_filters=None,
     )
-    return JSONResponse(content={"result": result})
+    return JSONResponse(content={"result": result.data.to_dict(orient="records")})
 
 
 @app.get("/pull-requests/summary", tags=pull_request_tags)
