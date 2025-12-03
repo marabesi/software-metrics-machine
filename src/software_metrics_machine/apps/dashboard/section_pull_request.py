@@ -191,6 +191,13 @@ def prs_section(
         pn.Row(
             pn.Column(
                 "### Average Review Time By Author",
+                pn.pane.HTML(
+                    """
+                        This view illustrates the average time taken for pull requests to be reviewed and merged,
+                        segmented by author. The reading is: On average, how many days does it take for PRs opened by a
+                        specific author (in the x axis) to be reviewed and merged?
+                    """
+                ),
                 pn.panel(
                     pn.bind(
                         plot_average_review_time_by_author,
@@ -223,6 +230,13 @@ def prs_section(
         pn.Row(
             pn.Column(
                 "### PRs By Author",
+                pn.pane.HTML(
+                    """
+                    This view displays the number of pull requests submitted by each author within the selected date range.
+                    It helps identify the most active contributors to the repository. In addition, this might also
+                    help to spot most knolwedgeable developers in the codebase based on their PR activity.
+                    """
+                ),
                 pn.panel(
                     pn.bind(
                         plot_prs_by_author,
