@@ -1,5 +1,7 @@
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from typing import List
+
+from software_metrics_machine.core.pipelines.pipelines_types import PipelineRun
 
 
 @dataclass
@@ -14,3 +16,4 @@ class PipelineDurationRow:
 class PipelineComputedDurations:
     total: int
     rows: List[PipelineDurationRow]
+    runs: List[PipelineRun] = field(default_factory=list)

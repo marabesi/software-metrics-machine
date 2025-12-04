@@ -328,7 +328,7 @@ class PipelinesRepository(FileSystemBaseRepository):
 
         rows = [(r.name, r.count, r.avg_min, r.total_min) for r in rows_struct]
 
-        return PipelineComputedDurations(total_runs, rows)
+        return PipelineComputedDurations(total_runs, rows, runs)
 
     def get_pipeline_fails_the_most(self, filters=None):
         runs = self.runs(filters)
