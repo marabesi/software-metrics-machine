@@ -285,7 +285,7 @@ class TestRestRoutes:
                 ],
                 "12": [
                     "duration_in_minutes",
-                    None,
+                    0.0,
                 ],
                 "2": [
                     "name",

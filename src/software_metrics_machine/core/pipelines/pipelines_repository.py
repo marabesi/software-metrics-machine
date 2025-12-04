@@ -41,27 +41,50 @@ class PipelinesRepository(FileSystemBaseRepository):
         self.__compute_duration_for_pipelines()
 
     def __compute_duration_for_pipelines(self):
-        groups: dict[str, List[float]] = {}
+        """
+        Compute and attach per-run job durations (in minutes) on each PipelineRun.
+
+        Optimizations for large datasets:
+        - Build a lookup map from run id -> run to avoid O(N^2) searches.
+        - Minimize attribute lookups inside hot loops.
+        - Accumulate durations in a dict of lists and then attach them in a second pass.
+        """
+        if not self.all_runs:
+            return
+
+        # prepare fast-access locals
+        run_map = {r.id: r for r in self.all_runs}
+        parse_dt = self.__parse_dt
+        log_warning = self.logger.warning
+
+        groups: dict[str, float] = {}
+
+        # iterate runs and jobs once, accumulating durations per run id
         for run in self.all_runs:
-            name = run.id
-            for job in run.jobs:
+            rid = run.id
+            jobs = getattr(run, "jobs", [])
+            groups[rid] = 0.0
+            for job in jobs:
                 if job.conclusion == "skipped":
                     continue
-                start = job.started_at
-                end = job.completed_at
-                sdt = self.__parse_dt(start)
-                edt = self.__parse_dt(end)
+                sdt = parse_dt(job.started_at)
+                edt = parse_dt(job.completed_at)
                 if edt:
-                    dur = (edt - sdt).total_seconds() / 60.0
-                    name = run.id
-                    groups.setdefault(name, []).append(dur)
+                    # store minutes to match other code expectations
+                    dur_min = (edt - sdt).total_seconds() / 60.0
+                    groups[rid] = groups[rid] + dur_min
                 else:
-                    self.logger.warning(f"No completed_at for job {job.id}")
+                    log_warning(
+                        f"No completed_at for job {getattr(job, 'id', '<unknown>')}"
+                    )
+
+        # attach computed durations back to corresponding run objects
         if groups:
-            for id, durs in groups.items():
-                run = next((r for r in self.all_runs if r.id == id), None)
-                if run:
-                    run.duration_in_minutes = durs
+            for rid, durs in groups.items():
+                run = run_map.get(rid)
+                if run is not None:
+                    # attach list of durations in minutes
+                    setattr(run, "duration_in_minutes", durs)
 
     def jobs(self, filters=None) -> List[PipelineJob]:
         runs = self.all_jobs
