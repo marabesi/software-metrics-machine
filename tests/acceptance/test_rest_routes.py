@@ -283,6 +283,10 @@ class TestRestRoutes:
                     "html_url",
                     "https://github.com/aaa/json-tool/actions/runs/11",
                 ],
+                "12": [
+                    "duration_in_minutes",
+                    None,
+                ],
                 "2": [
                     "name",
                     "CI",

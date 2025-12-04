@@ -64,6 +64,7 @@ class PipelineRun(BaseModel):
     conclusion: Optional[str]
     jobs: List[PipelineJob] = []
     html_url: str
+    duration_in_minutes: Optional[float] = None
 
 
 class DeploymentFrequency(TypedDict):

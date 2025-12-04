@@ -38,6 +38,30 @@ class PipelinesRepository(FileSystemBaseRepository):
         self.logger.debug(f"Loaded {len(self.all_runs)} runs")
 
         self.__load_jobs()
+        self.__compute_duration_for_pipelines()
+
+    def __compute_duration_for_pipelines(self):
+        groups: dict[str, List[float]] = {}
+        for run in self.all_runs:
+            name = run.id
+            for job in run.jobs:
+                if job.conclusion == "skipped":
+                    continue
+                start = job.started_at
+                end = job.completed_at
+                sdt = self.__parse_dt(start)
+                edt = self.__parse_dt(end)
+                if edt:
+                    dur = (edt - sdt).total_seconds() / 60.0
+                    name = run.id
+                    groups.setdefault(name, []).append(dur)
+                else:
+                    self.logger.warning(f"No completed_at for job {job.id}")
+        if groups:
+            for id, durs in groups.items():
+                run = next((r for r in self.all_runs if r.id == id), None)
+                if run:
+                    run.duration_in_minutes = durs
 
     def jobs(self, filters=None) -> List[PipelineJob]:
         runs = self.all_jobs
