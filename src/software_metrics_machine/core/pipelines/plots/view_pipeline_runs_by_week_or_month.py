@@ -10,7 +10,7 @@ from software_metrics_machine.apps.components.barchart_stacked import (
     build_barchart,
 )
 from software_metrics_machine.core.pipelines.aggregates.pipeline_workflow_runs_by_week_or_month import (
-    PipelineWorkflowRunsByWekOrMonth,
+    PipelineWorkflowRunsByWeekOrMonth,
 )
 from software_metrics_machine.core.pipelines.pipelines_repository import (
     PipelinesRepository,
@@ -33,7 +33,7 @@ class ViewWorkflowRunsByWeekOrMonth(BaseViewer):
         start_date: str | None = None,
         end_date: str | None = None,
     ) -> PlotResult:
-        result = PipelineWorkflowRunsByWekOrMonth(repository=self.repository).main(
+        result = PipelineWorkflowRunsByWeekOrMonth(repository=self.repository).main(
             aggregate_by=aggregate_by,
             workflow_path=workflow_path,
             raw_filters=raw_filters,

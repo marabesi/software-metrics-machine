@@ -1,6 +1,6 @@
 from unittest.mock import patch
 from software_metrics_machine.core.pipelines.aggregates.pipeline_workflow_runs_by_week_or_month import (
-    PipelineWorkflowRunsByWekOrMonth,
+    PipelineWorkflowRunsByWeekOrMonth,
 )
 from software_metrics_machine.core.pipelines.pipelines_repository import (
     PipelinesRepository,
@@ -27,7 +27,7 @@ class TestPipelineWorkflowRunsByWeekOrMonth:
             side_effect=mocked_read_file_if_exists,
         ):
             repository = PipelinesRepository(configuration=InMemoryConfiguration("."))
-            workflow_runs = PipelineWorkflowRunsByWekOrMonth(repository=repository)
+            workflow_runs = PipelineWorkflowRunsByWeekOrMonth(repository=repository)
 
             result = workflow_runs.main(aggregate_by="week")
 
@@ -78,7 +78,7 @@ class TestPipelineWorkflowRunsByWeekOrMonth:
             side_effect=mocked_read_file_if_exists,
         ):
             repository = PipelinesRepository(configuration=InMemoryConfiguration("."))
-            workflow_runs = PipelineWorkflowRunsByWekOrMonth(repository=repository)
+            workflow_runs = PipelineWorkflowRunsByWeekOrMonth(repository=repository)
 
             result = workflow_runs.main(aggregate_by="week")
 
@@ -155,7 +155,7 @@ class TestPipelineWorkflowRunsByWeekOrMonth:
             side_effect=mocked_read_file_if_exists,
         ):
             repository = PipelinesRepository(configuration=InMemoryConfiguration("."))
-            workflow_runs = PipelineWorkflowRunsByWekOrMonth(repository=repository)
+            workflow_runs = PipelineWorkflowRunsByWeekOrMonth(repository=repository)
 
             result = workflow_runs.main(aggregate_by="month")
 
@@ -221,7 +221,7 @@ class TestPipelineWorkflowRunsByWeekOrMonth:
             side_effect=mocked_read_file_if_exists,
         ):
             repository = PipelinesRepository(configuration=InMemoryConfiguration("."))
-            workflow_runs = PipelineWorkflowRunsByWekOrMonth(repository=repository)
+            workflow_runs = PipelineWorkflowRunsByWeekOrMonth(repository=repository)
 
             # Test with raw_filters parameter
             result = workflow_runs.main(

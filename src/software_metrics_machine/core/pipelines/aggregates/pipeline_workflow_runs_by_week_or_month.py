@@ -20,7 +20,7 @@ class PipelineWorkflowRunsByWeekOrMonthResult:
     runs: List[PipelineRun]
 
 
-class PipelineWorkflowRunsByWekOrMonth(BaseViewer):
+class PipelineWorkflowRunsByWeekOrMonth(BaseViewer):
 
     def __init__(self, repository: PipelinesRepository):
         self.repository = repository
