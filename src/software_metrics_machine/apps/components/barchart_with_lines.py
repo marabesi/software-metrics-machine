@@ -60,10 +60,6 @@ def build_barchart_with_lines(
 
     # ensure tools applied to the overall overlay as well
     if tools:
-        try:
-            overlay = overlay.opts(tools=tools)
-        except Exception:
-            # some overlays/elements may not accept tools; ignore safe-fail
-            pass
+        overlay = overlay.opts(tools=tools)
 
     return overlay

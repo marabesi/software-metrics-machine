@@ -267,59 +267,21 @@ class TestRestRoutes:
         assert resp.status_code == 200
         assert resp.json() == [
             {
-                "0": [
-                    "id",
-                    1,
-                ],
-                "1": [
-                    "path",
-                    "/workflows/build.yml",
-                ],
-                "10": [
-                    "jobs",
-                    [],
-                ],
-                "11": [
-                    "html_url",
-                    "https://github.com/aaa/json-tool/actions/runs/11",
-                ],
-                "12": [
-                    "duration_in_minutes",
-                    0.0,
-                ],
-                "2": [
-                    "name",
-                    "CI",
-                ],
-                "3": [
-                    "created_at",
-                    "2023-10-01T12:00:00Z",
-                ],
-                "4": [
-                    "run_started_at",
-                    "2023-10-01T12:01:00Z",
-                ],
-                "5": [
-                    "updated_at",
-                    "2023-10-01T12:10:00Z",
-                ],
-                "6": [
-                    "event",
-                    "push",
-                ],
-                "7": [
-                    "head_branch",
-                    "main",
-                ],
-                "8": [
-                    "status",
-                    "completed",
-                ],
-                "9": [
-                    "conclusion",
-                    "success",
-                ],
-            },
+                "0": ["id", 1],
+                "1": ["path", "/workflows/build.yml"],
+                "2": ["name", "CI"],
+                "3": ["short_name", "build"],
+                "4": ["created_at", "2023-10-01T12:00:00Z"],
+                "5": ["run_started_at", "2023-10-01T12:01:00Z"],
+                "6": ["updated_at", "2023-10-01T12:10:00Z"],
+                "7": ["event", "push"],
+                "8": ["head_branch", "main"],
+                "9": ["status", "completed"],
+                "10": ["conclusion", "success"],
+                "11": ["jobs", []],
+                "12": ["html_url", "https://github.com/aaa/json-tool/actions/runs/11"],
+                "13": ["duration_in_minutes", 0.0],
+            }
         ]
 
     def test_pipeline_jobs_average_time_route(self, cli):

@@ -5,7 +5,10 @@ from software_metrics_machine.core.infrastructure.base_viewer import BaseViewer
 from software_metrics_machine.core.pipelines.pipelines_repository import (
     PipelinesRepository,
 )
-from software_metrics_machine.core.pipelines.pipelines_types import PipelineFilters
+from software_metrics_machine.core.pipelines.pipelines_types import (
+    PipelineFilters,
+    PipelineRun,
+)
 
 
 @dataclass
@@ -17,6 +20,7 @@ class PipelineExecutionDurationResult:
     ylabel: str
     title_metric: str
     rows: List[List]
+    runs: List[PipelineRun]
 
 
 class PipelineExecutionDuration(BaseViewer):
@@ -49,7 +53,6 @@ class PipelineExecutionDuration(BaseViewer):
             return self.__aggregate_by_day(start_date, end_date, filters, metric)
 
         data = self.repository.get_workflows_run_duration(filters)
-
         rows = data.rows
         run_count = data.total
 
@@ -88,6 +91,7 @@ class PipelineExecutionDuration(BaseViewer):
             title_metric=title_metric,
             rows=rows,
             run_counts=run_count,
+            runs=data.runs,
         )
 
     def __aggregate_by_day(
@@ -102,6 +106,7 @@ class PipelineExecutionDuration(BaseViewer):
                 title_metric="",
                 rows=[],
                 run_counts=0,
+                runs=[],
             )
 
         try:
@@ -128,6 +133,7 @@ class PipelineExecutionDuration(BaseViewer):
         values: List[float] = []
         counts: List[int] = []
         rows_per_day: List[List] = []
+        runs: List[PipelineRun] = []
 
         for day in days:
             day_filters = {**filters, "start_date": day, "end_date": day}
@@ -158,6 +164,7 @@ class PipelineExecutionDuration(BaseViewer):
             values.append(metric_value)
             counts.append(total_counts)
             rows_per_day.append(rows_day)
+            runs.extend(data.runs)
 
         return PipelineExecutionDurationResult(
             names=names,
@@ -167,4 +174,5 @@ class PipelineExecutionDuration(BaseViewer):
             title_metric=title_metric,
             rows=rows_per_day,
             run_counts=run_count,
+            runs=runs,
         )

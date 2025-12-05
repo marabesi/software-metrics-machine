@@ -1,5 +1,6 @@
 import pandas as pd
 import holoviews as hv
+from bokeh.models import Span
 
 
 from software_metrics_machine.core.infrastructure.base_viewer import (
@@ -118,8 +119,28 @@ class ViewWorkflowRunsByWeekOrMonth(BaseViewer):
                     last_month = cur.month
 
             for x_plot in month_boundaries:
-                plot = plot * hv.VLine(x_plot).opts(
-                    color="gray", line_dash="dotted", line_width=1, alpha=0.6
-                )
+                # If build_barchart returned a Bokeh Figure, add a Span annotation.
+                # Otherwise (Holoviews element) overlay a VLine as before.
+                try:
+                    # Bokeh Figure has `add_layout` method
+                    if hasattr(plot, "add_layout"):
+                        span = Span(
+                            location=x_plot,
+                            dimension="height",
+                            line_color="gray",
+                            line_dash="dotted",
+                            line_width=1,
+                            line_alpha=0.6,
+                        )
+                        plot.add_layout(span)
+                    else:
+                        plot = plot * hv.VLine(x_plot).opts(
+                            color="gray", line_dash="dotted", line_width=1, alpha=0.6
+                        )
+                except Exception:
+                    # fallback to holoviews overlay if anything unexpected occurs
+                    plot = plot * hv.VLine(x_plot).opts(
+                        color="gray", line_dash="dotted", line_width=1, alpha=0.6
+                    )
 
         return PlotResult(plot, df)

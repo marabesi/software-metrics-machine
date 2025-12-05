@@ -9,7 +9,7 @@ T = TypeVar("T")
 
 
 class PlotResult(NamedTuple, Generic[T]):
-    plot: hv.Element
+    plot: hv.Element | List[hv.Element]
     data: T
 
 

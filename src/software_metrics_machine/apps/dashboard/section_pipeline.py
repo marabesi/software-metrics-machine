@@ -90,7 +90,7 @@ def pipeline_section(
         branch,
         event,
     ):
-        return (
+        charts = (
             ViewPipelineExecutionRunsDuration(repository=repository)
             .main(
                 start_date=date_range_picker[0],
@@ -101,6 +101,7 @@ def pipeline_section(
             )
             .plot
         )
+        return pn.Column(*charts)
 
     def plot_workflow_run_by(
         date_range_picker,
@@ -411,19 +412,19 @@ def pipeline_section(
         pn.Row("### Pipeline"),
         pn.panel(
             TabulatorComponent(df_pipelines, pipelines_filter_criteria, "pipelines"),
-            sizing_mode="stretch_width",
+            sizing_mode="stretch_both",
         ),
         pn.Row("### Jobs"),
         pn.panel(
             TabulatorComponent(df_jobs, jobs_filter_criteria, "jobs"),
-            sizing_mode="stretch_width",
+            sizing_mode="stretch_both",
         ),
-        sizing_mode="stretch_width",
+        sizing_mode="stretch_both",
     )
 
     return pn.Tabs(
         ("Insights", views),
         ("Data", data),
-        sizing_mode="stretch_width",
+        sizing_mode="stretch_both",
         active=0,
     )

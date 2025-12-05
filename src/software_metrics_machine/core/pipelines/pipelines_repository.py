@@ -39,6 +39,21 @@ class PipelinesRepository(FileSystemBaseRepository):
 
         self.__load_jobs()
         self.__compute_duration_for_pipelines()
+        self.__compute_short_name_for_pipelines()
+
+    def __compute_short_name_for_pipelines(self):
+        """
+        Compute and attach short names for each PipelineRun based on the workflow path.
+
+        The short name is derived from the workflow file name without its extension.
+        """
+        for run in self.all_runs:
+            path = run.path
+            if isinstance(path, str):
+                short_name = path.split("/")[-1].rsplit(".", 1)[0]
+                setattr(run, "short_name", short_name)
+            else:
+                setattr(run, "short_name", None)
 
     def __compute_duration_for_pipelines(self):
         """

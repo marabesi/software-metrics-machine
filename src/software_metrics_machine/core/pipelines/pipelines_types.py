@@ -55,6 +55,7 @@ class PipelineRun(BaseModel):
     id: int
     path: str
     name: Optional[str]
+    short_name: Optional[str] = None
     created_at: str
     run_started_at: str
     updated_at: Optional[str]

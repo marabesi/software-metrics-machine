@@ -1,6 +1,9 @@
 import pandas as pd
 import holoviews as hv
 
+from software_metrics_machine.apps.components.scatter_with_trend import (
+    build_scatter_with_trend,
+)
 from software_metrics_machine.core.infrastructure.base_viewer import (
     BaseViewer,
     PlotResult,
@@ -75,6 +78,16 @@ class ViewPipelineExecutionRunsDuration(BaseViewer):
             color=super().get_color(),
         )
 
+        overlay = build_scatter_with_trend(
+            data=result.runs,
+            x="duration_in_minutes",
+            y="short_name",
+            title="Pipeline runs",
+            height=super().get_chart_height(),
+            point_size=12,
+            tools=["hover"],
+        )
+
         df = pd.DataFrame(data)
 
-        return PlotResult(chart, df)
+        return PlotResult([chart, overlay], df)

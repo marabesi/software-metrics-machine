@@ -59,4 +59,7 @@ def build_barchart(
             color=color,
         )
 
-    return bars
+    fig = hv.render(bars, backend="bokeh")
+    fig.height = height
+    fig.sizing_mode = "stretch_width"
+    return fig
