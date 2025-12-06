@@ -127,7 +127,7 @@ jobs_selector = pn.widgets.AutocompleteInput(
 branch = pn.widgets.TextInput(
     name="Branch",
     placeholder="Filter runs by target branch (e.g., main)",
-    value="",
+    value=configuration.main_branch,
 )
 
 event = pn.widgets.AutocompleteInput(

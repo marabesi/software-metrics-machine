@@ -25,6 +25,7 @@ repo_url="https://github.com/$github_repo.git"
 base_dir="$(pwd)"
 clone_dir="$base_dir/downloads/$project"
 analysis_dir="$base_dir/downloads/${project}_analysis"
+main_branch="main"
 
 start_date="2025-07-01"
 end_date="2025-11-30"
@@ -57,7 +58,8 @@ TEMPLATE=$(cat <<EOF
     "github_repository": "$github_repo",
     "git_repository_location": "$clone_dir",
     "deployment_frequency_target_pipeline": "",
-    "deployment_frequency_target_job": ""
+    "deployment_frequency_target_job": "",
+    "main_branch": "$main_branch"
   }
 EOF
 )
