@@ -74,7 +74,7 @@ class PipelineRun(BaseModel):
     head_commit: PipelineRunHeadCommit
 
 
-class DeploymentFrequency(TypedDict):
+class DeploymentFrequency(BaseModel):
     days: List[str]
     weeks: List[str]
     daily_counts: List[str]
