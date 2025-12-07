@@ -10,6 +10,7 @@ from software_metrics_machine.core.pipelines.plots.view_deployment_frequency imp
 from software_metrics_machine.core.pipelines.pipelines_repository import (
     PipelinesRepository,
 )
+from software_metrics_machine.core.pipelines.plots.view_lead_time import ViewLeadTime
 from software_metrics_machine.providers.pydriller.commit_traverser import (
     CommitTraverser,
 )
@@ -137,6 +138,19 @@ def insights_section(repository: PipelinesRepository, date_range_picker):
             sizing_mode="stretch_width",
         )
 
+    def render_lead_time(date_range_picker):
+        result = (
+            ViewLeadTime(repository=repository)
+            .plot(
+                workflow_path=repository.configuration.deployment_frequency_target_pipeline,
+                job_name=repository.configuration.deployment_frequency_target_job,
+                start_date=date_range_picker[0],
+                end_date=date_range_picker[1],
+            )
+            .plot
+        )
+        return result
+
     return pn.Column(
         "# Insight section",
         pn.pane.HTML(
@@ -210,6 +224,15 @@ def insights_section(repository: PipelinesRepository, date_range_picker):
                     render_pairing_index_card,
                     date_range_picker.param.value,
                     authors_text.param.value,
+                ),
+            ),
+        ),
+        pn.Row(
+            pn.Column(
+                "## Lead Time",
+                pn.bind(
+                    render_lead_time,
+                    date_range_picker.param.value,
                 ),
             ),
         ),

@@ -45,6 +45,7 @@ module_groups = {
         "software_metrics_machine.apps.cli.pipeline_jobs_average_time_execution",
         "software_metrics_machine.apps.cli.pipeline_jobs_by_status",
         "software_metrics_machine.apps.cli.pipeline_deployment_frequency",
+        "software_metrics_machine.apps.cli.pipeline_lead_time",
     ],
     "code": [
         "software_metrics_machine.apps.cli.pydriller_change_set",

@@ -24,6 +24,10 @@ class PipelineJobStep(TypedDict, total=False):
     completed_at: Optional[str]
 
 
+class PipelineRunHeadCommit(TypedDict):
+    id: str
+
+
 class PipelineJobConclusion(str, Enum):
     success = "success"
     failure = "failure"
@@ -49,6 +53,7 @@ class PipelineJob(BaseModel):
     labels: List[str]
     run_attempt: int
     steps: List[PipelineJobStep] = []
+    head_sha: str
 
 
 class PipelineRun(BaseModel):
@@ -66,6 +71,7 @@ class PipelineRun(BaseModel):
     jobs: List[PipelineJob] = []
     html_url: str
     duration_in_minutes: Optional[float] = None
+    head_commit: PipelineRunHeadCommit
 
 
 class DeploymentFrequency(TypedDict):

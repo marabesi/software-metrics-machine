@@ -8,11 +8,18 @@ from software_metrics_machine.core.infrastructure.base_viewer import (
 from software_metrics_machine.core.pipelines.pipelines_repository import (
     PipelinesRepository,
 )
+from software_metrics_machine.providers.pydriller.commit_traverser import (
+    CommitTraverser,
+)
+from typing import List, Tuple
 
 
 class ViewLeadTime(BaseViewer):
     def __init__(self, repository: PipelinesRepository):
-        self.repository = repository
+        self.pipeline_repository = repository
+        self.traverser = CommitTraverser(
+            configuration=self.pipeline_repository.configuration
+        )
 
     def plot(
         self,
@@ -20,22 +27,77 @@ class ViewLeadTime(BaseViewer):
         job_name: str,
         start_date: str | None = None,
         end_date: str | None = None,
-    ) -> None:
-        # Filter jobs by the given job_name
-        filtered_jobs = [job for job in self.all_jobs if job.get("name") == job_name]
+    ) -> PlotResult:
+        filters = {
+            "status": "completed",
+            "conclusion": "success",
+            "workflow_path": workflow_path,
+        }
+        if start_date:
+            filters["start_date"] = start_date
+        if end_date:
+            filters["end_date"] = end_date
 
-        # Calculate lead times (time taken for each job to run)
-        lead_times = []
-        for job in filtered_jobs:
-            start_time = datetime.fromisoformat(job.get("start_time"))
-            end_time = datetime.fromisoformat(job.get("end_time"))
-            lead_times.append(
-                (start_time, end_time, (end_time - start_time).total_seconds())
-            )
+        runs = self.pipeline_repository.runs(filters)
+        lead_rows: List[Tuple[datetime, datetime, float]] = []
+        deploy_candidates: List[Tuple[str, datetime]] = []
 
-        # Create a DataFrame for lead times
+        for run in runs:
+            jobs = run.jobs
+
+            for job in jobs:
+                name = job.name
+                if name != job_name:
+                    continue
+
+                completed_at = job.completed_at
+                if not completed_at:
+                    continue
+
+                deploy_dt = datetime.fromisoformat(completed_at.replace("Z", "+00:00"))
+                sha = job.head_sha
+                deploy_candidates.append((sha, deploy_dt))
+
+        for sha, deploy_dt in deploy_candidates:
+            commit_dt = self.find_release_for_commit(self.pipeline_repository, sha)
+            if commit_dt:
+                lead_hours = (deploy_dt - commit_dt).total_seconds() / 3600.0
+                lead_rows.append((commit_dt, deploy_dt, lead_hours))
+
         df = pd.DataFrame(
-            lead_times, columns=["start_time", "end_time", "lead_time_seconds"]
+            lead_rows, columns=["start_time", "end_time", "lead_time_hours"]
         )
 
-        return PlotResult(plot=None, data=df).plot
+        if df.empty:
+            return PlotResult(plot=None, data=df)
+
+        df["start_time"] = (
+            pd.to_datetime(df["start_time"])
+            if not pd.api.types.is_datetime64_any_dtype(df["start_time"])
+            else df["start_time"]
+        )
+        df["week"] = df["start_time"].dt.to_period("W").astype(str)
+        df["month"] = df["start_time"].dt.to_period("M").astype(str)
+
+        # weekly_avg = df.groupby("week")["lead_time_hours"].mean().reset_index()
+        # monthly_avg = df.groupby("month")["lead_time_hours"].mean().reset_index()
+
+        return PlotResult(
+            plot=None,
+            # "weeks": weekly_avg["week"].tolist(),
+            # "months": monthly_avg["month"].tolist(),
+            # "weekly_avg": weekly_avg["lead_time_hours"].tolist(),
+            # "monthly_avg": monthly_avg["lead_time_hours"].tolist(),
+            data=df,
+        )
+
+    def find_release_for_commit(self, repository: PipelinesRepository, commit_hash):
+        for run in repository.runs():  # or repository.all_runs
+            if run.head_commit["id"] and run.head_commit["id"].startswith(commit_hash):
+                return datetime.fromisoformat(run.run_started_at.replace("Z", "+00:00"))
+            for job in run.jobs:
+                if job.head_sha and job.head_sha.startswith(commit_hash):
+                    return datetime.fromisoformat(
+                        job.completed_at.replace("Z", "+00:00")
+                    )
+        return None

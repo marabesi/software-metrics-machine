@@ -23,6 +23,7 @@ class PipelineBuilder:
             completed_at="2023-10-01T12:00:00Z",
             html_url="https://github.com/aaa/json-tool/actions/runs/11",
             jobs=[],
+            head_commit={"id": "abcdef1234567890"},
         )
         self._job_counter = 0
 
@@ -117,6 +118,7 @@ class PipelineJobBuilder:
             "head_branch": "main",
             "labels": [],
             "run_attempt": 1,
+            "head_sha": "jobdef1234567890",
         }
 
     def with_run_id(self, run_id: int):

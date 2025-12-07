@@ -281,6 +281,12 @@ class TestRestRoutes:
                 "11": ["jobs", []],
                 "12": ["html_url", "https://github.com/aaa/json-tool/actions/runs/11"],
                 "13": ["duration_in_minutes", 0.0],
+                "14": [
+                    "head_commit",
+                    {
+                        "id": "abcdef1234567890",
+                    },
+                ],
             }
         ]
 
