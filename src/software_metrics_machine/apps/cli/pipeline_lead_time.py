@@ -20,7 +20,7 @@ from software_metrics_machine.core.pipelines.plots.view_lead_time import (
 @click.option("--end-date", type=str, default=None, help="End date (YYYY-MM-DD)")
 def lead_time(pipeline, job_name, start_date, end_date):
     viewer = ViewLeadTime(repository=(create_pipelines_repository()))
-    result = viewer.plot(
+    result = viewer.main(
         workflow_path=pipeline,
         job_name=job_name,
         start_date=start_date,

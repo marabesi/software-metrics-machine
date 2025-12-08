@@ -21,13 +21,13 @@ class ViewLeadTime(BaseViewer):
             configuration=self.pipeline_repository.configuration
         )
 
-    def plot(
+    def main(
         self,
         workflow_path: str,
         job_name: str,
         start_date: str | None = None,
         end_date: str | None = None,
-    ) -> PlotResult:
+    ) -> PlotResult[pd.DataFrame]:
         filters = {
             "status": "completed",
             "conclusion": "success",
@@ -63,6 +63,9 @@ class ViewLeadTime(BaseViewer):
             if commit_dt:
                 lead_hours = (deploy_dt - commit_dt).total_seconds() / 3600.0
                 lead_rows.append((commit_dt, deploy_dt, lead_hours))
+
+        if len(lead_rows) == 0:
+            return PlotResult(plot=None, data=pd.DataFrame([]))
 
         df = pd.DataFrame(
             lead_rows, columns=["start_time", "end_time", "lead_time_hours"]

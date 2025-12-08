@@ -141,7 +141,7 @@ def insights_section(repository: PipelinesRepository, date_range_picker):
     def render_lead_time(date_range_picker):
         result = (
             ViewLeadTime(repository=repository)
-            .plot(
+            .main(
                 workflow_path=repository.configuration.deployment_frequency_target_pipeline,
                 job_name=repository.configuration.deployment_frequency_target_job,
                 start_date=date_range_picker[0],
