@@ -77,9 +77,10 @@ class PipelineRun(BaseModel):
 class DeploymentFrequency(BaseModel):
     days: List[str]
     weeks: List[str]
-    daily_counts: List[str]
-    weekly_counts: List[str]
-    monthly_counts: List[str]
+    months: List[str]
+    daily_counts: List[int]
+    weekly_counts: List[int]
+    monthly_counts: List[int]
 
 
 class PipelineFilters(TypedDict):

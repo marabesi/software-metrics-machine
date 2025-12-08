@@ -16,7 +16,7 @@ class FileSystemHandler:
 
     def store_file(self, file: str, data: str) -> bool:
         if not isinstance(data, str):
-            raise ValueError(f"{file} value given not string :::: {data}")
+            raise ValueError(f"{file} value given not string ::::")
 
         final_path = self.default_dir + "/" + file
 

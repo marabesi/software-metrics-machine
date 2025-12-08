@@ -50,6 +50,7 @@ class TestViewLeadTime:
                     **{
                         "days": ["2025-10-01"],
                         "weeks": ["2025-W40"],
+                        "months": ["2025-10"],
                         "daily_counts": ["1"],
                         "weekly_counts": ["1"],
                         "monthly_counts": ["1"],

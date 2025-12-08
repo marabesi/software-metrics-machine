@@ -286,14 +286,16 @@ class PipelinesRepository(FileSystemBaseRepository):
         weekly_counts = [deployments[week]["weekly"] for week in weeks]
         monthly_counts = [deployments[month]["monthly"] for month in months]
 
-        return {
-            "days": days,
-            "weeks": weeks,
-            "months": months,
-            "daily_counts": daily_counts,
-            "weekly_counts": weekly_counts,
-            "monthly_counts": monthly_counts,
-        }
+        return DeploymentFrequency(
+            **{
+                "days": days,
+                "weeks": weeks,
+                "months": months,
+                "daily_counts": daily_counts,
+                "weekly_counts": weekly_counts,
+                "monthly_counts": monthly_counts,
+            }
+        )
 
     def get_lead_time_for_job(self, job_name: str, filters=None):
         lead_times = []

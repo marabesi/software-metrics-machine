@@ -36,14 +36,13 @@ class ViewDeploymentFrequency(BaseViewer):
             end_date=end_date,
         )
 
-        daily_counts = aggregated["daily_counts"]
-        weekly_counts = aggregated["weekly_counts"]
-        monthly_counts = aggregated["monthly_counts"]
-        days = aggregated["days"]
-        weeks = aggregated["weeks"]
-        months = aggregated["months"]
+        daily_counts = aggregated.daily_counts
+        weekly_counts = aggregated.weekly_counts
+        monthly_counts = aggregated.monthly_counts
+        days = aggregated.days
+        weeks = aggregated.weeks
+        months = aggregated.months
 
-        # Helper to create a bar figure
         def _make_bar_fig(x, counts, title, color):
             src = ColumnDataSource(dict(x=list(range(len(x))), label=x, count=counts))
             p = figure(
@@ -64,7 +63,6 @@ class ViewDeploymentFrequency(BaseViewer):
                 text_font_size=self.get_font_size(),
             )
             p.add_layout(labels)
-            # set categorical tick labels via major_label_overrides if provided
             p.xaxis.major_label_overrides = {i: str(v) for i, v in enumerate(x)}
             p.xaxis.major_label_orientation = 0.785  # 45 degrees
             p.yaxis.axis_label = "Deployments"
@@ -80,31 +78,26 @@ class ViewDeploymentFrequency(BaseViewer):
             months, monthly_counts, "Monthly Deployment Frequency", "green"
         )
 
-        # Add vertical separators on weekly plot where month changes
-        try:
-            week_dates = [datetime.strptime(week + "-1", "%Y-W%W-%w") for week in weeks]
-            current_month = None
-            for i, week_date in enumerate(week_dates):
-                if current_month is None:
-                    current_month = week_date.month
-                if week_date.month != current_month:
-                    sep = Span(
-                        location=i - 0.5,
-                        dimension="height",
-                        line_color="gray",
-                        line_dash="dashed",
-                        line_alpha=0.7,
-                    )
-                    weekly_fig.add_layout(sep)
-                    current_month = week_date.month
-        except Exception:
-            # if parsing fails, skip separators
-            pass
+        week_dates = [datetime.strptime(week + "-1", "%Y-W%W-%w") for week in weeks]
+        current_month = None
+        for i, week_date in enumerate(week_dates):
+            if current_month is None:
+                current_month = week_date.month
+            if week_date.month != current_month:
+                sep = Span(
+                    location=i - 0.5,
+                    dimension="height",
+                    line_color="gray",
+                    line_dash="dashed",
+                    line_alpha=0.7,
+                )
+                weekly_fig.add_layout(sep)
+                current_month = week_date.month
 
         layout = column(daily_fig, weekly_fig, monthly_fig, sizing_mode="stretch_width")
 
         pane = pn.pane.Bokeh(layout)
 
-        handles_different_array_sizes = {k: pd.Series(v) for k, v in aggregated.items()}
+        handles_different_array_sizes = {k: pd.Series(v) for k, v in aggregated}
 
         return PlotResult(plot=pane, data=pd.DataFrame(handles_different_array_sizes))
