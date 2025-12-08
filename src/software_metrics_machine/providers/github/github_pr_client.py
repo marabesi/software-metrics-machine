@@ -106,7 +106,6 @@ class GithubPrsClient:
                 if created <= end_date:
                     prs.append(pr)
 
-            # next page logic
             link = r.links.get("next")
             print(f"  → link: {link}")
             url = link["url"] if link and not stop else None

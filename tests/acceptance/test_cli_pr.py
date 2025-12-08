@@ -1,6 +1,6 @@
 import pytest
 from software_metrics_machine.apps.cli import main
-from unittest.mock import patch
+from unittest.mock import patch, Mock
 from tests.prs_builder import PullRequestBuilder
 from tests.response_builder import build_http_successfull_response
 
@@ -41,7 +41,14 @@ class TestCliPrsCommands:
     def test_fetch_prs_between_dates(self, cli):
         configuration = cli.configuration
 
-        with patch("requests.get") as mock_get:
+        with (
+            patch("requests.get") as mock_get,
+            patch(
+                "software_metrics_machine.core.infrastructure.logger.Logger.get_logger"
+            ) as get_logger,
+        ):
+            mock_logger = Mock()
+            get_logger.return_value = mock_logger
             mock_get.return_value = build_http_successfull_response(
                 [
                     PullRequestBuilder()
@@ -67,10 +74,20 @@ class TestCliPrsCommands:
                 f"Fetching PRs for {configuration.github_repository} from 2023-01-01 to 2023-01-31"
                 in result.output
             )  # noqa
-            assert f"Data written to {cli.data_stored_at}" in result.output
+            mock_logger.info.assert_called_with(
+                f"  → Data written to {cli.data_stored_at}/github_fake_repo/github/prs.json"
+            )
+            assert "Fetch data has been completed" in result.output
 
     def test_fetch_prs_from_last_month(self, cli):
-        with patch("requests.get") as mock_get:
+        with (
+            patch("requests.get") as mock_get,
+            patch(
+                "software_metrics_machine.core.infrastructure.logger.Logger.get_logger"
+            ) as get_logger,
+        ):
+            mock_logger = Mock()
+            get_logger.return_value = mock_logger
             mock_get.return_value = build_http_successfull_response(
                 [
                     PullRequestBuilder()
@@ -90,7 +107,10 @@ class TestCliPrsCommands:
                 ],
             )
             mock_get.assert_called_once()
-            assert f"Data written to {cli.data_stored_at}" in result.output
+            mock_logger.info.assert_called_with(
+                f"  → Data written to {cli.data_stored_at}/github_fake_repo/github/prs.json"
+            )
+            assert "Fetch data has been completed" in result.output
 
     def test_fetch_defaults_to_1_month_when_no_date_is_provided(self, cli):
         with patch("requests.get") as mock_get:

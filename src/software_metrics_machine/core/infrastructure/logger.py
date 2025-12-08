@@ -8,7 +8,7 @@ from software_metrics_machine.core.infrastructure.configuration.configuration im
 class Logger:
     def __init__(self, configuration: Configuration, name: str = __name__):
         self.configuration = configuration
-        log_level = logging.CRITICAL
+        log_level = logging.INFO
         if self.configuration.logging_level:
             if self.configuration.logging_level == "INFO":
                 log_level = logging.INFO

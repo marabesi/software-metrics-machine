@@ -44,6 +44,7 @@ def execute(months=1, force=None, start_date=None, end_date=None, raw_filters=No
         end_date=end_date,
         raw_filters=raw_filters,
     )
+    click.echo("Fetch data has been completed")
 
 
 command = execute
