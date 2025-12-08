@@ -4,6 +4,7 @@ import requests
 from software_metrics_machine.core.infrastructure.configuration.configuration import (
     Configuration,
 )
+from software_metrics_machine.core.infrastructure.logger import Logger
 from software_metrics_machine.core.prs.prs_repository import PrsRepository
 from software_metrics_machine.core.infrastructure.json import as_json_string
 
@@ -17,6 +18,7 @@ class GithubPrsClient:
         }
         self.repository_slug = configuration.github_repository
         self.pr_repository = PrsRepository(configuration=configuration)
+        self.logger = Logger(configuration=configuration).get_logger()
         self.configuration = configuration
 
     def fetch_prs(
@@ -54,7 +56,7 @@ class GithubPrsClient:
             except ValueError:
                 raise ValueError("Dates must be in ISO format: YYYY-MM-DD")
 
-        print(
+        self.logger.info(
             f"Fetching PRs for {self.repository_slug} from {start_date.date()} to {end_date.date()}"  # noqa
         )
 

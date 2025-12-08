@@ -1,6 +1,6 @@
 import pytest
 from software_metrics_machine.apps.cli import main
-from unittest.mock import patch, Mock
+from unittest.mock import call, patch, Mock
 from tests.prs_builder import PullRequestBuilder
 from tests.response_builder import build_http_successfull_response
 
@@ -70,13 +70,17 @@ class TestCliPrsCommands:
                 ],
             )
 
-            assert (
-                f"Fetching PRs for {configuration.github_repository} from 2023-01-01 to 2023-01-31"
-                in result.output
-            )  # noqa
-            mock_logger.info.assert_called_with(
-                f"  → Data written to {cli.data_stored_at}/github_fake_repo/github/prs.json"
+            mock_logger.info.assert_has_calls(
+                [
+                    call(
+                        f"Fetching PRs for {configuration.github_repository} from 2023-01-01 to 2023-01-31"
+                    ),  # noqa
+                    call(
+                        f"  → Data written to {cli.data_stored_at}/github_fake_repo/github/prs.json"
+                    ),
+                ]
             )
+
             assert "Fetch data has been completed" in result.output
 
     def test_fetch_prs_from_last_month(self, cli):
@@ -106,7 +110,9 @@ class TestCliPrsCommands:
                     "1",
                 ],
             )
+
             mock_get.assert_called_once()
+
             mock_logger.info.assert_called_with(
                 f"  → Data written to {cli.data_stored_at}/github_fake_repo/github/prs.json"
             )
