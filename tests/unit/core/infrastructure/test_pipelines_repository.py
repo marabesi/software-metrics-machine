@@ -764,3 +764,42 @@ class TestPipelinesRepository:
             )
 
             assert expected == data
+
+    def test_returns_pipeline_that_matches_a_job_name(self):
+        single_run = as_json_string(
+            [
+                PipelineBuilder()
+                .with_id(1)
+                .with_path("/workflows/build.yml")
+                .with_status("success")
+                .with_created_at("2023-10-01T09:00:00Z")
+                .with_run_started_at("2023-10-01T09:00:00Z")
+                .with_updated_at("2023-10-01T09:10:00Z")
+                .build()
+            ]
+        )
+
+        def mocked_read_file_if_exists(file):
+            if file == "workflows.json":
+                return single_run
+            if file == "jobs.json":
+                return as_json_string(
+                    [
+                        PipelineJobBuilder()
+                        .with_run_id(1)
+                        .with_name("Deploy")
+                        .with_started_at("2023-10-01T09:00:00Z")
+                        .with_completed_at("2023-10-01T09:10:00Z")
+                        .build()
+                    ]
+                )
+            return None
+
+        with patch(
+            "software_metrics_machine.core.infrastructure.file_system_base_repository.FileSystemBaseRepository.read_file_if_exists",
+            side_effect=mocked_read_file_if_exists,
+        ):
+            repository = PipelinesRepository(configuration=InMemoryConfiguration("."))
+            data = repository.runs(filters={"job_name": "Build"})
+
+            assert 0 == len(data)

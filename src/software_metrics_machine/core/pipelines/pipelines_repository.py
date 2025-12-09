@@ -174,6 +174,11 @@ class PipelinesRepository(FileSystemBaseRepository):
         if path:
             runs = [r for r in runs if r.path == path]
 
+        job_name = filters.get("job_name")
+        if job_name:
+            runs = [
+                run for run in runs if any(job.name == job_name for job in run.jobs)
+            ]
         return runs
 
     def filter_by_job_name(
