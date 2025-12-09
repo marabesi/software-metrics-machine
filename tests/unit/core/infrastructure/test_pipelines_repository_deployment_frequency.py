@@ -78,7 +78,7 @@ class TestPipelinesRepositoryDeploymentFrequency:
             assert 0 == len(result.weeks)
             assert 0 == len(result.days)
 
-    def test_deployment_frequency(self):
+    def test_deployment_frequency_with_single_deployment(self):
         with patch(
             "software_metrics_machine.core.infrastructure.file_system_base_repository.FileSystemBaseRepository.read_file_if_exists",
             side_effect=lambda file: mocked_read_file_if_exists(file, pipeline, jobs),
@@ -88,8 +88,13 @@ class TestPipelinesRepositoryDeploymentFrequency:
             result = loader.get_deployment_frequency_for_job(
                 job_name="Deploy", filters=None
             )
+
             assert any(item.date == "2023-10" for item in result.months)
             assert any(item.date == "2023-W39" for item in result.weeks)
+
+            assert pipeline[0].head_commit["id"] == result.days[0].commit
+            assert pipeline[0].head_commit["id"] == result.weeks[0].commit
+            assert pipeline[0].head_commit["id"] == result.months[0].commit
 
     def test_deployment_frequency_return_the_day_which_deployment_was_done(self):
         with patch(
@@ -101,6 +106,7 @@ class TestPipelinesRepositoryDeploymentFrequency:
             result = loader.get_deployment_frequency_for_job(
                 job_name="Deploy", filters=None
             )
+
             assert any(item.date == "2023-10-01" for item in result.days)
 
     def test_should_not_compute_when_job_failed(self):

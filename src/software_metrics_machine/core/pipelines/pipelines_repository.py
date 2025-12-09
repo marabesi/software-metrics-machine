@@ -263,13 +263,18 @@ class PipelinesRepository(FileSystemBaseRepository):
                     day_key = str(created_at.date())
                     week_key = f"{created_at.year}-W{created_at.isocalendar()[1]:02d}"
                     month_key = f"{created_at.year}-{created_at.month:02d}"
+                    commit_id = run.head_commit["id"]
 
                     if day_key not in deployments:
-                        deployments[day_key] = {"daily": 0}
+                        deployments[day_key] = {"daily": 0, "commit": commit_id}
                     if week_key not in deployments:
-                        deployments[week_key] = {"weekly": 0}
+                        deployments[week_key] = {"weekly": 0, "commit": commit_id}
                     if month_key not in deployments:
-                        deployments[month_key] = {"weekly": 0, "monthly": 0}
+                        deployments[month_key] = {
+                            "weekly": 0,
+                            "monthly": 0,
+                            "commit": commit_id,
+                        }
 
                     deployments[day_key]["daily"] += 1
                     deployments[week_key]["weekly"] += 1
@@ -286,15 +291,27 @@ class PipelinesRepository(FileSystemBaseRepository):
         )
 
         days_items = [
-            {"date": day, "count": deployments[day].get("daily", 0), "commit": ""}
+            {
+                "date": day,
+                "count": deployments[day].get("daily", 0),
+                "commit": deployments[day].get("commit", ""),
+            }
             for day in days
         ]
         weeks_items = [
-            {"date": week, "count": deployments[week].get("weekly", 0), "commit": ""}
+            {
+                "date": week,
+                "count": deployments[week].get("weekly", 0),
+                "commit": deployments[week].get("commit", ""),
+            }
             for week in weeks
         ]
         months_items = [
-            {"date": month, "count": deployments[month].get("monthly", 0), "commit": ""}
+            {
+                "date": month,
+                "count": deployments[month].get("monthly", 0),
+                "commit": deployments[month].get("commit", ""),
+            }
             for month in months
         ]
 

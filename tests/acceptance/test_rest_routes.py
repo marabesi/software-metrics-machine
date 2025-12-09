@@ -252,6 +252,7 @@ class TestRestRoutes:
         assert resp.status_code == 200
         assert resp.json() == [
             {
+                "commits": "abcdef1234567890",
                 "daily_counts": 1,
                 "days": "2023-10-01",
                 "monthly_counts": 1,

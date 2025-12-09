@@ -60,7 +60,7 @@ class TestWorkflowsDeploymentFrequencyCliCommands:
             in result.output
         )
 
-    def test_prints_deployment_frequency(self, cli):
+    def test_prints_deployment_frequency_for_deploy(self, cli):
         cli.storage.store_pipelines_with(single_deployment_frequency())
         cli.storage.store_jobs_with(
             [
@@ -83,9 +83,9 @@ class TestWorkflowsDeploymentFrequencyCliCommands:
                 "Deploy",
             ],
         )
-        # days     weeks   months  daily_counts  weekly_counts  monthly_counts
+        # days     weeks   months  daily_counts  weekly_counts  monthly_counts commits
         assert (
-            "2023-10-01  2023-W39  2023-10             1              1               1"
+            "2023-10-01  2023-W39  2023-10             1              1               1  abcdef1234567890"
             in result.output
         )
 

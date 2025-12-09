@@ -35,14 +35,14 @@ class ViewDeploymentFrequency(BaseViewer):
             start_date=start_date,
             end_date=end_date,
         )
-
         # aggregated.* are lists of DeploymentItem; extract labels and counts
         days = [d.date for d in aggregated.days]
-        daily_counts = [d.count for d in aggregated.days]
         weeks = [w.date for w in aggregated.weeks]
-        weekly_counts = [w.count for w in aggregated.weeks]
         months = [m.date for m in aggregated.months]
+        daily_counts = [d.count for d in aggregated.days]
+        weekly_counts = [w.count for w in aggregated.weeks]
         monthly_counts = [m.count for m in aggregated.months]
+        commit = [m.commit for m in aggregated.days]
 
         def _make_bar_fig(x, counts, title, color):
             src = ColumnDataSource(dict(x=list(range(len(x))), label=x, count=counts))
@@ -106,6 +106,7 @@ class ViewDeploymentFrequency(BaseViewer):
             "daily_counts": pd.Series(daily_counts),
             "weekly_counts": pd.Series(weekly_counts),
             "monthly_counts": pd.Series(monthly_counts),
+            "commits": pd.Series(commit),
         }
 
         return PlotResult(plot=pane, data=pd.DataFrame(handles_different_array_sizes))
