@@ -47,14 +47,9 @@ class TestViewLeadTime:
 
             repository.get_deployment_frequency_for_job = MagicMock(
                 return_value=DeploymentFrequency(
-                    **{
-                        "days": ["2025-10-01"],
-                        "weeks": ["2025-W40"],
-                        "months": ["2025-10"],
-                        "daily_counts": ["1"],
-                        "weekly_counts": ["1"],
-                        "monthly_counts": ["1"],
-                    }
+                    days=[{"date": "2025-10-01", "count": 1, "commit": ""}],
+                    weeks=[{"date": "2025-W40", "count": 1, "commit": ""}],
+                    months=[{"date": "2025-10", "count": 1, "commit": ""}],
                 )
             )
             pipeline = ".github/workflows/ci.yml"

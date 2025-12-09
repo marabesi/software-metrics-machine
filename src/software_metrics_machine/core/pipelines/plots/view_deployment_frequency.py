@@ -36,12 +36,13 @@ class ViewDeploymentFrequency(BaseViewer):
             end_date=end_date,
         )
 
-        daily_counts = aggregated.daily_counts
-        weekly_counts = aggregated.weekly_counts
-        monthly_counts = aggregated.monthly_counts
-        days = aggregated.days
-        weeks = aggregated.weeks
-        months = aggregated.months
+        # aggregated.* are lists of DeploymentItem; extract labels and counts
+        days = [d.date for d in aggregated.days]
+        daily_counts = [d.count for d in aggregated.days]
+        weeks = [w.date for w in aggregated.weeks]
+        weekly_counts = [w.count for w in aggregated.weeks]
+        months = [m.date for m in aggregated.months]
+        monthly_counts = [m.count for m in aggregated.months]
 
         def _make_bar_fig(x, counts, title, color):
             src = ColumnDataSource(dict(x=list(range(len(x))), label=x, count=counts))
@@ -98,6 +99,13 @@ class ViewDeploymentFrequency(BaseViewer):
 
         pane = pn.pane.Bokeh(layout)
 
-        handles_different_array_sizes = {k: pd.Series(v) for k, v in aggregated}
+        handles_different_array_sizes = {
+            "days": pd.Series(days),
+            "weeks": pd.Series(weeks),
+            "months": pd.Series(months),
+            "daily_counts": pd.Series(daily_counts),
+            "weekly_counts": pd.Series(weekly_counts),
+            "monthly_counts": pd.Series(monthly_counts),
+        }
 
         return PlotResult(plot=pane, data=pd.DataFrame(handles_different_array_sizes))

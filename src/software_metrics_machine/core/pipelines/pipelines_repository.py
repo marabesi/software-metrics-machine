@@ -285,20 +285,24 @@ class PipelinesRepository(FileSystemBaseRepository):
             ]
         )
 
-        daily_counts = [
-            deployments[day]["daily"] for day in days if "daily" in deployments[day]
+        days_items = [
+            {"date": day, "count": deployments[day].get("daily", 0), "commit": ""}
+            for day in days
         ]
-        weekly_counts = [deployments[week]["weekly"] for week in weeks]
-        monthly_counts = [deployments[month]["monthly"] for month in months]
+        weeks_items = [
+            {"date": week, "count": deployments[week].get("weekly", 0), "commit": ""}
+            for week in weeks
+        ]
+        months_items = [
+            {"date": month, "count": deployments[month].get("monthly", 0), "commit": ""}
+            for month in months
+        ]
 
         return DeploymentFrequency(
             **{
-                "days": days,
-                "weeks": weeks,
-                "months": months,
-                "daily_counts": daily_counts,
-                "weekly_counts": weekly_counts,
-                "monthly_counts": monthly_counts,
+                "days": days_items,
+                "weeks": weeks_items,
+                "months": months_items,
             }
         )
 

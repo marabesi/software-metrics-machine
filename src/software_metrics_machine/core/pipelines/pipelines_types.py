@@ -74,13 +74,16 @@ class PipelineRun(BaseModel):
     head_commit: PipelineRunHeadCommit
 
 
+class DeploymentItem(BaseModel):
+    date: str
+    count: int
+    commit: str
+
+
 class DeploymentFrequency(BaseModel):
-    days: List[str]
-    weeks: List[str]
-    months: List[str]
-    daily_counts: List[int]
-    weekly_counts: List[int]
-    monthly_counts: List[int]
+    days: List[DeploymentItem]
+    weeks: List[DeploymentItem]
+    months: List[DeploymentItem]
 
 
 class PipelineFilters(TypedDict):

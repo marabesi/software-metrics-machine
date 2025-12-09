@@ -88,9 +88,9 @@ class TestDeploymentFrequency:
             assert [] == result.days
             assert [] == result.weeks
             assert [] == result.months
-            assert [] == result.daily_counts
-            assert [] == result.weekly_counts
-            assert [] == result.monthly_counts
+            assert [] == [item.count for item in result.days]
+            assert [] == [item.count for item in result.weeks]
+            assert [] == [item.count for item in result.months]
 
     def test_no_compute_with_missing_workflow(self):
         def mocked_read_file_if_exists(file):
@@ -130,9 +130,9 @@ class TestDeploymentFrequency:
             assert [] == result.days
             assert [] == result.weeks
             assert [] == result.months
-            assert [] == result.daily_counts
-            assert [] == result.weekly_counts
-            assert [] == result.monthly_counts
+            assert [] == [item.count for item in result.days]
+            assert [] == [item.count for item in result.weeks]
+            assert [] == [item.count for item in result.months]
 
     def test_empty_runs(self):
         def mocked_read_file_if_exists(file):
@@ -154,11 +154,11 @@ class TestDeploymentFrequency:
             result = deployment_frequency.execute(workflow_path=None, job_name=None)
 
             assert [] == result.days
-            assert [] == result.daily_counts
-            assert [] == result.weekly_counts
             assert [] == result.weeks
             assert [] == result.months
-            assert [] == result.monthly_counts
+            assert [] == [item.count for item in result.days]
+            assert [] == [item.count for item in result.weeks]
+            assert [] == [item.count for item in result.months]
 
     def test_runs_with_workflow_path_filter(self):
         def mocked_read_file_if_exists(file):

@@ -76,8 +76,7 @@ class TestPipelinesRepositoryDeploymentFrequency:
             )
             assert 0 == len(result.months)
             assert 0 == len(result.weeks)
-            assert 0 == len(result.weekly_counts)
-            assert 0 == len(result.monthly_counts)
+            assert 0 == len(result.days)
 
     def test_deployment_frequency(self):
         with patch(
@@ -89,8 +88,8 @@ class TestPipelinesRepositoryDeploymentFrequency:
             result = loader.get_deployment_frequency_for_job(
                 job_name="Deploy", filters=None
             )
-            assert "2023-10" in result.months
-            assert "2023-W39" in result.weeks
+            assert any(item.date == "2023-10" for item in result.months)
+            assert any(item.date == "2023-W39" for item in result.weeks)
 
     def test_deployment_frequency_return_the_day_which_deployment_was_done(self):
         with patch(
@@ -102,7 +101,7 @@ class TestPipelinesRepositoryDeploymentFrequency:
             result = loader.get_deployment_frequency_for_job(
                 job_name="Deploy", filters=None
             )
-            assert "2023-10-01" in result.days
+            assert any(item.date == "2023-10-01" for item in result.days)
 
     def test_should_not_compute_when_job_failed(self):
         failed_jobs = [
@@ -130,5 +129,4 @@ class TestPipelinesRepositoryDeploymentFrequency:
 
             assert 0 == len(result.months)
             assert 0 == len(result.weeks)
-            assert 0 == len(result.weekly_counts)
-            assert 0 == len(result.monthly_counts)
+            assert 0 == len(result.days)
