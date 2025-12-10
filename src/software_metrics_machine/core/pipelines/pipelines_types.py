@@ -43,7 +43,7 @@ class PipelineJob(BaseModel):
     run_id: int
     name: str
     status: str
-    conclusion: Optional[str]
+    conclusion: Optional[str] = "unknown"
     created_at: str
     started_at: str
     completed_at: Optional[str]
