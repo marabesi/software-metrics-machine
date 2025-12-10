@@ -7,7 +7,7 @@ from software_metrics_machine.core.pipelines.pipelines_types import (
 
 
 class PipelineBuilder:
-    def __init__(self, name="CI", path="/.github/workflows/ci.yml", status="completed"):
+    def __init__(self, name="CI", path="/.github/workflows/ci.yml", status=None):
         self._id = 1
         self._pipeline = PipelineRun(
             id=self._id,

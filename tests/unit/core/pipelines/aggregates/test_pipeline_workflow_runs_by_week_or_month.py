@@ -193,6 +193,7 @@ class TestPipelineWorkflowRunsByWeekOrMonth:
                         .with_path("/workflows/ci.yml")
                         .with_created_at("2023-01-15T10:00:00Z")
                         .with_event("push")
+                        .with_status("completed")
                         .build(),
                         PipelineBuilder()
                         .with_id(2)
