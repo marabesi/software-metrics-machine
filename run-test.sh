@@ -13,6 +13,8 @@ cp -R "$(pwd)/fixtures/github" "$(pwd)/tmp_test"
 
 export SMM_STORE_DATA_AT="$(pwd)/tmp_test/github"
 
+export PYTHONDONTWRITEBYTECODE=1
+
 TEMPLATE=$(cat <<EOF
 {
   "git_provider": "github",
