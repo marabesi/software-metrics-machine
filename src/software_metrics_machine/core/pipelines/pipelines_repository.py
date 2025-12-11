@@ -82,6 +82,11 @@ class PipelinesRepository(FileSystemBaseRepository):
             for job in jobs:
                 if job.conclusion == "skipped":
                     continue
+                if job.started_at is None:
+                    continue
+                if job.completed_at is None:
+                    continue
+
                 sdt = parse_dt(job.started_at)
                 edt = parse_dt(job.completed_at)
                 if edt:
@@ -387,7 +392,13 @@ class PipelinesRepository(FileSystemBaseRepository):
                 if job.conclusion == "skipped":
                     continue
                 start = job.started_at
+                if start is None:
+                    continue
+
                 end = job.completed_at
+                if end is None:
+                    continue
+
                 sdt = self.__parse_dt(start)
                 edt = self.__parse_dt(end)
                 if edt:

@@ -600,7 +600,7 @@ class TestPipelinesRepository:
             result = loader.get_unique_workflow_paths()
             assert result[0] == "All"
 
-    def test_compute_runs_duration(self):
+    def test_compute_runs_duration_for_single_run(self):
         single_run = as_json_string(
             [
                 PipelineBuilder()
@@ -648,6 +648,71 @@ class TestPipelinesRepository:
             assert 1 == count
             assert 10.0 == avg_min
             assert 10.0 == total_min
+
+    @pytest.mark.parametrize(
+        "pipeline_runs, jobs, expected",
+        [
+            pytest.param(
+                [
+                    PipelineBuilder()
+                    .with_id(1)
+                    .with_path("/workflows/build.yml")
+                    .with_status("success")
+                    .with_created_at("2023-10-01T09:00:00Z")
+                    .with_run_started_at("2023-10-01T09:00:00Z")
+                    .with_updated_at("2023-10-01T09:10:00Z")
+                    .build()
+                ],
+                [
+                    PipelineJobBuilder()
+                    .with_run_id(1)
+                    .with_started_at(None)
+                    .with_completed_at("2023-10-01T09:10:00Z")
+                    .build()
+                ],
+                0,
+                id="missing start date",
+            ),
+            pytest.param(
+                [
+                    PipelineBuilder()
+                    .with_id(1)
+                    .with_path("/workflows/build.yml")
+                    .with_status("success")
+                    .with_created_at("2023-10-01T09:00:00Z")
+                    .with_run_started_at("2023-10-01T09:00:00Z")
+                    .with_updated_at("2023-10-01T09:10:00Z")
+                    .build()
+                ],
+                [
+                    PipelineJobBuilder()
+                    .with_run_id(1)
+                    .with_started_at("2023-10-01T09:10:00Z")
+                    .with_completed_at(None)
+                    .build()
+                ],
+                0,
+                id="missing completed at date",
+            ),
+        ],
+    )
+    def test_exclude_jobs_in_compute_runs_duration(self, pipeline_runs, jobs, expected):
+        def mocked_read_file_if_exists(file):
+            if file == "workflows.json":
+                return as_json_string(pipeline_runs)
+            if file == "jobs.json":
+                return as_json_string(jobs)
+            return None
+
+        with patch(
+            "software_metrics_machine.core.infrastructure.file_system_base_repository.FileSystemBaseRepository.read_file_if_exists",
+            side_effect=mocked_read_file_if_exists,
+        ):
+            loader = PipelinesRepository(configuration=InMemoryConfiguration("."))
+
+            data = loader.get_workflows_run_duration()
+
+            assert expected == len(data.rows)
 
     @pytest.mark.parametrize(
         "pipeline_runs, expected",

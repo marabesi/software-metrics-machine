@@ -2,9 +2,9 @@ from unittest.mock import MagicMock, patch
 from software_metrics_machine.core.pipelines.pipelines_repository import (
     PipelinesRepository,
 )
-from software_metrics_machine.core.pipelines.pipelines_types import DeploymentFrequency
 from software_metrics_machine.core.pipelines.plots.view_lead_time import ViewLeadTime
 from tests.builders import as_json_string
+from tests.deployment_frequency_builder import DeploymentFrequencyBuilder
 from tests.in_memory_configuration import InMemoryConfiguration
 from tests.pipeline_builder import PipelineBuilder, PipelineJobBuilder
 
@@ -44,13 +44,12 @@ class TestViewLeadTime:
             side_effect=mocked_read_file_if_exists,
         ):
             repository = PipelinesRepository(configuration=InMemoryConfiguration("."))
-
             repository.get_deployment_frequency_for_job = MagicMock(
-                return_value=DeploymentFrequency(
-                    days=[{"date": "2025-10-01", "count": 1, "commit": ""}],
-                    weeks=[{"date": "2025-W40", "count": 1, "commit": ""}],
-                    months=[{"date": "2025-10", "count": 1, "commit": ""}],
-                )
+                return_value=DeploymentFrequencyBuilder()
+                .add_day("2023-10-01", count=1, commit="abcdef123")
+                .add_week("2023-W39", count=1, commit="abcdef456")
+                .add_month("2023-10", count=1, commit="abcdef789")
+                .build()
             )
             pipeline = ".github/workflows/ci.yml"
             job = "delivery"

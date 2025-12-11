@@ -45,7 +45,7 @@ class PipelineJob(BaseModel):
     status: str
     conclusion: Optional[str] = "unknown"
     created_at: str
-    started_at: str
+    started_at: Optional[str]
     completed_at: Optional[str]
     workflow_name: str
     html_url: Optional[str]
