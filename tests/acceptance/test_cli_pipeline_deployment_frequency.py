@@ -3,6 +3,12 @@ from software_metrics_machine.apps.cli import main
 from tests.builders import single_deployment_frequency
 from tests.pipeline_builder import PipelineBuilder, PipelineJobBuilder
 
+import pandas as pd
+
+pd.set_option("display.max_columns", None)
+pd.set_option("display.max_seq_items", None)
+pd.set_option("display.width", None)
+
 
 class TestWorkflowsDeploymentFrequencyCliCommands:
 
@@ -54,6 +60,8 @@ class TestWorkflowsDeploymentFrequencyCliCommands:
                 "Deploy",
             ],
         )
+
+        print("aaaaaaaaaaaaaaaaaaaaaaaaaa ", result.output)
         # days     weeks   months  daily_counts  weekly_counts  monthly_counts
         assert (
             "2023-10-01  2023-W39  2023-10             1              1               1"
