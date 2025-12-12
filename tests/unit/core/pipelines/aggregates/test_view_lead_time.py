@@ -11,7 +11,7 @@ from tests.pipeline_builder import PipelineBuilder, PipelineJobBuilder
 
 class TestViewLeadTime:
 
-    def test_find_commits_that_were_used_in_a_deployment_window(self):
+    def test_find_commits_that_were_used_in_a_daily_deployment_window(self):
         def mocked_read_file_if_exists(file):
             if file == "workflows.json":
                 return as_json_string(
