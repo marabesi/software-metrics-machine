@@ -36,8 +36,11 @@ class WorkflowRunSummary:
         start_date: Optional[str] = None,
         end_date: Optional[str] = None,
         output_format: Optional[str] = None,
+        raw_filters: Optional[str] = None,
     ) -> WorkflowRunSummaryStructure:
-        summary = self.summary.compute_summary(start_date=start_date, end_date=end_date)
+        summary = self.summary.compute_summary(
+            start_date=start_date, end_date=end_date, raw_filters=raw_filters
+        )
 
         if output_format and output_format not in ["text", "json"]:
             raise ValueError("Invalid output_format. Must be 'text' or 'json'.")

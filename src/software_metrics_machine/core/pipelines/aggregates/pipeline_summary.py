@@ -1,5 +1,5 @@
 from collections import Counter
-from typing import Dict, TypedDict
+from typing import Dict, TypedDict, Optional
 from software_metrics_machine.core.pipelines.pipelines_repository import (
     PipelinesRepository,
 )
@@ -28,9 +28,13 @@ class PipelineRunSummary:
         self.repository = repository
 
     def compute_summary(
-        self, start_date: str | None = None, end_date: str | None = None
+        self,
+        start_date: str | None = None,
+        end_date: str | None = None,
+        raw_filters: Optional[str] = None,
     ) -> PipelineRunSummaryStructure:
         filters = {"start_date": start_date, "end_date": end_date}
+        filters = {**filters, **self.repository.parse_raw_filters(raw_filters)}
         self.runs = self.repository.runs(filters)
         return self.__create_summary_structure(filters)
 

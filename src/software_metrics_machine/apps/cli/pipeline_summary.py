@@ -36,13 +36,20 @@ from software_metrics_machine.core.pipelines.plots.view_pipeline_summary import 
     default="text",
     help="Either 'text' or 'json' to specify the output format",
 )
-def summary(max_workflows, start_date, end_date, output):
+@click.option(
+    "--raw-filters",
+    type=str,
+    default=None,
+    help="Raw GitHub filters string (e.g. 'status=draft,author=john')",
+)
+def summary(max_workflows, start_date, end_date, output, raw_filters):
     view = WorkflowRunSummary(repository=create_pipelines_repository())
     result = view.print_summary(
         max_workflows=max_workflows,
         start_date=start_date,
         end_date=end_date,
         output_format=None,
+        raw_filters=raw_filters,
     )
 
     if output == "json":

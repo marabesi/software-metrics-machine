@@ -17,6 +17,7 @@ class TestPipelineSummaryCliCommands:
                     "summary",
                 ],
                 "Total runs: 1",
+                id="counts the number of runs",
             ),
             pytest.param(
                 single_run(),
@@ -25,6 +26,7 @@ class TestPipelineSummaryCliCommands:
                     "summary",
                 ],
                 "Most failed run: N/A",
+                id="no runs that failed to show",
             ),
             pytest.param(
                 [
@@ -85,6 +87,17 @@ class TestPipelineSummaryCliCommands:
                 ],
                 "Most failed run: N/A",
                 id="most_failed_single_pipeline outside date range",
+            ),
+            pytest.param(
+                single_run(),
+                [
+                    "pipelines",
+                    "summary",
+                    "--raw-filters",
+                    "event=pull_request",
+                ],
+                "Total runs: 0",
+                id="counts the number of runs filtered by raw-filters",
             ),
         ],
     )
