@@ -169,6 +169,7 @@ class PrsRepository(FileSystemBaseRepository):
         if state:
             filtered = [pr for pr in filtered if pr.state == state]
 
+        self.logger.debug(f"Filtered PRs count: {len(filtered)}")
         return filtered
 
     def get_unique_labels(

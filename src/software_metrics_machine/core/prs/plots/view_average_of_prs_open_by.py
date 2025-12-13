@@ -27,10 +27,13 @@ class ViewAverageOfPrsOpenBy(BaseViewer):
         end_date: str | None = None,
         raw_filters: str | None = None,
     ) -> PlotResult:
-        filters = {"start_date": start_date, "end_date": end_date, "authors": authors}
-        filters = {**filters, **self.repository.parse_raw_filters(raw_filters)}
+        filters = {
+            "start_date": start_date,
+            "end_date": end_date,
+            "authors": authors,
+            "raw_filters": raw_filters,
+        }
         prs = self.repository.prs_with_filters(filters)
-        print(f"Filtered PRs count: {len(prs)}")
 
         x_vals, y_vals = self.repository.average_by(
             by=aggregate_by, labels=labels, prs=prs
