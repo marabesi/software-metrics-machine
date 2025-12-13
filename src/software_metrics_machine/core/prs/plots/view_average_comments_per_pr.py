@@ -25,14 +25,19 @@ class ViewAverageCommentsPerPullRequest(BaseViewer):
         aggregate_by: str = "week",
         start_date: str | None = None,
         end_date: str | None = None,
+        raw_filters: str | None = None,
     ) -> PlotResult:
+        filters = {
+            "start_date": start_date,
+            "end_date": end_date,
+            "authors": authors,
+            "labels": labels,
+        }
+
+        parsed = self.repository.parse_raw_filters(raw_filters)
+        filters = {**filters, **parsed}
         df = self.repository.average_comments(
-            filters={
-                "start_date": start_date,
-                "end_date": end_date,
-                "authors": authors,
-                "labels": labels,
-            },
+            filters=filters,
             aggregate_by=aggregate_by,
         )
 

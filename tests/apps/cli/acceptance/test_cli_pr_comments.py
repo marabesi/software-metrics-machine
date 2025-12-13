@@ -70,56 +70,97 @@ class TestCliPrCommentsCommands:
 
         assert "{'x': [], 'y': [], 'period': []}" in result.output
 
-    def test_average_comments_filters_by_label(self, cli):
-        prs = [
-            PullRequestBuilder()
-            .with_number(1)
-            .with_created_at("2023-10-01T00:00:00Z")
-            .mark_merged("2023-10-02T00:00:00Z")
-            .with_label(PRLabels(id=1, name="bug"))
-            .build(),
-            PullRequestBuilder()
-            .with_number(2)
-            .with_created_at("2024-10-01T00:00:00Z")
-            .mark_merged("2024-10-02T00:00:00Z")
-            .with_label(PRLabels(id=2, name="enhancement"))
-            .build(),
-        ]
-
+    @pytest.mark.parametrize(
+        "prs, comments, command, expected_output",
+        [
+            pytest.param(
+                [
+                    PullRequestBuilder()
+                    .with_number(1)
+                    .with_created_at("2023-10-01T00:00:00Z")
+                    .mark_merged("2023-10-02T00:00:00Z")
+                    .with_label(PRLabels(id=1, name="bug"))
+                    .build(),
+                    PullRequestBuilder()
+                    .with_number(2)
+                    .with_created_at("2024-10-01T00:00:00Z")
+                    .mark_merged("2024-10-02T00:00:00Z")
+                    .with_label(PRLabels(id=2, name="enhancement"))
+                    .build(),
+                ],
+                [
+                    PullRequestCommentsBuilder()
+                    .with_number(1)
+                    .with_id(1)
+                    .with_body("Looks good")
+                    .with_created_at("2023-10-01T12:00:00Z")
+                    .build(),
+                    PullRequestCommentsBuilder()
+                    .with_number(2)
+                    .with_id(2)
+                    .with_body("Please change")
+                    .with_created_at("2023-10-01T12:00:00Z")
+                    .build(),
+                ],
+                [
+                    "prs",
+                    "average-comments-by",
+                    "--labels",
+                    "bug",
+                    "--aggregate-by",
+                    "month",
+                ],
+                "{'x': [Timestamp('2023-10-01 00:00:00')], 'y': [1.0], 'period': ['2023-10']}",
+            ),
+            pytest.param(
+                [
+                    PullRequestBuilder()
+                    .with_number(1)
+                    .with_created_at("2023-10-01T00:00:00Z")
+                    .mark_merged("2023-10-02T00:00:00Z")
+                    .with_label(PRLabels(id=1, name="bug"))
+                    .build(),
+                    PullRequestBuilder()
+                    .with_number(2)
+                    .with_created_at("2024-10-01T00:00:00Z")
+                    .mark_merged("2024-10-02T00:00:00Z")
+                    .with_label(PRLabels(id=2, name="enhancement"))
+                    .build(),
+                ],
+                [
+                    PullRequestCommentsBuilder()
+                    .with_number(1)
+                    .with_id(1)
+                    .with_body("Looks good")
+                    .with_created_at("2023-10-01T12:00:00Z")
+                    .build(),
+                    PullRequestCommentsBuilder()
+                    .with_number(2)
+                    .with_id(2)
+                    .with_body("Please change")
+                    .with_created_at("2023-10-01T12:00:00Z")
+                    .build(),
+                ],
+                [
+                    "prs",
+                    "average-comments-by",
+                    "--raw-filters",
+                    "state=closed",
+                    "--aggregate-by",
+                    "month",
+                ],
+                "{'x': [], 'y': [], 'period': []}",
+            ),
+        ],
+    )
+    def test_average_comments_filters_by_label(
+        self, cli, prs, comments, command, expected_output
+    ):
         cli.storage.store_prs_with(prs)
-
-        comments = [
-            PullRequestCommentsBuilder()
-            .with_number(1)
-            .with_id(1)
-            .with_body("Looks good")
-            .with_created_at("2023-10-01T12:00:00Z")
-            .build(),
-            PullRequestCommentsBuilder()
-            .with_number(2)
-            .with_id(2)
-            .with_body("Please change")
-            .with_created_at("2023-10-01T12:00:00Z")
-            .build(),
-        ]
-
         cli.storage.store_prs_comment_with(comments)
 
-        result = cli.runner.invoke(
-            main,
-            [
-                "prs",
-                "average-comments-by",
-                "--labels",
-                "bug",
-                "--aggregate-by",
-                "month",
-            ],
-        )
+        result = cli.runner.invoke(main, command)
 
         out = result.output
 
-        assert (
-            "{'x': [Timestamp('2023-10-01 00:00:00')], 'y': [1.0], 'period': ['2023-10']}"
-            in out
-        )
+        assert expected_output in out

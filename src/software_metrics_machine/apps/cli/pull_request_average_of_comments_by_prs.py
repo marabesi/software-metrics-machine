@@ -44,13 +44,22 @@ from software_metrics_machine.core.prs.plots.view_average_comments_per_pr import
     default=None,
     help="Filter PRs created on or before this date (ISO 8601)",
 )
-def average_prs_comment(authors, labels, aggregate_by, start_date, end_date):
+@click.option(
+    "--raw-filters",
+    type=str,
+    default=None,
+    help="Raw GitHub filters string (e.g. 'status=draft,author=john')",
+)
+def average_prs_comment(
+    authors, labels, aggregate_by, start_date, end_date, raw_filters
+):
     result = ViewAverageCommentsPerPullRequest(repository=create_prs_repository()).main(
         authors=authors,
         labels=labels,
         aggregate_by=aggregate_by,
         start_date=start_date,
         end_date=end_date,
+        raw_filters=raw_filters,
     )
     click.echo(result.data)
 
