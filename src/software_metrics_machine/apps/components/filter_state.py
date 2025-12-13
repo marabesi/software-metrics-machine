@@ -4,26 +4,26 @@ import param
 
 class Settings(param.Parameterized):
     tab = param.Integer(default=0)
-    focused = param.Integer(default=0)
+    # focused = param.Integer(default=0)
 
-    # Date range (ISO strings)
-    start = param.String(default="")
-    end = param.String(default="")
+    # # Date range (ISO strings)
+    # start = param.String(default="")
+    # end = param.String(default="")
 
-    # Pipeline selectors
-    pipeline = param.String(default="")
-    job = param.String(default="")
-    conclusion = param.String(default="")
+    # # Pipeline selectors
+    # pipeline = param.String(default="")
+    # job = param.String(default="")
+    # conclusion = param.String(default="")
 
-    # PR / author / label filters (comma-separated)
-    authors_prs = param.String(default="")
-    labels = param.String(default="")
+    # # PR / author / label filters (comma-separated)
+    # authors_prs = param.String(default="")
+    # labels = param.String(default="")
 
-    # Source code filters
-    ignore = param.String(default="")
-    authors_source_code = param.String(default="")
-    pre_selected = param.String(default="")
-    top_entries = param.String(default="10")
+    # # Source code filters
+    # ignore = param.String(default="")
+    # authors_source_code = param.String(default="")
+    # pre_selected = param.String(default="")
+    # top_entries = param.String(default="10")
 
 
 class FilterState:

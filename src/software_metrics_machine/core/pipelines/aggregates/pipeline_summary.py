@@ -30,12 +30,11 @@ class PipelineRunSummary:
     def compute_summary(
         self, start_date: str | None = None, end_date: str | None = None
     ) -> PipelineRunSummaryStructure:
-        self.runs = self.repository.runs(
-            {"start_date": start_date, "end_date": end_date}
-        )
-        return self.__create_summary_structure()
+        filters = {"start_date": start_date, "end_date": end_date}
+        self.runs = self.repository.runs(filters)
+        return self.__create_summary_structure(filters)
 
-    def __create_summary_structure(self) -> PipelineRunSummaryStructure:
+    def __create_summary_structure(self, filters) -> PipelineRunSummaryStructure:
         summary: PipelineRunSummaryStructure = {
             "total_runs": len(self.runs),
             "completed": 0,
@@ -80,7 +79,7 @@ class PipelineRunSummary:
             for k, v in name_counts.items()
         }
 
-        most_failed_runs = self.repository.get_pipeline_fails_the_most()
+        most_failed_runs = self.repository.get_pipeline_fails_the_most(filters)
         if len(most_failed_runs) > 0:
             most_failed = most_failed_runs[0]["pipeline_name"]
             count = most_failed_runs[0]["failed"]

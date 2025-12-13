@@ -8,22 +8,90 @@ from tests.pipeline_builder import PipelineBuilder
 class TestPipelineSummaryCliCommands:
 
     @pytest.mark.parametrize(
-        "workflows, expected_output",
+        "workflows, command, expected_output",
         [
-            (single_run(), "Total runs: 1"),
-            (single_run(), "Most failed run: N/A"),
+            pytest.param(
+                single_run(),
+                [
+                    "pipelines",
+                    "summary",
+                ],
+                "Total runs: 1",
+            ),
+            pytest.param(
+                single_run(),
+                [
+                    "pipelines",
+                    "summary",
+                ],
+                "Most failed run: N/A",
+            ),
+            pytest.param(
+                [
+                    PipelineBuilder()
+                    .with_id(1)
+                    .with_path("/workflows/build.yml")
+                    .with_status("failure")
+                    .with_conclusion("failure")
+                    .with_created_at("2023-10-01T12:00:00Z")
+                    .with_run_started_at("2023-10-01T12:01:00Z")
+                    .with_updated_at("2023-10-01T12:10:00Z")
+                    .with_event("push")
+                    .with_head_branch("main")
+                    .with_jobs([])
+                    .build(),
+                ],
+                [
+                    "pipelines",
+                    "summary",
+                ],
+                "Most failed run: /workflows/build.yml (1)",
+                id="most_failed_single_pipeline within date range",
+            ),
+            pytest.param(
+                [
+                    PipelineBuilder()
+                    .with_id(1)
+                    .with_path("/workflows/build.yml")
+                    .with_status("failure")
+                    .with_conclusion("failure")
+                    .with_created_at("2023-10-01T12:00:00Z")
+                    .with_run_started_at("2023-10-01T12:01:00Z")
+                    .with_updated_at("2023-10-01T12:10:00Z")
+                    .with_event("push")
+                    .with_head_branch("main")
+                    .with_jobs([])
+                    .build(),
+                    PipelineBuilder()
+                    .with_id(1)
+                    .with_path("/workflows/build.yml")
+                    .with_status("completed")
+                    .with_conclusion("success")
+                    .with_created_at("2024-01-03T12:00:00Z")
+                    .with_run_started_at("2024-01-03T12:01:00Z")
+                    .with_updated_at("2024-01-03T12:10:00Z")
+                    .with_event("push")
+                    .with_head_branch("main")
+                    .with_jobs([])
+                    .build(),
+                ],
+                [
+                    "pipelines",
+                    "summary",
+                    "--start-date",
+                    "2024-01-01",
+                    "--end-date",
+                    "2024-12-31",
+                ],
+                "Most failed run: N/A",
+                id="most_failed_single_pipeline outside date range",
+            ),
         ],
     )
-    def test_summary_pipeline(self, cli, workflows, expected_output):
+    def test_summary_pipeline(self, cli, workflows, command, expected_output):
         cli.storage.store_pipelines_with(workflows)
 
-        result = cli.runner.invoke(
-            main,
-            [
-                "pipelines",
-                "summary",
-            ],
-        )
+        result = cli.runner.invoke(main, command)
         assert expected_output in result.output
 
     @pytest.mark.parametrize(

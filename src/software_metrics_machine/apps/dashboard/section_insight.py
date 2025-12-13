@@ -34,6 +34,8 @@ def insights_section(repository: PipelinesRepository, date_range_picker):
         )
 
     def workflow_run_duration(date_range_picker):
+        if date_range_picker is None:
+            return pn.pane.Markdown("No date available", width=200)
         filters = {
             "start_date": date_range_picker[0],
             "end_date": date_range_picker[1],
@@ -75,7 +77,10 @@ def insights_section(repository: PipelinesRepository, date_range_picker):
         )
 
     def plot_failed_pipelines(date_range_picker):
-        summary = PipelineRunSummary(repository=repository).compute_summary()
+        summary = PipelineRunSummary(repository=repository).compute_summary(
+            start_date=date_range_picker[0],
+            end_date=date_range_picker[1],
+        )
         most_failed = summary.get("most_failed", "N/A")
         return pn.widgets.StaticText(
             name="Most failed pipeline", value=f"{most_failed}"
