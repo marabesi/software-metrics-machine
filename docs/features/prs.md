@@ -35,6 +35,7 @@ smm prs summary
 | Export         | Exports the data as csv to a given file path   | `--csv=my_export.csv`  |
 | Output        | Defines the output format, either text or json. Defaults to text.  | `--output=json`     |
 | Labels         | Filters PRs by attached labels. Multiple labels can be provided separated by commas. | `--labels=bug,enhancement` |
+| Raw filters    | Comma-separated raw filter string (e.g. `status=draft,author=john`). Parsed and merged with other flags. | `--raw-filters="status=draft,author=john"` |
 
 ### Examples - Summary PRs data
 
@@ -130,6 +131,7 @@ smm prs through-time
 | Start date     | Fetches PRs created after a date.    | `--start-date=2025-01-01`|
 | End date       | Fetches PRs created before a date.   | `--end-date=2025-12-31`  |
 | Authors        | Filters PRs by the authors who created them. Multiple authors can be provided separated by commas. This is the author who opened the PR  | `--authors=author1,author2`     |
+| Raw filters    | Comma-separated raw filter string (e.g. `status=draft,author=john`). Parsed and merged with other flags. | `--raw-filters="status=draft,author=john"` |
 
 ### Examples - Open PRs Through Time
 
@@ -193,6 +195,7 @@ smm prs average-open-by
 | Authors        | Filters PRs by the authors who created them. Multiple authors can be provided separated by commas. Thisis the author who opened the PR  | `--authors=author1,author2`     |
 | Aggregate by   | Defines the aggregation period, either by week or month. Defaults to week.  | `--aggregate-by=month`     |
 | Labels         | Filters PRs by the labels attached to it. Multiple labels can be provided separated by commas.  | `--labels=my_label,another_label`     |
+| Raw filters    | Comma-separated raw filter string (e.g. `status=draft,author=john`). Parsed and merged with other flags. | `--raw-filters="status=draft,author=john"` |
 
 ### Examples - Average PR Open
 
@@ -255,6 +258,7 @@ smm prs review-time-by-author
 | Start date     | Fetches PRs created after a date.    | `--start-date=2025-01-01`     |
 | End date       | Fetches PRs created before a date.   | `--end-date=2025-12-31`     |
 | Limit          | If the list is too big --top will show only the top x results from the list.  | `--top=10`     |
+| Raw filters    | Comma-separated raw filter string (e.g. `status=draft,author=john`). Parsed and merged with other flags. | `--raw-filters="status=draft,author=john"` |
 
 ### Examples - Average Review Time by Author
 
@@ -351,6 +355,7 @@ smm prs average-comments-by --aggregate-by=week
 | End date       | Filter PRs created on or before this date.   | `--end-date=2025-12-31`  |
 | Authors        | Filter PRs by the authors who created them. Multiple authors can be provided separated by commas. | `--authors=alice,bob`     |
 | Labels         | Filter PRs by attached labels. Multiple labels can be provided separated by commas. | `--labels=bug,enhancement` |
+| Raw filters    | Comma-separated raw filter string (e.g. `status=draft,author=john`). Parsed and merged with other flags. | `--raw-filters="status=draft,author=john"` |
 
 :::
 
