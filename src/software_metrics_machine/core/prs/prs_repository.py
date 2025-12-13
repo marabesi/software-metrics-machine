@@ -159,6 +159,11 @@ class PrsRepository(FileSystemBaseRepository):
             labels_list = self.__normalize_labels(labels)
             filtered = self.filter_prs_by_labels(filtered, labels_list)
 
+        state = filters.get("state")
+
+        if state:
+            filtered = [pr for pr in filtered if pr.state == state]
+
         return filtered
 
     def get_unique_labels(

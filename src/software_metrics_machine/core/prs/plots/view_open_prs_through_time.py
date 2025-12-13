@@ -21,10 +21,13 @@ class ViewOpenPrsThroughTime(BaseViewer):
         start_date: str | None = None,
         end_date: str | None = None,
         authors: str | None = None,
+        raw_filters: str | None = None,
     ) -> PlotResult:
-        prs = self.repository.prs_with_filters(
-            {"start_date": start_date, "end_date": end_date, "authors": authors}
-        )
+        filters = {"start_date": start_date, "end_date": end_date, "authors": authors}
+        # merge parsed raw filters if provided
+        parsed = self.repository.parse_raw_filters(raw_filters)
+        filters = {**filters, **parsed}
+        prs = self.repository.prs_with_filters(filters)
 
         if not prs:
             empty = hv.Text(0, 0, "No PRs to plot for prs through time").opts(

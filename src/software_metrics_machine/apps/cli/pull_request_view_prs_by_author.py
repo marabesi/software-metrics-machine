@@ -32,13 +32,20 @@ from software_metrics_machine.core.prs.plots.view_prs_by_author import ViewPrsBy
     default=None,
     help="Filter PRs created on or before this date (ISO 8601)",
 )
-def by_author(top, labels, start_date, end_date):
+@click.option(
+    "--raw-filters",
+    type=str,
+    default=None,
+    help="Raw GitHub filters string (e.g. 'status=draft,author=john')",
+)
+def by_author(top, labels, start_date, end_date, raw_filters):
     result = ViewPrsByAuthor(repository=create_prs_repository()).plot_top_authors(
         title=f"Top {top} PR authors",
         top=top,
         labels=labels,
         start_date=start_date,
         end_date=end_date,
+        raw_filters=raw_filters,
     )
     click.echo(result.data)
 

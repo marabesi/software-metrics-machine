@@ -17,6 +17,7 @@ class PrViewSummary:
         end_date=None,
         output_format=None,
         labels: str | None = None,
+        raw_filters: str | None = None,
     ) -> SummaryResult:
         self.csv = csv
         self.start_date = start_date
@@ -26,6 +27,11 @@ class PrViewSummary:
             "start_date": self.start_date,
             "end_date": self.end_date,
             "labels": self.labels,
+        }
+        # merge any raw filters parsed by the repository
+        self.filters = {
+            **self.filters,
+            **self.repository.parse_raw_filters(raw_filters),
         }
 
         self.prs = self.repository.prs_with_filters(self.filters)

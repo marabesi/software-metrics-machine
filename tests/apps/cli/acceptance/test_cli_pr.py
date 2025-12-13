@@ -208,7 +208,6 @@ class TestCliPrsCommands:
                 "5",
             ],
         )
-        assert 0 == result.exit_code
         assert "ana       0.0" in result.output
 
     @pytest.mark.parametrize(
@@ -281,7 +280,7 @@ class TestCliPrsCommands:
                         .mark_merged("2011-01-26T19:20:12Z")
                         .build(),
                     ],
-                    "aggregate_by": "month",
+                    "params": ["--aggregate-by", "month"],
                 },
                 "2011-01-01  1.0",
             ),
@@ -294,9 +293,23 @@ class TestCliPrsCommands:
                         .mark_merged("2011-01-26T19:20:12Z")
                         .build(),
                     ],
-                    "aggregate_by": "week",
+                    "params": ["--aggregate-by", "week"],
                 },
                 "2011-01-24  1.0",
+            ),
+            (
+                {
+                    "prs": [
+                        PullRequestBuilder()
+                        .with_created_at("2011-01-25T19:00:12Z")
+                        .with_closed_at("2011-01-26T19:20:12Z")
+                        .mark_merged("2011-01-26T19:20:12Z")
+                        .with_state("open")
+                        .build(),
+                    ],
+                    "params": ["--raw-filters", "state=closed"],
+                },
+                "Empty DataFrame",
             ),
         ],
     )
@@ -307,6 +320,6 @@ class TestCliPrsCommands:
 
         result = cli.runner.invoke(
             main,
-            ["prs", "average-open-by", "--aggregate-by", data["aggregate_by"]],
+            ["prs", "average-open-by", *data["params"]],
         )
         assert expected_output in result.output

@@ -27,10 +27,11 @@ class ViewAverageReviewTimeByAuthor(BaseViewer):
         start_date: str | None = None,
         end_date: str | None = None,
         authors: str | None = None,
+        raw_filters: str | None = None,
     ) -> PlotResult:
-        pairs = self.repository.prs_with_filters(
-            {"start_date": start_date, "end_date": end_date, "authors": authors}
-        )
+        filters = {"start_date": start_date, "end_date": end_date, "authors": authors}
+        filters = {**filters, **self.repository.parse_raw_filters(raw_filters)}
+        pairs = self.repository.prs_with_filters(filters)
 
         if labels:
             labels = [s.strip() for s in labels.split(",") if s.strip()]

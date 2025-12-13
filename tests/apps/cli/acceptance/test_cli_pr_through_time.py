@@ -40,6 +40,15 @@ class TestCliPrThroughTimeCommands:
                 ],
                 "No data available for the given period.",
             ),
+            (
+                [
+                    "prs",
+                    "through-time",
+                    "--raw-filters",
+                    "state=closed",
+                ],
+                "No data available for the given period.",
+            ),
         ],
     )
     def test_show_all_prs_available(self, cli, command, expected_in_output):
@@ -48,6 +57,7 @@ class TestCliPrThroughTimeCommands:
             .with_created_at("2011-01-26T19:01:12Z")
             .with_closed_at("2011-01-26T19:01:12Z")
             .with_author("ana")
+            .with_state("opened")
             .build(),
         ]
         cli.storage.store_prs_with(pull_requests_data)

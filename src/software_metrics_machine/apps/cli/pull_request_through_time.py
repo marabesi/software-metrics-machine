@@ -28,12 +28,19 @@ from software_metrics_machine.core.prs.plots.view_open_prs_through_time import (
     default=None,
     help="Filter PRs created on or before this date (ISO 8601)",
 )
-def prs_through_time(authors, start_date, end_date):
+@click.option(
+    "--raw-filters",
+    type=str,
+    default=None,
+    help="Raw GitHub filters string (e.g. 'status=draft,author=john')",
+)
+def prs_through_time(authors, start_date, end_date, raw_filters):
     result = ViewOpenPrsThroughTime(repository=create_prs_repository()).main(
         title="Open Pull Requests Through Time",
-        authors=authors,
         start_date=start_date,
         end_date=end_date,
+        authors=authors,
+        raw_filters=raw_filters,
     )
     click.echo(result.data)
 

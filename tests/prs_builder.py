@@ -26,6 +26,7 @@ class PullRequestBuilder:
     files_changed: List[str] = field(default_factory=list)
     labels: List[PRLabels] = field(default_factory=list)
     html_url: str = "https://github.com/org/repo/pull/1"
+    state: str = "open"
 
     def with_id(self, id: int) -> PullRequestBuilder:
         self.id = id
@@ -86,6 +87,10 @@ class PullRequestBuilder:
         self.labels.append(label)
         return self
 
+    def with_state(self, state: str) -> PullRequestBuilder:
+        self.state = state
+        return self
+
     def build(self) -> Dict[str, Any]:
         comments: List[PRComments] = [c for c in self.comments]
         pr = PRDetails(
@@ -102,6 +107,7 @@ class PullRequestBuilder:
                 "comments": comments,
                 "labels": list(self.labels),
                 "html_url": self.html_url,
+                "state": self.state,
             }
         )
         return pr

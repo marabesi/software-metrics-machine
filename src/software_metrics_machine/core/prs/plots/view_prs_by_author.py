@@ -24,10 +24,11 @@ class ViewPrsByAuthor(BaseViewer):
         labels: List[str] | None = None,
         start_date: str | None = None,
         end_date: str | None = None,
+        raw_filters: str | None = None,
     ) -> PlotResult:
-        prs = self.repository.prs_with_filters(
-            {"start_date": start_date, "end_date": end_date}
-        )
+        filters = {"start_date": start_date, "end_date": end_date}
+        filters = {**filters, **self.repository.parse_raw_filters(raw_filters)}
+        prs = self.repository.prs_with_filters(filters)
 
         if labels:
             labels = [s.strip() for s in labels.split(",") if s.strip()]

@@ -35,6 +35,7 @@ class PRDetails(BaseModel):
     created_at: str
     merged_at: Optional[str]
     closed_at: Optional[str]
+    state: str
     comments: List[PRComments] = []
     review_comments_url: str
     labels: List[PRLabels] = []
