@@ -242,9 +242,13 @@ class TestCliPrsCommands:
         assert "ana       0.0" in result.output
 
     @pytest.mark.parametrize(
-        "data, expected_output",
+        "command, data, expected_output",
         [
             pytest.param(
+                [
+                    "prs",
+                    "review-time-by-author",
+                ],
                 {
                     "prs": [
                         PullRequestBuilder()
@@ -258,6 +262,10 @@ class TestCliPrsCommands:
                 id="merged in 10 minutes",
             ),
             pytest.param(
+                [
+                    "prs",
+                    "review-time-by-author",
+                ],
                 {
                     "prs": [
                         PullRequestBuilder()
@@ -271,6 +279,10 @@ class TestCliPrsCommands:
                 id="merged in 1 day and 20 minutes",
             ),
             pytest.param(
+                [
+                    "prs",
+                    "review-time-by-author",
+                ],
                 {
                     "prs": [
                         PullRequestBuilder()
@@ -283,20 +295,34 @@ class TestCliPrsCommands:
                 "charlie  30.0",
                 id="merged in 30 days and 20 minutes",
             ),
+            pytest.param(
+                [
+                    "prs",
+                    "review-time-by-author",
+                    "--raw-filters",
+                    "state=closed",
+                ],
+                {
+                    "prs": [
+                        PullRequestBuilder()
+                        .with_author("charlie")
+                        .with_created_at("2011-01-01T19:00:12Z")
+                        .mark_merged("2011-01-31T19:20:12Z")
+                        .with_state("opened")
+                        .build(),
+                    ],
+                },
+                "No PRs to plot after filtering",
+                id="filtered by state",
+            ),
         ],
     )
     def test_with_stored_data_print_review_time_by_day(
-        self, cli, data, expected_output
+        self, cli, command, data, expected_output
     ):
         cli.storage.store_prs_with(data["prs"])
 
-        result = cli.runner.invoke(
-            main,
-            [
-                "prs",
-                "review-time-by-author",
-            ],
-        )
+        result = cli.runner.invoke(main, command)
         assert expected_output in result.output
 
     @pytest.mark.parametrize(
