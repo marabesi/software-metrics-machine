@@ -183,7 +183,7 @@ jobs:
           poetry install --no-interaction --no-ansi --no-root
 
       - name: "Run test"
-        run: "./lib/bashunit ./tests/apps/cli/e2e
+        run: "./lib/bashunit ./tests/apps/cli/e2e"
 
   send_docker_image_to_hub:
     needs: [code-quality, pytest, e2e]
