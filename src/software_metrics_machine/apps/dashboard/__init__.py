@@ -254,7 +254,7 @@ pre_selected_values = pn.widgets.Select(
     name="Ignore patterns",
     options={
         "None": "",
-        "Js/Ts projects": "*.json,**/**/*.png,*.snap,*.yml,*.yaml,*.md",
+        "Js/Ts projects": "*.json,**/**/*.png,*.snap,*.yml,*.yaml,*.md,*.sh",
         "Python and Markdown": "*.py,*.md",
         "All Text Files": "*.txt,*.log",
     },
@@ -270,7 +270,7 @@ top_entries = pn.widgets.Select(
         "100": "100",
         "1000": "1000",
     },
-    value="10",
+    value="20",
 )
 
 
