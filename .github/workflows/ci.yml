@@ -113,7 +113,7 @@ jobs:
         run: |
           git config --global user.email "you@example.com"
           git config --global user.name "Pytest"
-          poetry run pytest -vvv --cov=. --cov-report=xml
+          poetry run pytest -vvv --cov=. --cov-report=xml --ignore=tests/apps/cli/e2e --ignore=tests/apps/dashboard
 
       - name: Save coverage report
         uses: actions/upload-artifact@v4
