@@ -7,6 +7,7 @@ cleanup() {
 }
 
 cleanup
+mkdir -p "$(pwd)/tmp_test/github"
 mkdir -p "$(pwd)/tmp_test/repo"
 
 export SMM_STORE_DATA_AT="$(pwd)/tmp_test/github"
