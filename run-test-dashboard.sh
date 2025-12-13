@@ -2,14 +2,14 @@
 
 # Function to unify rm -rf operations
 cleanup() {
-  rm -rf "$(pwd)/tmp_test"
+  rm -rf "$(pwd)/tmp_test_dashboard"
   rm -rf "$(pwd)/data.csv"
 }
 
 cleanup
-mkdir -p "$(pwd)/tmp_test/repo"
+mkdir -p "$(pwd)/tmp_test_dashboard/repo"
 
-export SMM_STORE_DATA_AT="$(pwd)/tmp_test/github"
+export SMM_STORE_DATA_AT="$(pwd)/tmp_test_dashboard/github"
 
 export PYTHONDONTWRITEBYTECODE=1
 
@@ -18,21 +18,21 @@ TEMPLATE=$(cat <<EOF
   "git_provider": "github",
   "github_token": "fake-token",
   "github_repository": "fake-repo-test",
-  "git_repository_location": "$(pwd)/tmp_test/repo",
+  "git_repository_location": "$(pwd)/tmp_test_dashboard/repo",
   "deployment_frequency_target_pipeline": "",
   "deployment_frequency_target_job": ""
 }
 EOF
 )
 
-echo "$TEMPLATE" > "$(pwd)/tmp_test/github/smm_config.json"
+echo "$TEMPLATE" > "$(pwd)/tmp_test_dashboard/github/smm_config.json"
 
 git config --global user.email "you@example.com"
 git config --global user.name "Pytest"
 
 echo "Running tests..."
 #export PYTHONPATH="$(pwd):$PYTHONPATH"
-poetry run pytest --ignore=tests/apps/cli/e2e --ignore=tests/apps/dashboard -s "$@"
+poetry run pytest -s tests/apps/dashboard "$@"
 
 echo "Cleaning up..."
 cleanup
