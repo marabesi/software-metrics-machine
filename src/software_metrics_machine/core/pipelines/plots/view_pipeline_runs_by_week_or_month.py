@@ -17,8 +17,6 @@ from software_metrics_machine.core.pipelines.pipelines_repository import (
     PipelinesRepository,
 )
 
-hv.extension("bokeh")
-
 
 class ViewWorkflowRunsByWeekOrMonth(BaseViewer):
 

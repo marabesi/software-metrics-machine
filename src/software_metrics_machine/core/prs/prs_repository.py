@@ -136,6 +136,11 @@ class PrsRepository(FileSystemBaseRepository):
         if not filters:
             return self.all_prs
 
+        raw_filters = filters.get("raw_filters")
+        if raw_filters:
+            parsed = super().parse_raw_filters(raw_filters)
+            filters = {**filters, **parsed}
+
         start_date = filters.get("start_date")
         end_date = filters.get("end_date")
 

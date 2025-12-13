@@ -43,11 +43,9 @@ class PipelineExecutionDuration(BaseViewer):
                 "start_date": start_date,
                 "end_date": end_date,
                 "workflow_path": workflow_path,
+                "raw_filters": raw_filters,
             }
         )
-
-        if raw_filters:
-            filters = {**filters, **self.repository.parse_raw_filters(raw_filters)}
 
         if aggregate_by_day:
             return self.__aggregate_by_day(start_date, end_date, filters, metric)

@@ -33,8 +33,11 @@ class PipelineRunSummary:
         end_date: str | None = None,
         raw_filters: Optional[str] = None,
     ) -> PipelineRunSummaryStructure:
-        filters = {"start_date": start_date, "end_date": end_date}
-        filters = {**filters, **self.repository.parse_raw_filters(raw_filters)}
+        filters = {
+            "start_date": start_date,
+            "end_date": end_date,
+            "raw_filters": raw_filters,
+        }
         self.runs = self.repository.runs(filters)
         return self.__create_summary_structure(filters)
 

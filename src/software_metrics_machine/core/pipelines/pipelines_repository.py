@@ -135,6 +135,12 @@ class PipelinesRepository(FileSystemBaseRepository):
         if not filters:
             return self.all_runs
 
+        raw_filters = filters.get("raw_filters")
+        if raw_filters:
+            parsed = super().parse_raw_filters(raw_filters)
+            self.logger.debug(f"Applying pipeline filter: {parsed}")
+            filters = {**filters, **parsed}
+
         runs = self.all_runs
 
         start_date = filters.get("start_date")

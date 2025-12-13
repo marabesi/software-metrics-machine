@@ -29,10 +29,9 @@ class ViewAverageCommentsPerPullRequest(BaseViewer):
             "end_date": end_date,
             "authors": authors,
             "labels": labels,
+            "raw_filters": raw_filters,
         }
 
-        parsed = self.repository.parse_raw_filters(raw_filters)
-        filters = {**filters, **parsed}
         df = self.repository.average_comments(
             filters=filters,
             aggregate_by=aggregate_by,

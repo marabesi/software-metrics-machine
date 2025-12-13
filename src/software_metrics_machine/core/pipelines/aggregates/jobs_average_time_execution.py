@@ -42,11 +42,8 @@ class JobsByAverageTimeExecution:
         filters = {
             "start_date": start_date,
             "end_date": end_date,
-            **self.repository.parse_raw_filters(pipeline_raw_filters),
+            "raw_filters": pipeline_raw_filters,
         }
-        print(
-            f"Applying pipeline filter: {self.repository.parse_raw_filters(pipeline_raw_filters)}"
-        )
 
         runs = self.repository.runs(filters=filters)
 
