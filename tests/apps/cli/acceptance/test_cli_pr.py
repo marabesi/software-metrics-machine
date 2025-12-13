@@ -164,24 +164,55 @@ class TestCliPrsCommands:
         )
         assert "No PRs to plot after filtering" in result.output
 
-    def test_print_prs_created_by_authors(self, cli):
-        pull_requests_data = [
-            PullRequestBuilder()
-            .with_author("ana")
-            .with_created_at("2011-01-26T19:01:12Z")
-            .with_closed_at("2011-01-26T19:01:12Z")
-            .build(),
-        ]
-        cli.storage.store_prs_with(pull_requests_data)
+    @pytest.mark.parametrize(
+        "pull_request_data, command, expected_output",
+        [
+            pytest.param(
+                [
+                    PullRequestBuilder()
+                    .with_author("ana")
+                    .with_created_at("2011-01-26T19:01:12Z")
+                    .with_closed_at("2011-01-26T19:01:12Z")
+                    .build()
+                ],
+                [
+                    "prs",
+                    "by-author",
+                ],
+                "ana      1",
+                id="No filters will return the author and pr count",
+            ),
+            pytest.param(
+                [
+                    PullRequestBuilder()
+                    .with_author("ana")
+                    .with_created_at("2011-01-26T19:01:12Z")
+                    .with_closed_at("2011-01-26T19:01:12Z")
+                    .with_state("closed")
+                    .build()
+                ],
+                [
+                    "prs",
+                    "by-author",
+                    "--raw-filters",
+                    "state=opened",
+                ],
+                "No PRs to plot after filtering",
+                id="apply raw filters",
+            ),
+        ],
+    )
+    def test_print_prs_created_by_authors(
+        self, cli, pull_request_data, command, expected_output
+    ):
+        cli.storage.store_prs_with(pull_request_data)
 
         result = cli.runner.invoke(
             main,
-            [
-                "prs",
-                "by-author",
-            ],
+            command,
         )
-        assert "ana      1" in result.output
+
+        assert expected_output in result.output
 
     def test_with_stored_data_review_time_by_author(self, cli):
         # does not take into account closed prs, only prs that were merged

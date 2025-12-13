@@ -38,7 +38,13 @@ from software_metrics_machine.core.prs.plots.view_summary import PrViewSummary
     default="text",
     help="Either 'text' or 'json' to specify the output format",
 )
-def summary(csv, start_date, end_date, output, labels):
+@click.option(
+    "--raw-filters",
+    type=str,
+    default=None,
+    help="Raw GitHub filters string (e.g. 'status=draft,author=john')",
+)
+def summary(csv, start_date, end_date, output, labels, raw_filters):
     view = PrViewSummary(repository=create_prs_repository())
     result = view.main(
         csv=csv,
@@ -46,6 +52,7 @@ def summary(csv, start_date, end_date, output, labels):
         end_date=end_date,
         output_format=output,
         labels=labels,
+        raw_filters=raw_filters,
     )
 
     if output == "json":

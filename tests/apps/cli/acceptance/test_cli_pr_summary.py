@@ -46,7 +46,7 @@ def prs_with_authors() -> List[PRDetails]:
 class TestCliPrsSummaryCommands:
 
     @pytest.mark.parametrize(
-        "prs, expected_count",
+        "prs, command, expected_count",
         [
             pytest.param(
                 [
@@ -59,30 +59,49 @@ class TestCliPrsSummaryCommands:
                     .with_closed_at("2011-01-26T19:01:12Z")
                     .build(),
                 ],
-                "0",
+                [
+                    "prs",
+                    "summary",
+                    "--csv",
+                    "data.csv",
+                    "--start-date",
+                    "2023-01-01",
+                    "--end-date",
+                    "2023-12-31",
+                    "--output",
+                    "text",
+                ],
+                "Total PRs: 0",
                 id="two prs outside date range",
-            )
+            ),
+            pytest.param(
+                [
+                    PullRequestBuilder()
+                    .with_created_at("2011-01-26T19:01:12Z")
+                    .with_closed_at("2011-01-26T19:01:12Z")
+                    .build(),
+                    PullRequestBuilder()
+                    .with_created_at("2011-01-26T19:01:12Z")
+                    .with_closed_at("2011-01-26T19:01:12Z")
+                    .build(),
+                ],
+                [
+                    "prs",
+                    "summary",
+                    "--raw-filters",
+                    "state=opened",
+                ],
+                "Total PRs: 0",
+                id="filter by state",
+            ),
         ],
     )
-    def test_with_stored_data_summary(self, cli, prs, expected_count):
+    def test_with_stored_data_summary(self, cli, prs, command, expected_count):
         cli.storage.store_prs_with(prs)
 
-        result = cli.runner.invoke(
-            main,
-            [
-                "prs",
-                "summary",
-                "--csv",
-                "data.csv",
-                "--start-date",
-                "2023-01-01",
-                "--end-date",
-                "2023-12-31",
-                "--output",
-                "text",
-            ],
-        )
-        assert f"Total PRs: {expected_count}" in result.output
+        result = cli.runner.invoke(main, command)
+
+        assert expected_count in result.output
 
     def test_exports_csv_data(self, cli):
         cli.storage.store_prs_with(
