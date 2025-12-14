@@ -64,8 +64,6 @@ class JobsByAverageTimeExecution:
             exclude = [s.strip() for s in exclude_jobs.split(",") if s.strip()]
             jobs = self.repository.filter_by_job_name(jobs, exclude)
 
-        print(f"Found {len(runs)} workflow runs and {len(jobs)} jobs after filtering")
-
         # aggregate durations by job name
         sums: dict[str, float] = defaultdict(float)
         counts: dict[str, float] = defaultdict(int)

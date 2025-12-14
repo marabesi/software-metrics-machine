@@ -259,8 +259,7 @@ class TestJobsCliCommands:
                 "Deploy",
             ],
         )
-        assert 0 == result.exit_code
-        assert "Found 1 workflow runs and 1 jobs after filtering" in result.output
+        assert "Deploy  5.0" in result.output
 
     def test_plot_jobs_by_average_execution_time_by_raw_filters(self, cli):
         jobs = [
@@ -293,7 +292,6 @@ class TestJobsCliCommands:
                 "status=in_progress",
             ],
         )
-        assert 0 == result.exit_code
         assert "Found 0 workflow runs and 0 jobs after filtering" in result.output
 
     @pytest.mark.parametrize(

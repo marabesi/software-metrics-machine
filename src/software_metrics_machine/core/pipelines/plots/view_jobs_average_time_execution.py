@@ -61,7 +61,10 @@ class ViewJobsByAverageTimeExecution(BaseViewer):
             empty = hv.Text(0, 0, "No job durations found").opts(
                 height=super().get_chart_height()
             )
-            return PlotResult(plot=empty, data=pd.DataFrame(averages))
+            return PlotResult(
+                empty,
+                f"Found {total_runs} workflow runs and {total_jobs} jobs after filtering",
+            )
 
         names, mins = zip(*averages)
 
