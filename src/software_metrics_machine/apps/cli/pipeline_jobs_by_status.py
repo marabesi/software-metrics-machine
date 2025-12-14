@@ -36,13 +36,13 @@ from software_metrics_machine.core.pipelines.plots.view_jobs_by_status import (
     "--event",
     type=str,
     default=None,
-    help="Filter runs by event (comma-separated e.g. push,pull_request,schedule)",
+    help="Filter pipeline runs by event (comma-separated e.g. push,pull_request,schedule)",
 )
 @click.option(
     "--target-branch",
     type=str,
     default=None,
-    help="Filter runs/jobs by target branch name (comma-separated)",
+    help="Filter pipeline runs by target branch name (comma-separated)",
 )
 @click.option(
     "--start-date",
@@ -61,6 +61,14 @@ from software_metrics_machine.core.pipelines.plots.view_jobs_by_status import (
     default=False,
     help="Include setup jobs used by GitHub actions, such as 'Set up job' or 'Checkout code'",
 )
+@click.option(
+    "--raw-filters",
+    type=str,
+    help=(
+        "Filters to apply to the jobs dataset, in the form key=value,key2=value2."
+        "For possible filters, see https://docs.github.com/en/rest/actions/workflow-jobs?apiVersion=2022-11-28&versionId=free-pro-team%40latest&category=actions&subcategory=workflow-jobs#list-jobs-for-a-workflow-run"  # noqa
+    ),
+)
 def jobs_by_status(
     job_name,
     workflow_path,
@@ -71,6 +79,7 @@ def jobs_by_status(
     start_date,
     end_date,
     force_all_jobs,
+    raw_filters,
 ):
     result = ViewJobsByStatus(repository=create_pipelines_repository()).main(
         job_name=job_name,
@@ -81,6 +90,7 @@ def jobs_by_status(
         start_date=start_date,
         end_date=end_date,
         force_all_jobs=force_all_jobs,
+        raw_filters=raw_filters,
     )
     click.echo(result.data)
 

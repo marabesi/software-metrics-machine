@@ -29,7 +29,7 @@ class JobsByStatus:
         self.repository = repository
 
     def __count_delivery_by_day(self, jobs: List[PipelineJob], job_name: str):
-        per_day = defaultdict(Counter)
+        per_day: dict[str, dict[str, int]] = defaultdict(Counter)
         for j in jobs:
             name = j.name
             if name != job_name:
@@ -48,7 +48,7 @@ class JobsByStatus:
             dates.append("unknown")
 
         # determine conclusion order: prefer success, failure, then alphabetic
-        all_concs = set()
+        all_concs = set[str]()
         for c in per_day.values():
             all_concs.update(c.keys())
         ordered = []
@@ -66,7 +66,7 @@ class JobsByStatus:
         return dates, ordered, matrix
 
     def count_delivery_by_week(self, jobs: List[PipelineJob], job_name: str):
-        per_week = defaultdict(Counter)
+        per_week: dict[str, dict[str, int]] = defaultdict(Counter)
         for j in jobs:
             name = j.name
             if name.lower() != job_name:
@@ -84,7 +84,7 @@ class JobsByStatus:
         if "unknown" in per_week:
             weeks.append("unknown")
 
-        all_concs = set()
+        all_concs = set[str]()
         for cnt in per_week.values():
             all_concs.update(cnt.keys())
         ordered = []
@@ -106,19 +106,26 @@ class JobsByStatus:
         job_name: str,
         workflow_path: Optional[str] = None,
         aggregate_by_week: bool = False,
-        raw_filters: Optional[str] = None,
+        pipeline_raw_filters: Optional[str] = None,
         start_date: Optional[str] = None,
         end_date: Optional[str] = None,
         force_all_jobs: bool = False,
+        raw_filters: Optional[str] = None,
     ) -> JobByStatusResult:
-        filters = {
+        common_filters = {
             "start_date": start_date,
             "end_date": end_date,
-            **self.repository.parse_raw_filters(raw_filters),
         }
-        print(f"Applying date filter: {filters}")
-        runs = self.repository.runs(filters=filters)
-        jobs = self.repository.jobs(filters={**filters, "name": job_name})
+        pipeline_filters = {
+            **common_filters,
+            **self.repository.parse_raw_filters(pipeline_raw_filters),
+        }
+        print(f"Applying date filter: {pipeline_filters}")
+        runs = self.repository.runs(filters=common_filters)
+
+        job_filter = {**common_filters, "raw_filters": raw_filters, "name": job_name}
+
+        jobs = self.repository.jobs(filters=job_filter)
 
         # optional filter by workflow name (case-insensitive substring match)
         if workflow_path:

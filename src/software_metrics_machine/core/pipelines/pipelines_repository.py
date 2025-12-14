@@ -107,29 +107,39 @@ class PipelinesRepository(FileSystemBaseRepository):
                     setattr(run, "duration_in_minutes", durs)
 
     def jobs(self, filters=None) -> List[PipelineJob]:
-        runs = self.all_jobs
+        jobs = self.all_jobs
         if not filters:
-            return runs
+            return jobs
+
+        raw_filters = filters.get("raw_filters")
+        if raw_filters:
+            parsed = super().parse_raw_filters(raw_filters)
+            self.logger.debug(f"Applying job filter: {parsed}")
+            filters = {**filters, **parsed}
 
         start_date = filters.get("start_date")
         end_date = filters.get("end_date")
 
         if start_date and end_date:
-            runs = super().filter_by_date_range(self.all_jobs, start_date, end_date)
+            jobs = super().filter_by_date_range(self.all_jobs, start_date, end_date)
 
         name = filters.get("name")
         if name:
-            runs = [job for job in runs if job.name == name]
+            jobs = [job for job in jobs if job.name == name]
 
         pipeline = filters.get("pipeline")
         if pipeline:
-            runs = [job for job in runs if job.workflow_name == pipeline]
+            jobs = [job for job in jobs if job.workflow_name == pipeline]
 
         run_id = filters.get("run_id")
         if run_id:
-            runs = [job for job in runs if job.run_id == run_id]
+            jobs = [job for job in jobs if job.run_id == run_id]
 
-        return runs
+        status = filters.get("status")
+        if status:
+            jobs = [job for job in jobs if job.status == status]
+
+        return jobs
 
     def runs(self, filters: PipelineFilters | None = None) -> List[PipelineRun]:
         if not filters:

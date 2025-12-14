@@ -133,36 +133,39 @@ class TestJobsCliCommands:
                     .with_completed_at("2023-10-01T09:10:00Z")
                     .build(),
                 ],
-                "Found 1 workflow runs and 1 jobs after filtering",
+                "success      1",
             ),
-            # pytest.param(
-            #     [
-            #         "pipelines",
-            #         "jobs-by-status",
-            #         "--job-name",
-            #         "Deploy",
-            #         "--raw-filters",
-            #         "status=in_progress",
-            #     ],
-            #     [
-            #         PipelineJobBuilder()
-            #         .with_id(105)
-            #         .with_run_id(1)
-            #         .with_name("Deploy")
-            #         .with_started_at("2023-10-01T09:05:00Z")
-            #         .with_completed_at("2023-10-01T09:10:00Z")
-            #         .build(),
-            #         PipelineJobBuilder()
-            #         .with_id(106)
-            #         .with_run_id(1)
-            #         .with_name("Build")
-            #         .with_conclusion("success")
-            #         .with_started_at("2023-10-01T09:05:00Z")
-            #         .with_completed_at("2023-10-01T09:10:00Z")
-            #         .build(),
-            #     ],
-            #     "Found 1 workflow runs and 1 jobs after filtering"
-            # )
+            pytest.param(
+                [
+                    "pipelines",
+                    "jobs-by-status",
+                    "--job-name",
+                    "Deploy",
+                    "--raw-filters",
+                    "status=cancelled",
+                ],
+                [
+                    PipelineJobBuilder()
+                    .with_id(105)
+                    .with_run_id(1)
+                    .with_name("Deploy")
+                    .with_status("completed")
+                    .with_conclusion("success")
+                    .with_started_at("2023-10-01T09:05:00Z")
+                    .with_completed_at("2023-10-01T09:10:00Z")
+                    .build(),
+                    PipelineJobBuilder()
+                    .with_id(106)
+                    .with_run_id(1)
+                    .with_name("Build")
+                    .with_status("completed")
+                    .with_conclusion("success")
+                    .with_started_at("2023-10-01T09:05:00Z")
+                    .with_completed_at("2023-10-01T09:10:00Z")
+                    .build(),
+                ],
+                "No jobs to plot. 1 pipeline runs found.",
+            ),
         ],
     )
     def test_plot_jobs_by_status(self, cli, command, jobs, expected):

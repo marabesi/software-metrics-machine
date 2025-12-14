@@ -1,5 +1,4 @@
 import pandas as pd
-import holoviews as hv
 
 from software_metrics_machine.core.infrastructure.base_viewer import (
     BaseViewer,
@@ -14,8 +13,6 @@ from software_metrics_machine.core.pipelines.aggregates.jobs_by_status import (
 from software_metrics_machine.core.pipelines.pipelines_repository import (
     PipelinesRepository,
 )
-
-hv.extension("bokeh")
 
 
 class ViewJobsByStatus(BaseViewer):
@@ -33,15 +30,17 @@ class ViewJobsByStatus(BaseViewer):
         start_date: str | None = None,
         end_date: str | None = None,
         force_all_jobs: bool = False,
+        raw_filters: str | None = None,
     ) -> PlotResult:
         aggregate = JobsByStatus(repository=self.repository).main(
             job_name=job_name,
             workflow_path=workflow_path,
             aggregate_by_week=aggregate_by_week,
-            raw_filters=pipeline_raw_filters,
+            pipeline_raw_filters=pipeline_raw_filters,
             start_date=start_date,
             end_date=end_date,
             force_all_jobs=force_all_jobs,
+            raw_filters=raw_filters,
         )
 
         status_counts = aggregate.status_counts
@@ -103,5 +102,10 @@ class ViewJobsByStatus(BaseViewer):
             chart = timeline_bars
 
         df = pd.DataFrame(status_data)
+
+        if df.empty:
+            return PlotResult(
+                chart, f"No jobs to plot. {len(runs)} pipeline runs found."
+            )
 
         return PlotResult(chart, df)
