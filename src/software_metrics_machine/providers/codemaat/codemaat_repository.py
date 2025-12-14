@@ -1,4 +1,4 @@
-import pandas as pd
+from software_metrics_machine.core.infrastructure.pandas import pd
 from pathlib import PurePosixPath
 from typing import List
 from io import StringIO

@@ -1,4 +1,4 @@
-import pandas as pd
+from software_metrics_machine.core.infrastructure.pandas import pd
 import holoviews as hv
 
 from software_metrics_machine.apps.components.scatter_with_trend import (

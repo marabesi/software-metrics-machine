@@ -1,5 +1,5 @@
 import re
-import pandas as pd
+from software_metrics_machine.core.infrastructure.pandas import pd
 from pydriller import Repository
 from typing import Iterable, Optional, Tuple
 from software_metrics_machine.core.code_types import TraverserResult

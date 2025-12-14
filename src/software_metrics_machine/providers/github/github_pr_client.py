@@ -1,5 +1,5 @@
 from datetime import datetime, timezone
-import pandas as pd
+from software_metrics_machine.core.infrastructure.pandas import pd
 import requests
 from software_metrics_machine.core.infrastructure.configuration.configuration import (
     Configuration,

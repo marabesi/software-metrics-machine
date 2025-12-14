@@ -1,5 +1,5 @@
 from collections import defaultdict
-import pandas as pd
+from software_metrics_machine.core.infrastructure.pandas import pd
 
 import holoviews as hv
 

@@ -1,4 +1,4 @@
-import pandas as pd
+from software_metrics_machine.core.infrastructure.pandas import pd
 import panel as pn
 from software_metrics_machine.apps.components.tabulator import (
     TabulatorComponent,

@@ -1,7 +1,7 @@
 from datetime import datetime
 from typing import List, Iterable, Optional
 
-import pandas as pd
+from software_metrics_machine.core.infrastructure.pandas import pd
 from pydantic import TypeAdapter
 from software_metrics_machine.core.infrastructure.file_system_base_repository import (
     FileSystemBaseRepository,

@@ -1,5 +1,5 @@
 import holoviews as hv
-import pandas as pd
+from software_metrics_machine.core.infrastructure.pandas import pd
 from typing import Iterable, Callable
 
 hv.extension("bokeh")

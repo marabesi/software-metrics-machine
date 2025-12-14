@@ -1,7 +1,7 @@
 import math
 from typing import Dict, List
 
-import pandas as pd
+from software_metrics_machine.core.infrastructure.pandas import pd
 from bokeh.plotting import figure
 from bokeh.models import (
     ColumnDataSource,

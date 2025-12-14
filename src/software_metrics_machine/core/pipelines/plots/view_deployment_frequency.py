@@ -1,6 +1,6 @@
 from datetime import datetime
 
-import pandas as pd
+from software_metrics_machine.core.infrastructure.pandas import pd
 from bokeh.plotting import figure
 from bokeh.models import ColumnDataSource, LabelSet, Span
 from bokeh.layouts import column

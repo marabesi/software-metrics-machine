@@ -4,7 +4,7 @@ from typing import Counter, List, Iterable, Optional, Dict, Tuple
 from datetime import datetime, timezone
 from pydantic import TypeAdapter
 
-import pandas as pd
+from software_metrics_machine.core.infrastructure.pandas import pd
 from software_metrics_machine.core.infrastructure.file_system_base_repository import (
     FileSystemBaseRepository,
 )
