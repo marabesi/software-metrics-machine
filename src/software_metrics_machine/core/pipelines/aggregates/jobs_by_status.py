@@ -3,6 +3,7 @@ from typing import List, Optional
 from collections import Counter, defaultdict
 from datetime import datetime
 
+from software_metrics_machine.core.infrastructure.logger import Logger
 from software_metrics_machine.core.pipelines.pipelines_repository import (
     PipelinesRepository,
 )
@@ -27,6 +28,7 @@ class JobsByStatus:
 
     def __init__(self, repository: PipelinesRepository):
         self.repository = repository
+        self.logger = Logger(configuration=self.repository.configuration).get_logger()
 
     def __count_delivery_by_day(self, jobs: List[PipelineJob], job_name: str):
         per_day: dict[str, dict[str, int]] = defaultdict(Counter)
@@ -120,7 +122,7 @@ class JobsByStatus:
             **common_filters,
             **self.repository.parse_raw_filters(pipeline_raw_filters),
         }
-        print(f"Applying date filter: {pipeline_filters}")
+        self.logger.debug(f"Applying date filter for job by status: {pipeline_filters}")
         runs = self.repository.runs(filters=common_filters)
 
         job_filter = {**common_filters, "raw_filters": raw_filters, "name": job_name}
