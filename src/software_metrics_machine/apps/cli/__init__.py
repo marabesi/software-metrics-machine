@@ -42,7 +42,7 @@ module_groups = {
         "software_metrics_machine.apps.cli.pipeline_runs_duration",
         "software_metrics_machine.apps.cli.pipeline_runs_by",
         "software_metrics_machine.apps.cli.pipeline_jobs_summary",
-        "software_metrics_machine.apps.cli.pipeline_jobs_average_time_execution",
+        "software_metrics_machine.apps.cli.pipeline_jobs_time_execution",
         "software_metrics_machine.apps.cli.pipeline_jobs_by_status",
         "software_metrics_machine.apps.cli.pipeline_deployment_frequency",
         "software_metrics_machine.apps.cli.pipeline_lead_time",
