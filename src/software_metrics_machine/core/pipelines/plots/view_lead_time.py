@@ -32,11 +32,9 @@ class ViewLeadTime(BaseViewer):
             "status": "completed",
             "conclusion": "success",
             "workflow_path": workflow_path,
+            "start_date": start_date,
+            "end_date": end_date,
         }
-        if start_date:
-            filters["start_date"] = start_date
-        if end_date:
-            filters["end_date"] = end_date
 
         runs = self.pipeline_repository.runs(filters)
         lead_rows: List[Tuple[datetime, datetime, float]] = []
