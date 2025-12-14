@@ -139,6 +139,13 @@ class PipelinesRepository(FileSystemBaseRepository):
         if status:
             jobs = [job for job in jobs if job.status == status]
 
+        include_jobs_with_pipelines_only = filters.get(
+            "include_jobs_with_pipelines_only"
+        )
+        if not include_jobs_with_pipelines_only:
+            run_ids = {r.id for r in self.all_runs if r.id is not None}
+            jobs = [j for j in jobs if j.run_id in run_ids]
+
         return jobs
 
     def runs(self, filters: PipelineFilters | None = None) -> List[PipelineRun]:

@@ -145,7 +145,6 @@ smm pipelines jobs-by-execution-time
 | Start date     | Filter by created after this date.   | `--start-date=2025-01-01`     |
 | End date       | Filter by created before this date.  | `--end-date=2025-12-31`     |
 | Limit          |                                      | `--top=2`     |
-| Filtering      | Include setup jobs used by GitHub actions,such as 'Set up job' or 'Checkout code'  | `--force-all-job` |
 | Filtering      | Filters jobs based on their pipeline  | `--pipeline-raw-filters=target_branch=main` |
 | Job name       | Optional job name substring to filter jobs | `--job-name=test` |
 | Metric         | Optional metric to compute the job duration. Defaults to "avg" | `--metric=sum` |

@@ -34,7 +34,6 @@ class JobsByAverageTimeExecution:
         exclude_jobs: Optional[str] = None,
         start_date: Optional[str] = None,
         end_date: Optional[str] = None,
-        force_all_jobs: bool = False,
         job_name: Optional[str] = None,
         pipeline_raw_filters: Optional[str] = None,
         metric: str = "avg",
@@ -50,15 +49,6 @@ class JobsByAverageTimeExecution:
         job_filters = {**filters, "name": job_name}
 
         jobs = self.repository.jobs(filters=job_filters)
-
-        if workflow_path:
-            wf_low = workflow_path.lower()
-            runs = [r for r in runs if r.path.find(wf_low) != -1]
-
-        if not force_all_jobs:
-            # restrict jobs to only those belonging to the selected runs
-            run_ids = {r.id for r in runs if r.id is not None}
-            jobs = [j for j in jobs if j.run_id in run_ids]
 
         if exclude_jobs:
             exclude = [s.strip() for s in exclude_jobs.split(",") if s.strip()]

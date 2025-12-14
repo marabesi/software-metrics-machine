@@ -56,12 +56,6 @@ from software_metrics_machine.core.pipelines.plots.view_jobs_by_status import (
     help="End date (inclusive) in YYYY-MM-DD",
 )
 @click.option(
-    "--force-all-jobs",
-    is_flag=True,
-    default=False,
-    help="Include setup jobs used by GitHub actions, such as 'Set up job' or 'Checkout code'",
-)
-@click.option(
     "--raw-filters",
     type=str,
     help=(
@@ -78,7 +72,6 @@ def jobs_by_status(
     target_branch,
     start_date,
     end_date,
-    force_all_jobs,
     raw_filters,
 ):
     result = ViewJobsByStatus(repository=create_pipelines_repository()).main(
@@ -89,7 +82,6 @@ def jobs_by_status(
         pipeline_raw_filters=f"event={event},target_branch={target_branch}",
         start_date=start_date,
         end_date=end_date,
-        force_all_jobs=force_all_jobs,
         raw_filters=raw_filters,
     )
     click.echo(result.data)

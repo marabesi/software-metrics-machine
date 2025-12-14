@@ -29,6 +29,7 @@ class TestJobsByStatus:
                     .with_created_at("2023-01-01T10:00:00Z")
                     .build(),
                 ],
+                id="should not compute job without run associated",
             ),
         ],
     )
@@ -56,8 +57,6 @@ class TestJobsByStatus:
             assert result.runs == []
 
     def test_jobs_grouped_by_day(self):
-        """Test main() with jobs grouped by day and different conclusions."""
-
         def mocked_read_file_if_exists(file):
             if file == "workflows.json":
                 return as_json_string(

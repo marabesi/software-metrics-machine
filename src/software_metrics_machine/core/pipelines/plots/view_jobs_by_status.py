@@ -29,7 +29,6 @@ class ViewJobsByStatus(BaseViewer):
         pipeline_raw_filters: str | None = None,
         start_date: str | None = None,
         end_date: str | None = None,
-        force_all_jobs: bool = False,
         raw_filters: str | None = None,
     ) -> PlotResult:
         aggregate = JobsByStatus(repository=self.repository).main(
@@ -39,7 +38,6 @@ class ViewJobsByStatus(BaseViewer):
             pipeline_raw_filters=pipeline_raw_filters,
             start_date=start_date,
             end_date=end_date,
-            force_all_jobs=force_all_jobs,
             raw_filters=raw_filters,
         )
 

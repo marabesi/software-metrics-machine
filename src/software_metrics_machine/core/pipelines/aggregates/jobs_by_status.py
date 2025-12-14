@@ -30,79 +30,6 @@ class JobsByStatus:
         self.repository = repository
         self.logger = Logger(configuration=self.repository.configuration).get_logger()
 
-    def __count_delivery_by_day(self, jobs: List[PipelineJob], job_name: str):
-        per_day: dict[str, dict[str, int]] = defaultdict(Counter)
-        for j in jobs:
-            name = j.name
-            if name != job_name:
-                continue
-            created = j.created_at
-            dt = datetime.fromisoformat(created.replace("Z", "+00:00"))
-            date_key = dt.date().isoformat()
-            conclusion = j.conclusion
-            per_day[date_key][conclusion] += 1
-
-        if not per_day:
-            return [], [], []
-
-        dates = sorted(d for d in per_day.keys() if d != "unknown")
-        if "unknown" in per_day:
-            dates.append("unknown")
-
-        # determine conclusion order: prefer success, failure, then alphabetic
-        all_concs = set[str]()
-        for c in per_day.values():
-            all_concs.update(c.keys())
-        ordered = []
-        for pref in ("success", "failure"):
-            if pref in all_concs:
-                ordered.append(pref)
-                all_concs.remove(pref)
-        ordered += sorted(all_concs)
-
-        matrix = []
-        for conc in ordered:
-            row = [per_day[d].get(conc, 0) for d in dates]
-            matrix.append(row)
-
-        return dates, ordered, matrix
-
-    def count_delivery_by_week(self, jobs: List[PipelineJob], job_name: str):
-        per_week: dict[str, dict[str, int]] = defaultdict(Counter)
-        for j in jobs:
-            name = j.name
-            if name.lower() != job_name:
-                continue
-            created = j.created_at
-            dt = datetime.fromisoformat(created.replace("Z", "+00:00"))
-            week_key = f"{dt.isocalendar()[0]}-W{dt.isocalendar()[1]:02d}"
-            conclusion = j.conclusion
-            per_week[week_key][conclusion] += 1
-
-        if not per_week:
-            return [], [], []
-
-        weeks = sorted(w for w in per_week.keys() if w != "unknown")
-        if "unknown" in per_week:
-            weeks.append("unknown")
-
-        all_concs = set[str]()
-        for cnt in per_week.values():
-            all_concs.update(cnt.keys())
-        ordered = []
-        for pref in ("success", "failure"):
-            if pref in all_concs:
-                ordered.append(pref)
-                all_concs.remove(pref)
-        ordered += sorted(all_concs)
-
-        matrix = []
-        for concl in ordered:
-            row = [per_week[w].get(concl, 0) for w in weeks]
-            matrix.append(row)
-
-        return weeks, ordered, matrix
-
     def main(
         self,
         job_name: str,
@@ -111,7 +38,6 @@ class JobsByStatus:
         pipeline_raw_filters: Optional[str] = None,
         start_date: Optional[str] = None,
         end_date: Optional[str] = None,
-        force_all_jobs: bool = False,
         raw_filters: Optional[str] = None,
     ) -> JobByStatusResult:
         common_filters = {
@@ -120,6 +46,7 @@ class JobsByStatus:
         }
         pipeline_filters = {
             **common_filters,
+            "workflow_path": workflow_path,
             **self.repository.parse_raw_filters(pipeline_raw_filters),
         }
         self.logger.debug(f"Applying date filter for job by status: {pipeline_filters}")
@@ -128,16 +55,6 @@ class JobsByStatus:
         job_filter = {**common_filters, "raw_filters": raw_filters, "name": job_name}
 
         jobs = self.repository.jobs(filters=job_filter)
-
-        # optional filter by workflow name (case-insensitive substring match)
-        if workflow_path:
-            wf_low = workflow_path.lower()
-            runs = [r for r in runs if r.path.find(wf_low) != -1]
-
-        if not force_all_jobs:
-            # restrict jobs to only those belonging to the selected runs
-            run_ids = {r.id for r in runs if r.id is not None}
-            jobs = [j for j in jobs if j.run_id in run_ids]
 
         self.logger.debug(
             f"Found {len(runs)} workflow runs and {len(jobs)} jobs after filtering"
@@ -188,3 +105,76 @@ class JobsByStatus:
             display_job_name,
             display_workflow_name,
         )
+
+    def count_delivery_by_week(self, jobs: List[PipelineJob], job_name: str):
+        per_week: dict[str, dict[str, int]] = defaultdict(Counter)
+        for j in jobs:
+            name = j.name
+            if name.lower() != job_name:
+                continue
+            created = j.created_at
+            dt = datetime.fromisoformat(created.replace("Z", "+00:00"))
+            week_key = f"{dt.isocalendar()[0]}-W{dt.isocalendar()[1]:02d}"
+            conclusion = j.conclusion
+            per_week[week_key][conclusion] += 1
+
+        if not per_week:
+            return [], [], []
+
+        weeks = sorted(w for w in per_week.keys() if w != "unknown")
+        if "unknown" in per_week:
+            weeks.append("unknown")
+
+        all_concs = set[str]()
+        for cnt in per_week.values():
+            all_concs.update(cnt.keys())
+        ordered = []
+        for pref in ("success", "failure"):
+            if pref in all_concs:
+                ordered.append(pref)
+                all_concs.remove(pref)
+        ordered += sorted(all_concs)
+
+        matrix = []
+        for concl in ordered:
+            row = [per_week[w].get(concl, 0) for w in weeks]
+            matrix.append(row)
+
+        return weeks, ordered, matrix
+
+    def __count_delivery_by_day(self, jobs: List[PipelineJob], job_name: str):
+        per_day: dict[str, dict[str, int]] = defaultdict(Counter)
+        for j in jobs:
+            name = j.name
+            if name != job_name:
+                continue
+            created = j.created_at
+            dt = datetime.fromisoformat(created.replace("Z", "+00:00"))
+            date_key = dt.date().isoformat()
+            conclusion = j.conclusion
+            per_day[date_key][conclusion] += 1
+
+        if not per_day:
+            return [], [], []
+
+        dates = sorted(d for d in per_day.keys() if d != "unknown")
+        if "unknown" in per_day:
+            dates.append("unknown")
+
+        # determine conclusion order: prefer success, failure, then alphabetic
+        all_concs = set[str]()
+        for c in per_day.values():
+            all_concs.update(c.keys())
+        ordered = []
+        for pref in ("success", "failure"):
+            if pref in all_concs:
+                ordered.append(pref)
+                all_concs.remove(pref)
+        ordered += sorted(all_concs)
+
+        matrix = []
+        for conc in ordered:
+            row = [per_day[d].get(conc, 0) for d in dates]
+            matrix.append(row)
+
+        return dates, ordered, matrix

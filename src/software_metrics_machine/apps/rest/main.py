@@ -194,7 +194,6 @@ def pipeline_jobs_by_status(
     with_pipeline: Optional[bool] = Query(False),
     aggregate_by_week: Optional[bool] = Query(False),
     raw_filters: Optional[str] = Query(None),
-    force_all_jobs: Optional[bool] = Query(False),
 ):
     """
     Return job status summary for pipeline jobs.
@@ -208,7 +207,6 @@ def pipeline_jobs_by_status(
         pipeline_raw_filters=raw_filters,
         start_date=start_date,
         end_date=end_date,
-        force_all_jobs=force_all_jobs,
     )
     return JSONResponse(result.data.to_dict(orient="records"))
 
@@ -304,7 +302,6 @@ def pipeline_jobs_average_time(
     raw_filters: Optional[str] = Query(None),
     top: Optional[int] = Query(20),
     exclude_jobs: Optional[str] = Query(None),
-    force_all_jobs: Optional[bool] = Query(False),
     job_name: Optional[str] = Query(None),
     pipeline_raw_filters: Optional[str] = Query(None),
 ):
@@ -319,7 +316,6 @@ def pipeline_jobs_average_time(
         exclude_jobs=exclude_jobs,
         start_date=start_date,
         end_date=end_date,
-        force_all_jobs=force_all_jobs,
         job_name=job_name,
         pipeline_raw_filters=pipeline_raw_filters,
     )

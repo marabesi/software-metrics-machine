@@ -52,12 +52,6 @@ from software_metrics_machine.core.pipelines.plots.view_jobs_average_time_execut
     help="End date (inclusive) in YYYY-MM-DD",
 )
 @click.option(
-    "--force-all-jobs",
-    is_flag=True,
-    default=False,
-    help="Include setup jobs used by GitHub actions, such as 'Set up job' or 'Checkout code'",
-)
-@click.option(
     "--job-name",
     default=None,
     help="Filter jobs by job name",
@@ -83,7 +77,6 @@ def jobs_by_execution_time(
     exclude_jobs,
     start_date,
     end_date,
-    force_all_jobs,
     job_name,
     pipeline_raw_filters,
     metric,
@@ -97,7 +90,6 @@ def jobs_by_execution_time(
         exclude_jobs=exclude_jobs,
         start_date=start_date,
         end_date=end_date,
-        force_all_jobs=force_all_jobs,
         job_name=job_name,
         pipeline_raw_filters=pipeline_raw_filters,
         metric=metric,
