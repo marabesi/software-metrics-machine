@@ -162,6 +162,44 @@ smm pipelines jobs-by-execution-time
 smm pipelines jobs-by-status
 ```
 
+:::tabs key:cli
+== Dashboard
+
+Not available yet.
+
+== CLI
+
+```bash
+smm pipelines jobs-by-status
+```
+
+| Option               | Description                                                                                                                 | Example <div style="width:200px"></div>             |
+|----------------------|-----------------------------------------------------------------------------------------------------------------------------|-----------------------------------------------------|
+| Start date           | Filter by created after this date.                                                                                          | `--start-date=2025-01-01`                           |
+| End date             | Filter by created before this date.                                                                                         | `--end-date=2025-12-31`                             |
+| Raw Filters          | Filters by the job fields available by the provider, for example, if using GitHub, you can filters by any filter in the API | `--raw-filters=status=completed,conclusion=success` |
+| Pipeline raw Filters | Filters by the pipeline, use this option to decrease the scope size of the dataset                                          | `--pipeline-raw-filters=status=completed`           |
+
+
+### Examples - Filter jobs by status
+
+Computes jobs that belong to pipelines completed between August 17, 2025, and November 17, 2025 and have been
+successfully completed:
+
+```bash
+smm pipelines jobs-by-status \
+  --start-date 2025-08-17 \
+  --end-date 2025-11-17 \
+  --pipeline-raw-filters=status=completed \ 
+  --raw-filters=conclusion=success 
+```
+
+:::
+
+
+
+
+
 ## Jobs Summary
 
 ```bash
