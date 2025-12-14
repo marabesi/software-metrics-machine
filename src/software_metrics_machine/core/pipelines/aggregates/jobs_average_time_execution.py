@@ -1,7 +1,7 @@
 import dataclasses
 from collections import defaultdict
 from datetime import datetime
-from typing import Optional, List
+from typing import Optional, List, Tuple
 
 from software_metrics_machine.core.pipelines.pipelines_repository import (
     PipelinesRepository,
@@ -16,8 +16,8 @@ from software_metrics_machine.core.pipelines.pipelines_types import (
 class JobsAverageTimeExecutionResult:
     runs: List[PipelineRun]
     jobs: List[PipelineJob]
-    averages: List[float]
-    sums: List[float]
+    averages: List[Tuple[str, float]]
+    sums: List[Tuple[str, float]]
     counts: dict
 
 
@@ -48,43 +48,17 @@ class JobsByAverageTimeExecution:
         runs = self.repository.runs(filters=filters)
 
         job_filters = {**filters, "name": job_name}
-        print(f"Applying jobs filter: {job_filters}")
+
         jobs = self.repository.jobs(filters=job_filters)
 
         if workflow_path:
             wf_low = workflow_path.lower()
             runs = [r for r in runs if r.path.find(wf_low) != -1]
 
-        # raw_filters = self.repository.parse_raw_filters(raw_filters)
-        # # optional filter by event (e.g. push, pull_request) - accepts comma-separated or single value
-        # if event_vals := raw_filters.get("event"):
-        #     allowed = set(event_vals)
-        #     runs = [r for r in runs if (r.get("event") or "").lower() in allowed]
-
         if not force_all_jobs:
             # restrict jobs to only those belonging to the selected runs
             run_ids = {r.id for r in runs if r.id is not None}
             jobs = [j for j in jobs if j.run_id in run_ids]
-
-        # # optional filter by target branch (accepts comma-separated values)
-        # if target_vals := raw_filters.get("target_branch"):
-        #     allowed = set(target_vals)
-
-        #     def branch_matches(obj):
-        #         for key in (
-        #             "head_branch",
-        #             "head_ref",
-        #             "ref",
-        #             "base_ref",
-        #             "base_branch",
-        #         ):
-        #             val = obj.get(key) or ""
-        #             if val and val.lower() in allowed:
-        #                 return True
-        #         return False
-
-        #     runs = [r for r in runs if branch_matches(r)]
-        #     jobs = [j for j in jobs if branch_matches(j)]
 
         if exclude_jobs:
             exclude = [s.strip() for s in exclude_jobs.split(",") if s.strip()]
@@ -93,8 +67,8 @@ class JobsByAverageTimeExecution:
         print(f"Found {len(runs)} workflow runs and {len(jobs)} jobs after filtering")
 
         # aggregate durations by job name
-        sums = defaultdict(float)
-        counts = defaultdict(int)
+        sums: dict[str, float] = defaultdict(float)
+        counts: dict[str, float] = defaultdict(int)
         for job in jobs:
             name = job.name
             started = job.started_at
@@ -110,16 +84,17 @@ class JobsByAverageTimeExecution:
             sums[name] += secs
             counts[name] += 1
 
-        averages = [
+        averages: List[Tuple[str, float]] = [
             (name, (sums[name] / counts[name]) / 60.0) for name in counts.keys()
         ]  # minutes
 
-        sums = [(name, sums[name] / 60.0) for name in counts.keys()]
-
+        sums_list: List[Tuple[str, float]] = [
+            (name, sums[name] / 60.0) for name in counts.keys()
+        ]
         # sort by average descending (longest first)
         averages.sort(key=lambda x: x[1], reverse=True)
         averages = averages[:top]
 
         return JobsAverageTimeExecutionResult(
-            runs=runs, jobs=jobs, averages=averages, counts=counts, sums=sums
+            runs=runs, jobs=jobs, averages=averages, counts=counts, sums=sums_list
         )

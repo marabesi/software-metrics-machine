@@ -139,7 +139,9 @@ class JobsByStatus:
             run_ids = {r.id for r in runs if r.id is not None}
             jobs = [j for j in jobs if j.run_id in run_ids]
 
-        print(f"Found {len(runs)} workflow runs and {len(jobs)} jobs after filtering")
+        self.logger.debug(
+            f"Found {len(runs)} workflow runs and {len(jobs)} jobs after filtering"
+        )
 
         # derive display labels from job objects if possible
         display_job_name = job_name or "<job>"
