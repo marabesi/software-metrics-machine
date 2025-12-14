@@ -11,7 +11,7 @@ from software_metrics_machine.core.pipelines.pipelines_repository import (
 from software_metrics_machine.providers.pydriller.commit_traverser import (
     CommitTraverser,
 )
-from typing import List, Tuple
+from typing import List, Tuple, Set
 
 
 class ViewLeadTime(BaseViewer):
@@ -27,6 +27,8 @@ class ViewLeadTime(BaseViewer):
         job_name: str,
         start_date: str | None = None,
         end_date: str | None = None,
+        pipeline_raw_filters: str | None = None,
+        job_raw_filters: str | None = None,
     ) -> PlotResult[pd.DataFrame]:
         filters = {
             "status": "completed",
@@ -35,11 +37,13 @@ class ViewLeadTime(BaseViewer):
             "start_date": start_date,
             "end_date": end_date,
             "job_name": job_name,
+            "raw_filters": pipeline_raw_filters,
+            "job_raw_filters": job_raw_filters,
         }
 
         runs = self.pipeline_repository.runs(filters)
-        lead_rows: List[Tuple[datetime, datetime, float]] = []
-        deploy_candidates: List[Tuple[str, datetime]] = []
+        lead_rows: List[Tuple[str, datetime, datetime, float]] = []
+        deploy_candidates: Set[Tuple[str, datetime]] = set()
 
         for run in runs:
             jobs = run.jobs
@@ -52,10 +56,10 @@ class ViewLeadTime(BaseViewer):
                     continue
                 deploy_dt = datetime.fromisoformat(completed_at.replace("Z", "+00:00"))
                 sha = job.head_sha
-                deploy_candidates.append((sha, deploy_dt))
+                deploy_candidates.add((sha, deploy_dt))
 
         for sha, deploy_dt in deploy_candidates:
-            commit_dt = self.find_release_for_commit(self.pipeline_repository, sha)
+            commit_dt = self.find_release_for_commit(runs, sha)
             if commit_dt:
                 lead_hours = (deploy_dt - commit_dt).total_seconds() / 3600.0
                 lead_rows.append((sha, commit_dt, deploy_dt, lead_hours))
@@ -90,8 +94,8 @@ class ViewLeadTime(BaseViewer):
             data=df,
         )
 
-    def find_release_for_commit(self, repository: PipelinesRepository, commit_hash):
-        for run in repository.runs():  # or repository.all_runs
+    def find_release_for_commit(self, runs, commit_hash):
+        for run in runs:  # or repository.all_runs
             if run.head_commit["id"] and run.head_commit["id"].startswith(commit_hash):
                 return datetime.fromisoformat(run.run_started_at.replace("Z", "+00:00"))
             for job in run.jobs:

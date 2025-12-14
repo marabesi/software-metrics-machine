@@ -212,6 +212,25 @@ class PipelinesRepository(FileSystemBaseRepository):
             runs = [
                 run for run in runs if any(job.name == job_name for job in run.jobs)
             ]
+
+        job_raw_filters = filters.get("job_raw_filters")
+        if job_name:
+            job_filters_parsed = super().parse_raw_filters(job_raw_filters)
+
+            for filter_key, filter_value in job_filters_parsed.items():
+
+                def job_matches(obj: PipelineJob):
+                    attr_value = getattr(obj, filter_key, None)
+                    if attr_value is None:
+                        return False
+                    if str(attr_value) == str(filter_value):
+                        return True
+                    return False
+
+                runs = [
+                    run for run in runs if any(job_matches(job) for job in run.jobs)
+                ]
+
         return runs
 
     def filter_by_job_name(

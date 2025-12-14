@@ -18,13 +18,29 @@ from software_metrics_machine.core.pipelines.plots.view_lead_time import (
 )
 @click.option("--start-date", type=str, default=None, help="Start date (YYYY-MM-DD)")
 @click.option("--end-date", type=str, default=None, help="End date (YYYY-MM-DD)")
-def lead_time(pipeline, job_name, start_date, end_date):
+@click.option(
+    "--pipeline-raw-filters",
+    type=str,
+    default=None,
+    help="Raw GitHub filters string (e.g. 'status=draft,author=john')",
+)
+@click.option(
+    "--job-raw-filters",
+    type=str,
+    default=None,
+    help="Raw GitHub filters string (e.g. 'status=draft,author=john')",
+)
+def lead_time(
+    pipeline, job_name, start_date, end_date, pipeline_raw_filters, job_raw_filters
+):
     viewer = ViewLeadTime(repository=(create_pipelines_repository()))
     result = viewer.main(
         workflow_path=pipeline,
         job_name=job_name,
         start_date=start_date,
         end_date=end_date,
+        pipeline_raw_filters=pipeline_raw_filters,
+        job_raw_filters=job_raw_filters,
     ).data
 
     click.echo(result)
