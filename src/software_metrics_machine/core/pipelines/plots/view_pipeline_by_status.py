@@ -29,12 +29,14 @@ class ViewPipelineByStatus(BaseViewer):
         start_date: str | None = None,
         end_date: str | None = None,
         target_branch: str | None = None,
+        raw_filters: str | None = None,
     ) -> PlotResult:
         result = PipelineByStatus(repository=self.repository).main(
             workflow_path=workflow_path,
             target_branch=target_branch,
             start_date=start_date,
             end_date=end_date,
+            raw_filters=raw_filters,
         )
         status_counts = result.status_counts
         runs = result.runs

@@ -57,18 +57,24 @@ class TestPipelineRunsByStatusCliCommands:
                     "--end-date",
                     "2023-12-01",
                 ],
-                {
-                    "count": 3,
-                },
+                "completed      3",
+            ),
+            (
+                [
+                    "pipelines",
+                    "pipeline-by-status",
+                    "--raw-filters",
+                    "status=failed",
+                ],
+                "failed      1",
             ),
         ],
     )
     def test_should_filter_by_multiple_parameters(self, cli, command, expected):
-        expected_count = expected["count"]
         workflow_runs = github_workflows_data()
 
         cli.storage.store_pipelines_with(workflow_runs)
 
         result = cli.runner.invoke(main, command)
 
-        assert f"Total workflow runs after filters: {expected_count}" in result.output
+        assert expected in result.output

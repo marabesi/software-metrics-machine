@@ -26,11 +26,19 @@ from software_metrics_machine.core.pipelines.plots.view_pipeline_by_status impor
     type=str,
     help="End date (inclusive) in YYYY-MM-DD",
 )
-def pipeline_by_status(workflow_path, start_date, end_date):
+@click.option(
+    "--raw-filters",
+    type=str,
+    help=(
+        "Filters to apply to the pipeline dataset, in the form key=value,key2=value2."
+    ),
+)
+def pipeline_by_status(workflow_path, start_date, end_date, raw_filters):
     result = ViewPipelineByStatus(repository=create_pipelines_repository()).main(
         workflow_path=workflow_path,
         start_date=start_date,
         end_date=end_date,
+        raw_filters=raw_filters,
     )
     click.echo(result.data)
 
