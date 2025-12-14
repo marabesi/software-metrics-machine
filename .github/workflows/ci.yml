@@ -105,8 +105,8 @@ jobs:
           )
 
           echo "$TEMPLATE" > "$(pwd)/tmp_test/github/smm_config.json"
+          mkdir -p "$(pwd)/tmp_test/github"
           mkdir -p "$(pwd)/tmp_test/repo"
-          cp -R "$(pwd)/fixtures/github" "$(pwd)/tmp_test"
           chmod -R 755 "$(pwd)/tmp_test"
 
       - name: Run pytest
