@@ -146,6 +146,11 @@ class PipelinesRepository(FileSystemBaseRepository):
             run_ids = {r.id for r in self.all_runs if r.id is not None}
             jobs = [j for j in jobs if j.run_id in run_ids]
 
+        exclude_jobs = filters.get("exclude_jobs")
+        if exclude_jobs:
+            exclude = [s.strip() for s in exclude_jobs.split(",") if s.strip()]
+            jobs = self.filter_by_job_name(jobs, exclude)
+
         return jobs
 
     def runs(self, filters: PipelineFilters | None = None) -> List[PipelineRun]:
@@ -212,13 +217,13 @@ class PipelinesRepository(FileSystemBaseRepository):
     def filter_by_job_name(
         self, jobs: List[PipelineJob], job_name: Iterable[str]
     ) -> List[PipelineJob]:
-        job_name_set = {str(job).strip().lower() for job in (job_name or []) if job}
+        job_name_set = {str(job) for job in (job_name or []) if job}
         if not job_name_set:
             return jobs
 
         filtered: List[dict] = []
         for job in jobs:
-            pr_job_name = (job.get("name") or "").lower()
+            pr_job_name = job.name
             if any(token in pr_job_name for token in job_name_set):
                 continue
             filtered.append(job)

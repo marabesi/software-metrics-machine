@@ -140,14 +140,24 @@ part of the overall pipeline process. This command associates the jobs wih their
 smm pipelines jobs-by-execution-time
 ```
 
-| Option         | Description                          | Example <div style="width:200px"></div> |
-|----------------|--------------------------------------|--------------------------|
-| Start date     | Filter by created after this date.   | `--start-date=2025-01-01`     |
-| End date       | Filter by created before this date.  | `--end-date=2025-12-31`     |
-| Limit          |                                      | `--top=2`     |
-| Filtering      | Filters jobs based on their pipeline  | `--pipeline-raw-filters=target_branch=main` |
-| Job name       | Optional job name substring to filter jobs | `--job-name=test` |
-| Metric         | Optional metric to compute the job duration. Defaults to "avg" | `--metric=sum` |
+| Option       | Description                                                    | Example <div style="width:200px"></div>     |
+|--------------|----------------------------------------------------------------|---------------------------------------------|
+| Start date   | Filter by created after this date.                             | `--start-date=2025-01-01`                   |
+| End date     | Filter by created before this date.                            | `--end-date=2025-12-31`                     |
+| Limit        |                                                                | `--top=2`                                   |
+| Filtering    | Filters jobs based on their pipeline                           | `--pipeline-raw-filters=target_branch=main` |
+| Filtering    | Filters out the given jobs                                     | --exclude-jobs="Deploy"                     | 
+| Job name     | Optional job name substring to filter jobs                     | `--job-name=test`                           |
+| Metric       | Optional metric to compute the job duration. Defaults to "avg" | `--metric=sum`                              |
+
+### Examples - Shows jobs based on their execution time
+
+List the average time it takes for the jobs to run from start to finishi:
+
+```bash
+smm pipelines jobs-by-execution-time \
+  --exclude-jobs=report-build-status
+```
 
 
 :::

@@ -46,14 +46,9 @@ class JobsByAverageTimeExecution:
 
         runs = self.repository.runs(filters=filters)
 
-        job_filters = {**filters, "name": job_name}
+        job_filters = {**filters, "name": job_name, "exclude_jobs": exclude_jobs}
 
         jobs = self.repository.jobs(filters=job_filters)
-
-        if exclude_jobs:
-            exclude = [s.strip() for s in exclude_jobs.split(",") if s.strip()]
-            jobs = self.repository.filter_by_job_name(jobs, exclude)
-
         # aggregate durations by job name
         sums: dict[str, float] = defaultdict(float)
         counts: dict[str, float] = defaultdict(int)

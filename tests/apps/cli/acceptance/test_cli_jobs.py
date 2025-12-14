@@ -370,3 +370,32 @@ class TestJobsCliCommands:
             ],
         )
         assert "Deploy  10.0" in result.output
+
+    def test_exclude_job_from_list(self, cli):
+        jobs = [
+            PipelineJobBuilder()
+            .with_id(105)
+            .with_run_id(1)
+            .with_name("Deploy")
+            .with_conclusion("success")
+            .with_started_at("2023-10-01T09:05:00Z")
+            .with_completed_at("2023-10-01T09:10:00Z")
+            .build(),
+            PipelineJobBuilder()
+            .with_id(106)
+            .with_run_id(1)
+            .with_name("Deploy")
+            .with_conclusion("success")
+            .with_started_at("2023-10-01T09:05:00Z")
+            .with_completed_at("2023-10-01T09:10:00Z")
+            .build(),
+        ]
+        cli.storage.store_pipelines_with(single_run())
+        cli.storage.store_jobs_with(jobs)
+
+        result = cli.runner.invoke(
+            main,
+            ["pipelines", "jobs-by-execution-time", "--exclude-jobs", "Deploy"],
+        )
+
+        assert "Found 1 workflow runs and 0 jobs after filtering" in result.output
