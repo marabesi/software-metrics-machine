@@ -18,7 +18,7 @@ class JobsAverageTimeExecutionResult:
     jobs: List[PipelineJob]
     averages: List[Tuple[str, float]]
     sums: List[Tuple[str, float]]
-    counts: dict
+    counts: dict[str, float]
 
 
 class JobsByAverageTimeExecution:
