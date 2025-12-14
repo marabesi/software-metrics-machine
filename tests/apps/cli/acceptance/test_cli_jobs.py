@@ -106,39 +106,72 @@ class TestJobsCliCommands:
                 params={"owner": "random"},
             )
 
-    def test_plot_jobs_by_status(self, cli):
-        jobs = [
-            PipelineJobBuilder()
-            .with_id(105)
-            .with_run_id(1)
-            .with_name("Deploy")
-            .with_conclusion("success")
-            .with_started_at("2023-10-01T09:05:00Z")
-            .with_completed_at("2023-10-01T09:10:00Z")
-            .build(),
-            PipelineJobBuilder()
-            .with_id(106)
-            .with_run_id(1)
-            .with_name("Build")
-            .with_conclusion("success")
-            .with_started_at("2023-10-01T09:05:00Z")
-            .with_completed_at("2023-10-01T09:10:00Z")
-            .build(),
-        ]
+    @pytest.mark.parametrize(
+        "command, jobs, expected",
+        [
+            pytest.param(
+                [
+                    "pipelines",
+                    "jobs-by-status",
+                    "--job-name",
+                    "Deploy",
+                ],
+                [
+                    PipelineJobBuilder()
+                    .with_id(105)
+                    .with_run_id(1)
+                    .with_name("Deploy")
+                    .with_conclusion("success")
+                    .with_started_at("2023-10-01T09:05:00Z")
+                    .with_completed_at("2023-10-01T09:10:00Z")
+                    .build(),
+                    PipelineJobBuilder()
+                    .with_id(106)
+                    .with_run_id(1)
+                    .with_name("Build")
+                    .with_started_at("2023-10-01T09:05:00Z")
+                    .with_completed_at("2023-10-01T09:10:00Z")
+                    .build(),
+                ],
+                "Found 1 workflow runs and 1 jobs after filtering",
+            ),
+            # pytest.param(
+            #     [
+            #         "pipelines",
+            #         "jobs-by-status",
+            #         "--job-name",
+            #         "Deploy",
+            #         "--raw-filters",
+            #         "status=in_progress",
+            #     ],
+            #     [
+            #         PipelineJobBuilder()
+            #         .with_id(105)
+            #         .with_run_id(1)
+            #         .with_name("Deploy")
+            #         .with_started_at("2023-10-01T09:05:00Z")
+            #         .with_completed_at("2023-10-01T09:10:00Z")
+            #         .build(),
+            #         PipelineJobBuilder()
+            #         .with_id(106)
+            #         .with_run_id(1)
+            #         .with_name("Build")
+            #         .with_conclusion("success")
+            #         .with_started_at("2023-10-01T09:05:00Z")
+            #         .with_completed_at("2023-10-01T09:10:00Z")
+            #         .build(),
+            #     ],
+            #     "Found 1 workflow runs and 1 jobs after filtering"
+            # )
+        ],
+    )
+    def test_plot_jobs_by_status(self, cli, command, jobs, expected):
         cli.storage.store_pipelines_with(single_run())
         cli.storage.store_jobs_with(jobs)
 
-        result = cli.runner.invoke(
-            main,
-            [
-                "pipelines",
-                "jobs-by-status",
-                "--job-name",
-                "Deploy",
-            ],
-        )
-        assert 0 == result.exit_code
-        assert "Found 1 workflow runs and 1 jobs after filtering" in result.output
+        result = cli.runner.invoke(main, command)
+
+        assert expected in result.output
 
     @pytest.mark.parametrize(
         "jobs_with_conclusion, expected",

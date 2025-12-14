@@ -205,7 +205,7 @@ def pipeline_jobs_by_status(
         workflow_path=workflow_path,
         with_pipeline=with_pipeline,
         aggregate_by_week=aggregate_by_week,
-        raw_filters=raw_filters,
+        pipeline_raw_filters=raw_filters,
         start_date=start_date,
         end_date=end_date,
         force_all_jobs=force_all_jobs,

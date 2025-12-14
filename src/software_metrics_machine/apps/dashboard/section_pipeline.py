@@ -134,7 +134,7 @@ def pipeline_section(
                 end_date=date_range_picker[1],
                 job_name=sanitize_all_argument(jobs_selector),
                 workflow_path=sanitize_all_argument(workflow_selector),
-                raw_filters=f"target_branch={sanitize_all_argument(branch)},event={sanitize_all_argument(event)}",
+                pipeline_raw_filters=f"target_branch={sanitize_all_argument(branch)},event={sanitize_all_argument(event)}",
             )
             .plot
         )

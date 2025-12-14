@@ -17,8 +17,8 @@ class TestJobsByStatus:
     @pytest.mark.parametrize(
         "pipelines, jobs",
         [
-            ([], []),
-            (
+            pytest.param([], [], id="empty_data"),
+            pytest.param(
                 [],
                 [
                     PipelineJobBuilder()
@@ -32,15 +32,13 @@ class TestJobsByStatus:
             ),
         ],
     )
-    def test_empty_jobs_and_runs(self, pipelines, jobs):
-        """Test main() with empty jobs and runs."""
-
+    def test_jobs_and_runs_based_on_params(self, pipelines, jobs):
         def mocked_read_file_if_exists(file):
             if file == "workflows.json":
                 return as_json_string(pipelines)
             if file == "jobs.json":
                 return as_json_string(jobs)
-            return None
+            raise FileNotFoundError
 
         with patch(
             "software_metrics_machine.core.infrastructure.file_system_base_repository.FileSystemBaseRepository.read_file_if_exists",
@@ -51,7 +49,6 @@ class TestJobsByStatus:
 
             result = jobs_by_status.main(job_name="test")
 
-            # Verify result structure for empty data
             assert result.status_counts == {}
             assert result.dates == []
             assert result.conclusions == []
