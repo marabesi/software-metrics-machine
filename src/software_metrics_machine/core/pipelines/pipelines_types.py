@@ -78,6 +78,7 @@ class DeploymentItem(BaseModel):
     date: str
     count: int
     commit: str
+    link: str
 
 
 class DeploymentFrequency(BaseModel):

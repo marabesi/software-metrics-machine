@@ -42,6 +42,7 @@ def single_deployment_frequency() -> List[PipelineRun]:
         .with_event("push")
         .with_head_branch("main")
         .with_jobs([])
+        .with_html_url("http://link-to-pipeline")
         .build(),
     ]
 

@@ -13,21 +13,27 @@ class DeploymentFrequencyBuilder:
         self._months: List[DeploymentItem] = []
 
     def add_day(
-        self, date: str, count: int = 1, commit: str = ""
+        self, date: str, count: int = 1, commit: str = "", link: str = ""
     ) -> "DeploymentFrequencyBuilder":
-        self._days.append(DeploymentItem(date=date, count=count, commit=commit))
+        self._days.append(
+            DeploymentItem(date=date, count=count, commit=commit, link=link)
+        )
         return self
 
     def add_week(
-        self, date: str, count: int = 1, commit: str = ""
+        self, date: str, count: int = 1, commit: str = "", link: str = ""
     ) -> "DeploymentFrequencyBuilder":
-        self._weeks.append(DeploymentItem(date=date, count=count, commit=commit))
+        self._weeks.append(
+            DeploymentItem(date=date, count=count, commit=commit, link=link)
+        )
         return self
 
     def add_month(
-        self, date: str, count: int = 1, commit: str = ""
+        self, date: str, count: int = 1, commit: str = "", link: str = ""
     ) -> "DeploymentFrequencyBuilder":
-        self._months.append(DeploymentItem(date=date, count=count, commit=commit))
+        self._months.append(
+            DeploymentItem(date=date, count=count, commit=commit, link=link)
+        )
         return self
 
     def with_days(self, items: List[dict]) -> "DeploymentFrequencyBuilder":

@@ -43,6 +43,7 @@ class ViewDeploymentFrequency(BaseViewer):
         weekly_counts = [w.count for w in aggregated.weeks]
         monthly_counts = [m.count for m in aggregated.months]
         commit = [m.commit for m in aggregated.days]
+        link = [m.link for m in aggregated.days]
 
         def _make_bar_fig(x, counts, title, color):
             src = ColumnDataSource(dict(x=list(range(len(x))), label=x, count=counts))
@@ -107,6 +108,7 @@ class ViewDeploymentFrequency(BaseViewer):
             "weekly_counts": pd.Series(weekly_counts),
             "monthly_counts": pd.Series(monthly_counts),
             "commits": pd.Series(commit),
+            "links": pd.Series(link),
         }
 
         return PlotResult(plot=pane, data=pd.DataFrame(handles_different_array_sizes))

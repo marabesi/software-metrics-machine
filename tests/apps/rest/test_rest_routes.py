@@ -255,6 +255,7 @@ class TestRestRoutes:
                 "commits": "abcdef1234567890",
                 "daily_counts": 1,
                 "days": "2023-10-01",
+                "links": "https://github.com/aaa/json-tool/actions/runs/11",
                 "monthly_counts": 1,
                 "months": "2023-10",
                 "weekly_counts": 1,

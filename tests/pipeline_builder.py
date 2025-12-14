@@ -71,6 +71,10 @@ class PipelineBuilder:
         self._pipeline.jobs = jobs
         return self
 
+    def with_html_url(self, html_url: str):
+        self._pipeline.html_url = html_url
+        return self
+
     def add_job(
         self,
         name: str | None = None,

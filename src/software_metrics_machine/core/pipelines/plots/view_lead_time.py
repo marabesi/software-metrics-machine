@@ -34,6 +34,7 @@ class ViewLeadTime(BaseViewer):
             "workflow_path": workflow_path,
             "start_date": start_date,
             "end_date": end_date,
+            "job_name": job_name,
         }
 
         runs = self.pipeline_repository.runs(filters)
@@ -44,14 +45,11 @@ class ViewLeadTime(BaseViewer):
             jobs = run.jobs
 
             for job in jobs:
-                name = job.name
-                if name != job_name:
-                    continue
-
                 completed_at = job.completed_at
                 if not completed_at:
                     continue
-
+                if job.status != "completed" or job.conclusion != "success":
+                    continue
                 deploy_dt = datetime.fromisoformat(completed_at.replace("Z", "+00:00"))
                 sha = job.head_sha
                 deploy_candidates.append((sha, deploy_dt))
@@ -60,13 +58,13 @@ class ViewLeadTime(BaseViewer):
             commit_dt = self.find_release_for_commit(self.pipeline_repository, sha)
             if commit_dt:
                 lead_hours = (deploy_dt - commit_dt).total_seconds() / 3600.0
-                lead_rows.append((commit_dt, deploy_dt, lead_hours))
+                lead_rows.append((sha, commit_dt, deploy_dt, lead_hours))
 
         if len(lead_rows) == 0:
             return PlotResult(plot=None, data=pd.DataFrame([]))
 
         df = pd.DataFrame(
-            lead_rows, columns=["start_time", "end_time", "lead_time_hours"]
+            lead_rows, columns=["commit", "start_time", "end_time", "lead_time_hours"]
         )
 
         if df.empty:
