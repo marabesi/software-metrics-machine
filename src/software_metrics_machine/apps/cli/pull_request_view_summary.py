@@ -42,7 +42,7 @@ from software_metrics_machine.core.prs.plots.view_summary import PrViewSummary
     "--raw-filters",
     type=str,
     default=None,
-    help="Raw GitHub filters string (e.g. 'status=draft,author=john')",
+    help="Raw Provider filters string (e.g. 'status=draft,author=john')",
 )
 def summary(csv, start_date, end_date, output, labels, raw_filters):
     view = PrViewSummary(repository=create_prs_repository())

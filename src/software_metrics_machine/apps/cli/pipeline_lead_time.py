@@ -22,13 +22,13 @@ from software_metrics_machine.core.pipelines.plots.view_lead_time import (
     "--pipeline-raw-filters",
     type=str,
     default=None,
-    help="Raw GitHub filters string (e.g. 'status=draft,author=john')",
+    help="Raw Provider filters string (e.g. 'status=draft,author=john')",
 )
 @click.option(
     "--job-raw-filters",
     type=str,
     default=None,
-    help="Raw GitHub filters string (e.g. 'status=draft,author=john')",
+    help="Raw Provider filters string (e.g. 'status=draft,author=john')",
 )
 def lead_time(
     pipeline, job_name, start_date, end_date, pipeline_raw_filters, job_raw_filters

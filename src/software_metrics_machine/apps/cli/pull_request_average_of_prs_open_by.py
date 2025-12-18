@@ -48,7 +48,7 @@ from software_metrics_machine.core.prs.plots.view_average_of_prs_open_by import 
     "--raw-filters",
     type=str,
     default=None,
-    help="Raw GitHub filters string (e.g. 'status=draft,author=john')",
+    help="Raw Provider filters string (e.g. 'status=draft,author=john')",
 )
 def average_open_by(authors, labels, aggregate_by, start_date, end_date, raw_filters):
     result = ViewAverageOfPrsOpenBy(repository=create_prs_repository()).main(

@@ -36,7 +36,7 @@ from software_metrics_machine.core.prs.plots.view_prs_by_author import ViewPrsBy
     "--raw-filters",
     type=str,
     default=None,
-    help="Raw GitHub filters string (e.g. 'status=draft,author=john')",
+    help="Raw Provider filters string (e.g. 'status=draft,author=john')",
 )
 def by_author(top, labels, start_date, end_date, raw_filters):
     result = ViewPrsByAuthor(repository=create_prs_repository()).plot_top_authors(

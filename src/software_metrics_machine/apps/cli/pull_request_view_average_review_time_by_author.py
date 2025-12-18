@@ -40,7 +40,7 @@ from software_metrics_machine.core.prs.plots.view_average_review_time_by_author 
     "--raw-filters",
     type=str,
     default=None,
-    help="Raw GitHub filters string (e.g. 'status=draft,author=john')",
+    help="Raw Provider filters string (e.g. 'status=draft,author=john')",
 )
 def review_time_by_author(top, labels, start_date, end_date, raw_filters):
     result = ViewAverageReviewTimeByAuthor(

@@ -32,7 +32,7 @@ from software_metrics_machine.core.prs.plots.view_open_prs_through_time import (
     "--raw-filters",
     type=str,
     default=None,
-    help="Raw GitHub filters string (e.g. 'status=draft,author=john')",
+    help="Raw Provider filters string (e.g. 'status=draft,author=john')",
 )
 def prs_through_time(authors, start_date, end_date, raw_filters):
     result = ViewOpenPrsThroughTime(repository=create_prs_repository()).main(

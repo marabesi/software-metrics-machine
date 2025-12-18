@@ -40,7 +40,7 @@ from software_metrics_machine.core.pipelines.plots.view_pipeline_summary import 
     "--raw-filters",
     type=str,
     default=None,
-    help="Raw GitHub filters string (e.g. 'status=draft,author=john')",
+    help="Raw Provider filters string (e.g. 'status=draft,author=john')",
 )
 def summary(max_workflows, start_date, end_date, output, raw_filters):
     view = WorkflowRunSummary(repository=create_pipelines_repository())

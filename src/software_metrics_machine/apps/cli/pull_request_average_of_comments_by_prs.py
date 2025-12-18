@@ -48,7 +48,7 @@ from software_metrics_machine.core.prs.plots.view_average_comments_per_pr import
     "--raw-filters",
     type=str,
     default=None,
-    help="Raw GitHub filters string (e.g. 'status=draft,author=john')",
+    help="Raw Provider filters string (e.g. 'status=draft,author=john')",
 )
 def average_prs_comment(
     authors, labels, aggregate_by, start_date, end_date, raw_filters
