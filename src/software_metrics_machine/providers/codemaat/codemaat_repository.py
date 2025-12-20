@@ -1,3 +1,4 @@
+from software_metrics_machine.core.infrastructure.logger import Logger
 from software_metrics_machine.core.infrastructure.pandas import pd
 from pathlib import PurePosixPath
 from typing import List
@@ -16,6 +17,7 @@ class CodemaatRepository(FileSystemBaseRepository):
     def __init__(self, configuration: Configuration):
         self.configuration = configuration
         super().__init__(configuration=self.configuration, target_subfolder="codemaat")
+        self.logger = Logger(configuration=configuration).get_logger()
 
     def get_code_churn(self, filters: None = None) -> List[CodeChurn]:
         file = "abs-churn.csv"
@@ -169,7 +171,9 @@ class CodemaatRepository(FileSystemBaseRepository):
             # filter out matching rows
             mask = df["entity"].apply(lambda x: not matches_any_pattern(str(x)))
             df = df[mask]
-            print(f"Applied ignore file patterns: {pats}, remaining rows: {len(df)}")
+            self.logger.debug(
+                f"Applied ignore file patterns: {pats}, remaining rows: {len(df)}"
+            )
             return df
         return df
 
@@ -188,7 +192,9 @@ class CodemaatRepository(FileSystemBaseRepository):
             p = PurePosixPath(fname)
             for pat in pats:
                 try:
-                    print(f"Matching {fname} against pattern {pat}", p.match(pat))
+                    self.logger.debug(
+                        f"Matching {fname} against pattern {pat}", p.match(pat)
+                    )
                     if p.match(pat):
                         return True
                 except Exception:
