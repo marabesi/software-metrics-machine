@@ -72,6 +72,7 @@ smm code pairing-index
 | Start date     | Fetches PRs created after a date.    | `--start-date=2025-01-01`     |
 | End date       | Fetches PRs created before a date.   | `--end-date=2025-12-31`     |
 | Authors        | The comma separated authors to include in the index. It must be the email used in the commit. | `--authors=me@me.com`       |
+| Exclude Authors        | The comma separated authors to exclude in the index. It must be the email used in the commit. It will exclude every commit this author appears. | `--exclude-authors=me@me.com`       |
 
 ### Examples - Pairing Index
 
