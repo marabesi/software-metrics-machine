@@ -75,3 +75,19 @@ class TestCliCodePairingIndexCommands:
         )
 
         assert "100.0 %" in result.output
+
+    def test_cli_exclude_author_every_commit_excluded_author_appears(self, cli, git):
+        git.commit().with_author("Many", "many@many.com").with_coauthor(
+            "ALbert", "albert@albert.com"
+        ).execute()
+        git.commit().with_author("John Doe", "john@example.com").with_coauthor(
+            "Maria", "chec@check.com"
+        ).execute()
+        git.commit().with_author("John Doe", "john@example.com").execute()
+
+        result = cli.runner.invoke(
+            main,
+            ["code", "pairing-index", "--exclude-authors", "john@example.com"],
+        )
+
+        assert "100.0 %" in result.output

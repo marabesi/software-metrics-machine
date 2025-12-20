@@ -176,3 +176,25 @@ class TestPairingIndex:
 
             assert result["total_analyzed_commits"] == 2
             assert result["paired_commits"] == 1
+
+    def test_respects_exclude_authors_filter(self):
+        with patch(
+            "software_metrics_machine.providers.pydriller.commit_traverser.CommitTraverser.traverse_commits"
+        ) as mock_traverser_commits_run:
+            mock_traverser_commits_run.return_value = TraverserResult(
+                total_analyzed_commits=2, commits=[], paired_commits=1
+            )
+
+            repository = CodemaatRepository(configuration=InMemoryConfiguration("."))
+            pairing_index = PairingIndex(repository=repository)
+
+            exclude = "alice@example.com,bob"
+            pairing_index.get_pairing_index(exclude_authors=exclude)
+
+            mock_traverser_commits_run.assert_called_once()
+            called_kwargs = mock_traverser_commits_run.call_args.kwargs
+
+            assert list(called_kwargs["excluded_authors"]) == [
+                "alice@example.com",
+                "bob",
+            ]

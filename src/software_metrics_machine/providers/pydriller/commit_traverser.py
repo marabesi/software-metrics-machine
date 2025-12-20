@@ -15,6 +15,7 @@ class CommitTraverser:
     def traverse_commits(
         self,
         selected_authors: Optional[Iterable[str]] = None,
+        excluded_authors: Optional[Iterable[str]] = None,
         include_coauthors: bool = False,
         start_date: Optional[str] = None,
         end_date: Optional[str] = None,
@@ -23,6 +24,12 @@ class CommitTraverser:
         if selected_authors:
             selected_keys = {
                 s.strip().lower() for s in selected_authors if s and s.strip()
+            }
+
+        excluded_keys = None
+        if excluded_authors:
+            excluded_keys = {
+                s.strip().lower() for s in excluded_authors if s and s.strip()
             }
 
         total_commits = 0
@@ -57,14 +64,18 @@ class CommitTraverser:
                     if parsed:
                         co_authors.append(parsed)  # (name, email)
 
-            # If selected_keys is provided, determine whether to include this commit
+            # Determine whether to include this commit based on selected/excluded keys
             include_commit = True
+
+            if excluded_keys is not None and author_key in excluded_keys:
+                include_commit = False
+
             if selected_keys is not None:
-                # Include if main author matches
+                # If author is explicitly selected, include regardless of coauthors
                 if author_key in selected_keys:
                     include_commit = True
                 else:
-                    # Optionally include if any co-author matches
+                    # Optionally include if any co-author matches selected keys
                     if include_coauthors and co_authors:
                         match = False
                         for name, email in co_authors:

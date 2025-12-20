@@ -25,6 +25,7 @@ class PairingIndex:
         start_date: str | None = None,
         end_date: str | None = None,
         authors: str | None = None,
+        exclude_authors: str | None = None,
     ) -> PairingIndexResult:
         if authors:
             parsed = [a.strip() for a in authors.split(",") if a.strip()]
@@ -37,8 +38,15 @@ class PairingIndex:
         if selected_authors:
             self.logger.debug(f"Filtering commits to authors: {list(selected_authors)}")
 
+        excluded_list = None
+        if exclude_authors:
+            excluded_list = [a.strip() for a in exclude_authors.split(",") if a.strip()]
+
         traverse = self.traverser.traverse_commits(
-            selected_authors=selected_authors, start_date=start_date, end_date=end_date
+            selected_authors=selected_authors,
+            excluded_authors=excluded_list,
+            start_date=start_date,
+            end_date=end_date,
         )
         total = traverse["total_analyzed_commits"]
         list_of_commits = total

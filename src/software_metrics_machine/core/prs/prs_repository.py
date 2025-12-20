@@ -51,7 +51,7 @@ class PrsRepository(FileSystemBaseRepository):
         return (closed - created).days
 
     def average_by(
-        self, by: str, labels: str | None = None, prs=[]
+        self, by: str, labels: str | None = None, prs: List[PRDetails] = []
     ) -> tuple[List[str], List[float]]:
         if by == "month":
             return self.__average_by_month(labels=labels, prs=prs)
