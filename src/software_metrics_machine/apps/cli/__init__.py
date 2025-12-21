@@ -56,6 +56,7 @@ module_groups = {
         "software_metrics_machine.apps.cli.source_code_entity_effort",
         "software_metrics_machine.apps.cli.source_code_entity_ownership",
         "software_metrics_machine.apps.cli.source_code_pairing_index",
+        "software_metrics_machine.apps.cli.source_code_metadata",
     ],
     "tools": [
         "software_metrics_machine.apps.cli.tools_json_file_merger",
