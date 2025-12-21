@@ -46,8 +46,8 @@ class FileSystemBaseRepository:
         self.logger.info(f"  → Data written to {self.default_path_for(file)}")
         return result
 
-    def remove_file(self, filename: str) -> Optional[str]:
-        return self.file_system_handler.remove_file(filename)
+    def remove_file(self, filename: str) -> None:
+        self.file_system_handler.remove_file(filename)
 
     def created_at_key_sort(self, collection: Any):
         created = collection.__getattribute__("created_at")

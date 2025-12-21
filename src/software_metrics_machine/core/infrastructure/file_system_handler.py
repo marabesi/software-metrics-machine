@@ -29,9 +29,9 @@ class FileSystemHandler:
         # print(f"  → Data written to {p}")
         return True
 
-    def remove_file(self, filename: str) -> Optional[None]:
+    def remove_file(self, filename: str) -> None:
         final_path = self.default_dir + "/" + filename
         p = Path(final_path)
         if p.is_file():
-            return p.unlink()
+            p.unlink()
         return None
