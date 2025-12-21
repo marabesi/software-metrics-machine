@@ -18,10 +18,6 @@ def _empty_figure(message: str, height: Optional[int] = 200):
     p.xgrid.visible = False
     p.ygrid.visible = False
     p.outline_line_color = None
-    p.x_range.start = 0
-    p.x_range.end = 1
-    p.y_range.start = 0
-    p.y_range.end = 1
     p.text(
         x=[0.5], y=[0.5], text=[message], text_align="center", text_baseline="middle"
     )
