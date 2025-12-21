@@ -22,26 +22,26 @@ class CommitBuilder:
         self._author = author or "someone"
         self._msg = msg or "initial commit"
         self._hash = hash
-        self.date = None
+        self.date = "2024-05-01 12:00:00 +0000"
         self._coauthors: list[tuple[str, str]] = []
 
-    def with_author(self, author: str) -> "CommitBuilder":
+    def with_author(self, author: str) -> CommitBuilder:
         self._author = author
         return self
 
-    def with_msg(self, msg: str) -> "CommitBuilder":
+    def with_msg(self, msg: str) -> CommitBuilder:
         self._msg = msg
         return self
 
-    def with_hash(self, hash_value: str) -> "CommitBuilder":
+    def with_hash(self, hash_value: str) -> CommitBuilder:
         self._hash = hash_value
         return self
 
-    def with_date(self, date: str) -> "CommitBuilder":
+    def with_date(self, date: str) -> CommitBuilder:
         self.date = date
         return self
 
-    def with_coauthor(self, name: str, email: str) -> "CommitBuilder":
+    def with_coauthor(self, name: str, email: str) -> CommitBuilder:
         self._coauthors.append((name, email))
         return self
 
