@@ -1,11 +1,28 @@
 from ast import Tuple
 import subprocess
+import os
 from git import List
 
 
 class GitRepositoryResult:
     def __init__(self, cli):
         self.repository_path = cli.configuration.git_repository_location
+
+    def create_file(self, file_path: str, content: str = ""):
+        """Create a file in the repository with optional content."""
+        full_path = os.path.join(self.repository_path, file_path)
+        os.makedirs(os.path.dirname(full_path), exist_ok=True)
+        with open(full_path, "w") as f:
+            f.write(content)
+        return self
+
+    def stage_all_file(self) -> GitRepositoryResult:
+        subprocess.run(
+            ["git", "-C", self.repository_path, "add", "."],
+            capture_output=True,
+            text=True,
+        )
+        return self
 
     def commit(self):
         """Return a small fluent helper to create commits with different authors."""

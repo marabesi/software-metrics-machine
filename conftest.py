@@ -12,7 +12,7 @@ from software_metrics_machine.core.infrastructure.configuration.configuration im
 from software_metrics_machine.core.infrastructure.configuration.configuration_file_system_handler import (
     ConfigurationFileSystemHandler,
 )
-from tests.GitRepositoryBuilder import GitRepositoryResult
+from tests.git_repository_builder import GitRepositoryResult
 from tests.file_handler_for_testing import FileHandlerForTesting
 from tests.in_memory_configuration import InMemoryConfiguration
 
