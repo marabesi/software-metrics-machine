@@ -94,10 +94,12 @@ class CodeMetric:
             print("No production or test files found in the repository.")
             return
 
+        start_date_dt = None
+        end_date_dt = None
         if start_date:
-            start_date = pd.to_datetime(f"{start_date}T00:00:00Z").to_pydatetime()
+            start_date_dt = pd.to_datetime(f"{start_date}T00:00:00Z").to_pydatetime()
         if end_date:
-            end_date = pd.to_datetime(f"{end_date}T00:00:00Z").to_pydatetime()
+            end_date_dt = pd.to_datetime(f"{end_date}T00:00:00Z").to_pydatetime()
         # For each production file, count commits that touch it and, among those commits,
         # how many also touch any test file. Then compute the average fraction across
         # production files that had at least one commit.
@@ -112,8 +114,8 @@ class CodeMetric:
                 commits = list(
                     Repository(
                         path_to_repo=repo_path,
-                        since=start_date,
-                        to=end_date,
+                        since=start_date_dt,
+                        to=end_date_dt,
                         filepath=production_file,
                     ).traverse_commits()
                 )
