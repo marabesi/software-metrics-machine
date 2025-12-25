@@ -12,39 +12,6 @@ class CodeMetric:
     def __init__(self, repository: CodemaatRepository):
         self.repository = repository
 
-    def __is_ignored_path(self, path: str, ignore_list: list | None) -> bool:
-        if not ignore_list:
-            return False
-        pnorm = path.replace("\\", "/")
-        # check glob patterns and substring/prefix matches
-        for pattern in ignore_list:
-            if pattern.startswith("*."):
-                # match extension against basename
-                if fnmatch.fnmatch(os.path.basename(pnorm), pattern):
-                    return True
-            # match full relative path glob
-            if fnmatch.fnmatch(pnorm, pattern):
-                return True
-            # substring/prefix fallback
-            if pnorm.startswith(pattern) or (pattern in pnorm):
-                return True
-        return False
-
-    def __is_test_path(self, path: str, test_patterns_list: list | None) -> bool:
-        pnorm = path.replace("\\", "/")
-        if test_patterns_list:
-            for pattern in test_patterns_list:
-                if pattern.startswith("*."):
-                    if fnmatch.fnmatch(os.path.basename(pnorm), pattern):
-                        return True
-                if fnmatch.fnmatch(pnorm, pattern) or (pattern in pnorm):
-                    return True
-            return False
-        # fallback heuristic
-        lname = os.path.basename(path).lower()
-        lfull = path.lower()
-        return ("test" in lname) or ("/tests/" in lfull) or ("/test/" in lfull)
-
     def analyze_code_changes(
         self,
         start_date: str | None = None,
@@ -90,8 +57,8 @@ class CodeMetric:
                     else:
                         production_files.append(full)
 
-        if not production_files or not test_files:
-            print("No production or test files found in the repository.")
+        if not production_files and not test_files:
+            print("No production and test files found in the repository.")
             return
 
         start_date_dt = None
@@ -175,3 +142,36 @@ class CodeMetric:
             )
         else:
             print("No production files with commits found to analyze.")
+
+    def __is_ignored_path(self, path: str, ignore_list: list | None) -> bool:
+        if not ignore_list:
+            return False
+        pnorm = path.replace("\\", "/")
+        # check glob patterns and substring/prefix matches
+        for pattern in ignore_list:
+            if pattern.startswith("*."):
+                # match extension against basename
+                if fnmatch.fnmatch(os.path.basename(pnorm), pattern):
+                    return True
+            # match full relative path glob
+            if fnmatch.fnmatch(pnorm, pattern):
+                return True
+            # substring/prefix fallback
+            if pnorm.startswith(pattern) or (pattern in pnorm):
+                return True
+        return False
+
+    def __is_test_path(self, path: str, test_patterns_list: list | None) -> bool:
+        pnorm = path.replace("\\", "/")
+        if test_patterns_list:
+            for pattern in test_patterns_list:
+                if pattern.startswith("*."):
+                    if fnmatch.fnmatch(os.path.basename(pnorm), pattern):
+                        return True
+                if fnmatch.fnmatch(pnorm, pattern) or (pattern in pnorm):
+                    return True
+            return False
+        # fallback heuristic
+        lname = os.path.basename(path).lower()
+        lfull = path.lower()
+        return ("test" in lname) or ("/tests/" in lfull) or ("/test/" in lfull)

@@ -3,9 +3,11 @@ import subprocess
 import os
 from git import List
 
+from conftest_types import CliResult
+
 
 class GitRepositoryResult:
-    def __init__(self, cli):
+    def __init__(self, cli: CliResult):
         self.repository_path = cli.configuration.git_repository_location
 
     def create_file(self, file_path: str, content: str = ""):

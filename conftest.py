@@ -1,4 +1,3 @@
-from dataclasses import dataclass
 import functools
 import os
 import subprocess
@@ -6,9 +5,7 @@ import pytest
 import sys
 from click.testing import CliRunner
 
-from software_metrics_machine.core.infrastructure.configuration.configuration import (
-    Configuration,
-)
+from conftest_types import CliResult
 from software_metrics_machine.core.infrastructure.configuration.configuration_file_system_handler import (
     ConfigurationFileSystemHandler,
 )
@@ -55,15 +52,6 @@ def git(cli):
         text=True,
     )
     yield GitRepositoryResult(cli)
-
-
-@dataclass
-class CliResult:
-    runner: CliRunner
-    data_stored_at: str
-    codemaat_stored_at: str
-    configuration: Configuration
-    storage: FileHandlerForTesting
 
 
 @pytest.fixture
