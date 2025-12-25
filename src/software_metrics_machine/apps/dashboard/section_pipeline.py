@@ -36,7 +36,7 @@ def pipeline_section(
     branch,
     event,
     repository: PipelinesRepository,
-):
+) -> pn.Tabs:
     def sanitize_all_argument(selected_value):
         if selected_value == "All":
             return None

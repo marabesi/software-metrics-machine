@@ -1,8 +1,9 @@
 import panel as pn
+from software_metrics_machine.core.infrastructure.pandas import pd
 
 
 def TabulatorComponent(
-    df: pn.pane.DataFrame,
+    df: pd.DataFrame,
     header_filters,
     filename,
 ) -> pn.layout.Column:

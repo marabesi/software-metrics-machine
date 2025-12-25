@@ -39,12 +39,14 @@ class CodemaatRepository(FileSystemBaseRepository):
         output = []
         for _, row in data.iterrows():
             output.append(
-                {
-                    "date": row.get("date"),
-                    "added": row.get("added"),
-                    "deleted": row.get("deleted"),
-                    "commits": row.get("commits"),
-                }
+                CodeChurn(
+                    **{
+                        "date": row.get("date"),
+                        "added": row.get("added"),
+                        "deleted": row.get("deleted"),
+                        "commits": row.get("commits"),
+                    }
+                )
             )
         return output
 

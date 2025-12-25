@@ -24,7 +24,7 @@ from software_metrics_machine.core.prs.prs_repository import PrsRepository
 
 def prs_section(
     date_range_picker, author_select, label_selector, repository: PrsRepository
-):
+) -> pn.Tabs:
     def normalize_label(selected_labels):
         if len(selected_labels) == 0:
             return None

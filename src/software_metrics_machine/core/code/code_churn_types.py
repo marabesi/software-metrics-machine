@@ -1,8 +1,9 @@
+from datetime import datetime
 from pydantic import BaseModel
 
 
 class CodeChurn(BaseModel):
-    date: str
+    date: datetime
     added: int
     deleted: int
     commits: int

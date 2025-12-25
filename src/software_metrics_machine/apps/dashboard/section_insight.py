@@ -11,12 +11,19 @@ from software_metrics_machine.core.pipelines.pipelines_repository import (
     PipelinesRepository,
 )
 from software_metrics_machine.core.pipelines.plots.view_lead_time import ViewLeadTime
+from software_metrics_machine.providers.codemaat.codemaat_repository import (
+    CodemaatRepository,
+)
 from software_metrics_machine.providers.pydriller.commit_traverser import (
     CommitTraverser,
 )
 
 
-def insights_section(repository: PipelinesRepository, date_range_picker):
+def insights_section(
+    repository: PipelinesRepository,
+    codemaat_repository: CodemaatRepository,
+    date_range_picker,
+) -> pn.Column:
     authors_text = pn.widgets.TextInput(
         name="Authors filter", placeholder="comma-separated emails", value=""
     )
@@ -87,7 +94,7 @@ def insights_section(repository: PipelinesRepository, date_range_picker):
         )
 
     def render_pairing_index_card(date_range_picker, authors: str | None = None):
-        pi = PairingIndex(repository=repository)
+        pi = PairingIndex(repository=codemaat_repository)
         result = pi.get_pairing_index(
             start_date=date_range_picker[0],
             end_date=date_range_picker[1],
@@ -115,7 +122,9 @@ def insights_section(repository: PipelinesRepository, date_range_picker):
 
             # Filter by explicit phrase first
             phrase = "implemented the feature in the cli"
-            filtered = [c for c in commits_list if phrase in ((c.msg or "").lower())]
+            filtered = [
+                c for c in commits_list if phrase in ((getattr(c, "msg")).lower())
+            ]
 
             source_list = filtered if filtered else commits_list[-20:]
 
@@ -125,7 +134,7 @@ def insights_section(repository: PipelinesRepository, date_range_picker):
                 commits_data.append(
                     {
                         "author": author,
-                        "msg": c.msg or "",
+                        "msg": getattr(c, "msg", ""),
                         "hash": getattr(c, "hash", ""),
                     }
                 )

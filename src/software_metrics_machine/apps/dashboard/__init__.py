@@ -196,7 +196,9 @@ header_section_prs = pn.Row()
 header_section_pipeline = pn.Row()
 
 insights_section = insights_section(
-    repository=pipeline_repository, date_range_picker=start_end_date_picker
+    repository=pipeline_repository,
+    codemaat_repository=codemaat_repository,
+    date_range_picker=start_end_date_picker,
 )
 pipeline_section = pipeline_section(
     date_range_picker=start_end_date_picker,
@@ -274,15 +276,15 @@ top_entries = pn.widgets.Select(
 )
 
 
-def wrap_tabs(tabs: pn.Tabs):
+def wrap_tabs(tabs: pn.Column | pn.Tabs):
     tabs.css_classes = ["smm-margin-top"]
     return tabs
 
 
-prs_section = tab_pr_section(
+prs_section: pn.Tabs = tab_pr_section(
     start_end_date_picker, author_select, label_selector, repository=prs_repository
 )
-source_code_section = source_code_section(
+source_code_section_tab: pn.Column = source_code_section(
     repository=codemaat_repository,
     start_end_date_picker=start_end_date_picker,
     ignore_pattern_files=ignore_pattern_files,
@@ -322,7 +324,7 @@ TAB_DEFINITIONS = [
     },
     {
         "title": "Source code",
-        "view": wrap_tabs(source_code_section),
+        "view": wrap_tabs(source_code_section_tab),
         "show": [
             "start_end_date_picker",
             "ignore_pattern_files",
