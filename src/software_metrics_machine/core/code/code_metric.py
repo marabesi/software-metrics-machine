@@ -2,6 +2,9 @@ import os
 import fnmatch
 import pandas as pd
 from pydriller import Repository
+
+from software_metrics_machine.core.code.code_metadata_types import CodeMetadataResult
+from software_metrics_machine.core.infrastructure.logger import Logger
 from software_metrics_machine.providers.codemaat.codemaat_repository import (
     CodemaatRepository,
 )
@@ -11,6 +14,7 @@ class CodeMetric:
 
     def __init__(self, repository: CodemaatRepository):
         self.repository = repository
+        self.logger = Logger(configuration=repository.configuration).get_logger()
 
     def analyze_code_changes(
         self,
@@ -18,7 +22,7 @@ class CodeMetric:
         end_date: str | None = None,
         ignore: str | None = None,
         test_patterns: str | None = None,
-    ):
+    ) -> CodeMetadataResult:
         repo_path = self.repository.configuration.git_repository_location
 
         production_files = []
@@ -58,8 +62,9 @@ class CodeMetric:
                         production_files.append(full)
 
         if not production_files and not test_files:
-            print("No production and test files found in the repository.")
-            return
+            return CodeMetadataResult(
+                message="No production and test files found in the repository."
+            )
 
         start_date_dt = None
         end_date_dt = None
@@ -72,7 +77,7 @@ class CodeMetric:
         # production files that had at least one commit.
         per_file_fractions = []
 
-        print(
+        self.logger.debug(
             f"Analyzing {len(production_files)} production files against {len(test_files)} test files."
         )
 
@@ -137,11 +142,13 @@ class CodeMetric:
         if per_file_fractions:
             avg_fraction = sum(per_file_fractions) / len(per_file_fractions)
             percent = avg_fraction * 100.0
-            print(
-                f"Average fraction of production-file commits that also touch test files: {percent:.2f}%"
+            return CodeMetadataResult(
+                message=f"Average fraction of production-file commits that also touch test files: {percent:.2f}%"
             )
-        else:
-            print("No production files with commits found to analyze.")
+
+        return CodeMetadataResult(
+            message="No production files with commits found to analyze."
+        )
 
     def __is_ignored_path(self, path: str, ignore_list: list | None) -> bool:
         if not ignore_list:

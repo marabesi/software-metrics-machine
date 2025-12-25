@@ -79,3 +79,26 @@ class TestTest_codeVsProductionCode:
             "Average fraction of production-file commits that also touch test files: 0.00%"
             in result.output
         )
+
+    def test_no_production_files(self, cli, git):
+        git.create_file("tests/test_my_radom.py", "print('Hello World')")
+        git.stage_all_file()
+        git.commit().with_message("Add test file").with_author(
+            "Dev A", "a@a.com"
+        ).execute()
+
+        result = cli.runner.invoke(
+            main,
+            [
+                "code",
+                "metadata",
+                "--metric",
+                "test_code_vs_production_code",
+                "--ignore",
+                ".git/*",
+                "--test-patterns",
+                "tests/*",
+            ],
+        )
+
+        assert "No production files with commits found to analyze." in result.output

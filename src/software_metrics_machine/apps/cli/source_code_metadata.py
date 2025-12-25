@@ -45,7 +45,7 @@ def code_metadata(start_date, end_date, metric, test_patterns, ignore):
         ignore=ignore,
         test_patterns=test_patterns,
     )
-    click.echo(result)
+    click.echo(result.message)
 
 
 command = code_metadata
