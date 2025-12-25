@@ -236,3 +236,4 @@ mutants/
 sonar_data/
 sonar_extensions/
 sonar_logs/
+.fleet/
