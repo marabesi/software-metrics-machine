@@ -20,7 +20,7 @@ from software_metrics_machine.core.pipelines.pipelines_repository import (
 
 class ViewDeploymentFrequency(BaseViewer):
     def __init__(self, repository: PipelinesRepository):
-        self.repository = repository
+        self.repository: PipelinesRepository = repository
 
     def plot(
         self,

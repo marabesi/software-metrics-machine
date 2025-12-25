@@ -1,3 +1,5 @@
+# type: ignore
+
 from fastapi import FastAPI
 from enum import Enum
 from fastapi import Query
@@ -289,7 +291,7 @@ def pipeline_runs_by(
         start_date=start_date,
         end_date=end_date,
         raw_filters=raw_filters,
-        include_defined_only=include_defined_only,
+        include_defined_only=include_defined_only or False,
     )
     return JSONResponse(result.data.to_dict(orient="records"))
 
@@ -312,7 +314,7 @@ def pipeline_jobs_average_time(
     result = view.main(
         workflow_path=workflow_path,
         raw_filters=raw_filters,
-        top=top,
+        top=top or 20,
         exclude_jobs=exclude_jobs,
         start_date=start_date,
         end_date=end_date,

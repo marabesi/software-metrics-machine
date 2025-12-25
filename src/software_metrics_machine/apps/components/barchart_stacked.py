@@ -9,7 +9,7 @@ hv.extension("bokeh")
 def build_barchart(
     data: Iterable[dict],
     x: str,
-    y: str,
+    y: str | list[str],
     group: str | None = None,
     stacked: bool = False,
     height: int | None = None,

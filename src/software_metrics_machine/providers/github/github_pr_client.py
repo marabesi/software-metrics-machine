@@ -116,7 +116,7 @@ class GithubPrsClient:
 
     def fetch_pr_comments(
         self,
-        filters: None = None,
+        filters: dict | None = None,
         raw_params: str | None = None,
         force: bool = False,
     ):

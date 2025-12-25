@@ -34,17 +34,17 @@ class CodemaatRepository(FileSystemBaseRepository):
             if start_date and end_date:
                 sd = pd.to_datetime(start_date).date()
                 ed = pd.to_datetime(end_date).date()
-                data["date"] = pd.to_datetime(data["date"]).dt.date
-                data = data[(data["date"] >= sd) & (data["date"] <= ed)]
+                data["date_parsed"] = pd.to_datetime(data["date"]).dt.date
+                data = data[(data["date_parsed"] >= sd) & (data["date_parsed"] <= ed)]
         output = []
         for _, row in data.iterrows():
             output.append(
                 CodeChurn(
                     **{
                         "date": row.get("date"),
-                        "added": row.get("added"),
-                        "deleted": row.get("deleted"),
-                        "commits": row.get("commits"),
+                        "added": row.get("added") or 0,
+                        "deleted": row.get("deleted") or 0,
+                        "commits": row.get("commits") or 0,
                     }
                 )
             )

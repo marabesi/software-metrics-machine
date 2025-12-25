@@ -4,6 +4,7 @@ import json
 from software_metrics_machine.core.infrastructure.repository_factory import (
     create_pipelines_repository,
 )
+from software_metrics_machine.core.pipelines.pipelines_types import PipelineRun
 from software_metrics_machine.core.pipelines.plots.view_pipeline_summary import (
     WorkflowRunSummary,
 )
@@ -76,8 +77,8 @@ def summary(max_workflows, start_date, end_date, output, raw_filters):
             path = info.get("path") or ""
             click.echo(f"  {cnt:4d}  {name}  ({path})")
 
-    first = result.get("first_run") or {}
-    last = result.get("last_run") or {}
+    first: PipelineRun = result.get("first_run") or {}
+    last: PipelineRun = result.get("last_run") or {}
 
     click.echo("")
     click.echo("First run:")

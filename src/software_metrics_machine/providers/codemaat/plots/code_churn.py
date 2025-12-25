@@ -38,14 +38,8 @@ class CodeChurnViewer(BaseViewer, Viewable):
 
         data = []
         for row in code_churn_result:
-            data.append({"date": row["date"], "type": "Added", "value": row["added"]})
-            data.append(
-                {
-                    "date": row["date"],
-                    "type": "Deleted",
-                    "value": row["deleted"],
-                }
-            )
+            data.append({"date": row.date, "type": "Added", "value": row.added})
+            data.append({"date": row.date, "type": "Deleted", "value": row.deleted})
 
         chart = build_barchart(
             data,

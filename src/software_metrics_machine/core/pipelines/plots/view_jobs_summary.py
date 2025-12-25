@@ -62,8 +62,8 @@ class ViewJobsSummary:
             result["jobs_by_name"] = {k: v for k, v in sorted_items[:max_jobs]}
 
         # first/last with formatted dates
-        first = summary.get("first_job") or {}
-        last = summary.get("last_job") or {}
+        first: PipelineJob = summary.get("first_job") or {}
+        last: PipelineJob = summary.get("last_job") or {}
 
         result["first_job"] = self.__build_job_times(first)
         result["last_job"] = self.__build_job_times(last)

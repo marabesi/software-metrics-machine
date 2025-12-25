@@ -18,7 +18,7 @@ from software_metrics_machine.core.pipelines.pipelines_repository import (
 class ViewJobsByStatus(BaseViewer):
 
     def __init__(self, repository: PipelinesRepository):
-        self.repository = repository
+        self.repository: PipelinesRepository = repository
 
     def main(
         self,
