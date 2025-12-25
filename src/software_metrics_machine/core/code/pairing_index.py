@@ -56,7 +56,7 @@ class PairingIndex:
 
         if list_of_commits == 0:
             return PairingIndexResult(
-                pairing_index=0.0,
+                pairing_index_percentage=0.0,
                 total_analyzed_commits=list_of_commits,
                 paired_commits=0,
             )
@@ -67,7 +67,7 @@ class PairingIndex:
         pairing_index = float(f"{index:.2f}")
 
         return PairingIndexResult(
-            pairing_index=pairing_index,
+            pairing_index_percentage=pairing_index,
             total_analyzed_commits=list_of_commits,
             paired_commits=paired_commits,
         )

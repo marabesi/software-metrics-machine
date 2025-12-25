@@ -45,7 +45,7 @@ def pairing_index(
         authors=authors,
         exclude_authors=exclude_authors,
     )
-    click.echo(f"{result['pairing_index']} %")
+    click.echo(f"{result['pairing_index_percentage']} %")
 
 
 command = pairing_index

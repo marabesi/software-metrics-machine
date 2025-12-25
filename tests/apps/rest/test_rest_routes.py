@@ -22,7 +22,7 @@ class TestRestRoutes:
         assert resp.status_code == 200
         assert resp.json() == {
             "paired_commits": 0,
-            "pairing_index": 0.0,
+            "pairing_index_percentage": 0.0,
             "total_analyzed_commits": 2,
         }
 

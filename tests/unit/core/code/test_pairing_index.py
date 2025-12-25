@@ -153,7 +153,7 @@ class TestPairingIndex:
 
             result = pairing_index.get_pairing_index()
 
-            assert index == result["pairing_index"]
+            assert index == result["pairing_index_percentage"]
 
     def test_respects_selected_authors_filter(self):
         with patch(

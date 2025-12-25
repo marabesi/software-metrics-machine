@@ -97,11 +97,7 @@ def insights_section(repository: PipelinesRepository, date_range_picker):
         # Attempt to read pairing index from either of the possible keys
         pairing_val = None
         if isinstance(result, dict):
-            pairing_val = (
-                result.get("pairing_index")
-                or result.get("pairing_index_percentage")
-                or result.get("pairing_index_percentage")
-            )
+            pairing_val = result.get("pairing_index_percentage")
 
         pairing_text = (
             f"**Pairing index:** {pairing_val}%"
