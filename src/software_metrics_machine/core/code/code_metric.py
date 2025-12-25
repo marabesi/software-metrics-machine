@@ -98,7 +98,9 @@ class CodeMetric:
 
                 commits_len = len(list(commits))
                 if commits_len == 0:
-                    return "No production files with commits found to analyze."
+                    return CodeMetadataResult(
+                        message="No production files with commits found to analyze."
+                    )
 
                 print(
                     f"Analyzing production file: {production_file} - commits found: {len(list(commits))}"

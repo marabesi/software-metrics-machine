@@ -5,7 +5,10 @@ from typing import List
 from software_metrics_machine.core.pipelines.pipelines_repository import (
     PipelinesRepository,
 )
-from software_metrics_machine.core.pipelines.pipelines_types import PipelineRun
+from software_metrics_machine.core.pipelines.pipelines_types import (
+    PipelineFilters,
+    PipelineRun,
+)
 
 
 @dataclass
@@ -33,7 +36,7 @@ class PipelineByStatus:
             "target_branch": target_branch,
             "raw_filters": raw_filters,
         }
-        runs = self.repository.runs(filters)
+        runs = self.repository.runs(PipelineFilters(**filters))
 
         status_counts = Counter(run.status for run in runs)
 

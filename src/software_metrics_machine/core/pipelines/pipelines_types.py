@@ -88,12 +88,12 @@ class DeploymentFrequency(BaseModel):
 
 
 class PipelineFilters(TypedDict):
-    start_date: Optional[str]
-    end_date: Optional[str]
-    target_branch: Optional[str]
-    event: Optional[str]
-    workflow_path: Optional[str]
-    include_defined_only: Optional[bool]
-    status: Optional[str]
-    conclusions: Optional[str]
-    path: Optional[str]
+    start_date: Optional[str] = None
+    end_date: Optional[str] = None
+    target_branch: Optional[str] = None
+    event: Optional[str] = None
+    workflow_path: Optional[str] = None
+    include_defined_only: Optional[bool] = None
+    status: Optional[str] = None
+    conclusions: Optional[str] = None
+    path: Optional[str] = None
