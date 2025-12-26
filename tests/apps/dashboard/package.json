@@ -22,7 +22,9 @@
   },
   "homepage": "https://github.com/marabesi/software-metrics-machine#readme",
   "devDependencies": {
+    "@chromatic-com/playwright": "^0.12.8",
     "@playwright/test": "^1.57.0",
-    "@types/node": "^25.0.3"
+    "@types/node": "^25.0.3",
+    "chromatic": "^13.3.4"
   }
 }
