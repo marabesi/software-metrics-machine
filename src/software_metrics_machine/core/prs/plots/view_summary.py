@@ -3,7 +3,11 @@ from datetime import datetime
 import statistics
 
 from software_metrics_machine.core.prs.prs_repository import PrsRepository
-from software_metrics_machine.core.prs.pr_types import SummaryResult, PRDetails
+from software_metrics_machine.core.prs.pr_types import (
+    SummaryResult,
+    PRDetails,
+    PRFilters,
+)
 
 
 class PrViewSummary:
@@ -23,18 +27,18 @@ class PrViewSummary:
         self.start_date = start_date
         self.end_date = end_date
         self.labels = labels
-        self.filters = {
+        filters: dict = {
             "start_date": self.start_date,
             "end_date": self.end_date,
             "labels": self.labels,
         }
         # merge any raw filters parsed by the repository
-        self.filters = {
-            **self.filters,
+        self.filters: dict = {
+            **filters,
             **self.repository.parse_raw_filters(raw_filters),
         }
 
-        self.prs = self.repository.prs_with_filters(self.filters)
+        self.prs = self.repository.prs_with_filters(PRFilters(**self.filters))
 
         if len(self.prs) == 0:
             return {
@@ -46,7 +50,7 @@ class PrViewSummary:
                 "unique_authors": 0,
                 "unique_labels": 0,
                 "labels": [],
-                "first_pr": {
+                "first_pr": {  # type: ignore
                     "number": None,
                     "title": None,
                     "login": None,
@@ -54,7 +58,7 @@ class PrViewSummary:
                     "merged": None,
                     "closed": None,
                 },
-                "last_pr": {
+                "last_pr": {  # type: ignore
                     "number": None,
                     "title": None,
                     "login": None,
@@ -62,6 +66,10 @@ class PrViewSummary:
                     "merged": None,
                     "closed": None,
                 },
+                "most_commented_pr": {},
+                "top_commenter": {},
+                "top_themes": {},  # type: ignore
+                "first_comment_time_stats": {},
             }
 
         summary = self.__summarize_prs()
@@ -211,7 +219,7 @@ class PrViewSummary:
         merged = pr.merged_at or None
         closed = pr.closed_at or None
 
-        return {
+        return {  # type: ignore
             "number": number,
             "title": title,
             "login": login,

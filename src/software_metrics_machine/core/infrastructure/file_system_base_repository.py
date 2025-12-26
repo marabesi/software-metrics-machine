@@ -56,9 +56,7 @@ class FileSystemBaseRepository:
         else:
             return datetime.min.replace(tzinfo=timezone.utc)
 
-    def filter_by_date_range(
-        self, items: List[Any], start_date: datetime, end_date: datetime
-    ):
+    def filter_by_date_range(self, items: List[Any], start_date: str, end_date: str):
         filtered = []
         sd = self.__to_dt(start_date)
         ed = self.__to_dt(end_date)

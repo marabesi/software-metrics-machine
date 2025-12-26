@@ -53,6 +53,10 @@ class SummaryResult(TypedDict):
     labels: List[LabelSummary]
     first_pr: PRDetails
     last_pr: PRDetails
+    most_commented_pr: dict
+    top_commenter: dict
+    top_themes: List[dict]
+    first_comment_time_stats: dict
 
 
 class PRFilters(TypedDict, total=False):

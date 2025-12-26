@@ -238,7 +238,7 @@ class PipelinesRepository(FileSystemBaseRepository):
         if not job_name_set:
             return jobs
 
-        filtered: List[dict] = []
+        filtered: List[PipelineJob] = []
         for job in jobs:
             pr_job_name = job.name
             if any(token in pr_job_name for token in job_name_set):

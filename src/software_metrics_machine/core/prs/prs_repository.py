@@ -46,7 +46,7 @@ class PrsRepository(FileSystemBaseRepository):
             closed_at = datetime.fromisoformat(closed.replace("Z", "+00:00"))
         else:
             # still open – use current UTC time
-            closed = datetime.now(timezone.utc)
+            closed_at = datetime.now(timezone.utc)
 
         return (closed_at - created).days
 
@@ -175,7 +175,7 @@ class PrsRepository(FileSystemBaseRepository):
     def get_unique_labels(
         self, filters: Optional[PRFilters] = None
     ) -> List[LabelSummary]:
-        labels_list = []
+        labels_list: List[LabelSummary] = []
         labels_count: dict = {}
         for p in self.prs_with_filters(filters=filters):
             pr_labels = p.labels
@@ -204,12 +204,9 @@ class PrsRepository(FileSystemBaseRepository):
         if aggregate_by == "week":
             week_buckets: Dict[str, List[Tuple[int, datetime]]] = {}
             for pr in merged_prs:
-                try:
-                    merged_dt = datetime.fromisoformat(
-                        pr.merged_at.replace("Z", "+00:00")
-                    )
-                except Exception:
+                if not pr.merged_at:
                     continue
+                merged_dt = datetime.fromisoformat(pr.merged_at.replace("Z", "+00:00"))
                 iso = merged_dt.isocalendar()
                 year = iso[0]
                 week = iso[1]
