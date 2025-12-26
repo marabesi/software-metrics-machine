@@ -24,7 +24,7 @@ jobs:
       run: npx playwright install --with-deps
 
     - name: Run Playwright tests
-      run: npx chromatic --playwright --project-token={{ secrets.CHROMATIC_KEY }}
+      run: npx chromatic --playwright --project-token=${{ secrets.CHROMATIC_KEY }}
 
     - uses: actions/upload-artifact@v4
       if: ${{ !cancelled() }}
