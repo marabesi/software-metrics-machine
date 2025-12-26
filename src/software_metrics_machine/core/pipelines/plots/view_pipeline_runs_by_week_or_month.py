@@ -74,7 +74,6 @@ class ViewWorkflowRunsByWeekOrMonth(BaseViewer):
                     val = data_matrix[i][j]
                 except Exception:
                     val = 0
-                # print(period, "    00000000000 ")
                 data.append({"Period": period, "Workflow": name, "Runs": val})
 
         # guard: if all Runs are zero, avoid stacked bars with empty stacks

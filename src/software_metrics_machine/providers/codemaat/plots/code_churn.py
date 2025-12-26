@@ -20,7 +20,7 @@ hv.extension("bokeh")
 class CodeChurnViewer(BaseViewer, Viewable):
 
     def __init__(self, repository: CodemaatRepository):
-        self.repository = repository
+        self.repository: CodemaatRepository = repository
 
     def render(
         self,

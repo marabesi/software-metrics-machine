@@ -13,13 +13,11 @@ from software_metrics_machine.providers.codemaat.codemaat_repository import (
     CodemaatRepository,
 )
 
-hv.extension("bokeh")
-
 
 class EntityChurnViewer(BaseViewer, Viewable):
 
     def __init__(self, repository: CodemaatRepository):
-        self.repository = repository
+        self.repository: CodemaatRepository = repository
 
     def render(
         self,

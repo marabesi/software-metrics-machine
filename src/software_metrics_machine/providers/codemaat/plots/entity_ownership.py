@@ -13,12 +13,10 @@ from software_metrics_machine.providers.codemaat.codemaat_repository import (
     CodemaatRepository,
 )
 
-hv.extension("bokeh")
-
 
 class EntityOnershipViewer(BaseViewer, Viewable):
     def __init__(self, repository: CodemaatRepository):
-        self.repository = repository
+        self.repository: CodemaatRepository = repository
 
     def render(
         self,
@@ -28,7 +26,7 @@ class EntityOnershipViewer(BaseViewer, Viewable):
         type_churn: str | None = "added",
         include_only: str | None = None,
     ) -> PlotResult:
-        repo = self.repository
+        repo: CodemaatRepository = self.repository
         df = repo.get_entity_ownership(
             authors.split(",") if authors else [],
             filters={"include_only": include_only},

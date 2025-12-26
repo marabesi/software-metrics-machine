@@ -75,7 +75,7 @@ class PipelineRunSummary:
         name_counts: Counter[str] = Counter()
         name_paths: dict = {}
         for r in self.runs:
-            name: str = r.name
+            name = r.name
             name_counts[name] += 1
             # prefer explicit 'path' field if present, else try 'workflow_path' or 'file'
             if name not in name_paths:

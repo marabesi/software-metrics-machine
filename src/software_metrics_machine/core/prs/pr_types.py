@@ -55,7 +55,7 @@ class SummaryResult(TypedDict):
     last_pr: PRDetails
 
 
-class PRFilters(BaseModel):
+class PRFilters(TypedDict, total=False):
     start_date: Optional[str] = None
     end_date: Optional[str] = None
     authors: Optional[str] = None

@@ -9,6 +9,7 @@ from software_metrics_machine.core.pipelines.pipelines_repository import (
 from software_metrics_machine.core.infrastructure.configuration.configuration import (
     Configuration,
 )
+from software_metrics_machine.core.pipelines.pipelines_types import PipelineFilters
 from software_metrics_machine.core.prs.prs_repository import PrsRepository
 
 from software_metrics_machine.core.infrastructure.logger import Logger
@@ -62,7 +63,9 @@ class GithubWorkflowClient:
             while current_date <= end_date_obj:
                 day_str = current_date.strftime("%Y-%m-%d")
                 params["created"] = f"{day_str}..{day_str}"
-                print(f"Fetching workflow runs for {self.repository_slug} on {day_str}")
+                self.logger.debug(
+                    f"Fetching workflow runs for {self.repository_slug} on {day_str}"
+                )
 
                 url = f"https://api.github.com/repos/{self.repository_slug}/actions/runs?per_page=100"
                 while url:
@@ -196,7 +199,9 @@ class GithubWorkflowClient:
                 processed_runs = set()
                 partial = None
 
-        all_runs = workflows.runs({"start_date": start_date, "end_date": end_date})
+        all_runs = workflows.runs(
+            PipelineFilters(**{"start_date": start_date, "end_date": end_date})
+        )
         total_runs = len(all_runs)
         if total_runs == 0:
             print(

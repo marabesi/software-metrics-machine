@@ -85,18 +85,15 @@ class PipelineWorkflowRunsByWeekOrMonth(BaseViewer):
             row = [counts[p].get(name, 0) for p in periods]
             data_matrix.append(row)
 
-        rep_dates = []
+        rep_dates: List[datetime] = []
         for p in periods:
-            try:
-                y_str, part_str = p.split("-")
-                y = int(y_str)
-                part = int(part_str)
-                if aggregate_by == "week":
-                    rep = datetime.fromisocalendar(y, part, 1)
-                else:
-                    rep = datetime(y, part, 1)
-            except Exception:
-                rep = None
+            y_str, part_str = p.split("-")
+            y = int(y_str)
+            part = int(part_str)
+            if aggregate_by == "week":
+                rep = datetime.fromisocalendar(y, part, 1)
+            else:
+                rep = datetime(y, part, 1)
             rep_dates.append(rep)
 
         return PipelineWorkflowRunsByWeekOrMonthResult(

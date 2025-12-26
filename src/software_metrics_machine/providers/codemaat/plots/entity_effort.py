@@ -17,7 +17,7 @@ from software_metrics_machine.providers.codemaat.codemaat_repository import (
 
 class EntityEffortViewer(BaseViewer):
     def __init__(self, repository: CodemaatRepository):
-        self.repository = repository
+        self.repository: CodemaatRepository = repository
 
     def render_treemap(
         self,
@@ -25,7 +25,7 @@ class EntityEffortViewer(BaseViewer):
         ignore_files: str | None = None,
         include_only: str | None = None,
     ) -> PlotResult:
-        repo = self.repository
+        repo: CodemaatRepository = self.repository
         df = repo.get_entity_effort(filters={"include_only": include_only})
 
         if df is None or df.empty:

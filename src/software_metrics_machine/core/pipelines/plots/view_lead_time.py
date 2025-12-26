@@ -8,6 +8,7 @@ from software_metrics_machine.core.infrastructure.base_viewer import (
 from software_metrics_machine.core.pipelines.pipelines_repository import (
     PipelinesRepository,
 )
+from software_metrics_machine.core.pipelines.pipelines_types import PipelineFilters
 from software_metrics_machine.providers.pydriller.commit_traverser import (
     CommitTraverser,
 )
@@ -41,7 +42,7 @@ class ViewLeadTime(BaseViewer):
             "job_raw_filters": job_raw_filters,
         }
 
-        runs = self.pipeline_repository.runs(filters)
+        runs = self.pipeline_repository.runs(PipelineFilters(**filters))
         lead_rows: List[Tuple[str, datetime, datetime, float]] = []
         deploy_candidates: Set[Tuple[str, datetime]] = set()
 

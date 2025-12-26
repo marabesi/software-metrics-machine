@@ -1,5 +1,6 @@
 import click
 
+from software_metrics_machine.core.prs.pr_types import PRFilters
 from software_metrics_machine.providers.github.github_pr_client import GithubPrsClient
 from software_metrics_machine.core.infrastructure.repository_factory import (
     create_configuration,
@@ -36,10 +37,12 @@ def execute(force: bool = False, start_date=None, end_date=None, raw_filters=Non
     client = GithubPrsClient(configuration=create_configuration())
     client.fetch_pr_comments(
         force=force,
-        filters={
-            "start_date": start_date,
-            "end_date": end_date,
-        },
+        filters=PRFilters(
+            **{
+                "start_date": start_date,
+                "end_date": end_date,
+            }
+        ),
         raw_params=raw_filters,
     )
 

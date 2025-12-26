@@ -59,7 +59,7 @@ class PipelineJob(BaseModel):
 class PipelineRun(BaseModel):
     id: int
     path: str
-    name: Optional[str]
+    name: Optional[str] = "unknown"
     short_name: Optional[str] = None
     created_at: str
     run_started_at: str

@@ -34,7 +34,7 @@ class ViewPipelineExecutionRunsDuration(BaseViewer):
         metric: str = "avg",
         sort_by: str = "avg",
         raw_filters: str | None = None,
-        aggregate_by_day: bool | None = None,
+        aggregate_by_day: bool = False,
     ) -> PlotResult:
         result = PipelineExecutionDuration(repository=self.repository).main(
             workflow_path=workflow_path,

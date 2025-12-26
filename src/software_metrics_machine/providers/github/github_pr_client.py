@@ -5,6 +5,7 @@ from software_metrics_machine.core.infrastructure.configuration.configuration im
     Configuration,
 )
 from software_metrics_machine.core.infrastructure.logger import Logger
+from software_metrics_machine.core.prs.pr_types import PRFilters
 from software_metrics_machine.core.prs.prs_repository import PrsRepository
 from software_metrics_machine.core.infrastructure.json import as_json_string
 
@@ -116,7 +117,7 @@ class GithubPrsClient:
 
     def fetch_pr_comments(
         self,
-        filters: dict | None = None,
+        filters: PRFilters | None = None,
         raw_params: str | None = None,
         force: bool = False,
     ):

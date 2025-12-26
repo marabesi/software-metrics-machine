@@ -1,5 +1,7 @@
 from dataclasses import dataclass
-from software_metrics_machine.core.infrastructure.configuration import configuration
+from software_metrics_machine.core.infrastructure.configuration.configuration import (
+    Configuration,
+)
 from software_metrics_machine.core.infrastructure.run import Run
 from software_metrics_machine.providers.codemaat.codemaat_repository import (
     CodemaatRepository,
@@ -14,7 +16,7 @@ class ExecutionResult:
 
 
 class FetchCodemaat:
-    def __init__(self, configuration: configuration):
+    def __init__(self, configuration: Configuration):
         self.configuration = configuration
         self.codemaat_repository = CodemaatRepository(configuration=configuration)
 

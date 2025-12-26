@@ -177,10 +177,10 @@ class CouplingViewer(BaseViewer, Viewable):
         # Visual feedback on hover/selection
         # increase node radius on hover (use screen units to emulate 'size')
         node_renderer.hover_glyph = BkCircle(
-            radius=10, radius_units="screen", fill_color="color", line_color=None
+            radius=10, fill_color="color", line_color=None
         )
         node_renderer.selection_glyph = BkCircle(
-            radius=10, radius_units="screen", fill_color="color", line_color=None
+            radius=10, fill_color="color", line_color=None
         )
 
         # increase edge width on hover/selection
