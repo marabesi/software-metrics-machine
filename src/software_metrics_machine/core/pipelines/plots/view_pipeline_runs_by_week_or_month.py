@@ -70,10 +70,7 @@ class ViewWorkflowRunsByWeekOrMonth(BaseViewer):
         data = []
         for j, period in enumerate(periods):
             for i, name in enumerate(workflow_names):
-                try:
-                    val = data_matrix[i][j]
-                except Exception:
-                    val = 0
+                val = data_matrix[i][j] or 0
                 data.append({"Period": period, "Workflow": name, "Runs": val})
 
         # guard: if all Runs are zero, avoid stacked bars with empty stacks
@@ -107,37 +104,41 @@ class ViewWorkflowRunsByWeekOrMonth(BaseViewer):
 
         if aggregate_by == "week" and rep_dates and len(rep_dates) > 1:
             month_boundaries = []
-            last_month = rep_dates[0].month
-            for k in range(1, len(rep_dates)):
-                cur = rep_dates[k]
-                if cur.month != last_month:
-                    # position the divider between bars k-1 and k
-                    month_boundaries.append(k - 0.5)
-                    last_month = cur.month
+            if len(rep_dates) and rep_dates[0]:
+                last_month: int = rep_dates[0].month
+                for k in range(1, len(rep_dates)):
+                    cur = rep_dates[k]
+                    if cur and cur.month != last_month:
+                        # position the divider between bars k-1 and k
+                        month_boundaries.append(k - 0.5)
+                        last_month = cur.month
 
-            for x_plot in month_boundaries:
-                # If build_barchart returned a Bokeh Figure, add a Span annotation.
-                # Otherwise (Holoviews element) overlay a VLine as before.
-                try:
-                    # Bokeh Figure has `add_layout` method
-                    if hasattr(plot, "add_layout"):
-                        span = Span(
-                            location=x_plot,
-                            dimension="height",
-                            line_color="gray",
-                            line_dash="dotted",
-                            line_width=1,
-                            line_alpha=0.6,
-                        )
-                        plot.add_layout(span)
-                    else:
+                for x_plot in month_boundaries:
+                    # If build_barchart returned a Bokeh Figure, add a Span annotation.
+                    # Otherwise (Holoviews element) overlay a VLine as before.
+                    try:
+                        # Bokeh Figure has `add_layout` method
+                        if hasattr(plot, "add_layout"):
+                            span = Span(
+                                location=x_plot,
+                                dimension="height",
+                                line_color="gray",
+                                line_dash="dotted",
+                                line_width=1,
+                                line_alpha=0.6,
+                            )
+                            plot.add_layout(span)
+                        else:
+                            plot = plot * hv.VLine(x_plot).opts(
+                                color="gray",
+                                line_dash="dotted",
+                                line_width=1,
+                                alpha=0.6,
+                            )
+                    except Exception:
+                        # fallback to holoviews overlay if anything unexpected occurs
                         plot = plot * hv.VLine(x_plot).opts(
                             color="gray", line_dash="dotted", line_width=1, alpha=0.6
                         )
-                except Exception:
-                    # fallback to holoviews overlay if anything unexpected occurs
-                    plot = plot * hv.VLine(x_plot).opts(
-                        color="gray", line_dash="dotted", line_width=1, alpha=0.6
-                    )
 
         return PlotResult(plot, df)

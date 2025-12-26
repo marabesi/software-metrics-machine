@@ -8,6 +8,7 @@ from software_metrics_machine.core.pipelines.pipelines_repository import (
     PipelinesRepository,
 )
 from software_metrics_machine.core.pipelines.pipelines_types import (
+    PipelineFilters,
     PipelineRun,
     PipelineJob,
 )
@@ -40,17 +41,19 @@ class JobsByStatus:
         end_date: Optional[str] = None,
         raw_filters: Optional[str] = None,
     ) -> JobByStatusResult:
-        common_filters = {
+        common_filters: dict = {
             "start_date": start_date,
             "end_date": end_date,
         }
+
+        runs = self.repository.runs(filters=PipelineFilters(**common_filters))
+
         pipeline_filters = {
             **common_filters,
             "workflow_path": workflow_path,
             **self.repository.parse_raw_filters(pipeline_raw_filters),
         }
         self.logger.debug(f"Applying date filter for job by status: {pipeline_filters}")
-        runs = self.repository.runs(filters=common_filters)
 
         job_filter = {**common_filters, "raw_filters": raw_filters, "name": job_name}
 
@@ -116,7 +119,8 @@ class JobsByStatus:
             dt = datetime.fromisoformat(created.replace("Z", "+00:00"))
             week_key = f"{dt.isocalendar()[0]}-W{dt.isocalendar()[1]:02d}"
             conclusion = j.conclusion
-            per_week[week_key][conclusion] += 1
+            if conclusion:
+                per_week[week_key][conclusion] += 1
 
         if not per_week:
             return [], [], []

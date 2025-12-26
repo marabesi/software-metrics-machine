@@ -7,6 +7,7 @@ from software_metrics_machine.core.pipelines.pipelines_repository import (
     PipelinesRepository,
 )
 from software_metrics_machine.core.pipelines.pipelines_types import (
+    PipelineFilters,
     PipelineJob,
     PipelineRun,
 )
@@ -38,13 +39,13 @@ class JobsByAverageTimeExecution:
         pipeline_raw_filters: Optional[str] = None,
         metric: str = "avg",
     ) -> JobsAverageTimeExecutionResult:
-        filters = {
+        filters: dict = {
             "start_date": start_date,
             "end_date": end_date,
             "raw_filters": pipeline_raw_filters,
         }
 
-        runs = self.repository.runs(filters=filters)
+        runs = self.repository.runs(filters=PipelineFilters(**filters))
 
         job_filters = {**filters, "name": job_name, "exclude_jobs": exclude_jobs}
 

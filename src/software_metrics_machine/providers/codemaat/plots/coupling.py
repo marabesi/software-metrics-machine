@@ -102,6 +102,7 @@ class CouplingViewer(BaseViewer, Viewable):
         # scale line widths based on weights (normalize)
         low = min(weights)
         high = max(weights)
+        line_widths: list[float] = []
         if high == low:
             line_widths = [2 for _ in weights]
         else:
