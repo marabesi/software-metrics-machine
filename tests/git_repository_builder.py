@@ -1,4 +1,3 @@
-from typings import Tuple
 import subprocess
 import os
 from git import List
@@ -37,7 +36,7 @@ class GitRepositoryResult:
                 self._author_name: str
                 self._author_email: str
                 self._message = "feat: building app"
-                self.coauthors: List[Tuple[str, str]] = []
+                self.coauthors: List[tuple[str, str]] = []
                 self.date = None
 
             def with_author(self, name: str, email: str):
