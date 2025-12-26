@@ -8,6 +8,7 @@ on:
 
 env:
   PYTHON_VERSION: 3.14.1
+  IMAGE_NAME: ${{secrets.DOCKERHUB_USERNAME}}/software-metrics-machine
 
 jobs:
   code-quality:
@@ -189,9 +190,25 @@ jobs:
     runs-on: ubuntu-24.04
     steps:
     - uses: actions/checkout@v4
-    - name: Build Docker Image
-      run: |
-        docker build -f Dockerfile.dev -t ${{secrets.DOCKERHUB_USERNAME}}/software-metrics-machine .
+
+    - name: Set up Docker Buildx
+      uses: docker/setup-buildx-action@v3
+
+    - name: Build and export Docker image
+      uses: docker/build-push-action@v6
+      with:
+        tags: ${{env.IMAGE_NAME}}:latest
+        file: Dockerfile.dev
+        outputs: type=docker,dest=${{ runner.temp }}/myimage.tar
+
+    - name: Upload artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: myimage
+        path: ${{ runner.temp }}/myimage.tar
+    # - name: Build Docker Image
+    #   run: |
+    #     docker build -f Dockerfile.dev -t ${{env.IMAGE_NAME}} .
 
   send_docker_image_to_hub:
     needs: [code-quality, pytest, e2e, build_docker_image]
@@ -209,6 +226,18 @@ jobs:
     # - name: Build Docker Image
     #   run: |
     #     docker build -f Dockerfile.dev -t ${{secrets.DOCKERHUB_USERNAME}}/software-metrics-machine .
+
+    - name: Download artifact
+      uses: actions/download-artifact@v4
+      with:
+        name: myimage
+        path: ${{ runner.temp }}
+
+    - name: Load Docker image
+      run: |
+          docker load --input ${{ runner.temp }}/myimage.tar
+          docker image ls -a
+
     - name: Push Docker Image
       run: |
         docker push ${{secrets.DOCKERHUB_USERNAME}}/software-metrics-machine:latest
