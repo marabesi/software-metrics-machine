@@ -1,3 +1,4 @@
+from typing import List
 from software_metrics_machine.core.infrastructure.pandas import pd
 import holoviews as hv
 from bokeh.models import Span  # type: ignore[attr-defined]
@@ -67,14 +68,16 @@ class ViewWorkflowRunsByWeekOrMonth(BaseViewer):
             return PlotResult(placeholder, df)
 
         # build stacked data for HoloViews using numeric x-axis (Time)
-        data = []
+        data: List[dict] = []
         for j, period in enumerate(periods):
             for i, name in enumerate(workflow_names):
-                val = data_matrix[i][j] or 0
-                data.append({"Period": period, "Workflow": name, "Runs": val})
+                run_point: int = data_matrix[i][j] or 0
+                data.append({"Period": period, "Workflow": name, "Runs": run_point})
 
         # guard: if all Runs are zero, avoid stacked bars with empty stacks
-        total_runs = sum(d["Runs"] for d in data)
+        data_points: List[int] = [d["Runs"] for d in data]
+        total_runs = sum(data_points)
+
         if total_runs == 0:
             placeholder = hv.Text(0.5, 0.5, "No runs in selected range").opts(
                 height=super().get_chart_height(),

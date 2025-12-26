@@ -13,7 +13,7 @@ class JobsSummary:
     def __init__(self, repository: PipelinesRepository):
         self.repository: PipelinesRepository = repository
 
-    def summarize_jobs(self, jobs: List[PipelineJob]) -> dict:
+    def summarize_jobs(self, jobs: List[PipelineJob]) -> PipelineJobSummaryResult:
         total = len(jobs)
         summary: PipelineJobSummaryResult = {
             "first_job": None,
