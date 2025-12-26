@@ -264,7 +264,7 @@ class PipelinesRepository(FileSystemBaseRepository):
 
     def get_unique_workflow_names(self) -> List[str]:
         workflow_names = {run.name for run in self.all_runs}
-        return list(workflow_names)
+        return list(workflow_names)  # type: ignore
 
     def get_unique_workflow_paths(
         self, filters: Optional[PipelineFilters] = None
@@ -390,7 +390,7 @@ class PipelinesRepository(FileSystemBaseRepository):
         runs = self.runs(filters)
 
         for run in runs:
-            jobs = run.get("jobs", [])
+            jobs = run.jobs
             for job in jobs:
                 if job.name == job_name and job.conclusion == "success":
                     created_at = job.started_at
@@ -485,7 +485,7 @@ class PipelinesRepository(FileSystemBaseRepository):
             )
 
         rows: List[PipelineDurationRow] = [
-            (r.name, r.count, r.avg_min, r.total_min) for r in rows_struct
+            (r.name, r.count, r.avg_min, r.total_min) for r in rows_struct  # type: ignore
         ]
 
         return PipelineComputedDurations(total=total_runs, rows=rows, runs=runs)

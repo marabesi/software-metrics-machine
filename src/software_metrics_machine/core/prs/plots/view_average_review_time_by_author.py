@@ -43,10 +43,10 @@ class ViewAverageReviewTimeByAuthor(BaseViewer):
             labels_strip = [s.strip() for s in labels.split(",") if s.strip()]
             pairs = self.repository.filter_prs_by_labels(pairs, labels_strip)
 
-        pairs = self.__average_open_time_by_author(pairs, top)
+        pairs = self.__average_open_time_by_author(pairs, top)  # type: ignore
 
         if len(pairs) == 0:
-            pairs = [("No PRs to plot after filtering", 0)]
+            pairs = [("No PRs to plot after filtering", 0)]  # type: ignore
 
         zip_authors, avgs = zip(*pairs)
 
