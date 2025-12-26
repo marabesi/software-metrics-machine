@@ -15,7 +15,7 @@ repos:
         types: [python]
       - id: mypy
         name: mypy
-        entry: poetry run mypy src/software_metrics_machine/core/infrastructure src/software_metrics_machine/core/code src/software_metrics_machine/apps
+        entry: poetry run mypy ./src
         language: system
         types: [python]
       - id: pytest
