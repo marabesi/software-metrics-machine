@@ -43,12 +43,12 @@ class PrsRepository(FileSystemBaseRepository):
         created = datetime.fromisoformat(pr.created_at.replace("Z", "+00:00"))
         closed = pr.merged_at
         if closed:
-            closed = datetime.fromisoformat(closed.replace("Z", "+00:00"))
+            closed_at = datetime.fromisoformat(closed.replace("Z", "+00:00"))
         else:
             # still open – use current UTC time
             closed = datetime.now(timezone.utc)
 
-        return (closed - created).days
+        return (closed_at - created).days
 
     def average_by(
         self, by: str, labels: str | None = None, prs: List[PRDetails] = []

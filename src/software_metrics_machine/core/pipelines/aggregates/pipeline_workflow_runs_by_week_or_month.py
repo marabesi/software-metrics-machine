@@ -74,8 +74,8 @@ class PipelineWorkflowRunsByWeekOrMonth(BaseViewer):
                 runs=runs,
             )
 
-        periods = sorted(period_set)
-        workflow_names_list = sorted(workflow_names)
+        periods = list(period_set)
+        workflow_names_list = list(workflow_names)
 
         print(f"Plotting data aggregated by {aggregate_by}")
 
@@ -96,6 +96,7 @@ class PipelineWorkflowRunsByWeekOrMonth(BaseViewer):
                 rep = datetime(y, part, 1)
             rep_dates.append(rep)
 
+        print("aaaaa ", workflow_names)
         return PipelineWorkflowRunsByWeekOrMonthResult(
             rep_dates=rep_dates,
             periods=periods,
