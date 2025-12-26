@@ -7,7 +7,7 @@ on:
     branches: [ main ]
 
 env:
-  CHROMATIC_ARCHIVE_LOCATION: playwright-report/
+  CHROMATIC_ARCHIVE_LOCATION: test-results/
 
 jobs:
   test:
