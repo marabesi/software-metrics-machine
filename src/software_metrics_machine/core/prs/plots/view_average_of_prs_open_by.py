@@ -67,8 +67,8 @@ class ViewAverageOfPrsOpenBy(BaseViewer):
         if aggregate_by == "week":
             x: List[Timestamp] = [pd.to_datetime(dt) for dt in week_dates]
             # compute month_starts for vlines and month labels
-            start = x[0].date().replace(day=1)
-            end_dt = x[-1].date()
+            start = x[0].date().replace(day=1) if len(x) > 0 else None
+            end_dt = x[-1].date() if x else None
             month_starts = []
             if start and end_dt:
                 cur = start
