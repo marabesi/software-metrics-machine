@@ -122,9 +122,6 @@ class CouplingViewer(BaseViewer, Viewable):
         p = figure(
             title=f"Top {top} Code Coupling Chord Diagram",
             tools="pan,wheel_zoom,reset,save,fullscreen",
-            x_axis_type=None,
-            y_axis_type=None,
-            match_aspect=True,
             sizing_mode="stretch_width",
             height=self.get_chart_height(),
         )

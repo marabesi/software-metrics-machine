@@ -56,7 +56,7 @@ class SummaryResult(TypedDict):
 
 
 class PRFilters(TypedDict, total=False):
-    start_date: Optional[str] = None
-    end_date: Optional[str] = None
-    authors: Optional[str] = None
-    labels: Optional[List[str]] = None
+    start_date: str | None = None
+    end_date: str | None = None
+    authors: str | None = None
+    labels: List[str] | None = None

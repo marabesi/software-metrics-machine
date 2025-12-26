@@ -9,14 +9,11 @@ from software_metrics_machine.core.prs.prs_repository import PrsRepository
 from software_metrics_machine.apps.components.barchart_with_lines import (
     build_barchart_with_lines,
 )
-import holoviews as hv
-
-hv.extension("bokeh")
 
 
 class ViewAverageOfPrsOpenBy(BaseViewer):
     def __init__(self, repository: PrsRepository):
-        self.repository = repository
+        self.repository: PrsRepository = repository
 
     def main(
         self,

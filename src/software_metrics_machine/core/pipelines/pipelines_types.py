@@ -87,7 +87,7 @@ class DeploymentFrequency(BaseModel):
     months: List[DeploymentItem]
 
 
-class PipelineFilters(TypedDict):
+class PipelineFilters(TypedDict, total=False):
     start_date: Optional[str] = None
     end_date: Optional[str] = None
     target_branch: Optional[str] = None

@@ -1,7 +1,5 @@
-from typing import List
 import holoviews as hv
 
-from software_metrics_machine.core.code.code_churn_types import CodeChurn
 from software_metrics_machine.core.infrastructure.base_viewer import (
     BaseViewer,
     PlotResult,
@@ -14,8 +12,6 @@ from software_metrics_machine.providers.codemaat.codemaat_repository import (
     CodemaatRepository,
 )
 
-hv.extension("bokeh")
-
 
 class CodeChurnViewer(BaseViewer, Viewable):
 
@@ -26,7 +22,7 @@ class CodeChurnViewer(BaseViewer, Viewable):
         self,
         start_date: str | None = None,
         end_date: str | None = None,
-    ) -> PlotResult[List[CodeChurn]]:
+    ) -> PlotResult:
         code_churn_result = self.repository.get_code_churn(
             {"start_date": start_date, "end_date": end_date}
         )

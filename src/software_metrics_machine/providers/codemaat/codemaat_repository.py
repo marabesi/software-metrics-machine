@@ -71,7 +71,7 @@ class CodemaatRepository(FileSystemBaseRepository):
                 )
         return data
 
-    def get_entity_churn(self, ignore_files: str | None = None, filters: None = None):
+    def get_entity_churn(self, ignore_files: str | None = None, filters: dict = None):
         file = "entity-churn.csv"
 
         file_path = super().read_file_if_exists(file)

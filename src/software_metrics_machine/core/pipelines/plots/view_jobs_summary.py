@@ -62,21 +62,24 @@ class ViewJobsSummary:
             result["jobs_by_name"] = {k: v for k, v in sorted_items[:max_jobs]}
 
         # first/last with formatted dates
-        first: PipelineJob = summary.get("first_job")
-        last: PipelineJob = summary.get("last_job")
+        first: PipelineJob | None = summary.get("first_job")
+        last: PipelineJob | None = summary.get("last_job")
 
         result["first_job"] = self.__build_job_times(first)
         result["last_job"] = self.__build_job_times(last)
 
         return result
 
-    def __build_job_times(self, job: PipelineJob) -> JobTimeDetails:
+    def __build_job_times(self, job: PipelineJob | None) -> JobTimeDetails:
+        if job is None:
+            return {"created_at": None, "started_at": None, "completed_at": None}
+
         created_at = job.created_at
         started_at = job.started_at
         ended_at = job.completed_at
 
         return {
-            "created_at": datetime_to_local(created_at) if created_at else None,
-            "started_at": datetime_to_local(started_at) if started_at else None,
-            "completed_at": datetime_to_local(ended_at) if ended_at else None,
+            "created_at": datetime_to_local(created_at),
+            "started_at": datetime_to_local(started_at),
+            "completed_at": datetime_to_local(ended_at),
         }

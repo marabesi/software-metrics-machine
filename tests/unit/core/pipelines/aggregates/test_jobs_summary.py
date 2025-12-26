@@ -143,4 +143,3 @@ class TestJobsSummary:
             assert summary["unique_jobs"] == 2
             assert "deploy" in summary["jobs_by_name"]
             assert "lint" in summary["jobs_by_name"]
-

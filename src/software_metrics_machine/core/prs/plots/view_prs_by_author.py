@@ -66,7 +66,7 @@ class ViewPrsByAuthor(BaseViewer):
         return PlotResult(plot=chart, data=df)
 
     def top_authors(self, prs: List[PRDetails], top: int) -> List[Tuple[str, int]]:
-        counts = Counter()
+        counts: dict[str, int] = Counter()
         for pr in prs:
             user = pr.user
             login = user.login

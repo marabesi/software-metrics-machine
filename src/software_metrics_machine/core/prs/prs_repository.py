@@ -244,13 +244,12 @@ class PrsRepository(FileSystemBaseRepository):
         else:
             # aggregate by month
             month_buckets: Dict[str, List[Tuple[int, datetime]]] = {}
+
             for pr in merged_prs:
-                try:
-                    merged_dt = datetime.fromisoformat(
-                        pr.merged_at.replace("Z", "+00:00")
-                    )
-                except Exception:
+                if pr.merged_at is None:
                     continue
+
+                merged_dt = datetime.fromisoformat(pr.merged_at.replace("Z", "+00:00"))
                 month_key = merged_dt.strftime("%Y-%m")
                 cnt = self.__count_comments_before_merge(pr)
                 month_buckets.setdefault(month_key, []).append((cnt, merged_dt))

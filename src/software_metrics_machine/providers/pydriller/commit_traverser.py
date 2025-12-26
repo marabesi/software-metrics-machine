@@ -1,3 +1,4 @@
+from datetime import datetime
 import re
 from software_metrics_machine.core.infrastructure.pandas import pd
 from pydriller import Repository
@@ -39,15 +40,18 @@ class CommitTraverser:
 
         print(f"Analyzing repository at: {repo_path}\n")
 
+        parsed_start_date: datetime | None = None
+        parsed_end_date: datetime | None = None
+
         if start_date:
-            start_date = pd.to_datetime(f"{start_date} 00:00:00").to_pydatetime()
+            parsed_start_date = pd.to_datetime(f"{start_date} 00:00:00").to_pydatetime()
 
         if end_date:
-            end_date = pd.to_datetime(f"{end_date} 00:00:00").to_pydatetime()
+            parsed_end_date = pd.to_datetime(f"{end_date} 00:00:00").to_pydatetime()
 
         # We traverse the commits in the repository
         commits_from_repo = Repository(
-            path_to_repo=repo_path, since=start_date, to=end_date
+            path_to_repo=repo_path, since=parsed_start_date, to=parsed_end_date
         ).traverse_commits()
         for commit in commits_from_repo:
             # Determine whether this commit should be included based on selected_authors

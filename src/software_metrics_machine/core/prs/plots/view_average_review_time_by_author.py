@@ -17,7 +17,7 @@ from datetime import datetime
 class ViewAverageReviewTimeByAuthor(BaseViewer):
 
     def __init__(self, repository: PrsRepository):
-        self.repository = repository
+        self.repository: PrsRepository = repository
 
     def plot_average_open_time(
         self,
@@ -72,13 +72,14 @@ class ViewAverageReviewTimeByAuthor(BaseViewer):
             if pairs
             else pd.DataFrame()
         )
+
         return PlotResult(plot=chart, data=df)
 
     def __average_open_time_by_author(
         self, prs: List[PRDetails], top: int
     ) -> List[Tuple[str, float]]:
-        sums = defaultdict(float)
-        counts = defaultdict(int)
+        sums: dict[str, float] = defaultdict(float)
+        counts: dict[str, int] = defaultdict(int)
         for pr in prs:
             merged = pr.merged_at
             created = pr.created_at

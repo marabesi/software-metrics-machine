@@ -82,15 +82,13 @@ class PipelineBuilder:
         run_id: int | None = None,
         started_at: str | None = None,
         finished_at: str | None = None,
-        updated_at: str | None = None,
     ):
         job = PipelineJob(
             run_id=run_id,
             name=name,
             conclusion=conclusion,
             started_at=started_at,
-            finished_at=finished_at,
-            updated_at=updated_at,
+            completed_at=finished_at,
             head_branch=self._pipeline.head_branch,
             html_url=self._pipeline.html_url,
         )

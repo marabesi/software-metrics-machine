@@ -183,22 +183,24 @@ class PrViewSummary:
         return summary
 
     def __get_structured_summary(self, summary) -> SummaryResult:
-        structured_summary = {
-            "avg_comments_per_pr": summary.get("avg_comments_per_pr", 0),
-            "total_prs": summary.get("total_prs", 0),
-            "merged_prs": summary.get("merged_prs", 0),
-            "closed_prs": summary.get("closed_prs", 0),
-            "without_conclusion": summary.get("without_conclusion", 0),
-            "unique_authors": summary.get("unique_authors", 0),
-            "unique_labels": summary.get("unique_labels", 0),
-            "labels": summary.get("labels", []),
-            "first_pr": self.__brief_pr(summary.get("first_pr")),
-            "last_pr": self.__brief_pr(summary.get("last_pr")),
-            "most_commented_pr": summary.get("most_commented_pr", {}),
-            "top_commenter": summary.get("top_commenter", {}),
-            "top_themes": summary.get("top_themes", []),
-            "first_comment_time_stats": summary.get("first_comment_time_stats", {}),
-        }
+        structured_summary = SummaryResult(
+            **{
+                "avg_comments_per_pr": summary.get("avg_comments_per_pr", 0),
+                "total_prs": summary.get("total_prs", 0),
+                "merged_prs": summary.get("merged_prs", 0),
+                "closed_prs": summary.get("closed_prs", 0),
+                "without_conclusion": summary.get("without_conclusion", 0),
+                "unique_authors": summary.get("unique_authors", 0),
+                "unique_labels": summary.get("unique_labels", 0),
+                "labels": summary.get("labels", []),
+                "first_pr": self.__brief_pr(summary.get("first_pr")),
+                "last_pr": self.__brief_pr(summary.get("last_pr")),
+                "most_commented_pr": summary.get("most_commented_pr", {}),
+                "top_commenter": summary.get("top_commenter", {}),
+                "top_themes": summary.get("top_themes", []),
+                "first_comment_time_stats": summary.get("first_comment_time_stats", {}),
+            }
+        )
         return structured_summary
 
     def __brief_pr(self, pr: PRDetails) -> PRDetails:

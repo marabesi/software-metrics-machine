@@ -13,7 +13,7 @@ from software_metrics_machine.apps.components.barchart_with_lines import (
 
 class ViewAverageCommentsPerPullRequest(BaseViewer):
     def __init__(self, repository: PrsRepository):
-        self.repository = repository
+        self.repository: PrsRepository = repository
 
     def main(
         self,
