@@ -98,6 +98,7 @@ class PipelineFilters(TypedDict, total=False):
     status: Optional[str]
     conclusions: Optional[str]
     path: Optional[str]
+    raw_filters: Optional[str]
 
 
 @dataclass
@@ -122,3 +123,9 @@ class PipelineJobSummaryResult(TypedDict):
     jobs_by_name: dict[
         str, dict[str, Union[int, Optional[int]]]
     ]  # name -> {count, run_id}
+
+
+@dataclass
+class PipelineByStatusResult:
+    status_counts: Counter
+    runs: List[PipelineRun]

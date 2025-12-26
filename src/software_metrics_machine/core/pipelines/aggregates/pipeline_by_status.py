@@ -1,25 +1,17 @@
 from collections import Counter
-from dataclasses import dataclass
-from typing import List
 
 from software_metrics_machine.core.pipelines.pipelines_repository import (
     PipelinesRepository,
 )
 from software_metrics_machine.core.pipelines.pipelines_types import (
     PipelineFilters,
-    PipelineRun,
+    PipelineByStatusResult,
 )
-
-
-@dataclass
-class PipelineByStatusResult:
-    status_counts: Counter
-    runs: List[PipelineRun]
 
 
 class PipelineByStatus:
     def __init__(self, repository: PipelinesRepository):
-        self.repository = repository
+        self.repository: PipelinesRepository = repository
 
     def main(
         self,
@@ -29,7 +21,7 @@ class PipelineByStatus:
         target_branch: str | None = None,
         raw_filters: str | None = None,
     ) -> PipelineByStatusResult:
-        filters = {
+        filters: dict = {
             "start_date": start_date,
             "end_date": end_date,
             "path": workflow_path,

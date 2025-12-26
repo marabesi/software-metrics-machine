@@ -35,11 +35,11 @@ class JobsSummary:
         summary["last_job"] = last
 
         # count conclusions (e.g. success, failure, cancelled, etc.)
-        concl_counter = Counter((j.conclusion) for j in jobs)
+        concl_counter: dict = Counter((j.conclusion) for j in jobs)
         summary["conclusions"] = dict(concl_counter)
 
         # build a mapping from run_id -> workflow name by loading runs if available
-        runs = self.repository.runs() or []
+        runs = self.repository.runs()
         run_id_to_name = {r.id: r.name for r in runs if r.id}
 
         # unique composite job names (job.name + workflow name)
@@ -51,7 +51,7 @@ class JobsSummary:
         for j in jobs:
             job_name = j.name
             # try to obtain workflow/run name from job metadata or lookup by run_id
-            wf_name = j.workflow_name
+            wf_name: str | None = j.workflow_name
             if not wf_name:
                 run_id = j.run_id
                 wf_name = run_id_to_name.get(run_id)

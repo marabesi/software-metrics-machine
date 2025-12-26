@@ -53,11 +53,11 @@ class ViewJobsSummary:
 
         result["unique_jobs"] = summary.get("unique_jobs", 0)
 
-        jobs_by_name = summary.get("jobs_by_name", {})
+        jobs_by_name = summary.get("jobs_by_name")
         if jobs_by_name:
             # include top max_jobs entries
             sorted_items = sorted(
-                jobs_by_name.items(), key=lambda x: x[1].get("count", 0), reverse=True
+                jobs_by_name.items(), key=lambda x: x[1].get("count", 0), reverse=True  # type: ignore[arg-type,return-value]
             )
             result["jobs_by_name"] = {k: v for k, v in sorted_items[:max_jobs]}
 

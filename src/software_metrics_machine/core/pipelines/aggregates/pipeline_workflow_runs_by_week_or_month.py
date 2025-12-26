@@ -8,7 +8,10 @@ from software_metrics_machine.core.infrastructure.base_viewer import BaseViewer
 from software_metrics_machine.core.pipelines.pipelines_repository import (
     PipelinesRepository,
 )
-from software_metrics_machine.core.pipelines.pipelines_types import PipelineRun
+from software_metrics_machine.core.pipelines.pipelines_types import (
+    PipelineRun,
+    PipelineFilters,
+)
 
 
 @dataclass
@@ -23,7 +26,7 @@ class PipelineWorkflowRunsByWeekOrMonthResult:
 class PipelineWorkflowRunsByWeekOrMonth(BaseViewer):
 
     def __init__(self, repository: PipelinesRepository):
-        self.repository = repository
+        self.repository: PipelinesRepository = repository
 
     def main(
         self,
@@ -34,15 +37,17 @@ class PipelineWorkflowRunsByWeekOrMonth(BaseViewer):
         start_date: str | None = None,
         end_date: str | None = None,
     ) -> PipelineWorkflowRunsByWeekOrMonthResult:
-        filters = {
-            "raw_filters": raw_filters,
-            "start_date": start_date,
-            "end_date": end_date,
-            "workflow_path": workflow_path,
-            "include_defined_only": include_defined_only,
-        }
+        filters = PipelineFilters(
+            **{
+                "raw_filters": raw_filters,
+                "start_date": start_date,
+                "end_date": end_date,
+                "workflow_path": workflow_path,
+                "include_defined_only": include_defined_only,
+            }
+        )
 
-        runs = self.repository.runs(filters)
+        runs: List[PipelineRun] = self.repository.runs(filters)
 
         print(f"Found {len(runs)} runs after filtering")
 
