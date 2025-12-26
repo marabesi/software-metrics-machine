@@ -69,8 +69,8 @@ class WorkflowRunSummary:
             "queued": summary.get("queued", 0),
             "unique_workflows": summary.get("unique_workflows", 0),
             "runs_by_workflow": runs_by_wf,
-            "first_run": self.__build_run_times(summary.get("first_run", {})),
-            "last_run": self.__build_run_times(summary.get("last_run", {})),
+            "first_run": self.__build_run_times(summary.get("first_run")),
+            "last_run": self.__build_run_times(summary.get("last_run")),
             "most_failed": None,
         }
 
@@ -80,7 +80,7 @@ class WorkflowRunSummary:
 
         return result
 
-    def __build_run_times(self, run: PipelineRun) -> Dict:
+    def __build_run_times(self, run: PipelineRun | None) -> Dict:
         if not run:
             return {}
 

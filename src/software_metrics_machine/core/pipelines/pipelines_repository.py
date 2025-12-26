@@ -466,7 +466,7 @@ class PipelinesRepository(FileSystemBaseRepository):
                     self.logger.warning(f"No completed_at for job {job.id}")
 
         if not groups:
-            return PipelineComputedDurations(total_runs, [])
+            return PipelineComputedDurations(total_runs, [], [])
 
         rows_struct: List[PipelineDurationRow] = []
         for name, durs in groups.items():
@@ -484,9 +484,11 @@ class PipelinesRepository(FileSystemBaseRepository):
                 )
             )
 
-        rows = [(r.name, r.count, r.avg_min, r.total_min) for r in rows_struct]
+        rows: List[PipelineDurationRow] = [
+            (r.name, r.count, r.avg_min, r.total_min) for r in rows_struct
+        ]
 
-        return PipelineComputedDurations(total_runs, rows, runs)
+        return PipelineComputedDurations(total=total_runs, rows=rows, runs=runs)
 
     def get_pipeline_fails_the_most(self, filters=None):
         runs = self.runs(filters)

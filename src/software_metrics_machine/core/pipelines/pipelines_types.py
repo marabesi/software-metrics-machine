@@ -112,8 +112,10 @@ class PipelineFilters(TypedDict, total=False):
     include_defined_only: Optional[bool]
     status: Optional[str]
     conclusions: Optional[str]
+    job_name: Optional[str]
     path: Optional[str]
     raw_filters: Optional[str]
+    job_raw_filters: Optional[str]
 
 
 @dataclass

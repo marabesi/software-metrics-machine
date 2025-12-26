@@ -15,7 +15,7 @@ from software_metrics_machine.core.pipelines.pipelines_repository import (
 
 class ViewJobsTopFailed(BaseViewer):
     def __init__(self, repository: PipelinesRepository):
-        self.repository = repository
+        self.repository: PipelinesRepository = repository
 
     def main(
         self,
@@ -29,9 +29,9 @@ class ViewJobsTopFailed(BaseViewer):
 
         failures_by_date_job: dict[Tuple[str, str], int] = defaultdict(int)
         for j in jobs:
-            name = (j.get("name") or "<unknown>").strip()
-            conclusion = (j.get("conclusion") or "unknown").lower()
-            created = j.get("created_at") or j.get("started_at")
+            name = j.name
+            conclusion = j.conclusion
+            created = j.created_at
             if conclusion == "failure" and created:
                 try:
                     dt = pd.to_datetime(created)

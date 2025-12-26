@@ -59,4 +59,5 @@ class PRFilters(TypedDict, total=False):
     start_date: Optional[str]
     end_date: Optional[str]
     authors: Optional[str]
-    labels: Optional[List[str]]
+    labels: Optional[str]
+    raw_filters: Optional[str]

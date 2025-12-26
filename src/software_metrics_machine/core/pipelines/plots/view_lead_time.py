@@ -31,18 +31,20 @@ class ViewLeadTime(BaseViewer):
         pipeline_raw_filters: str | None = None,
         job_raw_filters: str | None = None,
     ) -> PlotResult[pd.DataFrame]:
-        filters = {
-            "status": "completed",
-            "conclusion": "success",
-            "workflow_path": workflow_path,
-            "start_date": start_date,
-            "end_date": end_date,
-            "job_name": job_name,
-            "raw_filters": pipeline_raw_filters,
-            "job_raw_filters": job_raw_filters,
-        }
+        filters = PipelineFilters(
+            **{
+                "status": "completed",
+                "conclusions": "success",
+                "workflow_path": workflow_path,
+                "start_date": start_date,
+                "end_date": end_date,
+                "job_name": job_name,
+                "raw_filters": pipeline_raw_filters,
+                "job_raw_filters": job_raw_filters,
+            }
+        )
 
-        runs = self.pipeline_repository.runs(PipelineFilters(**filters))
+        runs = self.pipeline_repository.runs(filters)
         lead_rows: List[Tuple[str, datetime, datetime, float]] = []
         deploy_candidates: Set[Tuple[str, datetime]] = set()
 

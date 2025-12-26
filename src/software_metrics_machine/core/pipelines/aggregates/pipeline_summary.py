@@ -3,7 +3,10 @@ from typing import Dict, TypedDict, Optional
 from software_metrics_machine.core.pipelines.pipelines_repository import (
     PipelinesRepository,
 )
-from software_metrics_machine.core.pipelines.pipelines_types import PipelineRun
+from software_metrics_machine.core.pipelines.pipelines_types import (
+    PipelineRun,
+    PipelineFilters,
+)
 
 
 class PipelineRunDetails(TypedDict):
@@ -18,14 +21,14 @@ class PipelineRunSummaryStructure(TypedDict):
     queued: int
     unique_workflows: int
     runs_by_workflow: Dict[str, PipelineRunDetails]
-    first_run: PipelineRun
-    last_run: PipelineRun
+    first_run: PipelineRun | None
+    last_run: PipelineRun | None
     most_failed: str
 
 
 class PipelineRunSummary:
     def __init__(self, repository: PipelinesRepository):
-        self.repository = repository
+        self.repository: PipelinesRepository = repository
 
     def compute_summary(
         self,
@@ -33,11 +36,13 @@ class PipelineRunSummary:
         end_date: str | None = None,
         raw_filters: Optional[str] = None,
     ) -> PipelineRunSummaryStructure:
-        filters = {
-            "start_date": start_date,
-            "end_date": end_date,
-            "raw_filters": raw_filters,
-        }
+        filters = PipelineFilters(
+            **{
+                "start_date": start_date,
+                "end_date": end_date,
+                "raw_filters": raw_filters,
+            }
+        )
         self.runs = self.repository.runs(filters)
         return self.__create_summary_structure(filters)
 
