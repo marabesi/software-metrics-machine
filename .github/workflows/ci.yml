@@ -138,7 +138,7 @@ jobs:
           format: cobertura
           file: coverage.xml
 
-  e2e:
+  e2e_cli:
     needs: [code-quality, pytest]
     name: "E2E tests CLI"
     runs-on: ubuntu-latest
@@ -186,7 +186,7 @@ jobs:
         run: "./lib/bashunit ./tests/apps/cli/e2e"
 
   build_docker_image:
-    needs: [code-quality, pytest, e2e]
+    needs: [code-quality, pytest, e2e_cli]
     runs-on: ubuntu-24.04
     steps:
     - uses: actions/checkout@v4
@@ -206,12 +206,29 @@ jobs:
       with:
         name: myimage
         path: ${{ runner.temp }}/myimage.tar
-    # - name: Build Docker Image
-    #   run: |
-    #     docker build -f Dockerfile.dev -t ${{env.IMAGE_NAME}} .
+
+  e2e_dashboard:
+    needs: [code-quality, pytest, build_docker_image]
+    runs-on: ubuntu-24.04
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Download artifact
+      uses: actions/download-artifact@v4
+      with:
+        name: myimage
+        path: ${{ runner.temp }}
+
+    - name: Load Docker image
+      run: |
+          docker load --input ${{ runner.temp }}/myimage.tar
+
+    - name: Run dashboard
+      run: |
+        docker run --rm -v $(pwd):/app -w /app ${{env.IMAGE_NAME}}:latest smm-dashboard
 
   send_docker_image_to_hub:
-    needs: [code-quality, pytest, e2e, build_docker_image]
+    needs: [code-quality, pytest, e2e_dashboard, build_docker_image]
     runs-on: ubuntu-24.04
     steps:
     - uses: actions/checkout@v4
@@ -223,9 +240,6 @@ jobs:
       run: |
         docker logout
         docker login -u $username -p $password docker.io
-    # - name: Build Docker Image
-    #   run: |
-    #     docker build -f Dockerfile.dev -t ${{secrets.DOCKERHUB_USERNAME}}/software-metrics-machine .
 
     - name: Download artifact
       uses: actions/download-artifact@v4
@@ -240,7 +254,7 @@ jobs:
 
     - name: Push Docker Image
       run: |
-        docker push ${{secrets.DOCKERHUB_USERNAME}}/software-metrics-machine:latest
+        docker push ${{env.IMAGE_NAME}}:latest
 
   delivery-test:
     permissions:
