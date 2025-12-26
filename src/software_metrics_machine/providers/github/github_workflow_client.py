@@ -55,6 +55,7 @@ class GithubWorkflowClient:
             params["branch"] = target_branch
 
         runs = []
+        url: str | None = None
 
         if step_by == "day" and start_date and end_date:
             current_date = datetime.strptime(start_date, "%Y-%m-%d")

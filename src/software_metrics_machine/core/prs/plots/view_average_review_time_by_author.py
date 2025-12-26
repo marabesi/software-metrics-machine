@@ -23,7 +23,7 @@ class ViewAverageReviewTimeByAuthor(BaseViewer):
         self,
         title: str,
         top: int = 10,
-        labels: List[str] | None = None,
+        labels: str | None = None,
         start_date: str | None = None,
         end_date: str | None = None,
         authors: str | None = None,
@@ -38,18 +38,19 @@ class ViewAverageReviewTimeByAuthor(BaseViewer):
         pairs = self.repository.prs_with_filters(filters)
 
         if labels:
-            labels = [s.strip() for s in labels.split(",") if s.strip()]
-            pairs = self.repository.filter_prs_by_labels(pairs, labels)
+            labels_strip = [s.strip() for s in labels.split(",") if s.strip()]
+            pairs = self.repository.filter_prs_by_labels(pairs, labels_strip)
 
         pairs = self.__average_open_time_by_author(pairs, top)
 
         if len(pairs) == 0:
             pairs = [("No PRs to plot after filtering", 0)]
 
-        authors, avgs = zip(*pairs)
+        zip_authors, avgs = zip(*pairs)
 
-        data = []
-        for name, val in zip(authors, avgs):
+        data: List[dict] = []
+        zips = zip(zip_authors, avgs)
+        for name, val in zips:
             data.append({"author": name, "avg_days": val})
 
         title = title or "Average Review Time By Author"

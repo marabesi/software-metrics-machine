@@ -1,3 +1,6 @@
+from typing import Any, List
+
+from pandas import Timestamp
 from software_metrics_machine.core.infrastructure.pandas import pd
 from datetime import datetime, date, timedelta
 
@@ -62,10 +65,10 @@ class ViewAverageOfPrsOpenBy(BaseViewer):
             title = "Average PR Open Days by Month"
 
         if aggregate_by == "week":
-            x = [pd.to_datetime(dt) for dt in week_dates]
+            x: List[Timestamp] = [pd.to_datetime(dt) for dt in week_dates]
             # compute month_starts for vlines and month labels
-            start = x[0].date().replace(day=1) if x else None
-            end_dt = x[-1].date() if x else None
+            start = x[0].date().replace(day=1)
+            end_dt = x[-1].date()
             month_starts = []
             if start and end_dt:
                 cur = start
@@ -80,6 +83,7 @@ class ViewAverageOfPrsOpenBy(BaseViewer):
             ylim_top = max(y_vals) if y_vals else 1
             for i in range(len(month_starts)):
                 ms = month_starts[i]
+                nxt: Any | timedelta
                 if i + 1 < len(month_starts):
                     nxt = month_starts[i + 1]
                 else:

@@ -18,7 +18,7 @@ from software_metrics_machine.core.infrastructure.configuration.configuration im
 
 class CodemaatRepository(FileSystemBaseRepository):
     def __init__(self, configuration: Configuration):
-        self.configuration = configuration
+        self.configuration: Configuration = configuration
         super().__init__(configuration=self.configuration, target_subfolder="codemaat")
         self.logger = Logger(configuration=configuration).get_logger()
 
@@ -68,15 +68,17 @@ class CodemaatRepository(FileSystemBaseRepository):
             print(f"Filtered coupling data count: {len(data.values.tolist())}")
 
         if filters and filters.get("include_only"):
-            include_patterns: List[str] = filters.get("include_only") or None
+            include_patterns: str | None = filters.get("include_only") or None
             if include_patterns:
                 # normalize patterns list (split by comma if necessary)
                 data = self.__apply_include_only_filter(
-                    data, include_patterns, column="entity"
+                    data=data, include_patterns=include_patterns, column="entity"
                 )
         return data
 
-    def get_entity_churn(self, ignore_files: str | None = None, filters: dict = None):
+    def get_entity_churn(
+        self, ignore_files: str | None = None, filters: dict | None = None
+    ):
         file = "entity-churn.csv"
 
         file_path = super().read_file_if_exists(file)
@@ -93,10 +95,10 @@ class CodemaatRepository(FileSystemBaseRepository):
             print(f"Filtered get entity churn data count: {len(data.values.tolist())}")
 
         if filters and filters.get("include_only"):
-            include_patterns: List[str] = filters.get("include_only") or None
+            include_patterns: str | None = filters.get("include_only") or None
             if include_patterns:
                 data = self.__apply_include_only_filter(
-                    data, include_patterns, column="entity"
+                    data=data, include_patterns=include_patterns, column="entity"
                 )
 
         return data
@@ -111,7 +113,7 @@ class CodemaatRepository(FileSystemBaseRepository):
         data = self.__parse_csv(file_path)
 
         if filters and filters.get("include_only"):
-            include_patterns: List[str] = filters.get("include_only") or None
+            include_patterns: str | None = filters.get("include_only") or None
             if include_patterns:
                 data = self.__apply_include_only_filter(
                     data, include_patterns, column="entity"

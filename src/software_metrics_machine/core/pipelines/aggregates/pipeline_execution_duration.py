@@ -1,4 +1,3 @@
-from dataclasses import dataclass
 from typing import List
 from datetime import datetime, timedelta
 from software_metrics_machine.core.infrastructure.base_viewer import BaseViewer
@@ -6,21 +5,10 @@ from software_metrics_machine.core.pipelines.pipelines_repository import (
     PipelinesRepository,
 )
 from software_metrics_machine.core.pipelines.pipelines_types import (
+    PipelineExecutionDurationResult,
     PipelineFilters,
     PipelineRun,
 )
-
-
-@dataclass
-class PipelineExecutionDurationResult:
-    names: List[str]
-    values: List[float]
-    job_counts: List[int]
-    run_counts: int
-    ylabel: str
-    title_metric: str
-    rows: List[List]
-    runs: List[PipelineRun]
 
 
 class PipelineExecutionDuration(BaseViewer):

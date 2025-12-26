@@ -1,4 +1,5 @@
 from collections import defaultdict
+from typing import List, Tuple
 from software_metrics_machine.core.infrastructure.pandas import pd
 
 import holoviews as hv
@@ -10,8 +11,6 @@ from software_metrics_machine.core.infrastructure.base_viewer import (
 from software_metrics_machine.core.pipelines.pipelines_repository import (
     PipelinesRepository,
 )
-
-hv.extension("bokeh")
 
 
 class ViewJobsTopFailed(BaseViewer):
@@ -28,7 +27,7 @@ class ViewJobsTopFailed(BaseViewer):
         filters = {"start_date": start_date, "end_date": end_date}
         jobs = self.repository.jobs(filters=filters)
 
-        failures_by_date_job = defaultdict(int)
+        failures_by_date_job: dict[Tuple[str, str], int] = defaultdict(int)
         for j in jobs:
             name = (j.get("name") or "<unknown>").strip()
             conclusion = (j.get("conclusion") or "unknown").lower()
@@ -48,10 +47,14 @@ class ViewJobsTopFailed(BaseViewer):
         job_totals = defaultdict(int)
         for row in data:
             job_totals[row["Job"]] += row["Failures"]
-        top_jobs = sorted(job_totals, key=job_totals.get, reverse=True)
-        data = [row for row in data if row["Job"] in top_jobs]
 
-        bars = hv.Bars(data, ["Date", "Job"], "Failures").opts(
+        top_jobs: List[str] = sorted(job_totals, reverse=True)
+
+        data_list: List[dict[str, object]] = [
+            row for row in data if row["Job"] in top_jobs
+        ]
+
+        bars = hv.Bars(data_list, ["Date", "Job"], "Failures").opts(
             stacked=True,
             legend_position="right",
             width=900,

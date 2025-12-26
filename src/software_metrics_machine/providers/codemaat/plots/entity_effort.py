@@ -53,7 +53,7 @@ class EntityEffortViewer(BaseViewer):
         rects = squarify.squarify(normed, 0, 0, 100, 100)
 
         rows = []
-        labels = []
+        labels: list[dict] = []
         for r, ent, val in zip(rects, entities, values):
             left = r["x"]
             bottom = r["y"]
@@ -117,8 +117,10 @@ class EntityEffortViewer(BaseViewer):
         )
 
         # Add centered labels (entity name and integer value)
-        labels = [f"{r['entity']}\n{int(r['value'])}" for _, r in df_rects.iterrows()]
-        src.add(labels, "label")
+        centered_labels = [
+            f"{r['entity']}\n{int(r['value'])}" for _, r in df_rects.iterrows()
+        ]
+        src.add(centered_labels, "label")
         # Basic label placement; for small rectangles text may overlap — acceptable fallback
         p.text(
             x="x",

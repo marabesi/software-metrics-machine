@@ -1,7 +1,7 @@
 from collections import defaultdict
 from dataclasses import dataclass
 from datetime import datetime
-from typing import List
+from typing import List, Set
 
 
 from software_metrics_machine.core.infrastructure.base_viewer import BaseViewer
@@ -13,9 +13,9 @@ from software_metrics_machine.core.pipelines.pipelines_types import PipelineRun
 
 @dataclass
 class PipelineWorkflowRunsByWeekOrMonthResult:
-    rep_dates: List[datetime | None]
+    rep_dates: List[datetime]
     periods: List[str]
-    workflow_names: List[str]
+    workflow_names: Set[str]
     data_matrix: List[list[int]]
     runs: List[PipelineRun]
 
@@ -46,9 +46,9 @@ class PipelineWorkflowRunsByWeekOrMonth(BaseViewer):
 
         print(f"Found {len(runs)} runs after filtering")
 
-        counts = defaultdict(lambda: defaultdict(int))
+        counts: dict[str, dict] = defaultdict(lambda: defaultdict(int))
         period_set = set()
-        workflow_names = set()
+        workflow_names: Set[str] = set()
 
         for r in runs:
             name = r.path
@@ -69,19 +69,19 @@ class PipelineWorkflowRunsByWeekOrMonth(BaseViewer):
             return PipelineWorkflowRunsByWeekOrMonthResult(
                 rep_dates=[],
                 periods=[],
-                workflow_names=[],
+                workflow_names=set(),
                 data_matrix=[],
                 runs=runs,
             )
 
         periods = sorted(period_set)
-        workflow_names = sorted(workflow_names)
+        workflow_names_list = sorted(workflow_names)
 
         print(f"Plotting data aggregated by {aggregate_by}")
 
         # build matrix of counts per workflow per period
         data_matrix = []
-        for name in workflow_names:
+        for name in workflow_names_list:
             row = [counts[p].get(name, 0) for p in periods]
             data_matrix.append(row)
 

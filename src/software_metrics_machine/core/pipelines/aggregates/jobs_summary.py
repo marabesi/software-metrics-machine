@@ -8,7 +8,7 @@ from software_metrics_machine.core.pipelines.pipelines_types import PipelineJob
 
 class JobsSummary:
     def __init__(self, repository: PipelinesRepository):
-        self.repository = repository
+        self.repository: PipelinesRepository = repository
 
     def summarize_jobs(self, jobs: List[PipelineJob]) -> dict:
         summary = {}
@@ -43,7 +43,7 @@ class JobsSummary:
         composite_names = set()
 
         # aggregate counts by composite job name and capture a representative run_id (if available)
-        name_counts = Counter()
+        name_counts: dict[str, int] = Counter()
         name_runs = {}
         for j in jobs:
             job_name = j.name

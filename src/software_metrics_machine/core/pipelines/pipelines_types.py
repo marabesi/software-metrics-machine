@@ -1,5 +1,6 @@
 from enum import Enum
 from typing import List, Optional, Union
+from attr import dataclass
 from typing_extensions import TypedDict
 
 
@@ -88,12 +89,24 @@ class DeploymentFrequency(BaseModel):
 
 
 class PipelineFilters(TypedDict, total=False):
-    start_date: Optional[str] = None
-    end_date: Optional[str] = None
-    target_branch: Optional[str] = None
-    event: Optional[str] = None
-    workflow_path: Optional[str] = None
-    include_defined_only: Optional[bool] = None
-    status: Optional[str] = None
-    conclusions: Optional[str] = None
-    path: Optional[str] = None
+    start_date: Optional[str]
+    end_date: Optional[str]
+    target_branch: Optional[str]
+    event: Optional[str]
+    workflow_path: Optional[str]
+    include_defined_only: Optional[bool]
+    status: Optional[str]
+    conclusions: Optional[str]
+    path: Optional[str]
+
+
+@dataclass
+class PipelineExecutionDurationResult:
+    names: List[str]
+    values: List[float]
+    job_counts: List[int]
+    run_counts: int
+    ylabel: str
+    title_metric: str
+    rows: List[List]
+    runs: List[PipelineRun]

@@ -8,7 +8,7 @@ from bokeh.models import (
     MultiLine,
     LabelSet,
     HoverTool,
-    Circle as BkCircle,
+    Scatter,
 )
 from bokeh.palettes import Viridis256, Category20_20
 
@@ -174,12 +174,8 @@ class CouplingViewer(BaseViewer, Viewable):
 
         # Visual feedback on hover/selection
         # increase node radius on hover (use screen units to emulate 'size')
-        node_renderer.hover_glyph = BkCircle(
-            radius=10, fill_color="color", line_color=None
-        )
-        node_renderer.selection_glyph = BkCircle(
-            radius=10, fill_color="color", line_color=None
-        )
+        node_renderer.hover_glyph = Scatter(fill_color="color", line_color=None)
+        node_renderer.selection_glyph = Scatter(fill_color="color", line_color=None)
 
         # increase edge width on hover/selection
         edge_renderer.hover_glyph = MultiLine(line_color="edge_color", line_width=6)

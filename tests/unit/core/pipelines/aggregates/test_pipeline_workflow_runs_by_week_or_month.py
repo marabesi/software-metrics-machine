@@ -34,7 +34,7 @@ class TestPipelineWorkflowRunsByWeekOrMonth:
             # Verify empty result structure
             assert result.rep_dates == []
             assert result.periods == []
-            assert result.workflow_names == []
+            assert len(result.workflow_names) == 0
             assert result.data_matrix == []
             assert result.runs == []
 
@@ -99,8 +99,9 @@ class TestPipelineWorkflowRunsByWeekOrMonth:
             # Verify counts in matrix
             # CI workflow: week1=2, week2=1
             # Build workflow: week1=0, week2=1
-            ci_idx = result.workflow_names.index("/workflows/ci.yml")
-            build_idx = result.workflow_names.index("/workflows/build.yml")
+            list_names = list(result.workflow_names)
+            ci_idx = list_names.index("/workflows/ci.yml")
+            build_idx = list_names.index("/workflows/build.yml")
             week1_idx = result.periods.index("2023-01")
             week2_idx = result.periods.index("2023-02")
 
@@ -171,9 +172,10 @@ class TestPipelineWorkflowRunsByWeekOrMonth:
             assert len(result.data_matrix) == 2
             assert len(result.data_matrix[0]) == 2
 
+            list_names = list(result.workflow_names)
             # Verify counts in matrix
-            ci_idx = result.workflow_names.index("/workflows/ci.yml")
-            build_idx = result.workflow_names.index("/workflows/build.yml")
+            ci_idx = list_names.index("/workflows/ci.yml")
+            build_idx = list_names.index("/workflows/build.yml")
             jan_idx = result.periods.index("2023-01")
             feb_idx = result.periods.index("2023-02")
 
