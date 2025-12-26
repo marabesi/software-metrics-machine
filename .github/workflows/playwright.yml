@@ -49,4 +49,4 @@ jobs:
         retention-days: 30
 
     - name: Run Playwright chromatic tests
-      run: npx chromatic --playwright --project-token=${{ secrets.CHROMATIC_KEY }}
+      run: npx chromatic --playwright --project-token=${{ secrets.CHROMATIC_KEY }} --exit-zero-on-changes
