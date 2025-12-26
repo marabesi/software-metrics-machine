@@ -96,7 +96,6 @@ class PipelineWorkflowRunsByWeekOrMonth(BaseViewer):
                 rep = datetime(y, part, 1)
             rep_dates.append(rep)
 
-        print("aaaaa ", workflow_names)
         return PipelineWorkflowRunsByWeekOrMonthResult(
             rep_dates=rep_dates,
             periods=periods,
