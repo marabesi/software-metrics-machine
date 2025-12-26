@@ -237,3 +237,10 @@ sonar_data/
 sonar_extensions/
 sonar_logs/
 .fleet/
+
+# Playwright
+/test-results/
+/playwright-report/
+/blob-report/
+/playwright/.cache/
+/playwright/.auth/
