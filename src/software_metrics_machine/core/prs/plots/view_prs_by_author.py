@@ -21,7 +21,7 @@ class ViewPrsByAuthor(BaseViewer):
         self,
         title: str,
         top: int = 10,
-        labels: List[str] | None = None,
+        labels: str | None = None,
         start_date: str | None = None,
         end_date: str | None = None,
         raw_filters: str | None = None,
@@ -31,8 +31,8 @@ class ViewPrsByAuthor(BaseViewer):
         prs = self.repository.prs_with_filters(filters)
 
         if labels:
-            labels = [s.strip() for s in labels.split(",") if s.strip()]
-            prs = self.repository.filter_prs_by_labels(prs, labels)
+            labels_list = [s.strip() for s in labels.split(",") if s.strip()]
+            prs = self.repository.filter_prs_by_labels(prs, labels_list)
 
         top_authors = self.top_authors(prs, top)
 
@@ -71,4 +71,4 @@ class ViewPrsByAuthor(BaseViewer):
             user = pr.user
             login = user.login
             counts[login] += 1
-        return counts.most_common(top)
+        return counts.most_common(top)  # type: ignore[attr-defined]

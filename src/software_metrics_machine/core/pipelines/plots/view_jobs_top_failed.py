@@ -44,7 +44,8 @@ class ViewJobsTopFailed(BaseViewer):
             {"Date": date, "Job": job, "Failures": count}
             for (date, job), count in failures_by_date_job.items()
         ]
-        job_totals = defaultdict(int)
+
+        job_totals: dict[str, int] = defaultdict(int)
         for row in data:
             job_totals[row["Job"]] += row["Failures"]
 
