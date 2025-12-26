@@ -3,7 +3,7 @@ from typing import Dict, List
 
 from software_metrics_machine.core.infrastructure.pandas import pd
 from bokeh.plotting import figure
-from bokeh.models import (
+from bokeh.models import (  # type: ignore[attr-defined]
     ColumnDataSource,
     MultiLine,
     LabelSet,
@@ -25,7 +25,7 @@ from software_metrics_machine.providers.codemaat.codemaat_repository import (
 
 class CouplingViewer(BaseViewer, Viewable):
     def __init__(self, repository: CodemaatRepository):
-        self.repository = repository
+        self.repository: CodemaatRepository = repository
         self.logger = Logger(configuration=repository.configuration).get_logger()
 
     def render(

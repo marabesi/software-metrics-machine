@@ -1,6 +1,6 @@
 from software_metrics_machine.core.infrastructure.pandas import pd
 import holoviews as hv
-from bokeh.models import Span
+from bokeh.models import Span  # type: ignore[attr-defined]
 
 
 from software_metrics_machine.core.infrastructure.base_viewer import (
