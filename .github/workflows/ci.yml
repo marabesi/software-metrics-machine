@@ -259,7 +259,7 @@ jobs:
   delivery-test:
     permissions:
       id-token: write
-    needs: [ pytest, e2e ]
+    needs: [ pytest, e2e_cli ]
     if: github.ref == 'refs/heads/main' && contains(github.event.head_commit.message, 'tagged version')
     uses: ./.github/workflows/delivery-pypi.yml
     with:
