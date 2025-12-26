@@ -110,3 +110,15 @@ class PipelineExecutionDurationResult:
     title_metric: str
     rows: List[List]
     runs: List[PipelineRun]
+
+
+@dataclass
+class PipelineJobSummaryResult(TypedDict):
+    first_job: Optional[PipelineJob]
+    last_job: Optional[PipelineJob]
+    conclusions: dict[str, int]
+    unique_jobs: int
+    total_jobs: int
+    jobs_by_name: dict[
+        str, dict[str, Union[int, Optional[int]]]
+    ]  # name -> {count, run_id}

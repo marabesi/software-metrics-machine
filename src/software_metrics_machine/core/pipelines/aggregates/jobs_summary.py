@@ -3,7 +3,10 @@ from typing import List
 from software_metrics_machine.core.pipelines.pipelines_repository import (
     PipelinesRepository,
 )
-from software_metrics_machine.core.pipelines.pipelines_types import PipelineJob
+from software_metrics_machine.core.pipelines.pipelines_types import (
+    PipelineJob,
+    PipelineJobSummaryResult,
+)
 
 
 class JobsSummary:
@@ -11,23 +14,23 @@ class JobsSummary:
         self.repository: PipelinesRepository = repository
 
     def summarize_jobs(self, jobs: List[PipelineJob]) -> dict:
-        summary = {}
         total = len(jobs)
-        summary["total_jobs"] = total
+        summary: PipelineJobSummaryResult = {
+            "first_job": None,
+            "last_job": None,
+            "conclusions": {},
+            "unique_jobs": 0,
+            "total_jobs": total,
+            "jobs_by_name": {},
+        }
+
         if total == 0:
-            summary.update(
-                {
-                    "first_job": None,
-                    "last_job": None,
-                    "conclusions": {},
-                    "unique_jobs": 0,
-                }
-            )
             return summary
 
         # assume jobs are in chronological order; take first and last
-        first = jobs[0]
-        last = jobs[-1]
+        first: PipelineJob | None = jobs[0]
+        last: PipelineJob | None = jobs[-1]
+
         summary["first_job"] = first
         summary["last_job"] = last
 
