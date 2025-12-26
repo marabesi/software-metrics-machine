@@ -26,6 +26,7 @@ jobs:
       uses: chromaui/action@latest
       with:
         projectToken: ${{ secrets.CHROMATIC_KEY }}
+        workingDir: ./tests/apps/dashboard
 
     # - name: Install Playwright Browsers
     #   run: npx playwright install --with-deps
