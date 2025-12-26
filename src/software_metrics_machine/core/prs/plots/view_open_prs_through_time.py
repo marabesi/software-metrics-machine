@@ -8,6 +8,7 @@ from software_metrics_machine.core.infrastructure.base_viewer import (
 from software_metrics_machine.apps.components.barchart_stacked import (
     build_barchart,
 )
+from software_metrics_machine.core.prs.pr_types import PRFilters
 from software_metrics_machine.core.prs.prs_repository import PrsRepository
 
 
@@ -23,7 +24,9 @@ class ViewOpenPrsThroughTime(BaseViewer):
         authors: str | None = None,
         raw_filters: str | None = None,
     ) -> PlotResult:
-        filters = {"start_date": start_date, "end_date": end_date, "authors": authors}
+        filters = PRFilters(
+            **{"start_date": start_date, "end_date": end_date, "authors": authors}
+        )
         # merge parsed raw filters if provided
         parsed = self.repository.parse_raw_filters(raw_filters)
         filters = {**filters, **parsed}

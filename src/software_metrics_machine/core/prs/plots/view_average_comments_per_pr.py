@@ -5,6 +5,7 @@ from software_metrics_machine.core.infrastructure.base_viewer import (
     BaseViewer,
     PlotResult,
 )
+from software_metrics_machine.core.prs.pr_types import PRFilters
 from software_metrics_machine.core.prs.prs_repository import PrsRepository
 from software_metrics_machine.apps.components.barchart_with_lines import (
     build_barchart_with_lines,
@@ -24,13 +25,15 @@ class ViewAverageCommentsPerPullRequest(BaseViewer):
         end_date: str | None = None,
         raw_filters: str | None = None,
     ) -> PlotResult:
-        filters = {
-            "start_date": start_date,
-            "end_date": end_date,
-            "authors": authors,
-            "labels": labels,
-            "raw_filters": raw_filters,
-        }
+        filters = PRFilters(
+            **{
+                "start_date": start_date,
+                "end_date": end_date,
+                "authors": authors,
+                "labels": labels,
+                "raw_filters": raw_filters,
+            }
+        )
 
         df = self.repository.average_comments(
             filters=filters,

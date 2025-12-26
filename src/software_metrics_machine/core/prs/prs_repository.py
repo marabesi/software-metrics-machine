@@ -194,7 +194,9 @@ class PrsRepository(FileSystemBaseRepository):
             total_comments += len(pr.comments)
         return total_comments
 
-    def average_comments(self, filters: None = None, aggregate_by: str = "week"):
+    def average_comments(
+        self, filters: PRFilters | None = None, aggregate_by: str = "week"
+    ):
         prs = self.prs_with_filters(filters=filters)
 
         merged_prs = prs

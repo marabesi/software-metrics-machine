@@ -23,7 +23,7 @@ hv.extension("bokeh")
 
 class ViewPipelineExecutionRunsDuration(BaseViewer):
     def __init__(self, repository: PipelinesRepository):
-        self.repository = repository
+        self.repository: PipelinesRepository = repository
 
     def main(
         self,

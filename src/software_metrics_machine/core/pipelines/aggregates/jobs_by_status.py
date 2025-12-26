@@ -152,7 +152,8 @@ class JobsByStatus:
             dt = datetime.fromisoformat(created.replace("Z", "+00:00"))
             date_key = dt.date().isoformat()
             conclusion = j.conclusion
-            per_day[date_key][conclusion] += 1
+            if conclusion:
+                per_day[date_key][conclusion] += 1
 
         if not per_day:
             return [], [], []

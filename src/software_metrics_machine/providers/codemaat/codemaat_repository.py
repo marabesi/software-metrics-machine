@@ -4,7 +4,10 @@ from pathlib import PurePosixPath
 from typing import List
 from io import StringIO
 
-from software_metrics_machine.core.code.code_churn_types import CodeChurn
+from software_metrics_machine.core.code.code_churn_types import (
+    CodeChurn,
+    CodeChurnFilters,
+)
 from software_metrics_machine.core.infrastructure.file_system_base_repository import (
     FileSystemBaseRepository,
 )
@@ -19,7 +22,9 @@ class CodemaatRepository(FileSystemBaseRepository):
         super().__init__(configuration=self.configuration, target_subfolder="codemaat")
         self.logger = Logger(configuration=configuration).get_logger()
 
-    def get_code_churn(self, filters: None = None) -> List[CodeChurn]:
+    def get_code_churn(
+        self, filters: CodeChurnFilters | None = None
+    ) -> List[CodeChurn]:
         file = "abs-churn.csv"
 
         file_path = super().read_file_if_exists(file)

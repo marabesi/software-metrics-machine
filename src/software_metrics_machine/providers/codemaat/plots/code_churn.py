@@ -1,5 +1,6 @@
 import holoviews as hv
 
+from software_metrics_machine.core.code.code_churn_types import CodeChurnFilters
 from software_metrics_machine.core.infrastructure.base_viewer import (
     BaseViewer,
     PlotResult,
@@ -24,7 +25,7 @@ class CodeChurnViewer(BaseViewer, Viewable):
         end_date: str | None = None,
     ) -> PlotResult:
         code_churn_result = self.repository.get_code_churn(
-            {"start_date": start_date, "end_date": end_date}
+            CodeChurnFilters(**{"start_date": start_date, "end_date": end_date})
         )
 
         if len(code_churn_result) == 0:

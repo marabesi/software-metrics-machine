@@ -75,8 +75,8 @@ class ViewJobsSummary:
             return {"created_at": None, "started_at": None, "completed_at": None}
 
         created_at = job.created_at
-        started_at = job.started_at
-        ended_at = job.completed_at
+        started_at = job.started_at or ""
+        ended_at = job.completed_at or ""
 
         return {
             "created_at": datetime_to_local(created_at),
