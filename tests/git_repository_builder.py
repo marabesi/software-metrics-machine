@@ -1,4 +1,4 @@
-from ast import Tuple
+from typings import Tuple
 import subprocess
 import os
 from git import List
