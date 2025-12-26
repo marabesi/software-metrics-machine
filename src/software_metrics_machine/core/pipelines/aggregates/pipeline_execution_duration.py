@@ -8,6 +8,7 @@ from software_metrics_machine.core.pipelines.pipelines_types import (
     PipelineExecutionDurationResult,
     PipelineFilters,
     PipelineRun,
+    PipelineComputedDurations,
 )
 
 
@@ -49,12 +50,12 @@ class PipelineExecutionDuration(BaseViewer):
         }.get(sort_by, lambda r: r[2])
 
         rows.sort(key=sort_key, reverse=True)
-        rows = rows[:max_runs]
+        rows_limited = rows[:max_runs]
 
-        names = [r[0] for r in rows]
-        counts = [r[1] for r in rows]
-        avgs = [r[2] for r in rows]
-        sums = [r[3] for r in rows]
+        names = [r[0] for r in rows_limited]
+        counts = [r[1] for r in rows_limited]
+        avgs = [r[2] for r in rows_limited]
+        sums = [r[3] for r in rows_limited]
 
         if metric == "sum":
             values = sums
@@ -75,13 +76,17 @@ class PipelineExecutionDuration(BaseViewer):
             job_counts=counts,
             ylabel=ylabel,
             title_metric=title_metric,
-            rows=rows,
+            rows=rows_limited,
             run_counts=run_count,
             runs=data.runs,
         )
 
     def __aggregate_by_day(
-        self, start_date: str | None, end_date: str | None, filters: dict, metric: str
+        self,
+        start_date: str | None,
+        end_date: str | None,
+        filters: PipelineFilters,
+        metric: str,
     ) -> PipelineExecutionDurationResult:
         if not start_date or not end_date:
             return PipelineExecutionDurationResult(
@@ -107,6 +112,7 @@ class PipelineExecutionDuration(BaseViewer):
                 title_metric="",
                 rows=[],
                 run_counts=0,
+                runs=[],
             )
 
         days = []
@@ -118,11 +124,13 @@ class PipelineExecutionDuration(BaseViewer):
         names: List[str] = []
         values: List[float] = []
         counts: List[int] = []
-        rows_per_day: List[List] = []
+        rows_per_day: List[PipelineComputedDurations] = []
         runs: List[PipelineRun] = []
 
         for day in days:
-            day_filters = {**filters, "start_date": day, "end_date": day}
+            day_filters = PipelineFilters(
+                **{**filters, "start_date": day, "end_date": day}
+            )
             data = self.repository.get_workflows_run_duration(day_filters)
             run_count = data.total
             rows_day = data.rows
@@ -149,8 +157,14 @@ class PipelineExecutionDuration(BaseViewer):
             names.append(day)
             values.append(metric_value)
             counts.append(total_counts)
-            rows_per_day.append(rows_day)
             runs.extend(data.runs)
+            rows_per_day.append(
+                PipelineComputedDurations(
+                    total=len(rows_day),
+                    rows=rows_day,
+                    runs=data.runs,
+                )
+            )
 
         return PipelineExecutionDurationResult(
             names=names,

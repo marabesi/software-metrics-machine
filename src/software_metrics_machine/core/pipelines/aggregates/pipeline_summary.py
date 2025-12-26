@@ -76,6 +76,8 @@ class PipelineRunSummary:
         name_paths: dict = {}
         for r in self.runs:
             name = r.name
+            if not name:
+                continue
             name_counts[name] += 1
             # prefer explicit 'path' field if present, else try 'workflow_path' or 'file'
             if name not in name_paths:

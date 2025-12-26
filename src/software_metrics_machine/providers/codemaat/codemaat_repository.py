@@ -55,7 +55,9 @@ class CodemaatRepository(FileSystemBaseRepository):
             )
         return output
 
-    def get_coupling(self, ignore_files: str | None = None, filters: None = None):
+    def get_coupling(
+        self, ignore_files: str | None = None, filters: dict | None = None
+    ):
         file = "coupling.csv"
         file_path = super().read_file_if_exists(file)
         if not file_path:
@@ -103,7 +105,7 @@ class CodemaatRepository(FileSystemBaseRepository):
 
         return data
 
-    def get_entity_effort(self, filters: None = None):
+    def get_entity_effort(self, filters: dict | None = None):
         file = "entity-effort.csv"
         file_path = super().read_file_if_exists(file)
         if not file_path:
@@ -120,7 +122,9 @@ class CodemaatRepository(FileSystemBaseRepository):
                 )
         return data
 
-    def get_entity_ownership(self, authors: List[str] = [], filters: None = None):
+    def get_entity_ownership(
+        self, authors: List[str] = [], filters: dict | None = None
+    ):
         file = "entity-ownership.csv"
         file_path = super().read_file_if_exists(file)
         if not file_path:
@@ -135,7 +139,7 @@ class CodemaatRepository(FileSystemBaseRepository):
         print(f"Found {len(data)} row for entity ownership")
 
         if filters and filters.get("include_only"):
-            include_patterns: List[str] = filters.get("include_only") or None
+            include_patterns: str | None = filters.get("include_only") or None
             if include_patterns:
                 data = self.__apply_include_only_filter(
                     data, include_patterns, column="entity"

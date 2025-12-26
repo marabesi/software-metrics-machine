@@ -1,12 +1,27 @@
 from enum import Enum
 from typing import List, Optional, Union
-from attr import dataclass
+from dataclasses import dataclass, field
 from typing_extensions import TypedDict
 
 
 from pydantic import BaseModel
 
 StrOrInt = Union[str, int]
+
+
+@dataclass
+class PipelineDurationRow:
+    name: str
+    count: int
+    avg_min: float
+    total_min: float
+
+
+@dataclass
+class PipelineComputedDurations:
+    total: int
+    rows: List[PipelineDurationRow]
+    runs: List[PipelineRun] = field(default_factory=list)
 
 
 class PipelineJobStepStatus(str, Enum):
@@ -109,7 +124,7 @@ class PipelineExecutionDurationResult:
     run_counts: int
     ylabel: str
     title_metric: str
-    rows: List[List]
+    rows: List[PipelineComputedDurations]
     runs: List[PipelineRun]
 
 

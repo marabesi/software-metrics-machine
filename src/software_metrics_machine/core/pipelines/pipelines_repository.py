@@ -10,16 +10,14 @@ from software_metrics_machine.core.infrastructure.configuration.configuration im
     Configuration,
 )
 from software_metrics_machine.core.infrastructure.logger import Logger
-from software_metrics_machine.core.pipelines.pipelines_duration_types import (
-    PipelineComputedDurations,
-    PipelineDurationRow,
-)
 from software_metrics_machine.core.pipelines.pipelines_types import (
     DeploymentFrequency,
     PipelineJob,
     PipelineJobConclusion,
     PipelineRun,
     PipelineFilters,
+    PipelineComputedDurations,
+    PipelineDurationRow,
 )
 
 
