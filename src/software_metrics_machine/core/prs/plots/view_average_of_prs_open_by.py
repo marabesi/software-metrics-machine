@@ -12,6 +12,7 @@ from software_metrics_machine.core.prs.prs_repository import PrsRepository
 from software_metrics_machine.apps.components.barchart_with_lines import (
     build_barchart_with_lines,
 )
+from software_metrics_machine.core.prs.pr_types import PRFilters
 
 
 class ViewAverageOfPrsOpenBy(BaseViewer):
@@ -27,12 +28,14 @@ class ViewAverageOfPrsOpenBy(BaseViewer):
         end_date: str | None = None,
         raw_filters: str | None = None,
     ) -> PlotResult:
-        filters = {
-            "start_date": start_date,
-            "end_date": end_date,
-            "authors": authors,
-            "raw_filters": raw_filters,
-        }
+        filters = PRFilters(
+            **{
+                "start_date": start_date,
+                "end_date": end_date,
+                "authors": authors,
+                "raw_filters": raw_filters,
+            }
+        )
         prs = self.repository.prs_with_filters(filters)
 
         x_vals, y_vals = self.repository.average_by(

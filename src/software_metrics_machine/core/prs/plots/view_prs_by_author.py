@@ -8,7 +8,7 @@ from software_metrics_machine.core.infrastructure.base_viewer import (
 from software_metrics_machine.apps.components.barchart_stacked import (
     build_barchart,
 )
-from software_metrics_machine.core.prs.pr_types import PRDetails
+from software_metrics_machine.core.prs.pr_types import PRDetails, PRFilters
 from software_metrics_machine.core.prs.prs_repository import PrsRepository
 from typing import List, Tuple
 
@@ -28,7 +28,7 @@ class ViewPrsByAuthor(BaseViewer):
     ) -> PlotResult:
         filters = {"start_date": start_date, "end_date": end_date}
         filters = {**filters, **self.repository.parse_raw_filters(raw_filters)}
-        prs = self.repository.prs_with_filters(filters)
+        prs = self.repository.prs_with_filters(PRFilters(**filters))
 
         if labels:
             labels_list = [s.strip() for s in labels.split(",") if s.strip()]

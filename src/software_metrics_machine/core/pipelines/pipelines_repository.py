@@ -392,9 +392,9 @@ class PipelinesRepository(FileSystemBaseRepository):
         for run in runs:
             jobs = run.get("jobs", [])
             for job in jobs:
-                if job.get("name") == job_name and job.get("conclusion") == "success":
-                    created_at = job.get("started_at")
-                    completed_at = job.get("completed_at")
+                if job.name == job_name and job.conclusion == "success":
+                    created_at = job.started_at
+                    completed_at = job.completed_at
                     if created_at and completed_at:
                         start_dt = datetime.fromisoformat(
                             created_at.replace("Z", "+00:00")

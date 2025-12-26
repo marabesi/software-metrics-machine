@@ -7,7 +7,7 @@ from software_metrics_machine.core.infrastructure.base_viewer import (
 from software_metrics_machine.apps.components.barchart_stacked import (
     build_barchart,
 )
-from software_metrics_machine.core.prs.pr_types import PRDetails
+from software_metrics_machine.core.prs.pr_types import PRDetails, PRFilters
 from software_metrics_machine.core.prs.prs_repository import PrsRepository
 from collections import defaultdict
 from typing import List, Tuple
@@ -29,12 +29,14 @@ class ViewAverageReviewTimeByAuthor(BaseViewer):
         authors: str | None = None,
         raw_filters: str | None = None,
     ) -> PlotResult:
-        filters = {
-            "start_date": start_date,
-            "end_date": end_date,
-            "authors": authors,
-            "raw_filters": raw_filters,
-        }
+        filters = PRFilters(
+            **{
+                "start_date": start_date,
+                "end_date": end_date,
+                "authors": authors,
+                "raw_filters": raw_filters,
+            }
+        )
         pairs = self.repository.prs_with_filters(filters)
 
         if labels:
