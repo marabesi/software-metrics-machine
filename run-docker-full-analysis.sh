@@ -72,12 +72,6 @@ echo "$TEMPLATE" > "$analysis_dir/smm_config.json"
 
 docker stop smm || true
 
-#docker run \
-#  -e SMM_STORE_DATA_AT="/data" \
-#  -v $(pwd)/downloads/ollama:/ollama \
-#  -v $(pwd)/downloads/ollama_analysis:/data \
-#  --rm $IMAGE_NAME smm sh -c "git config --global --add safe.directory /ollama"
-
 docker run \
   -e SMM_STORE_DATA_AT="/data" \
   -v $(pwd)/downloads/ollama:/ollama \
