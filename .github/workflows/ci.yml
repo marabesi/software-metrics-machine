@@ -250,12 +250,11 @@ jobs:
           -v $(pwd)/downloads/ollama_analysis:/data \
           ${{env.IMAGE_NAME}}:latest \
           smm-dashboard
-        docker logs smm
-        docker inspect -f '{{range.NetworkSettings.Networks}}{{.IPAddress}}{{end}}' smm
 
     - name: Run Playwright tests
       working-directory: ./tests/apps/dashboard
-      run: npx playwright test
+      run: |
+        URL_DASHBOARD="$(docker inspect -f '{{range.NetworkSettings.Networks}}{{.IPAddress}}{{end}}'):5006" npx playwright test
 
     - name: Run Playwright chromatic tests
       working-directory: ./tests/apps/dashboard
