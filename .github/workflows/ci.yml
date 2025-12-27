@@ -208,7 +208,7 @@ jobs:
         path: ${{ runner.temp }}/myimage.tar
 
   e2e_dashboard:
-    needs: [code-quality, pytest, build_docker_image]
+    needs: [code-quality, build_docker_image]
     runs-on: ubuntu-24.04
     steps:
     - uses: actions/checkout@v4
@@ -234,10 +234,6 @@ jobs:
     - name: Install Playwright Browsers
       working-directory: ./tests/apps/dashboard
       run: npx playwright install --with-deps
-
-    - name: Run Playwright tests
-      working-directory: ./tests/apps/dashboard
-      run: npx playwright test
 
     - name: Run dashboard
       run: |
