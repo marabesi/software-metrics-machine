@@ -223,6 +223,22 @@ jobs:
       run: |
           docker load --input ${{ runner.temp }}/myimage.tar
 
+    - uses: actions/setup-node@v4
+      with:
+        node-version: lts/*
+
+    - name: Install dependencies
+      working-directory: ./tests/apps/dashboard
+      run: npm ci
+
+    - name: Install Playwright Browsers
+      working-directory: ./tests/apps/dashboard
+      run: npx playwright install --with-deps
+
+    - name: Run Playwright tests
+      working-directory: ./tests/apps/dashboard
+      run: npx playwright test
+
     - name: Run dashboard
       run: |
         ./run-full-analysis.sh ${{ secrets.GITHUB_TOKEN }} $(pwd)/downloads
@@ -233,6 +249,10 @@ jobs:
           -v $(pwd)/downloads/ollama_analysis:/data \
           ${{env.IMAGE_NAME}}:latest \
           smm-dashboard
+
+    - name: Run Playwright chromatic tests
+      working-directory: ./tests/apps/dashboard
+      run: npx chromatic --playwright --project-token=${{ secrets.CHROMATIC_KEY }} --exit-zero-on-changes
 
   send_docker_image_to_hub:
     needs: [code-quality, pytest, e2e_dashboard, build_docker_image]
