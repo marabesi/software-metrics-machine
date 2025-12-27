@@ -1,11 +1,11 @@
 #!/bin/bash
 
 GITHUB_TOKEN=$1
-
 BASE_DIR=$2
+IMAGE_NAME=$3
 
- project="ollama"
- github_repo="ollama/ollama"
+project="ollama"
+github_repo="ollama/ollama"
 
 # project="vitepress"
 # github_repo="vuejs/vitepress"
@@ -58,7 +58,7 @@ TEMPLATE=$(cat <<EOF
     "git_provider": "github",
     "github_token": "$GITHUB_TOKEN",
     "github_repository": "$github_repo",
-    "git_repository_location": "$clone_dir",
+    "git_repository_location": "/ollama",
     "deployment_frequency_target_pipeline": "",
     "deployment_frequency_target_job": "",
     "main_branch": "$main_branch"
@@ -69,13 +69,18 @@ EOF
 echo "$TEMPLATE" > "$analysis_dir/smm_config.json"
 
 
-./run-cli.sh code fetch --start-date "$start_date" --end-date "$end_date"
-./run-cli.sh prs fetch --start-date "$start_date" --end-date "$end_date"
-./run-cli.sh prs fetch-comments --start-date "$start_date" --end-date "$end_date"
-./run-cli.sh pipelines fetch --start-date "$start_date" --end-date "$end_date"
-./run-cli.sh pipelines jobs-fetch --start-date "$start_date" --end-date "$end_date"
+docker run \
+  -e SMM_STORE_DATA_AT="/data" \
+  -v $(pwd)/downloads/ollama:/ollama \
+  -v $(pwd)/downloads/ollama_analysis:/data \
+  --rm $IMAGE_NAME smm code fetch --start-date "$start_date" --end-date "$end_date"
 
-./run-cli.sh pipelines summary
-./run-cli.sh prs summary
+#docker run --rm $IMAGE_NAME smm prs fetch --start-date "$start_date" --end-date "$end_date"
+#docker run --rm $IMAGE_NAME smm prs fetch-comments --start-date "$start_date" --end-date "$end_date"
+#docker run --rm $IMAGE_NAME smm pipelines fetch --start-date "$start_date" --end-date "$end_date"
+#docker run --rm $IMAGE_NAME smm pipelines jobs-fetch --start-date "$start_date" --end-date "$end_date"
+#
+#./run-cli.sh pipelines summary
+#./run-cli.sh prs summary
 
 # ./run-dashboard.sh
