@@ -251,7 +251,7 @@ jobs:
           smm-dashboard
 
     - name: Run Playwright tests
-      # run: npx chromatic --playwright --project-token=${{ secrets.CHROMATIC_KEY }}
+      working-directory: ./tests/apps/dashboard
       run: npx playwright test
 
     - name: Run Playwright chromatic tests
