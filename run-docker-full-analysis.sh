@@ -67,9 +67,16 @@ TEMPLATE=$(cat <<EOF
 EOF
 )
 
+
 echo "$TEMPLATE" > "$analysis_dir/smm_config.json"
 
-git config --global --add safe.directory $(pwd)/downloads/ollama
+docker stop smm
+
+docker run \
+  -e SMM_STORE_DATA_AT="/data" \
+  -v $(pwd)/downloads/ollama:/ollama \
+  -v $(pwd)/downloads/ollama_analysis:/data \
+  --rm $IMAGE_NAME smm sh -c "git config --global --add safe.directory /ollama"
 
 docker run \
   -e SMM_STORE_DATA_AT="/data" \

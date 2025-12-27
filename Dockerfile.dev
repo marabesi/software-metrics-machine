@@ -18,4 +18,6 @@ COPY . .
 
 RUN poetry install --no-interaction --no-ansi
 
+RUN git config --system --add safe.directory '*'
+
 EXPOSE 5006
