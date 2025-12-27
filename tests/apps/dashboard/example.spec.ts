@@ -1,6 +1,6 @@
 import { test, expect } from "@chromatic-com/playwright";
 
-const url = `http://${process.env.URL_DASHBOARD}:5006`
+const url = `${process.env.URL_DASHBOARD}`
 
 test('has title', async ({ page }) => {
   await page.goto(url);
