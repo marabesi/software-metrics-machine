@@ -15,7 +15,7 @@ from typing import List, Tuple
 
 class ViewPrsByAuthor(BaseViewer):
     def __init__(self, repository: PrsRepository):
-        self.repository = repository
+        self.repository: PrsRepository = repository
 
     def plot_top_authors(
         self,
@@ -28,7 +28,7 @@ class ViewPrsByAuthor(BaseViewer):
     ) -> PlotResult:
         filters = {"start_date": start_date, "end_date": end_date}
         filters = {**filters, **self.repository.parse_raw_filters(raw_filters)}
-        prs = self.repository.prs_with_filters(PRFilters(**filters))
+        prs = self.repository.prs_with_filters(PRFilters(**filters))  # type: ignore
 
         if labels:
             labels_list = [s.strip() for s in labels.split(",") if s.strip()]

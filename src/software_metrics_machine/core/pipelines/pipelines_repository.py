@@ -307,9 +307,12 @@ class PipelinesRepository(FileSystemBaseRepository):
                 if (
                     job.name == job_name
                     and job.conclusion == PipelineJobConclusion.success
+                    and job.completed_at is not None
                 ):
-                    created_at = job.completed_at[:10]
-                    created_at = datetime.fromisoformat(created_at + "T00:00:00+00:00")
+                    raw_created_at = job.completed_at[:10]
+                    created_at = datetime.fromisoformat(
+                        raw_created_at + "T00:00:00+00:00"
+                    )
                     day_key = str(created_at.date())
                     week_key = f"{created_at.year}-W{created_at.isocalendar()[1]:02d}"
                     month_key = f"{created_at.year}-{created_at.month:02d}"
@@ -335,9 +338,9 @@ class PipelinesRepository(FileSystemBaseRepository):
                             "link": run.html_url,
                         }
 
-                    deployments[day_key]["daily"] += 1
-                    deployments[week_key]["weekly"] += 1
-                    deployments[month_key]["monthly"] += 1
+                    deployments[day_key]["daily"] += 1  # type: ignore
+                    deployments[week_key]["weekly"] += 1  # type: ignore
+                    deployments[month_key]["monthly"] += 1  # type: ignore
 
         days = sorted([key for key in deployments.keys() if key.count("-") == 2])
         weeks = sorted([key for key in deployments.keys() if "W" in key])
@@ -378,7 +381,7 @@ class PipelinesRepository(FileSystemBaseRepository):
         ]
 
         return DeploymentFrequency(
-            **{
+            **{  # type: ignore
                 "days": days_items,
                 "weeks": weeks_items,
                 "months": months_items,

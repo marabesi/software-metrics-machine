@@ -52,10 +52,21 @@ class PipelineExecutionDuration(BaseViewer):
         rows.sort(key=sort_key, reverse=True)
         rows_limited = rows[:max_runs]
 
-        names = [r[0] for r in rows_limited]
-        counts = [r[1] for r in rows_limited]
-        avgs = [r[2] for r in rows_limited]
-        sums = [r[3] for r in rows_limited]
+        names = [r[0] for r in rows_limited]  # type: ignore
+        counts = [r[1] for r in rows_limited]  # type: ignore
+        avgs = [r[2] for r in rows_limited]  # type: ignore
+        sums = [r[3] for r in rows_limited]  # type: ignore
+
+        rows_computed: List[PipelineComputedDurations] = []
+
+        for row in rows_limited:
+            rows_computed.append(
+                PipelineComputedDurations(
+                    total=row.count,
+                    rows=rows,
+                    runs=data.runs,
+                )
+            )
 
         if metric == "sum":
             values = sums
@@ -76,7 +87,7 @@ class PipelineExecutionDuration(BaseViewer):
             job_counts=counts,
             ylabel=ylabel,
             title_metric=title_metric,
-            rows=rows_limited,
+            rows=rows_computed,
             run_counts=run_count,
             runs=data.runs,
         )
@@ -136,8 +147,8 @@ class PipelineExecutionDuration(BaseViewer):
             rows_day = data.rows
 
             # compute aggregates across all pipelines for the day
-            total_minutes = sum([r[3] for r in rows_day]) if rows_day else 0.0
-            total_counts = sum([r[1] for r in rows_day]) if rows_day else 0
+            total_minutes = sum([r[3] for r in rows_day]) if rows_day else 0.0  # type: ignore
+            total_counts = sum([r[1] for r in rows_day]) if rows_day else 0  # type: ignore
             # approximate average across day: total_minutes / max(1, total_counts)
             avg_minutes = (total_minutes / total_counts) if total_counts else 0.0
 

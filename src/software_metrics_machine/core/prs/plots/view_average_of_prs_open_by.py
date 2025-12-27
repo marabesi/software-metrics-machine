@@ -90,9 +90,9 @@ class ViewAverageOfPrsOpenBy(BaseViewer):
                 if i + 1 < len(month_starts):
                     nxt = month_starts[i + 1]
                 else:
-                    nxt = end_dt + timedelta(days=1)
+                    nxt = end_dt + timedelta(days=1)  # type: ignore
                 mid = (
-                    pd.to_datetime(ms) + (pd.to_datetime(nxt) - pd.to_datetime(ms)) / 2
+                    pd.to_datetime(ms) + (pd.to_datetime(nxt) - pd.to_datetime(ms)) / 2  # type: ignore
                 )
                 extra_labels.append(
                     {"x": mid, "y": ylim_top * 0.98, "text": ms.strftime("%b %Y")}
