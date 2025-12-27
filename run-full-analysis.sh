@@ -2,8 +2,10 @@
 
 GITHUB_TOKEN=$1
 
-# project="ollama"
-# github_repo="ollama/ollama"
+BASE_DIR=$2
+
+ project="ollama"
+ github_repo="ollama/ollama"
 
 # project="vitepress"
 # github_repo="vuejs/vitepress"
@@ -14,21 +16,21 @@ GITHUB_TOKEN=$1
 # project="marabesi"
 # github_repo="marabesi/software-metrics-machine"
 
-project="marabesi"
-github_repo="marabesi/json-tool"
+#project="marabesi"
+#github_repo="marabesi/json-tool"
 
 # project="vercel"
 # github_repo="vercel/next.js"
 
 repo_url="https://github.com/$github_repo.git"
 
-base_dir="$(pwd)"
-clone_dir="$base_dir/downloads/$project"
-analysis_dir="$base_dir/downloads/${project}_analysis"
+base_dir="$BASE_DIR"
+clone_dir="$base_dir/$project"
+analysis_dir="$base_dir/${project}_analysis"
 main_branch="main"
 
 start_date="2025-07-01"
-end_date="2025-11-30"
+end_date="2025-07-06"
 
 export SMM_STORE_DATA_AT="$analysis_dir"
 
@@ -56,7 +58,7 @@ TEMPLATE=$(cat <<EOF
     "git_provider": "github",
     "github_token": "$GITHUB_TOKEN",
     "github_repository": "$github_repo",
-    "git_repository_location": "$clone_dir",
+    "git_repository_location": "/ollama",
     "deployment_frequency_target_pipeline": "",
     "deployment_frequency_target_job": "",
     "main_branch": "$main_branch"

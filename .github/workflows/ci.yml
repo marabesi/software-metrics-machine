@@ -225,7 +225,14 @@ jobs:
 
     - name: Run dashboard
       run: |
-        docker run --rm -v $(pwd):/app -w /app ${{env.IMAGE_NAME}}:latest smm-dashboard
+        ./run-full-analysis.sh ${{ secrets.GITHUB_TOKEN }} $(pwd)/downloads
+        docker run -d --rm \
+          -p 5006:5006 \
+          -e SMM_STORE_DATA_AT="/data" \
+          -v $(pwd)/downloads/ollama:/ollama \
+          -v $(pwd)/downloads/ollama_analysis:/data \
+          ${{env.IMAGE_NAME}}:latest \
+          smm-dashboard
 
   send_docker_image_to_hub:
     needs: [code-quality, pytest, e2e_dashboard, build_docker_image]
