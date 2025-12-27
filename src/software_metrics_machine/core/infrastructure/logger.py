@@ -1,4 +1,5 @@
 import logging
+import sys
 
 from software_metrics_machine.core.infrastructure.configuration.configuration import (
     Configuration,
@@ -14,7 +15,7 @@ class Logger:
                 log_level = logging.INFO
             if self.configuration.logging_level == "DEBUG":
                 log_level = logging.DEBUG
-        logging.basicConfig(level=log_level)
+        logging.basicConfig(level=log_level, stream=sys.stdout)
         self.logger = logging.getLogger(name)
         self.logger.setLevel(log_level)
 
