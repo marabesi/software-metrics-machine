@@ -69,6 +69,7 @@ EOF
 
 echo "$TEMPLATE" > "$analysis_dir/smm_config.json"
 
+git config --global --add safe.directory $(pwd)/downloads/ollama
 
 docker run \
   -e SMM_STORE_DATA_AT="/data" \
