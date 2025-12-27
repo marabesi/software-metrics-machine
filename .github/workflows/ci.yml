@@ -186,7 +186,7 @@ jobs:
         run: "./lib/bashunit ./tests/apps/cli/e2e"
 
   build_docker_image:
-    needs: [code-quality, pytest, e2e_cli]
+    needs: [code-quality, pytest]
     runs-on: ubuntu-24.04
     steps:
     - uses: actions/checkout@v4
