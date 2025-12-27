@@ -210,7 +210,6 @@ jobs:
   e2e_dashboard:
     needs: [code-quality, build_docker_image]
     runs-on: ubuntu-24.04
-    container: e2e_dashboard
     env:
       CHROMATIC_ARCHIVE_LOCATION: test-results/
     steps:
@@ -252,6 +251,7 @@ jobs:
           ${{env.IMAGE_NAME}}:latest \
           smm-dashboard
         docker logs smm
+        docker inspect -f '{{range.NetworkSettings.Networks}}{{.IPAddress}}{{end}}' smm
 
     - name: Run Playwright tests
       working-directory: ./tests/apps/dashboard
