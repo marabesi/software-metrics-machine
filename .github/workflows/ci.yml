@@ -48,7 +48,7 @@ jobs:
         run: poetry run flake8
 
       - name: Run mypy
-        run: poetry run mypy src/software_metrics_machine/core/infrastructure src/software_metrics_machine/core/code
+        run: poetry run mypy ./src ./tests
 
   pytest:
     name: Pytest

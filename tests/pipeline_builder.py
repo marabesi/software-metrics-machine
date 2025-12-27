@@ -77,20 +77,27 @@ class PipelineBuilder:
 
     def add_job(
         self,
-        name: str | None = None,
+        name: str,
+        run_id: int,
         conclusion: str | None = None,
-        run_id: int | None = None,
         started_at: str | None = None,
         finished_at: str | None = None,
     ):
         job = PipelineJob(
+            id=self._job_counter,
             run_id=run_id,
             name=name,
             conclusion=conclusion,
+            workflow_name="builder",
+            status="completed",
+            created_at="2023-10-01T12:00:00Z",
             started_at=started_at,
             completed_at=finished_at,
             head_branch=self._pipeline.head_branch,
             html_url=self._pipeline.html_url,
+            labels=[],
+            run_attempt=1,
+            head_sha="jobdef1234567890",
         )
         self._pipeline.jobs.append(job)
         return self

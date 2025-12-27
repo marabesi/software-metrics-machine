@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass, field
-from typing import Any, Dict, List, Optional
+from typing import List, Optional
 
 from software_metrics_machine.core.prs.pr_types import (
     PRDetails,
@@ -22,7 +22,7 @@ class PullRequestBuilder:
     closed_at: Optional[str] = None
     merged_at: Optional[str] = None
     review_comments_url: str = "unknown"
-    comments: List[Dict[str, Any]] = field(default_factory=list)
+    comments: List[PRComments] = field(default_factory=list)
     files_changed: List[str] = field(default_factory=list)
     labels: List[PRLabels] = field(default_factory=list)
     html_url: str = "https://github.com/org/repo/pull/1"
@@ -71,11 +71,14 @@ class PullRequestBuilder:
     def with_comment(
         self, author: str, body: str, created_at: str
     ) -> "PullRequestBuilder":
-        comment = {
-            "author": author,
-            "body": body,
-            "created_at": created_at,
-        }
+        comment = PRComments(
+            id=1,
+            user=PrUser.model_validate({"login": author}),
+            body=body,
+            created_at=created_at,
+            updated_at="2023-10-10T00:00:00Z",
+            pull_request_url="https://github.com/org/repo/pull/1",
+        )
         self.comments.append(comment)
         return self
 
@@ -91,10 +94,10 @@ class PullRequestBuilder:
         self.state = state
         return self
 
-    def build(self) -> Dict[str, Any]:
+    def build(self) -> PRDetails:
         comments: List[PRComments] = [c for c in self.comments]
-        pr = PRDetails(
-            **{
+        pr = PRDetails.model_validate(
+            {
                 "id": self.id,
                 "number": self.number,
                 "title": self.title,

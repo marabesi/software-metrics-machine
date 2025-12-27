@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass, field
-from typing import Any, Dict, Optional
+from typing import Optional
 
 from software_metrics_machine.core.prs.pr_types import PRComments
 
@@ -39,7 +39,7 @@ class PullRequestCommentsBuilder:
         self.user_login = login
         return self
 
-    def build(self) -> Dict[str, Any]:
+    def build(self) -> PRComments:
         payload = {
             "id": self.id,
             "body": self.body,
@@ -50,5 +50,5 @@ class PullRequestCommentsBuilder:
         if self.user_login:
             payload["user"] = {"login": self.user_login}
 
-        comments = PRComments(**payload)
+        comments = PRComments.model_validate(payload)
         return comments

@@ -15,7 +15,7 @@ repos:
         types: [python]
       - id: mypy
         name: mypy
-        entry: poetry run mypy
+        entry: poetry run mypy ./src ./tests
         language: system
         types: [python]
       - id: pytest

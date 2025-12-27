@@ -1,6 +1,6 @@
 from fastapi.testclient import TestClient
 
-from software_metrics_machine.apps.rest.main import app as rest_main
+from software_metrics_machine.apps.rest.main import app as rest_main  # type: ignore[attr-defined]
 from tests.csv_builder import CSVBuilder
 from tests.builders import (
     github_workflows_data,

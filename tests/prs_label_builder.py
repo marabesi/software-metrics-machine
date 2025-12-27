@@ -22,8 +22,8 @@ class PullRequestLabelBuilder:
         return self
 
     def build(self) -> PRLabels:
-        pr = PRLabels(
-            **{
+        pr = PRLabels.model_validate(
+            {
                 "id": self.id,
                 "name": self.name,
             }
