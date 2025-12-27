@@ -254,6 +254,7 @@ jobs:
     - name: Run Playwright tests
       working-directory: ./tests/apps/dashboard
       run: |
+        docker logs smm
         URL_DASHBOARD="$(docker inspect -f '{{range.NetworkSettings.Networks}}{{.IPAddress}}{{end}}'):5006" npx playwright test
 
     - name: Run Playwright chromatic tests

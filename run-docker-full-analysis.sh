@@ -61,7 +61,8 @@ TEMPLATE=$(cat <<EOF
     "git_repository_location": "/ollama",
     "deployment_frequency_target_pipeline": "",
     "deployment_frequency_target_job": "",
-    "main_branch": "$main_branch"
+    "main_branch": "$main_branch",
+    "logging_level": "DEBUG"
   }
 EOF
 )
