@@ -250,6 +250,10 @@ jobs:
           ${{env.IMAGE_NAME}}:latest \
           smm-dashboard
 
+    - name: Run Playwright tests
+      # run: npx chromatic --playwright --project-token=${{ secrets.CHROMATIC_KEY }}
+      run: npx playwright test
+
     - name: Run Playwright chromatic tests
       working-directory: ./tests/apps/dashboard
       run: npx chromatic --playwright --project-token=${{ secrets.CHROMATIC_KEY }} --exit-zero-on-changes
