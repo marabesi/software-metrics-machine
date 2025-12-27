@@ -210,6 +210,8 @@ jobs:
   e2e_dashboard:
     needs: [code-quality, build_docker_image]
     runs-on: ubuntu-24.04
+    env:
+      CHROMATIC_ARCHIVE_LOCATION: test-results/
     steps:
     - uses: actions/checkout@v4
       with:
