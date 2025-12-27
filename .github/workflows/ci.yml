@@ -242,7 +242,7 @@ jobs:
     - name: Run dashboard
       run: |
         ./run-docker-full-analysis.sh ${{ secrets.GITHUB_TOKEN }} $(pwd)/downloads ${{env.IMAGE_NAME}}
-        docker run --rm \
+        docker run -d --rm \
           --name smm \
           -p 5006:5006 \
           -e SMM_STORE_DATA_AT="/data" \
