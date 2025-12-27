@@ -210,6 +210,7 @@ jobs:
   e2e_dashboard:
     needs: [code-quality, build_docker_image]
     runs-on: ubuntu-24.04
+    container: e2e_dashboard
     env:
       CHROMATIC_ARCHIVE_LOCATION: test-results/
     steps:
@@ -243,12 +244,14 @@ jobs:
       run: |
         ./run-docker-full-analysis.sh ${{ secrets.GITHUB_TOKEN }} $(pwd)/downloads ${{env.IMAGE_NAME}}
         docker run -d --rm \
+          --name smm \
           -p 5006:5006 \
           -e SMM_STORE_DATA_AT="/data" \
           -v $(pwd)/downloads/ollama:/ollama \
           -v $(pwd)/downloads/ollama_analysis:/data \
           ${{env.IMAGE_NAME}}:latest \
           smm-dashboard
+        docker logs smm
 
     - name: Run Playwright tests
       working-directory: ./tests/apps/dashboard
