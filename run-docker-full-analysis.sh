@@ -78,6 +78,15 @@ docker run \
   -v $(pwd)/downloads/ollama_analysis:/data \
   --rm $IMAGE_NAME smm code fetch --start-date "$start_date" --end-date "$end_date"
 
+ docker run -d --rm \
+   --name smm \
+   -p 5006:5006 \
+   -e SMM_STORE_DATA_AT="/data" \
+   -v $(pwd)/downloads/ollama:/ollama \
+   -v $(pwd)/downloads/ollama_analysis:/data \
+   $IMAGE_NAME \
+   smm-dashboard
+
 #docker run --rm $IMAGE_NAME smm prs fetch --start-date "$start_date" --end-date "$end_date"
 #docker run --rm $IMAGE_NAME smm prs fetch-comments --start-date "$start_date" --end-date "$end_date"
 #docker run --rm $IMAGE_NAME smm pipelines fetch --start-date "$start_date" --end-date "$end_date"
