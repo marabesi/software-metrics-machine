@@ -1,8 +1,7 @@
 from software_metrics_machine.core.infrastructure.pandas import pd
 import panel as pn
 from software_metrics_machine.apps.components.aggregate_by_select import (
-    aggregate_by_metric_select,
-    aggregate_by_select,
+    SelectComponent,
 )
 from software_metrics_machine.apps.components.tabulator import (
     TabulatorComponent,
@@ -25,6 +24,8 @@ from software_metrics_machine.core.pipelines.plots.view_pipeline_runs_by_week_or
 from software_metrics_machine.core.pipelines.pipelines_repository import (
     PipelinesRepository,
 )
+
+selects = SelectComponent()
 
 
 def pipeline_section(
@@ -139,8 +140,8 @@ def pipeline_section(
             .plot
         )
 
-    aggregate_by = aggregate_by_select()
-    aggregate_metric_select = aggregate_by_metric_select()
+    aggregate_by = selects.aggregate_by_select()
+    aggregate_metric_select = selects.aggregate_by_metric_select()
 
     views = pn.Column(
         "## Pipeline",
