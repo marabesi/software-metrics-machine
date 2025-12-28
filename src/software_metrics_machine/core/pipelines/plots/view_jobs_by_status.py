@@ -64,7 +64,6 @@ class ViewJobsByStatus(BaseViewer):
                 else f"Status of Workflows ({workflow_path}) - {total_runs} runs"
             ),
             xrotation=45,
-            label_generator=super().build_labels_above_bars,
             tools=super().get_tools(),
             color=super().get_color(),
         )
@@ -90,7 +89,6 @@ class ViewJobsByStatus(BaseViewer):
             title=(
                 f'Executions of job "{display_job_name}" in workflow "{display_workflow_name}" by {'week' if aggregate_by_week else 'day'} (stacked by conclusion)'  # noqa
             ),
-            label_generator=None,
             tools=super().get_tools(),
         )
 

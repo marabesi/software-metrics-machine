@@ -89,7 +89,6 @@ class EntityOnershipViewer(BaseViewer, Viewable):
             height=super().get_chart_height(),
             title="Entity Ownership: Lines Added per Author",
             xrotation=45,
-            label_generator=super().build_labels_above_bars,
             tools=super().get_tools(),
             color=super().get_color(),
         )
@@ -104,7 +103,6 @@ class EntityOnershipViewer(BaseViewer, Viewable):
             height=super().get_chart_height(),
             title="Entity Ownership: Lines Deleted per Author",
             xrotation=45,
-            label_generator=None,
             tools=super().get_tools(),
             color=super().get_color(),
         )

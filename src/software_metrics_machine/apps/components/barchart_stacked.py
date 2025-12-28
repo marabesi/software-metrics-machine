@@ -2,7 +2,7 @@ import holoviews as hv
 from bokeh.models import HoverTool
 from software_metrics_machine.core.infrastructure.base_viewer import BaseViewer
 from software_metrics_machine.core.infrastructure.pandas import pd
-from typing import Callable, Iterable
+from typing import Iterable
 
 
 class BarchartStacked(BaseViewer):
@@ -17,7 +17,6 @@ class BarchartStacked(BaseViewer):
         height: int | None = None,
         title: str | None = None,
         xrotation: int = 45,
-        label_generator: Callable[[list[dict], str, str], hv.Labels] | None = None,
         tools: list[str] | None = None,
         color: str | None = None,
     ):

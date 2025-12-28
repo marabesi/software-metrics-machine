@@ -66,7 +66,6 @@ class ViewAverageReviewTimeByAuthor(BaseViewer):
             height=super().get_chart_height(),
             title=title,
             xrotation=0,
-            label_generator=super().build_labels_above_bars,
             tools=super().get_tools(),
             color=super().get_color(),
         )

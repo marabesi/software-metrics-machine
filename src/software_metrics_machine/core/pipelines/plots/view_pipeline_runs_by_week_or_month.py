@@ -102,7 +102,6 @@ class ViewWorkflowRunsByWeekOrMonth(BaseViewer):
             height=super().get_chart_height(),
             title=title,
             xrotation=45,
-            label_generator=None,
             tools=super().get_tools(),
         )
 

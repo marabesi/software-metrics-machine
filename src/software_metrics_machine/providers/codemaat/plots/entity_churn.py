@@ -91,7 +91,6 @@ class EntityChurnViewer(BaseViewer, Viewable):
             height=super().get_chart_height(),
             title="Code Entity Churn: Lines Added and Deleted",
             xrotation=45,
-            label_generator=super().build_labels_above_bars,
             tools=super().get_tools(),
             color=super().get_color(),
         )

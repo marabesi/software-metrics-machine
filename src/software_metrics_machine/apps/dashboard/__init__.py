@@ -69,7 +69,7 @@ prs_repository = PrsRepository(configuration=configuration)
 codemaat_repository = CodemaatRepository(configuration=configuration)
 
 current_date = date.today()
-start_date = current_date - timedelta(days=6 * 30)  # Approximation of 6 months
+start_date = current_date - timedelta(days=12 * 30)  # Approximation of 6 months
 end_date = current_date
 
 if configuration.dashboard_start_date and configuration.dashboard_end_date:

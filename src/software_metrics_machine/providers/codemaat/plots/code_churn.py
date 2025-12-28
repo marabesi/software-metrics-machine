@@ -48,7 +48,6 @@ class CodeChurnViewer(BaseViewer, Viewable):
             height=super().get_chart_height(),
             title="Code Churn: Lines Added and Deleted per Date",
             xrotation=45,
-            label_generator=super().build_labels_above_bars,
             tools=super().get_tools(),
             color=super().get_color(),
         )
