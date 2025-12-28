@@ -397,6 +397,7 @@ template = FastListTemplate(
     accent=configuration.dashboard_color,
     collapsed_right_sidebar=False,
     collapsed_sidebar=True,
+    favicon="./src/software_metrics_machine/apps/dashboard/images/favicon.ico",
 )
 
 template.main.append(tabs)

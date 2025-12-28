@@ -23,6 +23,8 @@ if (NODE_ENV === 'production') {
     ]);
 }
 
+head.push(['link', { rel: 'icon', href: 'favicon.ico' }]);
+
 // https://vitepress.dev/reference/site-config
 export default withMermaid(
   defineConfig({
