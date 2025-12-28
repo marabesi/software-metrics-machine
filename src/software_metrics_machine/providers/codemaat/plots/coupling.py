@@ -82,7 +82,7 @@ class CouplingViewer(BaseViewer, Viewable):
         node_x = [layout[n][0] for n in unique_nodes]
         node_y = [layout[n][1] for n in unique_nodes]
 
-        palette = super().get_palette(unique_nodes)
+        palette = super().get_palette(unique_nodes)["colors"]
         node_colors = [palette[i % len(palette)] for i in range(len(unique_nodes))]
         node_source = ColumnDataSource(
             dict(x=node_x, y=node_y, label=unique_nodes, color=node_colors)

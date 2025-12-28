@@ -49,6 +49,7 @@ class BarchartStacked(BaseViewer):
                 title=title or "",
                 hooks=[_remove_bar_borders],
                 tools=[hover],
+                cmap=super().get_palette(df.all())["colors"],
             )
         else:
             bars = hv.Bars(df, x, y).opts(
@@ -58,6 +59,7 @@ class BarchartStacked(BaseViewer):
                 hooks=[_remove_bar_borders],
                 tools=[hover],
                 color=color,
+                cmap=super().get_palette(df.all())["colors"],
             )
 
         fig = hv.render(bars, backend="bokeh")

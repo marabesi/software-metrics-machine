@@ -100,7 +100,10 @@ class EntityEffortViewer(BaseViewer):
         low = float(df_rects["value"].min())
         high = float(df_rects["value"].max())
         mapper = linear_cmap(
-            field_name="value", palette=super().get_palette(rows), low=low, high=high
+            field_name="value",
+            palette=super().get_palette(rows)["colors"],
+            low=low,
+            high=high,
         )
 
         src = ColumnDataSource(df_rects)
