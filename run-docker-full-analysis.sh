@@ -29,8 +29,8 @@ clone_dir="$base_dir/$project"
 analysis_dir="$base_dir/${project}_analysis"
 main_branch="main"
 
-start_date="2025-12-20"
-end_date="2025-12-31"
+start_date="2025-07-20"
+end_date="2025-11-31"
 
 export SMM_STORE_DATA_AT="$analysis_dir"
 

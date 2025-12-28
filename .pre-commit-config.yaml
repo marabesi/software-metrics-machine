@@ -16,6 +16,7 @@ repos:
       - id: mypy
         name: mypy
         entry: poetry run mypy ./src ./tests
+        pass_filenames: false
         language: system
         types: [python]
       - id: pytest

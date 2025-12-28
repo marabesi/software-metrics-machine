@@ -127,6 +127,8 @@ class CouplingViewer(BaseViewer, Viewable):
             height=self.get_chart_height(),
         )
         p.grid.grid_line_color = None
+        # hide the x and y tickets because we don't care about them in coupling diagram
+        p.axis.visible = False
 
         # Draw chords as MultiLine using edge_source; store renderer to attach hover
         edge_renderer = p.multi_line(
