@@ -2,48 +2,63 @@ import panel as pn
 from software_metrics_machine.core.infrastructure.pandas import pd
 
 
-def TabulatorComponent(
-    df: pd.DataFrame,
-    header_filters,
-    filename,
-) -> pn.layout.Column:
-    initial_size = 100
-    table = pn.widgets.Tabulator(
-        df,
-        pagination="remote",
-        page_size=initial_size,
-        header_filters=header_filters,
-        show_index=False,
-        sizing_mode="stretch_width",
-        # configuration={
-        #     "initialHeaderFilter": [
-        #         {"field":"path", "value": ".github/workflows/ci.yml"}
-        #     ]
-        # }
-    )
-    filename_input, button = table.download_menu(
-        text_kwargs={"name": "", "value": f"{filename}.csv"},
-        button_kwargs={"name": "Download table"},
-    )
-    page_size_select = pn.widgets.Select(
-        name="",
-        options=[10, 25, 50, 100, 200],
-        value=initial_size,
-    )
+class TabulatorComponent:
+    def __init__(
+        self,
+        df: pd.DataFrame,
+        header_filters,
+        filename,
+    ):
+        self.df = df
+        self.header_filters = header_filters
+        self.filename = filename
+        self.initial_size = 100
+        self.table = None
+        self.filename_input = None
+        self.button = None
+        self.page_size_select = None
+        self._build()
 
-    def _on_page_size_change(event):
+    def _build(self):
+        self.table = pn.widgets.Tabulator(
+            self.df,
+            pagination="remote",
+            page_size=self.initial_size,
+            header_filters=self.header_filters,
+            show_index=False,
+            sizing_mode="stretch_width",
+            # configuration={
+            #     "initialHeaderFilter": [
+            #         {"field":"path", "value": ".github/workflows/ci.yml"}
+            #     ]
+            # }
+        )
+        self.filename_input, self.button = self.table.download_menu(
+            text_kwargs={"name": "", "value": f"{self.filename}.csv"},
+            button_kwargs={"name": "Download table"},
+        )
+        self.page_size_select = pn.widgets.Select(
+            name="",
+            options=[10, 25, 50, 100, 200],
+            value=self.initial_size,
+        )
+        self.page_size_select.param.watch(self._on_page_size_change, "value")
+
+    def _on_page_size_change(self, event):
         new_size = int(event.new)
-        table.page_size = new_size
+        self.table.page_size = new_size
 
-    page_size_select.param.watch(_on_page_size_change, "value")
+    def __panel__(self) -> pn.layout.Column:
+        controls = pn.FlexBox(
+            self.filename_input,
+            self.button,
+            self.page_size_select,
+            align_items="center",
+        )
 
-    controls = pn.FlexBox(
-        filename_input, button, page_size_select, align_items="center"
-    )
-
-    data = pn.Column(
-        controls,
-        pn.Row(table, sizing_mode="stretch_width"),
-        sizing_mode="stretch_width",
-    )
-    return data
+        data = pn.Column(
+            controls,
+            pn.Row(self.table, sizing_mode="stretch_width"),
+            sizing_mode="stretch_width",
+        )
+        return data
