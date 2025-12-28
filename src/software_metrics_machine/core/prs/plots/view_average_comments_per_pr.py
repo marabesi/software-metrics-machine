@@ -8,12 +8,13 @@ from software_metrics_machine.core.infrastructure.base_viewer import (
 from software_metrics_machine.core.prs.pr_types import PRFilters
 from software_metrics_machine.core.prs.prs_repository import PrsRepository
 from software_metrics_machine.apps.components.barchart_with_lines import (
-    build_barchart_with_lines,
+    BarchartWithLines,
 )
 
 
 class ViewAverageCommentsPerPullRequest(BaseViewer):
     def __init__(self, repository: PrsRepository):
+        self.barchart_with_lines = BarchartWithLines(repository=repository)
         self.repository: PrsRepository = repository
 
     def main(
@@ -89,7 +90,7 @@ class ViewAverageCommentsPerPullRequest(BaseViewer):
                 y = list(df["y"])
                 data = [{"x": xi, "y": yi} for xi, yi in zip(x, y)]
 
-        chart = build_barchart_with_lines(
+        chart = self.barchart_with_lines.build_barchart_with_lines(
             data,
             x="x",
             y="y",
