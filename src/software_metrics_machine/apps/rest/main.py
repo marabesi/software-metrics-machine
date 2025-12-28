@@ -1,5 +1,7 @@
 # type: ignore
 
+import holoviews as hv  # TODO: remove dependency that is for dashboard only
+
 from fastapi import FastAPI
 from enum import Enum
 from fastapi import Query
@@ -51,6 +53,8 @@ from software_metrics_machine.core.pipelines.plots.view_jobs_average_time_execut
 )
 
 from software_metrics_machine.core.prs.plots.view_summary import PrViewSummary
+
+hv.extension("bokeh")
 
 app = FastAPI(
     title="Software Metrics Machine REST API",

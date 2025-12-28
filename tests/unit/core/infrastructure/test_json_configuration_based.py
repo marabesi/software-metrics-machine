@@ -27,7 +27,7 @@ class TestJsonConfigurationBased:
             github_repository="owner/repo",
             git_repository_location="/my/repo",
         )
-        assert "#4c78a8" == configuration.dashboard_color
+        assert "#6b77e3" == configuration.dashboard_color
 
     def test_by_defaulk_sets_logging_to_critical(sel):
         configuration = Configuration(
