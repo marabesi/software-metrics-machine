@@ -3,8 +3,6 @@ from bokeh.models import HoverTool
 from software_metrics_machine.core.infrastructure.pandas import pd
 from typing import Callable, Iterable
 
-hv.extension("bokeh")
-
 
 def build_barchart(
     data: Iterable[dict],

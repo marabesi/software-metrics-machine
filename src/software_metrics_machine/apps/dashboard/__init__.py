@@ -31,6 +31,7 @@ from software_metrics_machine.providers.codemaat.codemaat_repository import (
 )
 
 pn.extension(
+    "bokeh",
     "tabulator",
     "notifications",
     raw_css=[

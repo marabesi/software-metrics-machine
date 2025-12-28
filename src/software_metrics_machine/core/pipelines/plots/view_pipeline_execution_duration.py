@@ -1,5 +1,4 @@
 from software_metrics_machine.core.infrastructure.pandas import pd
-import holoviews as hv
 
 from software_metrics_machine.apps.components.scatter_with_trend import (
     build_scatter_with_trend,
@@ -17,8 +16,6 @@ from software_metrics_machine.core.pipelines.aggregates.pipeline_execution_durat
 from software_metrics_machine.core.pipelines.pipelines_repository import (
     PipelinesRepository,
 )
-
-hv.extension("bokeh")
 
 
 class ViewPipelineExecutionRunsDuration(BaseViewer):

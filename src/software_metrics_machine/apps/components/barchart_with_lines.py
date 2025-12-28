@@ -2,8 +2,6 @@ import holoviews as hv
 from software_metrics_machine.core.infrastructure.pandas import pd
 from typing import Iterable, Callable
 
-hv.extension("bokeh")
-
 
 def build_barchart_with_lines(
     data: Iterable[dict],

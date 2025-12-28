@@ -7,8 +7,6 @@ from bokeh.models import ColumnDataSource
 from bokeh.transform import factor_cmap, factor_mark
 from bokeh.palettes import Category10
 
-hv.extension("bokeh")
-
 
 def _empty_figure(message: str, height: Optional[int] = 200):
     """Return a minimal Bokeh figure containing a centered message."""

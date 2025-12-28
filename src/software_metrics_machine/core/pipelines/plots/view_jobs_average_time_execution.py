@@ -16,8 +16,6 @@ from software_metrics_machine.core.pipelines.pipelines_repository import (
 )
 from typing import Optional
 
-hv.extension("bokeh")
-
 
 class ViewJobsByAverageTimeExecution(BaseViewer):
 

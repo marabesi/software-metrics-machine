@@ -1,5 +1,4 @@
 from software_metrics_machine.core.infrastructure.pandas import pd
-import holoviews as hv
 
 
 from software_metrics_machine.core.infrastructure.base_viewer import (
@@ -15,8 +14,6 @@ from software_metrics_machine.core.pipelines.aggregates.pipeline_by_status impor
 from software_metrics_machine.core.pipelines.pipelines_repository import (
     PipelinesRepository,
 )
-
-hv.extension("bokeh")
 
 
 class ViewPipelineByStatus(BaseViewer):
