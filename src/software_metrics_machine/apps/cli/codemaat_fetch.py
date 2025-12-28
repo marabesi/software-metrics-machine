@@ -27,9 +27,15 @@ from software_metrics_machine.providers.codemaat.fetch import FetchCodemaat
 )
 def execute_codemaat(start_date, end_date, subfolder):
     client = FetchCodemaat(configuration=create_configuration())
-    client.execute_codemaat(
+    result = client.execute_codemaat(
         start_date=start_date, end_date=end_date, subfolder=subfolder
     )
+
+    if result.stderr:
+        print(f"Command errored with status 1 error: {result.stderr}")
+        return
+
+    print(result.stdout)
 
 
 command = execute_codemaat

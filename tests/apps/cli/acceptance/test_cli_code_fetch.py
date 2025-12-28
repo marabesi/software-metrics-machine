@@ -87,3 +87,27 @@ class TestCliCodeFetchCommands:
                 "tests/",
                 "false",
             ] == run_command
+
+    def test_should_output_error_when_command_fails(self, cli):
+        with patch(
+            "software_metrics_machine.core.infrastructure.run.Run.run_command"
+        ) as mock_run:
+            mock_run.return_value = CompletedProcess(
+                args="", returncode=1, stdout=None, stderr="ERROR!"
+            )
+
+            result = cli.runner.invoke(
+                main,
+                [
+                    "code",
+                    "fetch",
+                    "--start-date",
+                    "2025-01-01",
+                    "--end-date",
+                    "2025-01-01",
+                    "--subfolder",
+                    "tests/",
+                ],
+            )
+
+            assert "Command errored with status 1 error: ERROR!" in result.output

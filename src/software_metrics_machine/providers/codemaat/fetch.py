@@ -39,9 +39,8 @@ class FetchCodemaat:
             subfolder and subfolder or "",
             force and "true" or "false",
         ]
-        result = Run().run_command(command, capture_output=True, text=True, check=True)
 
-        print(result.stdout)
+        result = Run().run_command(command, capture_output=True, text=True, check=True)
 
         return ExecutionResult(
             stdout=result.stdout, stderr=result.stderr, code=result.returncode

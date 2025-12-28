@@ -29,8 +29,8 @@ clone_dir="$base_dir/$project"
 analysis_dir="$base_dir/${project}_analysis"
 main_branch="main"
 
-start_date="2025-07-01"
-end_date="2025-07-06"
+start_date="2025-12-20"
+end_date="2025-12-31"
 
 export SMM_STORE_DATA_AT="$analysis_dir"
 
@@ -62,7 +62,7 @@ TEMPLATE=$(cat <<EOF
     "deployment_frequency_target_pipeline": "",
     "deployment_frequency_target_job": "",
     "main_branch": "$main_branch",
-    "logging_level": "DEBUG"
+    "logging_level": "CRITICAL"
   }
 EOF
 )
@@ -78,14 +78,13 @@ docker run \
   -v $(pwd)/downloads/ollama_analysis:/data \
   --rm $IMAGE_NAME smm code fetch --start-date "$start_date" --end-date "$end_date"
 
- docker run -d --rm \
-   --name smm \
-   -p 5006:5006 \
-   -e SMM_STORE_DATA_AT="/data" \
-   -v $(pwd)/downloads/ollama:/ollama \
-   -v $(pwd)/downloads/ollama_analysis:/data \
-   $IMAGE_NAME \
-   smm-dashboard
+docker run -d --rm \
+  --name smm \
+  -p 5006:5006 \
+  -e SMM_STORE_DATA_AT="/data" \
+  -v $(pwd)/downloads/ollama:/ollama \
+  -v $(pwd)/downloads/ollama_analysis:/data \
+  $IMAGE_NAME smm-dashboard
 
 #docker run --rm $IMAGE_NAME smm prs fetch --start-date "$start_date" --end-date "$end_date"
 #docker run --rm $IMAGE_NAME smm prs fetch-comments --start-date "$start_date" --end-date "$end_date"
