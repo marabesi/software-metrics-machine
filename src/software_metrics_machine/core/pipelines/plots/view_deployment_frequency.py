@@ -45,39 +45,19 @@ class ViewDeploymentFrequency(BaseViewer):
         commit = [m.commit for m in aggregated.days]
         link = [m.link for m in aggregated.days]
 
-        def _make_bar_fig(x, counts, title, color):
-            src = ColumnDataSource(dict(x=list(range(len(x))), label=x, count=counts))
-            p = figure(
-                title=title,
-                x_range=(-0.5, max(0, len(x) - 0.5)),
-                tools="hover,pan,wheel_zoom,reset,save",
-                sizing_mode="stretch_width",
-                height=int(self.get_chart_height() / 3),
-            )
-            p.vbar(x="x", top="count", width=0.9, fill_color=color, source=src)
-            labels = LabelSet(
-                x="x",
-                y="count",
-                text="count",
-                source=src,
-                text_align="center",
-                text_baseline="bottom",
-                text_font_size=self.get_font_size(),
-            )
-            p.add_layout(labels)
-            p.xaxis.major_label_overrides = {i: str(v) for i, v in enumerate(x)}
-            p.xaxis.major_label_orientation = 0.785  # 45 degrees
-            p.yaxis.axis_label = "Deployments"
-            return p
+        palette = super().get_palette(days)["colors"]
+        color_days = palette[0]
+        color_weeks = palette[9]
+        color_months = palette[19]
 
-        daily_fig = _make_bar_fig(
-            days, daily_counts, "Daily Deployment Frequency", "orange"
+        daily_fig = self._make_bar_fig(
+            days, daily_counts, "Daily Deployment Frequency", color_days
         )
-        weekly_fig = _make_bar_fig(
-            weeks, weekly_counts, "Weekly Deployment Frequency", "blue"
+        weekly_fig = self._make_bar_fig(
+            weeks, weekly_counts, "Weekly Deployment Frequency", color_weeks
         )
-        monthly_fig = _make_bar_fig(
-            months, monthly_counts, "Monthly Deployment Frequency", "green"
+        monthly_fig = self._make_bar_fig(
+            months, monthly_counts, "Monthly Deployment Frequency", color_months
         )
 
         week_dates = [datetime.strptime(week + "-1", "%Y-W%W-%w") for week in weeks]
@@ -112,3 +92,28 @@ class ViewDeploymentFrequency(BaseViewer):
         }
 
         return PlotResult(plot=pane, data=pd.DataFrame(handles_different_array_sizes))
+
+    def _make_bar_fig(self, x, counts, title, color):
+        src = ColumnDataSource(dict(x=list(range(len(x))), label=x, count=counts))
+        p = figure(
+            title=title,
+            x_range=(-0.5, max(0, len(x) - 0.5)),
+            tools="hover,pan,wheel_zoom,reset,save",
+            sizing_mode="stretch_width",
+            height=int(self.get_chart_height() / 3),
+        )
+        p.vbar(x="x", top="count", width=0.9, color=color, source=src)
+        labels = LabelSet(
+            x="x",
+            y="count",
+            text="count",
+            source=src,
+            text_align="center",
+            text_baseline="bottom",
+            text_font_size=self.get_font_size(),
+        )
+        p.add_layout(labels)
+        p.xaxis.major_label_overrides = {i: str(v) for i, v in enumerate(x)}
+        p.xaxis.major_label_orientation = 0.785  # 45 degrees
+        p.yaxis.axis_label = "Deployments"
+        return p
