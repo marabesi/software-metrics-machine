@@ -4,7 +4,6 @@ import squarify
 from bokeh.plotting import figure
 from bokeh.models import ColumnDataSource, HoverTool
 from bokeh.transform import linear_cmap
-from bokeh.palettes import Viridis256
 
 from software_metrics_machine.core.infrastructure.base_viewer import (
     BaseViewer,
@@ -100,7 +99,9 @@ class EntityEffortViewer(BaseViewer):
         # Color mapping by value
         low = float(df_rects["value"].min())
         high = float(df_rects["value"].max())
-        mapper = linear_cmap(field_name="value", palette=Viridis256, low=low, high=high)
+        mapper = linear_cmap(
+            field_name="value", palette=super().get_palette(rows), low=low, high=high
+        )
 
         src = ColumnDataSource(df_rects)
 

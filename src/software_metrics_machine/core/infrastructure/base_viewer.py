@@ -1,4 +1,5 @@
 from typing import Generic, List, NamedTuple, TypeVar
+from bokeh.palettes import Viridis256, Category20_20
 
 from software_metrics_machine.core.infrastructure.file_system_base_repository import (
     FileSystemBaseRepository,
@@ -35,6 +36,10 @@ class BaseViewer:
 
     def get_font_size(self) -> str:
         return "8pt"
+
+    def get_palette(self, data_points):
+        # Assign categorical colors to nodes (Category20_20 supports up to 20 distinct colors)
+        return Category20_20 if len(data_points) <= 20 else Viridis256
 
     def build_labels_above_bars(
         self,

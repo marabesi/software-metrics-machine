@@ -38,7 +38,7 @@ class Configuration:
                     "❌ You must provide github_repository (e.g. octocat/Hello-World)"
                 )
         if not self.dashboard_color:
-            self.dashboard_color = "#4c78a8"
+            self.dashboard_color = "#6b77e3"
 
         if not self.logging_level:
             self.logging_level = "CRITICAL"

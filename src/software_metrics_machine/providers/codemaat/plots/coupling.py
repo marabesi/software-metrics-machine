@@ -10,7 +10,6 @@ from bokeh.models import (  # type: ignore[attr-defined]
     HoverTool,
     Scatter,
 )
-from bokeh.palettes import Viridis256, Category20_20
 
 from software_metrics_machine.core.infrastructure.base_viewer import (
     BaseViewer,
@@ -83,8 +82,7 @@ class CouplingViewer(BaseViewer, Viewable):
         node_x = [layout[n][0] for n in unique_nodes]
         node_y = [layout[n][1] for n in unique_nodes]
 
-        # Assign categorical colors to nodes (Category20_20 supports up to 20 distinct colors)
-        palette = Category20_20 if len(unique_nodes) <= 20 else Viridis256
+        palette = super().get_palette(unique_nodes)
         node_colors = [palette[i % len(palette)] for i in range(len(unique_nodes))]
         node_source = ColumnDataSource(
             dict(x=node_x, y=node_y, label=unique_nodes, color=node_colors)
