@@ -1,8 +1,6 @@
 from software_metrics_machine.core.infrastructure.pandas import pd
 
-from software_metrics_machine.apps.components.scatter_with_trend import (
-    build_scatter_with_trend,
-)
+from software_metrics_machine.apps.components.scatter_with_trend import ScatterWithTrend
 from software_metrics_machine.core.infrastructure.base_viewer import (
     BaseViewer,
     PlotResult,
@@ -21,6 +19,7 @@ from software_metrics_machine.core.pipelines.pipelines_repository import (
 class ViewPipelineExecutionRunsDuration(BaseViewer):
     def __init__(self, repository: PipelinesRepository):
         self.barchart = BarchartStacked(repository=repository)
+        self.scater_with_trend = ScatterWithTrend()
         self.repository: PipelinesRepository = repository
 
     def main(
@@ -75,7 +74,7 @@ class ViewPipelineExecutionRunsDuration(BaseViewer):
             color=super().get_color(),
         )
 
-        overlay = build_scatter_with_trend(
+        overlay = self.scater_with_trend.build_scatter_with_trend(
             data=result.runs,
             x="duration_in_minutes",
             y="short_name",
