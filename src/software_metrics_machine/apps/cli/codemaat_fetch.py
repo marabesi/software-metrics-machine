@@ -32,10 +32,10 @@ def execute_codemaat(start_date, end_date, subfolder):
     )
 
     if result.stderr:
-        print(f"Command errored with status 1 error: {result.stderr}")
+        click.echo(f"Command errored with status 1 error: {result.stderr}")
         return
 
-    print(result.stdout)
+    click.echo(result.stdout)
 
 
 command = execute_codemaat
