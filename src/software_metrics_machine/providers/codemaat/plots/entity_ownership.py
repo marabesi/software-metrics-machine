@@ -7,7 +7,7 @@ from software_metrics_machine.core.infrastructure.base_viewer import (
 )
 from software_metrics_machine.core.infrastructure.viewable import Viewable
 from software_metrics_machine.apps.components.barchart_stacked import (
-    build_barchart,
+    BarchartStacked,
 )
 from software_metrics_machine.providers.codemaat.codemaat_repository import (
     CodemaatRepository,
@@ -16,6 +16,7 @@ from software_metrics_machine.providers.codemaat.codemaat_repository import (
 
 class EntityOnershipViewer(BaseViewer, Viewable):
     def __init__(self, repository: CodemaatRepository):
+        self.barchart = BarchartStacked(repository=repository)
         self.repository: CodemaatRepository = repository
 
     def render(
@@ -79,7 +80,7 @@ class EntityOnershipViewer(BaseViewer, Viewable):
             )
 
         # Build stacked bars for added (stacked by author)
-        bars_added = build_barchart(
+        bars_added = self.barchart.build_barchart(
             data_added,
             x="entity_short",
             y=["value", "entity"],
@@ -94,7 +95,7 @@ class EntityOnershipViewer(BaseViewer, Viewable):
         )
 
         # Build stacked bars for deleted and overlay with transparency
-        bars_deleted = build_barchart(
+        bars_deleted = self.barchart.build_barchart(
             data_deleted,
             x="entity_short",
             y="value",

@@ -6,7 +6,7 @@ from software_metrics_machine.core.infrastructure.base_viewer import (
     PlotResult,
 )
 from software_metrics_machine.apps.components.barchart_stacked import (
-    build_barchart,
+    BarchartStacked,
 )
 from software_metrics_machine.core.prs.pr_types import PRFilters
 from software_metrics_machine.core.prs.prs_repository import PrsRepository
@@ -14,6 +14,7 @@ from software_metrics_machine.core.prs.prs_repository import PrsRepository
 
 class ViewOpenPrsThroughTime(BaseViewer):
     def __init__(self, repository: PrsRepository):
+        self.barchart = BarchartStacked(repository=repository)
         self.repository: PrsRepository = repository
 
     def main(
@@ -65,7 +66,7 @@ class ViewOpenPrsThroughTime(BaseViewer):
             rows.append({"date": d, "kind": "Closed", "count": timeline[d]["closed"]})
 
         # build a stacked barchart grouped by 'kind'
-        chart = build_barchart(
+        chart = self.barchart.build_barchart(
             rows,
             x="date",
             y="count",

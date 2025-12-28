@@ -6,7 +6,7 @@ from software_metrics_machine.core.infrastructure.base_viewer import (
     PlotResult,
 )
 from software_metrics_machine.apps.components.barchart_stacked import (
-    build_barchart,
+    BarchartStacked,
 )
 from software_metrics_machine.core.pipelines.aggregates.jobs_average_time_execution import (
     JobsByAverageTimeExecution,
@@ -20,6 +20,7 @@ from typing import Optional
 class ViewJobsByAverageTimeExecution(BaseViewer):
 
     def __init__(self, repository: PipelinesRepository):
+        self.barchart = BarchartStacked(repository=repository)
         self.repository: PipelinesRepository = repository
 
     def main(
@@ -79,7 +80,7 @@ class ViewJobsByAverageTimeExecution(BaseViewer):
             else f"Top {len(names)} jobs by average duration for '{workflow_path}' - {total_runs} runs - {total_jobs} jobs"  # noqa
         )
 
-        chart = build_barchart(
+        chart = self.barchart.build_barchart(
             data,
             x=x,
             y=[y, count],

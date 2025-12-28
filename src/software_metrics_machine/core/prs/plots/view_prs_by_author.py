@@ -6,7 +6,7 @@ from software_metrics_machine.core.infrastructure.base_viewer import (
     PlotResult,
 )
 from software_metrics_machine.apps.components.barchart_stacked import (
-    build_barchart,
+    BarchartStacked,
 )
 from software_metrics_machine.core.prs.pr_types import PRDetails, PRFilters
 from software_metrics_machine.core.prs.prs_repository import PrsRepository
@@ -15,6 +15,7 @@ from typing import List, Tuple
 
 class ViewPrsByAuthor(BaseViewer):
     def __init__(self, repository: PrsRepository):
+        self.barchart = BarchartStacked(repository=repository)
         self.repository: PrsRepository = repository
 
     def plot_top_authors(
@@ -45,7 +46,7 @@ class ViewPrsByAuthor(BaseViewer):
         for name, cnt in zip(authors, counts):
             data.append({"author": name, "count": cnt})
 
-        chart = build_barchart(
+        chart = self.barchart.build_barchart(
             data,
             x="author",
             y="count",

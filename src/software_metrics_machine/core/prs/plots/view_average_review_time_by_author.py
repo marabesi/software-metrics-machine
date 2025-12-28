@@ -5,7 +5,7 @@ from software_metrics_machine.core.infrastructure.base_viewer import (
     PlotResult,
 )
 from software_metrics_machine.apps.components.barchart_stacked import (
-    build_barchart,
+    BarchartStacked,
 )
 from software_metrics_machine.core.prs.pr_types import PRDetails, PRFilters
 from software_metrics_machine.core.prs.prs_repository import PrsRepository
@@ -17,6 +17,7 @@ from datetime import datetime
 class ViewAverageReviewTimeByAuthor(BaseViewer):
 
     def __init__(self, repository: PrsRepository):
+        self.barchart = BarchartStacked(repository=repository)
         self.repository: PrsRepository = repository
 
     def plot_average_open_time(
@@ -57,7 +58,7 @@ class ViewAverageReviewTimeByAuthor(BaseViewer):
 
         title = title or "Average Review Time By Author"
 
-        chart = build_barchart(
+        chart = self.barchart.build_barchart(
             data,
             x="author",
             y="avg_days",

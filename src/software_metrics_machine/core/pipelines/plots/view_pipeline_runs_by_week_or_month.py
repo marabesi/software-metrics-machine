@@ -9,7 +9,7 @@ from software_metrics_machine.core.infrastructure.base_viewer import (
     PlotResult,
 )
 from software_metrics_machine.apps.components.barchart_stacked import (
-    build_barchart,
+    BarchartStacked,
 )
 from software_metrics_machine.core.pipelines.aggregates.pipeline_workflow_runs_by_week_or_month import (
     PipelineWorkflowRunsByWeekOrMonth,
@@ -22,6 +22,7 @@ from software_metrics_machine.core.pipelines.pipelines_repository import (
 class ViewWorkflowRunsByWeekOrMonth(BaseViewer):
 
     def __init__(self, repository: PipelinesRepository):
+        self.barchart = BarchartStacked(repository=repository)
         self.repository: PipelinesRepository = repository
 
     def main(
@@ -92,7 +93,7 @@ class ViewWorkflowRunsByWeekOrMonth(BaseViewer):
         group = "Workflow"
 
         title = f"Workflow runs per {'week' if aggregate_by == 'week' else 'month'} by workflow name ({total_runs} in total)"  # noqa
-        plot = build_barchart(
+        plot = self.barchart.build_barchart(
             data,
             x=x,
             y=y,

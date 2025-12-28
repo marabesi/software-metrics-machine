@@ -7,7 +7,7 @@ from software_metrics_machine.core.infrastructure.base_viewer import (
 )
 from software_metrics_machine.core.infrastructure.viewable import Viewable
 from software_metrics_machine.apps.components.barchart_stacked import (
-    build_barchart,
+    BarchartStacked,
 )
 from software_metrics_machine.providers.codemaat.codemaat_repository import (
     CodemaatRepository,
@@ -17,6 +17,7 @@ from software_metrics_machine.providers.codemaat.codemaat_repository import (
 class CodeChurnViewer(BaseViewer, Viewable):
 
     def __init__(self, repository: CodemaatRepository):
+        self.barchart = BarchartStacked(repository=repository)
         self.repository: CodemaatRepository = repository
 
     def render(
@@ -38,7 +39,7 @@ class CodeChurnViewer(BaseViewer, Viewable):
             data.append({"date": row.date, "type": "Added", "value": row.added})
             data.append({"date": row.date, "type": "Deleted", "value": row.deleted})
 
-        chart = build_barchart(
+        chart = self.barchart.build_barchart(
             data,
             x="date",
             y="value",

@@ -6,7 +6,7 @@ from software_metrics_machine.core.infrastructure.base_viewer import (
     PlotResult,
 )
 from software_metrics_machine.apps.components.barchart_stacked import (
-    build_barchart,
+    BarchartStacked,
 )
 from software_metrics_machine.core.pipelines.aggregates.pipeline_by_status import (
     PipelineByStatus,
@@ -18,6 +18,7 @@ from software_metrics_machine.core.pipelines.pipelines_repository import (
 
 class ViewPipelineByStatus(BaseViewer):
     def __init__(self, repository: PipelinesRepository):
+        self.barchart = BarchartStacked(repository=repository)
         self.repository: PipelinesRepository = repository
 
     def main(
@@ -48,7 +49,7 @@ class ViewPipelineByStatus(BaseViewer):
                 f"Status of Pipeline Runs for '{workflow_path}' - Total {total_runs}"
             )
 
-        chart = build_barchart(
+        chart = self.barchart.build_barchart(
             data,
             x="Status",
             y="Count",

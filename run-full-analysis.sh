@@ -4,8 +4,8 @@ GITHUB_TOKEN=$1
 
 BASE_DIR=$2
 
- project="ollama"
- github_repo="ollama/ollama"
+#  project="ollama"
+#  github_repo="ollama/ollama"
 
 # project="vitepress"
 # github_repo="vuejs/vitepress"
@@ -16,8 +16,8 @@ BASE_DIR=$2
 # project="marabesi"
 # github_repo="marabesi/software-metrics-machine"
 
-#project="marabesi"
-#github_repo="marabesi/json-tool"
+project="marabesi"
+github_repo="marabesi/json-tool"
 
 # project="vercel"
 # github_repo="vercel/next.js"
@@ -29,7 +29,7 @@ clone_dir="$base_dir/$project"
 analysis_dir="$base_dir/${project}_analysis"
 main_branch="main"
 
-start_date="2025-07-01"
+start_date="2024-07-01"
 end_date="2025-07-06"
 
 export SMM_STORE_DATA_AT="$analysis_dir"

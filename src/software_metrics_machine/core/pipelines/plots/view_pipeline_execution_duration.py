@@ -8,7 +8,7 @@ from software_metrics_machine.core.infrastructure.base_viewer import (
     PlotResult,
 )
 from software_metrics_machine.apps.components.barchart_stacked import (
-    build_barchart,
+    BarchartStacked,
 )
 from software_metrics_machine.core.pipelines.aggregates.pipeline_execution_duration import (
     PipelineExecutionDuration,
@@ -20,6 +20,7 @@ from software_metrics_machine.core.pipelines.pipelines_repository import (
 
 class ViewPipelineExecutionRunsDuration(BaseViewer):
     def __init__(self, repository: PipelinesRepository):
+        self.barchart = BarchartStacked(repository=repository)
         self.repository: PipelinesRepository = repository
 
     def main(
@@ -62,7 +63,7 @@ class ViewPipelineExecutionRunsDuration(BaseViewer):
                 }
             )
 
-        chart = build_barchart(
+        chart = self.barchart.build_barchart(
             data,
             x="name",
             y=["value", "total_jobs", "total_runs"],

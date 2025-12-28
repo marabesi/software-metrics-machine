@@ -5,7 +5,7 @@ from software_metrics_machine.core.infrastructure.base_viewer import (
     PlotResult,
 )
 from software_metrics_machine.apps.components.barchart_stacked import (
-    build_barchart,
+    BarchartStacked,
 )
 from software_metrics_machine.core.pipelines.aggregates.jobs_by_status import (
     JobsByStatus,
@@ -18,6 +18,7 @@ from software_metrics_machine.core.pipelines.pipelines_repository import (
 class ViewJobsByStatus(BaseViewer):
 
     def __init__(self, repository: PipelinesRepository):
+        self.barchart = BarchartStacked(repository=repository)
         self.repository: PipelinesRepository = repository
 
     def main(
@@ -51,7 +52,7 @@ class ViewJobsByStatus(BaseViewer):
         total_runs = len(runs)
 
         status_data = [{"Status": k, "Count": v} for k, v in status_counts.items()]
-        status_bars = build_barchart(
+        status_bars = self.barchart.build_barchart(
             status_data,
             x="Status",
             y="Count",
@@ -78,7 +79,7 @@ class ViewJobsByStatus(BaseViewer):
                     {"Period": period, "Conclusion": conc, "Runs": runs_count}
                 )
 
-        timeline_bars = build_barchart(
+        timeline_bars = self.barchart.build_barchart(
             timeline_data,
             x="Period",
             y="Runs",
