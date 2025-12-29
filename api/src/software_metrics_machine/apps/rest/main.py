@@ -6,6 +6,8 @@ from fastapi import FastAPI
 from enum import Enum
 from fastapi import Query
 from fastapi.responses import JSONResponse
+from fastapi.middleware.cors import CORSMiddleware
+
 from typing import Optional
 
 from software_metrics_machine.core.infrastructure.repository_factory import (
@@ -61,6 +63,15 @@ app = FastAPI(
     description="A Data-Driven Approach to High-Performing Teams - See your software development process through data. Everything runs locally.",
 )
 
+origins = ["*"]
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=origins,
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 source_code_tags: list[str | Enum] = ["Source code"]
 pipeline_tags: list[str | Enum] = ["Pipeline"]

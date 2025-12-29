@@ -18,11 +18,30 @@ services:
       context: api/
       dockerfile: Dockerfile.dev
     platform: linux/amd64
+    environment:
+      - SMM_STORE_DATA_AT=./data
     ports:
       - '8000:8000'
     volumes:
       - ./api:/app
+      - ./api/downloads/ollama:/ollama
+      - ./api/downloads/ollama_analysis:/data
     command: poetry run smm-rest --host 0.0.0.0 --port 8000
+
+  legacy_dashboard:
+    build:
+      context: api/
+      dockerfile: Dockerfile.dev
+    platform: linux/amd64
+    environment:
+      - SMM_STORE_DATA_AT=./data
+    ports:
+      - '5006:5006'
+    volumes:
+      - ./api:/app
+      - ./api/downloads/ollama:/ollama
+      - ./api/downloads/ollama_analysis:/data
+    command: poetry run smm-dashboard
 
   webapp:
     build:
@@ -34,3 +53,7 @@ services:
     volumes:
       - ./webapp:/app
     command: npm run dev -- -H 0.0.0.0
+
+networks:
+  default:
+    driver: bridge
