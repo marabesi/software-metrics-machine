@@ -145,7 +145,7 @@ jobs:
         uses: coverallsapp/github-action@v2
         with:
           format: cobertura
-          file: api/coverage.xml
+          file: coverage.xml
 
   e2e_cli:
     needs: [code-quality, pytest]
@@ -210,7 +210,8 @@ jobs:
       uses: docker/build-push-action@v6
       with:
         tags: ${{env.IMAGE_NAME}}:latest
-        file: api/Dockerfile.dev
+        context: api
+        file: Dockerfile.dev
         outputs: type=docker,dest=${{ runner.temp }}/myimage.tar
 
     - name: Upload artifact
