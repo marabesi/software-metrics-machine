@@ -18,6 +18,9 @@ on:
       password:
         description: 'API token or password for the repository'
 
+defaults:
+  run:
+    working-directory: ./api
 
 jobs:
   delivery:

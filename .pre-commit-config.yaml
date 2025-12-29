@@ -1,26 +1,30 @@
 fail_fast: true
-exclude: ^docs/
+exclude: |
+  (?x)^(
+      docs
+  )$
+files: ^api/
 repos:
   - repo: local
     hooks:
       - id: black
         name: black
-        entry: poetry run black
+        entry: cd api/ && poetry run black
         language: system
         types: [python]
       - id: flake8
         name: flake8
-        entry: poetry run flake8 .
+        entry: cd api/ && poetry run flake8 .
         language: system
         types: [python]
       - id: mypy
         name: mypy
-        entry: poetry run mypy ./src ./tests
+        entry: cd api/ && poetry run mypy ./src ./tests
         pass_filenames: false
         language: system
         types: [python]
       - id: pytest
         name: pytest
-        entry: ./run-tests.sh
+        entry: cd api/ && ./run-tests.sh
         language: system
         types: [bash]

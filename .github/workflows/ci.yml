@@ -10,6 +10,10 @@ env:
   PYTHON_VERSION: 3.14.1
   IMAGE_NAME: ${{secrets.DOCKERHUB_USERNAME}}/software-metrics-machine
 
+defaults:
+  run:
+    working-directory: ./api
+
 jobs:
   code-quality:
     name: Code Quality

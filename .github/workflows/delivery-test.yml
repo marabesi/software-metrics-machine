@@ -3,6 +3,10 @@ name: Delivery PyPI - Test
 on:
   workflow_dispatch:
 
+defaults:
+  run:
+    working-directory: ./api
+
 jobs:
   delivery:
     permissions:
