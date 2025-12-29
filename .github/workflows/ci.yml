@@ -253,7 +253,7 @@ jobs:
       run: npx playwright install --with-deps
 
     - name: Run dashboard
-      run: cd ./api/tests/apps/dashboard && ./run-docker-full-analysis.sh ${{ secrets.GITHUB_TOKEN }} $(pwd)/downloads ${{env.IMAGE_NAME}}
+      run: cd ./api && ./run-docker-full-analysis.sh ${{ secrets.GITHUB_TOKEN }} $(pwd)/downloads ${{env.IMAGE_NAME}}
 
     - name: Run Playwright tests
       working-directory: ./api/tests/apps/dashboard

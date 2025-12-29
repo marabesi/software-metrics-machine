@@ -33,7 +33,7 @@ jobs:
       - name: Install Poetry
         run: |
           cd api/ && python -m pip install --upgrade pip
-          cd api/ && pip install poetry
+                  && pip install poetry
 
       - name: Install dependencies (poetry)
         run: cd api/ && poetry install --no-interaction --no-ansi --no-root --only main
