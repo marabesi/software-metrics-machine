@@ -211,7 +211,7 @@ jobs:
       with:
         tags: ${{env.IMAGE_NAME}}:latest
         context: api
-        file: Dockerfile.dev
+        file: api/Dockerfile.dev
         outputs: type=docker,dest=${{ runner.temp }}/myimage.tar
 
     - name: Upload artifact
