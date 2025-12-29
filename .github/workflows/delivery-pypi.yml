@@ -18,13 +18,12 @@ on:
       password:
         description: 'API token or password for the repository'
 
-defaults:
-  run:
-    working-directory: ./api
-
 jobs:
   delivery:
     runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ./api
     steps:
       - name: Checkout
         uses: actions/checkout@v4

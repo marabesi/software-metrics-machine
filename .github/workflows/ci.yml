@@ -10,14 +10,13 @@ env:
   PYTHON_VERSION: 3.14.1
   IMAGE_NAME: ${{secrets.DOCKERHUB_USERNAME}}/software-metrics-machine
 
-defaults:
-  run:
-    working-directory: ./api
-
 jobs:
   code-quality:
     name: Code Quality
     runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ./api
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -57,6 +56,9 @@ jobs:
   pytest:
     name: Pytest
     runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ./api
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -129,6 +131,9 @@ jobs:
   upload-coverage:
     name: Upload Coverage
     runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ./api
     needs: [code-quality, pytest]
     steps:
       - name: Download coverage report
@@ -146,6 +151,9 @@ jobs:
     needs: [code-quality, pytest]
     name: "E2E tests CLI"
     runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ./api
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -192,6 +200,9 @@ jobs:
   build_docker_image:
     needs: [code-quality, pytest]
     runs-on: ubuntu-24.04
+    defaults:
+      run:
+        working-directory: ./api
     steps:
     - uses: actions/checkout@v4
 
@@ -214,6 +225,9 @@ jobs:
   e2e_dashboard:
     needs: [code-quality, build_docker_image]
     runs-on: ubuntu-24.04
+    defaults:
+      run:
+        working-directory: ./api
     env:
       CHROMATIC_ARCHIVE_LOCATION: test-results/
     steps:
@@ -265,6 +279,9 @@ jobs:
   send_docker_image_to_hub:
     needs: [code-quality, pytest, e2e_dashboard, build_docker_image]
     runs-on: ubuntu-24.04
+    defaults:
+      run:
+        working-directory: ./api
     steps:
     - uses: actions/checkout@v4
     - name: login to docker hub
