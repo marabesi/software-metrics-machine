@@ -200,9 +200,6 @@ jobs:
   build_docker_image:
     needs: [code-quality, pytest]
     runs-on: ubuntu-24.04
-    defaults:
-      run:
-        working-directory: ./api
     steps:
     - uses: actions/checkout@v4
 
@@ -213,7 +210,7 @@ jobs:
       uses: docker/build-push-action@v6
       with:
         tags: ${{env.IMAGE_NAME}}:latest
-        file: Dockerfile.dev
+        file: api/Dockerfile.dev
         outputs: type=docker,dest=${{ runner.temp }}/myimage.tar
 
     - name: Upload artifact
@@ -225,9 +222,6 @@ jobs:
   e2e_dashboard:
     needs: [code-quality, build_docker_image]
     runs-on: ubuntu-24.04
-    defaults:
-      run:
-        working-directory: ./api
     env:
       CHROMATIC_ARCHIVE_LOCATION: test-results/
     steps:
@@ -279,9 +273,6 @@ jobs:
   send_docker_image_to_hub:
     needs: [code-quality, pytest, e2e_dashboard, build_docker_image]
     runs-on: ubuntu-24.04
-    defaults:
-      run:
-        working-directory: ./api
     steps:
     - uses: actions/checkout@v4
     - name: login to docker hub

@@ -21,9 +21,6 @@ on:
 jobs:
   delivery:
     runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: ./api
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -53,16 +50,14 @@ jobs:
 
       - name: Build
         run: |
-          rm -rf ./tests
-          rm -rf ./fixtures
-          rm -rf ./docs
-          rm -rf .github/
-          python -m pip install --upgrade build
-          python3 -m build
+          rm -rf ./api/tests
+          rm -rf ./api/fixtures
+          cd api/ && python -m pip install --upgrade build
+          cd api/ && python3 -m build
 
       - name: Publish package
         uses: pypa/gh-action-pypi-publish@release/v1
         with:
           password: ${{ secrets.password }}
           repository-url: ${{ inputs.repository-url }}
-          packages-dir: dist/
+          packages-dir: api/dist/
