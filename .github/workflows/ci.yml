@@ -125,7 +125,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: coverage-report
-          path: coverage.xml
+          path: api/coverage.xml
 
 
   upload-coverage:
@@ -145,7 +145,7 @@ jobs:
         uses: coverallsapp/github-action@v2
         with:
           format: cobertura
-          file: coverage.xml
+          file: api/coverage.xml
 
   e2e_cli:
     needs: [code-quality, pytest]
@@ -250,18 +250,18 @@ jobs:
         node-version: lts/*
 
     - name: Install dependencies
-      working-directory: ./tests/apps/dashboard
+      working-directory: ./api/tests/apps/dashboard
       run: npm ci
 
     - name: Install Playwright Browsers
-      working-directory: ./tests/apps/dashboard
+      working-directory: ./api/tests/apps/dashboard
       run: npx playwright install --with-deps
 
     - name: Run dashboard
       run: ./run-docker-full-analysis.sh ${{ secrets.GITHUB_TOKEN }} $(pwd)/downloads ${{env.IMAGE_NAME}}
 
     - name: Run Playwright tests
-      working-directory: ./tests/apps/dashboard
+      working-directory: ./api/tests/apps/dashboard
       run: |
         sleep 10
         docker inspect smm
@@ -273,7 +273,7 @@ jobs:
         URL_DASHBOARD="http://localhost:5006" npx playwright test
 
     - name: Run Playwright chromatic tests
-      working-directory: ./tests/apps/dashboard
+      working-directory: ./api/tests/apps/dashboard
       run: npx chromatic --playwright --project-token=${{ secrets.CHROMATIC_KEY }} --exit-zero-on-changes
 
   send_docker_image_to_hub:
