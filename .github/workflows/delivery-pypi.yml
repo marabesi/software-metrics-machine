@@ -32,8 +32,7 @@ jobs:
 
       - name: Install Poetry
         run: |
-          cd api/ && python -m pip install --upgrade pip
-                  && pip install poetry
+          cd api/ && python -m pip install --upgrade pip && pip install poetry
 
       - name: Install dependencies (poetry)
         run: cd api/ && poetry install --no-interaction --no-ansi --no-root --only main
@@ -52,8 +51,7 @@ jobs:
         run: |
           rm -rf ./api/tests
           rm -rf ./api/fixtures
-          cd api/ && python -m pip install --upgrade build
-          cd api/ && python3 -m build
+          cd api/ && python -m pip install --upgrade build && python3 -m build
 
       - name: Publish package
         uses: pypa/gh-action-pypi-publish@release/v1
