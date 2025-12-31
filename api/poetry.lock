@@ -1625,14 +1625,14 @@ langchain-core = ">=0.3.75,<2.0.0"
 
 [[package]]
 name = "langsmith"
-version = "0.5.1"
+version = "0.5.2"
 description = "Client library to connect to the LangSmith Observability and Evaluation Platform."
 optional = false
 python-versions = ">=3.10"
 groups = ["main"]
 files = [
-    {file = "langsmith-0.5.1-py3-none-any.whl", hash = "sha256:70aa2a4c75add3f723c3bbac80dbb8adc575077834d3a733ee1ec133206ff351"},
-    {file = "langsmith-0.5.1.tar.gz", hash = "sha256:6a10b38cb4ce58941b7f1dbdf41a461868605dd0162bf05d17690f2e4b6e50e7"},
+    {file = "langsmith-0.5.2-py3-none-any.whl", hash = "sha256:42f8b853a18dd4d5f7fa38c8ff29e38da065a727022da410d91b3e13819aacc1"},
+    {file = "langsmith-0.5.2.tar.gz", hash = "sha256:a6186d555ba59732b1b10e2ba6fe34ee0b3c1bf3a7fb8d7be0dec367ac3b75f1"},
 ]
 
 [package.dependencies]
@@ -2692,14 +2692,14 @@ types-pytz = ">=2022.1.1"
 
 [[package]]
 name = "panel"
-version = "1.8.4"
+version = "1.8.5"
 description = "The powerful data exploration & web app framework for Python."
 optional = false
 python-versions = ">=3.10"
 groups = ["main"]
 files = [
-    {file = "panel-1.8.4-py3-none-any.whl", hash = "sha256:d0e0f316c78159c87544a403d4600f7f056a6cafdc035df5b13c9c8667c36c96"},
-    {file = "panel-1.8.4.tar.gz", hash = "sha256:c4d6e7e3a895d3a42b6b69ee30d3acc191580619a2d1b8cd18f7f6684246a67f"},
+    {file = "panel-1.8.5-py3-none-any.whl", hash = "sha256:b2baf010fcfac4c92eeffe71f469907b2f7fadcffdd36e42f87c541cbb48c3b3"},
+    {file = "panel-1.8.5.tar.gz", hash = "sha256:67f7529b06cfcd67a2eb2338c4c7d43b325925b209fb6a966526bcb32c956cb7"},
 ]
 
 [package.dependencies]

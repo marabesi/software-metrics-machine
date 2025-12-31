@@ -23,6 +23,12 @@ from software_metrics_machine.core.pipelines.plots.view_pipeline_summary import 
 from software_metrics_machine.core.prs.plots.view_open_prs_through_time import (
     ViewOpenPrsThroughTime,
 )
+from software_metrics_machine.core.prs.plots.view_prs_by_author import (
+    ViewPrsByAuthor,
+)
+from software_metrics_machine.core.prs.plots.view_average_review_time_by_author import (
+    ViewAverageReviewTimeByAuthor,
+)
 from software_metrics_machine.providers.codemaat.plots.entity_churn import (
     EntityChurnViewer,
 )
@@ -366,3 +372,52 @@ def pull_request_through_time(
         end_date=end_date,
     )
     return JSONResponse(content={"result": result.data.to_dict(orient="records")})
+
+
+@app.get("/pull-requests/by-author", tags=pull_request_tags)
+def pull_requests_by_author(
+    start_date: Optional[str] = Query(None),
+    end_date: Optional[str] = Query(None),
+    labels: Optional[str] = Query(None),
+    top: Optional[int] = Query(10),
+    raw_filters: Optional[str] = Query(None),
+):
+    """
+    Return top N authors ranked by number of pull requests created.
+    """
+    view = ViewPrsByAuthor(repository=create_prs_repository())
+    result = view.plot_top_authors(
+        title="Pull Requests by Author",
+        top=top or 10,
+        labels=labels,
+        start_date=start_date,
+        end_date=end_date,
+        raw_filters=raw_filters,
+    )
+    return JSONResponse(content={"result": result.data.to_dict(orient="records")})
+
+
+@app.get("/pull-requests/average-review-time", tags=pull_request_tags)
+def pull_requests_average_review_time(
+    start_date: Optional[str] = Query(None),
+    end_date: Optional[str] = Query(None),
+    labels: Optional[str] = Query(None),
+    authors: Optional[str] = Query(None),
+    top: Optional[int] = Query(10),
+    raw_filters: Optional[str] = Query(None),
+):
+    """
+    Return average review time (in days) per author for merged PRs.
+    """
+    view = ViewAverageReviewTimeByAuthor(repository=create_prs_repository())
+    result = view.plot_average_open_time(
+        title="Average Review Time by Author",
+        top=top or 10,
+        labels=labels,
+        start_date=start_date,
+        end_date=end_date,
+        authors=authors,
+        raw_filters=raw_filters,
+    )
+    return JSONResponse(content={"result": result.data.to_dict(orient="records")})
+
