@@ -17,7 +17,7 @@ class TestConfigurationRoute:
         
         assert "result" in result
         config = result["result"]
-        
+
         # Verify expected configuration fields are present
         assert "git_provider" in config
         assert "github_repository" in config

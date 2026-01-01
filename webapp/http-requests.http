@@ -1,0 +1,19 @@
+
+## Project
+
+### fetch current project configuration
+GET {{url}}/configuration
+Accept: application/json
+
+## Code
+
+### fetch code churn
+
+GET {{url}}/code/code-churn?start_date={{start_date}}&end_date={{end_date}}
+Accept: application/json
+
+## Pipelines
+
+
+## Pull requests
+

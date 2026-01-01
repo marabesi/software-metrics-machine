@@ -444,4 +444,3 @@ def configuration():
             "logging_level": config.logging_level,
         }
     })
-
