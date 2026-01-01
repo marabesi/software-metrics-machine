@@ -12,6 +12,7 @@ from typing import Optional
 
 from software_metrics_machine.core.infrastructure.repository_factory import (
     create_codemaat_repository,
+    create_configuration,
     create_pipelines_repository,
     create_prs_repository,
 )
@@ -420,4 +421,27 @@ def pull_requests_average_review_time(
         raw_filters=raw_filters,
     )
     return JSONResponse(content={"result": result.data.to_dict(orient="records")})
+
+
+@app.get("/configuration")
+def configuration():
+    """
+    Return the stored configuration.
+    """
+    config = create_configuration()
+    return JSONResponse(content={
+        "result": {
+            "git_provider": config.git_provider,
+            "github_repository": config.github_repository,
+            "git_repository_location": config.git_repository_location,
+            "store_data": config.store_data,
+            "deployment_frequency_target_pipeline": config.deployment_frequency_target_pipeline,
+            "deployment_frequency_target_job": config.deployment_frequency_target_job,
+            "main_branch": config.main_branch,
+            "dashboard_start_date": config.dashboard_start_date,
+            "dashboard_end_date": config.dashboard_end_date,
+            "dashboard_color": config.dashboard_color,
+            "logging_level": config.logging_level,
+        }
+    })
 
