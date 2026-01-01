@@ -14,7 +14,7 @@ class TestConfigurationRoute:
     def test_get_configuration_returns_stored_configuration(self, cli):
         resp = client.get("/configuration")
         result = resp.json()
-        
+
         assert "result" in result
         config = result["result"]
 
