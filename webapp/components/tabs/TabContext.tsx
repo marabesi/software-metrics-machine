@@ -13,7 +13,7 @@ const TabContext = createContext<TabsContextInterface | undefined>(undefined);
 export const useTabContext = () => {
   const context = useContext(TabContext);
   if (context === undefined) {
-    throw new Error('useClipboardContext must be used within a ClipboardContextProvider');
+    throw new Error('useTabContext must be used within a TabProvider');
   }
   return context;
 };
@@ -40,7 +40,7 @@ export const TabProvider = ({ children }: { children?: ReactElement | undefined 
           aria-label="secondary tabs example"
         >
           <Tab value="one" label="Insights" />
-          <Tab value="two" label="Item Two" />
+          <Tab value="two" label="Pipelines" />
           <Tab value="three" label="Item Three" />
         </Tabs>
       </Box>

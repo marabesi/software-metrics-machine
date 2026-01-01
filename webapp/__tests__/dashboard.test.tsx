@@ -6,6 +6,7 @@ describe('Dashboard', () => {
     description                      | expected
     ${'repository under inspection'} | ${'Persistent drawer'}
     ${'tab insights'}                | ${'Insights'}
+    ${'pipelines'}                   | ${'Pipelines'}
   `('should render $description', ({expected}) => {
     render(<PersistentDrawerLeft />);
 

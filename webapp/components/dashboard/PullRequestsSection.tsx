@@ -3,7 +3,6 @@
 import { useEffect, useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { pullRequestAPI } from '@/lib/api';
-import DateRangePicker from '@/components/ui/DateRangePicker';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, LineChart, Line } from 'recharts';
 
 export default function PullRequestsSection() {
@@ -41,12 +40,6 @@ export default function PullRequestsSection() {
 
   return (
     <div className="space-y-6">
-      <DateRangePicker
-        startDate={dateRange.start_date}
-        endDate={dateRange.end_date}
-        onChange={setDateRange}
-      />
-
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <Card>
           <CardHeader>

@@ -14,6 +14,9 @@ Accept: application/json
 
 ## Pipelines
 
+### fetch pipelines by status
+GET {{url}}/pipelines/by-status?start_date={{start_date}}&end_date={{end_date}}
+Accept: application/json
 
 ## Pull requests
 
