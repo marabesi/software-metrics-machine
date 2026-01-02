@@ -1,7 +1,8 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import Card from '@mui/material/Card';
+import {CardContent, CardHeader} from '@mui/material';
 import { sourceCodeAPI, pipelineAPI, pullRequestAPI } from '@/lib/api';
 
 export default function InsightsSection() {
@@ -39,12 +40,10 @@ export default function InsightsSection() {
 
   return (
     <div className="space-y-6">
-
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         <Card>
-          <CardHeader>
-            <CardTitle>Pairing Index</CardTitle>
-            <CardDescription>Team collaboration metric</CardDescription>
+          <CardHeader title="Pairing Index">
+            <CardContent>Team collaboration metric</CardContent>
           </CardHeader>
           <CardContent>
             <div className="text-4xl font-bold">
@@ -58,8 +57,8 @@ export default function InsightsSection() {
 
         <Card>
           <CardHeader>
-            <CardTitle>Pipeline Runs</CardTitle>
-            <CardDescription>CI/CD activity</CardDescription>
+            {/*<CardTitle>Pipeline Runs</CardTitle>*/}
+            {/*<CardDescription>CI/CD activity</CardDescription>*/}
           </CardHeader>
           <CardContent>
             <div className="text-4xl font-bold">{pipelineSummary?.total_runs || 0}</div>
@@ -79,8 +78,8 @@ export default function InsightsSection() {
 
         <Card>
           <CardHeader>
-            <CardTitle>Pull Requests</CardTitle>
-            <CardDescription>Code review metrics</CardDescription>
+            {/*<CardTitle>Pull Requests</CardTitle>*/}
+            {/*<CardDescription>Code review metrics</CardDescription>*/}
           </CardHeader>
           <CardContent>
             <div className="text-4xl font-bold">{prSummary?.total || 0}</div>

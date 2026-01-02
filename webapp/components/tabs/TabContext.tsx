@@ -23,7 +23,6 @@ export const TabProvider = ({ children }: { children?: ReactElement | undefined 
 
   const handleChange = (event: React.SyntheticEvent, newValue: string) => {
     setValue(newValue);
-    console.log(newValue);
   };
 
   return (
