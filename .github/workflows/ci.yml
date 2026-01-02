@@ -59,7 +59,7 @@ jobs:
     runs-on: ubuntu-latest
     defaults:
       run:
-        working-directory: ./webapp
+        working-directory: webapp
     steps:
       - name: Use Node.js
         uses: actions/setup-node@v3
