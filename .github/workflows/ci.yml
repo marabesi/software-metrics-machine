@@ -58,7 +58,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Set Environment Variables
-        uses: tw3lveparsecs/github-actions-setvars@v0.1
+        uses: tw3lveparsecs/github-actions-setvars@v0.2
 
       - name: Use Node.js
         uses: actions/setup-node@v3
