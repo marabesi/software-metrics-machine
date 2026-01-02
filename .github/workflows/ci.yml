@@ -57,8 +57,10 @@ jobs:
   code-quality-webapp:
     name: Code Quality Webapp
     runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ./webapp
     steps:
-
       - name: Use Node.js
         uses: actions/setup-node@v3
         with:
@@ -69,14 +71,14 @@ jobs:
         id: cache
         with:
           path: |
-            ./webapp/node_modules
+            ./node_modules
             ~/.cache/Cypress
           key: ${{ hashFiles('**/package-lock.json') }}
           restore-keys: ${{ hashFiles('**/package-lock.json') }}
 
       - name: install
         if: steps.cache.outputs.cache-hit != 'true'
-        run: cd webapp && npm install 
+        run: npm install
 
   pytest:
     name: Pytest
