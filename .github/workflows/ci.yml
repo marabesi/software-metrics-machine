@@ -9,6 +9,7 @@ on:
 env:
   PYTHON_VERSION: 3.14.1
   IMAGE_NAME: ${{secrets.DOCKERHUB_USERNAME}}/software-metrics-machine
+  NODE_VERSION: 25.2.1
 
 jobs:
   code-quality-api:
@@ -57,8 +58,6 @@ jobs:
     name: Code Quality Webapp
     runs-on: ubuntu-latest
     steps:
-      - name: Set Environment Variables
-        uses: tw3lveparsecs/github-actions-set-variables@latest
 
       - name: Use Node.js
         uses: actions/setup-node@v3
