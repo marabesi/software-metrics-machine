@@ -63,4 +63,7 @@ class ConfigurationBuilder:
             dashboard_start_date=data.get("dashboard_start_date"),
             dashboard_end_date=data.get("dashboard_end_date"),
             dashboard_color=data.get("dashboard_color"),
+            jira_url=data.get("jira_url"),
+            jira_token=data.get("jira_token"),
+            jira_project=data.get("jira_project"),
         )

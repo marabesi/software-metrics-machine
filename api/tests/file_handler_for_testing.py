@@ -16,6 +16,7 @@ class FileHandlerForTesting:
         self.file_system_handler = FileSystemBaseRepository(
             configuration=configuration, target_subfolder="github"
         )
+        self.configuration = configuration
         self.default_dir = str(path)
 
         self.file_system_codemaat_handler = FileSystemBaseRepository(
@@ -40,8 +41,26 @@ class FileHandlerForTesting:
             "prs_review_comments.json", as_json_string(data)
         )
 
-    def store_json_file(self, file: str, data: List) -> bool:
-        self.file_system_handler.store_file(file, as_json_string(data))
+    def store_json_file(self, subfolder_or_file: str, file_or_data: any = None, data: any = None) -> bool:
+        # Support both old and new signatures
+        # Old: store_json_file(file, data)
+        # New: store_json_file(subfolder, file, data)
+        if data is None:
+            # Old signature: (file, data)
+            file = subfolder_or_file
+            json_data = file_or_data
+            handler = self.file_system_handler
+        else:
+            # New signature: (subfolder, file, data)
+            subfolder = subfolder_or_file
+            file = file_or_data
+            json_data = data
+            handler = FileSystemBaseRepository(
+                configuration=self.configuration,
+                target_subfolder=subfolder
+            )
+        
+        handler.store_file(file, as_json_string(json_data))
         return True
 
     def store_file(self, file: str, data: str) -> bool:

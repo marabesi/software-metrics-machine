@@ -58,6 +58,11 @@ module_groups = {
         "software_metrics_machine.apps.cli.source_code_pairing_index",
         "software_metrics_machine.apps.cli.source_code_metadata",
     ],
+    "jira": [
+        "software_metrics_machine.apps.cli.jira_fetch_issues",
+        "software_metrics_machine.apps.cli.jira_fetch_changelog",
+        "software_metrics_machine.apps.cli.jira_fetch_comments",
+    ],
     "tools": [
         "software_metrics_machine.apps.cli.tools_json_file_merger",
     ],

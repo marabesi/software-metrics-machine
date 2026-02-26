@@ -13,6 +13,9 @@ class Configuration:
         dashboard_end_date=None,
         dashboard_color=None,
         logging_level=None,
+        jira_url=None,
+        jira_token=None,
+        jira_project=None,
     ):
         self.git_provider = git_provider
         self.github_token = github_token
@@ -26,6 +29,9 @@ class Configuration:
         self.dashboard_end_date = dashboard_end_date
         self.dashboard_color = dashboard_color
         self.logging_level = logging_level
+        self.jira_url = jira_url
+        self.jira_token = jira_token
+        self.jira_project = jira_project
 
         if not self.git_repository_location:
             raise ValueError(
