@@ -30,6 +30,17 @@ If your are using BitBucket, the following metrics are supported:
 
 - Source code analysis via git
 
+## Issue Tracking Systems
+
+### Jira
+
+If your are using [Jira](./jira.md), the following metrics are supported:
+
+- Issues and issue properties
+- Issue change history and timeline
+- Issue comments and discussions
+- Issue filtering by type, status, and date range
+
 ## Code analysis tools
 
 ### Codemaat
