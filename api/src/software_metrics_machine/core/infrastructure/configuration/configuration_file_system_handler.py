@@ -39,6 +39,9 @@ class ConfigurationFileSystemHandler:
             jira_email=data.get("jira_email"),
             jira_token=data.get("jira_token"),
             jira_project=data.get("jira_project"),
+            sonar_url=data.get("sonar_url"),
+            sonar_token=data.get("sonar_token"),
+            sonar_project=data.get("sonar_project"),
         )
 
     def store_file(self, file: str, data: Configuration) -> bool:

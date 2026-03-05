@@ -17,6 +17,9 @@ class Configuration:
         jira_email=None,
         jira_token=None,
         jira_project=None,
+        sonar_url=None,
+        sonar_token=None,
+        sonar_project=None,
     ):
         self.git_provider = git_provider
         self.github_token = github_token
@@ -34,6 +37,9 @@ class Configuration:
         self.jira_email = jira_email
         self.jira_token = jira_token
         self.jira_project = jira_project
+        self.sonar_url = sonar_url
+        self.sonar_token = sonar_token
+        self.sonar_project = sonar_project
 
         if not self.git_repository_location:
             raise ValueError(

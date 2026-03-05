@@ -110,3 +110,22 @@ class TestJsonConfigurationBased:
         assert read_configuration.jira_token == "token123"
         assert read_configuration.jira_project == "PRJ"
 
+    def test_reads_sonar_configuration(self, tmp_path):
+        configuration_file_system_handler = ConfigurationFileSystemHandler(tmp_path)
+        configuration = Configuration(
+            git_provider="github",
+            github_token="token",
+            github_repository="owner/repo",
+            git_repository_location="/my/repo",
+            sonar_url="http://sonarqube:9000",
+            sonar_token="sonar-token",
+            sonar_project="SONAR_PROJECT",
+        )
+        file = "my_sonar_conf.json"
+        configuration_file_system_handler.store_file(file, configuration)
+
+        read_configuration = configuration_file_system_handler.read_file_if_exists(file)
+        assert read_configuration.sonar_url == "http://sonarqube:9000"
+        assert read_configuration.sonar_token == "sonar-token"
+        assert read_configuration.sonar_project == "SONAR_PROJECT"
+
