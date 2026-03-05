@@ -12,4 +12,8 @@ class InMemoryConfiguration(Configuration):
             store_data=store_data,
             git_repository_location=f"{store_data}/acceptance_repo",
             logging_level="DEBUG",
+            jira_url="https://fake.atlassian.net",
+            jira_email="test@example.com",
+            jira_token="fake_jira_token",
+            jira_project="PROJ",
         )

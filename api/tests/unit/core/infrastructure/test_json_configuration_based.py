@@ -89,3 +89,24 @@ class TestJsonConfigurationBased:
                 git_repository_location="/my/repo",
             )
 
+    def test_reads_jira_configuration(self, tmp_path):
+        configuration_file_system_handler = ConfigurationFileSystemHandler(tmp_path)
+        configuration = Configuration(
+            git_provider="github",
+            github_token="token",
+            github_repository="owner/repo",
+            git_repository_location="/my/repo",
+            jira_url="https://example.atlassian.net",
+            jira_email="test@example.com",
+            jira_token="token123",
+            jira_project="PRJ",
+        )
+        file = "my_conf.json"
+        configuration_file_system_handler.store_file(file, configuration)
+
+        read_configuration = configuration_file_system_handler.read_file_if_exists(file)
+        assert read_configuration.jira_url == "https://example.atlassian.net"
+        assert read_configuration.jira_email == "test@example.com"
+        assert read_configuration.jira_token == "token123"
+        assert read_configuration.jira_project == "PRJ"
+

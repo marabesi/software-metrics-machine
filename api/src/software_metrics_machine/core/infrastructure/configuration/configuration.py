@@ -14,6 +14,7 @@ class Configuration:
         dashboard_color=None,
         logging_level=None,
         jira_url=None,
+        jira_email=None,
         jira_token=None,
         jira_project=None,
     ):
@@ -30,6 +31,7 @@ class Configuration:
         self.dashboard_color = dashboard_color
         self.logging_level = logging_level
         self.jira_url = jira_url
+        self.jira_email = jira_email
         self.jira_token = jira_token
         self.jira_project = jira_project
 

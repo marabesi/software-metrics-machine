@@ -1,5 +1,6 @@
 import pytest
 from unittest.mock import patch, Mock, call
+from requests.auth import HTTPBasicAuth
 from software_metrics_machine.apps.cli import main
 from tests.response_builder import build_http_successfull_response
 
@@ -366,3 +367,98 @@ class TestCliJiraCommands:
             )
 
             assert result.exit_code in [0, 1]  # May fail if config incomplete
+
+    def test_fetch_issues_uses_http_basic_auth(self, cli):
+        """Test that fetch issues uses HTTPBasicAuth instead of Bearer token."""
+        with patch("requests.get") as mock_get:
+            mock_get.return_value = build_http_successfull_response({
+                "issues": [],
+                "total": 0
+            })
+
+            cli.runner.invoke(main, ["jira", "fetch"])
+
+            # Verify that auth was passed to requests.get
+            call_args = mock_get.call_args
+            assert "auth" in call_args.kwargs
+            auth = call_args.kwargs["auth"]
+            assert isinstance(auth, HTTPBasicAuth)
+
+    def test_fetch_issues_headers_do_not_contain_authorization(self, cli):
+        """Test that headers do not contain Bearer Authorization token."""
+        with patch("requests.get") as mock_get:
+            mock_get.return_value = build_http_successfull_response({
+                "issues": [],
+                "total": 0
+            })
+
+            cli.runner.invoke(main, ["jira", "fetch"])
+
+            # Verify that Authorization header is NOT in headers
+            call_args = mock_get.call_args
+            headers = call_args.kwargs.get("headers", {})
+            
+            assert "Authorization" not in headers
+            assert all("Bearer" not in str(v) for v in headers.values())
+            # Verify only Accept header is present
+            assert headers == {"Accept": "application/json"}
+
+    def test_fetch_issues_auth_contains_email_and_token(self, cli):
+        """Test that HTTPBasicAuth is created with email and API token."""
+        with patch("requests.get") as mock_get:
+            mock_get.return_value = build_http_successfull_response({
+                "issues": [],
+                "total": 0
+            })
+
+            cli.runner.invoke(main, ["jira", "fetch"])
+
+            call_args = mock_get.call_args
+            auth = call_args.kwargs["auth"]
+            
+            # Verify auth is HTTPBasicAuth with correct credentials
+            assert auth.username == cli.configuration.jira_email
+            assert auth.password == cli.configuration.jira_token
+
+    def test_fetch_changelog_uses_http_basic_auth(self, cli):
+        """Test that fetch changelog uses HTTPBasicAuth."""
+        # First create some issues data
+        cli.storage.store_json_file(
+            "jira",
+            "issues.json",
+            [
+                {
+                    "key": "PROJ-1",
+                    "fields": {
+                        "summary": "Test issue",
+                        "created": "2025-01-01T10:00:00.000-0300",
+                    }
+                }
+            ]
+        )
+
+        with patch("requests.get") as mock_get:
+            mock_get.return_value = build_http_successfull_response({
+                "changelog": {
+                    "histories": [
+                        {
+                            "created": "2025-01-01T10:00:00.000-0300",
+                            "items": [
+                                {
+                                    "field": "status",
+                                    "fromString": "Open",
+                                    "toString": "In Progress"
+                                }
+                            ]
+                        }
+                    ]
+                }
+            })
+
+            cli.runner.invoke(main, ["jira", "fetch-changelog"])
+
+            if mock_get.called:
+                # Verify auth was used
+                call_args = mock_get.call_args
+                assert "auth" in call_args.kwargs
+                assert isinstance(call_args.kwargs["auth"], HTTPBasicAuth)

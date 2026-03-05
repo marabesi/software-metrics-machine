@@ -442,5 +442,9 @@ def configuration():
             "dashboard_end_date": config.dashboard_end_date,
             "dashboard_color": config.dashboard_color,
             "logging_level": config.logging_level,
+            "jira_url": config.jira_url,
+            "jira_email": config.jira_email,
+            "jira_token": config.jira_token,
+            "jira_project": config.jira_project,
         }
     })

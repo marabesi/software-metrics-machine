@@ -35,6 +35,10 @@ class ConfigurationFileSystemHandler:
             dashboard_end_date=data.get("dashboard_end_date"),
             dashboard_color=data.get("dashboard_color"),
             logging_level=data.get("logging_level"),
+            jira_url=data.get("jira_url"),
+            jira_email=data.get("jira_email"),
+            jira_token=data.get("jira_token"),
+            jira_project=data.get("jira_project"),
         )
 
     def store_file(self, file: str, data: Configuration) -> bool:

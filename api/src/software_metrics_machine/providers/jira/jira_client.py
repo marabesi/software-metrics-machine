@@ -1,6 +1,7 @@
 from datetime import datetime, timezone
 from software_metrics_machine.core.infrastructure.pandas import pd
 import requests
+from requests.auth import HTTPBasicAuth
 from software_metrics_machine.core.infrastructure.configuration.configuration import (
     Configuration,
 )
@@ -22,21 +23,26 @@ class JiraIssuesClient:
     
     This client handles authentication and data fetching from Jira API.
     It stores fetched data locally for further analysis.
+    
+    Authentication uses HTTP Basic Auth with email and API token as defined in:
+    https://developer.atlassian.com/cloud/jira/rest/v3/api-group-issues/#api-rest-api-3-search-get
     """
 
     def __init__(self, configuration: Configuration):
         self.jira_url = configuration.jira_url
+        self.jira_email = configuration.jira_email
         self.jira_token = configuration.jira_token
         self.jira_project = configuration.jira_project
         self.jira_repository = JiraRepository(configuration=configuration)
         self.logger = Logger(configuration=configuration).get_logger()
         self.configuration = configuration
 
-        # Setup headers for authentication
+        # Setup HTTP Basic Auth (email:token)
+        self.auth = HTTPBasicAuth(self.jira_email, self.jira_token)
+        
+        # Setup headers for API requests
         self.HEADERS = {
-            "Authorization": f"Bearer {self.jira_token}",
             "Accept": "application/json",
-            "Content-Type": "application/json",
         }
 
     def fetch_issues(
@@ -251,7 +257,7 @@ class JiraIssuesClient:
         start_at = 0
         total = None
 
-        url = f"{self.jira_url}/rest/api/3/search"
+        url = f"{self.jira_url}/rest/api/3/search/jql"
 
         while total is None or start_at < total:
             print(f"  → fetching issues (offset: {start_at})")
@@ -267,6 +273,7 @@ class JiraIssuesClient:
                 response = requests.get(
                     url,
                     headers=self.HEADERS,
+                    auth=self.auth,
                     params=params,
                     timeout=30,
                 )
@@ -295,6 +302,7 @@ class JiraIssuesClient:
             response = requests.get(
                 url,
                 headers=self.HEADERS,
+                auth=self.auth,
                 params={"expand": "changelog"},
                 timeout=30,
             )

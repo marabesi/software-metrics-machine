@@ -30,3 +30,7 @@ class TestConfigurationRoute:
         assert "dashboard_end_date" in config
         assert "dashboard_color" in config
         assert "logging_level" in config
+        assert "jira_url" in config
+        assert "jira_email" in config
+        assert "jira_token" in config
+        assert "jira_project" in config
