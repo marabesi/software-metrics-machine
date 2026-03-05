@@ -1,3 +1,4 @@
+import pytest
 from software_metrics_machine.core.infrastructure.configuration.configuration import (
     Configuration,
 )
@@ -69,3 +70,22 @@ class TestJsonConfigurationBased:
         assert read_configuration.dashboard_end_date == "2023-01-01"
         assert read_configuration.dashboard_color == "#000"
         assert read_configuration.logging_level == "INFO"
+
+    def test_configuration_accepts_gitlab_provider_with_repository(self):
+        config = Configuration(
+            git_provider="gitlab",
+            github_token="token",
+            github_repository="owner/repo",
+            git_repository_location="/my/repo",
+        )
+        assert config.git_provider == "gitlab"
+
+
+    def test_configuration_requires_repository_for_gitlab(self):
+        with pytest.raises(ValueError):
+            Configuration(
+                git_provider="gitlab",
+                github_token="token",
+                git_repository_location="/my/repo",
+            )
+

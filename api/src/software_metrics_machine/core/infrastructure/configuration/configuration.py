@@ -37,7 +37,7 @@ class Configuration:
             raise ValueError(
                 "❌  You must provide git_repository_location before running."
             )
-        if self.git_provider.lower() == "github":
+        if self.git_provider.lower() in ("github", "gitlab"):
             # format: owner/repo
             if not self.github_repository:
                 raise ValueError(
