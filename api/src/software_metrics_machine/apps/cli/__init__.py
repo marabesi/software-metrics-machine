@@ -63,6 +63,9 @@ module_groups = {
         "software_metrics_machine.apps.cli.jira_fetch_changelog",
         "software_metrics_machine.apps.cli.jira_fetch_comments",
     ],
+    "sonarqube": [
+        "software_metrics_machine.apps.cli.sonarqube_fetch_measures",
+    ],
     "tools": [
         "software_metrics_machine.apps.cli.tools_json_file_merger",
     ],

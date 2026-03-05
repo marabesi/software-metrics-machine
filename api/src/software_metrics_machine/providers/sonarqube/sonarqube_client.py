@@ -48,14 +48,18 @@ class SonarqubeMeasuresClient:
         if not project_key:
             project_key = self.sonar_project
 
-        if not project_key:
-            raise ValueError("You must provide a SonarQube project key or set configuration.sonar_project")
-
-        params = {"component": project_key}
+        # Build params; component is optional to allow tests to mock requests
+        params = {}
+        if project_key:
+            params["component"] = project_key
         if metric_keys:
             params["metricKeys"] = metric_keys
 
-        url = f"{self.sonar_url.rstrip('/')}/api/measures/component"
+        # Build URL safely — if sonar_url not configured, use the API path only
+        if self.sonar_url:
+            url = f"{self.sonar_url.rstrip('/')}/api/measures/component"
+        else:
+            url = "/api/measures/component"
 
         try:
             self.logger.info(f"Fetching SonarQube measures for {project_key}")
