@@ -27,11 +27,48 @@ export default function PipelineSection() {
           pipelineAPI.jobsAverageTime(apiParams),
           pipelineAPI.deploymentFrequency(apiParams),
         ]);
-        // Handle both direct array responses and wrapped responses
-        setJobsByStatus(Array.isArray(jobs) ? jobs : jobs?.result || []);
-        setRunsDuration(Array.isArray(duration) ? duration : duration?.result || []);
-        setJobsAvgTime(Array.isArray(avgTime) ? avgTime : avgTime?.result || []);
-        setDeploymentFrequency(Array.isArray(deployment) ? deployment : deployment?.result || []);
+        
+        // Handle jobsByStatus - transform Status/Count to status/count
+        const jobsData = Array.isArray(jobs) ? jobs.map((j: any) => ({
+          job_name: j.job_name || 'Unknown',
+          status: j.status || j.Status?.toLowerCase() || 'unknown',
+          count: j.count || j.Count || 0,
+          Status: j.Status,
+          Count: j.Count
+        })) : jobs?.result || [];
+        
+        // Handle runsDuration - transform name/value to workflow/avg_duration
+        const durationData = Array.isArray(duration) ? duration.map((d: any) => ({
+          workflow: d.workflow || d.name || 'Unknown',
+          avg_duration: d.avg_duration || d.value || 0,
+          name: d.name,
+          value: d.value
+        })) : duration?.result || [];
+        
+        // Handle jobsAverageTime - unwrap if needed and transform
+        let avgTimeData = [];
+        if (Array.isArray(avgTime)) {
+          avgTimeData = avgTime.map((a: any) => ({
+            job_name: a.job_name || 'Unknown',
+            avg_time: a.avg_time || 0
+          }));
+        } else if (avgTime?.result && Array.isArray(avgTime.result)) {
+          avgTimeData = avgTime.result.map((a: any) => ({
+            job_name: a.job_name || 'Unknown',
+            avg_time: a.avg_time || 0
+          }));
+        }
+        
+        // Handle deploymentFrequency - transform if needed
+        const deploymentData = Array.isArray(deployment) ? deployment.map((d: any) => ({
+          date: d.date || 'Unknown',
+          count: d.count || 0
+        })) : deployment?.result || [];
+        
+        setJobsByStatus(jobsData);
+        setRunsDuration(durationData);
+        setJobsAvgTime(avgTimeData);
+        setDeploymentFrequency(deploymentData);
       } catch (error) {
         console.error('Error fetching pipeline data:', error);
         // Set empty arrays on error to prevent map errors
@@ -125,18 +162,18 @@ export default function PipelineSection() {
               </thead>
               <tbody>
                 {Array.isArray(jobsByStatus) && jobsByStatus.map((job, idx) => (
-                  <tr key={`job-${job.job_name}-${job.status}-${idx}`} className="border-b hover:bg-gray-50">
-                    <td className="p-2">{job.job_name}</td>
+                  <tr key={`job-${idx}`} className="border-b hover:bg-gray-50">
+                    <td className="p-2">{job.job_name || 'N/A'}</td>
                     <td className="p-2">
                       <span className={`px-2 py-1 rounded text-xs ${
-                        job.status === 'success' ? 'bg-green-100 text-green-800' :
-                        job.status === 'failure' ? 'bg-red-100 text-red-800' :
+                        (job.status || job.Status || '').toLowerCase() === 'success' ? 'bg-green-100 text-green-800' :
+                        (job.status || job.Status || '').toLowerCase() === 'failure' ? 'bg-red-100 text-red-800' :
                         'bg-gray-100 text-gray-800'
                       }`}>
-                        {job.status}
+                        {job.Status || job.status || 'Unknown'}
                       </span>
                     </td>
-                    <td className="p-2 text-right">{job.count}</td>
+                    <td className="p-2 text-right">{job.Count || job.count || 0}</td>
                   </tr>
                 ))}
               </tbody>

@@ -15,6 +15,7 @@ export default function PullRequestsSection() {
   const [openThroughTime, setOpenThroughTime] = useState<any[]>([]);
   const [avgOpenBy, setAvgOpenBy] = useState<any[]>([]);
   const [avgComments, setAvgComments] = useState<any>(null);
+  const [summary, setSummary] = useState<any>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -22,19 +23,43 @@ export default function PullRequestsSection() {
       try {
         setLoading(true);
         const apiParams = buildPullRequestApiParams(filters);
-        const [author, review, open, openBy, comments] = await Promise.all([
+        const [author, review, open, openBy, comments, summaryData] = await Promise.all([
           pullRequestAPI.byAuthor(apiParams),
           pullRequestAPI.averageReviewTime(apiParams),
           pullRequestAPI.openThroughTime(apiParams),
           pullRequestAPI.averageOpenBy(apiParams),
           pullRequestAPI.averageComments(apiParams),
+          pullRequestAPI.summary(apiParams),
         ]);
         // Handle both direct array responses and wrapped responses
         setByAuthor(Array.isArray(author) ? author : author?.result || []);
         setAvgReviewTime(Array.isArray(review) ? review : review?.result || []);
-        setOpenThroughTime(Array.isArray(open) ? open : open?.result || []);
+        let openData = Array.isArray(open) ? open : open?.result || [];
+        // Transform data: group by date and pivot kind into opened/closed
+        if (openData.length > 0) {
+          const grouped = openData.reduce((acc: any, item: any) => {
+            const existing = acc.find((d: any) => d.date === item.date);
+            if (existing) {
+              if (item.kind === 'Opened') {
+                existing.opened = item.count;
+              } else if (item.kind === 'Closed') {
+                existing.closed = item.count;
+              }
+            } else {
+              acc.push({
+                date: item.date,
+                opened: item.kind === 'Opened' ? item.count : 0,
+                closed: item.kind === 'Closed' ? item.count : 0,
+              });
+            }
+            return acc;
+          }, []);
+          openData = grouped;
+        }
+        setOpenThroughTime(openData);
         setAvgOpenBy(Array.isArray(openBy) ? openBy : openBy?.result || []);
         setAvgComments(comments?.result !== undefined ? comments.result : comments);
+        setSummary(summaryData?.result !== undefined ? summaryData.result : summaryData);
       } catch (error) {
         console.error('Error fetching PR data:', error);
         // Set empty arrays on error
@@ -43,6 +68,7 @@ export default function PullRequestsSection() {
         setOpenThroughTime([]);
         setAvgOpenBy([]);
         setAvgComments(null);
+        setSummary(null);
       } finally {
         setLoading(false);
       }
@@ -88,7 +114,7 @@ export default function PullRequestsSection() {
                 <YAxis />
                 <Tooltip />
                 <Legend />
-                <Bar dataKey="avg_hours" fill="#82ca9d" name="Avg Hours" />
+                <Bar dataKey="avg_days" fill="#82ca9d" name="Avg Days" />
               </BarChart>
             </ResponsiveContainer>
           </CardContent>
@@ -107,7 +133,8 @@ export default function PullRequestsSection() {
               <YAxis />
               <Tooltip />
               <Legend />
-              <Line type="monotone" dataKey="open_prs" stroke="#8884d8" name="Open PRs" />
+              <Line type="monotone" dataKey="opened" stroke="#8884d8" name="Opened" />
+              <Line type="monotone" dataKey="closed" stroke="#82ca9d" name="Closed" />
             </LineChart>
           </ResponsiveContainer>
         </CardContent>
@@ -138,10 +165,48 @@ export default function PullRequestsSection() {
           </CardHeader>
           <CardContent>
             <div className="space-y-4">
+              <div className="grid grid-cols-2 gap-4">
+                <div className="p-4 bg-blue-50 rounded-lg">
+                  <p className="text-sm text-gray-600">Total PRs</p>
+                  <p className="text-3xl font-bold text-blue-600">
+                    {summary?.total_prs || 0}
+                  </p>
+                </div>
+                <div className="p-4 bg-green-50 rounded-lg">
+                  <p className="text-sm text-gray-600">Merged</p>
+                  <p className="text-3xl font-bold text-green-600">
+                    {summary?.merged_prs || 0}
+                  </p>
+                </div>
+                <div className="p-4 bg-gray-50 rounded-lg">
+                  <p className="text-sm text-gray-600">Closed</p>
+                  <p className="text-3xl font-bold text-gray-600">
+                    {summary?.closed_prs || 0}
+                  </p>
+                </div>
+                <div className="p-4 bg-purple-50 rounded-lg">
+                  <p className="text-sm text-gray-600">Avg Comments</p>
+                  <p className="text-3xl font-bold text-purple-600">
+                    {summary?.avg_comments_per_pr?.toFixed(2) || 0}
+                  </p>
+                </div>
+                <div className="p-4 bg-orange-50 rounded-lg">
+                  <p className="text-sm text-gray-600">Unique Authors</p>
+                  <p className="text-3xl font-bold text-orange-600">
+                    {summary?.unique_authors || 0}
+                  </p>
+                </div>
+                <div className="p-4 bg-pink-50 rounded-lg">
+                  <p className="text-sm text-gray-600">Unique Labels</p>
+                  <p className="text-3xl font-bold text-pink-600">
+                    {summary?.unique_labels || 0}
+                  </p>
+                </div>
+              </div>
               <div className="p-4 bg-blue-50 rounded-lg">
-                <p className="text-sm text-gray-600">Average Comments Per PR</p>
+                <p className="text-sm text-gray-600">Average Comments Per PR (Detailed)</p>
                 <p className="text-3xl font-bold text-blue-600">
-                  {avgComments?.avg_comments?.toFixed(2) || 'N/A'}
+                  {avgComments?.avg_comments?.toFixed(2) || 0}
                 </p>
               </div>
             </div>

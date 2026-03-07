@@ -10,7 +10,7 @@ function buildApiParams(filters: any): ApiParams {
   return {
     start_date: filters.startDate,
     end_date: filters.endDate,
-    authors: filters.authorSelect.length > 0 ? filters.authorSelect.join(',') : undefined,
+    authors: filters.authorSelect && filters.authorSelect.length > 0 ? filters.authorSelect.join(',') : undefined,
   };
 }
 
@@ -32,9 +32,10 @@ export default function InsightsSection() {
           pullRequestAPI.summary(apiParams),
         ]);
         // Handle both direct object responses and wrapped responses
+        const prData = pr?.result || pr || null;
         setPairingIndex(pairing?.result || pairing || null);
         setPipelineSummary(pipeline?.result || pipeline || null);
-        setPrSummary(pr?.result || pr || null);
+        setPrSummary(prData);
       } catch (error) {
         console.error('Error fetching insights:', error);
         setPairingIndex(null);
@@ -70,9 +71,7 @@ export default function InsightsSection() {
         </Card>
 
         <Card>
-          <CardHeader>
-            {/*<CardTitle>Pipeline Runs</CardTitle>*/}
-            {/*<CardDescription>CI/CD activity</CardDescription>*/}
+          <CardHeader title="Pipeline Runs">
           </CardHeader>
           <CardContent>
             <div className="text-4xl font-bold">{pipelineSummary?.total_runs || 0}</div>
@@ -91,21 +90,19 @@ export default function InsightsSection() {
         </Card>
 
         <Card>
-          <CardHeader>
-            {/*<CardTitle>Pull Requests</CardTitle>*/}
-            {/*<CardDescription>Code review metrics</CardDescription>*/}
+          <CardHeader title="Pull Requests">
           </CardHeader>
           <CardContent>
-            <div className="text-4xl font-bold">{prSummary?.total || 0}</div>
+            <div className="text-4xl font-bold">{prSummary?.total_prs || prSummary?.total || 0}</div>
             <div className="grid grid-cols-3 gap-2 mt-4 text-sm">
               <div>
-                <div className="text-green-600 font-semibold">{prSummary?.merged || 0} Merged</div>
+                <div className="text-green-600 font-semibold">{prSummary?.merged_prs || prSummary?.merged || 0} Merged</div>
               </div>
               <div>
-                <div className="text-gray-600 font-semibold">{prSummary?.closed || 0} Closed</div>
+                <div className="text-gray-600 font-semibold">{prSummary?.closed_prs || prSummary?.closed || 0} Closed</div>
               </div>
               <div>
-                <div className="text-blue-600 font-semibold">{prSummary?.open || 0} Open</div>
+                <div className="text-blue-600 font-semibold">{prSummary?.open_prs || prSummary?.open || 0} Open</div>
               </div>
             </div>
           </CardContent>

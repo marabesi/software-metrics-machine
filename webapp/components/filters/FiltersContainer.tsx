@@ -2,7 +2,7 @@
 
 import { Box, Paper, Typography, Divider, Button, Stack } from "@mui/material";
 import { useFilters } from "@/components/filters/FiltersContext";
-import { useTabContext } from "@/components/tabs/TabContext";
+import { usePathname } from "next/navigation";
 import DateRangePicker from "@/components/filters/DateRangePicker";
 import SelectFilter from "@/components/filters/SelectFilter";
 import MultiSelectFilter from "@/components/filters/MultiSelectFilter";
@@ -13,7 +13,18 @@ import { pipelineAPI, pullRequestAPI } from "@/lib/api";
 
 export default function FiltersContainer() {
   const { filters, updateFilter, resetFilters } = useFilters();
-  const { activeTab } = useTabContext();
+  const pathname = usePathname();
+  
+  // Determine active section from pathname
+  const getActiveSection = () => {
+    if (pathname.includes('/insights')) return 'insights';
+    if (pathname.includes('/pipelines')) return 'pipelines';
+    if (pathname.includes('/pull-requests')) return 'pull-requests';
+    if (pathname.includes('/source-code')) return 'source-code';
+    return 'insights';
+  };
+  
+  const activeSection = getActiveSection();
   const [workflowOptions, setWorkflowOptions] = useState<string[]>(['All']);
   const [jobOptions, setJobOptions] = useState<string[]>([]);
   const [statusOptions, setStatusOptions] = useState<string[]>([]);
@@ -78,13 +89,13 @@ export default function FiltersContainer() {
 
       <Divider sx={{ mb: 2 }} />
 
-      {/* Insights Tab (one) - Date Range Only */}
-      {activeTab === 'one' && (
+      {/* Insights Tab - Date Range Only */}
+      {activeSection === 'insights' && (
         <Box sx={{ mb: 3 }} />
       )}
 
-      {/* Pipelines Tab (two) - Pipeline Filters */}
-      {activeTab === 'two' && (
+      {/* Pipelines Tab - Pipeline Filters */}
+      {activeSection === 'pipelines' && (
         <Box sx={{ mb: 3 }}>
           <Typography variant="subtitle2" sx={{ mb: 1, fontWeight: 600 }}>
             Pipeline Filters
@@ -130,8 +141,8 @@ export default function FiltersContainer() {
         </Box>
       )}
 
-      {/* Pull Request Tab (three) - Pull Request Filters */}
-      {activeTab === 'three' && (
+      {/* Pull Request Tab - Pull Request Filters */}
+      {activeSection === 'pull-requests' && (
         <Box sx={{ mb: 3 }}>
           <Typography variant="subtitle2" sx={{ mb: 1, fontWeight: 600 }}>
             Pull Request Filters
@@ -159,8 +170,8 @@ export default function FiltersContainer() {
         </Box>
       )}
 
-      {/* Source Code Tab (four) - Source Code Filters */}
-      {activeTab === 'four' && (
+      {/* Source Code Tab - Source Code Filters */}
+      {activeSection === 'source-code' && (
         <Box sx={{ mb: 3 }}>
           <Typography variant="subtitle2" sx={{ mb: 1, fontWeight: 600 }}>
             Source Code Filters

@@ -1,4 +1,7 @@
-import React, { createContext, useContext } from 'react';
+'use client';
+
+import React, { createContext, useContext, useEffect } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
 import Box from "@mui/material/Box";
 import {Tab, Tabs} from "@mui/material";
 import InsightsSection from "@/components/dashboard/InsightsSection";
@@ -23,11 +26,34 @@ export const useTabContext = () => {
 
 export const TabProvider = ({ children }: { children?: React.ReactNode }) => {
   const [value, setValue] = React.useState('one');
+  const [mounted, setMounted] = React.useState(false);
+  const router = useRouter();
+  const searchParams = useSearchParams();
+
+  // Initialize from URL on mount
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  // Update tab from URL when searchParams change
+  useEffect(() => {
+    if (!mounted) return;
+    const tabParam = searchParams.get('tab');
+    if (tabParam && ['one', 'two', 'three', 'four'].includes(tabParam)) {
+      setValue(tabParam);
+    }
+  }, [searchParams, mounted]);
+
+  const setActiveTab = (tab: string) => {
+    setValue(tab);
+    // Update URL with new tab
+    router.push(`?tab=${tab}`, { scroll: false });
+  };
 
   return (
     <TabContext.Provider value={{
       activeTab: value,
-      setActiveTab: setValue
+      setActiveTab
     }}>
       {children}
     </TabContext.Provider>
