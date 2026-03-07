@@ -334,7 +334,7 @@ jobs:
     permissions:
       id-token: write
     needs: [ pytest, e2e_cli ]
-    if: github.ref == 'refs/heads/main' && contains(github.event.head_commit.message, 'tagged version')
+    if: github.ref == 'refs/heads/main' && contains(github.event.head_commit.message, 'tagged test version')
     uses: ./.github/workflows/delivery-pypi.yml
     with:
       repository-url: 'https://test.pypi.org/legacy/'
@@ -344,7 +344,8 @@ jobs:
   delivery:
     permissions:
       id-token: write
-    needs: [ delivery-test ]
+    needs: [ pytest, e2e_cli ]
+    if: github.ref == 'refs/heads/main' && contains(github.event.head_commit.message, 'tagged version')
     uses: ./.github/workflows/delivery-pypi.yml
     with:
       repository-url: ''
