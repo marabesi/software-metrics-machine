@@ -1,9 +1,8 @@
 import pytest
-from unittest.mock import patch, MagicMock, call
+from unittest.mock import patch, MagicMock
 from requests.auth import HTTPBasicAuth
 from software_metrics_machine.providers.jira.jira_client import JiraIssuesClient
 from tests.in_memory_configuration import InMemoryConfiguration
-from tests.response_builder import build_http_successfull_response
 
 
 class TestJiraIssuesClient:
@@ -46,7 +45,7 @@ class TestJiraIssuesClient:
             ) as mock_read,
             patch(
                 "software_metrics_machine.core.infrastructure.file_system_base_repository.FileSystemBaseRepository.store_file"
-            ) as mock_store,
+            ),
             patch("requests.get") as mock_get,
         ):
             mock_read.return_value = None  # Not cached
@@ -84,7 +83,7 @@ class TestJiraIssuesClient:
             ) as mock_read,
             patch(
                 "software_metrics_machine.core.infrastructure.file_system_base_repository.FileSystemBaseRepository.store_file"
-            ) as mock_store,
+            ),
             patch("requests.get") as mock_get,
         ):
             mock_read.return_value = None
@@ -134,7 +133,7 @@ class TestJiraIssuesClient:
             ) as mock_read,
             patch(
                 "software_metrics_machine.core.infrastructure.file_system_base_repository.FileSystemBaseRepository.store_file"
-            ) as mock_store,
+            ),
             patch("requests.get") as mock_get,
         ):
             mock_read.return_value = None
@@ -178,7 +177,7 @@ class TestJiraIssuesClient:
             ) as mock_read,
             patch(
                 "software_metrics_machine.core.infrastructure.file_system_base_repository.FileSystemBaseRepository.store_file"
-            ) as mock_store,
+            ),
             patch("requests.get") as mock_get,
         ):
             # Mock different responses for different file reads
@@ -188,7 +187,7 @@ class TestJiraIssuesClient:
                 elif filename == "issues.json":
                     return '[{"key": "PROJ-1"}]'  # Issues exist
                 return None
-            
+
             mock_read.side_effect = read_side_effect
 
             mock_response = MagicMock()
@@ -223,12 +222,12 @@ class TestJiraIssuesClient:
     def test_http_basic_auth_credentials_format(self):
         """Test that HTTPBasicAuth is properly created with email and token."""
         auth = self.jira_client.auth
-        
+
         # HTTPBasicAuth should be initialized with username and password
         assert isinstance(auth, HTTPBasicAuth)
         assert auth.username == self.configuration.jira_email
         assert auth.password == self.configuration.jira_token
-        
+
         # Verify credentials are not empty
         assert auth.username is not None
         assert auth.password is not None
@@ -277,7 +276,7 @@ class TestJiraIssuesClient:
             ) as mock_read,
             patch(
                 "software_metrics_machine.core.infrastructure.file_system_base_repository.FileSystemBaseRepository.store_file"
-            ) as mock_store,
+            ),
             patch(
                 "software_metrics_machine.core.infrastructure.file_system_base_repository.FileSystemBaseRepository.remove_file"
             ) as mock_remove,
@@ -304,14 +303,14 @@ class TestJiraIssuesClient:
     def test_api_url_construction(self):
         """Test that API URLs are constructed correctly with /jql endpoint."""
         expected_search_url = f"{self.configuration.jira_url}/rest/api/3/search/jql"
-        
+
         with (
             patch(
                 "software_metrics_machine.core.infrastructure.file_system_base_repository.FileSystemBaseRepository.read_file_if_exists"
             ) as mock_read,
             patch(
                 "software_metrics_machine.core.infrastructure.file_system_base_repository.FileSystemBaseRepository.store_file"
-            ) as mock_store,
+            ),
             patch("requests.get") as mock_get,
         ):
             mock_read.return_value = None

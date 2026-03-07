@@ -20,10 +20,10 @@ class JiraRepository(FileSystemBaseRepository):
 class JiraIssuesClient:
     """
     Client for fetching issues from Jira.
-    
+
     This client handles authentication and data fetching from Jira API.
     It stores fetched data locally for further analysis.
-    
+
     Authentication uses HTTP Basic Auth with email and API token as defined in:
     https://developer.atlassian.com/cloud/jira/rest/v3/api-group-issues/#api-rest-api-3-search-get
     """
@@ -39,7 +39,7 @@ class JiraIssuesClient:
 
         # Setup HTTP Basic Auth (email:token)
         self.auth = HTTPBasicAuth(self.jira_email, self.jira_token)
-        
+
         # Setup headers for API requests
         self.HEADERS = {
             "Accept": "application/json",
@@ -57,7 +57,6 @@ class JiraIssuesClient:
     ):
         """
         Fetch issues from Jira.
-        
         Args:
             start_date: Start date for filtering issues (ISO 8601 format)
             end_date: End date for filtering issues (ISO 8601 format)
@@ -120,7 +119,6 @@ class JiraIssuesClient:
     def fetch_issue_changes(self, force=False):
         """
         Fetch issue change history/changelog for issues.
-        
         This method retrieves changelog data for all previously fetched issues,
         which can be useful for analyzing issue state transitions and timelines.
         """

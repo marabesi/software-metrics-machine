@@ -1,5 +1,5 @@
 import pytest
-from unittest.mock import patch, Mock, call
+from unittest.mock import patch, Mock
 from requests.auth import HTTPBasicAuth
 from software_metrics_machine.apps.cli import main
 from tests.response_builder import build_http_successfull_response
@@ -397,7 +397,7 @@ class TestCliJiraCommands:
             # Verify that Authorization header is NOT in headers
             call_args = mock_get.call_args
             headers = call_args.kwargs.get("headers", {})
-            
+
             assert "Authorization" not in headers
             assert all("Bearer" not in str(v) for v in headers.values())
             # Verify only Accept header is present
@@ -415,7 +415,7 @@ class TestCliJiraCommands:
 
             call_args = mock_get.call_args
             auth = call_args.kwargs["auth"]
-            
+
             # Verify auth is HTTPBasicAuth with correct credentials
             assert auth.username == cli.configuration.jira_email
             assert auth.password == cli.configuration.jira_token

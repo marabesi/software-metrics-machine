@@ -25,7 +25,7 @@ class TestSonarqubeMeasuresClient:
                 "software_metrics_machine.core.infrastructure.file_system_base_repository.FileSystemBaseRepository.store_file"
             ) as mocked_store,
             patch("requests.get") as mock_get,
-        ):    
+        ):
             mock_read.return_value = None
 
             mock_response = MagicMock()

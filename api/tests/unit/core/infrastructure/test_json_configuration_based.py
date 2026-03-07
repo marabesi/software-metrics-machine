@@ -80,7 +80,6 @@ class TestJsonConfigurationBased:
         )
         assert config.git_provider == "gitlab"
 
-
     def test_configuration_requires_repository_for_gitlab(self):
         with pytest.raises(ValueError):
             Configuration(
@@ -128,4 +127,3 @@ class TestJsonConfigurationBased:
         assert read_configuration.sonar_url == "http://sonarqube:9000"
         assert read_configuration.sonar_token == "sonar-token"
         assert read_configuration.sonar_project == "SONAR_PROJECT"
-

@@ -1,4 +1,3 @@
-import pytest
 from unittest.mock import patch
 from software_metrics_machine.apps.cli import main
 from tests.response_builder import build_http_successfull_response

@@ -59,7 +59,6 @@ class FileHandlerForTesting:
                 configuration=self.configuration,
                 target_subfolder=subfolder
             )
-        
         handler.store_file(file, as_json_string(json_data))
         return True
 
