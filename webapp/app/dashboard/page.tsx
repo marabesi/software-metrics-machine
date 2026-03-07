@@ -53,11 +53,11 @@ import IconButton from '@mui/material/IconButton';
 import MenuIcon from '@mui/icons-material/Menu';
 import ChevronLeftIcon from '@mui/icons-material/ChevronLeft';
 import ChevronRightIcon from '@mui/icons-material/ChevronRight';
-import {TabProvider} from "@/components/tabs/TabContext";
+import {TabProvider, TabContent} from "@/components/tabs/TabContext";
 import {FiltersProvider} from "@/components/filters/FiltersContext";
 import FiltersContainer from "@/components/filters/FiltersContainer";
 
-const drawerWidth = 240;
+const drawerWidth = 400;
 
 const Main = styled('main', { shouldForwardProp: (prop) => prop !== 'open' })<{
   open?: boolean;
@@ -68,7 +68,7 @@ const Main = styled('main', { shouldForwardProp: (prop) => prop !== 'open' })<{
     easing: theme.transitions.easing.sharp,
     duration: theme.transitions.duration.leavingScreen,
   }),
-  marginLeft: `-${drawerWidth}px`,
+  marginRight: `-${drawerWidth}px`,
   variants: [
     {
       props: ({ open }) => open,
@@ -77,7 +77,7 @@ const Main = styled('main', { shouldForwardProp: (prop) => prop !== 'open' })<{
           easing: theme.transitions.easing.easeOut,
           duration: theme.transitions.duration.enteringScreen,
         }),
-        marginLeft: 0,
+        marginRight: 0,
       },
     },
   ],
@@ -99,7 +99,7 @@ const AppBar = styled(MuiAppBar, {
       props: ({ open }) => open,
       style: {
         width: `calc(100% - ${drawerWidth}px)`,
-        marginLeft: `${drawerWidth}px`,
+        marginRight: `${drawerWidth}px`,
         transition: theme.transitions.create(['margin', 'width'], {
           easing: theme.transitions.easing.easeOut,
           duration: theme.transitions.duration.enteringScreen,
@@ -120,7 +120,12 @@ const DrawerHeader = styled('div')(({ theme }) => ({
 
 export default function PersistentDrawerLeft() {
   const theme = useTheme();
-  const [open, setOpen] = React.useState(false);
+  const [open, setOpen] = React.useState(true);
+  const [mounted, setMounted] = React.useState(false);
+
+  React.useEffect(() => {
+    setMounted(true);
+  }, []);
 
   const handleDrawerOpen = () => {
     setOpen(true);
@@ -130,60 +135,78 @@ export default function PersistentDrawerLeft() {
     setOpen(false);
   };
 
+  // Prevent hydration mismatch by only rendering after mount
+  if (!mounted) {
+    return (
+      <Box sx={{ display: 'flex' }}>
+        <AppBar position="fixed">
+          <Toolbar>
+            <Typography variant="h6" noWrap component="div">
+              Persistent drawer
+            </Typography>
+          </Toolbar>
+        </AppBar>
+        <Main>
+          <DrawerHeader />
+        </Main>
+      </Box>
+    );
+  }
+
   return (
-    <Box sx={{ display: 'flex' }}>
-      <CssBaseline />
-      <AppBar position="fixed" open={open}>
-        <Toolbar>
-          <IconButton
-            color="inherit"
-            aria-label="open drawer"
-            onClick={handleDrawerOpen}
-            edge="start"
-            sx={[
-              {
-                mr: 2,
+    <TabProvider>
+      <FiltersProvider>
+        <Box sx={{ display: 'flex' }}>
+          <AppBar position="fixed" open={open}>
+            <Toolbar>
+              <Typography variant="h6" noWrap component="div" sx={{ flexGrow: 1 }}>
+                Persistent drawer
+              </Typography>
+              <IconButton
+                color="inherit"
+                aria-label="open drawer"
+                onClick={handleDrawerOpen}
+                edge="end"
+                sx={[
+                  {
+                    ml: 2,
+                  },
+                  open && { display: 'none' },
+                ]}
+              >
+                <MenuIcon />
+              </IconButton>
+            </Toolbar>
+          </AppBar>
+          <Main open={open}>
+            <DrawerHeader />
+            <TabContent />
+          </Main>
+          <Drawer
+            sx={{
+              width: drawerWidth,
+              flexShrink: 0,
+              '& .MuiDrawer-paper': {
+                width: drawerWidth,
+                boxSizing: 'border-box',
               },
-              open && { display: 'none' },
-            ]}
+            }}
+            variant="persistent"
+            anchor="right"
+            open={open}
           >
-            <MenuIcon />
-          </IconButton>
-          <Typography variant="h6" noWrap component="div">
-            Persistent drawer
-          </Typography>
-        </Toolbar>
-      </AppBar>
-      <Drawer
-        sx={{
-          width: drawerWidth,
-          flexShrink: 0,
-          '& .MuiDrawer-paper': {
-            width: drawerWidth,
-            boxSizing: 'border-box',
-          },
-        }}
-        variant="persistent"
-        anchor="left"
-        open={open}
-      >
-        <DrawerHeader>
-          <IconButton onClick={handleDrawerClose}>
-            {theme.direction === 'ltr' ? <ChevronLeftIcon /> : <ChevronRightIcon />}
-          </IconButton>
-        </DrawerHeader>
-        <Divider />
-      </Drawer>
-      <Main open={open}>
-        <DrawerHeader />
-        <FiltersProvider>
-          <>
-            <FiltersContainer />
-            <TabProvider>
-            </TabProvider>
-          </>
-        </FiltersProvider>
-      </Main>
-    </Box>
+            <DrawerHeader>
+              <IconButton onClick={handleDrawerClose}>
+                {theme.direction === 'ltr' ? <ChevronLeftIcon /> : <ChevronRightIcon />}
+              </IconButton>
+            </DrawerHeader>
+            <Divider />
+            <Box sx={{ p: 2, overflowY: 'auto' }}>
+              <FiltersContainer />
+            </Box>
+          </Drawer>
+        </Box>
+      </FiltersProvider>
+    </TabProvider>
   );
 }

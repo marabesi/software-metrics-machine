@@ -1,7 +1,10 @@
-import React, { createContext, ReactElement, useContext } from 'react';
+import React, { createContext, useContext } from 'react';
 import Box from "@mui/material/Box";
 import {Tab, Tabs} from "@mui/material";
 import InsightsSection from "@/components/dashboard/InsightsSection";
+import PipelineSection from "@/components/dashboard/PipelineSection";
+import PullRequestsSection from "@/components/dashboard/PullRequestsSection";
+import SourceCodeSection from "@/components/dashboard/SourceCodeSection";
 
 interface TabsContextInterface {
   activeTab: string;
@@ -18,36 +21,55 @@ export const useTabContext = () => {
   return context;
 };
 
-export const TabProvider = ({ children }: { children?: ReactElement | undefined }) => {
+export const TabProvider = ({ children }: { children?: React.ReactNode }) => {
   const [value, setValue] = React.useState('one');
-
-  const handleChange = (event: React.SyntheticEvent, newValue: string) => {
-    setValue(newValue);
-  };
 
   return (
     <TabContext.Provider value={{
       activeTab: value,
       setActiveTab: setValue
     }}>
+      {children}
+    </TabContext.Provider>
+  );
+};
+
+export const TabContent = () => {
+  const { activeTab: value, setActiveTab } = useTabContext();
+
+  const handleChange = (event: React.SyntheticEvent, newValue: string) => {
+    setActiveTab(newValue);
+  };
+
+  return (
+    <>
       <Box sx={{ width: '100%' }}>
         <Tabs
           value={value}
           onChange={handleChange}
           textColor="secondary"
           indicatorColor="secondary"
-          aria-label="secondary tabs example"
+          aria-label="dashboard tabs"
         >
           <Tab value="one" label="Insights" />
           <Tab value="two" label="Pipelines" />
-          <Tab value="three" label="Item Three" />
+          <Tab value="three" label="Pull Requests" />
+          <Tab value="four" label="Source Code" />
         </Tabs>
       </Box>
-      <TabPanel value="one" active={value}>
+      <TabPanel key="panel-insights" value="one" active={value}>
         <InsightsSection />
       </TabPanel>
-      {children}
-    </TabContext.Provider>
+      <TabPanel key="panel-pipelines" value="two" active={value}>
+        <PipelineSection />
+      </TabPanel>
+      <TabPanel key="panel-prs" value="three" active={value}>
+        <PullRequestsSection />
+      </TabPanel>
+      <TabPanel key="panel-source-code" value="four" active={value}>
+        <SourceCodeSection />
+      </TabPanel>
+    </>
   );
 };
 
@@ -64,8 +86,8 @@ function TabPanel(props: TabPanelProps) {
     <div
       role="tabpanel"
       hidden={value !== active}
-      id={`full-width-tabpanel-${active}`}
-      aria-labelledby={`full-width-tab-${active}`}
+      id={`tabpanel-${value}`}
+      aria-labelledby={`tab-${value}`}
       {...other}
     >
       {value === active && (

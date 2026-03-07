@@ -3,36 +3,53 @@
 import { useEffect, useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { sourceCodeAPI } from '@/lib/api';
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, ScatterChart, Scatter } from 'recharts';
+import { useFilters } from '@/components/filters/FiltersContext';
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, ScatterChart, Scatter, LineChart, Line } from 'recharts';
+import { buildSourceCodeApiParams } from '@/lib/utils/apiParams';
+import { ensureArray } from '@/lib/utils/chartData';
 
 export default function SourceCodeSection() {
-  const [dateRange, setDateRange] = useState({ start_date: '', end_date: '' });
+  const { filters } = useFilters();
   const [entityChurn, setEntityChurn] = useState<any[]>([]);
   const [coupling, setCoupling] = useState<any[]>([]);
   const [entityEffort, setEntityEffort] = useState<any[]>([]);
+  const [codeChurn, setCodeChurn] = useState<any[]>([]);
+  const [entityOwnership, setEntityOwnership] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const fetchData = async () => {
       try {
         setLoading(true);
-        const [churn, coup, effort] = await Promise.all([
-          sourceCodeAPI.entityChurn({ ...dateRange, top: 20 }),
-          sourceCodeAPI.coupling({ ...dateRange, top: 20 }),
-          sourceCodeAPI.entityEffort({ ...dateRange, top_n: 20 }),
+        const apiParams = buildSourceCodeApiParams(filters);
+        const [churn, coup, effort, churnOverTime, ownership] = await Promise.all([
+          sourceCodeAPI.entityChurn(apiParams),
+          sourceCodeAPI.coupling(apiParams),
+          sourceCodeAPI.entityEffort(apiParams),
+          sourceCodeAPI.codeChurn(apiParams),
+          sourceCodeAPI.entityOwnership(apiParams),
         ]);
-        setEntityChurn(churn);
-        setCoupling(coup);
-        setEntityEffort(effort);
+        // Handle both direct array responses and wrapped responses
+        setEntityChurn(Array.isArray(churn) ? churn : churn?.result || []);
+        setCoupling(Array.isArray(coup) ? coup : coup?.result || []);
+        setEntityEffort(Array.isArray(effort) ? effort : effort?.result || []);
+        setCodeChurn(Array.isArray(churnOverTime) ? churnOverTime : churnOverTime?.result || []);
+        setEntityOwnership(Array.isArray(ownership) ? ownership : ownership?.result || []);
       } catch (error) {
         console.error('Error fetching source code data:', error);
+        // Set empty arrays on error
+        setEntityChurn([]);
+        setCoupling([]);
+        setEntityEffort([]);
+        setCodeChurn([]);
+        setEntityOwnership([]);
       } finally {
         setLoading(false);
       }
     };
 
     fetchData();
-  }, [dateRange]);
+  }, [filters]);
 
   if (loading) {
     return <div className="text-center p-8">Loading source code metrics...</div>;
@@ -48,7 +65,7 @@ export default function SourceCodeSection() {
           </CardHeader>
           <CardContent>
             <ResponsiveContainer width="100%" height={300}>
-              <BarChart data={entityChurn}>
+              <BarChart data={ensureArray(entityChurn)}>
                 <CartesianGrid strokeDasharray="3 3" />
                 <XAxis dataKey="entity" angle={-45} textAnchor="end" height={100} />
                 <YAxis />
@@ -67,13 +84,52 @@ export default function SourceCodeSection() {
           </CardHeader>
           <CardContent>
             <ResponsiveContainer width="100%" height={300}>
-              <BarChart data={entityEffort}>
+              <BarChart data={ensureArray(entityEffort)}>
                 <CartesianGrid strokeDasharray="3 3" />
                 <XAxis dataKey="entity" angle={-45} textAnchor="end" height={100} />
                 <YAxis />
                 <Tooltip />
                 <Legend />
                 <Bar dataKey="revisions" fill="#8884d8" name="Revisions" />
+              </BarChart>
+            </ResponsiveContainer>
+          </CardContent>
+        </Card>
+      </div>
+
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <Card>
+          <CardHeader>
+            <CardTitle>Code Churn Over Time</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <ResponsiveContainer width="100%" height={300}>
+              <LineChart data={ensureArray(codeChurn)}>
+                <CartesianGrid strokeDasharray="3 3" />
+                <XAxis dataKey="date" angle={-45} textAnchor="end" height={100} />
+                <YAxis />
+                <Tooltip />
+                <Legend />
+                <Line type="monotone" dataKey="value" stroke="#8884d8" name="Lines Changed" />
+              </LineChart>
+            </ResponsiveContainer>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader>
+            <CardTitle>Entity Ownership</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <ResponsiveContainer width="100%" height={300}>
+              <BarChart data={ensureArray(entityOwnership).slice(0, 15)}>
+                <CartesianGrid strokeDasharray="3 3" />
+                <XAxis dataKey="entity" angle={-45} textAnchor="end" height={100} />
+                <YAxis />
+                <Tooltip />
+                <Legend />
+                <Bar dataKey="added" stackId="a" fill="#82ca9d" name="Added" />
+                <Bar dataKey="deleted" stackId="a" fill="#ff6b6b" name="Deleted" />
               </BarChart>
             </ResponsiveContainer>
           </CardContent>
@@ -95,8 +151,8 @@ export default function SourceCodeSection() {
                 </tr>
               </thead>
               <tbody>
-                {coupling.map((item, idx) => (
-                  <tr key={idx} className="border-b hover:bg-gray-50">
+                {Array.isArray(coupling) && coupling.map((item, idx) => (
+                  <tr key={`coupling-${item.entity}-${item.coupled}-${idx}`} className="border-b hover:bg-gray-50">
                     <td className="p-2 font-mono text-xs">{item.entity}</td>
                     <td className="p-2 font-mono text-xs">{item.coupled}</td>
                     <td className="p-2 text-right">

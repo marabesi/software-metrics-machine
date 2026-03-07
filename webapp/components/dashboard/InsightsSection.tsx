@@ -3,10 +3,19 @@
 import { useEffect, useState } from 'react';
 import Card from '@mui/material/Card';
 import {CardContent, CardHeader} from '@mui/material';
-import { sourceCodeAPI, pipelineAPI, pullRequestAPI } from '@/lib/api';
+import { sourceCodeAPI, pipelineAPI, pullRequestAPI, ApiParams } from '@/lib/api';
+import { useFilters } from '@/components/filters/FiltersContext';
+
+function buildApiParams(filters: any): ApiParams {
+  return {
+    start_date: filters.startDate,
+    end_date: filters.endDate,
+    authors: filters.authorSelect.length > 0 ? filters.authorSelect.join(',') : undefined,
+  };
+}
 
 export default function InsightsSection() {
-  const [dateRange, setDateRange] = useState({ start_date: '', end_date: '' });
+  const { filters } = useFilters();
   const [pairingIndex, setPairingIndex] = useState<any>(null);
   const [pipelineSummary, setPipelineSummary] = useState<any>(null);
   const [prSummary, setPrSummary] = useState<any>(null);
@@ -16,23 +25,28 @@ export default function InsightsSection() {
     const fetchData = async () => {
       try {
         setLoading(true);
+        const apiParams = buildApiParams(filters);
         const [pairing, pipeline, pr] = await Promise.all([
-          sourceCodeAPI.pairingIndex(dateRange),
-          pipelineAPI.summary(dateRange),
-          pullRequestAPI.summary(dateRange),
+          sourceCodeAPI.pairingIndex(apiParams),
+          pipelineAPI.summary(apiParams),
+          pullRequestAPI.summary(apiParams),
         ]);
-        setPairingIndex(pairing);
-        setPipelineSummary(pipeline);
-        setPrSummary(pr);
+        // Handle both direct object responses and wrapped responses
+        setPairingIndex(pairing?.result || pairing || null);
+        setPipelineSummary(pipeline?.result || pipeline || null);
+        setPrSummary(pr?.result || pr || null);
       } catch (error) {
         console.error('Error fetching insights:', error);
+        setPairingIndex(null);
+        setPipelineSummary(null);
+        setPrSummary(null);
       } finally {
         setLoading(false);
       }
     };
 
     fetchData();
-  }, [dateRange]);
+  }, [filters]);
 
   if (loading) {
     return <div className="text-center p-8">Loading insights...</div>;

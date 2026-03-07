@@ -296,6 +296,14 @@ class PipelinesRepository(FileSystemBaseRepository):
         list_all.insert(0, "All")
         return list_all
 
+    def get_unique_branches(self, filters=None) -> List[str]:
+        runs = self.runs(filters)
+        branches = {run.head_branch for run in runs if run.head_branch}
+        list_all = list(filter(None, list(branches)))
+        list_all.sort()
+        list_all.insert(0, "All")
+        return list_all
+
     def get_deployment_frequency_for_job(
         self, job_name: str, filters: Optional[PipelineFilters]
     ) -> DeploymentFrequency:

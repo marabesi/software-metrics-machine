@@ -1,42 +1,43 @@
 'use client';
 
-import { useState } from 'react';
-import {AdapterDayjs} from "@mui/x-date-pickers/AdapterDayjs";
-import {DatePicker, LocalizationProvider} from "@mui/x-date-pickers";
+import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
+import { DatePicker, LocalizationProvider } from "@mui/x-date-pickers";
 import dayjs from "dayjs";
+import { useFilters } from './FiltersContext';
+import { Box } from '@mui/material';
 
-interface DateRangePickerProps {
-  startDate: string;
-  endDate: string;
-}
-
-export default function DateRangePicker({ startDate, endDate }: DateRangePickerProps) {
-  const [localStartDate, setLocalStartDate] = useState(startDate);
-  const [localEndDate, setLocalEndDate] = useState(endDate);
-
-  // const handleApply = () => {
-  //   onChange({
-  //     start_date: localStartDate,
-  //     end_date: localEndDate,
-  //   });
-  // };
-
-  const handleClear = () => {
-    setLocalStartDate('');
-    setLocalEndDate('');
-    // onChange({ start_date: '', end_date: '' });
-  };
+export default function DateRangePicker() {
+  const { filters, updateFilter } = useFilters();
+  const { startDate, endDate } = filters;
 
   return (
-    <LocalizationProvider dateAdapter={AdapterDayjs}>
-      <DatePicker label="Basic date picker"
-                  value={dayjs(localStartDate)}
-                  onChange={(e) => setLocalStartDate(dayjs(e).format('YYYY-MM-DD'))}
-      />
-      <DatePicker label="Basic date picker"
-                  value={dayjs(localEndDate)}
-                  onChange={(e) => setLocalEndDate(dayjs(e).format('YYYY-MM-DD'))}
-      />
-    </LocalizationProvider>
+    <Box sx={{ display: 'flex', gap: 2, m: 1 }}>
+      <LocalizationProvider dateAdapter={AdapterDayjs}>
+        <DatePicker
+          label="Start Date"
+          value={startDate ? dayjs(startDate) : null}
+          onChange={(date) => {
+            if (date) {
+              updateFilter('startDate', dayjs(date).format('YYYY-MM-DD'));
+            }
+          }}
+          slotProps={{
+            textField: { size: 'small' },
+          }}
+        />
+        <DatePicker
+          label="End Date"
+          value={endDate ? dayjs(endDate) : null}
+          onChange={(date) => {
+            if (date) {
+              updateFilter('endDate', dayjs(date).format('YYYY-MM-DD'));
+            }
+          }}
+          slotProps={{
+            textField: { size: 'small' },
+          }}
+        />
+      </LocalizationProvider>
+    </Box>
   );
 }

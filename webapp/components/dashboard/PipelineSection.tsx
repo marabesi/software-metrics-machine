@@ -3,36 +3,49 @@
 import { useEffect, useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { pipelineAPI } from '@/lib/api';
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
+import { useFilters } from '@/components/filters/FiltersContext';
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, LineChart, Line } from 'recharts';
+import { buildPipelineApiParams } from '@/lib/utils/apiParams';
+import { ensureArray } from '@/lib/utils/chartData';
 
 export default function PipelineSection() {
-  const [dateRange, setDateRange] = useState({ start_date: '', end_date: '' });
+  const { filters } = useFilters();
   const [jobsByStatus, setJobsByStatus] = useState<any[]>([]);
   const [runsDuration, setRunsDuration] = useState<any[]>([]);
   const [jobsAvgTime, setJobsAvgTime] = useState<any[]>([]);
+  const [deploymentFrequency, setDeploymentFrequency] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const fetchData = async () => {
       try {
         setLoading(true);
-        const [jobs, duration, avgTime] = await Promise.all([
-          pipelineAPI.jobsByStatus(dateRange),
-          pipelineAPI.runsDuration(dateRange),
-          pipelineAPI.jobsAverageTime(dateRange),
+        const apiParams = buildPipelineApiParams(filters);
+        const [jobs, duration, avgTime, deployment] = await Promise.all([
+          pipelineAPI.jobsByStatus(apiParams),
+          pipelineAPI.runsDuration(apiParams),
+          pipelineAPI.jobsAverageTime(apiParams),
+          pipelineAPI.deploymentFrequency(apiParams),
         ]);
-        setJobsByStatus(jobs);
-        setRunsDuration(duration);
-        setJobsAvgTime(avgTime);
+        // Handle both direct array responses and wrapped responses
+        setJobsByStatus(Array.isArray(jobs) ? jobs : jobs?.result || []);
+        setRunsDuration(Array.isArray(duration) ? duration : duration?.result || []);
+        setJobsAvgTime(Array.isArray(avgTime) ? avgTime : avgTime?.result || []);
+        setDeploymentFrequency(Array.isArray(deployment) ? deployment : deployment?.result || []);
       } catch (error) {
         console.error('Error fetching pipeline data:', error);
+        // Set empty arrays on error to prevent map errors
+        setJobsByStatus([]);
+        setRunsDuration([]);
+        setJobsAvgTime([]);
+        setDeploymentFrequency([]);
       } finally {
         setLoading(false);
       }
     };
 
     fetchData();
-  }, [dateRange]);
+  }, [filters]);
 
   if (loading) {
     return <div className="text-center p-8">Loading pipeline metrics...</div>;
@@ -47,7 +60,7 @@ export default function PipelineSection() {
           </CardHeader>
           <CardContent>
             <ResponsiveContainer width="100%" height={300}>
-              <BarChart data={runsDuration}>
+              <BarChart data={ensureArray(runsDuration)}>
                 <CartesianGrid strokeDasharray="3 3" />
                 <XAxis dataKey="workflow" angle={-45} textAnchor="end" height={100} />
                 <YAxis />
@@ -65,7 +78,7 @@ export default function PipelineSection() {
           </CardHeader>
           <CardContent>
             <ResponsiveContainer width="100%" height={300}>
-              <BarChart data={jobsAvgTime}>
+              <BarChart data={ensureArray(jobsAvgTime)}>
                 <CartesianGrid strokeDasharray="3 3" />
                 <XAxis dataKey="job_name" angle={-45} textAnchor="end" height={100} />
                 <YAxis />
@@ -77,6 +90,24 @@ export default function PipelineSection() {
           </CardContent>
         </Card>
       </div>
+
+      <Card>
+        <CardHeader>
+          <CardTitle>Deployment Frequency</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <ResponsiveContainer width="100%" height={300}>
+            <LineChart data={ensureArray(deploymentFrequency)}>
+              <CartesianGrid strokeDasharray="3 3" />
+              <XAxis dataKey="date" angle={-45} textAnchor="end" height={100} />
+              <YAxis />
+              <Tooltip />
+              <Legend />
+              <Line type="monotone" dataKey="count" stroke="#8884d8" name="Deployments" />
+            </LineChart>
+          </ResponsiveContainer>
+        </CardContent>
+      </Card>
 
       <Card>
         <CardHeader>
@@ -93,8 +124,8 @@ export default function PipelineSection() {
                 </tr>
               </thead>
               <tbody>
-                {jobsByStatus.map((job, idx) => (
-                  <tr key={idx} className="border-b hover:bg-gray-50">
+                {Array.isArray(jobsByStatus) && jobsByStatus.map((job, idx) => (
+                  <tr key={`job-${job.job_name}-${job.status}-${idx}`} className="border-b hover:bg-gray-50">
                     <td className="p-2">{job.job_name}</td>
                     <td className="p-2">
                       <span className={`px-2 py-1 rounded text-xs ${
