@@ -1,4 +1,4 @@
-from typing import List, Optional
+from typing import List, Optional, Any
 from pathlib import Path
 
 from software_metrics_machine.core.infrastructure.configuration.configuration import (
@@ -41,7 +41,7 @@ class FileHandlerForTesting:
             "prs_review_comments.json", as_json_string(data)
         )
 
-    def store_json_file(self, subfolder_or_file: str, file_or_data: any = None, data: any = None) -> bool:
+    def store_json_file(self, subfolder_or_file: str, file_or_data: Any = None, data: Any = None) -> bool:
         # Support both old and new signatures
         # Old: store_json_file(file, data)
         # New: store_json_file(subfolder, file, data)
