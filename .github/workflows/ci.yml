@@ -7,7 +7,7 @@ on:
       - "docs/**"
 
 env:
-  PYTHON_VERSION: 3.14.1
+  PYTHON_VERSION: 3.15
   IMAGE_NAME: ${{secrets.DOCKERHUB_USERNAME}}/software-metrics-machine
   NODE_VERSION: 25.2.1
 
@@ -20,7 +20,7 @@ jobs:
         working-directory: ./api
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
 
       - name: Set up Python
         uses: actions/setup-python@v4
@@ -62,15 +62,15 @@ jobs:
         working-directory: webapp
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
 
       - name: Use Node.js
-        uses: actions/setup-node@v3
+        uses: actions/setup-node@v6
         with:
           node-version: ${{ env.NODE_VERSION }}
 
       - name: Attempt to restore the cache
-        uses: actions/cache@v3
+        uses: actions/cache@v5
         id: cache
         with:
           path: |
@@ -91,7 +91,7 @@ jobs:
         working-directory: ./api
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
 
       - name: Set up Python
         uses: actions/setup-python@v4
@@ -186,7 +186,7 @@ jobs:
         working-directory: ./api
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
 
       - name: "Install bashunit"
         run: |
@@ -231,7 +231,7 @@ jobs:
     needs: [code-quality-api, code-quality-webapp, pytest]
     runs-on: ubuntu-24.04
     steps:
-    - uses: actions/checkout@v4
+    - uses: actions/checkout@v6
 
     - name: Set up Docker Buildx
       uses: docker/setup-buildx-action@v3
@@ -256,7 +256,7 @@ jobs:
     env:
       CHROMATIC_ARCHIVE_LOCATION: test-results/
     steps:
-    - uses: actions/checkout@v4
+    - uses: actions/checkout@v6
       with:
         fetch-depth: 0
 
@@ -305,7 +305,7 @@ jobs:
     needs: [code-quality-api, code-quality-webapp, pytest, e2e_dashboard, build_docker_image]
     runs-on: ubuntu-24.04
     steps:
-    - uses: actions/checkout@v4
+    - uses: actions/checkout@v6
     - name: login to docker hub
       id: docker-hub
       env:

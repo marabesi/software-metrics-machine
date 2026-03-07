@@ -35,7 +35,7 @@ jobs:
         working-directory: ./docs
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
       - name: Setup NodeJs
         uses: actions/setup-node@v5.0.0
       - name: install
