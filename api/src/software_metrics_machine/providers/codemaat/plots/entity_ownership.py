@@ -23,6 +23,7 @@ class EntityOnershipViewer(BaseViewer, Viewable):
         self,
         top_n: int = 30,
         ignore_files: str | None = None,
+        ignore_pattern: str | None = None,
         authors: str | None = None,
         type_churn: str | None = "added",
         include_only: str | None = None,

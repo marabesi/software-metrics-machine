@@ -30,6 +30,7 @@ class CouplingViewer(BaseViewer, Viewable):
     def render(
         self,
         ignore_files: str | None = None,
+        ignore_pattern: str | None = None,
         top: int = 20,
         include_only: str | None = None,
     ) -> PlotResult:

@@ -125,6 +125,7 @@ def entity_churn(
     start_date: Optional[str] = Query(None),
     end_date: Optional[str] = Query(None),
     ignore_files: Optional[str] = Query(None),
+    ignore_pattern: Optional[str] = Query(None),
     include_only: Optional[str] = Query(None),
     top: Optional[int] = Query(None),
 ):
@@ -135,6 +136,7 @@ def entity_churn(
     result = viewer.render(
         top_n=top,
         ignore_files=ignore_files,
+        ignore_pattern=ignore_pattern,
         include_only=include_only,
         start_date=start_date,
         end_date=end_date,
@@ -160,6 +162,7 @@ def code_coupling(
     start_date: Optional[str] = Query(None),
     end_date: Optional[str] = Query(None),
     ignore_files: Optional[str] = Query(None),
+    ignore_pattern: Optional[str] = Query(None),
     include_only: Optional[str] = Query(None),
     top: Optional[int] = Query(20),
 ):
@@ -167,7 +170,7 @@ def code_coupling(
     Return coupling pairs ranked by coupling degree.
     """
     result = CouplingViewer(repository=create_codemaat_repository()).render(
-        ignore_files=ignore_files, include_only=include_only, top=top
+        ignore_files=ignore_files, ignore_pattern=ignore_pattern, include_only=include_only, top=top
     )
     return JSONResponse(convert_result_data(result.data))
 
@@ -178,6 +181,7 @@ def entity_effort(
     end_date: Optional[str] = Query(None),
     top_n: Optional[int] = Query(30),
     ignore_files: Optional[str] = Query(None),
+    ignore_pattern: Optional[str] = Query(None),
     include_only: Optional[str] = Query(None),
 ):
     """
@@ -185,7 +189,7 @@ def entity_effort(
     """
     viewer = EntityEffortViewer(repository=create_codemaat_repository())
     result = viewer.render_treemap(
-        top_n=top_n, ignore_files=ignore_files, include_only=include_only
+        top_n=top_n, ignore_files=ignore_files, ignore_pattern=ignore_pattern, include_only=include_only
     )
     return JSONResponse(convert_result_data(result.data))
 
@@ -196,6 +200,7 @@ def entity_ownership(
     end_date: Optional[str] = Query(None),
     top_n: Optional[int] = Query(None),
     ignore_files: Optional[str] = Query(None),
+    ignore_pattern: Optional[str] = Query(None),
     authors: Optional[str] = Query(None),
     include_only: Optional[str] = Query(None),
 ):
@@ -206,6 +211,7 @@ def entity_ownership(
     result = viewer.render(
         top_n=top_n,
         ignore_files=ignore_files,
+        ignore_pattern=ignore_pattern,
         authors=authors,
         include_only=include_only,
     )
