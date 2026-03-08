@@ -30,11 +30,11 @@ export default function SourceCodeSection() {
           sourceCodeAPI.entityOwnership(apiParams),
         ]);
         // Handle both direct array responses and wrapped responses
-        setEntityChurn(Array.isArray(churn) ? churn : churn?.result || []);
-        setCoupling(Array.isArray(coup) ? coup : coup?.result || []);
-        setEntityEffort(Array.isArray(effort) ? effort : effort?.result || []);
-        setCodeChurn(Array.isArray(churnOverTime) ? churnOverTime : churnOverTime?.result || []);
-        setEntityOwnership(Array.isArray(ownership) ? ownership : ownership?.result || []);
+        setEntityChurn(Array.isArray(churn) ? churn : ((churn as any)?.result || []));
+        setCoupling(Array.isArray(coup) ? coup : ((coup as any)?.result || []));
+        setEntityEffort(Array.isArray(effort) ? effort : ((effort as any)?.result || []));
+        setCodeChurn(Array.isArray(churnOverTime) ? churnOverTime : ((churnOverTime as any)?.result || []));
+        setEntityOwnership(Array.isArray(ownership) ? ownership : ((ownership as any)?.result || []));
       } catch (error) {
         console.error('Error fetching source code data:', error);
         // Set empty arrays on error

@@ -32,9 +32,11 @@ export default function InsightsSection() {
           pullRequestAPI.summary(apiParams),
         ]);
         // Handle both direct object responses and wrapped responses
-        const prData = pr?.result || pr || null;
-        setPairingIndex(pairing?.result || pairing || null);
-        setPipelineSummary(pipeline?.result || pipeline || null);
+        const prData = pr && typeof pr === 'object' && 'result' in pr ? pr.result : pr;
+        const pairingData = pairing && typeof pairing === 'object' && 'result' in pairing ? pairing.result : pairing;
+        const pipelineData = pipeline && typeof pipeline === 'object' && 'result' in pipeline ? pipeline.result : pipeline;
+        setPairingIndex(pairingData || null);
+        setPipelineSummary(pipelineData || null);
         setPrSummary(prData);
       } catch (error) {
         console.error('Error fetching insights:', error);

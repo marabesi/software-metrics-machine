@@ -32,9 +32,9 @@ export default function PullRequestsSection() {
           pullRequestAPI.summary(apiParams),
         ]);
         // Handle both direct array responses and wrapped responses
-        setByAuthor(Array.isArray(author) ? author : author?.result || []);
-        setAvgReviewTime(Array.isArray(review) ? review : review?.result || []);
-        let openData = Array.isArray(open) ? open : open?.result || [];
+        setByAuthor(Array.isArray(author) ? author : ((author as any)?.result || []));
+        setAvgReviewTime(Array.isArray(review) ? review : ((review as any)?.result || []));
+        let openData = Array.isArray(open) ? open : ((open as any)?.result || []);
         // Transform data: group by date and pivot kind into opened/closed
         if (openData.length > 0) {
           const grouped = openData.reduce((acc: any, item: any) => {
@@ -57,9 +57,9 @@ export default function PullRequestsSection() {
           openData = grouped;
         }
         setOpenThroughTime(openData);
-        setAvgOpenBy(Array.isArray(openBy) ? openBy : openBy?.result || []);
-        setAvgComments(comments?.result !== undefined ? comments.result : comments);
-        setSummary(summaryData?.result !== undefined ? summaryData.result : summaryData);
+        setAvgOpenBy(Array.isArray(openBy) ? openBy : ((openBy as any)?.result || []));
+        setAvgComments((comments as any)?.result !== undefined ? (comments as any).result : comments);
+        setSummary((summaryData as any)?.result !== undefined ? (summaryData as any).result : summaryData);
       } catch (error) {
         console.error('Error fetching PR data:', error);
         // Set empty arrays on error

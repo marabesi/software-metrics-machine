@@ -35,7 +35,7 @@ export default function PipelineSection() {
           count: j.count || j.Count || 0,
           Status: j.Status,
           Count: j.Count
-        })) : jobs?.result || [];
+        })) : ((jobs as any)?.result || []);
         
         // Handle runsDuration - transform name/value to workflow/avg_duration
         const durationData = Array.isArray(duration) ? duration.map((d: any) => ({
@@ -43,7 +43,7 @@ export default function PipelineSection() {
           avg_duration: d.avg_duration || d.value || 0,
           name: d.name,
           value: d.value
-        })) : duration?.result || [];
+        })) : ((duration as any)?.result || []);
         
         // Handle jobsAverageTime - unwrap if needed and transform
         let avgTimeData = [];
@@ -52,8 +52,8 @@ export default function PipelineSection() {
             job_name: a.job_name || 'Unknown',
             avg_time: a.avg_time || 0
           }));
-        } else if (avgTime?.result && Array.isArray(avgTime.result)) {
-          avgTimeData = avgTime.result.map((a: any) => ({
+        } else if ((avgTime as any)?.result && Array.isArray((avgTime as any).result)) {
+          avgTimeData = (avgTime as any).result.map((a: any) => ({
             job_name: a.job_name || 'Unknown',
             avg_time: a.avg_time || 0
           }));
@@ -63,7 +63,7 @@ export default function PipelineSection() {
         const deploymentData = Array.isArray(deployment) ? deployment.map((d: any) => ({
           date: d.date || 'Unknown',
           count: d.count || 0
-        })) : deployment?.result || [];
+        })) : ((deployment as any)?.result || []);
         
         setJobsByStatus(jobsData);
         setRunsDuration(durationData);

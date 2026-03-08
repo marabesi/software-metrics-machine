@@ -24,6 +24,9 @@ def add_commands_from_groups(module_groups):
 
 
 module_groups = {
+    "dashboard": [
+        "software_metrics_machine.apps.cli.dashboard_serve",
+    ],
     "prs": [
         "software_metrics_machine.apps.cli.github_fetch_prs",
         "software_metrics_machine.apps.cli.github_fetch_prs_comments",
