@@ -14,9 +14,10 @@ from software_metrics_machine.core.infrastructure.json import as_json_string
 class GitlabPrsClient:
 
     def __init__(self, configuration: Configuration):
-        # reuse existing configuration token field for compatibility with tests
+        # Use gitlab_token for GitLab provider, fallback to github_token for compatibility
+        token = configuration.gitlab_token or configuration.github_token
         self.HEADERS = {
-            "Authorization": f"token {configuration.github_token}",
+            "Authorization": f"token {token}",
             "Accept": "application/json",
         }
         # GitLab project needs to be URL encoded (owner%2Frepo)

@@ -52,6 +52,7 @@ class ConfigurationBuilder:
         return Configuration(
             git_provider=data.get("git_provider"),
             github_token=data.get("github_token"),
+            gitlab_token=data.get("gitlab_token"),
             github_repository=data.get("github_repository"),
             store_data=None,
             git_repository_location=data.get("git_repository_location"),

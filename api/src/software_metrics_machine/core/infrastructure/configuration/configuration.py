@@ -3,6 +3,7 @@ class Configuration:
         self,
         git_provider="github",
         github_token=None,
+        gitlab_token=None,
         github_repository=None,
         store_data=None,
         git_repository_location=None,
@@ -23,6 +24,7 @@ class Configuration:
     ):
         self.git_provider = git_provider
         self.github_token = github_token
+        self.gitlab_token = gitlab_token
         self.github_repository = github_repository
         self.store_data = store_data
         self.git_repository_location = git_repository_location
