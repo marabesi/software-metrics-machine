@@ -5,7 +5,7 @@ import { FormControl, InputLabel, Select, MenuItem, SelectChangeEvent } from '@m
 
 interface SelectFilterProps {
   label: string;
-  value: string;
+  value?: string;
   options: string[];
   onChange: (value: string) => void;
   disabled?: boolean;

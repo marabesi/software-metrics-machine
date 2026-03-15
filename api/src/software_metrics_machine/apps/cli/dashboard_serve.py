@@ -70,7 +70,6 @@ def command(api_port, frontend_port, hostname, open, verbose):
     signal.signal(signal.SIGINT, signal_handler)
     signal.signal(signal.SIGTERM, signal_handler)
 
-    # Check if node is available
     try:
         subprocess.run(["node", "--version"], capture_output=True, check=True)
     except (subprocess.CalledProcessError, FileNotFoundError):
@@ -90,9 +89,7 @@ def command(api_port, frontend_port, hostname, open, verbose):
 
     # Try different possible locations for the webapp
     possible_locations = [
-        package_dir.parent.parent.parent / "webapp",  # Development: ../../webapp
-        package_dir / "webapp",  # Installed package location
-        Path.home() / ".local" / "share" / "software-metrics-machine" / "webapp",
+        package_dir.parent.parent.parent / "api/out",
     ]
 
     webapp_dir = None
@@ -106,19 +103,17 @@ def command(api_port, frontend_port, hostname, open, verbose):
             click.style(
                 "Error: Frontend build directory not found.\n"
                 "Searched locations:\n" +
-                "\n".join(f"  - {loc}" for loc in possible_locations) +
-                "\n\nPlease run: ./scripts/build-frontend.sh",
+                "\n".join(f"  - {loc}" for loc in possible_locations),
                 fg="red"
             )
         )
         sys.exit(1)
 
-    frontend_build_dir = webapp_dir / ".next"
+    frontend_build_dir = webapp_dir 
     if not frontend_build_dir.exists():
         click.echo(
             click.style(
-                f"Error: Frontend build not found at {frontend_build_dir}\n"
-                "Please run: ./scripts/build-frontend.sh",
+                f"Error: Frontend build not found at {frontend_build_dir}\n",
                 fg="red"
             )
         )
