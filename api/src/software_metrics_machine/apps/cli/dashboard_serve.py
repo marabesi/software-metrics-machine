@@ -15,8 +15,6 @@ frontend_process = None
 
 def cleanup_processes():
     """Cleanup function to kill both processes on exit"""
-    global api_process, frontend_process
-    
     for proc in [api_process, frontend_process]:
         if proc and proc.poll() is None:
             try:
@@ -64,14 +62,14 @@ def signal_handler(sig, frame):
 )
 def command(api_port, frontend_port, hostname, open, verbose):
     """Start the Software Metrics Machine dashboard with API and frontend servers."""
-    
+
     global api_process, frontend_process
-    
+
     # Register cleanup handlers
     atexit.register(cleanup_processes)
     signal.signal(signal.SIGINT, signal_handler)
     signal.signal(signal.SIGTERM, signal_handler)
-    
+
     # Check if node is available
     try:
         subprocess.run(["node", "--version"], capture_output=True, check=True)
@@ -84,37 +82,37 @@ def command(api_port, frontend_port, hostname, open, verbose):
             )
         )
         sys.exit(1)
-    
+
     # Find the frontend build directory
     # When running from development: api/src/software_metrics_machine/apps/cli/dashboard_serve.py
     # We need to go back to the project root to find webapp
     package_dir = Path(__file__).parent.parent.parent  # software_metrics_machine
-    
+
     # Try different possible locations for the webapp
     possible_locations = [
         package_dir.parent.parent.parent / "webapp",  # Development: ../../webapp
         package_dir / "webapp",  # Installed package location
         Path.home() / ".local" / "share" / "software-metrics-machine" / "webapp",
     ]
-    
+
     webapp_dir = None
     for location in possible_locations:
         if location.exists():
             webapp_dir = location
             break
-    
+
     if webapp_dir is None:
         click.echo(
             click.style(
                 "Error: Frontend build directory not found.\n"
-                "Searched locations:\n" + 
+                "Searched locations:\n" +
                 "\n".join(f"  - {loc}" for loc in possible_locations) +
                 "\n\nPlease run: ./scripts/build-frontend.sh",
                 fg="red"
             )
         )
         sys.exit(1)
-    
+
     frontend_build_dir = webapp_dir / ".next"
     if not frontend_build_dir.exists():
         click.echo(
@@ -125,12 +123,12 @@ def command(api_port, frontend_port, hostname, open, verbose):
             )
         )
         sys.exit(1)
-    
+
     click.echo(click.style("Starting Software Metrics Machine Dashboard...", fg="cyan", bold=True))
     click.echo(f"API Server: http://{hostname}:{api_port}")
     click.echo(f"Frontend: http://{hostname}:{frontend_port}")
     click.echo("")
-    
+
     try:
         # Start API server
         click.echo(click.style("Starting API server...", fg="yellow"))
@@ -154,15 +152,15 @@ def command(api_port, frontend_port, hostname, open, verbose):
             text=True
         )
         click.echo(click.style(f"✓ API server started (PID: {api_process.pid})", fg="green"))
-        
+
         time.sleep(2)
-        
+
         # Start frontend server
         click.echo(click.style("Starting frontend server...", fg="yellow"))
         frontend_env = os.environ.copy()
         frontend_env["PORT"] = str(frontend_port)
         frontend_env["NEXT_PUBLIC_API_URL"] = f"http://{hostname}:{api_port}"
-        
+
         frontend_cmd = ["npm", "run", "start"]
         frontend_process = subprocess.Popen(
             frontend_cmd,
@@ -173,34 +171,34 @@ def command(api_port, frontend_port, hostname, open, verbose):
             text=True
         )
         click.echo(click.style(f"✓ Frontend server started (PID: {frontend_process.pid})", fg="green"))
-        
+
         # Wait a moment for frontend to start
         time.sleep(2)
-        
+
         # Open browser if requested
         if open:
             webbrowser.open(f"http://{hostname}:{frontend_port}")
             click.echo("")
             click.echo(click.style("✓ Opening browser...", fg="green"))
-        
+
         click.echo("")
         click.echo(click.style("Dashboard is ready! Press Ctrl+C to stop.", fg="cyan", bold=True))
         click.echo("")
-        
+
         while True:
             api_status = api_process.poll()
             frontend_status = frontend_process.poll()
-            
+
             if api_status is not None:
                 click.echo(click.style("⚠ API server has stopped", fg="red"))
                 raise RuntimeError("API server stopped unexpectedly")
-            
+
             if frontend_status is not None:
                 click.echo(click.style("⚠ Frontend server has stopped", fg="red"))
                 raise RuntimeError("Frontend server stopped unexpectedly")
-            
+
             time.sleep(1)
-    
+
     except KeyboardInterrupt:
         click.echo("\n\nShutting down services...")
     except Exception as e:

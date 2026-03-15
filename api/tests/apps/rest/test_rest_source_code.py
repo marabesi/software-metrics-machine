@@ -13,7 +13,7 @@ class _Result(dict):
         self._data = data if data is not None else []
         # Initialize dict with empty content for JSON serialization
         self.update({})
-    
+
     @property
     def data(self):
         return self._data
@@ -60,7 +60,7 @@ class TestCodeParameterPassing:
 
         mock_viewer.render.assert_called_once()
         call_kwargs = mock_viewer.render.call_args[1]
-        
+
         assert call_kwargs['top_n'] == 50
         assert call_kwargs['ignore_files'] == "test,spec"
         assert call_kwargs['include_only'] == "src"
@@ -165,7 +165,7 @@ class TestCodeParameterPassing:
 
         mock_viewer.render.assert_called_once()
         call_kwargs = mock_viewer.render.call_args[1]
-        
+
         assert call_kwargs['top_n'] is None
 
     @patch('software_metrics_machine.apps.rest.main.CouplingViewer')
@@ -203,7 +203,7 @@ class TestCodeParameterPassing:
 
 class TestCodeIgnorePatternParameter:
     """Verify code endpoints pass ignore_pattern parameter to collaborators.
-    
+
     NOTE: Tests in this class will only run for endpoints that accept ignore_pattern.
     If ignore_pattern is not defined in an endpoint's signature, no test is created for it.
     Never use if statements inside tests.
@@ -224,7 +224,7 @@ class TestCodeIgnorePatternParameter:
 
         mock_viewer.render.assert_called_once()
         call_kwargs = mock_viewer.render.call_args[1]
-        
+
         assert call_kwargs['ignore_pattern'] == "*.test.ts"
 
     @patch('software_metrics_machine.apps.rest.main.CouplingViewer')
@@ -238,7 +238,7 @@ class TestCodeIgnorePatternParameter:
 
         mock_viewer.render.assert_called_once()
         call_kwargs = mock_viewer.render.call_args[1]
-        
+
         assert call_kwargs['ignore_pattern'] == "dist/**"
 
     @patch('software_metrics_machine.apps.rest.main.EntityEffortViewer')
@@ -256,7 +256,7 @@ class TestCodeIgnorePatternParameter:
 
         mock_viewer.render_treemap.assert_called_once()
         call_kwargs = mock_viewer.render_treemap.call_args[1]
-        
+
         assert call_kwargs['ignore_pattern'] == "node_modules"
 
     @patch('software_metrics_machine.apps.rest.main.EntityOnershipViewer')
@@ -275,5 +275,5 @@ class TestCodeIgnorePatternParameter:
 
         mock_viewer.render.assert_called_once()
         call_kwargs = mock_viewer.render.call_args[1]
-        
+
         assert call_kwargs['ignore_pattern'] == "docs/**"

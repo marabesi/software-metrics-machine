@@ -6,7 +6,7 @@ These tests use mocking to isolate the REST layer and verify that:
 2. Parameters are passed to the underlying view/viewer classes
 3. Parameters are transported correctly from request → business logic
 """
-from unittest.mock import Mock, patch, MagicMock
+from unittest.mock import patch, MagicMock
 from fastapi.testclient import TestClient
 
 from software_metrics_machine.apps.rest.main import app as rest_main
@@ -21,7 +21,7 @@ class _Result(dict):
         self._data = data if data is not None else []
         # Initialize dict with empty content for JSON serialization
         self.update({})
-    
+
     @property
     def data(self):
         return self._data
@@ -65,7 +65,7 @@ class TestPipelineParameterPassing:
 
         mock_view.main.assert_called_once()
         call_kwargs = mock_view.main.call_args[1]
-        
+
         assert call_kwargs['start_date'] == "2023-01-01"
         assert call_kwargs['end_date'] == "2023-12-31"
         assert call_kwargs['job_name'] == "Build"
@@ -155,7 +155,7 @@ class TestPipelineParameterPassing:
 
         mock_view.main.assert_called_once()
         call_kwargs = mock_view.main.call_args[1]
-        
+
         assert call_kwargs['aggregate_by'] == "month"
         assert call_kwargs['workflow_path'] == "/workflows/test.yml"
         assert call_kwargs['start_date'] == "2023-01-01"
@@ -184,7 +184,7 @@ class TestPipelineParameterPassing:
 
         mock_view.main.assert_called_once()
         call_kwargs = mock_view.main.call_args[1]
-        
+
         assert call_kwargs['workflow_path'] == "/workflows/test.yml"
         assert call_kwargs['raw_filters'] == '{"status":"success"}'
         assert call_kwargs['top'] == 30
@@ -255,7 +255,7 @@ class TestPullRequestParameterPassing:
 
         mock_view.plot_top_authors.assert_called_once()
         call_kwargs = mock_view.plot_top_authors.call_args[1]
-        
+
         assert call_kwargs['title'] == "Pull Requests by Author"
         assert call_kwargs['start_date'] == "2023-01-01"
         assert call_kwargs['end_date'] == "2023-12-31"
@@ -282,7 +282,7 @@ class TestPullRequestParameterPassing:
 
         mock_view.plot_average_open_time.assert_called_once()
         call_kwargs = mock_view.plot_average_open_time.call_args[1]
-        
+
         assert call_kwargs['title'] == "Average Review Time by Author"
         assert call_kwargs['top'] == 15
         assert call_kwargs['labels'] == "bug,feature"
@@ -290,6 +290,7 @@ class TestPullRequestParameterPassing:
         assert call_kwargs['end_date'] == "2023-12-31"
         assert call_kwargs['authors'] == "alice,bob"
         assert call_kwargs['raw_filters'] == '{"status":"merged"}'
+
 
 class TestDefaultParameterHandling:
     """Verify endpoints correctly handle default parameter values."""
@@ -319,7 +320,7 @@ class TestDefaultParameterHandling:
         client.get("/pipelines/jobs-by-status")
 
         call_kwargs = mock_view.main.call_args[1]
-        
+
         assert call_kwargs['with_pipeline'] is False
         assert call_kwargs['aggregate_by_week'] is False
 
@@ -333,7 +334,7 @@ class TestDefaultParameterHandling:
         client.get("/pipelines/runs-by")
 
         call_kwargs = mock_view.main.call_args[1]
-        
+
         assert call_kwargs['aggregate_by'] == "week"
 
     @patch('software_metrics_machine.apps.rest.main.ViewPipelineExecutionRunsDuration')
@@ -346,8 +347,9 @@ class TestDefaultParameterHandling:
         client.get("/pipelines/runs-duration")
 
         call_kwargs = mock_view.main.call_args[1]
-        
+
         assert call_kwargs['max_runs'] == 100
+
 
 class TestPullRequestAdvancedParameterPassing:
     """Verify advanced PR endpoints pass parameters correctly to repository methods."""
@@ -369,7 +371,7 @@ class TestPullRequestAdvancedParameterPassing:
 
         mock_repo.average_by.assert_called_once()
         call_kwargs = mock_repo.average_by.call_args[1]
-        
+
         assert call_kwargs['by'] == "month"
         assert call_kwargs['labels'] == "bug,feature"
 
@@ -390,7 +392,7 @@ class TestPullRequestAdvancedParameterPassing:
 
         mock_repo.average_comments.assert_called_once()
         call_kwargs = mock_repo.average_comments.call_args[1]
-        
+
         assert call_kwargs['aggregate_by'] == "month"
 
     @patch('software_metrics_machine.apps.rest.main.create_prs_repository')
@@ -404,7 +406,7 @@ class TestPullRequestAdvancedParameterPassing:
 
         mock_repo.average_by.assert_called_once()
         call_kwargs = mock_repo.average_by.call_args[1]
-        
+
         assert call_kwargs['by'] == "week"
 
     @patch('software_metrics_machine.apps.rest.main.create_prs_repository')
@@ -418,6 +420,5 @@ class TestPullRequestAdvancedParameterPassing:
 
         mock_repo.average_comments.assert_called_once()
         call_kwargs = mock_repo.average_comments.call_args[1]
-        
-        assert call_kwargs['aggregate_by'] == "week"
 
+        assert call_kwargs['aggregate_by'] == "week"

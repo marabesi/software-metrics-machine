@@ -459,9 +459,9 @@ def pull_requests_average_open_by(
     Return average days PRs remain open, aggregated by period (week or month).
     """
     from software_metrics_machine.core.prs.pr_types import PRFilters
-    
+
     repository = create_prs_repository()
-    
+
     # Build filters if dates are provided
     filters = None
     if start_date or end_date:
@@ -469,23 +469,23 @@ def pull_requests_average_open_by(
             start_date=start_date,
             end_date=end_date,
         )
-    
+
     # Get filtered PRs
     filtered_prs = repository.prs_with_filters(filters=filters)
-    
+
     # Use the aggregate_by parameter (week or month)
     periods, averages = repository.average_by(
         by=aggregate_by or "week",
         labels=labels,
         prs=filtered_prs
     )
-    
+
     # Transform to the format expected by the frontend
     result_data = [
         {"period": period, "avg_days": avg}
         for period, avg in zip(periods, averages)
     ]
-    
+
     return JSONResponse(content=result_data)
 
 
@@ -500,9 +500,9 @@ def pull_requests_average_comments(
     Return average comments per PR, aggregated by period (week or month).
     """
     from software_metrics_machine.core.prs.pr_types import PRFilters
-    
+
     repository = create_prs_repository()
-    
+
     # Build filters if dates are provided
     filters = None
     if start_date or end_date:
@@ -510,19 +510,19 @@ def pull_requests_average_comments(
             start_date=start_date,
             end_date=end_date,
         )
-    
+
     # Get average comments by period
     result = repository.average_comments(
         filters=filters,
         aggregate_by=aggregate_by or "week"
     )
-    
+
     # Transform to the format expected by the frontend
     result_data = [
         {"period": period, "avg_comments": avg}
         for period, avg in zip(result["period"], result["y"])
     ]
-    
+
     return JSONResponse(content=result_data)
 
 
