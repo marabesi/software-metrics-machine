@@ -22,7 +22,6 @@ class EntityEffortViewer(BaseViewer):
         self,
         top_n: int | None = 30,
         ignore_files: str | None = None,
-        ignore_pattern: str | None = None,
         include_only: str | None = None,
     ) -> PlotResult:
         repo: CodemaatRepository = self.repository

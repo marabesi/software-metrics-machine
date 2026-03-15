@@ -83,9 +83,9 @@ export default function PullRequestsSection() {
     fetchData();
   }, [filters]);
 
-  if (loading) {
-    return <div className="text-center p-8">Loading pull request metrics...</div>;
-  }
+  // if (loading) {
+  //   return <div className="text-center p-8">Loading pull request metrics...</div>;
+  // }
 
   return (
     <div className="space-y-6">

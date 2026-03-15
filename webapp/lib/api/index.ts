@@ -1,6 +1,7 @@
 export { sourceCodeAPI } from './sourceCode';
 export { pipelineAPI } from './pipeline';
 export { pullRequestAPI } from './pullRequest';
+export { configurationAPI } from './configuration';
 export { fetchAPI, type ApiParams } from './client';
 
 export default {

@@ -100,9 +100,9 @@ export default function InsightsSection() {
     fetchData();
   }, [filters]);
 
-  if (loading) {
-    return <div className="text-center p-8">Loading insights...</div>;
-  }
+  // if (loading) {
+  //   return <div className="text-center p-8">Loading insights...</div>;
+  // }
 
   // Get month transition indices for reference lines
   const monthTransitionIndices = deploymentFrequency

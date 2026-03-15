@@ -22,7 +22,7 @@ class TypedDictEncoder(json.JSONEncoder):
                 return 'null'
             else:
                 return _repr(o)
-        
+
         # Temporarily replace allow_nan to handle NaN/Infinity gracefully
         old_floatstr = self._floatstr if hasattr(self, '_floatstr') else None
         self._floatstr = floatstr

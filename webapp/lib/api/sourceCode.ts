@@ -36,4 +36,7 @@ export const sourceCodeAPI = {
       '/code/entity-ownership',
       params
     ),
+  
+  getAuthors: () =>
+    fetchAPI<string[]>('/code/authors'),
 };

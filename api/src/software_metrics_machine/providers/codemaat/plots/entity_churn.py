@@ -24,7 +24,6 @@ class EntityChurnViewer(BaseViewer, Viewable):
         self,
         top_n: int = 30,
         ignore_files: str | None = None,
-        ignore_pattern: str | None = None,
         include_only: str | None = None,
         start_date: str | None = None,
         end_date: str | None = None,

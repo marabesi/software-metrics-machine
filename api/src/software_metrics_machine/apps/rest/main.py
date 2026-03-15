@@ -121,7 +121,7 @@ def convert_result_data(data):
     else:
         # Try to convert to dict
         result = str(data)
-    
+
     # Sanitize NaN and Infinity values
     return sanitize_nan_and_inf(result)
 
@@ -157,7 +157,6 @@ def entity_churn(
     result = viewer.render(
         top_n=top,
         ignore_files=ignore_files,
-        ignore_pattern=None,
         include_only=include_only,
         start_date=start_date,
         end_date=end_date,
@@ -190,7 +189,7 @@ def code_coupling(
     Return coupling pairs ranked by coupling degree.
     """
     result = CouplingViewer(repository=create_codemaat_repository()).render(
-        ignore_files=ignore_files, ignore_pattern=None, include_only=include_only, top=top
+        ignore_files=ignore_files, include_only=include_only, top=top
     )
     return JSONResponse(convert_result_data(result.data))
 
@@ -208,7 +207,7 @@ def entity_effort(
     """
     viewer = EntityEffortViewer(repository=create_codemaat_repository())
     result = viewer.render_treemap(
-        top_n=top_n, ignore_files=ignore_files, ignore_pattern=None, include_only=include_only
+        top_n=top_n, ignore_files=ignore_files, include_only=include_only
     )
     return JSONResponse(convert_result_data(result.data))
 
@@ -229,7 +228,6 @@ def entity_ownership(
     result = viewer.render(
         top_n=top_n,
         ignore_files=ignore_files,
-        ignore_pattern=None,
         authors=authors,
         include_only=include_only,
     )
@@ -633,6 +631,16 @@ def pipeline_jobs(
     return JSONResponse(content=[
         {"name": job, "id": job} for job in jobs
     ])
+
+
+@app.get("/code/authors", tags=source_code_tags)
+def code_authors():
+    """
+    Return list of unique authors from git commits in source code.
+    """
+    repository = create_codemaat_repository()
+    authors = repository.get_entity_ownership_unique_authors()
+    return JSONResponse(content=authors)
 
 
 @app.get("/pull-requests/authors", tags=pull_request_tags)

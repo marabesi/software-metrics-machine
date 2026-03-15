@@ -9,7 +9,7 @@ import MultiSelectFilter from "@/components/filters/MultiSelectFilter";
 import TextInputFilter from "@/components/filters/TextInputFilter";
 import SliderFilter from "@/components/filters/SliderFilter";
 import { useEffect, useState } from "react";
-import { pipelineAPI, pullRequestAPI } from "@/lib/api";
+import { pipelineAPI, pullRequestAPI, sourceCodeAPI, configurationAPI } from "@/lib/api";
 
 export default function FiltersContainer() {
   const { filters, updateFilter, resetFilters } = useFilters();
@@ -32,12 +32,26 @@ export default function FiltersContainer() {
   const [branchOptions, setBranchOptions] = useState<string[]>([]);
   const [eventOptions, setEventOptions] = useState<string[]>([]);
   const [authorOptions, setAuthorOptions] = useState<string[]>([]);
+  const [authorSourceCodeOptions, setAuthorSourceCodeOptions] = useState<string[]>([]);
   const [labelOptions, setLabelOptions] = useState<string[]>([]);
 
   // Fetch filter options from API on component mount
   useEffect(() => {
     const fetchFilterOptions = async () => {
       try {
+        // Fetch and apply configuration defaults if dates are not set
+        if (!filters.startDate || !filters.endDate) {
+          const config = await configurationAPI.getConfiguration().catch(() => null);
+          if (config?.result) {
+            if (!filters.startDate && config.result.dashboard_start_date) {
+              updateFilter('startDate', config.result.dashboard_start_date);
+            }
+            if (!filters.endDate && config.result.dashboard_end_date) {
+              updateFilter('endDate', config.result.dashboard_end_date);
+            }
+          }
+        }
+
         // Try to fetch filter options, but provide defaults if endpoints don't exist yet
         const workflows = await pipelineAPI.getWorkflows().catch(() => []);
         setWorkflowOptions([...workflows.map((w: any) => w.name || w.path).filter(Boolean)]);
@@ -56,6 +70,9 @@ export default function FiltersContainer() {
 
         const authors = await pullRequestAPI.getAuthors().catch(() => []);
         setAuthorOptions(authors);
+
+        const sourceCodeAuthors = await sourceCodeAPI.getAuthors().catch(() => []);
+        setAuthorSourceCodeOptions(sourceCodeAuthors);
 
         const labels = await pullRequestAPI.getLabels().catch(() => []);
         setLabelOptions(labels);
@@ -192,7 +209,7 @@ export default function FiltersContainer() {
             <MultiSelectFilter
               label="Authors (Source Code)"
               values={filters.authorSelectSourceCode}
-              options={authorOptions}
+              options={authorSourceCodeOptions}
               onChange={(values) => updateFilter('authorSelectSourceCode', values)}
             />
             <SelectFilter

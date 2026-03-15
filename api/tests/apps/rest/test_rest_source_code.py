@@ -101,7 +101,6 @@ class TestCodeParameterPassing:
 
         mock_viewer.render.assert_called_once_with(
             ignore_files="vendor",
-            ignore_pattern=None,
             include_only="app",
             top=30,
         )
@@ -125,7 +124,6 @@ class TestCodeParameterPassing:
         mock_viewer.render_treemap.assert_called_once_with(
             top_n=15,
             ignore_files="tests",
-            ignore_pattern=None,
             include_only="core",
         )
 
@@ -149,7 +147,6 @@ class TestCodeParameterPassing:
         mock_viewer.render.assert_called_once_with(
             top_n=40,
             ignore_files="dist",
-            ignore_pattern=None,
             authors="diana",
             include_only="lib",
         )
@@ -179,7 +176,6 @@ class TestCodeParameterPassing:
 
         mock_viewer.render.assert_called_once_with(
             ignore_files=None,
-            ignore_pattern=None,
             include_only=None,
             top=20,
         )
@@ -196,50 +192,11 @@ class TestCodeParameterPassing:
         mock_viewer.render_treemap.assert_called_once_with(
             top_n=30,
             ignore_files=None,
-            ignore_pattern=None,
             include_only=None,
         )
 
 
 class TestCodeIgnorePatternParameter:
-    """Verify code endpoints pass ignore_pattern parameter to collaborators.
-
-    NOTE: Tests in this class will only run for endpoints that accept ignore_pattern.
-    If ignore_pattern is not defined in an endpoint's signature, no test is created for it.
-    Never use if statements inside tests.
-    """
-
-    @patch('software_metrics_machine.apps.rest.main.EntityChurnViewer')
-    def test_entity_churn_with_ignore_pattern(self, mock_viewer_class, cli):
-        """Verify /code/entity-churn passes ignore_pattern to viewer."""
-        mock_viewer = MagicMock()
-        mock_viewer.render.return_value = _Result()
-        mock_viewer_class.return_value = mock_viewer
-
-        client.get(
-            "/code/entity-churn?"
-            "ignore_pattern=*.test.ts&"
-            "include_only=src"
-        )
-
-        mock_viewer.render.assert_called_once()
-        call_kwargs = mock_viewer.render.call_args[1]
-
-        assert call_kwargs['ignore_pattern'] == "*.test.ts"
-
-    @patch('software_metrics_machine.apps.rest.main.CouplingViewer')
-    def test_coupling_with_ignore_pattern(self, mock_viewer_class, cli):
-        """Verify /code/coupling passes ignore_pattern to viewer."""
-        mock_viewer = MagicMock()
-        mock_viewer.render.return_value = _Result()
-        mock_viewer_class.return_value = mock_viewer
-
-        client.get("/code/coupling?ignore_pattern=dist/**&top=25")
-
-        mock_viewer.render.assert_called_once()
-        call_kwargs = mock_viewer.render.call_args[1]
-
-        assert call_kwargs['ignore_pattern'] == "dist/**"
 
     @patch('software_metrics_machine.apps.rest.main.EntityEffortViewer')
     def test_entity_effort_with_ignore_pattern(self, mock_viewer_class, cli):
@@ -250,30 +207,46 @@ class TestCodeIgnorePatternParameter:
 
         client.get(
             "/code/entity-effort?"
-            "ignore_pattern=node_modules&"
+            "ignore_files=node_modules&"
             "top_n=20"
         )
 
         mock_viewer.render_treemap.assert_called_once()
         call_kwargs = mock_viewer.render_treemap.call_args[1]
 
-        assert call_kwargs['ignore_pattern'] == "node_modules"
+        assert call_kwargs['ignore_files'] == "node_modules"
 
-    @patch('software_metrics_machine.apps.rest.main.EntityOnershipViewer')
-    def test_entity_ownership_with_ignore_pattern(self, mock_viewer_class, cli):
-        """Verify /code/entity-ownership passes ignore_pattern to viewer."""
-        mock_viewer = MagicMock()
-        mock_viewer.render.return_value = _Result()
-        mock_viewer_class.return_value = mock_viewer
 
-        client.get(
-            "/code/entity-ownership?"
-            "ignore_pattern=docs/**&"
-            "authors=alice&"
-            "top_n=15"
-        )
+class TestCodeAuthorsFilterEndpoint:
+    """Test /code/authors filter endpoint."""
 
-        mock_viewer.render.assert_called_once()
-        call_kwargs = mock_viewer.render.call_args[1]
+    @patch('software_metrics_machine.apps.rest.main.create_codemaat_repository')
+    def test_code_authors_returns_list(self, mock_repo_factory, cli):
+        """Verify /code/authors returns list of unique source code authors."""
+        mock_repo = MagicMock()
+        mock_repo.get_entity_ownership_unique_authors.return_value = ["alice", "bob", "charlie"]
+        mock_repo_factory.return_value = mock_repo
 
-        assert call_kwargs['ignore_pattern'] == "docs/**"
+        response = client.get("/code/authors")
+
+        assert response.status_code == 200
+        data = response.json()
+        assert isinstance(data, list)
+        assert len(data) == 3
+        assert "alice" in data
+        assert "bob" in data
+        assert "charlie" in data
+
+    @patch('software_metrics_machine.apps.rest.main.create_codemaat_repository')
+    def test_code_authors_empty_list(self, mock_repo_factory, cli):
+        """Verify /code/authors returns empty list when no authors found."""
+        mock_repo = MagicMock()
+        mock_repo.get_entity_ownership_unique_authors.return_value = []
+        mock_repo_factory.return_value = mock_repo
+
+        response = client.get("/code/authors")
+
+        assert response.status_code == 200
+        data = response.json()
+        assert isinstance(data, list)
+        assert len(data) == 0

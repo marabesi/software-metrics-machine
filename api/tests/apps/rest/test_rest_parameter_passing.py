@@ -147,7 +147,7 @@ class TestPipelineParameterPassing:
         mock_config.deployment_frequency_target_job = "ConfiguredJob"
         mock_repo.configuration = mock_config
         mock_repo_factory.return_value = mock_repo
-        
+
         # Create mock view
         mock_view = MagicMock()
         mock_view.plot.return_value = _Result()
@@ -181,7 +181,7 @@ class TestPipelineParameterPassing:
         mock_config.deployment_frequency_target_job = "ConfiguredJob"
         mock_repo.configuration = mock_config
         mock_repo_factory.return_value = mock_repo
-        
+
         # Create mock view
         mock_view = MagicMock()
         mock_view.plot.return_value = _Result()
@@ -214,7 +214,7 @@ class TestPipelineParameterPassing:
         mock_config.deployment_frequency_target_job = None
         mock_repo.configuration = mock_config
         mock_repo_factory.return_value = mock_repo
-        
+
         # Create mock view
         mock_view = MagicMock()
         mock_view.plot.return_value = _Result()
@@ -531,7 +531,7 @@ class TestNaNHandling:
     def test_deployment_frequency_with_nan_values(self, mock_view_class, cli):
         """Verify /pipelines/deployment-frequency handles NaN values in response."""
         import math
-        
+
         mock_view = MagicMock()
         # Return data with NaN values (simulating real data with missing values)
         mock_view.plot.return_value = _Result(
@@ -561,7 +561,7 @@ class TestNaNHandling:
     def test_jobs_by_status_with_infinity_values(self, mock_view_class, cli):
         """Verify endpoints handle Infinity values in response."""
         import math
-        
+
         mock_view = MagicMock()
         # Return data with Infinity values
         mock_view.main.return_value = _Result(
