@@ -26,7 +26,7 @@ services:
       - ./api:/app
       - ./api/downloads/marabesi:/ollama
       - ./api/downloads/marabesi_analysis:/data
-    command: poetry run smm-rest --host 0.0.0.0 --port 8000
+    command: poetry run smm-rest --host 0.0.0.0 --port 8000 --reload
 
   legacy_dashboard:
     build:

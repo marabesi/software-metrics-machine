@@ -16,6 +16,7 @@ export default function PullRequestsSection() {
   const [avgOpenBy, setAvgOpenBy] = useState<any[]>([]);
   const [avgComments, setAvgComments] = useState<any>(null);
   const [summary, setSummary] = useState<any>(null);
+  const [topThemes, setTopThemes] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -59,7 +60,11 @@ export default function PullRequestsSection() {
         setOpenThroughTime(openData);
         setAvgOpenBy(Array.isArray(openBy) ? openBy : ((openBy as any)?.result || []));
         setAvgComments((comments as any)?.result !== undefined ? (comments as any).result : comments);
-        setSummary((summaryData as any)?.result !== undefined ? (summaryData as any).result : summaryData);
+        const summaryResult = (summaryData as any)?.result !== undefined ? (summaryData as any).result : summaryData;
+        setSummary(summaryResult);
+        // Extract top themes from summary and limit to top 10
+        const themes = summaryResult?.top_themes || [];
+        setTopThemes(Array.isArray(themes) ? themes.slice(0, 10) : []);
       } catch (error) {
         console.error('Error fetching PR data:', error);
         // Set empty arrays on error
@@ -69,6 +74,7 @@ export default function PullRequestsSection() {
         setAvgOpenBy([]);
         setAvgComments(null);
         setSummary(null);
+        setTopThemes([]);
       } finally {
         setLoading(false);
       }
@@ -136,6 +142,24 @@ export default function PullRequestsSection() {
               <Line type="monotone" dataKey="opened" stroke="#8884d8" name="Opened" />
               <Line type="monotone" dataKey="closed" stroke="#82ca9d" name="Closed" />
             </LineChart>
+          </ResponsiveContainer>
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardHeader>
+          <CardTitle>Top Themes</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <ResponsiveContainer width="100%" height={300}>
+            <BarChart data={ensureArray(topThemes)}>
+              <CartesianGrid strokeDasharray="3 3" />
+              <XAxis dataKey="theme" angle={-45} textAnchor="end" height={100} />
+              <YAxis />
+              <Tooltip />
+              <Legend />
+              <Bar dataKey="count" fill="#ffc658" name="Occurrences" />
+            </BarChart>
           </ResponsiveContainer>
         </CardContent>
       </Card>

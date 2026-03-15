@@ -136,6 +136,106 @@ class TestPipelineParameterPassing:
             end_date="2023-12-31",
         )
 
+    @patch('software_metrics_machine.apps.rest.main.create_pipelines_repository')
+    @patch('software_metrics_machine.apps.rest.main.ViewDeploymentFrequency')
+    def test_pipeline_deployment_frequency_with_config_override(self, mock_view_class, mock_repo_factory, cli):
+        """Verify deployment-frequency uses configuration values when available."""
+        # Create mock repository with configuration
+        mock_repo = MagicMock()
+        mock_config = MagicMock()
+        mock_config.deployment_frequency_target_pipeline = "/workflows/configured.yml"
+        mock_config.deployment_frequency_target_job = "ConfiguredJob"
+        mock_repo.configuration = mock_config
+        mock_repo_factory.return_value = mock_repo
+        
+        # Create mock view
+        mock_view = MagicMock()
+        mock_view.plot.return_value = _Result()
+        mock_view_class.return_value = mock_view
+
+        # Call with different query parameters (these should be overridden)
+        client.get(
+            "/pipelines/deployment-frequency?"
+            "start_date=2023-01-01&"
+            "end_date=2023-12-31&"
+            "workflow_path=/workflows/query.yml&"
+            "job_name=QueryJob"
+        )
+
+        # Verify that configuration values were used instead of query parameters
+        mock_view.plot.assert_called_once_with(
+            workflow_path="/workflows/configured.yml",  # From config, not query
+            job_name="ConfiguredJob",  # From config, not query
+            start_date="2023-01-01",
+            end_date="2023-12-31",
+        )
+
+    @patch('software_metrics_machine.apps.rest.main.create_pipelines_repository')
+    @patch('software_metrics_machine.apps.rest.main.ViewDeploymentFrequency')
+    def test_pipeline_deployment_frequency_with_partial_config(self, mock_view_class, mock_repo_factory, cli):
+        """Verify deployment-frequency uses query params when config is None."""
+        # Create mock repository with partial configuration
+        mock_repo = MagicMock()
+        mock_config = MagicMock()
+        mock_config.deployment_frequency_target_pipeline = None  # Not configured
+        mock_config.deployment_frequency_target_job = "ConfiguredJob"
+        mock_repo.configuration = mock_config
+        mock_repo_factory.return_value = mock_repo
+        
+        # Create mock view
+        mock_view = MagicMock()
+        mock_view.plot.return_value = _Result()
+        mock_view_class.return_value = mock_view
+
+        client.get(
+            "/pipelines/deployment-frequency?"
+            "start_date=2023-01-01&"
+            "end_date=2023-12-31&"
+            "workflow_path=/workflows/query.yml&"
+            "job_name=QueryJob"
+        )
+
+        # Verify pipeline uses query param, job uses config value
+        mock_view.plot.assert_called_once_with(
+            workflow_path="/workflows/query.yml",  # From query (config was None)
+            job_name="ConfiguredJob",  # From config (overrides query)
+            start_date="2023-01-01",
+            end_date="2023-12-31",
+        )
+
+    @patch('software_metrics_machine.apps.rest.main.create_pipelines_repository')
+    @patch('software_metrics_machine.apps.rest.main.ViewDeploymentFrequency')
+    def test_pipeline_deployment_frequency_with_no_config(self, mock_view_class, mock_repo_factory, cli):
+        """Verify deployment-frequency uses only query params when config is not set."""
+        # Create mock repository with no configuration values set
+        mock_repo = MagicMock()
+        mock_config = MagicMock()
+        mock_config.deployment_frequency_target_pipeline = None
+        mock_config.deployment_frequency_target_job = None
+        mock_repo.configuration = mock_config
+        mock_repo_factory.return_value = mock_repo
+        
+        # Create mock view
+        mock_view = MagicMock()
+        mock_view.plot.return_value = _Result()
+        mock_view_class.return_value = mock_view
+
+        client.get(
+            "/pipelines/deployment-frequency?"
+            "start_date=2023-01-01&"
+            "end_date=2023-12-31&"
+            "workflow_path=/workflows/query.yml&"
+            "job_name=QueryJob"
+        )
+
+        # Verify query params are used when config is None
+        mock_view.plot.assert_called_once_with(
+            workflow_path="/workflows/query.yml",
+            job_name="QueryJob",
+            start_date="2023-01-01",
+            end_date="2023-12-31",
+        )
+
     @patch('software_metrics_machine.apps.rest.main.ViewWorkflowRunsByWeekOrMonth')
     def test_pipeline_runs_by_parameters(self, mock_view_class, cli):
         """Verify /pipelines/runs-by passes all expected parameters."""
@@ -422,3 +522,60 @@ class TestPullRequestAdvancedParameterPassing:
         call_kwargs = mock_repo.average_comments.call_args[1]
 
         assert call_kwargs['aggregate_by'] == "week"
+
+
+class TestNaNHandling:
+    """Verify endpoints handle NaN values in responses correctly."""
+
+    @patch('software_metrics_machine.apps.rest.main.ViewDeploymentFrequency')
+    def test_deployment_frequency_with_nan_values(self, mock_view_class, cli):
+        """Verify /pipelines/deployment-frequency handles NaN values in response."""
+        import math
+        
+        mock_view = MagicMock()
+        # Return data with NaN values (simulating real data with missing values)
+        mock_view.plot.return_value = _Result(
+            data=[
+                {"month": "2023-01", "count": 5},
+                {"month": "2023-02", "count": math.nan},  # NaN value
+                {"month": "2023-03", "count": 3},
+            ]
+        )
+        mock_view_class.return_value = mock_view
+
+        # This should not raise a JSON serialization error
+        response = client.get(
+            "/pipelines/deployment-frequency?"
+            "start_date=2023-01-01&"
+            "end_date=2023-12-31&"
+            "workflow_path=/workflows/test.yml&"
+            "job_name=Deploy"
+        )
+
+        assert response.status_code == 200
+        # NaN should be converted to null in JSON
+        data = response.json()
+        assert data[1]["count"] is None  # NaN converted to null
+
+    @patch('software_metrics_machine.apps.rest.main.ViewJobsByStatus')
+    def test_jobs_by_status_with_infinity_values(self, mock_view_class, cli):
+        """Verify endpoints handle Infinity values in response."""
+        import math
+        
+        mock_view = MagicMock()
+        # Return data with Infinity values
+        mock_view.main.return_value = _Result(
+            data=[
+                {"job": "test", "duration": 10},
+                {"job": "build", "duration": math.inf},  # Infinity value
+            ]
+        )
+        mock_view_class.return_value = mock_view
+
+        # This should not raise a JSON serialization error
+        response = client.get("/pipelines/jobs-by-status")
+
+        assert response.status_code == 200
+        # Infinity should be converted to null in JSON
+        data = response.json()
+        assert data[1]["duration"] is None  # Infinity converted to null

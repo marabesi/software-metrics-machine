@@ -194,12 +194,12 @@ class TestRestRoutes:
         assert resp.json() == {
             "result": [
                 {
-                    "0": "Deploy",
-                    "1": 5.0,
+                    "job_name": "Deploy",
+                    "avg_time": 5.0,
                 },
                 {
-                    "0": "Build",
-                    "1": 5.0,
+                    "job_name": "Build",
+                    "avg_time": 5.0,
                 },
             ],
         }

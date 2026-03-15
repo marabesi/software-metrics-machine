@@ -9,7 +9,7 @@ export const pipelineAPI = {
     ),
   
   jobsByStatus: (params?: ApiParams) =>
-    fetchAPI<Array<{ job_name: string; status: string; count: number }>>(
+    fetchAPI<Array<{ Status: string; Count: number }>>(
       '/pipelines/jobs-by-status',
       params
     ),
@@ -30,7 +30,7 @@ export const pipelineAPI = {
     ),
   
   deploymentFrequency: (params?: ApiParams) =>
-    fetchAPI<Array<{ date: string; count: number; commit: string }>>(
+    fetchAPI<Array<{ days: string; weeks: string; months: string; daily_counts: number; weekly_counts: number; monthly_counts: number; commits: string; links: string }>>(
       '/pipelines/deployment-frequency',
       params
     ),

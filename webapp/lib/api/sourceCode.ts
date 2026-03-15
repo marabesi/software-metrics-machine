@@ -26,7 +26,7 @@ export const sourceCodeAPI = {
     ),
   
   entityEffort: (params?: ApiParams) =>
-    fetchAPI<Array<{ entity: string; revisions: number }>>(
+    fetchAPI<Array<{ entity: string; 'total-revs': number }>>(
       '/code/entity-effort',
       params
     ),

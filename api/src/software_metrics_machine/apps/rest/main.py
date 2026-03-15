@@ -1,6 +1,7 @@
 # type: ignore
 
 import holoviews as hv  # TODO: remove dependency that is for dashboard only
+import math
 
 from fastapi import FastAPI
 from enum import Enum
@@ -85,23 +86,44 @@ pipeline_tags: list[str | Enum] = ["Pipeline"]
 pull_request_tags: list[str | Enum] = ["Pull Requests"]
 
 
+def sanitize_nan_and_inf(obj):
+    """
+    Recursively sanitize NaN and Infinity values for JSON serialization.
+    Converts NaN and Infinity to null.
+    """
+    if isinstance(obj, dict):
+        return {key: sanitize_nan_and_inf(value) for key, value in obj.items()}
+    elif isinstance(obj, list):
+        return [sanitize_nan_and_inf(item) for item in obj]
+    elif isinstance(obj, float):
+        if math.isnan(obj) or math.isinf(obj):
+            return None
+        return obj
+    else:
+        return obj
+
+
 def convert_result_data(data):
     """
     Safely convert result data to records format.
     Handles both DataFrame and string/dict cases.
+    Sanitizes NaN and Infinity values for JSON serialization.
     """
     if hasattr(data, 'to_dict'):
         # It's a DataFrame
-        return data.to_dict(orient="records")
+        result = data.to_dict(orient="records")
     elif isinstance(data, str):
         # It's already a string, return as is
-        return data
+        result = data
     elif isinstance(data, (list, dict)):
-        # It's already a list or dict, return as is
-        return data
+        # It's already a list or dict
+        result = data
     else:
         # Try to convert to dict
-        return str(data)
+        result = str(data)
+    
+    # Sanitize NaN and Infinity values
+    return sanitize_nan_and_inf(result)
 
 
 @app.get("/code/pairing-index", tags=source_code_tags)
@@ -125,7 +147,6 @@ def entity_churn(
     start_date: Optional[str] = Query(None),
     end_date: Optional[str] = Query(None),
     ignore_files: Optional[str] = Query(None),
-    ignore_pattern: Optional[str] = Query(None),
     include_only: Optional[str] = Query(None),
     top: Optional[int] = Query(None),
 ):
@@ -136,7 +157,7 @@ def entity_churn(
     result = viewer.render(
         top_n=top,
         ignore_files=ignore_files,
-        ignore_pattern=ignore_pattern,
+        ignore_pattern=None,
         include_only=include_only,
         start_date=start_date,
         end_date=end_date,
@@ -162,7 +183,6 @@ def code_coupling(
     start_date: Optional[str] = Query(None),
     end_date: Optional[str] = Query(None),
     ignore_files: Optional[str] = Query(None),
-    ignore_pattern: Optional[str] = Query(None),
     include_only: Optional[str] = Query(None),
     top: Optional[int] = Query(20),
 ):
@@ -170,7 +190,7 @@ def code_coupling(
     Return coupling pairs ranked by coupling degree.
     """
     result = CouplingViewer(repository=create_codemaat_repository()).render(
-        ignore_files=ignore_files, ignore_pattern=ignore_pattern, include_only=include_only, top=top
+        ignore_files=ignore_files, ignore_pattern=None, include_only=include_only, top=top
     )
     return JSONResponse(convert_result_data(result.data))
 
@@ -181,7 +201,6 @@ def entity_effort(
     end_date: Optional[str] = Query(None),
     top_n: Optional[int] = Query(30),
     ignore_files: Optional[str] = Query(None),
-    ignore_pattern: Optional[str] = Query(None),
     include_only: Optional[str] = Query(None),
 ):
     """
@@ -189,7 +208,7 @@ def entity_effort(
     """
     viewer = EntityEffortViewer(repository=create_codemaat_repository())
     result = viewer.render_treemap(
-        top_n=top_n, ignore_files=ignore_files, ignore_pattern=ignore_pattern, include_only=include_only
+        top_n=top_n, ignore_files=ignore_files, ignore_pattern=None, include_only=include_only
     )
     return JSONResponse(convert_result_data(result.data))
 
@@ -200,7 +219,6 @@ def entity_ownership(
     end_date: Optional[str] = Query(None),
     top_n: Optional[int] = Query(None),
     ignore_files: Optional[str] = Query(None),
-    ignore_pattern: Optional[str] = Query(None),
     authors: Optional[str] = Query(None),
     include_only: Optional[str] = Query(None),
 ):
@@ -211,7 +229,7 @@ def entity_ownership(
     result = viewer.render(
         top_n=top_n,
         ignore_files=ignore_files,
-        ignore_pattern=ignore_pattern,
+        ignore_pattern=None,
         authors=authors,
         include_only=include_only,
     )
@@ -309,10 +327,11 @@ def pipeline_deployment_frequency(
     """
     Return deployment frequency counts (daily/weekly/monthly) for a job or workflow.
     """
-    view = ViewDeploymentFrequency(repository=create_pipelines_repository())
+    pipelines_repository = create_pipelines_repository()
+    view = ViewDeploymentFrequency(repository=pipelines_repository)
     result = view.plot(
-        workflow_path=workflow_path,
-        job_name=job_name,
+        workflow_path=pipelines_repository.configuration.deployment_frequency_target_pipeline or workflow_path,
+        job_name=pipelines_repository.configuration.deployment_frequency_target_job or job_name,
         start_date=start_date,
         end_date=end_date,
     )

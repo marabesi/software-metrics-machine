@@ -27,7 +27,7 @@ export function buildPipelineApiParams(filters: DashboardFilters): ApiParams {
   return {
     start_date: filters.startDate,
     end_date: filters.endDate,
-    workflow_path: filters.workflowSelector !== 'All' ? filters.workflowSelector : undefined,
+    workflow_path: filters.workflowSelector,
     status: filters.workflowStatus?.length ? filters.workflowStatus.join(',') : undefined,
     conclusion: filters.workflowConclusions?.length ? filters.workflowConclusions.join(',') : undefined,
     job_name: filters.jobSelector?.length ? filters.jobSelector.join(',') : undefined,
@@ -44,8 +44,8 @@ export function buildSourceCodeApiParams(filters: DashboardFilters): ApiParams {
   return {
     start_date: filters.startDate,
     end_date: filters.endDate,
-    ignore_pattern: filters.ignorePatternFiles || undefined,
-    include_pattern: filters.includePatternFiles || undefined,
+    ignore_files: filters.ignorePatternFiles || undefined,
+    include_only: filters.includePatternFiles || undefined,
     authors: filters.authorSelectSourceCode?.length
       ? filters.authorSelectSourceCode.join(',')
       : undefined,

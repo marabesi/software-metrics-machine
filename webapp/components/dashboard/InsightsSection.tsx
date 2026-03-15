@@ -5,6 +5,8 @@ import Card from '@mui/material/Card';
 import {CardContent, CardHeader} from '@mui/material';
 import { sourceCodeAPI, pipelineAPI, pullRequestAPI, ApiParams } from '@/lib/api';
 import { useFilters } from '@/components/filters/FiltersContext';
+import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, ReferenceLine } from 'recharts';
+import { ensureArray } from '@/lib/utils/chartData';
 
 function buildApiParams(filters: any): ApiParams {
   return {
@@ -14,11 +16,26 @@ function buildApiParams(filters: any): ApiParams {
   };
 }
 
+function buildPipelineApiParams(filters: any): ApiParams {
+  return {
+    start_date: filters.startDate,
+    end_date: filters.endDate,
+    workflow_path: filters.workflowSelector,
+    status: filters.workflowStatus?.length ? filters.workflowStatus.join(',') : undefined,
+    conclusion: filters.workflowConclusions?.length ? filters.workflowConclusions.join(',') : undefined,
+    job_name: filters.jobSelector?.length ? filters.jobSelector.join(',') : undefined,
+    branch: filters.branch?.length ? filters.branch.join(',') : undefined,
+    event: filters.event?.length ? filters.event.join(',') : undefined,
+    metric: filters.aggregateMetric,
+  };
+}
+
 export default function InsightsSection() {
   const { filters } = useFilters();
   const [pairingIndex, setPairingIndex] = useState<any>(null);
   const [pipelineSummary, setPipelineSummary] = useState<any>(null);
   const [prSummary, setPrSummary] = useState<any>(null);
+  const [deploymentFrequency, setDeploymentFrequency] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -26,23 +43,55 @@ export default function InsightsSection() {
       try {
         setLoading(true);
         const apiParams = buildApiParams(filters);
-        const [pairing, pipeline, pr] = await Promise.all([
+        const pipelineParams = buildPipelineApiParams(filters);
+        const [pairing, pipeline, pr, deployment] = await Promise.all([
           sourceCodeAPI.pairingIndex(apiParams),
           pipelineAPI.summary(apiParams),
           pullRequestAPI.summary(apiParams),
+          pipelineAPI.deploymentFrequency(pipelineParams),
         ]);
         // Handle both direct object responses and wrapped responses
         const prData = pr && typeof pr === 'object' && 'result' in pr ? pr.result : pr;
         const pairingData = pairing && typeof pairing === 'object' && 'result' in pairing ? pairing.result : pairing;
         const pipelineData = pipeline && typeof pipeline === 'object' && 'result' in pipeline ? pipeline.result : pipeline;
+        const deploymentData = Array.isArray(deployment) ? deployment
+          .map((d: any) => {
+            const dateStr = d.days || 'Unknown';
+            // Extract month from date (YYYY-MM-DD -> YYYY-MM)
+            const month = dateStr !== 'Unknown' ? dateStr.substring(0, 7) : 'Unknown';
+            return {
+              date: dateStr,
+              month: month,
+              day_count: d.daily_counts || 0,
+              week_count: d.weekly_counts || 0,
+              month_count: d.monthly_counts || 0,
+            };
+          })
+          // Deduplicate by date (in case multiple records for same day) and sum counts
+          .reduce((acc: any[], item: any) => {
+            const existing = acc.find(a => a.date === item.date);
+            if (existing) {
+              existing.day_count = Math.max(existing.day_count, item.day_count);
+              existing.week_count = Math.max(existing.week_count, item.week_count);
+              existing.month_count = Math.max(existing.month_count, item.month_count);
+            } else {
+              acc.push(item);
+            }
+            return acc;
+          }, [])
+          .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime())
+        : [];
+        
         setPairingIndex(pairingData || null);
         setPipelineSummary(pipelineData || null);
         setPrSummary(prData);
+        setDeploymentFrequency(deploymentData);
       } catch (error) {
         console.error('Error fetching insights:', error);
         setPairingIndex(null);
         setPipelineSummary(null);
         setPrSummary(null);
+        setDeploymentFrequency([]);
       } finally {
         setLoading(false);
       }
@@ -54,6 +103,16 @@ export default function InsightsSection() {
   if (loading) {
     return <div className="text-center p-8">Loading insights...</div>;
   }
+
+  // Get month transition indices for reference lines
+  const monthTransitionIndices = deploymentFrequency
+    .map((d, idx) => ({
+      date: d.date,
+      month: d.month,
+      idx,
+    }))
+    .filter((d, idx) => idx === 0 || d.month !== deploymentFrequency[idx - 1]?.month)
+    .map(d => d.date);
 
   return (
     <div className="space-y-6">
@@ -110,6 +169,39 @@ export default function InsightsSection() {
           </CardContent>
         </Card>
       </div>
+
+      <Card>
+        <CardHeader title="Deployment Frequency" />
+        <CardContent>
+          <ResponsiveContainer width="100%" height={300}>
+            <LineChart data={ensureArray(deploymentFrequency)}>
+              <CartesianGrid strokeDasharray="3 3" />
+              {monthTransitionIndices.map((date) => (
+                <ReferenceLine key={date} x={date} stroke="#000" strokeWidth={2} />
+              ))}
+              <XAxis dataKey="date" angle={-45} textAnchor="end" height={100} />
+              <YAxis />
+              <Tooltip />
+              <Legend />
+              <Line type="monotone" dataKey="day_count" stroke="#8884d8" name="Daily" dot={false} isAnimationActive={false} />
+            </LineChart>
+          </ResponsiveContainer>
+          <ResponsiveContainer width="100%" height={300}>
+            <LineChart data={ensureArray(deploymentFrequency)}>
+              <CartesianGrid strokeDasharray="3 3" />
+              {monthTransitionIndices.map((date) => (
+                <ReferenceLine key={date} x={date} stroke="#000" strokeWidth={2} />
+              ))}
+              <XAxis dataKey="date" angle={-45} textAnchor="end" height={100} />
+              <YAxis />
+              <Tooltip />
+              <Legend />
+              <Line type="monotone" dataKey="week_count" stroke="#82ca9d" name="Weekly" dot={false} isAnimationActive={false} />
+              <Line type="monotone" dataKey="month_count" stroke="#ffc658" name="Monthly" dot={false} isAnimationActive={false} />
+            </LineChart>
+          </ResponsiveContainer>
+        </CardContent>
+      </Card>
     </div>
   );
 }

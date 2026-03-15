@@ -25,7 +25,7 @@ export default function FiltersContainer() {
   };
   
   const activeSection = getActiveSection();
-  const [workflowOptions, setWorkflowOptions] = useState<string[]>(['All']);
+  const [workflowOptions, setWorkflowOptions] = useState<string[]>([]);
   const [jobOptions, setJobOptions] = useState<string[]>([]);
   const [statusOptions, setStatusOptions] = useState<string[]>([]);
   const [conclusionOptions, setConclusionOptions] = useState<string[]>([]);
@@ -40,7 +40,7 @@ export default function FiltersContainer() {
       try {
         // Try to fetch filter options, but provide defaults if endpoints don't exist yet
         const workflows = await pipelineAPI.getWorkflows().catch(() => []);
-        setWorkflowOptions(['All', ...workflows.map((w: any) => w.name || w.path).filter(Boolean)]);
+        setWorkflowOptions([...workflows.map((w: any) => w.name || w.path).filter(Boolean)]);
 
         const statuses = await pipelineAPI.getStatuses().catch(() => []);
         setStatusOptions(statuses.length > 0 ? statuses : ['completed', 'in_progress', 'queued']);
@@ -100,7 +100,7 @@ export default function FiltersContainer() {
           <Typography variant="subtitle2" sx={{ mb: 1, fontWeight: 600 }}>
             Pipeline Filters
           </Typography>
-          <Stack direction={{ xs: 'column', md: 'row' }} spacing={1} flexWrap="wrap">
+          <Stack direction="column" spacing={2} flexWrap="wrap">
             <SelectFilter
               label="Workflow"
               value={filters.workflowSelector}
@@ -147,7 +147,7 @@ export default function FiltersContainer() {
           <Typography variant="subtitle2" sx={{ mb: 1, fontWeight: 600 }}>
             Pull Request Filters
           </Typography>
-          <Stack direction={{ xs: 'column', md: 'row' }} spacing={1} flexWrap="wrap">
+          <Stack direction="column" spacing={2} flexWrap="wrap">
             <MultiSelectFilter
               label="Authors"
               values={filters.authorSelect}
@@ -176,7 +176,7 @@ export default function FiltersContainer() {
           <Typography variant="subtitle2" sx={{ mb: 1, fontWeight: 600 }}>
             Source Code Filters
           </Typography>
-          <Stack direction={{ xs: 'column', md: 'row' }} spacing={1} flexWrap="wrap" alignItems="flex-start">
+          <Stack direction="column" spacing={2} flexWrap="wrap">
             <TextInputFilter
               label="Ignore Pattern Files"
               value={filters.ignorePatternFiles}

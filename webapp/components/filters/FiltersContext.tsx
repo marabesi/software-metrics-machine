@@ -8,7 +8,7 @@ export interface DashboardFilters {
   endDate: string;
 
   // Pipeline filters
-  workflowSelector: string;
+  workflowSelector?: string;
   workflowStatus: string[];
   workflowConclusions: string[];
   jobSelector: string[];
@@ -34,7 +34,7 @@ export interface DashboardFilters {
 const defaultFilters: DashboardFilters = {
   startDate: '',
   endDate: '',
-  workflowSelector: 'All',
+  workflowSelector: undefined,
   workflowStatus: [],
   workflowConclusions: [],
   jobSelector: [],

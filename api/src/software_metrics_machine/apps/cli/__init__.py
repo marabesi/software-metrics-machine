@@ -1,7 +1,9 @@
 import importlib
+import holoviews as hv  # TODO: remove dependency that is for dashboard only
 
 import click
 
+hv.extension("bokeh")
 
 @click.group()
 def main():

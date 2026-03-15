@@ -90,7 +90,7 @@ export default function SourceCodeSection() {
                 <YAxis />
                 <Tooltip />
                 <Legend />
-                <Bar dataKey="revisions" fill="#8884d8" name="Revisions" />
+                <Bar dataKey="total-revs" fill="#8884d8" name="Total Revisions" />
               </BarChart>
             </ResponsiveContainer>
           </CardContent>

@@ -92,9 +92,10 @@ class ViewJobsByAverageTimeExecution(BaseViewer):
             color=super().get_color(),
         )
 
-        df = pd.DataFrame(averages)
-
-        if metric == "sum":
-            df = pd.DataFrame(sums)
+        # Create DataFrame with proper column names for JSON response
+        if metric == "avg":
+            df = pd.DataFrame(averages, columns=["job_name", "avg_time"])
+        else:  # metric == "sum"
+            df = pd.DataFrame(sums, columns=["job_name", "avg_time"])
 
         return PlotResult(chart, df)

@@ -259,7 +259,7 @@ class TestJobsCliCommands:
                 "Deploy",
             ],
         )
-        assert "Deploy  5.0" in result.output
+        assert "Deploy       5.0" in result.output
 
     def test_plot_jobs_by_average_execution_time_by_raw_filters(self, cli):
         jobs = [
@@ -308,7 +308,7 @@ class TestJobsCliCommands:
                     .with_completed_at("2023-10-01T09:10:00Z")
                     .build(),
                 ],
-                "Deploy  5.0",
+                "Deploy       5.0",
             ),
             (
                 [
@@ -321,7 +321,7 @@ class TestJobsCliCommands:
                     .with_completed_at("2023-10-01T09:05:00Z")
                     .build(),
                 ],
-                "Build  1.0",
+                "Build       1.0",
             ),
         ],
     )
@@ -369,7 +369,7 @@ class TestJobsCliCommands:
                 "sum",
             ],
         )
-        assert "Deploy  10.0" in result.output
+        assert "Deploy      10.0" in result.output
 
     def test_exclude_job_from_list(self, cli):
         jobs = [
