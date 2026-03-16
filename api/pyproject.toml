@@ -37,8 +37,8 @@ packages = [
     { include = "software_metrics_machine", from = "src" },
 ]
 include = [
-    { path = "../webapp/out", format = "sdist" },
-    { path = "../webapp/out", format = "wheel" },
+    { path = "./out", format = "sdist" },
+    { path = "./out", format = "wheel" },
 ]
 
 [build-system]

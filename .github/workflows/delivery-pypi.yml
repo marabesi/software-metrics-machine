@@ -35,6 +35,7 @@ jobs:
           cd webapp/
           npm ci
           npm run build
+          cp -R out ../api/out
 
       - name: Set up Python
         uses: actions/setup-python@v6
