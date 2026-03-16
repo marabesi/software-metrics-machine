@@ -114,7 +114,7 @@ class TestCodeParameterPassing:
 
         client.get(
             "/code/entity-effort?"
-            "top_n=15&"
+            "top=15&"
             "ignore_files=tests&"
             "include_only=core&"
             "start_date=2023-01-01&"
@@ -136,7 +136,7 @@ class TestCodeParameterPassing:
 
         client.get(
             "/code/entity-ownership?"
-            "top_n=40&"
+            "top=40&"
             "ignore_files=dist&"
             "authors=diana&"
             "include_only=lib&"

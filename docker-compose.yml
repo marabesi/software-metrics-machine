@@ -24,7 +24,7 @@ services:
       - '8000:8000'
     volumes:
       - ./api:/app
-      - ./api/downloads/marabesi:/ollama
+      - ./api/downloads/marabesi:/marabesi
       - ./api/downloads/marabesi_analysis:/data
     command: poetry run smm-rest --host 0.0.0.0 --port 8000 --reload
 
@@ -47,7 +47,6 @@ services:
     build:
       context: webapp/
       dockerfile: Dockerfile.dev
-    platform: linux/amd64
     ports:
       - '3000:3000'
     volumes:

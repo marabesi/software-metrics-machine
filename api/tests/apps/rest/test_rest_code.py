@@ -110,6 +110,22 @@ class TestRestRoutes:
             },
         ]
 
+    def test_entity_effort_route_with_top_parameter(self, cli):
+        csv_data = (
+            CSVBuilder(headers=["entity", "author", "author-revs", "total-revs"])
+            .extend_rows([
+                ["E1", "alice", 1, 10],
+                ["E2", "bob", 2, 20],
+                ["E3", "charlie", 3, 30],
+            ])
+            .build()
+        )
+        cli.storage.store_csv_file("entity-effort.csv", csv_data)
+        resp = client.get("/code/entity-effort?top=2")
+        data = resp.json()
+        assert resp.status_code == 200
+        assert len(data) == 2
+
     def test_entity_ownership_route(self, cli):
         csv_data = (
             CSVBuilder(headers=["entity", "author", "added", "deleted"])

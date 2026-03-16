@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { sourceCodeAPI } from '@/lib/api';
 import { useFilters } from '@/components/filters/FiltersContext';
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, ScatterChart, Scatter, LineChart, Line } from 'recharts';
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, LineChart, Line } from 'recharts';
 import { buildSourceCodeApiParams } from '@/lib/utils/apiParams';
 import { ensureArray } from '@/lib/utils/chartData';
 
@@ -15,12 +15,10 @@ export default function SourceCodeSection() {
   const [entityEffort, setEntityEffort] = useState<any[]>([]);
   const [codeChurn, setCodeChurn] = useState<any[]>([]);
   const [entityOwnership, setEntityOwnership] = useState<any[]>([]);
-  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const fetchData = async () => {
       try {
-        setLoading(true);
         const apiParams = buildSourceCodeApiParams(filters);
         const [churn, coup, effort, churnOverTime, ownership] = await Promise.all([
           sourceCodeAPI.entityChurn(apiParams),
@@ -43,25 +41,18 @@ export default function SourceCodeSection() {
         setEntityEffort([]);
         setCodeChurn([]);
         setEntityOwnership([]);
-      } finally {
-        setLoading(false);
       }
     };
 
     fetchData();
   }, [filters]);
 
-  // if (loading) {
-  //   return <div className="text-center p-8">Loading source code metrics...</div>;
-  // }
-
   return (
     <div className="space-y-6">
-
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <Card>
           <CardHeader>
-            <CardTitle>Entity Churn (Top 20)</CardTitle>
+            <CardTitle>Entity Churn (Top {filters.topEntries})</CardTitle>
           </CardHeader>
           <CardContent>
             <ResponsiveContainer width="100%" height={300}>
@@ -80,7 +71,7 @@ export default function SourceCodeSection() {
 
         <Card>
           <CardHeader>
-            <CardTitle>Entity Effort (Top 20)</CardTitle>
+            <CardTitle>Entity Effort (Top {filters.topEntries})</CardTitle>
           </CardHeader>
           <CardContent>
             <ResponsiveContainer width="100%" height={300}>

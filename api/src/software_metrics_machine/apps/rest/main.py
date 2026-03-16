@@ -200,16 +200,13 @@ def code_coupling(
 def entity_effort(
     start_date: Optional[str] = Query(None),
     end_date: Optional[str] = Query(None),
-    top_n: Optional[int] = Query(30),
+    top: Optional[int] = Query(30),
     ignore_files: Optional[str] = Query(None),
     include_only: Optional[str] = Query(None),
 ):
-    """
-    Return entity effort (lines changed) as a treemap-friendly list.
-    """
     viewer = EntityEffortViewer(repository=create_codemaat_repository())
     result = viewer.render_treemap(
-        top_n=top_n, ignore_files=ignore_files, include_only=include_only
+        top_n=top, ignore_files=ignore_files, include_only=include_only
     )
     return JSONResponse(convert_result_data(result.data))
 
@@ -218,7 +215,7 @@ def entity_effort(
 def entity_ownership(
     start_date: Optional[str] = Query(None),
     end_date: Optional[str] = Query(None),
-    top_n: Optional[int] = Query(None),
+    top: Optional[int] = Query(None),
     ignore_files: Optional[str] = Query(None),
     authors: Optional[str] = Query(None),
     include_only: Optional[str] = Query(None),
@@ -228,7 +225,7 @@ def entity_ownership(
     """
     viewer = EntityOnershipViewer(repository=create_codemaat_repository())
     result = viewer.render(
-        top_n=top_n,
+        top_n=top,
         ignore_files=ignore_files,
         authors=authors,
         include_only=include_only,

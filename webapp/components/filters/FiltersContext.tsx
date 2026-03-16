@@ -1,6 +1,6 @@
 'use client';
 
-import React, { createContext, ReactElement, useContext, useState } from 'react';
+import { createContext, ReactElement, useContext, useState } from 'react';
 
 export interface DashboardFilters {
   // Date filters
