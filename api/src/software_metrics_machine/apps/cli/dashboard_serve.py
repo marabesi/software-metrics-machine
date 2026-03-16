@@ -109,7 +109,7 @@ def command(api_port, frontend_port, hostname, open, verbose):
         )
         sys.exit(1)
 
-    frontend_build_dir = webapp_dir 
+    frontend_build_dir = webapp_dir
     if not frontend_build_dir.exists():
         click.echo(
             click.style(
