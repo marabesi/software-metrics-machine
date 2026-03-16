@@ -49,7 +49,7 @@ COPY api/ .
 RUN poetry install --no-interaction --no-ansi
 
 # Copy frontend static assets from build stage
-COPY --from=frontend-builder /workspace/webapp/out ./static
+COPY --from=frontend-builder /workspace/webapp/out ./out
 
 # Configure git
 RUN git config --system --add safe.directory '*'

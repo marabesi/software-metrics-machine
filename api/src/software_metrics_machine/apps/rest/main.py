@@ -691,6 +691,6 @@ def configuration():
 
 
 # Serve frontend static files
-static_path = Path(__file__).parent.parent.parent.parent.parent / "static"
+static_path = Path(__file__).parent.parent.parent.parent.parent / "out"
 if static_path.exists():
     app.mount("/", StaticFiles(directory=str(static_path), html=True), name="static")

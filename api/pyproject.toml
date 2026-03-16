@@ -1,7 +1,7 @@
 [project]
 name = "software-metrics-machine"
 description = "A data-driven approach to software measurament for high-performing teams"
-version = "0.3.0"
+version = "0.3.1"
 readme = "README.md"
 requires-python = ">=3.14,<4.0"
 dependencies = [
@@ -37,10 +37,8 @@ packages = [
     { include = "software_metrics_machine", from = "src" },
 ]
 include = [
-    { path = "../webapp/.next", format = "sdist" },
-    { path = "../webapp/.next", format = "wheel" },
-    { path = "../webapp/public", format = "sdist" },
-    { path = "../webapp/public", format = "wheel" },
+    { path = "../webapp/out", format = "sdist" },
+    { path = "../webapp/out", format = "wheel" },
 ]
 
 [build-system]
