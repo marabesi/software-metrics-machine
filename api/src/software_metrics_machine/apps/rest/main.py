@@ -2,12 +2,14 @@
 
 import holoviews as hv  # TODO: remove dependency that is for dashboard only
 import math
+from pathlib import Path
 
 from fastapi import FastAPI
 from enum import Enum
 from fastapi import Query
 from fastapi.responses import JSONResponse
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.staticfiles import StaticFiles
 
 from typing import Optional
 
@@ -689,3 +691,9 @@ def configuration():
             "jira_project": config.jira_project,
         }
     })
+
+
+# Serve frontend static files
+static_path = Path(__file__).parent.parent.parent.parent.parent / "static"
+if static_path.exists():
+    app.mount("/", StaticFiles(directory=str(static_path), html=True), name="static")
