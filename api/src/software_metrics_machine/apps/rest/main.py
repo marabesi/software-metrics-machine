@@ -694,10 +694,12 @@ def configuration():
 # Serve frontend static files
 static_paths = [
     # Installed package: static folder in package root
-    Path(__file__).parent.parent / "static",
+    Path(__file__).parent.parent.parent / "static",
     # Development: api/out folder 
     Path(__file__).parent.parent.parent.parent.parent / "out",
 ]
+
+print(f"Looking for static files in: {[str(path) for path in static_paths]}")
 
 static_path = None
 for candidate in static_paths:
