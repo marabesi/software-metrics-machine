@@ -10,6 +10,7 @@ from fastapi import Query
 from fastapi.responses import JSONResponse
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
+from fastapi.responses import FileResponse
 
 from typing import Optional
 
@@ -689,8 +690,14 @@ def configuration():
         }
     })
 
-
 # Serve frontend static files
 static_path = Path(__file__).parent.parent.parent.parent.parent / "out"
 if static_path.exists():
-    app.mount("/", StaticFiles(directory=str(static_path), html=True), name="static")
+    app.mount("/", StaticFiles(directory=str(static_path), html=True), name="dashboard")
+
+@app.middleware("http")
+async def catch_404(request: Request, call_next: Response):
+    response = await call_next(request)
+    if response.status_code == 404:
+        return FileResponse(str(static_path / "index.html"), headers={"Cache-Control": "no-cache"})
+    return response
