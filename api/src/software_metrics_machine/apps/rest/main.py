@@ -706,11 +706,14 @@ for candidate in static_paths:
         break
 
 if static_path:
+    print(f"Serving static files from: {static_path}")
     app.mount("/", StaticFiles(directory=str(static_path), html=True), name="dashboard")
 
     @app.middleware("http")
     async def catch_404(request: Request, call_next: Response):
         response = await call_next(request)
         if response.status_code == 404:
-            return FileResponse(str(static_path / "index.html"), headers={"Cache-Control": "no-cache"})
+            file_response = str(static_path / "index.html")
+            print(f"Returning index.html for 404 response {request.url} {file_response}")
+            return FileResponse(file_response, headers={"Cache-Control": "no-cache"})
         return response
