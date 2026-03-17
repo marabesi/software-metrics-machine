@@ -35,7 +35,8 @@ jobs:
           cd webapp/
           npm ci
           npm run build
-          cp -R out ../api/out
+          mkdir -p ../api/src/software_metrics_machine/static
+          cp -R out/* ../api/src/software_metrics_machine/static/
 
       - name: Set up Python
         uses: actions/setup-python@v6

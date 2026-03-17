@@ -691,13 +691,26 @@ def configuration():
     })
 
 # Serve frontend static files
-static_path = Path(__file__).parent.parent.parent.parent.parent / "out"
-if static_path.exists():
+# Serve frontend static files
+static_paths = [
+    # Installed package: static folder in package root
+    Path(__file__).parent.parent / "static",
+    # Development: api/out folder 
+    Path(__file__).parent.parent.parent.parent.parent / "out",
+]
+
+static_path = None
+for candidate in static_paths:
+    if candidate.exists() and (candidate / "index.html").exists():
+        static_path = candidate
+        break
+
+if static_path:
     app.mount("/", StaticFiles(directory=str(static_path), html=True), name="dashboard")
 
-@app.middleware("http")
-async def catch_404(request: Request, call_next: Response):
-    response = await call_next(request)
-    if response.status_code == 404:
-        return FileResponse(str(static_path / "index.html"), headers={"Cache-Control": "no-cache"})
-    return response
+    @app.middleware("http")
+    async def catch_404(request: Request, call_next: Response):
+        response = await call_next(request)
+        if response.status_code == 404:
+            return FileResponse(str(static_path / "index.html"), headers={"Cache-Control": "no-cache"})
+        return response
