@@ -4,7 +4,7 @@ exclude: |
       docs
   )$
 repos:
-  - repo: api
+  - repo: local
     hooks:
       - id: black
         name: black
@@ -27,8 +27,10 @@ repos:
         entry: cd api/ && ./run-tests.sh
         language: system
         types: [bash]
-  - repo: frontend
+  - repo: local
     hooks:
       - id: lint
+        language: system
+        types: [bash]
         name: lint
         entry: cd webapp/ && npm run lint

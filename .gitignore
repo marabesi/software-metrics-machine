@@ -245,3 +245,4 @@ playwright/.cache/
 playwright/.auth/
 
 out/
+lib/bashunit
