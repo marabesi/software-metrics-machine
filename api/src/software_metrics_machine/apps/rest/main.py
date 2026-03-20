@@ -1,5 +1,3 @@
-# type: ignore
-
 import holoviews as hv  # TODO: remove dependency that is for dashboard only
 import math
 from pathlib import Path
@@ -7,10 +5,10 @@ from pathlib import Path
 from fastapi import FastAPI, Request
 from enum import Enum
 from fastapi import Query
-from fastapi.responses import JSONResponse, Response
+from fastapi.responses import JSONResponse, Response, FileResponse
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
-from fastapi.responses import FileResponse
+from typing import Callable
 
 from typing import Optional
 
@@ -158,7 +156,7 @@ def entity_churn(
     """
     viewer = EntityChurnViewer(repository=create_codemaat_repository())
     result = viewer.render(
-        top_n=top,
+        top_n=top or 0,
         ignore_files=ignore_files,
         include_only=include_only,
         start_date=start_date,
@@ -192,7 +190,7 @@ def code_coupling(
     Return coupling pairs ranked by coupling degree.
     """
     result = CouplingViewer(repository=create_codemaat_repository()).render(
-        ignore_files=ignore_files, include_only=include_only, top=top
+        ignore_files=ignore_files, include_only=include_only, top=top or 20
     )
     return JSONResponse(convert_result_data(result.data))
 
@@ -226,7 +224,7 @@ def entity_ownership(
     """
     viewer = EntityOnershipViewer(repository=create_codemaat_repository())
     result = viewer.render(
-        top_n=top,
+        top_n=top or 0,
         ignore_files=ignore_files,
         authors=authors,
         include_only=include_only,
@@ -265,10 +263,10 @@ def pipeline_jobs_by_status(
     """
     view = ViewJobsByStatus(repository=create_pipelines_repository())
     result = view.main(
-        job_name=job_name,
+        job_name=job_name or "",
         workflow_path=workflow_path,
-        with_pipeline=with_pipeline,
-        aggregate_by_week=aggregate_by_week,
+        with_pipeline=with_pipeline or False,
+        aggregate_by_week=aggregate_by_week or False,
         pipeline_raw_filters=raw_filters,
         start_date=start_date,
         end_date=end_date,
@@ -285,7 +283,7 @@ def pipeline_summary(
     """
     view = WorkflowRunSummary(repository=create_pipelines_repository())
     result = view.print_summary(
-        max_workflows=None,
+        max_workflows=100,
         start_date=start_date,
         end_date=end_date,
         output_format="json",
@@ -309,7 +307,7 @@ def pipeline_runs_duration(
         workflow_path=workflow_path,
         start_date=start_date,
         end_date=end_date,
-        max_runs=max_runs,
+        max_runs=max_runs or 100,
         raw_filters=raw_filters,
     )
     return JSONResponse(convert_result_data(result.data))
@@ -328,8 +326,8 @@ def pipeline_deployment_frequency(
     pipelines_repository = create_pipelines_repository()
     view = ViewDeploymentFrequency(repository=pipelines_repository)
     result = view.plot(
-        workflow_path=pipelines_repository.configuration.deployment_frequency_target_pipeline or workflow_path,
-        job_name=pipelines_repository.configuration.deployment_frequency_target_job or job_name,
+        workflow_path=pipelines_repository.configuration.deployment_frequency_target_pipeline or workflow_path or "",
+        job_name=pipelines_repository.configuration.deployment_frequency_target_job or job_name or "",
         start_date=start_date,
         end_date=end_date,
     )
@@ -350,7 +348,7 @@ def pipeline_runs_by(
     """
     view = ViewWorkflowRunsByWeekOrMonth(repository=create_pipelines_repository())
     result = view.main(
-        aggregate_by=aggregate_by,
+        aggregate_by=aggregate_by or "week",
         workflow_path=workflow_path,
         start_date=start_date,
         end_date=end_date,
@@ -709,14 +707,16 @@ for candidate in static_paths:
         break
 
 if static_path:
-    print(f"Serving static files from: {static_path}")
-    app.mount("/", StaticFiles(directory=str(static_path), html=True), name="dashboard")
+    # Capture the narrowed type for use in the middleware closure
+    active_static_path = static_path
+    print(f"Serving static files from: {active_static_path}")
+    app.mount("/", StaticFiles(directory=str(active_static_path), html=True), name="dashboard")
 
     @app.middleware("http")
-    async def catch_404(request: Request, call_next: Response):
+    async def catch_404(request: Request, call_next: Callable) -> Response:
         response = await call_next(request)
         if response.status_code == 404:
-            file_response = str(static_path / "index.html")
+            file_response = str(active_static_path / "index.html")
             print(f"Returning index.html for 404 response {request.url} {file_response}")
             return FileResponse(file_response, headers={"Cache-Control": "no-cache"})
         return response
