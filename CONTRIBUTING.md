@@ -44,6 +44,14 @@ You should see an output something like the following:
 Python 3.11.0
 ```
 
+### Install pre commit hooks
+
+In the root of the repository, you will find a file named `.pre-commit-config.yaml`. This file contains the configuration for pre-commit hooks that will automatically run checks and formatting before you commit your changes. To install the pre-commit hooks, run the following command:
+
+```bash
+pip install pre-commit
+```
+
 ### Install dependencies
 
 Change directory to the cloned repository and install the dependencies using poetry:

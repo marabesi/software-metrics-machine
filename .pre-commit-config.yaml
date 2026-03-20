@@ -3,9 +3,8 @@ exclude: |
   (?x)^(
       docs
   )$
-files: ^api/
 repos:
-  - repo: local
+  - repo: api
     hooks:
       - id: black
         name: black
@@ -28,3 +27,8 @@ repos:
         entry: cd api/ && ./run-tests.sh
         language: system
         types: [bash]
+  - repo: frontend
+    hooks:
+      - id: lint
+        name: lint
+        entry: cd webapp/ && npm run lint

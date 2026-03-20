@@ -8,9 +8,7 @@ from fastapi import Query
 from fastapi.responses import JSONResponse, Response, FileResponse
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
-from typing import Callable
-
-from typing import Optional
+from typing import Optional, Callable, cast
 
 from software_metrics_machine.core.infrastructure.repository_factory import (
     create_codemaat_repository,
@@ -156,7 +154,7 @@ def entity_churn(
     """
     viewer = EntityChurnViewer(repository=create_codemaat_repository())
     result = viewer.render(
-        top_n=top or 0,
+        top_n=cast(int, top),
         ignore_files=ignore_files,
         include_only=include_only,
         start_date=start_date,
@@ -190,7 +188,7 @@ def code_coupling(
     Return coupling pairs ranked by coupling degree.
     """
     result = CouplingViewer(repository=create_codemaat_repository()).render(
-        ignore_files=ignore_files, include_only=include_only, top=top or 20
+        ignore_files=ignore_files, include_only=include_only, top=cast(int, top)
     )
     return JSONResponse(convert_result_data(result.data))
 
@@ -224,7 +222,7 @@ def entity_ownership(
     """
     viewer = EntityOnershipViewer(repository=create_codemaat_repository())
     result = viewer.render(
-        top_n=top or 0,
+        top_n=cast(int, top),
         ignore_files=ignore_files,
         authors=authors,
         include_only=include_only,
@@ -263,10 +261,10 @@ def pipeline_jobs_by_status(
     """
     view = ViewJobsByStatus(repository=create_pipelines_repository())
     result = view.main(
-        job_name=job_name or "",
+        job_name=cast(str, job_name),
         workflow_path=workflow_path,
-        with_pipeline=with_pipeline or False,
-        aggregate_by_week=aggregate_by_week or False,
+        with_pipeline=cast(bool, with_pipeline),
+        aggregate_by_week=cast(bool, aggregate_by_week),
         pipeline_raw_filters=raw_filters,
         start_date=start_date,
         end_date=end_date,
@@ -283,7 +281,6 @@ def pipeline_summary(
     """
     view = WorkflowRunSummary(repository=create_pipelines_repository())
     result = view.print_summary(
-        max_workflows=100,
         start_date=start_date,
         end_date=end_date,
         output_format="json",
@@ -307,7 +304,7 @@ def pipeline_runs_duration(
         workflow_path=workflow_path,
         start_date=start_date,
         end_date=end_date,
-        max_runs=max_runs or 100,
+        max_runs=cast(int, max_runs),
         raw_filters=raw_filters,
     )
     return JSONResponse(convert_result_data(result.data))
@@ -325,9 +322,11 @@ def pipeline_deployment_frequency(
     """
     pipelines_repository = create_pipelines_repository()
     view = ViewDeploymentFrequency(repository=pipelines_repository)
+    target_pipeline = pipelines_repository.configuration.deployment_frequency_target_pipeline or workflow_path
+    target_job = pipelines_repository.configuration.deployment_frequency_target_job or job_name
     result = view.plot(
-        workflow_path=pipelines_repository.configuration.deployment_frequency_target_pipeline or workflow_path or "",
-        job_name=pipelines_repository.configuration.deployment_frequency_target_job or job_name or "",
+        workflow_path=cast(str, target_pipeline),
+        job_name=cast(str, target_job),
         start_date=start_date,
         end_date=end_date,
     )
@@ -348,7 +347,7 @@ def pipeline_runs_by(
     """
     view = ViewWorkflowRunsByWeekOrMonth(repository=create_pipelines_repository())
     result = view.main(
-        aggregate_by=aggregate_by or "week",
+        aggregate_by=cast(str, aggregate_by),
         workflow_path=workflow_path,
         start_date=start_date,
         end_date=end_date,

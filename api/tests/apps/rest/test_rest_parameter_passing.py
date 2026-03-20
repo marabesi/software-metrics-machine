@@ -84,7 +84,6 @@ class TestPipelineParameterPassing:
         client.get("/pipelines/summary?start_date=2023-01-01&end_date=2023-12-31")
 
         mock_view.print_summary.assert_called_once_with(
-            max_workflows=None,
             start_date="2023-01-01",
             end_date="2023-12-31",
             output_format="json",
