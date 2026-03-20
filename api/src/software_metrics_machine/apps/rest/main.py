@@ -4,10 +4,10 @@ import holoviews as hv  # TODO: remove dependency that is for dashboard only
 import math
 from pathlib import Path
 
-from fastapi import FastAPI
+from fastapi import FastAPI, Request
 from enum import Enum
 from fastapi import Query
-from fastapi.responses import JSONResponse
+from fastapi.responses import JSONResponse, Response
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import FileResponse
@@ -690,12 +690,13 @@ def configuration():
         }
     })
 
+
 # Serve frontend static files
 # Serve frontend static files
 static_paths = [
     # Installed package: static folder in package root
     Path(__file__).parent.parent.parent / "static",
-    # Development: api/out folder 
+    # Development: api/out folder
     Path(__file__).parent.parent.parent.parent.parent / "out",
 ]
 
