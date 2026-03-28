@@ -34,3 +34,8 @@ repos:
         types: [bash]
         name: lint
         entry: cd webapp/ && npm run lint
+      - id: test
+        language: system
+        types: [bash]
+        name: test
+        entry: cd webapp/ && npm run test
