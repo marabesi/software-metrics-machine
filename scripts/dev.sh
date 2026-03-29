@@ -93,7 +93,7 @@ sleep 2
 
 # Start Frontend
 echo -e "${BLUE}Starting Frontend on http://localhost:${FRONTEND_PORT}${NC}"
-cd "$PROJECT_ROOT/webapp"
+cd "$PROJECT_ROOT/apps/webapp"
 PORT=$FRONTEND_PORT npm run dev 2>&1 | sed "s/^/${GREEN}[FRONTEND]${NC} /" &
 FRONTEND_PID=$!
 echo -e "${GREEN}✓ Frontend started (PID: $FRONTEND_PID)${NC}"

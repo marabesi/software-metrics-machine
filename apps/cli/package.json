@@ -1,0 +1,28 @@
+{
+  "name": "@smm/cli",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Software Metrics Machine - CLI",
+  "main": "dist/index.js",
+  "bin": {
+    "smm": "dist/index.js"
+  },
+  "types": "dist/index.d.ts",
+  "scripts": {
+    "build": "tsc --outDir dist",
+    "dev": "ts-node src/index.ts",
+    "test": "vitest",
+    "test:ci": "vitest run ./__tests__"
+  },
+  "dependencies": {
+    "@smm/core": "workspace:*",
+    "@smm/utils": "workspace:*",
+    "commander": "^14.0.3"
+  },
+  "devDependencies": {
+    "@types/node": "*",
+    "ts-node": "*",
+    "typescript": "*",
+    "vitest": "*"
+  }
+}

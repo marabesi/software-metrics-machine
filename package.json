@@ -1,0 +1,48 @@
+{
+  "name": "software-metrics-machine",
+  "version": "0.4.0",
+  "description": "Data-driven approach to software measurement for high-performing teams",
+  "private": true,
+  "type": "module",
+  "author": "Marabesi",
+  "license": "MIT",
+  "scripts": {
+    "dev": "npm run dev",
+    "build": "npm run build:packages",
+    "build:packages": "cd ./packages/utils && npm run build && cd ../core && npm run build",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:coverage": "vitest run --coverage",
+    "typecheck": "npm run typecheck:packages",
+    "typecheck:packages": "cd ./packages/core && npm run type-check && npm run type-check && cd ../packages/utils && npm run type-check",
+    "clean": "cd packages/core && npm run clean; cd ../utils && npm run clean; cd ../../services/rest && npm run clean; cd ../cli && npm run clean"
+  },
+  "keywords": [
+    "software-metrics",
+    "dora",
+    "deployment-frequency",
+    "lead-time",
+    "change-failure-rate",
+    "mean-time-recovery"
+  ],
+  "packageManager": "pnpm@10.0.0",
+  "engines": {
+    "node": ">=25.2.1",
+    "pnpm": ">=10.0.0"
+  },
+  "devDependencies": {
+    "@types/node": "^25.2.1",
+    "@vitest/coverage-v8": "^4.1.2",
+    "vitest": "^4.1.2",
+    "axios": "^1.14.0",
+    "chalk": "^5.6.2",
+    "class-transformer": "^0.5.1",
+    "class-validator": "^0.15.1",
+    "date-fns": "^4.1.0",
+    "inquirer": "^13.3.2",
+    "ora": "^9.3.0",
+    "reflect-metadata": "^0.2.2",
+    "typescript": "^6.0.2",
+    "ts-node": "^10.9.2"
+  }
+}

@@ -246,3 +246,5 @@ playwright/.auth/
 
 out/
 lib/bashunit
+
+node_modules

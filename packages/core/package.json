@@ -1,0 +1,45 @@
+{
+  "name": "@smm/core",
+  "private": true,
+  "version": "0.4.0",
+  "description": "Software Metrics Machine - Core business logic library",
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "import": "./dist/index.js",
+      "types": "./dist/index.d.ts"
+    }
+  },
+  "files": [
+    "dist",
+    "src"
+  ],
+  "scripts": {
+    "build": "tsc --outDir dist",
+    "clean": "rm -rf dist",
+    "dev": "tsc --watch",
+    "test": "vitest",
+    "test:run": "vitest run",
+    "test:coverage": "vitest run --coverage",
+    "type-check": "tsc --noEmit"
+  },
+  "keywords": [
+    "metrics",
+    "dora",
+    "business-logic"
+  ],
+  "author": "Marabesi",
+  "license": "MIT",
+  "devDependencies": {
+    "@types/node": "*",
+    "typescript": "*",
+    "vitest": "*"
+  },
+  "dependencies": {
+    "axios": "*",
+    "date-fns": "*",
+    "@smm/utils": "workspace:*"
+  }
+}

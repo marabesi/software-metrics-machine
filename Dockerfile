@@ -3,7 +3,7 @@
 # Stage 1: Build frontend (Next.js)
 FROM node:25-slim AS frontend-builder
 
-WORKDIR /workspace/webapp
+WORKDIR /workspace/apps/webapp
 
 # Copy package files
 COPY webapp/package.json webapp/package-lock.json ./
@@ -49,7 +49,7 @@ COPY api/ .
 RUN poetry install --no-interaction --no-ansi
 
 # Copy frontend static assets from build stage
-COPY --from=frontend-builder /workspace/webapp/out ./out
+COPY --from=frontend-builder /workspace/apps/webapp/out ./out
 
 # Configure git
 RUN git config --system --add safe.directory '*'

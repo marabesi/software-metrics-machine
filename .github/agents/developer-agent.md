@@ -105,7 +105,7 @@ This agent assists developers in contributing to Software Metrics Machine, a dat
   │       └── sonarqube/  # SonarQube integration
   └── tests/              # Test suite
 
-/webapp/                  # Next.js React dashboard
+/apps/webapp/                  # Next.js React dashboard
   ├── app/                # Next.js app directory
   │   ├── layout.tsx      # Root layout
   │   ├── page.tsx        # Home page
@@ -171,7 +171,7 @@ Repository classes handle:
 ### Webapp Directory Structure
 
 ```
-/webapp/
+/apps/webapp/
 ├── app/                    # Next.js App Router
 │   ├── layout.tsx          # Root layout with theme provider
 │   ├── page.tsx            # Home/dashboard page
@@ -231,7 +231,7 @@ Available environment variables:
 ### Running the Webapp
 
 ```bash
-cd /webapp
+cd /apps/webapp
 
 # Install dependencies
 npm install
@@ -345,22 +345,22 @@ describe('MetricCard', () => {
 
 #### Adding a New Dashboard Page
 
-1. Create directory: `/webapp/app/metrics-name/`
+1. Create directory: `/apps/webapp/app/metrics-name/`
 2. Add `layout.tsx` and `page.tsx`
 3. Import components and fetch data
 4. Add route to navigation
 
 #### Adding a New Chart
 
-1. Create component in `/webapp/components/Charts/`
+1. Create component in `/apps/webapp/components/Charts/`
 2. Use Recharts library for visualization
 3. Accept data as props
 4. Handle loading/error states
 
 #### Integrating New API Endpoint
 
-1. Add fetch function in `/webapp/lib/api.ts`
-2. Create hook if needed (`/webapp/lib/hooks/`)
+1. Add fetch function in `/apps/webapp/lib/api.ts`
+2. Create hook if needed (`/apps/webapp/lib/hooks/`)
 3. Create consuming component
 4. Handle loading/error states
 5. Add tests
