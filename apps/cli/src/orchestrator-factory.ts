@@ -33,17 +33,20 @@ export function createOrchestrator(): MetricsOrchestrator {
     // Load configuration from environment
     const config = new Configuration(process.env);
 
+    // Parse GitHub repository (format: owner/repo)
+    const [githubOwner, githubRepo] = (config.githubRepository || '/').split('/');
+
     // Initialize GitHub clients
     const githubPrsClient = new GithubPrsClient(
       config.githubToken || '',
-      config.githubOwner || '',
-      config.githubRepo || '',
+      githubOwner || '',
+      githubRepo || '',
     );
 
     const githubWorkflowClient = new GithubWorkflowClient(
       config.githubToken || '',
-      config.githubOwner || '',
-      config.githubRepo || '',
+      githubOwner || '',
+      githubRepo || '',
     );
 
     // Initialize Jira client
@@ -56,37 +59,37 @@ export function createOrchestrator(): MetricsOrchestrator {
 
     // Initialize SonarQube client
     const sonarqubeClient = new SonarqubeMeasuresClient(
-      config.sonarqubeUrl || '',
-      config.sonarqubeToken || '',
-      config.sonarqubeProject || '',
+      config.sonarUrl || '',
+      config.sonarToken || '',
+      config.sonarProject || '',
     );
 
     // Initialize Git traverser
-    const commitTraverser = new CommitTraverser(config.repoPath || '.');
+    const commitTraverser = new CommitTraverser(config.gitRepositoryLocation || '.');
 
     // Initialize CodeMaat analyzer
-    const codemaatAnalyzer = new CodemaatAnalyzer(config.codemaatDataPath || '/tmp');
+    const codemaatAnalyzer = new CodemaatAnalyzer(config.storeData || '/tmp');
 
     // Initialize repositories
     const prsRepository = new PullRequestsRepository(
       githubPrsClient,
-      config.outputDir || './outputs',
+      config.storeData || './outputs',
     );
 
     const pipelinesRepository = new PipelinesRepository(
       githubWorkflowClient,
-      config.outputDir || './outputs',
+      config.storeData || './outputs',
     );
 
     const codeRepository = new CodeMetricsRepository(
       commitTraverser,
       codemaatAnalyzer,
-      config.outputDir || './outputs',
+      config.storeData || './outputs',
     );
 
     const issuesRepository = new IssuesRepository(
       jiraClient,
-      config.outputDir || './outputs',
+      config.storeData || './outputs',
     );
 
     const qualityRepository = new QualityMetricsRepository(sonarqubeClient);
@@ -118,14 +121,14 @@ export function validateConfiguration(): { valid: boolean; errors: string[] } {
   const errors: string[] = [];
 
   // Check for at least one provider configuration
-  const hasGithub = process.env.GITHUB_TOKEN && process.env.GITHUB_OWNER && process.env.GITHUB_REPO;
+  const hasGithub = process.env.GITHUB_TOKEN && process.env.GITHUB_REPOSITORY;
   const hasJira = process.env.JIRA_URL && process.env.JIRA_EMAIL && process.env.JIRA_TOKEN;
-  const hasSonarqube = process.env.SONARQUBE_URL && process.env.SONARQUBE_TOKEN;
-  const hasGit = process.env.REPO_PATH;
+  const hasSonarqube = process.env.SONAR_URL && process.env.SONAR_TOKEN;
+  const hasGit = process.env.GIT_REPOSITORY_LOCATION;
 
   if (!hasGithub && !hasJira && !hasSonarqube && !hasGit) {
     errors.push(
-      'No provider configuration found. Please set at least one of: GITHUB_TOKEN, JIRA_URL, SONARQUBE_URL, REPO_PATH',
+      'No provider configuration found. Please set at least one of: GITHUB_TOKEN, JIRA_URL, SONAR_URL, GIT_REPOSITORY_LOCATION',
     );
   }
 

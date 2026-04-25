@@ -1,4 +1,4 @@
-import { logger } from '@utils/logger';
+import { logger } from '@smm/utils';
 import { PullRequestsRepository } from './pull-requests-repository';
 import { PipelinesRepository } from './pipelines-repository';
 import { CodeMetricsRepository } from './code-metrics-repository';

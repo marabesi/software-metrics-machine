@@ -1,7 +1,7 @@
 import { Command } from 'commander';
-import { createMetricsCommands } from './commands/metrics';
+import { createMetricsCommands } from './commands/metrics.js';
 import { Logger } from '@smm/utils';
-import { validateConfiguration } from './orchestrator-factory';
+import { validateConfiguration } from './orchestrator-factory.js';
 
 const logger = new Logger('smm-cli');
 

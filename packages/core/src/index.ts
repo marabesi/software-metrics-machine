@@ -9,7 +9,7 @@
  * - aggregates: Repository adapters, orchestrators
  */
 
-export * from './infrastructure';
-export * from './domain';
-export * from './providers';
-export * from './aggregates';
+export * from './infrastructure/index.js';
+export * from './domain/index.js';
+export * from './providers/index.js';
+export * from './aggregates/index.js';

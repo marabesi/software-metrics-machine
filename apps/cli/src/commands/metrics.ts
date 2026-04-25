@@ -9,8 +9,8 @@ import {
   formatCompleteReport,
   formatError,
   formatLoading,
-} from '../formatters';
-import { createOrchestrator } from '../orchestrator-factory';
+} from '../formatters/index.js';
+import { createOrchestrator } from '../orchestrator-factory.js';
 
 const logger = new Logger('MetricsCommand');
 

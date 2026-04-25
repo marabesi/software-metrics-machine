@@ -1,4 +1,4 @@
-import { logger } from '@utils/logger';
+import { logger } from '@smm/utils';
 import { Commit } from '../../src/domain-types';
 import { CommitTraverser } from '../../src/providers/git';
 import { CodemaatAnalyzer } from '../../src/providers/codemaat';

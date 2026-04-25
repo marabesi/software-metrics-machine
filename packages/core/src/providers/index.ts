@@ -10,9 +10,9 @@
  * - CodeMaat: Code metrics from analysis
  */
 
-export * from './github';
-export * from './gitlab';
-export * from './jira';
-export * from './sonarqube';
-export * from './git';
-export * from './codemaat';
+export * from './github/index.js';
+export * from './gitlab/index.js';
+export * from './jira/index.js';
+export * from './sonarqube/index.js';
+export * from './git/index.js';
+export * from './codemaat/index.js';

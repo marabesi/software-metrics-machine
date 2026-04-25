@@ -2,6 +2,7 @@
   "name": "@smm/cli",
   "version": "1.0.0",
   "private": true,
+  "type": "module",
   "description": "Software Metrics Machine - CLI",
   "main": "dist/index.js",
   "bin": {
@@ -10,7 +11,7 @@
   "types": "dist/index.d.ts",
   "scripts": {
     "build": "tsc --outDir dist",
-    "dev": "ts-node src/index.ts",
+    "dev": "tsx src/index.ts",
     "test": "vitest",
     "test:ci": "vitest run ./__tests__"
   },
@@ -22,6 +23,8 @@
   "devDependencies": {
     "@types/node": "*",
     "ts-node": "*",
+    "tsconfig-paths": "^4.2.0",
+    "tsx": "^4.21.0",
     "typescript": "*",
     "vitest": "*"
   }

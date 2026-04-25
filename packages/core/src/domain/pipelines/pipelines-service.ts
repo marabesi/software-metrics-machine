@@ -1,4 +1,4 @@
-import { Logger, logger } from '@utils/logger';
+import { Logger, logger } from '@smm/utils';
 import { IRepository } from '../../infrastructure/repository';
 import {
   PipelineRun,

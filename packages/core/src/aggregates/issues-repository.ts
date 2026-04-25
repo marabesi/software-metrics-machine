@@ -1,4 +1,4 @@
-import { logger } from '@utils/logger';
+import { logger } from '@smm/utils';
 import { FileSystemRepository } from '../../src/infrastructure/repository';
 import { Issue } from 'src/domain-types';
 import { JiraIssuesClient } from '../../src/providers/jira';

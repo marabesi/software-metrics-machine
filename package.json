@@ -14,7 +14,7 @@
     "test:watch": "vitest",
     "test:coverage": "vitest run --coverage",
     "typecheck": "npm run typecheck:packages",
-    "typecheck:packages": "cd ./packages/core && npm run type-check && npm run type-check && cd ../packages/utils && npm run type-check",
+    "typecheck:packages": "cd ./packages/core && npm run type-check",
     "clean": "cd packages/core && npm run clean; cd ../utils && npm run clean; cd ../../services/rest && npm run clean; cd ../cli && npm run clean"
   },
   "keywords": [

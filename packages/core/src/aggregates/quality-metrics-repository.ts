@@ -1,4 +1,4 @@
-import { logger } from '@utils/logger';
+import { logger } from '@smm/utils';
 import { SonarqubeMeasuresClient } from '../../src/providers/sonarqube';
 
 export interface IQualityMetricsRepository {

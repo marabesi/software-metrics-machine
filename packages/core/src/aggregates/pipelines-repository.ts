@@ -1,4 +1,4 @@
-import { logger } from '@utils/logger';
+import { logger } from '@smm/utils';
 import { FileSystemRepository } from '../../src/infrastructure/repository';
 import { PipelineRun } from 'src/domain-types';
 import { GithubWorkflowClient } from '../../src/providers/github';
