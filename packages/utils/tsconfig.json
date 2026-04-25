@@ -2,7 +2,9 @@
   "extends": "../../tsconfig.json",
   "compilerOptions": {
     "outDir": "./dist",
-    "baseUrl": "."
+    "baseUrl": ".",
+    "moduleResolution": "node16",
+    "module": "node16"
   },
   "include": ["src"],
   "exclude": ["node_modules", "dist", "__tests__"]
