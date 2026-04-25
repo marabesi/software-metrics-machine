@@ -16,11 +16,10 @@
     "allowSyntheticDefaultImports": true,
     "experimentalDecorators": true,
     "emitDecoratorMetadata": true,
-    "types": ["node"],
-    "baseUrl": ".",
-    "paths": {
-      "@smm/*": ["../../packages/*/dist"]
-    }
+    "types": ["node"]
+  },
+  "ts-node": {
+    "transpileOnly": true
   },
   "include": ["src/**/*"],
   "exclude": ["node_modules", "dist", "__tests__"]

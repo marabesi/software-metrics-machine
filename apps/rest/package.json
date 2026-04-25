@@ -7,7 +7,7 @@
   "types": "dist/index.d.ts",
   "scripts": {
     "build": "tsc --outDir dist",
-    "dev": "ts-node -r tsconfig-paths/register src/main.ts",
+    "dev": "ts-node src/main.ts",
     "test": "vitest",
     "test:ci": "vitest run"
   },
