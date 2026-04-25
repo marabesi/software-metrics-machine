@@ -17,8 +17,8 @@
     "allowSyntheticDefaultImports": true,
     "baseUrl": "../..",
     "paths": {
-      "@smm/core": ["packages/core/src"],
-      "@smm/utils": ["packages/utils/src"]
+      "@smm/core": ["packages/core/dist"],
+      "@smm/utils": ["packages/utils/dist"]
     }
   },
   "ts-node": {

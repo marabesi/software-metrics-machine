@@ -19,7 +19,7 @@
     "types": ["node"],
     "baseUrl": ".",
     "paths": {
-      "@smm/*": ["../../packages/*/src"]
+      "@smm/*": ["../../packages/*/dist"]
     }
   },
   "include": ["src/**/*"],
