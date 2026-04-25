@@ -85,10 +85,10 @@ export interface FullReportResponse {
   };
 }
 
-export interface ErrorResponse {
-  statusCode: number;
-  message: string;
-  error: string;
-  timestamp: string;
+export class ErrorResponse {
+  statusCode!: number;
+  message!: string;
+  error!: string;
+  timestamp!: string;
   path?: string;
 }

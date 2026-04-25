@@ -7,7 +7,7 @@ import {
   Logger,
 } from '@nestjs/common';
 import { Request, Response } from 'express';
-import { ErrorResponse } from '../dtos';
+import { ErrorResponse } from '../dtos/response.dto.js';
 
 /**
  * Global exception filter for all HTTP exceptions

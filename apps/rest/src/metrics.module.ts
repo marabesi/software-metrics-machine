@@ -1,6 +1,6 @@
 import { Module, MiddlewareConsumer, NestModule } from '@nestjs/common';
-import { MetricsController } from './metrics.controller';
-import { LoggingMiddleware } from './middleware/logging.middleware';
+import { MetricsController } from './metrics.controller.js';
+import { LoggingMiddleware } from './middleware/logging.middleware.js';
 import {
   MetricsOrchestrator,
   PullRequestsRepository,
@@ -45,22 +45,26 @@ import {
     // GitHub Clients
     {
       provide: GithubPrsClient,
-      useFactory: (config: Configuration) =>
-        new GithubPrsClient(
+      useFactory: (config: Configuration) => {
+        const [githubOwner, githubRepo] = (config.githubRepository || '/').split('/');
+        return new GithubPrsClient(
           config.githubToken || '',
-          config.githubOwner || '',
-          config.githubRepo || '',
-        ),
+          githubOwner || '',
+          githubRepo || '',
+        );
+      },
       inject: [Configuration],
     },
     {
       provide: GithubWorkflowClient,
-      useFactory: (config: Configuration) =>
-        new GithubWorkflowClient(
+      useFactory: (config: Configuration) => {
+        const [githubOwner, githubRepo] = (config.githubRepository || '/').split('/');
+        return new GithubWorkflowClient(
           config.githubToken || '',
-          config.githubOwner || '',
-          config.githubRepo || '',
-        ),
+          githubOwner || '',
+          githubRepo || '',
+        );
+      },
       inject: [Configuration],
     },
 
@@ -82,9 +86,9 @@ import {
       provide: SonarqubeMeasuresClient,
       useFactory: (config: Configuration) =>
         new SonarqubeMeasuresClient(
-          config.sonarqubeUrl || '',
-          config.sonarqubeToken || '',
-          config.sonarqubeProject || '',
+          config.sonarUrl || '',
+          config.sonarToken || '',
+          config.sonarProject || '',
         ),
       inject: [Configuration],
     },
@@ -93,13 +97,13 @@ import {
     {
       provide: CommitTraverser,
       useFactory: (config: Configuration) =>
-        new CommitTraverser(config.repoPath || '.'),
+        new CommitTraverser(config.gitRepositoryLocation || '.'),
       inject: [Configuration],
     },
     {
       provide: CodemaatAnalyzer,
       useFactory: (config: Configuration) =>
-        new CodemaatAnalyzer(config.codemaatDataPath || '/tmp'),
+        new CodemaatAnalyzer(config.storeData || '/tmp'),
       inject: [Configuration],
     },
 
@@ -107,13 +111,13 @@ import {
     {
       provide: PullRequestsRepository,
       useFactory: (client: GithubPrsClient, config: Configuration) =>
-        new PullRequestsRepository(client, config.outputDir || './outputs'),
+        new PullRequestsRepository(client, config.storeData || './outputs'),
       inject: [GithubPrsClient, Configuration],
     },
     {
       provide: PipelinesRepository,
       useFactory: (client: GithubWorkflowClient, config: Configuration) =>
-        new PipelinesRepository(client, config.outputDir || './outputs'),
+        new PipelinesRepository(client, config.storeData || './outputs'),
       inject: [GithubWorkflowClient, Configuration],
     },
     {
@@ -122,13 +126,13 @@ import {
         traverser: CommitTraverser,
         analyzer: CodemaatAnalyzer,
         config: Configuration,
-      ) => new CodeMetricsRepository(traverser, analyzer, config.outputDir || './outputs'),
+      ) => new CodeMetricsRepository(traverser, analyzer, config.storeData || './outputs'),
       inject: [CommitTraverser, CodemaatAnalyzer, Configuration],
     },
     {
       provide: IssuesRepository,
       useFactory: (client: JiraIssuesClient, config: Configuration) =>
-        new IssuesRepository(client, config.outputDir || './outputs'),
+        new IssuesRepository(client, config.storeData || './outputs'),
       inject: [JiraIssuesClient, Configuration],
     },
     {

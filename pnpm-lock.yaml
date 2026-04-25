@@ -142,6 +142,9 @@ importers:
       ts-node:
         specifier: '*'
         version: 10.9.2(@types/node@25.5.0)(typescript@5.9.3)
+      tsx:
+        specifier: ^4.21.0
+        version: 4.21.0
       typescript:
         specifier: '*'
         version: 5.9.3

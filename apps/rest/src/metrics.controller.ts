@@ -8,6 +8,8 @@ import {
   IssueMetricsQueryDto,
   QualityMetricsQueryDto,
   FullReportQueryDto,
+} from './dtos/index.js';
+import {
   PullRequestMetricsResponse,
   DeploymentMetricsResponse,
   CodeMetricsResponse,
@@ -15,7 +17,7 @@ import {
   QualityMetricsResponse,
   FullReportResponse,
   ErrorResponse,
-} from './dtos';
+} from './dtos/response.dto.js';
 
 /**
  * Metrics API Controller
