@@ -247,4 +247,13 @@ playwright/.auth/
 out/
 lib/bashunit
 
-node_modules
+# TypeScript compilation artifacts in source directories
+# These should only exist in dist/ folders
+packages/*/src/**/*.js
+packages/*/src/**/*.d.ts
+packages/*/src/**/*.d.ts.map
+packages/*/src/**/*.js.map
+apps/*/src/**/*.js
+apps/*/src/**/*.d.ts
+apps/*/src/**/*.d.ts.map
+apps/*/src/**/*.js.map

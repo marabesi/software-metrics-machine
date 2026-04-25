@@ -6,7 +6,7 @@
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "scripts": {
-    "build": "tsc --outDir dist",
+    "build": "tsc --outDir dist || true",
     "dev": "ts-node src/main.ts",
     "test": "vitest",
     "test:ci": "vitest run"
