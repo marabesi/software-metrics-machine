@@ -4,6 +4,6 @@
 
 // Re-export all utilities from this package
 
-export * from './date-time.js';
-export * from './logger.js';
-export * from './json.js';
+export * from './date-time';
+export * from './logger';
+export * from './json';

@@ -1,2 +1,2 @@
-export { PRsService, type IPRsService } from './prs-service.js';
-export * from './pr-types.js';
+export { PRsService, type IPRsService } from './prs-service';
+export * from './pr-types';

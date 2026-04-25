@@ -3,11 +3,11 @@
   "private": true,
   "version": "0.4.0",
   "description": "Software Metrics Machine - Core business logic library",
-  "type": "module",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
   "exports": {
     ".": {
+      "require": "./dist/index.js",
       "import": "./dist/index.js",
       "types": "./dist/index.d.ts"
     }

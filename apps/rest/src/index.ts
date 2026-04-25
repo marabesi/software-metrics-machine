@@ -3,9 +3,9 @@
  * Exports all public modules and components
  */
 
-export { MetricsController } from './metrics.controller.js';
-export { MetricsModule } from './metrics.module.js';
-export * from './dtos/index.js';
-export { HttpExceptionFilter, AllExceptionsFilter } from './filters/http-exception.filter.js';
-export { LoggingMiddleware } from './middleware/logging.middleware.js';
-export { setupSwagger } from './config/swagger.config.js';
+export { MetricsController } from './metrics.controller';
+export { MetricsModule } from './metrics.module';
+export * from './dtos';
+export { HttpExceptionFilter, AllExceptionsFilter } from './filters/http-exception.filter';
+export { LoggingMiddleware } from './middleware/logging.middleware';
+export { setupSwagger } from './config/swagger.config';

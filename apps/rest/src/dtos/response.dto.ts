@@ -65,7 +65,7 @@ export interface IssueMetricsResponse {
 }
 
 export interface QualityMetricsResponse {
-  [metric: string]: number | string;
+  [metric: string]: number | string | Record<string, any> | undefined;
   filters?: Record<string, any>;
 }
 

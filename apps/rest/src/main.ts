@@ -1,9 +1,9 @@
 import 'reflect-metadata';
 import { NestFactory } from '@nestjs/core';
 import { Logger, ValidationPipe, BadRequestException } from '@nestjs/common';
-import { MetricsModule } from './metrics.module.js';
-import { HttpExceptionFilter, AllExceptionsFilter } from './filters/http-exception.filter.js';
-import { setupSwagger } from './config/swagger.config.js';
+import { MetricsModule } from './metrics.module';
+import { HttpExceptionFilter, AllExceptionsFilter } from './filters/http-exception.filter';
+import { setupSwagger } from './config/swagger.config';
 
 /**
  * Software Metrics Machine - REST API Server
@@ -54,8 +54,7 @@ async function bootstrap() {
   });
 
   // Setup Swagger/OpenAPI documentation
-  // TODO: Re-enable Swagger after fixing ES module compatibility
-  // setupSwagger(app);
+  setupSwagger(app);
 
   const port = process.env.PORT || 3000;
   const environment = process.env.NODE_ENV || 'development';

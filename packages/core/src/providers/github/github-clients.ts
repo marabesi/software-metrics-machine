@@ -1,5 +1,5 @@
 import axios, { AxiosInstance } from 'axios';
-import { PRDetails } from 'src/domain-types';
+import { PRDetails } from '../../domain-types';
 import { Logger } from '@smm/utils';
 
 export interface IGithubPrsClient {

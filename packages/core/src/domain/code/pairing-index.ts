@@ -1,6 +1,6 @@
 import { Logger, logger } from '@smm/utils';
 import { IRepository } from '../../infrastructure/repository';
-import { Commit, PairingIndexResult } from 'src/domain-types';
+import { Commit, PairingIndexResult } from '../../domain-types';
 
 export interface IPairingIndexService {
   getPairingIndex(options?: {

@@ -1,5 +1,5 @@
 import { execSync } from 'child_process';
-import { Commit, TraverserResult } from 'src/domain-types';
+import { Commit, TraverserResult } from '../../domain-types';
 import { Logger } from '@smm/utils';
 
 export interface ICommitTraverser {

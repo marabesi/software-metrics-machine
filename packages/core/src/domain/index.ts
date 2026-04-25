@@ -1,3 +1,3 @@
-export * from './code/index.js';
-export * from './prs/index.js';
-export * from './pipelines/index.js';
+export * from './code/index';
+export * from './prs/index';
+export * from './pipelines/index';

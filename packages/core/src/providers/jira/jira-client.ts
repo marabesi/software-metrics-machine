@@ -1,5 +1,5 @@
 import axios, { AxiosInstance } from 'axios';
-import { Issue } from 'src/domain-types';
+import { Issue } from '../../domain-types';
 import { Logger } from '@smm/utils';
 
 export interface IJiraIssuesClient {

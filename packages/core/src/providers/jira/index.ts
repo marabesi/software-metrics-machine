@@ -1,1 +1,1 @@
-export { JiraIssuesClient, type IJiraIssuesClient } from './jira-client.js';
+export { JiraIssuesClient, type IJiraIssuesClient } from './jira-client';

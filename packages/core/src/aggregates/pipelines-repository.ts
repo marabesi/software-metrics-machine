@@ -1,6 +1,6 @@
 import { logger } from '@smm/utils';
 import { FileSystemRepository } from '../../src/infrastructure/repository';
-import { PipelineRun } from 'src/domain-types';
+import { PipelineRun } from '../domain-types';
 import { GithubWorkflowClient } from '../../src/providers/github';
 import { PipelinesService } from '../../src/domain/pipelines';
 

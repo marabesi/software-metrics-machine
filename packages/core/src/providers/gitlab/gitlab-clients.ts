@@ -1,4 +1,4 @@
-import { PRDetails } from 'src/domain-types';
+import { PRDetails } from '../../domain-types';
 
 export interface IGitlabMrClient {
   fetchMergeRequests(options?: {

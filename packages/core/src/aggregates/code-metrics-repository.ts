@@ -1,5 +1,5 @@
 import { logger } from '@smm/utils';
-import { Commit } from '../../src/domain-types';
+import { Commit } from '../domain-types';
 import { CommitTraverser } from '../../src/providers/git';
 import { CodemaatAnalyzer } from '../../src/providers/codemaat';
 import { PairingIndexService } from '../../src/domain/code/pairing-index';

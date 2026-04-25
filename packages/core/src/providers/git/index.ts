@@ -1,1 +1,1 @@
-export { CommitTraverser, type ICommitTraverser } from './commit-traverser.js';
+export { CommitTraverser, type ICommitTraverser } from './commit-traverser';

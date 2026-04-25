@@ -1,6 +1,6 @@
 import { Module, MiddlewareConsumer, NestModule } from '@nestjs/common';
-import { MetricsController } from './metrics.controller.js';
-import { LoggingMiddleware } from './middleware/logging.middleware.js';
+import { MetricsController } from './metrics.controller';
+import { LoggingMiddleware } from './middleware/logging.middleware';
 import {
   MetricsOrchestrator,
   PullRequestsRepository,
