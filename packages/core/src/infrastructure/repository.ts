@@ -61,7 +61,7 @@ export class FileSystemRepository<T> implements IRepository<T> {
   }
 
   async saveAll(items: T[]): Promise<void> {
-    const data = JSON.stringify(items.map(item => this.serialize(item)), null, 2);
+    const data = JSON.stringify(items, null, 2);
     await this.ensureDirectoryExists();
     await fs.writeFile(this.filePath, data, 'utf-8');
   }
@@ -82,9 +82,17 @@ export class FileSystemRepository<T> implements IRepository<T> {
     try {
       const data = await fs.readFile(this.filePath, 'utf-8');
       const parsed = JSON.parse(data);
-      return Array.isArray(parsed) 
-        ? parsed.map((item: string) => this.deserialize(item))
-        : [this.deserialize(data)];
+
+      if (!Array.isArray(parsed)) {
+        return [parsed as T];
+      }
+
+      // Backward compatibility for previously double-serialized arrays.
+      if (parsed.length > 0 && typeof parsed[0] === 'string') {
+        return parsed.map((item: string) => this.deserialize(item));
+      }
+
+      return parsed as T[];
     } catch (error) {
       if ((error as NodeJS.ErrnoException).code === 'ENOENT') {
         return [];

@@ -1,5 +1,6 @@
 import { logger } from '@smm/utils';
 import { SonarqubeMeasuresClient } from '../../src/providers/sonarqube';
+import { FileSystemRepository } from '../../src/infrastructure/repository';
 
 export interface IQualityMetricsRepository {
   getQualityMetrics(options?: any): Promise<any>;
@@ -17,14 +18,26 @@ export class QualityMetricsRepository implements IQualityMetricsRepository {
   private lastFetch?: any;
   private lastFetchTime: number = 0;
   private cacheDuration: number = 1000 * 60 * 60; // 1 hour
+  private cache: FileSystemRepository<any>;
 
-  constructor(private sonarqubeClient: SonarqubeMeasuresClient) {}
+  constructor(private sonarqubeClient: SonarqubeMeasuresClient, cacheDir: string = './outputs') {
+    this.cache = new FileSystemRepository<any>(`${cacheDir}/quality-metrics.json`);
+  }
 
   /**
    * Get quality metrics
    */
   async getQualityMetrics(options?: any): Promise<any> {
     const now = Date.now();
+
+    // If memory cache is cold, try to load last saved metrics from disk.
+    if (!this.lastFetch) {
+      const fromDisk = await this.cache.load();
+      if (fromDisk) {
+        this.lastFetch = fromDisk;
+        this.lastFetchTime = now;
+      }
+    }
 
     // Use cache if recent
     if (this.lastFetch && now - this.lastFetchTime < this.cacheDuration) {
@@ -44,6 +57,7 @@ export class QualityMetricsRepository implements IQualityMetricsRepository {
 
     this.lastFetch = metrics;
     this.lastFetchTime = now;
+    await this.cache.save(metrics);
 
     return metrics;
   }

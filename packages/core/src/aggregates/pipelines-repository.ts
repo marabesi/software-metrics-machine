@@ -37,10 +37,37 @@ export class PipelinesRepository implements IPipelinesRepository {
     startDate?: string;
     endDate?: string;
     forceRefresh?: boolean;
+    includeJobs?: boolean;
   }): Promise<PipelineRun[]> {
     const fromCache = await this.cache.loadAll();
 
     if (!options?.forceRefresh && fromCache.length > 0) {
+      if (options?.includeJobs) {
+        const missingJobs = fromCache.filter((run) => !run.jobs || run.jobs.length === 0);
+
+        if (missingJobs.length > 0) {
+          logger.info(`Fetching jobs for ${missingJobs.length} cached workflow runs...`);
+          const workflowIds = missingJobs.map((run) => String(run.id));
+          const jobs = await this.githubWorkflowClient.fetchJobsForWorkflows(workflowIds);
+
+          const jobsByRunId = new Map<string, any[]>();
+          for (const job of jobs) {
+            const runId = String(job.runId);
+            const existing = jobsByRunId.get(runId) || [];
+            existing.push(job);
+            jobsByRunId.set(runId, existing);
+          }
+
+          const enrichedRuns = fromCache.map((run) => ({
+            ...run,
+            jobs: jobsByRunId.get(String(run.id)) || run.jobs || [],
+          }));
+
+          await this.cache.saveAll(enrichedRuns);
+          return enrichedRuns;
+        }
+      }
+
       logger.info(`Using cached pipelines: ${fromCache.length} records`);
       return fromCache;
     }
@@ -51,14 +78,31 @@ export class PipelinesRepository implements IPipelinesRepository {
       endDate: options?.endDate,
     });
 
-    // Save to cache
-    // if (freshWorkflows.length > 0) {
-    //   await this.cache.saveAll(
-    //     new Map(freshWorkflows.map((w, idx: number) => [`workflow-${idx}`, w as PipelineRun]))
-    //   );
-    // }
+    let workflows = freshWorkflows as PipelineRun[];
 
-    return freshWorkflows as PipelineRun[];
+    if (options?.includeJobs && workflows.length > 0) {
+      logger.info(`Fetching jobs for ${workflows.length} workflow runs...`);
+      const workflowIds = workflows.map((run) => String(run.id));
+      const jobs = await this.githubWorkflowClient.fetchJobsForWorkflows(workflowIds);
+
+      const jobsByRunId = new Map<string, any[]>();
+      for (const job of jobs) {
+        const runId = String(job.runId);
+        const existing = jobsByRunId.get(runId) || [];
+        existing.push(job);
+        jobsByRunId.set(runId, existing);
+      }
+
+      workflows = workflows.map((run) => ({
+        ...run,
+        jobs: jobsByRunId.get(String(run.id)) || [],
+      }));
+    }
+
+    // Persist fetched workflows/jobs so metrics commands can run from local data.
+    await this.cache.saveAll(workflows);
+
+    return workflows;
   }
 
   /**

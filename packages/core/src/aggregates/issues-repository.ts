@@ -50,6 +50,8 @@ export class IssuesRepository implements IIssuesRepository {
       status: options?.status,
     });
 
+    await this.cache.saveAll(freshIssues);
+
     return freshIssues;
   }
 

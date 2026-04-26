@@ -50,12 +50,8 @@ export class PullRequestsRepository implements IPullRequestsRepository {
       endDate: options?.endDate,
     });
 
-    // Save to cache
-    // if (freshPRs.length > 0) {
-    //   await this.cache.saveAll(
-    //     new Map(freshPRs.map((pr, idx) => [`pr-${idx}`, pr]))
-    //   );
-    // }
+    // Persist fetched data to disk so subsequent commands can reuse cached data.
+    await this.cache.saveAll(freshPRs);
 
     return freshPRs;
   }

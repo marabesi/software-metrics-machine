@@ -1,10 +1,5 @@
 import { Command } from 'commander';
 import { Logger } from '@smm/utils';
-import {
-  GithubWorkflowClient,
-  PipelinesRepository,
-  Configuration,
-} from '@smm/core';
 import { createOrchestrator } from '../orchestrator-factory.js';
 
 const logger = new Logger('PipelinesCommand');
@@ -37,7 +32,6 @@ export function createPipelinesCommands(program: Command): void {
   pipelinesGroup
     .command('fetch')
     .description('Fetch pipeline runs from GitHub')
-    .option('--months <number>', 'Number of months back to fetch', '1')
     .option('--force', 'Force re-fetching pipelines even if already fetched')
     .option('--start-date <date>', 'Filter runs created on or after this date (ISO 8601)')
     .option('--end-date <date>', 'Filter runs created on or before this date (ISO 8601)')
@@ -47,30 +41,14 @@ export function createPipelinesCommands(program: Command): void {
         console.log('🔄 Fetching pipeline runs from GitHub...');
 
         const orchestrator = createOrchestrator();
-        const config = orchestrator.getConfiguration();
-        const repository = new PipelinesRepository(config.storeData || './outputs');
-        const client = new GithubWorkflowClient(
-          config.githubToken || '',
-          config.githubOwner || '',
-          config.githubRepository || '',
-          repository
-        );
-
-        const filters = options.rawFilters
-          ? Object.fromEntries(
-              options.rawFilters.split(',').map((f: string) => f.split('='))
-            )
-          : undefined;
-
-        await client.fetchWorkflowRuns({
-          months: parseInt(options.months),
-          force: options.force,
+        await orchestrator.getDeploymentMetrics({
+          forceRefresh: options.force,
           startDate: options.startDate,
           endDate: options.endDate,
-          filters,
+          rawFilters: options.rawFilters,
         });
 
-        console.log('✅ Fetch pipeline data has been completed');
+        console.log('✅ Fetch pipeline data has been completed and stored on disk');
       } catch (error) {
         logger.error('Failed to fetch pipeline runs', error);
         process.exit(1);
@@ -84,7 +62,6 @@ export function createPipelinesCommands(program: Command): void {
   pipelinesGroup
     .command('fetch-jobs')
     .description('Fetch pipeline jobs from GitHub')
-    .option('--months <number>', 'Number of months back to fetch', '1')
     .option('--force', 'Force re-fetching jobs even if already fetched')
     .option('--start-date <date>', 'Filter jobs created on or after this date')
     .option('--end-date <date>', 'Filter jobs created on or before this date')
@@ -93,23 +70,14 @@ export function createPipelinesCommands(program: Command): void {
         console.log('🔄 Fetching pipeline jobs from GitHub...');
 
         const orchestrator = createOrchestrator();
-        const config = orchestrator.getConfiguration();
-        const repository = new PipelinesRepository(config.storeData || './outputs');
-        const client = new GithubWorkflowClient(
-          config.githubToken || '',
-          config.githubOwner || '',
-          config.githubRepository || '',
-          repository
-        );
-
-        await client.fetchWorkflowJobs({
-          months: parseInt(options.months),
-          force: options.force,
+        await orchestrator.getDeploymentMetrics({
+          forceRefresh: options.force,
+          includeJobs: true,
           startDate: options.startDate,
           endDate: options.endDate,
         });
 
-        console.log('✅ Fetch pipeline jobs has been completed');
+        console.log('✅ Fetch pipeline jobs has been completed and stored on disk');
       } catch (error) {
         logger.error('Failed to fetch pipeline jobs', error);
         process.exit(1);

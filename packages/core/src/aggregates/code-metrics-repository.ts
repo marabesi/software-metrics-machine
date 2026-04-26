@@ -53,15 +53,8 @@ export class CodeMetricsRepository implements ICodeMetricsRepository {
       endDate: options?.endDate,
     });
 
-    // Save to cache
-    // if (result.commits.length > 0) {
-    //   await this.commitCache.saveAll(
-    //     [
-    //       {totalAnalyzedCommits: result.totalAnalyzedCommits, pairedCommits: result.pairedCommits, commits: result.commits}
-    //     ]
-    //     // new Map(result.commits.map((c, idx) => [`commit-${idx}`, c]))
-    //   );
-    // }
+    // Persist fetched commits to disk for reuse by subsequent commands.
+    await this.commitCache.saveAll(result.commits);
 
     return result.commits;
   }

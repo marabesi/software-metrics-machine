@@ -34,18 +34,13 @@ export function createOrchestrator(): MetricsOrchestrator {
     // Load configuration from environment (or JSON file via SMM_STORE_DATA_AT)
     const config = new Configuration(process.env);
 
-    // Determine data storage directory
-    // If SMM_STORE_DATA_AT is a JSON file, store data in the same directory
-    let dataDirectory = './outputs';
-    if (config.storeData) {
-      const configPath = config.storeData;
-      if (configPath.endsWith('.json')) {
-        // Store data in the same directory as the config file
-        dataDirectory = path.dirname(configPath);
-      } else {
-        dataDirectory = configPath;
-      }
-    }
+    // Determine data storage directory following Python's path pattern:
+    // {SMM_STORE_DATA_AT}/{git_provider}_{owner}_{repo}/
+    const baseDir = config.storeData || './outputs';
+    const gitProvider = config.gitProvider || 'github';
+    const repoSlug = (config.githubRepository || '').replace('/', '_');
+    const targetDir = `${gitProvider}_${repoSlug}`;
+    const dataDirectory = path.join(baseDir, targetDir);
 
     // Parse GitHub repository (format: owner/repo)
     const [githubOwner, githubRepo] = (config.githubRepository || '/').split('/');
