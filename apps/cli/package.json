@@ -1,7 +1,7 @@
 {
   "name": "@smm/cli",
-  "version": "1.0.0",
-  "private": true,
+  "version": "0.0.1",
+  "private": false,
   "type": "module",
   "description": "Software Metrics Machine - CLI",
   "main": "dist/index.js",

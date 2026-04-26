@@ -1,7 +1,7 @@
 {
   "name": "@smm/core",
   "private": true,
-  "version": "0.4.0",
+  "version": "0.0.1",
   "description": "Software Metrics Machine - Core business logic library",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
