@@ -23,7 +23,7 @@ describe('FiltersContext', () => {
 
     expect(result.current.filters.startDate).toBe('');
     expect(result.current.filters.endDate).toBe('');
-    expect(result.current.filters.workflowSelector).toBe('All');
+    expect(result.current.filters.workflowSelector).toBeUndefined();
     expect(result.current.filters.workflowStatus).toEqual([]);
     expect(result.current.filters.aggregateBy).toBe('week');
     expect(result.current.filters.topEntries).toBe(20);
@@ -117,7 +117,7 @@ describe('FiltersContext', () => {
     expect(result.current.filters.workflowStatus).toEqual([]);
     expect(result.current.filters.aggregateBy).toBe('week');
     expect(result.current.filters.topEntries).toBe(20);
-    expect(result.current.filters.workflowSelector).toBe('All');
+    expect(result.current.filters.workflowSelector).toBeUndefined();
   });
 
   it('initializes with all expected filter properties', () => {

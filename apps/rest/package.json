@@ -34,7 +34,7 @@
     "supertest": "^6.3.3",
     "ts-jest": "^29.1.0",
     "ts-node": "*",
-    "tsx": "^4.21.0",
+    "tsx": "*",
     "typescript": "*",
     "vitest": "*"
   }

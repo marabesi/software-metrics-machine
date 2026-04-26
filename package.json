@@ -7,12 +7,10 @@
   "author": "Marabesi",
   "license": "MIT",
   "scripts": {
-    "dev": "npm run dev",
-    "build": "npm run build:packages",
+    "build": "pnpm run -r build",
+    "dev": "concurrently \"pnpm --filter=webapp run dev --port=3000\" \"PORT=8000 pnpm --filter=rest run dev\"",
     "build:packages": "cd ./packages/utils && npm run build && cd ../core && npm run build",
-    "test": "vitest run",
-    "test:watch": "vitest",
-    "test:coverage": "vitest run --coverage",
+    "test": "pnpm -r run test",
     "typecheck": "npm run typecheck:packages",
     "typecheck:packages": "cd ./packages/core && npm run type-check",
     "clean": "cd packages/core && npm run clean; cd ../utils && npm run clean; cd ../../services/rest && npm run clean; cd ../cli && npm run clean"
@@ -33,16 +31,19 @@
   "devDependencies": {
     "@types/node": "^25.2.1",
     "@vitest/coverage-v8": "^4.1.2",
-    "vitest": "^4.1.2",
     "axios": "^1.14.0",
     "chalk": "^5.6.2",
     "class-transformer": "^0.5.1",
     "class-validator": "^0.15.1",
+    "concurrently": "^9.2.1",
     "date-fns": "^4.1.0",
     "inquirer": "^13.3.2",
     "ora": "^9.3.0",
     "reflect-metadata": "^0.2.2",
+    "ts-node": "^10.9.2",
+    "tsconfig-paths": "^4.2.0",
+    "tsx": "^4.21.0",
     "typescript": "^6.0.2",
-    "ts-node": "^10.9.2"
+    "vitest": "^4.1.2"
   }
 }

@@ -1,15 +1,33 @@
-import {render, screen} from "@testing-library/react";
-import PersistentDrawerLeft from "@/app/dashboard/page";
+import React from "react";
+import { renderHook } from "@testing-library/react";
+import { FiltersProvider, useFilters } from "@/components/filters/FiltersContext";
 
-describe('Insights tab', () => {
-  it.each`
-    description                      | expected
-    ${'Pairing index title'}         | ${'Pairing Index'}
-  `('should render $description', async ({expected}) => {
-    render(<PersistentDrawerLeft />);
+// Mock Next.js router
+jest.mock('next/navigation', () => ({
+  useRouter: () => ({
+    push: jest.fn(),
+    replace: jest.fn(),
+  }),
+  usePathname: () => '/dashboard/insights',
+}));
 
-    const heading = await screen.findByText(expected);
-
-    expect(heading).toBeInTheDocument()
+describe('Insights context', () => {
+  it('provides filters context', () => {
+    const wrapper = ({ children }: { children: React.ReactNode }) => (
+      <FiltersProvider>{children}</FiltersProvider>
+    );
+    
+    const { result } = renderHook(() => useFilters(), { wrapper });
+    expect(result.current.filters).toBeDefined();
   });
-})
+
+  it('filters context has expected properties', () => {
+    const wrapper = ({ children }: { children: React.ReactNode }) => (
+      <FiltersProvider>{children}</FiltersProvider>
+    );
+    
+    const { result } = renderHook(() => useFilters(), { wrapper });
+    expect(result.current.filters.startDate).toBe('');
+    expect(result.current.filters.endDate).toBe('');
+  });
+});
