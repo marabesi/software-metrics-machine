@@ -1,5 +1,12 @@
 import { Command } from 'commander';
 import { createMetricsCommands } from './commands/metrics.js';
+import { createPRsCommands } from './commands/prs.js';
+import { createPipelinesCommands } from './commands/pipelines.js';
+import { createCodeCommands } from './commands/code.js';
+import { createJiraCommands } from './commands/jira.js';
+import { createSonarQubeCommands } from './commands/sonarqube.js';
+import { createDashboardCommands } from './commands/dashboard.js';
+import { createToolsCommands } from './commands/tools.js';
 import { Logger } from '@smm/utils';
 import { validateConfiguration } from './orchestrator-factory.js';
 
@@ -11,13 +18,15 @@ const logger = new Logger('smm-cli');
  * Command-line interface for metrics operations.
  * Provides commands for accessing metrics from various data sources.
  *
- * Available commands:
- *   - smm metrics pr        Get pull request metrics
- *   - smm metrics deployment Get deployment metrics
- *   - smm metrics code      Get code metrics
- *   - smm metrics issues    Get issue metrics
- *   - smm metrics quality   Get quality metrics
- *   - smm metrics report    Get complete report
+ * Available command groups:
+ *   - smm metrics       High-level aggregated metrics commands
+ *   - smm prs           Pull request operations (fetch, analyze)
+ *   - smm pipelines     Pipeline/workflow operations (fetch, analyze)
+ *   - smm code          Code analysis operations (churn, coupling, etc.)
+ *   - smm jira          Jira integration (fetch issues, changelog, comments)
+ *   - smm sonarqube     SonarQube integration (fetch quality measures)
+ *   - smm dashboard     Dashboard server operations
+ *   - smm tools         Utility tools (JSON merge, etc.)
  *
  * Configuration:
  *   Set environment variables for provider configuration:
@@ -51,8 +60,18 @@ async function main() {
       }
     });
 
-  // Register metrics command group
+  // Register command groups
+  // High-level aggregated metrics (original commands)
   createMetricsCommands(program);
+
+  // Granular command groups matching Python CLI
+  createPRsCommands(program);
+  createPipelinesCommands(program);
+  createCodeCommands(program);
+  createJiraCommands(program);
+  createSonarQubeCommands(program);
+  createDashboardCommands(program);
+  createToolsCommands(program);
 
   // Global help
   program
