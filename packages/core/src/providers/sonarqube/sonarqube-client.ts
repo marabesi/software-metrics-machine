@@ -88,21 +88,11 @@ export class SonarqubeMeasuresClient implements ISonarqubeMeasuresClient {
         throw new Error(`Project ${this.projectKey} not found in SonarQube.`);
       }
 
-      // Transform SonarQube response to domain type
-      const measures: CodeMetric[] = (component.measures || []).map((m: any) => ({
-        key: m.metric,
-        name: m.metric, // Could enhance with metric names
-        value: m.value || m.periods?.[0]?.value || 0,
-        formatter: m.formatter || 'PERCENT',
-      }));
+      this.logger.info(
+        `Fetched ${(component.measures || []).length} metrics for project ${this.projectKey}`
+      );
 
-      this.logger.info(`Fetched ${measures.length} metrics for project ${this.projectKey}`);
-
-      return {
-        key: component.key,
-        name: component.name,
-        measures,
-      };
+      return component;
     } catch (error) {
       const errorMsg = error instanceof Error ? error.message : String(error);
       this.logger.error(`Failed to fetch SonarQube measures: ${errorMsg}`);

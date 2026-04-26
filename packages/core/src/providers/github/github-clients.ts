@@ -86,21 +86,22 @@ export class GithubPrsClient implements IGithubPrsClient {
           break; // No more pages
         }
 
-        // Transform GitHub PR to PRDetails
+        // Keep the full GitHub payload and add compatibility aliases.
         for (const pr of prs) {
           const prDetail: PRDetails = {
-            id: pr.id,
-            number: pr.number,
-            title: pr.title,
-            state: pr.state,
-            author: { login: pr.user.login, id: pr.user.id },
+            ...pr,
+            author: { login: pr.user?.login, id: pr.user?.id },
             createdAt: pr.created_at,
             updatedAt: pr.updated_at,
             mergedAt: pr.merged_at,
             closedAt: pr.closed_at,
             url: pr.html_url,
             comments: pr.comments || 0,
-            labels: pr.labels.map((label: any) => ({ name: label.name, description: label.description })),
+            labels: (pr.labels || []).map((label: any) => ({
+              ...label,
+              name: label.name,
+              description: label.description,
+            })),
           };
 
           // Filter by date if provided
@@ -247,14 +248,15 @@ export class GithubWorkflowClient implements IGithubWorkflowClient {
             new Date(run.created_at) <= new Date(options.endDate)
           ) {
             allRuns.push({
-              id: run.id,
-              name: run.name,
-              status: run.status,
-              conclusion: run.conclusion,
+              ...run,
               createdAt: run.created_at,
               updatedAt: run.updated_at,
               runNumber: run.run_number,
               htmlUrl: run.html_url,
+              startedAt: run.run_started_at,
+              completedAt: run.updated_at,
+              branch: run.head_branch,
+              path: run.path || run.workflow_url || '',
             });
           }
         }
@@ -304,10 +306,7 @@ export class GithubWorkflowClient implements IGithubWorkflowClient {
 
         for (const job of jobs) {
           allJobs.push({
-            id: job.id,
-            name: job.name,
-            status: job.status,
-            conclusion: job.conclusion,
+            ...job,
             startedAt: job.started_at,
             completedAt: job.completed_at,
             duration: this.calculateDuration(job.started_at, job.completed_at),

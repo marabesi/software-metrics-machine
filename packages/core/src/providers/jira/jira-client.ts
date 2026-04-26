@@ -112,17 +112,18 @@ export class JiraIssuesClient implements IJiraIssuesClient {
           break; // No more issues
         }
 
-        // Transform Jira issue to Issue domain type
+        // Keep the full Jira payload and add compatibility aliases.
         for (const issue of issues) {
           const domainIssue: Issue = {
+            ...issue,
             id: issue.key,
             key: issue.key,
-            title: issue.fields.summary,
-            status: issue.fields.status?.name || 'UNKNOWN',
-            createdAt: issue.fields.created,
-            description: issue.fields.description,
-            assignee: issue.fields.assignee?.displayName || 'Unassigned',
-            labels: issue.fields.labels || [],
+            title: issue.fields?.summary,
+            status: issue.fields?.status?.name || 'UNKNOWN',
+            createdAt: issue.fields?.created,
+            description: issue.fields?.description,
+            assignee: issue.fields?.assignee?.displayName || 'Unassigned',
+            labels: issue.fields?.labels || [],
           };
 
           allIssues.push(domainIssue);
