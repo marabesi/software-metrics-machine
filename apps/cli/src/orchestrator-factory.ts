@@ -5,6 +5,8 @@
  */
 
 import * as path from 'path';
+import * as fs from 'fs';
+import { fileURLToPath } from 'url';
 import {
   MetricsOrchestrator,
   PullRequestsRepository,
@@ -23,6 +25,41 @@ import {
 import { Logger } from '@smm/utils';
 
 const logger = new Logger('OrchestratorFactory');
+const currentDir = path.dirname(fileURLToPath(import.meta.url));
+const workspaceRoot = path.resolve(currentDir, '../../../');
+
+function resolveGitRepositoryPath(configuredPath?: string): string {
+  if (!configuredPath) {
+    return '.';
+  }
+
+  if (fs.existsSync(configuredPath)) {
+    return configuredPath;
+  }
+
+  const candidates: string[] = [];
+
+  if (!path.isAbsolute(configuredPath)) {
+    candidates.push(path.resolve(workspaceRoot, configuredPath));
+    candidates.push(path.resolve(workspaceRoot, 'api', configuredPath));
+  } else {
+    const relativeToWorkspace = path.relative(workspaceRoot, configuredPath);
+    if (!relativeToWorkspace.startsWith('..') && !path.isAbsolute(relativeToWorkspace)) {
+      candidates.push(path.join(workspaceRoot, 'api', relativeToWorkspace));
+    }
+  }
+
+  for (const candidate of candidates) {
+    if (fs.existsSync(candidate)) {
+      logger.warn(
+        `Configured git_repository_location not found: ${configuredPath}. Using resolved path: ${candidate}`,
+      );
+      return candidate;
+    }
+  }
+
+  return configuredPath;
+}
 
 /**
  * Create and configure MetricsOrchestrator with dependency injection
@@ -41,6 +78,10 @@ export function createOrchestrator(): MetricsOrchestrator {
     const repoSlug = (config.githubRepository || '').replace('/', '_');
     const targetDir = `${gitProvider}_${repoSlug}`;
     const dataDirectory = path.join(baseDir, targetDir);
+    const gitProviderDirectory = path.join(dataDirectory, gitProvider);
+    const jiraDirectory = path.join(dataDirectory, 'jira');
+    const sonarqubeDirectory = path.join(dataDirectory, 'sonarqube');
+    const codemaatDirectory = path.join(dataDirectory, 'codemaat');
 
     // Parse GitHub repository (format: owner/repo)
     const [githubOwner, githubRepo] = (config.githubRepository || '/').split('/');
@@ -74,20 +115,22 @@ export function createOrchestrator(): MetricsOrchestrator {
     );
 
     // Initialize Git traverser
-    const commitTraverser = new CommitTraverser(config.gitRepositoryLocation || '.');
+    const commitTraverser = new CommitTraverser(
+      resolveGitRepositoryPath(config.gitRepositoryLocation),
+    );
 
     // Initialize CodeMaat analyzer
-    const codemaatAnalyzer = new CodemaatAnalyzer(dataDirectory);
+    const codemaatAnalyzer = new CodemaatAnalyzer(codemaatDirectory);
 
     // Initialize repositories
     const prsRepository = new PullRequestsRepository(
       githubPrsClient,
-      dataDirectory,
+      gitProviderDirectory,
     );
 
     const pipelinesRepository = new PipelinesRepository(
       githubWorkflowClient,
-      dataDirectory,
+      gitProviderDirectory,
     );
 
     const codeRepository = new CodeMetricsRepository(
@@ -98,10 +141,13 @@ export function createOrchestrator(): MetricsOrchestrator {
 
     const issuesRepository = new IssuesRepository(
       jiraClient,
-      dataDirectory,
+      jiraDirectory,
     );
 
-    const qualityRepository = new QualityMetricsRepository(sonarqubeClient);
+    const qualityRepository = new QualityMetricsRepository(
+      sonarqubeClient,
+      sonarqubeDirectory,
+    );
 
     // Create orchestrator
     const orchestrator = new MetricsOrchestrator(

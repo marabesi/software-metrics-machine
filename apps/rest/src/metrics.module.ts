@@ -1,5 +1,7 @@
 import { Module, MiddlewareConsumer, NestModule } from '@nestjs/common';
+import * as path from 'path';
 import { MetricsController } from './metrics.controller';
+import { DashboardController } from './dashboard.controller';
 import { LoggingMiddleware } from './middleware/logging.middleware';
 import {
   MetricsOrchestrator,
@@ -16,6 +18,20 @@ import {
   CodemaatAnalyzer,
   Configuration,
 } from '@smm/core';
+
+function buildDataDirectories(config: Configuration) {
+  const baseDir = config.storeData || './outputs';
+  const gitProvider = config.gitProvider || 'github';
+  const repoSlug = (config.githubRepository || '').replace('/', '_');
+  const dataDirectory = path.join(baseDir, `${gitProvider}_${repoSlug}`);
+
+  return {
+    gitProviderDirectory: path.join(dataDirectory, gitProvider),
+    jiraDirectory: path.join(dataDirectory, 'jira'),
+    sonarqubeDirectory: path.join(dataDirectory, 'sonarqube'),
+    codemaatDirectory: path.join(dataDirectory, 'codemaat'),
+  };
+}
 
 /**
  * REST API Module
@@ -34,7 +50,7 @@ import {
  * - MetricsOrchestrator: Business logic orchestration
  */
 @Module({
-  controllers: [MetricsController],
+  controllers: [MetricsController, DashboardController],
   providers: [
     // Configuration
     {
@@ -102,22 +118,28 @@ import {
     },
     {
       provide: CodemaatAnalyzer,
-      useFactory: (config: Configuration) =>
-        new CodemaatAnalyzer(config.storeData || '/tmp'),
+      useFactory: (config: Configuration) => {
+        const paths = buildDataDirectories(config);
+        return new CodemaatAnalyzer(paths.codemaatDirectory);
+      },
       inject: [Configuration],
     },
 
     // Repositories
     {
       provide: PullRequestsRepository,
-      useFactory: (client: GithubPrsClient, config: Configuration) =>
-        new PullRequestsRepository(client, config.storeData || './outputs'),
+      useFactory: (client: GithubPrsClient, config: Configuration) => {
+        const paths = buildDataDirectories(config);
+        return new PullRequestsRepository(client, paths.gitProviderDirectory);
+      },
       inject: [GithubPrsClient, Configuration],
     },
     {
       provide: PipelinesRepository,
-      useFactory: (client: GithubWorkflowClient, config: Configuration) =>
-        new PipelinesRepository(client, config.storeData || './outputs'),
+      useFactory: (client: GithubWorkflowClient, config: Configuration) => {
+        const paths = buildDataDirectories(config);
+        return new PipelinesRepository(client, paths.gitProviderDirectory);
+      },
       inject: [GithubWorkflowClient, Configuration],
     },
     {
@@ -126,20 +148,27 @@ import {
         traverser: CommitTraverser,
         analyzer: CodemaatAnalyzer,
         config: Configuration,
-      ) => new CodeMetricsRepository(traverser, analyzer, config.storeData || './outputs'),
+      ) => {
+        const paths = buildDataDirectories(config);
+        return new CodeMetricsRepository(traverser, analyzer, paths.codemaatDirectory);
+      },
       inject: [CommitTraverser, CodemaatAnalyzer, Configuration],
     },
     {
       provide: IssuesRepository,
-      useFactory: (client: JiraIssuesClient, config: Configuration) =>
-        new IssuesRepository(client, config.storeData || './outputs'),
+      useFactory: (client: JiraIssuesClient, config: Configuration) => {
+        const paths = buildDataDirectories(config);
+        return new IssuesRepository(client, paths.jiraDirectory);
+      },
       inject: [JiraIssuesClient, Configuration],
     },
     {
       provide: QualityMetricsRepository,
-      useFactory: (client: SonarqubeMeasuresClient) =>
-        new QualityMetricsRepository(client),
-      inject: [SonarqubeMeasuresClient],
+      useFactory: (client: SonarqubeMeasuresClient, config: Configuration) => {
+        const paths = buildDataDirectories(config);
+        return new QualityMetricsRepository(client, paths.sonarqubeDirectory);
+      },
+      inject: [SonarqubeMeasuresClient, Configuration],
     },
 
     // Orchestrator

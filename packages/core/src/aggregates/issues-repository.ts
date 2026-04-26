@@ -1,7 +1,7 @@
 import { logger } from '@smm/utils';
 import { FileSystemRepository } from '../../src/infrastructure/repository';
 import { Issue } from '../domain-types';
-import { JiraIssuesClient } from '../../src/providers/jira';
+import { type IJiraIssuesClient } from '../../src/providers/jira';
 
 export interface IIssuesRepository {
   getIssues(filters?: any): Promise<Issue[]>;
@@ -21,7 +21,7 @@ export class IssuesRepository implements IIssuesRepository {
   private cache: FileSystemRepository<Issue>;
 
   constructor(
-    private jiraClient: JiraIssuesClient,
+    private jiraClient: IJiraIssuesClient,
     cacheDir: string
   ) {
     this.cache = new FileSystemRepository<Issue>(`${cacheDir}/issues.json`);

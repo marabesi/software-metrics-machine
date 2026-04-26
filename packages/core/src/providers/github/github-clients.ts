@@ -19,6 +19,17 @@ export interface IGithubWorkflowClient {
   }): Promise<any[]>;
 
   fetchJobsForWorkflows(workflowIds: string[]): Promise<any[]>;
+
+  fetchWorkflowRunsPage(
+    page: number,
+    perPage?: number
+  ): Promise<{ runs: any[]; hasNext: boolean }>;
+
+  fetchJobsPage(
+    runId: string,
+    page: number,
+    perPage?: number
+  ): Promise<{ jobs: any[]; hasNext: boolean }>;
 }
 
 /**
@@ -217,17 +228,8 @@ export class GithubWorkflowClient implements IGithubWorkflowClient {
           `Fetching workflow runs page ${page} for ${this.owner}/${this.repo}`
         );
 
-        const response = await this.axiosInstance.get(
-          `/repos/${this.owner}/${this.repo}/actions/runs`,
-          {
-            params: {
-              per_page,
-              page,
-            },
-          }
-        );
-
-        const runs = response.data.workflow_runs;
+        const response = await this.fetchWorkflowRunsPage(page, per_page);
+        const runs = response.runs;
 
         if (!runs || runs.length === 0) {
           break; // No more runs
@@ -262,7 +264,7 @@ export class GithubWorkflowClient implements IGithubWorkflowClient {
         }
 
         if (page < 0) break;
-        if (runs.length < per_page) break;
+        if (!response.hasNext) break;
 
         page++;
       }
@@ -293,25 +295,26 @@ export class GithubWorkflowClient implements IGithubWorkflowClient {
           `Fetching jobs for workflow run ${runId} in ${this.owner}/${this.repo}`
         );
 
-        const response = await this.axiosInstance.get(
-          `/repos/${this.owner}/${this.repo}/actions/runs/${runId}/jobs`,
-          {
-            params: {
-              per_page: 100,
-            },
+        let page = 1;
+        while (true) {
+          const response = await this.fetchJobsPage(runId, page, 100);
+          const jobs = response.jobs || [];
+
+          for (const job of jobs) {
+            allJobs.push({
+              ...job,
+              startedAt: job.started_at,
+              completedAt: job.completed_at,
+              duration: this.calculateDuration(job.started_at, job.completed_at),
+              runId,
+            });
           }
-        );
 
-        const jobs = response.data.jobs || [];
+          if (!response.hasNext) {
+            break;
+          }
 
-        for (const job of jobs) {
-          allJobs.push({
-            ...job,
-            startedAt: job.started_at,
-            completedAt: job.completed_at,
-            duration: this.calculateDuration(job.started_at, job.completed_at),
-            runId,
-          });
+          page += 1;
         }
       }
 
@@ -333,5 +336,51 @@ export class GithubWorkflowClient implements IGithubWorkflowClient {
     return (
       new Date(completedAt).getTime() - new Date(startedAt).getTime()
     ) / 1000; // Duration in seconds
+  }
+
+  async fetchWorkflowRunsPage(
+    page: number,
+    perPage: number = 100
+  ): Promise<{ runs: any[]; hasNext: boolean }> {
+    const response = await this.axiosInstance.get(
+      `/repos/${this.owner}/${this.repo}/actions/runs`,
+      {
+        params: {
+          per_page: perPage,
+          page,
+        },
+      }
+    );
+
+    const runs = response.data.workflow_runs || [];
+    const hasNext = this.hasNextLink(response.headers?.link) || runs.length === perPage;
+    return { runs, hasNext };
+  }
+
+  async fetchJobsPage(
+    runId: string,
+    page: number,
+    perPage: number = 100
+  ): Promise<{ jobs: any[]; hasNext: boolean }> {
+    const response = await this.axiosInstance.get(
+      `/repos/${this.owner}/${this.repo}/actions/runs/${runId}/jobs`,
+      {
+        params: {
+          per_page: perPage,
+          page,
+        },
+      }
+    );
+
+    const jobs = response.data.jobs || [];
+    const hasNext = this.hasNextLink(response.headers?.link) || jobs.length === perPage;
+    return { jobs, hasNext };
+  }
+
+  private hasNextLink(linkHeader?: string): boolean {
+    if (!linkHeader) {
+      return false;
+    }
+    return linkHeader.includes('rel="next"');
   }
 }

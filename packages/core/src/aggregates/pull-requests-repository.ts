@@ -1,7 +1,7 @@
 import { logger } from '@smm/utils';
 import { FileSystemRepository } from '../../src/infrastructure/repository';
 import { PRDetails } from '../domain-types';
-import { GithubPrsClient, GithubWorkflowClient } from '../../src/providers/github';
+import { type IGithubPrsClient } from '../../src/providers/github';
 import { PRsService } from '../../src/domain/prs';
 
 export interface IPullRequestsRepository {
@@ -22,7 +22,7 @@ export class PullRequestsRepository implements IPullRequestsRepository {
   private cache: FileSystemRepository<PRDetails>;
 
   constructor(
-    private githubPrsClient: GithubPrsClient,
+    private githubPrsClient: IGithubPrsClient,
     cacheDir: string
   ) {
     this.cache = new FileSystemRepository<PRDetails>(`${cacheDir}/prs.json`);

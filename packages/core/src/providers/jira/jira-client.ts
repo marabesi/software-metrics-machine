@@ -20,9 +20,9 @@ export interface IJiraIssuesClient {
  * Jira API client for Issues
  * Real implementation using Jira REST API v3
  * Endpoints utilized:
- *   - GET /rest/api/3/search - Search/list issues with JQL
- *   - GET /rest/api/3/issues/{issueIdOrKey} - Get single issue with changelog
- *   - GET /rest/api/3/issues/{issueIdOrKey}/comments - Get issue comments
+ *   - GET /rest/api/3/search/jql - Search/list issues with JQL
+ *   - GET /rest/api/3/issue/{issueIdOrKey} - Get single issue with changelog
+ *   - GET /rest/api/3/issue/{issueIdOrKey}/comment - Get issue comments
  */
 export class JiraIssuesClient implements IJiraIssuesClient {
   private axiosInstance: AxiosInstance;
@@ -96,7 +96,7 @@ export class JiraIssuesClient implements IJiraIssuesClient {
           `Fetching Jira issues (startAt: ${startAt}, maxResults: ${maxResults})`
         );
 
-        const response = await this.axiosInstance.get('/rest/api/3/search', {
+        const response = await this.axiosInstance.get('/rest/api/3/search/jql', {
           params: {
             jql,
             startAt,
@@ -162,7 +162,7 @@ export class JiraIssuesClient implements IJiraIssuesClient {
       this.logger.info(`Fetching changelog for Jira issue: ${issueKey}`);
 
       const response = await this.axiosInstance.get(
-        `/rest/api/3/issues/${issueKey}`,
+        `/rest/api/3/issue/${issueKey}`,
         {
           params: {
             expand: 'changelog',
@@ -193,7 +193,7 @@ export class JiraIssuesClient implements IJiraIssuesClient {
       this.logger.info(`Fetching comments for Jira issue: ${issueKey}`);
 
       const response = await this.axiosInstance.get(
-        `/rest/api/3/issues/${issueKey}/comments`
+        `/rest/api/3/issue/${issueKey}/comment`
       );
 
       const comments = response.data.comments || [];

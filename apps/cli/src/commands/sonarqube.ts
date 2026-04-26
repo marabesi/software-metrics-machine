@@ -40,10 +40,16 @@ export function createSonarQubeCommands(program: Command): void {
           console.log(JSON.stringify(measures, null, 2));
         } else {
           console.log('\n=== SonarQube Quality Measures ===\n');
-          console.log(`Measures Fetched: ${Object.keys(measures).length}`);
-          console.log('\nMeasures:');
-          for (const [key, value] of Object.entries(measures)) {
-            console.log(`  ${key}: ${value}`);
+          const measureList = Array.isArray(measures.measures) ? measures.measures : [];
+          console.log(`Measures Fetched: ${measureList.length}`);
+          console.log(`Project Key: ${measures.key || 'N/A'}`);
+          console.log(`Project Name: ${measures.name || 'N/A'}`);
+
+          if (measureList.length > 0) {
+            console.log('\nMeasures:');
+            for (const measure of measureList) {
+              console.log(`  ${measure.metric || measure.key}: ${measure.value ?? 'N/A'}`);
+            }
           }
         }
 

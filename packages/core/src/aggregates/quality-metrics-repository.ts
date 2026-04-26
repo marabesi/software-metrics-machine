@@ -1,5 +1,5 @@
 import { logger } from '@smm/utils';
-import { SonarqubeMeasuresClient } from '../../src/providers/sonarqube';
+import { type ISonarqubeMeasuresClient } from '../../src/providers/sonarqube';
 import { FileSystemRepository } from '../../src/infrastructure/repository';
 
 export interface IQualityMetricsRepository {
@@ -20,8 +20,8 @@ export class QualityMetricsRepository implements IQualityMetricsRepository {
   private cacheDuration: number = 1000 * 60 * 60; // 1 hour
   private cache: FileSystemRepository<any>;
 
-  constructor(private sonarqubeClient: SonarqubeMeasuresClient, cacheDir: string = './outputs') {
-    this.cache = new FileSystemRepository<any>(`${cacheDir}/quality-metrics.json`);
+  constructor(private sonarqubeClient: ISonarqubeMeasuresClient, cacheDir: string = './outputs/sonarqube') {
+    this.cache = new FileSystemRepository<any>(`${cacheDir}/measures.json`);
   }
 
   /**

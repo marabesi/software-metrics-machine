@@ -1,7 +1,7 @@
 import { logger } from '@smm/utils';
 import { Commit } from '../domain-types';
-import { CommitTraverser } from '../../src/providers/git';
-import { CodemaatAnalyzer } from '../../src/providers/codemaat';
+import { type ICommitTraverser } from '../../src/providers/git';
+import { type ICodemaatAnalyzer } from '../../src/providers/codemaat';
 import { PairingIndexService } from '../../src/domain/code/pairing-index';
 import { FileSystemRepository } from '../../src/infrastructure/repository';
 
@@ -24,8 +24,8 @@ export class CodeMetricsRepository implements ICodeMetricsRepository {
   private commitCache: FileSystemRepository<Commit>;
 
   constructor(
-    private commitTraverser: CommitTraverser,
-    private codemaatAnalyzer: CodemaatAnalyzer,
+    private commitTraverser: ICommitTraverser,
+    private codemaatAnalyzer: ICodemaatAnalyzer,
     cacheDir: string
   ) {
     this.commitCache = new FileSystemRepository<Commit>(`${cacheDir}/commits.json`);
