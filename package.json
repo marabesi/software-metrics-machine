@@ -13,7 +13,7 @@
     "test": "pnpm -r run test",
     "typecheck": "npm run typecheck:packages",
     "typecheck:packages": "cd ./packages/core && npm run type-check",
-    "clean": "cd packages/core && npm run clean; cd ../utils && npm run clean; cd ../../services/rest && npm run clean; cd ../cli && npm run clean"
+    "cli": "cd ./apps/cli && pnpm run dev"
   },
   "keywords": [
     "software-metrics",

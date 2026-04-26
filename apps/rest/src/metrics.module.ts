@@ -1,7 +1,10 @@
 import { Module, MiddlewareConsumer, NestModule } from '@nestjs/common';
 import * as path from 'path';
 import { MetricsController } from './metrics.controller';
-import { DashboardController } from './dashboard.controller';
+import { CodeController } from './controllers/code.controller';
+import { PipelinesController } from './controllers/pipelines.controller';
+import { PullRequestsController } from './controllers/pull-requests.controller';
+import { ConfigurationController } from './controllers/configuration.controller';
 import { LoggingMiddleware } from './middleware/logging.middleware';
 import {
   MetricsOrchestrator,
@@ -50,7 +53,7 @@ function buildDataDirectories(config: Configuration) {
  * - MetricsOrchestrator: Business logic orchestration
  */
 @Module({
-  controllers: [MetricsController, DashboardController],
+  controllers: [MetricsController, CodeController, PipelinesController, PullRequestsController, ConfigurationController],
   providers: [
     // Configuration
     {

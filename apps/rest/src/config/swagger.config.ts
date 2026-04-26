@@ -53,7 +53,7 @@ Errors return HTTP status codes with JSON error response:
     )
     .setVersion('1.0.0')
     .addTag('Metrics', 'All metrics endpoints')
-    .addServer('http://localhost:3000', 'Development')
+    .addServer(`http://localhost:${process.env.PORT}`, 'Development')
     .addServer('https://api.metrics.example.com', 'Production')
     .build();
 
