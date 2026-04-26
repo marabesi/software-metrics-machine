@@ -1,3 +1,0 @@
-"""
-GitLab provider package
-"""

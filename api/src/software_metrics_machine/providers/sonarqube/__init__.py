@@ -1,1 +1,0 @@
-"""SonarQube provider package."""
