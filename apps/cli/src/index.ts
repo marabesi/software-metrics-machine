@@ -27,11 +27,35 @@ const logger = new Logger('smm-cli');
  *   - smm tools         Utility tools (JSON merge, etc.)
  *
  * Configuration:
- *   Set environment variables for provider configuration:
- *   - GITHUB_TOKEN, GITHUB_OWNER, GITHUB_REPO
- *   - JIRA_URL, JIRA_EMAIL, JIRA_TOKEN, JIRA_PROJECT
- *   - SONARQUBE_URL, SONARQUBE_TOKEN, SONARQUBE_PROJECT
- *   - REPO_PATH
+ *   Set SMM_STORE_DATA_AT environment variable to point to a JSON configuration file:
+ *   
+ *   export SMM_STORE_DATA_AT=/path/to/config.json
+ *   
+ *   JSON configuration format:
+ *   {
+ *     "git_provider": "github",
+ *     "github_token": "your_token",
+ *     "github_repository": "owner/repo",
+ *     "git_repository_location": "/path/to/repo",
+ *     "deployment_frequency_target_pipeline": ".github/workflows/ci.yml",
+ *     "deployment_frequency_target_job": "delivery",
+ *     "main_branch": "main",
+ *     "jira_url": "https://your-org.atlassian.net",
+ *     "jira_token": "your_token",
+ *     "jira_project": "PROJECT",
+ *     "jira_email": "your@email.com",
+ *     "sonar_url": "https://sonarcloud.io",
+ *     "sonar_token": "your_token",
+ *     "sonar_project": "project_key",
+ *     "log_level": "INFO",
+ *     "dashboard_start_date": "2024-01-01",
+ *     "dashboard_end_date": "2024-12-31"
+ *   }
+ *   
+ *   Alternatively, you can use individual environment variables:
+ *   GITHUB_TOKEN, GITHUB_REPOSITORY, GIT_REPOSITORY_LOCATION,
+ *   JIRA_URL, JIRA_EMAIL, JIRA_TOKEN, JIRA_PROJECT,
+ *   SONAR_URL, SONAR_TOKEN, SONAR_PROJECT
  */
 async function main() {
   const program = new Command();
