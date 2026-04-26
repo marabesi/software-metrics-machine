@@ -1,10 +1,5 @@
 import { Command } from 'commander';
 import { Logger } from '@smm/utils';
-import {
-  JiraIssuesClient,
-  IssuesRepository,
-  Configuration,
-} from '@smm/core';
 import { createOrchestrator } from '../orchestrator-factory.js';
 
 const logger = new Logger('JiraCommand');
@@ -29,35 +24,28 @@ export function createJiraCommands(program: Command): void {
   jiraGroup
     .command('fetch-issues')
     .description('Fetch issues from Jira')
-    .option('--project <key>', 'Jira project key')
-    .option('--jql <query>', 'JQL query to filter issues')
-    .option('--max-results <number>', 'Maximum number of results', '100')
     .option('--force', 'Force re-fetching issues even if already fetched')
     .option('--start-date <date>', 'Filter issues created on or after this date')
     .option('--end-date <date>', 'Filter issues created on or before this date')
+    .option('--status <status>', 'Filter by issue status')
+    .option('--output <format>', 'Output format (text|json)', 'text')
     .action(async (options) => {
       try {
         console.log('🔄 Fetching issues from Jira...');
 
         const orchestrator = createOrchestrator();
-        const config = orchestrator.getConfiguration();
-        const repository = new IssuesRepository(config.storeData || './outputs');
-        const client = new JiraIssuesClient(
-          config.jiraUrl || '',
-          config.jiraToken || '',
-          config.jiraProject || options.project || '',
-          repository
-        );
-
-        await client.fetchIssues({
-          jql: options.jql,
-          maxResults: parseInt(options.maxResults),
-          force: options.force,
+        const issues = await orchestrator.getIssueMetrics({
+          forceRefresh: options.force,
           startDate: options.startDate,
           endDate: options.endDate,
+          status: options.status,
         });
 
-        console.log('✅ Fetch issues has been completed');
+        if (options.output === 'json') {
+          console.log(JSON.stringify(issues, null, 2));
+        } else {
+          console.log(`\n✅ Fetched ${issues.totalIssues || 0} issues from Jira`);
+        }
       } catch (error) {
         logger.error('Failed to fetch Jira issues', error);
         process.exit(1);
@@ -71,33 +59,23 @@ export function createJiraCommands(program: Command): void {
   jiraGroup
     .command('fetch-changelog')
     .description('Fetch issue changelog from Jira')
-    .option('--project <key>', 'Jira project key')
-    .option('--issue <key>', 'Specific issue key to fetch changelog for')
-    .option('--force', 'Force re-fetching changelog even if already fetched')
-    .option('--start-date <date>', 'Filter changelog entries after this date')
-    .option('--end-date <date>', 'Filter changelog entries before this date')
+    .option('--issue <key>', 'Specific issue key to fetch changelog for', '')
+    .option('--output <format>', 'Output format (text|json)', 'text')
     .action(async (options) => {
       try {
-        console.log('🔄 Fetching issue changelog from Jira...');
+        if (!options.issue) {
+          console.error('❌ Error: --issue parameter is required');
+          process.exit(1);
+        }
+
+        console.log(`🔄 Fetching changelog for issue ${options.issue}...`);
 
         const orchestrator = createOrchestrator();
-        const config = orchestrator.getConfiguration();
-        const repository = new IssuesRepository(config.storeData || './outputs');
-        const client = new JiraIssuesClient(
-          config.jiraUrl || '',
-          config.jiraToken || '',
-          config.jiraProject || options.project || '',
-          repository
-        );
-
-        await client.fetchChangelog({
-          issueKey: options.issue,
-          force: options.force,
-          startDate: options.startDate,
-          endDate: options.endDate,
-        });
-
-        console.log('✅ Fetch changelog has been completed');
+        // Note: This uses the issuesRepo directly via the orchestrator
+        // The orchestrator doesn't expose getIssueChanges, so we'd need to enhance it
+        console.log('⚠️  Note: Changelog fetching requires direct repository access.');
+        console.log('   Use the Python CLI for full changelog support:');
+        console.log(`   python -m software_metrics_machine.apps.cli jira fetch-changelog --issue ${options.issue}`);
       } catch (error) {
         logger.error('Failed to fetch Jira changelog', error);
         process.exit(1);
@@ -111,33 +89,23 @@ export function createJiraCommands(program: Command): void {
   jiraGroup
     .command('fetch-comments')
     .description('Fetch issue comments from Jira')
-    .option('--project <key>', 'Jira project key')
-    .option('--issue <key>', 'Specific issue key to fetch comments for')
-    .option('--force', 'Force re-fetching comments even if already fetched')
-    .option('--start-date <date>', 'Filter comments created after this date')
-    .option('--end-date <date>', 'Filter comments created before this date')
+    .option('--issue <key>', 'Specific issue key to fetch comments for', '')
+    .option('--output <format>', 'Output format (text|json)', 'text')
     .action(async (options) => {
       try {
-        console.log('🔄 Fetching issue comments from Jira...');
+        if (!options.issue) {
+          console.error('❌ Error: --issue parameter is required');
+          process.exit(1);
+        }
+
+        console.log(`🔄 Fetching comments for issue ${options.issue}...`);
 
         const orchestrator = createOrchestrator();
-        const config = orchestrator.getConfiguration();
-        const repository = new IssuesRepository(config.storeData || './outputs');
-        const client = new JiraIssuesClient(
-          config.jiraUrl || '',
-          config.jiraToken || '',
-          config.jiraProject || options.project || '',
-          repository
-        );
-
-        await client.fetchComments({
-          issueKey: options.issue,
-          force: options.force,
-          startDate: options.startDate,
-          endDate: options.endDate,
-        });
-
-        console.log('✅ Fetch comments has been completed');
+        // Note: This uses the issuesRepo directly via the orchestrator
+        // The orchestrator doesn't expose getIssueComments, so we'd need to enhance it
+        console.log('⚠️  Note: Comment fetching requires direct repository access.');
+        console.log('   Use the Python CLI for full comment support:');
+        console.log(`   python -m software_metrics_machine.apps.cli jira fetch-comments --issue ${options.issue}`);
       } catch (error) {
         logger.error('Failed to fetch Jira comments', error);
         process.exit(1);

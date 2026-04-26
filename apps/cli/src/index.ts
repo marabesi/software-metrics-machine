@@ -1,5 +1,4 @@
 import { Command } from 'commander';
-import { createMetricsCommands } from './commands/metrics.js';
 import { createPRsCommands } from './commands/prs.js';
 import { createPipelinesCommands } from './commands/pipelines.js';
 import { createCodeCommands } from './commands/code.js';
@@ -19,7 +18,6 @@ const logger = new Logger('smm-cli');
  * Provides commands for accessing metrics from various data sources.
  *
  * Available command groups:
- *   - smm metrics       High-level aggregated metrics commands
  *   - smm prs           Pull request operations (fetch, analyze)
  *   - smm pipelines     Pipeline/workflow operations (fetch, analyze)
  *   - smm code          Code analysis operations (churn, coupling, etc.)
@@ -61,10 +59,6 @@ async function main() {
     });
 
   // Register command groups
-  // High-level aggregated metrics (original commands)
-  createMetricsCommands(program);
-
-  // Granular command groups matching Python CLI
   createPRsCommands(program);
   createPipelinesCommands(program);
   createCodeCommands(program);
