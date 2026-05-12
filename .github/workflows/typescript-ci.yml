@@ -11,10 +11,6 @@ on:
       - 'pnpm-workspace.yaml'
       - 'pnpm-lock.yaml'
       - '.github/workflows/typescript-ci.yml'
-  pull_request:
-    branches:
-      - main
-      - develop
 
 jobs:
   test-and-lint:

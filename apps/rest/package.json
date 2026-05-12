@@ -1,7 +1,6 @@
 {
-  "name": "@smm/rest",
+  "name": "@smmachine/rest",
   "version": "0.0.1",
-  "private": true,
   "description": "Software Metrics Machine - REST API",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",

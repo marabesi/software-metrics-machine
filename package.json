@@ -2,7 +2,6 @@
   "name": "software-metrics-machine",
   "version": "0.4.0",
   "description": "Data-driven approach to software measurement for high-performing teams",
-  "private": true,
   "type": "module",
   "author": "Marabesi",
   "license": "MIT",
@@ -23,7 +22,6 @@
     "change-failure-rate",
     "mean-time-recovery"
   ],
-  "packageManager": "pnpm@10.0.0",
   "engines": {
     "node": ">=25.2.1",
     "pnpm": ">=10.0.0"

@@ -1,5 +1,5 @@
 {
-  "name": "@smm/cli",
+  "name": "@smmachine/cli",
   "version": "0.0.1",
   "private": false,
   "type": "module",

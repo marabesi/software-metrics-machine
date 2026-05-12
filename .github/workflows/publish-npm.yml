@@ -1,0 +1,46 @@
+name: Publish Package to npmjs
+
+on:
+  workflow_dispatch:
+    inputs:
+      workspace_name:
+        description: 'Which app you want to deploy (cli, rest, webapp)'
+        required: true
+
+env:
+  NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+  PNPM_VERSION: 10.0.0
+
+jobs:
+  publish:
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: read
+      id-token: write
+
+    steps:
+    - uses: actions/checkout@v6
+    - name: Set Environment Variables
+      uses: tw3lveparsecs/github-actions-setvars@v0.1
+      with:
+        envFilePath: ./envvars.for.actions
+
+    - name: Use Node.js
+      uses: actions/setup-node@v6
+      with:
+        node-version: ${{ env.NODE_VERSION }}
+        registry-url: 'https://registry.npmjs.org'
+        cache: pnpm
+
+    - name: Set up pnpm
+      uses: pnpm/action-setup@v4
+      with:
+        version: ${{ env.PNPM_VERSION }}
+
+    - name: Publish CLI to npm
+      if: ${{ github.event.inputs.workspace_name == 'cli' }}
+      run: |
+        pnpm install --frozen-lockfile
+        pnpm -r build
+        cd apps/cli && npm publish --access public
+    
