@@ -2,11 +2,11 @@
   "name": "@smmachine/cli",
   "version": "0.0.5",
   "private": false,
-  "type": "module",
+  "type": "commonjs",
   "description": "Software Metrics Machine - CLI",
-  "main": "dist/index.js",
+  "main": "dist/index.cjs",
   "bin": {
-    "smm": "dist/index.js"
+    "smm": "dist/index.cjs"
   },
   "types": "dist/index.d.ts",
   "files": [

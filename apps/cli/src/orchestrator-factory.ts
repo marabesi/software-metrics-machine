@@ -6,7 +6,6 @@
 
 import * as path from 'path';
 import * as fs from 'fs';
-import { fileURLToPath } from 'url';
 import {
   MetricsOrchestrator,
   PullRequestsRepository,
@@ -25,7 +24,7 @@ import {
 import { Logger } from '@smmachine/utils';
 
 const logger = new Logger('OrchestratorFactory');
-const currentDir = path.dirname(fileURLToPath(import.meta.url));
+const currentDir = __dirname;
 const workspaceRoot = path.resolve(currentDir, '../../../');
 
 function resolveGitRepositoryPath(configuredPath?: string): string {

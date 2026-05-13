@@ -2,7 +2,6 @@ import { Command } from 'commander';
 import { execFileSync } from 'child_process';
 import * as fs from 'fs';
 import * as path from 'path';
-import { fileURLToPath } from 'url';
 import { Logger } from '@smmachine/utils';
 import {
   CommitTraverser,
@@ -11,7 +10,7 @@ import {
 import { createOrchestrator } from '../orchestrator-factory.js';
 
 const logger = new Logger('CodeCommand');
-const currentDir = path.dirname(fileURLToPath(import.meta.url));
+const currentDir = __dirname;
 const workspaceRoot = path.resolve(currentDir, '../../../../');
 const cliRoot = path.join(workspaceRoot, 'apps/cli');
 
