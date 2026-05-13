@@ -1,5 +1,5 @@
 {
-  "name": "@smm/utils",
+  "name": "@smmachine/utils",
   "version": "0.0.1",
   "private": true,
   "description": "Software Metrics Machine - Utility functions",

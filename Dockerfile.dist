@@ -1,0 +1,10 @@
+FROM node:25-alpine
+
+WORKDIR /app
+
+# Install the @smmachine/cli package globally
+RUN npm i -g @smmachine/cli
+
+# Set the entrypoint to the CLI
+# ENTRYPOINT ["smm"]
+CMD ["--help"]

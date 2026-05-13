@@ -1,5 +1,5 @@
 {
-  "name": "@smm/core",
+  "name": "@smmachine/core",
   "private": true,
   "version": "0.0.1",
   "description": "Software Metrics Machine - Core business logic library",
@@ -39,6 +39,6 @@
   "dependencies": {
     "axios": "*",
     "date-fns": "*",
-    "@smm/utils": "workspace:*"
+    "@smmachine/utils": "workspace:*"
   }
 }

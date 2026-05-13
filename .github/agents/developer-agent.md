@@ -560,7 +560,7 @@ The project uses pnpm workspaces with a dual-module architecture:
 **packages/core/package.json**:
 ```json
 {
-  "name": "@smm/core",
+  "name": "@smmachine/core",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
   "files": ["dist"],
@@ -625,7 +625,7 @@ pnpm --filter=@smm/utils build && pnpm --filter=@smm/core build
 **apps/cli/package.json**:
 ```json
 {
-  "name": "@smm/cli",
+  "name": "@smmachine/cli",
   "type": "module",
   "main": "./src/index.ts",
   "scripts": {
@@ -657,7 +657,7 @@ pnpm --filter=@smm/utils build && pnpm --filter=@smm/core build
 **apps/rest/package.json**:
 ```json
 {
-  "name": "@smm/rest",
+  "name": "@smmachine/rest",
   "scripts": {
     "dev": "ts-node src/main.ts",
     "build": "tsc --outDir dist || true"
@@ -709,7 +709,7 @@ The REST API build has cosmetic type errors (TypeScript sees both src and dist o
 **apps/webapp/package.json**:
 ```json
 {
-  "name": "@smm/webapp",
+  "name": "@smmachine/webapp",
   "type": "module",
   "scripts": {
     "dev": "next dev --turbopack",

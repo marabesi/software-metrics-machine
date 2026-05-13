@@ -1,6 +1,6 @@
 {
   "name": "@smmachine/cli",
-  "version": "0.0.1",
+  "version": "0.0.4",
   "private": false,
   "type": "module",
   "description": "Software Metrics Machine - CLI",
@@ -16,8 +16,8 @@
     "test:ci": "vitest run ./__tests__"
   },
   "dependencies": {
-    "@smm/core": "workspace:*",
-    "@smm/utils": "workspace:*",
+    "@smmachine/core": "workspace:*",
+    "@smmachine/utils": "workspace:*",
     "commander": "^14.0.3"
   },
   "devDependencies": {

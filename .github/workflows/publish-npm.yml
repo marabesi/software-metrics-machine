@@ -42,5 +42,5 @@ jobs:
       run: |
         pnpm install --frozen-lockfile
         pnpm -r build
-        cd apps/cli && npm publish --access public
+        pnpm --filter cli publish --access public
     
