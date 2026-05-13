@@ -3,11 +3,11 @@ import { execFileSync } from 'child_process';
 import * as fs from 'fs';
 import * as path from 'path';
 import { fileURLToPath } from 'url';
-import { Logger } from '@smm/utils';
+import { Logger } from '@smmachine/utils';
 import {
   CommitTraverser,
   Configuration,
-} from '@smm/core';
+} from '@smmachine/core';
 import { createOrchestrator } from '../orchestrator-factory.js';
 
 const logger = new Logger('CodeCommand');

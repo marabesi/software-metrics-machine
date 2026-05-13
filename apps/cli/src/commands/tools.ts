@@ -1,5 +1,5 @@
 import { Command } from 'commander';
-import { Logger } from '@smm/utils';
+import { Logger } from '@smmachine/utils';
 import * as fs from 'fs';
 import * as path from 'path';
 

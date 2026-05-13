@@ -1,5 +1,5 @@
 import { Command } from 'commander';
-import { Logger } from '@smm/utils';
+import { Logger } from '@smmachine/utils';
 
 const logger = new Logger('DashboardCommand');
 

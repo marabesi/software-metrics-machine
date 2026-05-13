@@ -6,7 +6,7 @@ import { createJiraCommands } from './commands/jira.js';
 import { createSonarQubeCommands } from './commands/sonarqube.js';
 import { createDashboardCommands } from './commands/dashboard.js';
 import { createToolsCommands } from './commands/tools.js';
-import { Logger } from '@smm/utils';
+import { Logger } from '@smmachine/utils';
 import { validateConfiguration } from './orchestrator-factory.js';
 
 const logger = new Logger('smm-cli');

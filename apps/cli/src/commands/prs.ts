@@ -1,5 +1,5 @@
 import { Command } from 'commander';
-import { Logger } from '@smm/utils';
+import { Logger } from '@smmachine/utils';
 import { createOrchestrator } from '../orchestrator-factory.js';
 
 const logger = new Logger('PRsCommand');
