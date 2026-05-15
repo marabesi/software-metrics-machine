@@ -18,13 +18,13 @@ fi
 MARKER_FILE="$(mktemp)"
 touch "$MARKER_FILE"
 
-echo "Packing @smmachine/cli..."
+echo "Packing @smmachine..."
 (
 	cd "$REPO_ROOT"
-	pnpm --filter=@smmachine/cli pack
+	pnpm pack
 )
 
-PACKED_FILE="$(find "$REPO_ROOT" -maxdepth 1 -type f -name "smmachine-cli-*.tgz" -newer "$MARKER_FILE" -print | tail -n 1)"
+PACKED_FILE="$(find "$REPO_ROOT" -maxdepth 1 -type f -name "smmachine-*.tgz" -newer "$MARKER_FILE" -print | tail -n 1)"
 
 rm -f "$MARKER_FILE"
 

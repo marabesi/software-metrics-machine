@@ -14,7 +14,7 @@
     "README.md"
   ],
   "scripts": {
-    "build": "tsup && cp -R ./node_modules/@smmachine/webapp/.next ./dist/webapp && cp -R ./node_modules/@smmachine/rest/dist ./dist/rest",
+    "build": "tsup",
     "build:deps": "pnpm --filter @smmachine/utils build && pnpm --filter @smmachine/core build",
     "dev": "tsx src/index.ts",
     "prepack": "pnpm run build:deps && pnpm run build",
