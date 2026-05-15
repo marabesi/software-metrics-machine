@@ -1,0 +1,10 @@
+FROM node:25-slim
+
+WORKDIR /tmp/smm-install-test
+
+ARG PACKED_FILE
+
+COPY ${PACKED_FILE} /tmp/package.tgz
+
+# installing given package to check if it can be installed without errors
+RUN npm i -g /tmp/package.tgz

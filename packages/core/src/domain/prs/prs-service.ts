@@ -44,7 +44,7 @@ export class PRsService implements IPRsService {
     const averageComments =
       prs.length > 0 ? totalComments / prs.length : 0;
 
-    this.logger.info(
+    this.logger.debug(
       `PR Metrics: ${prs.length} total, ${mergedPRs.length} merged, avg ${averageOpenDays.toFixed(2)} days open`
     );
 

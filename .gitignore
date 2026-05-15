@@ -257,3 +257,6 @@ apps/*/src/**/*.js
 apps/*/src/**/*.d.ts
 apps/*/src/**/*.d.ts.map
 apps/*/src/**/*.js.map
+
+*.tar.gz
+*.tgz

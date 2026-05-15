@@ -31,7 +31,7 @@ export class MetricsOrchestrator implements IMetricsOrchestrator {
    * Get PR metrics (lead time, comments, etc.)
    */
   async getPRMetrics(filters?: any): Promise<any> {
-    logger.info('Orchestrating PR metrics...');
+    logger.debug('Orchestrating PR metrics...');
     return this.prsRepo.getPRMetrics(filters);
   }
 

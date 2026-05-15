@@ -65,7 +65,7 @@ function resolveGitRepositoryPath(configuredPath?: string): string {
  */
 export function createOrchestrator(): MetricsOrchestrator {
   try {
-    logger.info('Initializing MetricsOrchestrator...');
+    logger.debug('Initializing MetricsOrchestrator...');
 
     // Load configuration from environment (or JSON file via SMM_STORE_DATA_AT)
     const config = new Configuration(process.env);
@@ -157,7 +157,7 @@ export function createOrchestrator(): MetricsOrchestrator {
       qualityRepository,
     );
 
-    logger.info('✓ MetricsOrchestrator initialized successfully');
+    logger.debug('✓ MetricsOrchestrator initialized successfully');
 
     return orchestrator;
   } catch (error) {

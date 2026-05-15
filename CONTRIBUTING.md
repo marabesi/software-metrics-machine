@@ -1,102 +1,116 @@
 # Contributing to Software Metrics Machine
 
-We welcome contributions from the community to enhance the Software Metrics Machine project. Whether you're fixing bugs, adding new features, or improving documentation, your input is valuable to us. Please follow the guidelines below to ensure a smooth contribution process.
+Thanks for contributing. This repository is a **pnpm TypeScript monorepo** with applications in `apps/*` and shared libraries in `packages/*`.
 
-## Technical Requirements
+## Requirements
 
-- Python
-- Panel
-- Pandas
-- Pytest
-- Docker
-- Other dependencies as listed in [pyproject.toml](./pyproject.toml)
+- Node.js `>=25.2.1`
+- pnpm `>=10.0.0`
+- Git
+
+Optional (only for specific workflows like local container runs):
+
+- Docker / Docker Compose
+
+## Project Structure
+
+Main workspace layout:
+
+- `apps/cli`: CLI application (`@smmachine/cli`)
+- `apps/rest`: REST API (`@smmachine/rest`)
+- `apps/webapp`: Next.js dashboard (`@smmachine/webapp`)
+- `packages/core`: Core domain logic (`@smmachine/core`)
+- `packages/utils`: Shared helpers (`@smmachine/utils`)
+- `docs/`: Documentation (including architecture docs)
+
+See architecture documentation in `docs/architecture`.
 
 ## Getting Started
 
-1. **Fork the Repository**: Start by forking the Software Metrics Machine repository on GitHub to your own account.
-
-2. **Clone Your Fork**: Clone your forked repository to your local machine using:
+1. Fork and clone your fork:
 
 ```bash
 git clone https://github.com/marabesi/software-metrics-machine
-```
-
-### MacOs
-
-If you are on a mac, you can easily install them using the following commands:
-
-```bash
-brew install python
-brew install poetry
-```
-
-### Checkpoint python and poetry installation
-
-Once installed python and poetry, run the following command:
-
-```bash
-poetry run python --version
-```
-
-You should see an output something like the following:
-
-```plaintext
-Python 3.11.0
-```
-
-### Install pre commit hooks
-
-In the root of the repository, you will find a file named `.pre-commit-config.yaml`. This file contains the configuration for pre-commit hooks that will automatically run checks and formatting before you commit your changes. To install the pre-commit hooks, run the following command:
-
-```bash
-pip install pre-commit
-```
-
-### Install dependencies
-
-Change directory to the cloned repository and install the dependencies using poetry:
-
-```bash
 cd software-metrics-machine
-poetry install --no-root
 ```
 
-3. **Create a Branch**: Create a new branch for your feature or bug fix:
+2. Install dependencies from the monorepo root:
+
+```bash
+pnpm install
+```
+
+3. Create a branch:
 
 ```bash
 git checkout -b feature/your-feature-name
 ```
 
-4. **Make Changes**: Make your changes in the codebase. Ensure that your code adheres to the project's coding standards and includes appropriate tests.
+## Development Commands
 
-5. **Commit Your Changes**: Commit your changes with a descriptive commit message:
+Run these from the repository root.
 
-```bash
-git commit -m "Add feature X"
-```
-
-6. **Push to Your Fork**: Push your changes to your forked repository:
+### Full workspace
 
 ```bash
-git push origin feature/your-feature-name
+# Build all workspace packages/apps
+pnpm build
+
+# Run tests in all workspaces
+pnpm test
 ```
 
-7. **Create a Pull Request**: Go to the original Software Metrics Machine repository and create a pull request from your forked repository. Provide a clear description of your changes and any relevant context.
+### Local API + dashboard development
+
+```bash
+# Starts webapp (port 3000) and REST API (port 8000)
+pnpm dev
+```
+
+### CLI development
+
+```bash
+# Run CLI in dev mode
+pnpm cli
+```
+
+### Targeted workspace commands
+
+```bash
+# Examples
+pnpm --filter @smmachine/rest test
+pnpm --filter @smmachine/core test
+pnpm --filter @smmachine/webapp build
+```
 
 ## Contribution Guidelines
 
-- **Code Style**: Follow the existing code style and conventions used in the project. This includes naming conventions, indentation, and documentation.
-- **Testing**: Ensure that your changes are covered by tests. Run existing tests to verify that nothing is broken.
-  - You can run tests using:
-  
-  ```bash
-  sh run-tests.sh
-  ```
+- Keep changes focused and scoped to the feature/fix.
+- Add or update tests for behavior changes.
+- Update docs when public behavior, commands, or architecture changes.
+- Preserve existing project conventions and folder boundaries.
 
-- **Documentation**: Update the documentation as needed to reflect your changes.
-- **Review Process**: Be prepared to engage in the code review process. Respond to feedback and make necessary adjustments to your pull request.  
-- **License**: By contributing to this project, you agree that your contributions will be licensed under the same license as the project.
+Before opening a PR, at minimum run:
 
-## Resources
+```bash
+pnpm test
+pnpm build
+```
 
-- [Multi page app documentation](https://discourse.holoviz.org/t/multi-page-app-documentation/3108/7)
+## Pull Request Checklist
+
+1. Branch is rebased or up to date with `main`.
+2. Tests pass locally.
+3. Relevant documentation is updated.
+4. PR description explains:
+   - what changed
+   - why it changed
+   - how it was validated
+
+## Review Process
+
+Maintainers will review your PR and may request changes. Please address feedback with follow-up commits.
+
+## License
+
+By contributing, you agree your contributions are licensed under the repository license.

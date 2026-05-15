@@ -40,7 +40,7 @@ export class PullRequestsRepository implements IPullRequestsRepository {
     const fromCache = await this.cache.loadAll();
 
     if (!options?.forceRefresh && fromCache.length > 0) {
-      logger.info(`Using cached PRs: ${fromCache.length} records`);
+      logger.debug(`Using cached PRs: ${fromCache.length} records`);
       return fromCache;
     }
 
