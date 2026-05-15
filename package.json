@@ -18,7 +18,7 @@
   "license": "MIT",
   "scripts": {
     "build": "pnpm run -r build",
-    "build:npm": "pnpm --filter @smmachine/utils build && pnpm --filter @smmachine/core build && pnpm --filter @smmachine/rest build && pnpm --filter @smmachine/webapp build && pnpm exec tsup",
+    "build:npm": "pnpm run -r clean && pnpm --filter @smmachine/utils build && pnpm --filter @smmachine/core build && pnpm --filter @smmachine/rest build && pnpm --filter @smmachine/webapp build && pnpm exec tsup",
     "dev": "concurrently \"pnpm --filter=webapp run dev --port=3000\" \"PORT=8000 pnpm --filter=rest run dev\"",
     "build:packages": "cd ./packages/utils && npm run build && cd ../core && npm run build",
     "test": "pnpm -r run test",

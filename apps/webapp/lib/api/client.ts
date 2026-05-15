@@ -1,13 +1,42 @@
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
-
 export interface ApiParams {
   start_date?: string;
   end_date?: string;
   [key: string]: string | number | undefined;
 }
 
+type RuntimeConfigResponse = {
+  apiBaseUrl?: string;
+};
+
+async function browserApiBaseUrl(): Promise<string> {
+  return new Promise((resolve, reject) => {
+    fetch('/api/runtime-config', {
+      cache: 'no-store',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    })
+      .then(async (response) => {
+        if (!response.ok) {
+          throw new Error(`Runtime config error: ${response.statusText}`);
+        }
+
+        const data = (await response.json()) as RuntimeConfigResponse;
+        if (typeof data.apiBaseUrl === 'string' && data.apiBaseUrl.length > 0) {
+          resolve(data.apiBaseUrl);
+          return;
+        }
+
+        throw new Error('Runtime config missing apiBaseUrl');
+      })
+      .catch((error) => {
+        reject(error);
+      });
+  });
+}
+
 export async function fetchAPI<T>(endpoint: string, params?: ApiParams): Promise<T> {
-  const url = new URL(endpoint, API_BASE_URL);
+  const url = new URL(endpoint, await browserApiBaseUrl());
   
   if (params) {
     Object.entries(params).forEach(([key, value]) => {

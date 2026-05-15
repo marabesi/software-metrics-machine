@@ -163,7 +163,7 @@ export function createDashboardCommands(program: Command): void {
           HOSTNAME: host,
           PORT: webPort,
           REST_PORT: restPort,
-          NEXT_PUBLIC_API_URL: `http://${host}:${restPort}`,
+          SMM_REST_BASE_URL: `http://${host}:${restPort}`,
           NODE_ENV: process.env.NODE_ENV || 'production',
         });
         services.push({ name: 'webapp', process: webappProcess });

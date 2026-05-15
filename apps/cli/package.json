@@ -19,7 +19,8 @@
     "dev": "tsx src/index.ts",
     "prepack": "pnpm run build:deps && pnpm run build",
     "test": "vitest --watch=false",
-    "test:ci": "vitest run ./__tests__"
+    "test:ci": "vitest run ./__tests__",
+    "clean": "rm -rf dist"
   },
   "dependencies": {
     "commander": "^14.0.3"

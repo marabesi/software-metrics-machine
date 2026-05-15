@@ -8,7 +8,8 @@
     "build": "rm -rf dist && tsc --outDir dist || true",
     "dev": "ts-node src/main.ts",
     "test": "vitest",
-    "test:ci": "vitest run"
+    "test:ci": "vitest run",
+    "clean": "rm -rf dist"
   },
   "dependencies": {
     "@nestjs/common": "^10.2.5",

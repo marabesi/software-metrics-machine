@@ -1,0 +1,2 @@
+# Exclude Next.js dev artifacts from npm package
+apps/webapp/.next/dev/
