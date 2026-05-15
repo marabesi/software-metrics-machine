@@ -14,7 +14,7 @@
     "README.md"
   ],
   "scripts": {
-    "build": "tsup",
+    "build": "tsup && cp -R ./node_modules/@smmachine/webapp/.next ./dist/webapp && cp -R ./node_modules/@smmachine/rest/dist ./dist/rest",
     "build:deps": "pnpm --filter @smmachine/utils build && pnpm --filter @smmachine/core build",
     "dev": "tsx src/index.ts",
     "prepack": "pnpm run build:deps && pnpm run build",
@@ -27,6 +27,8 @@
   "devDependencies": {
     "@smmachine/core": "workspace:*",
     "@smmachine/utils": "workspace:*",
+    "@smmachine/rest": "workspace:*",
+    "@smmachine/webapp": "workspace:*",
     "@types/node": "*",
     "ts-node": "*",
     "tsconfig-paths": "*",

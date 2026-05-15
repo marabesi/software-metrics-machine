@@ -66,9 +66,15 @@ importers:
       '@smmachine/core':
         specifier: workspace:*
         version: link:../../packages/core
+      '@smmachine/rest':
+        specifier: workspace:*
+        version: link:../rest
       '@smmachine/utils':
         specifier: workspace:*
         version: link:../../packages/utils
+      '@smmachine/webapp':
+        specifier: workspace:*
+        version: link:../webapp
       '@types/node':
         specifier: '*'
         version: 25.5.0

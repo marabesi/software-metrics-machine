@@ -19,24 +19,19 @@ The way this project works goes through three main steps:
 
 ### Environment requirements
 
-* python 3.13+
+* Node.js 25+
 * java (for running source code analysis)
 
-### Via PyPI
+### Via npm
 
 ```bash
-pipx install software-metrics-machine
+npm install -g @smmachine/cli
 ```
 
-Once installed, you can run the `smm` command in your terminal along with other ones:
+Once installed, you can run the `smm` command in your terminal:
 
 ```plaintext
-installed package software-metrics-machine, installed using Python
-
-These apps are now globally available
-- smm
-- smm-dashboard
-- smm-rest
+smm
 ```
 
 ## Define where to store the data
