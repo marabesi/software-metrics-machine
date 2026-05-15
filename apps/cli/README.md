@@ -7,9 +7,7 @@ The CLI package provides a command-line interface for the Software Metrics Machi
 ## Installation
 
 ```bash
-npm install -g @smmachine/cli
-# or
-npm install -w cli
+npm install -g @smmachine/launcher
 ```
 
 ## Configuration
