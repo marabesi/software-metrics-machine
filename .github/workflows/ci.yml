@@ -30,7 +30,7 @@ jobs:
           cache: pnpm
 
       - name: Install dependencies
-        run: pnpm install --frozen-lockfile
+        run: pnpm install
 
       - name: Build workspace
-        run: pnpm -r build
+        run: pnpm run build
