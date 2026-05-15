@@ -79,7 +79,7 @@ This agent assists developers in contributing to Software Metrics Machine, a dat
 ### Main Applications
 
 - **CLI**: `smm` - Command-line interface for metrics collection
-- **Dashboard**: `smm-dashboard` - Interactive visualization with Panel
+- **Dashboard**: `smm dashboard serve` - Interactive visualization with Panel
 - **REST API**: `smm-rest` - FastAPI server for programmatic access
 - **Webapp**: Next.js React application for modern metrics dashboard UI
 

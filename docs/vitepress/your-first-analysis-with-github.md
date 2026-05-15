@@ -121,10 +121,10 @@ Now that you have fetched the data, you can visualize it using the dashboard app
 Machine. To start the dashboard, run the following command:
 
 ```bash
-smm-dashboard
+smm dashboard serve
 ```
 
-This will start a local server, and you can access the dashboard by navigating to `http://localhost:5006` in
+This will start a local server, and you can access the dashboard by navigating to `http://localhost:3000` in
 your web browser.
 
 [Happy exploring!](features.md)

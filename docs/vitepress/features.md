@@ -12,14 +12,14 @@ data. This section provides an overview of the main features available in SMM.
 To see the dashboard, you first need to start it with the following command:
 
 ```bash
-smm-dashboard
+smm dashboard serve
 ```
 
-The command will hang the terminal and start a local server on port 5006.
+The command will hang the terminal and start a local server on port 3000.
 
 ### Accessing the Dashboard
 
-The dashboard, is available under the local url `http://localhost:5006` in your web browser.
+The dashboard, is available under the local url `http://localhost:3000` in your web browser.
 
 ![Dashboard Overview](/dashboard/dashboard.png)
 
