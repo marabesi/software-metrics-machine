@@ -1,6 +1,6 @@
 import { Controller, Get, Logger, Query } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
-import { PullRequestsRepository, Configuration } from '@smm/core';
+import { PullRequestsRepository, Configuration } from '@smmachine/core';
 
 interface PRLike {
   createdAt?: string;

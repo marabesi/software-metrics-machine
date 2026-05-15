@@ -1,6 +1,6 @@
 import { Controller, Get, Query, HttpException, HttpStatus, Logger } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiQuery, ApiResponse, ApiOkResponse } from '@nestjs/swagger';
-import { MetricsOrchestrator } from '@smm/core';
+import { MetricsOrchestrator } from '@smmachine/core';
 import {
   PRMetricsQueryDto,
   DeploymentMetricsQueryDto,

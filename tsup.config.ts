@@ -1,22 +1,69 @@
 import { defineConfig } from 'tsup';
 
-export default defineConfig({
-  entry: ['apps/cli/src/index.ts'],
-  format: ['cjs'],
-  target: 'node20',
-  outDir: 'dist',
-  sourcemap: true,
-  clean: true,
-  dts: false,
-  noExternal: ['@smmachine/core', '@smmachine/utils'],
-  outExtension() {
-    return {
-      js: '.cjs',
-    };
+export default defineConfig([
+  {
+    entry: {
+      index: 'apps/cli/src/index.ts',
+    },
+    format: ['cjs'],
+    target: 'node20',
+    platform: 'node',
+    outDir: 'dist',
+    sourcemap: true,
+    clean: true,
+    dts: false,
+    noExternal: ['@smmachine/core', '@smmachine/utils'],
+    outExtension() {
+      return {
+        js: '.cjs',
+      };
+    },
+    banner: {
+      js: '#!/usr/bin/env node',
+    },
   },
-  banner: {
-    js: '#!/usr/bin/env node',
+  {
+    entry: {
+      main: 'apps/rest/dist/main.js',
+    },
+    format: ['cjs'],
+    target: 'node20',
+    platform: 'node',
+    outDir: 'dist/rest',
+    sourcemap: true,
+    clean: false,
+    dts: false,
+    bundle: true,
+    noExternal: ['@smmachine/core', '@smmachine/utils'],
+    external: [
+      '@nestjs/microservices',
+      '@nestjs/microservices/*',
+      '@nestjs/websockets',
+      '@nestjs/websockets/*',
+      'class-transformer/storage',
+    ],
+    outExtension() {
+      return {
+        js: '.cjs',
+      };
+    },
   },
-  onSuccess:
-    'mkdir -p dist && rm -rf dist/rest dist/webapp && cp -R apps/rest/dist dist/rest && cp -R apps/webapp/.next dist/webapp',
-});
+  {
+    entry: {
+      'webapp/server': 'apps/webapp/.next/standalone/apps/webapp/server.js',
+    },
+    format: ['cjs'],
+    target: 'node20',
+    platform: 'node',
+    outDir: 'dist',
+    sourcemap: true,
+    clean: false,
+    dts: false,
+    bundle: false,
+    outExtension() {
+      return {
+        js: '.cjs',
+      };
+    },
+  },
+]);

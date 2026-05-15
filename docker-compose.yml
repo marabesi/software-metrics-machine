@@ -14,31 +14,37 @@ services:
       retries: 10
 
   api:
-    build:
-      context: apps/rest/
-      dockerfile: Dockerfile.dev
-    platform: linux/amd64
+    image: node:25-slim
+    working_dir: /workspace
     environment:
-      - SMM_STORE_DATA_AT=./data
-      - PORT=8000
+      PORT: 8000
+      SMM_STORE_DATA_AT: /workspace/.data
+      NODE_ENV: development
+      PNPM_HOME: /pnpm
     ports:
       - '8000:8000'
     volumes:
-      - ./apps/rest:/app
-      - ./apps/rest/downloads/marabesi:/marabesi
-      - ./apps/rest/downloads/marabesi_analysis:/data
-    command: pnpm run dev
+      - .:/workspace
+      - pnpm-store:/pnpm/store
+    command: sh -c "corepack enable && pnpm install --frozen-lockfile && pnpm --filter @smmachine/rest dev"
 
   webapp:
-    build:
-      context: apps/webapp/
-      dockerfile: Dockerfile.dev
+    image: node:25-slim
+    working_dir: /workspace
+    environment:
+      PORT: 3000
+      NODE_ENV: development
+      PNPM_HOME: /pnpm
     ports:
       - '3000:3000'
     volumes:
-      - ./apps/webapp:/app
-    command: npm run dev -- -H 0.0.0.0
+      - .:/workspace
+      - pnpm-store:/pnpm/store
+    command: sh -c "corepack enable && pnpm install --frozen-lockfile && pnpm --filter @smmachine/webapp dev -- -H 0.0.0.0"
 
 networks:
   default:
     driver: bridge
+
+volumes:
+  pnpm-store:

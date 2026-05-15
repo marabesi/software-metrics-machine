@@ -20,7 +20,7 @@ import {
   CommitTraverser,
   CodemaatAnalyzer,
   Configuration,
-} from '@smm/core';
+} from '@smmachine/core';
 
 function buildDataDirectories(config: Configuration) {
   const baseDir = config.storeData || './outputs';

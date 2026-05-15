@@ -1,6 +1,6 @@
 import { Controller, Get, Logger, Query } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
-import { PipelinesRepository, Configuration } from '@smm/core';
+import { PipelinesRepository, Configuration } from '@smmachine/core';
 
 interface RunLike {
   path?: string;

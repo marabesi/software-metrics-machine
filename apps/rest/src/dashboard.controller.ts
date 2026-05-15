@@ -4,7 +4,7 @@ import {
   Configuration,
   PipelinesRepository,
   PullRequestsRepository,
-} from '@smm/core';
+} from '@smmachine/core';
 import * as fs from 'fs/promises';
 import * as path from 'path';
 

@@ -1,6 +1,6 @@
 import { Controller, Get, Logger, Query } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
-import { CodeMetricsRepository, Configuration } from '@smm/core';
+import { CodeMetricsRepository, Configuration } from '@smmachine/core';
 import * as fs from 'fs/promises';
 import * as path from 'path';
 

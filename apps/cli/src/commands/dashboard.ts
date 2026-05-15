@@ -13,7 +13,9 @@ type ServiceProcess = {
 
 function findDistRoot(): string {
   const candidates = [
-    path.resolve(__dirname, '../dist'),
+    __dirname,
+    path.resolve(__dirname, 'dist'),
+    path.resolve(process.cwd(), 'dist'),
   ];
 
   for (const candidate of candidates) {
@@ -27,11 +29,47 @@ function findDistRoot(): string {
   );
 }
 
-function resolveWebappEntry(webappDistDir: string): string {
+function findPackageRoot(distRoot: string): string {
   const candidates = [
-    path.join(webappDistDir, 'standalone', 'apps', 'webapp', 'server.js'),
-    // path.join(webappDistDir, 'server.js'),
-    // path.join(webappDistDir, '.next', 'standalone', 'server.js'),
+    path.resolve(distRoot, '..'),
+    process.cwd(),
+  ];
+
+  for (const candidate of candidates) {
+    if (fs.existsSync(path.join(candidate, 'package.json'))) {
+      return candidate;
+    }
+  }
+
+  throw new Error(`Could not locate package root from dist root ${distRoot}`);
+}
+
+function resolveWebappAppDir(packageRoot: string): string {
+  const candidates = [
+    path.join(packageRoot, 'apps', 'webapp'),
+  ];
+
+  for (const appDir of candidates) {
+    if (fs.existsSync(path.join(appDir, '.next'))) {
+      return appDir;
+    }
+  }
+
+  throw new Error(
+    `Could not find packaged webapp build. Expected one of: ${candidates.join(', ')}`,
+  );
+}
+
+function resolveNextBin(packageRoot: string): string {
+  return require.resolve('next/dist/bin/next', {
+    paths: [packageRoot],
+  });
+}
+
+function resolveRestEntry(distRoot: string): string {
+  const candidates = [
+    path.join(distRoot, 'rest', 'main.cjs'),
+    path.join(distRoot, 'rest', 'main.js'),
   ];
 
   for (const entry of candidates) {
@@ -40,18 +78,17 @@ function resolveWebappEntry(webappDistDir: string): string {
     }
   }
 
-  throw new Error(
-    `Could not find webapp server entrypoint. Expected one of: ${candidates.join(', ')}`,
-  );
+  throw new Error(`Could not find REST entrypoint. Expected one of: ${candidates.join(', ')}`);
 }
 
 function spawnService(
   name: string,
   scriptPath: string,
+  args: string[],
   cwd: string,
   env: NodeJS.ProcessEnv,
 ): ChildProcess {
-  const child = spawn(process.execPath, [scriptPath], {
+  const child = spawn(process.execPath, [scriptPath, ...args], {
     cwd,
     env,
     stdio: 'inherit',
@@ -92,7 +129,7 @@ export function createDashboardCommands(program: Command): void {
     .description('Start bundled REST API and dashboard webapp servers')
     .option('--webapp-port <number>', 'Port to run the webapp server on', '3000')
     .option('--rest-port <number>', 'Port to run the REST API server on', '3001')
-    .option('--host <host>', 'Host to bind the server to', 'localhost')
+    .option('--host <host>', 'Host to bind the server to', '0.0.0.0')
     .action(async (options) => {
       try {
         const webPort = String(options.webappPort);
@@ -100,13 +137,10 @@ export function createDashboardCommands(program: Command): void {
         const host = String(options.host);
 
         const distRoot = findDistRoot();
-        // const restEntry = path.join(distRoot, 'rest', 'dist', 'main.js');
-        const webappDistDir = path.join(distRoot, 'webapp');
-        const webappEntry = resolveWebappEntry(webappDistDir);
-
-        // if (!fs.existsSync(restEntry)) {
-        //   throw new Error(`Could not find REST entrypoint at ${restEntry}`);
-        // }
+        const packageRoot = findPackageRoot(distRoot);
+        const restEntry = resolveRestEntry(distRoot);
+        const webappAppDir = resolveWebappAppDir(packageRoot);
+        const nextBin = resolveNextBin(packageRoot);
 
         console.log('🚀 Starting bundled dashboard services...');
         console.log(`   Host: ${options.host}`);
@@ -116,20 +150,20 @@ export function createDashboardCommands(program: Command): void {
         const services: ServiceProcess[] = [];
         const commonEnv = { ...process.env };
 
-        // const restProcess = spawnService('rest', restEntry, path.dirname(restEntry), {
-        //   ...commonEnv,
-        //   HOST: host,
-        //   PORT: restPort,
-        // });
-        // services.push({ name: 'rest', process: restProcess });
+        const restProcess = spawnService('rest', restEntry, [], path.dirname(restEntry), {
+          ...commonEnv,
+          HOST: host,
+          PORT: restPort,
+        });
+        services.push({ name: 'rest', process: restProcess });
 
-        const webappProcess = spawnService('webapp', webappEntry, path.dirname(webappEntry), {
+        const webappProcess = spawnService('webapp', nextBin, ['start', webappAppDir, '-p', webPort, '-H', host], packageRoot, {
           ...commonEnv,
           HOST: host,
           HOSTNAME: host,
           PORT: webPort,
           REST_PORT: restPort,
-          SMM_REST_BASE_URL: process.env.SMM_REST_BASE_URL || `http://${host}:${restPort}`,
+          NEXT_PUBLIC_API_URL: `http://${host}:${restPort}`,
           NODE_ENV: process.env.NODE_ENV || 'production',
         });
         services.push({ name: 'webapp', process: webappProcess });
