@@ -8,7 +8,7 @@ import { describe, it, expect, beforeAll, afterAll } from 'vitest';
 import * as fs from 'fs';
 import * as path from 'path';
 import * as os from 'os';
-import { CodemaatAnalyzer } from '../src/providers/codemaat/codemaat-analyzer';
+import { CodemaatAnalyzer } from '../src';
 
 describe('CodeMaat Analyzer Tests', () => {
   let tempDir: string;
@@ -193,8 +193,8 @@ src/api.ts,src/utils.ts,78`;
       expect(result).toBeDefined();
       expect(result.churn).toBeDefined();
       expect(result.coupling).toBeDefined();
-      expect(result.churn.data.length).toBe(2);
-      expect(result.coupling.length).toBe(2);
+      expect(result?.churn?.data.length).toBe(2);
+      expect(result?.coupling?.length).toBe(2);
     });
 
     it('should analyze with date filtering', async () => {

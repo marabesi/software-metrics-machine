@@ -7,7 +7,7 @@ import {
   CommitTraverser,
   Configuration,
 } from '@smmachine/core';
-import { createOrchestrator } from '../orchestrator-factory.js';
+import { createOrchestrator } from '../orchestrator-factory';
 
 const logger = new Logger('CodeCommand');
 const currentDir = __dirname;

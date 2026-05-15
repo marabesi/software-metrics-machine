@@ -1,10 +1,10 @@
 import { logger } from '@smm/utils';
 import * as fs from 'fs/promises';
 import * as path from 'path';
-import { FileSystemRepository } from '../../src/infrastructure/repository';
+import { FileSystemRepository } from '../infrastructure/repository';
 import { PipelineRun } from '../domain-types';
-import { type IGithubWorkflowClient } from '../../src/providers/github';
-import { PipelinesService } from '../../src/domain/pipelines';
+import { type IGithubWorkflowClient } from '../providers/github';
+import { PipelinesService } from '../domain/pipelines';
 
 interface WorkflowsProgress {
   page: number;

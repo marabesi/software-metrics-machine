@@ -1,9 +1,9 @@
 import { logger } from '@smm/utils';
 import { Commit } from '../domain-types';
-import { type ICommitTraverser } from '../../src/providers/git';
-import { type ICodemaatAnalyzer } from '../../src/providers/codemaat';
-import { PairingIndexService } from '../../src/domain/code/pairing-index';
-import { FileSystemRepository } from '../../src/infrastructure/repository';
+import { type ICommitTraverser } from '../providers/git';
+import { type ICodemaatAnalyzer } from '../providers/codemaat';
+import { PairingIndexService } from '../domain/code/pairing-index';
+import { FileSystemRepository } from '../infrastructure/repository';
 
 export interface ICodeMetricsRepository {
   getPairingIndex(options?: any): Promise<any>;

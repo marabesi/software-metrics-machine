@@ -1,7 +1,7 @@
 import { logger } from '@smm/utils';
-import { FileSystemRepository } from '../../src/infrastructure/repository';
+import { FileSystemRepository } from '../infrastructure/repository';
 import { Issue } from '../domain-types';
-import { type IJiraIssuesClient } from '../../src/providers/jira';
+import { type IJiraIssuesClient } from '../providers/jira';
 
 export interface IIssuesRepository {
   getIssues(filters?: any): Promise<Issue[]>;

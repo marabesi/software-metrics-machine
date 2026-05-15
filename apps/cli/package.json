@@ -18,7 +18,7 @@
     "build:deps": "pnpm --filter @smmachine/utils build && pnpm --filter @smmachine/core build",
     "dev": "tsx src/index.ts",
     "prepack": "pnpm run build:deps && pnpm run build",
-    "test": "vitest",
+    "test": "vitest --watch=false",
     "test:ci": "vitest run ./__tests__"
   },
   "dependencies": {

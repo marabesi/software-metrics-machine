@@ -1,6 +1,6 @@
 import { logger } from '@smm/utils';
-import { type ISonarqubeMeasuresClient } from '../../src/providers/sonarqube';
-import { FileSystemRepository } from '../../src/infrastructure/repository';
+import { type ISonarqubeMeasuresClient } from '../providers/sonarqube';
+import { FileSystemRepository } from '../infrastructure/repository';
 
 export interface IQualityMetricsRepository {
   getQualityMetrics(options?: any): Promise<any>;

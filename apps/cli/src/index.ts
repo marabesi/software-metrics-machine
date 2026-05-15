@@ -1,15 +1,59 @@
 import { Command } from 'commander';
-import { createPRsCommands } from './commands/prs.js';
-import { createPipelinesCommands } from './commands/pipelines.js';
-import { createCodeCommands } from './commands/code.js';
-import { createJiraCommands } from './commands/jira.js';
-import { createSonarQubeCommands } from './commands/sonarqube.js';
-import { createDashboardCommands } from './commands/dashboard.js';
-import { createToolsCommands } from './commands/tools.js';
+import { createPRsCommands } from './commands/prs';
+import { createPipelinesCommands } from './commands/pipelines';
+import { createCodeCommands } from './commands/code';
+import { createJiraCommands } from './commands/jira';
+import { createSonarQubeCommands } from './commands/sonarqube';
+import { createDashboardCommands } from './commands/dashboard';
+import { createToolsCommands } from './commands/tools';
 import { Logger } from '@smmachine/utils';
-import { validateConfiguration } from './orchestrator-factory.js';
+import { validateConfiguration } from './orchestrator-factory';
 
 const logger = new Logger('smm-cli');
+
+export function commands() {
+  const program = new Command();
+
+  program
+    .name('smm')
+    .description('Software Metrics Machine - High-performing team metrics')
+    .version('1.0.0')
+    .option('--debug', 'Enable debug logging')
+    .hook('preAction', (thisCommand) => {
+      const options = thisCommand.opts();
+      if (options.debug || process.env.DEBUG) {
+        logger.setLevel('DEBUG');
+      }
+    })
+    .hook('preAction', () => {
+      // Validate configuration before executing commands
+      const validation = validateConfiguration();
+      if (!validation.valid) {
+        for (const error of validation.errors) {
+          logger.error(error);
+        }
+        process.exit(1);
+      }
+    });
+
+  // Register command groups
+  createPRsCommands(program);
+  createPipelinesCommands(program);
+  createCodeCommands(program);
+  createJiraCommands(program);
+  createSonarQubeCommands(program);
+  createDashboardCommands(program);
+  createToolsCommands(program);
+
+  // Global help
+  program
+    .command('help')
+    .description('Show help information')
+    .action(() => {
+      program.outputHelp();
+    });
+  return program;
+}
 
 /**
  * Software Metrics Machine - CLI
@@ -57,47 +101,8 @@ const logger = new Logger('smm-cli');
  *   JIRA_URL, JIRA_EMAIL, JIRA_TOKEN, JIRA_PROJECT,
  *   SONAR_URL, SONAR_TOKEN, SONAR_PROJECT
  */
-async function main() {
-  const program = new Command();
-
-  program
-    .name('smm')
-    .description('Software Metrics Machine - High-performing team metrics')
-    .version('1.0.0')
-    .option('--debug', 'Enable debug logging')
-    .hook('preAction', (thisCommand) => {
-      const options = thisCommand.opts();
-      if (options.debug || process.env.DEBUG) {
-        logger.setLevel('DEBUG');
-      }
-    })
-    .hook('preAction', () => {
-      // Validate configuration before executing commands
-      const validation = validateConfiguration();
-      if (!validation.valid) {
-        for (const error of validation.errors) {
-          logger.error(error);
-        }
-        process.exit(1);
-      }
-    });
-
-  // Register command groups
-  createPRsCommands(program);
-  createPipelinesCommands(program);
-  createCodeCommands(program);
-  createJiraCommands(program);
-  createSonarQubeCommands(program);
-  createDashboardCommands(program);
-  createToolsCommands(program);
-
-  // Global help
-  program
-    .command('help')
-    .description('Show help information')
-    .action(() => {
-      program.outputHelp();
-    });
+export async function main() {
+  const program = commands();
 
   // Default action if no command provided
   if (!process.argv.slice(2).length) {

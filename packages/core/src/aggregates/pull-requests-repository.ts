@@ -1,8 +1,8 @@
 import { logger } from '@smm/utils';
-import { FileSystemRepository } from '../../src/infrastructure/repository';
+import { FileSystemRepository } from '../infrastructure/repository';
 import { PRDetails } from '../domain-types';
-import { type IGithubPrsClient } from '../../src/providers/github';
-import { PRsService } from '../../src/domain/prs';
+import { type IGithubPrsClient } from '../providers/github';
+import { PRsService } from '../domain/prs';
 
 export interface IPullRequestsRepository {
   getPRMetrics(filters?: any): Promise<any>;
