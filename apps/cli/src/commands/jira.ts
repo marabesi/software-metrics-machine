@@ -75,7 +75,9 @@ export function createJiraCommands(program: Command): void {
         // The orchestrator doesn't expose getIssueChanges, so we'd need to enhance it
         console.log('⚠️  Note: Changelog fetching requires direct repository access.');
         console.log('   Use the Python CLI for full changelog support:');
-        console.log(`   python -m software_metrics_machine.apps.cli jira fetch-changelog --issue ${options.issue}`);
+        console.log(
+          `   python -m software_metrics_machine.apps.cli jira fetch-changelog --issue ${options.issue}`
+        );
       } catch (error) {
         logger.error('Failed to fetch Jira changelog', error);
         process.exit(1);
@@ -105,7 +107,9 @@ export function createJiraCommands(program: Command): void {
         // The orchestrator doesn't expose getIssueComments, so we'd need to enhance it
         console.log('⚠️  Note: Comment fetching requires direct repository access.');
         console.log('   Use the Python CLI for full comment support:');
-        console.log(`   python -m software_metrics_machine.apps.cli jira fetch-comments --issue ${options.issue}`);
+        console.log(
+          `   python -m software_metrics_machine.apps.cli jira fetch-comments --issue ${options.issue}`
+        );
       } catch (error) {
         logger.error('Failed to fetch Jira comments', error);
         process.exit(1);

@@ -72,9 +72,9 @@ export function commands() {
  *
  * Configuration:
  *   Set SMM_STORE_DATA_AT environment variable to point to a JSON configuration file:
- *   
+ *
  *   export SMM_STORE_DATA_AT=/path/to/config.json
- *   
+ *
  *   JSON configuration format:
  *   {
  *     "git_provider": "github",
@@ -95,7 +95,7 @@ export function commands() {
  *     "dashboard_start_date": "2024-01-01",
  *     "dashboard_end_date": "2024-12-31"
  *   }
- *   
+ *
  *   Alternatively, you can use individual environment variables:
  *   GITHUB_TOKEN, GITHUB_REPOSITORY, GIT_REPOSITORY_LOCATION,
  *   JIRA_URL, JIRA_EMAIL, JIRA_TOKEN, JIRA_PROJECT,

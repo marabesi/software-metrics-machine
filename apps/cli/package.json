@@ -20,7 +20,8 @@
     "prepack": "pnpm run build:deps && pnpm run build",
     "test": "vitest --watch=false",
     "test:ci": "vitest run ./__tests__",
-    "clean": "rm -rf dist"
+    "clean": "rm -rf dist",
+    "lint": "eslint ."
   },
   "dependencies": {
     "commander": "catalog:"
@@ -31,6 +32,11 @@
     "@smmachine/rest": "workspace:*",
     "@smmachine/webapp": "workspace:*",
     "@types/node": "catalog:",
+    "@typescript-eslint/eslint-plugin": "catalog:",
+    "@typescript-eslint/parser": "catalog:",
+    "eslint": "catalog:",
+    "eslint-config-prettier": "catalog:",
+    "eslint-plugin-prettier": "catalog:",
     "ts-node": "catalog:",
     "tsconfig-paths": "catalog:",
     "tsx": "catalog:",

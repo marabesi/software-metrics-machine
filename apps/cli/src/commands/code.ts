@@ -3,10 +3,7 @@ import { execFileSync } from 'child_process';
 import * as fs from 'fs';
 import * as path from 'path';
 import { Logger } from '@smmachine/utils';
-import {
-  CommitTraverser,
-  Configuration,
-} from '@smmachine/core';
+import { CommitTraverser, Configuration } from '@smmachine/core';
 import { createOrchestrator } from '../orchestrator-factory';
 
 const logger = new Logger('CodeCommand');
@@ -55,9 +52,7 @@ function resolveRepositoryFromConfig(config: Configuration): string {
     }
   }
 
-  throw new Error(
-    `git_repository_location from smm_config.json was not found: ${configuredPath}`,
-  );
+  throw new Error(`git_repository_location from smm_config.json was not found: ${configuredPath}`);
 }
 
 /**
@@ -101,7 +96,9 @@ export function createCodeCommands(program: Command): void {
         const result = await traverser.traverseCommits({
           startDate: options.startDate,
           endDate: options.endDate,
-          selectedAuthors: options.authors ? options.authors.split(',').map((a: string) => a.trim()) : undefined,
+          selectedAuthors: options.authors
+            ? options.authors.split(',').map((a: string) => a.trim())
+            : undefined,
         });
         const commits = result.commits;
 
@@ -157,7 +154,7 @@ export function createCodeCommands(program: Command): void {
             cwd: cliRoot,
             encoding: 'utf-8',
             stdio: ['ignore', 'pipe', 'pipe'],
-          },
+          }
         );
 
         if (options.output === 'json') {
@@ -169,8 +166,8 @@ export function createCodeCommands(program: Command): void {
                 stdout,
               },
               null,
-              2,
-            ),
+              2
+            )
           );
         } else {
           console.log('\n=== CodeMaat Fetch ===\n');
@@ -201,14 +198,22 @@ export function createCodeCommands(program: Command): void {
 
         const orchestrator = createOrchestrator();
         const metrics = await orchestrator.getCodeMetrics({
-          selectedAuthors: options.authors ? options.authors.split(',').map((a: string) => a.trim()) : undefined,
+          selectedAuthors: options.authors
+            ? options.authors.split(',').map((a: string) => a.trim())
+            : undefined,
           startDate: options.startDate,
           endDate: options.endDate,
         });
         const churnRows = Array.isArray(metrics.codeChurn?.data) ? metrics.codeChurn.data : [];
-        const totalCommits = churnRows.reduce((sum: number, row: any) => sum + (row.commits || 0), 0);
+        const totalCommits = churnRows.reduce(
+          (sum: number, row: any) => sum + (row.commits || 0),
+          0
+        );
         const linesAdded = churnRows.reduce((sum: number, row: any) => sum + (row.added || 0), 0);
-        const linesRemoved = churnRows.reduce((sum: number, row: any) => sum + (row.deleted || 0), 0);
+        const linesRemoved = churnRows.reduce(
+          (sum: number, row: any) => sum + (row.deleted || 0),
+          0
+        );
 
         if (options.output === 'json') {
           console.log(JSON.stringify({ codeChurn: churnRows }, null, 2));
@@ -284,7 +289,7 @@ export function createCodeCommands(program: Command): void {
         const churnRows = Array.isArray(metrics.codeChurn?.data) ? metrics.codeChurn.data : [];
         const totalChurn = churnRows.reduce(
           (sum: number, row: any) => sum + (row.added || 0) + (row.deleted || 0),
-          0,
+          0
         );
 
         if (options.output === 'json') {
@@ -429,7 +434,10 @@ export function createCodeCommands(program: Command): void {
         const pairing = metrics.pairingIndex || {};
         const churnRows = Array.isArray(metrics.codeChurn?.data) ? metrics.codeChurn.data : [];
         const linesAdded = churnRows.reduce((sum: number, row: any) => sum + (row.added || 0), 0);
-        const linesRemoved = churnRows.reduce((sum: number, row: any) => sum + (row.deleted || 0), 0);
+        const linesRemoved = churnRows.reduce(
+          (sum: number, row: any) => sum + (row.deleted || 0),
+          0
+        );
 
         if (options.output === 'json') {
           console.log(JSON.stringify(metrics, null, 2));
@@ -440,7 +448,9 @@ export function createCodeCommands(program: Command): void {
           console.log(`Code Churn Data Points: ${churnRows.length}`);
           console.log(`Lines Added: ${linesAdded}`);
           console.log(`Lines Removed: ${linesRemoved}`);
-          console.log(`Coupling Relationships: ${Array.isArray(metrics.fileCoupling) ? metrics.fileCoupling.length : 0}`);
+          console.log(
+            `Coupling Relationships: ${Array.isArray(metrics.fileCoupling) ? metrics.fileCoupling.length : 0}`
+          );
         }
       } catch (error) {
         logger.error('Failed to retrieve code metadata', error);

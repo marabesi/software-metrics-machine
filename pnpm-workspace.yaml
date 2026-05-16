@@ -41,6 +41,10 @@ catalog:
   dayjs: ^1.11.20
   eslint: ^9
   eslint-config-next: 16.1.1
+  eslint-config-prettier: ^10.1.5
+  eslint-plugin-prettier: ^5.4.0
+  '@typescript-eslint/eslint-plugin': ^8.33.0
+  '@typescript-eslint/parser': ^8.33.0
   inquirer: ^13.4.3
   next: 16.2.1
   ora: ^9.4.0

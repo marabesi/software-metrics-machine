@@ -66,4 +66,4 @@ export class Logger {
 /**
  * Global logger instance
  */
-export const logger = new Logger('SMM', process.env.LOG_LEVEL as LogLevel || 'INFO');
+export const logger = new Logger('SMM', (process.env.LOG_LEVEL as LogLevel) || 'INFO');

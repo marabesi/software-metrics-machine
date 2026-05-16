@@ -13,7 +13,9 @@ const logger = new Logger('SonarQubeCommand');
  *   smm sonarqube fetch-measures   Fetch quality measures from SonarQube
  */
 export function createSonarQubeCommands(program: Command): void {
-  const sonarqubeGroup = program.command('sonarqube').description('SonarQube integration operations');
+  const sonarqubeGroup = program
+    .command('sonarqube')
+    .description('SonarQube integration operations');
 
   /**
    * smm sonarqube fetch-measures [options]
@@ -22,14 +24,17 @@ export function createSonarQubeCommands(program: Command): void {
   sonarqubeGroup
     .command('fetch-measures')
     .description('Fetch quality measures from SonarQube')
-    .option('--metrics <list>', 'Comma-separated list of metrics to fetch (default: coverage,sqale_rating,complexity,duplicated_lines_density)')
+    .option(
+      '--metrics <list>',
+      'Comma-separated list of metrics to fetch (default: coverage,sqale_rating,complexity,duplicated_lines_density)'
+    )
     .option('--output <format>', 'Output format (text|json)', 'text')
     .action(async (options) => {
       try {
         console.log('🔄 Fetching quality measures from SonarQube...');
 
         const orchestrator = createOrchestrator();
-        
+
         const metricsParam = options.metrics
           ? { metrics: options.metrics.split(',').map((m: string) => m.trim()) }
           : undefined;

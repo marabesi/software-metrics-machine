@@ -19,7 +19,8 @@ export function formatPullRequestMetrics(data: any, options: FormatterOptions): 
     const lines: string[] = ['metric,value'];
     if (data.totalPRs !== undefined) lines.push(`total_prs,${data.totalPRs}`);
     if (data.leadTime?.average !== undefined) lines.push(`lead_time_days,${data.leadTime.average}`);
-    if (data.commentSummary?.total !== undefined) lines.push(`total_comments,${data.commentSummary.total}`);
+    if (data.commentSummary?.total !== undefined)
+      lines.push(`total_comments,${data.commentSummary.total}`);
     return lines.join('\n');
   }
 
@@ -27,15 +28,15 @@ export function formatPullRequestMetrics(data: any, options: FormatterOptions): 
   let output = '\n📊 Pull Request Metrics\n';
   output += '═══════════════════════════════════════\n';
   output += `Total PRs: ${data.totalPRs || 'N/A'}\n`;
-  
+
   if (data.leadTime) {
     output += `Lead Time: ${data.leadTime.average || 'N/A'} ${data.leadTime.unit || 'days'}\n`;
   }
-  
+
   if (data.commentSummary) {
     output += `Total Comments: ${data.commentSummary.total || 'N/A'}\n`;
   }
-  
+
   if (data.labelSummary && Object.keys(data.labelSummary).length > 0) {
     output += '\nLabels:\n';
     for (const [label, count] of Object.entries(data.labelSummary)) {
@@ -67,12 +68,12 @@ export function formatDeploymentMetrics(data: any, options: FormatterOptions): s
   // Text format (default)
   let output = '\n🚀 Deployment Metrics\n';
   output += '═══════════════════════════════════════\n';
-  
+
   if (data.pipelineMetrics) {
     output += `Total Runs: ${data.pipelineMetrics.totalRuns || 'N/A'}\n`;
     output += `Success Rate: ${(data.pipelineMetrics.successRate * 100).toFixed(1)}%\n`;
   }
-  
+
   if (data.deploymentFrequency && data.deploymentFrequency.length > 0) {
     output += '\nDeployment Frequency:\n';
     for (const item of data.deploymentFrequency) {
@@ -117,15 +118,15 @@ export function formatCodeMetrics(data: any, options: FormatterOptions): string 
   // Text format (default)
   let output = '\n💻 Code Metrics\n';
   output += '═══════════════════════════════════════\n';
-  
+
   if (data.pairingIndex) {
     output += `Pairing Index: ${data.pairingIndex.pairingIndexPercentage || 'N/A'}%\n`;
   }
-  
+
   if (data.codeChurn?.data) {
     output += `Code Churn: +${data.codeChurn.data.additions} -${data.codeChurn.data.deletions}\n`;
   }
-  
+
   if (data.fileCoupling && data.fileCoupling.length > 0) {
     output += `\nFile Coupling (${data.fileCoupling.length} pairs):\n`;
     for (const coupling of data.fileCoupling.slice(0, 10)) {
@@ -162,7 +163,7 @@ export function formatIssueMetrics(data: any, options: FormatterOptions): string
   let output = '\n🎫 Issue Metrics\n';
   output += '═══════════════════════════════════════\n';
   output += `Total Issues: ${data.totalIssues || 'N/A'}\n`;
-  
+
   if (data.issues && data.issues.length > 0) {
     output += '\nRecent Issues:\n';
     for (const issue of data.issues.slice(0, 10)) {
@@ -199,7 +200,7 @@ export function formatQualityMetrics(data: any, options: FormatterOptions): stri
   // Text format (default)
   let output = '\n✅ Quality Metrics\n';
   output += '═══════════════════════════════════════\n';
-  
+
   for (const [key, value] of Object.entries(data)) {
     if (key !== 'filters') {
       const metricName = key.replace(/_/g, ' ');
@@ -221,7 +222,7 @@ export function formatCompleteReport(data: any, options: FormatterOptions): stri
 
   if (options.format === 'csv') {
     const lines: string[] = ['section,metric,value'];
-    
+
     // Add PR metrics
     if (data.pullRequests) {
       lines.push(`PR,total_prs,${data.pullRequests.totalPRs}`);
@@ -233,7 +234,9 @@ export function formatCompleteReport(data: any, options: FormatterOptions): stri
     // Add deployment metrics
     if (data.deployment) {
       lines.push(`Deployment,total_runs,${data.deployment.pipelineMetrics.totalRuns}`);
-      lines.push(`Deployment,success_rate,${(data.deployment.pipelineMetrics.successRate * 100).toFixed(1)}`);
+      lines.push(
+        `Deployment,success_rate,${(data.deployment.pipelineMetrics.successRate * 100).toFixed(1)}`
+      );
     }
 
     // Add code metrics
@@ -265,7 +268,7 @@ export function formatCompleteReport(data: any, options: FormatterOptions): stri
   output += '║                  Comprehensive Report                  ║\n';
   output += '╚════════════════════════════════════════════════════════╝\n';
   output += `Generated: ${data.timestamp || new Date().toISOString()}\n`;
-  
+
   if (data.filters && Object.keys(data.filters).length > 0) {
     output += '\nApplied Filters:\n';
     for (const [key, value] of Object.entries(data.filters)) {

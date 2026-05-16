@@ -41,7 +41,9 @@ export function parseJson<T = unknown>(json: string): T {
   try {
     return JSON.parse(json) as T;
   } catch (error) {
-    throw new Error(`Failed to parse JSON: ${error instanceof Error ? error.message : String(error)}`);
+    throw new Error(
+      `Failed to parse JSON: ${error instanceof Error ? error.message : String(error)}`
+    );
   }
 }
 
@@ -54,9 +56,13 @@ export function safeJsonStringify(value: unknown): string {
   try {
     return JSON.stringify(value, null, 2);
   } catch (error) {
-    return JSON.stringify({
-      error: 'Failed to serialize',
-      message: error instanceof Error ? error.message : String(error),
-    }, null, 2);
+    return JSON.stringify(
+      {
+        error: 'Failed to serialize',
+        message: error instanceof Error ? error.message : String(error),
+      },
+      null,
+      2
+    );
   }
 }

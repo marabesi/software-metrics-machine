@@ -188,9 +188,7 @@ export function createPipelinesCommands(program: Command): void {
         });
 
         if (options.output === 'json') {
-          console.log(
-            JSON.stringify({ averageDuration: metrics.averageDuration }, null, 2)
-          );
+          console.log(JSON.stringify({ averageDuration: metrics.averageDuration }, null, 2));
         } else {
           console.log('\n=== Pipeline Run Durations ===\n');
           if (options.workflow) {
@@ -298,9 +296,7 @@ export function createPipelinesCommands(program: Command): void {
         });
 
         if (options.output === 'json') {
-          console.log(
-            JSON.stringify({ averageDuration: metrics.averageDuration }, null, 2)
-          );
+          console.log(JSON.stringify({ averageDuration: metrics.averageDuration }, null, 2));
         } else {
           console.log('\n=== Job Execution Times ===\n');
           if (options.job) {

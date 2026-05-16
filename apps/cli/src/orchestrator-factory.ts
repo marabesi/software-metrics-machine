@@ -51,7 +51,7 @@ function resolveGitRepositoryPath(configuredPath?: string): string {
   for (const candidate of candidates) {
     if (fs.existsSync(candidate)) {
       logger.warn(
-        `Configured git_repository_location not found: ${configuredPath}. Using resolved path: ${candidate}`,
+        `Configured git_repository_location not found: ${configuredPath}. Using resolved path: ${candidate}`
       );
       return candidate;
     }
@@ -89,13 +89,13 @@ export function createOrchestrator(): MetricsOrchestrator {
     const githubPrsClient = new GithubPrsClient(
       config.githubToken || '',
       githubOwner || '',
-      githubRepo || '',
+      githubRepo || ''
     );
 
     const githubWorkflowClient = new GithubWorkflowClient(
       config.githubToken || '',
       githubOwner || '',
-      githubRepo || '',
+      githubRepo || ''
     );
 
     // Initialize Jira client
@@ -103,50 +103,38 @@ export function createOrchestrator(): MetricsOrchestrator {
       config.jiraUrl || '',
       config.jiraEmail || '',
       config.jiraToken || '',
-      config.jiraProject || '',
+      config.jiraProject || ''
     );
 
     // Initialize SonarQube client
     const sonarqubeClient = new SonarqubeMeasuresClient(
       config.sonarUrl || '',
       config.sonarToken || '',
-      config.sonarProject || '',
+      config.sonarProject || ''
     );
 
     // Initialize Git traverser
     const commitTraverser = new CommitTraverser(
-      resolveGitRepositoryPath(config.gitRepositoryLocation),
+      resolveGitRepositoryPath(config.gitRepositoryLocation)
     );
 
     // Initialize CodeMaat analyzer
     const codemaatAnalyzer = new CodemaatAnalyzer(codemaatDirectory);
 
     // Initialize repositories
-    const prsRepository = new PullRequestsRepository(
-      githubPrsClient,
-      gitProviderDirectory,
-    );
+    const prsRepository = new PullRequestsRepository(githubPrsClient, gitProviderDirectory);
 
-    const pipelinesRepository = new PipelinesRepository(
-      githubWorkflowClient,
-      gitProviderDirectory,
-    );
+    const pipelinesRepository = new PipelinesRepository(githubWorkflowClient, gitProviderDirectory);
 
     const codeRepository = new CodeMetricsRepository(
       commitTraverser,
       codemaatAnalyzer,
-      dataDirectory,
+      dataDirectory
     );
 
-    const issuesRepository = new IssuesRepository(
-      jiraClient,
-      jiraDirectory,
-    );
+    const issuesRepository = new IssuesRepository(jiraClient, jiraDirectory);
 
-    const qualityRepository = new QualityMetricsRepository(
-      sonarqubeClient,
-      sonarqubeDirectory,
-    );
+    const qualityRepository = new QualityMetricsRepository(sonarqubeClient, sonarqubeDirectory);
 
     // Create orchestrator
     const orchestrator = new MetricsOrchestrator(
@@ -154,7 +142,7 @@ export function createOrchestrator(): MetricsOrchestrator {
       pipelinesRepository,
       codeRepository,
       issuesRepository,
-      qualityRepository,
+      qualityRepository
     );
 
     logger.debug('✓ MetricsOrchestrator initialized successfully');
@@ -162,7 +150,7 @@ export function createOrchestrator(): MetricsOrchestrator {
     return orchestrator;
   } catch (error) {
     logger.error(
-      `Failed to initialize orchestrator: ${error instanceof Error ? error.message : String(error)}`,
+      `Failed to initialize orchestrator: ${error instanceof Error ? error.message : String(error)}`
     );
     throw error;
   }
@@ -186,12 +174,14 @@ export function validateConfiguration(): { valid: boolean; errors: string[] } {
 
     if (!hasGithub && !hasJira && !hasSonarqube && !hasGit) {
       errors.push(
-        'No provider configuration found. Please configure at least one provider in your JSON config file or environment variables.',
+        'No provider configuration found. Please configure at least one provider in your JSON config file or environment variables.'
       );
     }
 
     if (!hasGithub) {
-      logger.warn('GitHub provider not configured - PR and deployment metrics will not be available');
+      logger.warn(
+        'GitHub provider not configured - PR and deployment metrics will not be available'
+      );
     }
 
     if (!hasJira) {
@@ -207,7 +197,7 @@ export function validateConfiguration(): { valid: boolean; errors: string[] } {
     }
   } catch (error) {
     errors.push(
-      `Failed to load configuration: ${error instanceof Error ? error.message : String(error)}`,
+      `Failed to load configuration: ${error instanceof Error ? error.message : String(error)}`
     );
   }
 

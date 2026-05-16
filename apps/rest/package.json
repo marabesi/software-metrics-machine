@@ -9,7 +9,8 @@
     "dev": "ts-node src/main.ts",
     "test": "vitest",
     "test:ci": "vitest run",
-    "clean": "rm -rf dist"
+    "clean": "rm -rf dist",
+    "lint": "eslint ."
   },
   "dependencies": {
     "@nestjs/common": "catalog:",
@@ -30,6 +31,11 @@
     "@types/jest": "^29.5.2",
     "@types/node": "catalog:",
     "@types/supertest": "catalog:",
+    "@typescript-eslint/eslint-plugin": "catalog:",
+    "@typescript-eslint/parser": "catalog:",
+    "eslint": "catalog:",
+    "eslint-config-prettier": "catalog:",
+    "eslint-plugin-prettier": "catalog:",
     "jest": "^29.5.0",
     "supertest": "catalog:",
     "ts-jest": "^29.1.0",

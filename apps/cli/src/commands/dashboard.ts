@@ -19,21 +19,21 @@ function findDistRoot(): string {
   ];
 
   for (const candidate of candidates) {
-    if (fs.existsSync(path.join(candidate, 'rest')) && fs.existsSync(path.join(candidate, 'webapp'))) {
+    if (
+      fs.existsSync(path.join(candidate, 'rest')) &&
+      fs.existsSync(path.join(candidate, 'webapp'))
+    ) {
       return candidate;
     }
   }
 
   throw new Error(
-    `Could not locate bundled services. Expected rest and webapp folders under one of: ${candidates.join(', ')}`,
+    `Could not locate bundled services. Expected rest and webapp folders under one of: ${candidates.join(', ')}`
   );
 }
 
 function findPackageRoot(distRoot: string): string {
-  const candidates = [
-    path.resolve(distRoot, '..'),
-    process.cwd(),
-  ];
+  const candidates = [path.resolve(distRoot, '..'), process.cwd()];
 
   for (const candidate of candidates) {
     if (fs.existsSync(path.join(candidate, 'package.json'))) {
@@ -45,9 +45,7 @@ function findPackageRoot(distRoot: string): string {
 }
 
 function resolveWebappAppDir(packageRoot: string): string {
-  const candidates = [
-    path.join(packageRoot, 'apps', 'webapp'),
-  ];
+  const candidates = [path.join(packageRoot, 'apps', 'webapp')];
 
   for (const appDir of candidates) {
     if (fs.existsSync(path.join(appDir, '.next'))) {
@@ -56,7 +54,7 @@ function resolveWebappAppDir(packageRoot: string): string {
   }
 
   throw new Error(
-    `Could not find packaged webapp build. Expected one of: ${candidates.join(', ')}`,
+    `Could not find packaged webapp build. Expected one of: ${candidates.join(', ')}`
   );
 }
 
@@ -86,7 +84,7 @@ function spawnService(
   scriptPath: string,
   args: string[],
   cwd: string,
-  env: NodeJS.ProcessEnv,
+  env: NodeJS.ProcessEnv
 ): ChildProcess {
   const child = spawn(process.execPath, [scriptPath, ...args], {
     cwd,
@@ -157,20 +155,28 @@ export function createDashboardCommands(program: Command): void {
         });
         services.push({ name: 'rest', process: restProcess });
 
-        const webappProcess = spawnService('webapp', nextBin, ['start', webappAppDir, '-p', webPort, '-H', host], packageRoot, {
-          ...commonEnv,
-          HOST: host,
-          HOSTNAME: host,
-          PORT: webPort,
-          REST_PORT: restPort,
-          SMM_REST_BASE_URL: `http://${host}:${restPort}`,
-          NODE_ENV: process.env.NODE_ENV || 'production',
-        });
+        const webappProcess = spawnService(
+          'webapp',
+          nextBin,
+          ['start', webappAppDir, '-p', webPort, '-H', host],
+          packageRoot,
+          {
+            ...commonEnv,
+            HOST: host,
+            HOSTNAME: host,
+            PORT: webPort,
+            REST_PORT: restPort,
+            SMM_REST_BASE_URL: `http://${host}:${restPort}`,
+            NODE_ENV: process.env.NODE_ENV || 'production',
+          }
+        );
         services.push({ name: 'webapp', process: webappProcess });
 
         for (const service of services) {
           service.process.on('exit', (code, signal) => {
-            logger.info(`${service.name} exited with code=${code ?? 'null'} signal=${signal ?? 'null'}`);
+            logger.info(
+              `${service.name} exited with code=${code ?? 'null'} signal=${signal ?? 'null'}`
+            );
             terminateServices(services);
           });
         }
