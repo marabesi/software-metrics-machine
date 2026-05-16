@@ -49,6 +49,14 @@ This project relies on metrics that are extracted from:
 
 ## Getting started
 
+```sh
+npm install -g @smmachine/launcher
+```
+
+```sh
+smm 
+```
+
 The official documentation is hosted at [github pages](https://marabesi.github.io/software-metrics-machine/getting-started.html).
 
 ## References
@@ -61,8 +69,6 @@ Here are some references:
   * <https://pragprog.com/titles/atevol/software-design-x-rays/>
   * <https://github.com/fouadh/gocan>
 * Platform
-  * <https://python-poetry.org/>
-  * <https://matplotlib.org/>
   * <https://git-scm.com/doc>
   * <https://docs.github.com/en/rest?apiVersion=2022-11-28>
 * Research

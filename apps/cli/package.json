@@ -23,19 +23,19 @@
     "clean": "rm -rf dist"
   },
   "dependencies": {
-    "commander": "^14.0.3"
+    "commander": "catalog:"
   },
   "devDependencies": {
     "@smmachine/core": "workspace:*",
     "@smmachine/utils": "workspace:*",
     "@smmachine/rest": "workspace:*",
     "@smmachine/webapp": "workspace:*",
-    "@types/node": "*",
-    "ts-node": "*",
-    "tsconfig-paths": "*",
-    "tsx": "*",
-    "tsup": "^8.5.0",
-    "typescript": "*",
-    "vitest": "*"
+    "@types/node": "catalog:",
+    "ts-node": "catalog:",
+    "tsconfig-paths": "catalog:",
+    "tsx": "catalog:",
+    "tsup": "catalog:",
+    "typescript": "catalog:",
+    "vitest": "catalog:"
   }
 }

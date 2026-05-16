@@ -24,11 +24,11 @@
   "author": "Marabesi",
   "license": "MIT",
   "devDependencies": {
-    "@types/node": "*",
-    "typescript": "*",
-    "vitest": "*"
+    "@types/node": "catalog:",
+    "typescript": "catalog:",
+    "vitest": "catalog:"
   },
   "dependencies": {
-    "date-fns": "*"
+    "date-fns": "catalog:"
   }
 }

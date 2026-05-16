@@ -7,6 +7,7 @@
     "resolveJsonModule": true,
     "allowJs": false,
     "strict": true,
+    "ignoreDeprecations": "6.0",
     "esModuleInterop": true,
     "skipLibCheck": true,
     "experimentalDecorators": true,
@@ -17,11 +18,11 @@
     "sourceMap": true,
     "baseUrl": ".",
     "paths": {
-      "@/*": ["src/*"],
-      "@packages/*": ["packages/*/src"],
-      "@core/*": ["packages/core/src/*"],
-      "@types/*": ["packages/types/src/*"],
-      "@utils/*": ["packages/utils/src/*"]
+      "@/*": ["./src/*"],
+      "@packages/*": ["./packages/*/src"],
+      "@core/*": ["./packages/core/src/*"],
+      "@types/*": ["./packages/types/src/*"],
+      "@utils/*": ["./packages/utils/src/*"]
     },
     "types": ["node", "vitest/globals"]
   },
