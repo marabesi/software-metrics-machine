@@ -1,6 +1,6 @@
 import React from 'react';
 import { renderHook, act } from '@testing-library/react';
-import { FiltersProvider, useFilters, DashboardFilters } from '@/components/filters/FiltersContext';
+import { FiltersProvider, useFilters } from '@/components/filters/FiltersContext';
 
 describe('FiltersContext', () => {
   it('throws error when useFilters is used outside provider', () => {
