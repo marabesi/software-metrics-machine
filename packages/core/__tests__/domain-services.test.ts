@@ -1,10 +1,10 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
-import { PairingIndexService } from '../code/pairing-index';
-import { PRsService } from '../prs/prs-service';
-import { PipelinesService } from '../pipelines/pipelines-service';
-import { CommitBuilder, PullRequestBuilder, PipelineRunBuilder } from '../../infrastructure/builders';
-import { IRepository } from '../../infrastructure/repository';
-import { Commit, PullRequest, PipelineRun } from '@types/domain-types';
+import { PairingIndexService } from '../src';
+import { PRsService } from '../src';
+import { PipelinesService } from '../src';
+import { CommitBuilder, PullRequestBuilder, PipelineRunBuilder } from './builders/builders';
+import { IRepository } from '../src';
+import { Commit } from '../src/domain-types';
 
 describe('PairingIndexService', () => {
   let pairingService: PairingIndexService;

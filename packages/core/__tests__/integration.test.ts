@@ -1,9 +1,9 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
-import { GithubPrsClient, GithubWorkflowClient } from '../providers/github';
-import { JiraIssuesClient } from '../providers/jira';
-import { SonarqubeMeasuresClient } from '../providers/sonarqube';
-import { CommitTraverser } from '../providers/git';
-import { CodemaatAnalyzer } from '../providers/codemaat';
+import { GithubPrsClient, GithubWorkflowClient } from '../src';
+import { JiraIssuesClient } from '../src';
+import { SonarqubeMeasuresClient } from '../src';
+import { CommitTraverser } from '../src';
+import { CodemaatAnalyzer } from '../src';
 import {
   PullRequestsRepository,
   PipelinesRepository,
@@ -11,7 +11,7 @@ import {
   IssuesRepository,
   QualityMetricsRepository,
   MetricsOrchestrator,
-} from '../aggregates';
+} from '../src';
 
 describe('Full Business Logic Integration', () => {
   let prsRepo: PullRequestsRepository;

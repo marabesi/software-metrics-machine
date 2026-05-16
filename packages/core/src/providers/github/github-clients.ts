@@ -40,17 +40,17 @@ export interface IGithubWorkflowClient {
  *   - GET /repos/{owner}/{repo}/pulls/{pull_number}/comments - Get PR comments
  */
 export class GithubPrsClient implements IGithubPrsClient {
-  private axiosInstance: AxiosInstance;
+  private readonly axiosInstance: AxiosInstance;
   private logger: Logger;
   private readonly baseUrl = 'https://api.github.com';
 
   constructor(
-    private token: string,
+    token: string,
     private owner: string,
     private repo: string
   ) {
     this.logger = new Logger('GithubPrsClient');
-    
+
     this.axiosInstance = axios.create({
       baseURL: this.baseUrl,
       headers: {

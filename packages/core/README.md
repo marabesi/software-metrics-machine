@@ -32,6 +32,3 @@ Contains the core business logic for:
 - Deployment frequency tracking
 - Pull request analytics
 
-## Migration Notes
-
-This package will contain the TypeScript migration of the Python `api/src/software_metrics_machine/` module.

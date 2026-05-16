@@ -9,7 +9,7 @@
  */
 
 import { describe, it, expect, beforeAll, skip } from 'vitest';
-import { JiraIssuesClient } from '../src/providers/jira/jira-client';
+import { JiraIssuesClient } from '../../../src/providers/jira/jira-client';
 
 const JIRA_URL = process.env.JIRA_URL || 'https://your-instance.atlassian.net';
 const JIRA_EMAIL = process.env.JIRA_EMAIL || 'user@example.com';

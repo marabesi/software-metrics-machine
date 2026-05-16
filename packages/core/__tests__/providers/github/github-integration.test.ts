@@ -8,8 +8,8 @@
  * - Appropriate rate limits
  */
 
-import { describe, it, expect, beforeAll, skip } from 'vitest';
-import { GithubPrsClient, GithubWorkflowClient } from '../src/providers/github/github-clients';
+import { describe, it, expect, beforeAll } from 'vitest';
+import { GithubPrsClient, GithubWorkflowClient } from '../../../src';
 
 const GITHUB_TOKEN = process.env.GITHUB_TOKEN || 'test-token';
 const GITHUB_OWNER = process.env.GITHUB_OWNER || 'microsoft';

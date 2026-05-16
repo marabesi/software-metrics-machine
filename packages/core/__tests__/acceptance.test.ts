@@ -1,15 +1,15 @@
 import { describe, it, expect, beforeEach } from 'vitest';
-import { PullRequestsRepository } from '../src/aggregates/pull-requests-repository';
-import { PipelinesRepository } from '../src/aggregates/pipelines-repository';
-import { CodeMetricsRepository } from '../src/aggregates/code-metrics-repository';
-import { IssuesRepository } from '../src/aggregates/issues-repository';
-import { QualityMetricsRepository } from '../src/aggregates/quality-metrics-repository';
-import { MetricsOrchestrator } from '../src/aggregates/metrics-orchestrator';
-import { GithubPrsClient, GithubWorkflowClient } from '../src/providers/github';
-import { JiraIssuesClient } from '../src/providers/jira';
-import { SonarqubeMeasuresClient } from '../src/providers/sonarqube';
-import { CommitTraverser } from '../src/providers/git';
-import { CodemaatAnalyzer } from '../src/providers/codemaat';
+import { PullRequestsRepository } from '../src';
+import { PipelinesRepository } from '../src';
+import { CodeMetricsRepository } from '../src';
+import { IssuesRepository } from '../src';
+import { QualityMetricsRepository } from '../src';
+import { MetricsOrchestrator } from '../src';
+import { GithubPrsClient, GithubWorkflowClient } from '../src';
+import { JiraIssuesClient } from '../src';
+import { SonarqubeMeasuresClient } from '../src';
+import { CommitTraverser } from '../src';
+import { CodemaatAnalyzer } from '../src';
 
 /**
  * Acceptance tests for the complete metrics system.

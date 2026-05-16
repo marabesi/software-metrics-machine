@@ -1,14 +1,8 @@
-/**
- * Unit and integration tests for CodeMaat analyzer
- * 
- * Tests reading CSV files from a data directory
- */
-
 import { describe, it, expect, beforeAll, afterAll } from 'vitest';
 import * as fs from 'fs';
 import * as path from 'path';
 import * as os from 'os';
-import { CodemaatAnalyzer } from '../src';
+import { CodemaatAnalyzer } from '../../../src';
 
 describe('CodeMaat Analyzer Tests', () => {
   let tempDir: string;
@@ -203,8 +197,8 @@ src/api.ts,src/utils.ts,78`;
         endDate: '2024-01-02',
       });
 
-      expect(result.churn.data.length).toBe(1);
-      expect(result.churn.data[0].date).toBe('2024-01-02');
+      expect(result?.churn?.data.length).toBe(1);
+      expect(result?.churn?.data[0].date).toBe('2024-01-02');
     });
 
     it('should analyze with ignore patterns', async () => {
@@ -212,7 +206,7 @@ src/api.ts,src/utils.ts,78`;
         ignorePatterns: ['*.ts'],
       });
 
-      expect(result.coupling.length).toBe(0);
+      expect(result?.coupling?.length).toBe(0);
     });
   });
 

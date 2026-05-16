@@ -9,7 +9,7 @@
  */
 
 import { describe, it, expect, beforeAll } from 'vitest';
-import { SonarqubeMeasuresClient } from '../src/providers/sonarqube/sonarqube-client';
+import { SonarqubeMeasuresClient } from '../../../src/providers/sonarqube/sonarqube-client';
 
 const SONARQUBE_URL = process.env.SONARQUBE_URL || 'http://localhost:9000';
 const SONARQUBE_TOKEN = process.env.SONARQUBE_TOKEN || 'test-token';

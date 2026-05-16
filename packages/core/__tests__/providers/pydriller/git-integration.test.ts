@@ -1,12 +1,5 @@
-/**
- * Integration tests for Git commit analysis (CommitTraverser)
- * 
- * NOTE: These tests require a git repository to be available.
- * They test the CommitTraverser against real git repositories.
- */
-
 import { describe, it, expect, beforeAll } from 'vitest';
-import { CommitTraverser } from '../src/providers/git/commit-traverser';
+import { CommitTraverser } from '../../../src';
 
 describe('Git Commit Analysis - CommitTraverser', () => {
   let traverser: CommitTraverser;
