@@ -42,7 +42,7 @@ describe('PairingIndexService', () => {
 
   it('should calculate pairing index correctly', async () => {
     const result = await pairingService.getPairingIndex();
-    
+
     expect(result.totalAnalyzedCommits).toBeGreaterThan(0);
     expect(result.pairingIndexPercentage).toBeGreaterThanOrEqual(0);
     expect(result.pairingIndexPercentage).toBeLessThanOrEqual(100);
@@ -50,9 +50,9 @@ describe('PairingIndexService', () => {
 
   it('should return 0 for pairing index when no commits', async () => {
     mockCommitRepo.loadAll = vi.fn(async () => []);
-    
+
     const result = await pairingService.getPairingIndex();
-    
+
     expect(result.totalAnalyzedCommits).toBe(0);
     expect(result.pairingIndexPercentage).toBe(0);
   });
@@ -77,7 +77,7 @@ describe('PairingIndexService', () => {
 
   it('should round pairing index to 2 decimal places', async () => {
     const result = await pairingService.getPairingIndex();
-    
+
     const decimalPlaces = result.pairingIndexPercentage.toString().split('.')[1]?.length || 0;
     expect(decimalPlaces).toBeLessThanOrEqual(2);
   });

@@ -64,7 +64,7 @@ describe('CodeMaat Analyzer Tests', () => {
       });
 
       expect(result.data.length).toBe(2);
-      expect(result.data.map(d => d.date)).toEqual(['2024-02-01', '2024-03-01']);
+      expect(result.data.map((d) => d.date)).toEqual(['2024-02-01', '2024-03-01']);
     });
 
     it('should handle CSV with quoted values', async () => {

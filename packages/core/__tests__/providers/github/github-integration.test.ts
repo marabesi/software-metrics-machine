@@ -1,6 +1,6 @@
 /**
  * Integration tests for GitHub API clients
- * 
+ *
  * WARNING: These tests make real HTTP calls to GitHub API.
  * They require:
  * - Valid GITHUB_TOKEN in environment
@@ -28,69 +28,54 @@ describe('GitHub API Integration Tests', () => {
   });
 
   describe('GithubPrsClient', () => {
-    it.skipIf(skipRealApiTests)(
-      'should fetch pull requests from GitHub API',
-      async () => {
-        const prs = await prsClient.fetchPRs({ state: 'closed' });
+    it.skipIf(skipRealApiTests)('should fetch pull requests from GitHub API', async () => {
+      const prs = await prsClient.fetchPRs({ state: 'closed' });
 
-        expect(Array.isArray(prs)).toBe(true);
-        if (prs.length > 0) {
-          const pr = prs[0];
-          expect(pr).toHaveProperty('number');
-          expect(pr).toHaveProperty('title');
-          expect(pr).toHaveProperty('state');
-          expect(pr).toHaveProperty('author');
-          expect(pr).toHaveProperty('createdAt');
-          expect(pr).toHaveProperty('labels');
-        }
+      expect(Array.isArray(prs)).toBe(true);
+      if (prs.length > 0) {
+        const pr = prs[0];
+        expect(pr).toHaveProperty('number');
+        expect(pr).toHaveProperty('title');
+        expect(pr).toHaveProperty('state');
+        expect(pr).toHaveProperty('author');
+        expect(pr).toHaveProperty('createdAt');
+        expect(pr).toHaveProperty('labels');
       }
-    );
+    });
 
-    it.skipIf(skipRealApiTests)(
-      'should filter PRs by date range',
-      async () => {
-        const prs = await prsClient.fetchPRs({
-          state: 'all',
-          startDate: '2024-01-01',
-          endDate: '2024-01-31',
+    it.skipIf(skipRealApiTests)('should filter PRs by date range', async () => {
+      const prs = await prsClient.fetchPRs({
+        state: 'all',
+        startDate: '2024-01-01',
+        endDate: '2024-01-31',
+      });
+
+      expect(Array.isArray(prs)).toBe(true);
+      prs.forEach((pr) => {
+        const createdDate = new Date(pr.createdAt);
+        expect(createdDate.getTime()).toBeLessThanOrEqual(new Date('2024-01-31').getTime());
+      });
+    });
+
+    it.skipIf(skipRealApiTests)('should fetch PR comments', async () => {
+      // Get a PR number first
+      const prs = await prsClient.fetchPRs({ state: 'closed' });
+
+      if (prs.length > 0) {
+        const prNumber = prs[0].number;
+        const comments = await prsClient.fetchPRComments(prNumber);
+
+        expect(Array.isArray(comments)).toBe(true);
+        comments.forEach((comment) => {
+          expect(comment).toHaveProperty('id');
+          expect(comment).toHaveProperty('body');
+          expect(comment).toHaveProperty('user');
         });
-
-        expect(Array.isArray(prs)).toBe(true);
-        prs.forEach((pr) => {
-          const createdDate = new Date(pr.createdAt);
-          expect(createdDate.getTime()).toBeLessThanOrEqual(
-            new Date('2024-01-31').getTime()
-          );
-        });
       }
-    );
-
-    it.skipIf(skipRealApiTests)(
-      'should fetch PR comments',
-      async () => {
-        // Get a PR number first
-        const prs = await prsClient.fetchPRs({ state: 'closed' });
-
-        if (prs.length > 0) {
-          const prNumber = prs[0].number;
-          const comments = await prsClient.fetchPRComments(prNumber);
-
-          expect(Array.isArray(comments)).toBe(true);
-          comments.forEach((comment) => {
-            expect(comment).toHaveProperty('id');
-            expect(comment).toHaveProperty('body');
-            expect(comment).toHaveProperty('user');
-          });
-        }
-      }
-    );
+    });
 
     it('should throw error on invalid authentication', async () => {
-      const invalidClient = new GithubPrsClient(
-        'invalid-token',
-        GITHUB_OWNER,
-        GITHUB_REPO
-      );
+      const invalidClient = new GithubPrsClient('invalid-token', GITHUB_OWNER, GITHUB_REPO);
 
       try {
         await invalidClient.fetchPRs();
@@ -102,11 +87,7 @@ describe('GitHub API Integration Tests', () => {
     });
 
     it('should handle non-existent repository', async () => {
-      const invalidClient = new GithubPrsClient(
-        GITHUB_TOKEN,
-        'invalid-owner',
-        'non-existent-repo'
-      );
+      const invalidClient = new GithubPrsClient(GITHUB_TOKEN, 'invalid-owner', 'non-existent-repo');
 
       try {
         await invalidClient.fetchPRs();
@@ -119,78 +100,64 @@ describe('GitHub API Integration Tests', () => {
   });
 
   describe('GithubWorkflowClient', () => {
-    it.skipIf(skipRealApiTests)(
-      'should fetch workflow runs from GitHub API',
-      async () => {
-        const workflows = await workflowClient.fetchWorkflows();
+    it.skipIf(skipRealApiTests)('should fetch workflow runs from GitHub API', async () => {
+      const workflows = await workflowClient.fetchWorkflows();
 
-        expect(Array.isArray(workflows)).toBe(true);
-        if (workflows.length > 0) {
-          const workflow = workflows[0];
-          expect(workflow).toHaveProperty('id');
-          expect(workflow).toHaveProperty('name');
-          expect(workflow).toHaveProperty('status');
-          expect(workflow).toHaveProperty('createdAt');
-        }
+      expect(Array.isArray(workflows)).toBe(true);
+      if (workflows.length > 0) {
+        const workflow = workflows[0];
+        expect(workflow).toHaveProperty('id');
+        expect(workflow).toHaveProperty('name');
+        expect(workflow).toHaveProperty('status');
+        expect(workflow).toHaveProperty('createdAt');
       }
-    );
+    });
 
-    it.skipIf(skipRealApiTests)(
-      'should filter workflows by date range',
-      async () => {
-        const workflows = await workflowClient.fetchWorkflows({
-          startDate: '2024-01-01',
-          endDate: '2024-01-31',
+    it.skipIf(skipRealApiTests)('should filter workflows by date range', async () => {
+      const workflows = await workflowClient.fetchWorkflows({
+        startDate: '2024-01-01',
+        endDate: '2024-01-31',
+      });
+
+      expect(Array.isArray(workflows)).toBe(true);
+      workflows.forEach((workflow) => {
+        const createdDate = new Date(workflow.createdAt);
+        expect(createdDate.getTime()).toBeLessThanOrEqual(new Date('2024-01-31').getTime());
+      });
+    });
+
+    it.skipIf(skipRealApiTests)('should fetch jobs for workflow runs', async () => {
+      const workflows = await workflowClient.fetchWorkflows();
+
+      if (workflows.length > 0) {
+        const runIds = workflows.slice(0, 3).map((w) => w.id.toString());
+        const jobs = await workflowClient.fetchJobsForWorkflows(runIds);
+
+        expect(Array.isArray(jobs)).toBe(true);
+        jobs.forEach((job) => {
+          expect(job).toHaveProperty('id');
+          expect(job).toHaveProperty('name');
+          expect(job).toHaveProperty('status');
+          expect(job).toHaveProperty('runId');
         });
+      }
+    });
 
-        expect(Array.isArray(workflows)).toBe(true);
-        workflows.forEach((workflow) => {
-          const createdDate = new Date(workflow.createdAt);
-          expect(createdDate.getTime()).toBeLessThanOrEqual(
-            new Date('2024-01-31').getTime()
-          );
+    it.skipIf(skipRealApiTests)('should calculate job duration correctly', async () => {
+      const workflows = await workflowClient.fetchWorkflows();
+
+      if (workflows.length > 0) {
+        const runIds = workflows.slice(0, 1).map((w) => w.id.toString());
+        const jobs = await workflowClient.fetchJobsForWorkflows(runIds);
+
+        jobs.forEach((job) => {
+          if (job.duration !== undefined && job.duration > 0) {
+            expect(typeof job.duration).toBe('number');
+            expect(job.duration).toBeGreaterThan(0);
+          }
         });
       }
-    );
-
-    it.skipIf(skipRealApiTests)(
-      'should fetch jobs for workflow runs',
-      async () => {
-        const workflows = await workflowClient.fetchWorkflows();
-
-        if (workflows.length > 0) {
-          const runIds = workflows.slice(0, 3).map((w) => w.id.toString());
-          const jobs = await workflowClient.fetchJobsForWorkflows(runIds);
-
-          expect(Array.isArray(jobs)).toBe(true);
-          jobs.forEach((job) => {
-            expect(job).toHaveProperty('id');
-            expect(job).toHaveProperty('name');
-            expect(job).toHaveProperty('status');
-            expect(job).toHaveProperty('runId');
-          });
-        }
-      }
-    );
-
-    it.skipIf(skipRealApiTests)(
-      'should calculate job duration correctly',
-      async () => {
-        const workflows = await workflowClient.fetchWorkflows();
-
-        if (workflows.length > 0) {
-          const runIds = workflows.slice(0, 1).map((w) => w.id.toString());
-          const jobs = await workflowClient.fetchJobsForWorkflows(runIds);
-
-          jobs.forEach((job) => {
-            if (job.duration !== undefined && job.duration > 0) {
-              expect(typeof job.duration).toBe('number');
-              expect(job.duration).toBeGreaterThan(0);
-            }
-          });
-        }
-      }
-    );
+    });
   });
 
   describe('Error Handling', () => {

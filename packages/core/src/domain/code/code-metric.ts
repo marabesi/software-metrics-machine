@@ -33,13 +33,11 @@ export class CodeMetricService implements ICodeMetricService {
     const ignoreList = this.parsePatterns(options?.ignore);
     const testPatternsList = this.parsePatterns(options?.testPatterns);
 
-    this.logger.info(
-      `Analyzing code changes with ${testPatternsList.length} test patterns`
-    );
+    this.logger.info(`Analyzing code changes with ${testPatternsList.length} test patterns`);
 
     // This would typically traverse git history and analyze commits
     // For now, returning a placeholder that demonstrates the calculation structure
-    
+
     return {
       message: 'Code analysis would traverse commits and calculate test coverage ratio',
       percentage: 0,
@@ -108,9 +106,7 @@ export class CodeMetricService implements ICodeMetricService {
 
     // Fallback heuristic: check if 'test' appears in name or path
     return (
-      fileName.includes('test') ||
-      fullLower.includes('/tests/') ||
-      fullLower.includes('/test/')
+      fileName.includes('test') || fullLower.includes('/tests/') || fullLower.includes('/test/')
     );
   }
 
@@ -121,7 +117,7 @@ export class CodeMetricService implements ICodeMetricService {
     if (!patternStr) return [];
     return patternStr
       .split(',')
-      .map(p => p.trim().replace(/\\/g, '/').replace(/\/$/, ''))
-      .filter(p => p.length > 0);
+      .map((p) => p.trim().replace(/\\/g, '/').replace(/\/$/, ''))
+      .filter((p) => p.length > 0);
   }
 }

@@ -18,7 +18,13 @@ interface RunLike {
   createdAt?: string;
   startedAt?: string;
   completedAt?: string;
-  jobs?: Array<{ name?: string; status?: string; conclusion?: string; startedAt?: string; completedAt?: string }>;
+  jobs?: Array<{
+    name?: string;
+    status?: string;
+    conclusion?: string;
+    startedAt?: string;
+    completedAt?: string;
+  }>;
   event?: string;
 }
 
@@ -40,14 +46,14 @@ export class DashboardController {
     private readonly codeRepo: CodeMetricsRepository,
     private readonly pipelinesRepo: PipelinesRepository,
     private readonly pullRequestsRepo: PullRequestsRepository,
-    private readonly config: Configuration,
+    private readonly config: Configuration
   ) {}
 
   @Get('/code/pairing-index')
   async pairingIndex(
     @Query('start_date') startDate?: string,
     @Query('end_date') endDate?: string,
-    @Query('authors') authors?: string,
+    @Query('authors') authors?: string
   ) {
     const selectedAuthors = this.parseCsvList(authors);
     const pairing = await this.codeRepo.getPairingIndex({
@@ -67,34 +73,36 @@ export class DashboardController {
   async codeChurn(
     @Query('start_date') startDate?: string,
     @Query('end_date') endDate?: string,
-    @Query('type_churn') typeChurn?: string,
+    @Query('type_churn') typeChurn?: string
   ) {
     const churn = await this.codeRepo.getCodeChurn({ startDate, endDate });
     const churnType = (typeChurn || 'total').toLowerCase();
 
-    return (churn?.data || []).map((row: { date: string; added: number; deleted: number; commits: number }) => {
-      const value =
-        churnType === 'added'
-          ? row.added
-          : churnType === 'deleted'
-          ? row.deleted
-          : churnType === 'commits'
-          ? row.commits
-          : row.added + row.deleted;
+    return (churn?.data || []).map(
+      (row: { date: string; added: number; deleted: number; commits: number }) => {
+        const value =
+          churnType === 'added'
+            ? row.added
+            : churnType === 'deleted'
+              ? row.deleted
+              : churnType === 'commits'
+                ? row.commits
+                : row.added + row.deleted;
 
-      return {
-        date: row.date,
-        type: churnType,
-        value,
-      };
-    });
+        return {
+          date: row.date,
+          type: churnType,
+          value,
+        };
+      }
+    );
   }
 
   @Get('/code/coupling')
   async coupling(
     @Query('ignore_files') ignoreFiles?: string,
     @Query('include_only') includeOnly?: string,
-    @Query('top') top?: string,
+    @Query('top') top?: string
   ) {
     const ignorePatterns = this.parseCsvList(ignoreFiles);
     const includePatterns = this.parseCsvList(includeOnly);
@@ -103,26 +111,32 @@ export class DashboardController {
     });
 
     const filtered = coupling
-      .filter((row: { file1: string; file2: string; couplingStrength: number }) =>
-        this.matchesIncludeOnly(row.file1, includePatterns) ||
-        this.matchesIncludeOnly(row.file2, includePatterns) ||
-        includePatterns.length === 0,
+      .filter(
+        (row: { file1: string; file2: string; couplingStrength: number }) =>
+          this.matchesIncludeOnly(row.file1, includePatterns) ||
+          this.matchesIncludeOnly(row.file2, includePatterns) ||
+          includePatterns.length === 0
       )
-      .sort((a: { couplingStrength: number }, b: { couplingStrength: number }) => b.couplingStrength - a.couplingStrength);
+      .sort(
+        (a: { couplingStrength: number }, b: { couplingStrength: number }) =>
+          b.couplingStrength - a.couplingStrength
+      );
 
     const maxRows = top ? Number(top) : 20;
-    return filtered.slice(0, Number.isFinite(maxRows) ? maxRows : 20).map((row: { file1: string; file2: string; couplingStrength: number }) => ({
-      entity: row.file1,
-      coupled: row.file2,
-      degree: row.couplingStrength,
-    }));
+    return filtered
+      .slice(0, Number.isFinite(maxRows) ? maxRows : 20)
+      .map((row: { file1: string; file2: string; couplingStrength: number }) => ({
+        entity: row.file1,
+        coupled: row.file2,
+        degree: row.couplingStrength,
+      }));
   }
 
   @Get('/code/entity-churn')
   async entityChurn(
     @Query('ignore_files') ignoreFiles?: string,
     @Query('include_only') includeOnly?: string,
-    @Query('top') top?: string,
+    @Query('top') top?: string
   ) {
     const rows = await this.readCsvRecords('entity-churn.csv');
     const filtered = this.filterEntities(rows, ignoreFiles, includeOnly)
@@ -142,7 +156,7 @@ export class DashboardController {
   async entityEffort(
     @Query('ignore_files') ignoreFiles?: string,
     @Query('include_only') includeOnly?: string,
-    @Query('top') top?: string,
+    @Query('top') top?: string
   ) {
     const rows = await this.readCsvRecords('entity-effort.csv');
     const filtered = this.filterEntities(rows, ignoreFiles, includeOnly)
@@ -161,7 +175,7 @@ export class DashboardController {
     @Query('ignore_files') ignoreFiles?: string,
     @Query('include_only') includeOnly?: string,
     @Query('authors') authors?: string,
-    @Query('top') top?: string,
+    @Query('top') top?: string
   ) {
     const authorFilter = new Set(this.parseCsvList(authors).map((author) => author.toLowerCase()));
     const rows = await this.readCsvRecords('entity-ownership.csv');
@@ -190,7 +204,9 @@ export class DashboardController {
   async codeAuthors() {
     const rows = await this.readCsvRecords('entity-ownership.csv');
     return Array.from(
-      new Set(rows.map((row) => String(row.author || '').trim()).filter((author) => author.length > 0)),
+      new Set(
+        rows.map((row) => String(row.author || '').trim()).filter((author) => author.length > 0)
+      )
     ).sort();
   }
 
@@ -203,7 +219,7 @@ export class DashboardController {
     @Query('conclusion') conclusion?: string,
     @Query('branch') branch?: string,
     @Query('job_name') jobName?: string,
-    @Query('event') event?: string,
+    @Query('event') event?: string
   ) {
     const runs = await this.loadRunsWithFilters({
       startDate,
@@ -237,7 +253,7 @@ export class DashboardController {
     @Query('conclusion') conclusion?: string,
     @Query('branch') branch?: string,
     @Query('job_name') jobName?: string,
-    @Query('event') event?: string,
+    @Query('event') event?: string
   ) {
     const runs = await this.loadRunsWithFilters({
       startDate,
@@ -275,7 +291,7 @@ export class DashboardController {
     @Query('conclusion') conclusion?: string,
     @Query('branch') branch?: string,
     @Query('job_name') jobName?: string,
-    @Query('event') event?: string,
+    @Query('event') event?: string
   ) {
     const runs = await this.loadRunsWithFilters({
       startDate,
@@ -289,7 +305,9 @@ export class DashboardController {
       includeJobs: false,
     });
 
-    const sortedByDate = [...runs].sort((a, b) => this.toTimestamp(a.createdAt) - this.toTimestamp(b.createdAt));
+    const sortedByDate = [...runs].sort(
+      (a, b) => this.toTimestamp(a.createdAt) - this.toTimestamp(b.createdAt)
+    );
     return {
       total_runs: runs.length,
       first_run: sortedByDate.length > 0 ? sortedByDate[0] : null,
@@ -308,7 +326,7 @@ export class DashboardController {
     @Query('conclusion') conclusion?: string,
     @Query('branch') branch?: string,
     @Query('job_name') jobName?: string,
-    @Query('event') event?: string,
+    @Query('event') event?: string
   ) {
     const runs = await this.loadRunsWithFilters({
       startDate,
@@ -338,7 +356,8 @@ export class DashboardController {
     return Array.from(grouped.entries())
       .map(([workflow, durations]) => ({
         workflow,
-        avg_duration: durations.length > 0 ? durations.reduce((a, b) => a + b, 0) / durations.length : 0,
+        avg_duration:
+          durations.length > 0 ? durations.reduce((a, b) => a + b, 0) / durations.length : 0,
         total_runs: durations.length,
       }))
       .sort((a, b) => b.total_runs - a.total_runs);
@@ -353,7 +372,7 @@ export class DashboardController {
     @Query('status') status?: string,
     @Query('conclusion') conclusion?: string,
     @Query('branch') branch?: string,
-    @Query('event') event?: string,
+    @Query('event') event?: string
   ) {
     const runs = await this.loadRunsWithFilters({
       startDate,
@@ -415,7 +434,7 @@ export class DashboardController {
     @Query('conclusion') conclusion?: string,
     @Query('branch') branch?: string,
     @Query('job_name') jobName?: string,
-    @Query('event') event?: string,
+    @Query('event') event?: string
   ) {
     const runs = await this.loadRunsWithFilters({
       startDate,
@@ -462,7 +481,7 @@ export class DashboardController {
     @Query('job_name') jobName?: string,
     @Query('exclude_jobs') excludeJobs?: string,
     @Query('event') event?: string,
-    @Query('top') top?: string,
+    @Query('top') top?: string
   ) {
     const runs = await this.loadRunsWithFilters({
       startDate,
@@ -500,7 +519,8 @@ export class DashboardController {
     const result = Array.from(grouped.entries())
       .map(([jobNameValue, durations]) => ({
         job_name: jobNameValue,
-        avg_time: durations.length > 0 ? durations.reduce((a, b) => a + b, 0) / durations.length : 0,
+        avg_time:
+          durations.length > 0 ? durations.reduce((a, b) => a + b, 0) / durations.length : 0,
         count: durations.length,
       }))
       .sort((a, b) => b.count - a.count)
@@ -513,41 +533,34 @@ export class DashboardController {
   async workflows() {
     const runs = await this.pipelinesRepo.refreshPipelines();
     const values = Array.from(
-      new Set(runs.map((run: RunLike) => run.path || '').filter((value: string) => value.length > 0)),
+      new Set(
+        runs.map((run: RunLike) => run.path || '').filter((value: string) => value.length > 0)
+      )
     ).sort();
     return values.map((workflow) => ({ name: workflow, path: workflow }));
   }
 
   @Get('/pipelines/statuses')
-  async statuses(
-    @Query('start_date') startDate?: string,
-    @Query('end_date') endDate?: string,
-  ) {
+  async statuses(@Query('start_date') startDate?: string, @Query('end_date') endDate?: string) {
     const runs = await this.loadRunsWithFilters({ startDate, endDate, includeJobs: false });
     return Array.from(
-      new Set(runs.map((run) => run.status || '').filter((value) => value.length > 0)),
+      new Set(runs.map((run) => run.status || '').filter((value) => value.length > 0))
     ).sort();
   }
 
   @Get('/pipelines/conclusions')
-  async conclusions(
-    @Query('start_date') startDate?: string,
-    @Query('end_date') endDate?: string,
-  ) {
+  async conclusions(@Query('start_date') startDate?: string, @Query('end_date') endDate?: string) {
     const runs = await this.loadRunsWithFilters({ startDate, endDate, includeJobs: false });
     return Array.from(
-      new Set(runs.map((run) => run.conclusion || '').filter((value) => value.length > 0)),
+      new Set(runs.map((run) => run.conclusion || '').filter((value) => value.length > 0))
     ).sort();
   }
 
   @Get('/pipelines/branches')
-  async branches(
-    @Query('start_date') startDate?: string,
-    @Query('end_date') endDate?: string,
-  ) {
+  async branches(@Query('start_date') startDate?: string, @Query('end_date') endDate?: string) {
     const runs = await this.loadRunsWithFilters({ startDate, endDate, includeJobs: false });
     return Array.from(
-      new Set(runs.map((run) => run.branch || '').filter((value) => value.length > 0)),
+      new Set(runs.map((run) => run.branch || '').filter((value) => value.length > 0))
     ).sort();
   }
 
@@ -555,7 +568,9 @@ export class DashboardController {
   async events() {
     const runs = await this.pipelinesRepo.refreshPipelines();
     return Array.from(
-      new Set(runs.map((run: RunLike) => run.event || '').filter((value: string) => value.length > 0)),
+      new Set(
+        runs.map((run: RunLike) => run.event || '').filter((value: string) => value.length > 0)
+      )
     ).sort();
   }
 
@@ -572,7 +587,9 @@ export class DashboardController {
       }
     }
 
-    return Array.from(names).sort().map((name) => ({ name, id: name }));
+    return Array.from(names)
+      .sort()
+      .map((name) => ({ name, id: name }));
   }
 
   @Get('/pull-requests/summary')
@@ -580,7 +597,7 @@ export class DashboardController {
     @Query('start_date') startDate?: string,
     @Query('end_date') endDate?: string,
     @Query('authors') authors?: string,
-    @Query('labels') labels?: string,
+    @Query('labels') labels?: string
   ) {
     const prs = await this.loadPRsWithFilters({ startDate, endDate, authors, labels });
 
@@ -589,12 +606,18 @@ export class DashboardController {
     const open = prs.filter((pr) => !pr.closedAt && !pr.mergedAt).length;
     const totalComments = prs.reduce((sum, pr) => sum + (pr.comments || 0), 0);
     const avgComments = prs.length > 0 ? totalComments / prs.length : 0;
-    const authorsSet = new Set(prs.map((pr) => pr.author?.login || '').filter((name) => name.length > 0));
+    const authorsSet = new Set(
+      prs.map((pr) => pr.author?.login || '').filter((name) => name.length > 0)
+    );
     const labelsSet = new Set(
-      prs.flatMap((pr) => (pr.labels || []).map((label) => label.name || '').filter((name) => name.length > 0)),
+      prs.flatMap((pr) =>
+        (pr.labels || []).map((label) => label.name || '').filter((name) => name.length > 0)
+      )
     );
 
-    const sorted = [...prs].sort((a, b) => this.toTimestamp(a.createdAt) - this.toTimestamp(b.createdAt));
+    const sorted = [...prs].sort(
+      (a, b) => this.toTimestamp(a.createdAt) - this.toTimestamp(b.createdAt)
+    );
 
     return {
       result: {
@@ -617,7 +640,7 @@ export class DashboardController {
     @Query('start_date') startDate?: string,
     @Query('end_date') endDate?: string,
     @Query('authors') authors?: string,
-    @Query('labels') labels?: string,
+    @Query('labels') labels?: string
   ) {
     const prs = await this.loadPRsWithFilters({ startDate, endDate, authors, labels });
     const counts = new Map<string, { Opened: number; Closed: number }>();
@@ -655,7 +678,7 @@ export class DashboardController {
     @Query('end_date') endDate?: string,
     @Query('labels') labels?: string,
     @Query('top') top?: string,
-    @Query('authors') authors?: string,
+    @Query('authors') authors?: string
   ) {
     const prs = await this.loadPRsWithFilters({ startDate, endDate, authors, labels });
     const grouped = new Map<string, number>();
@@ -680,7 +703,7 @@ export class DashboardController {
     @Query('end_date') endDate?: string,
     @Query('labels') labels?: string,
     @Query('top') top?: string,
-    @Query('authors') authors?: string,
+    @Query('authors') authors?: string
   ) {
     const prs = await this.loadPRsWithFilters({ startDate, endDate, authors, labels });
     const merged = prs.filter((pr) => Boolean(pr.mergedAt) || Boolean(pr.closedAt));
@@ -714,14 +737,15 @@ export class DashboardController {
     @Query('end_date') endDate?: string,
     @Query('aggregate_by') aggregateBy?: string,
     @Query('labels') labels?: string,
-    @Query('authors') authors?: string,
+    @Query('authors') authors?: string
   ) {
     const mode = (aggregateBy || 'week').toLowerCase();
     const prs = await this.loadPRsWithFilters({ startDate, endDate, authors, labels });
     const grouped = new Map<string, number[]>();
 
     for (const pr of prs) {
-      const period = mode === 'month' ? this.toMonthKey(pr.createdAt) : this.toWeekKey(pr.createdAt);
+      const period =
+        mode === 'month' ? this.toMonthKey(pr.createdAt) : this.toWeekKey(pr.createdAt);
       const start = this.toTimestamp(pr.createdAt);
       const end = this.toTimestamp(pr.mergedAt || pr.closedAt || pr.createdAt);
       const days = (end - start) / (1000 * 60 * 60 * 24);
@@ -743,7 +767,7 @@ export class DashboardController {
     @Query('start_date') startDate?: string,
     @Query('end_date') endDate?: string,
     @Query('labels') labels?: string,
-    @Query('authors') authors?: string,
+    @Query('authors') authors?: string
   ) {
     const prs = await this.loadPRsWithFilters({ startDate, endDate, authors, labels });
     const totalComments = prs.reduce((sum, pr) => sum + (pr.comments || 0), 0);
@@ -755,7 +779,9 @@ export class DashboardController {
   async pullRequestAuthors() {
     const prs = await this.pullRequestsRepo.refreshPRs();
     return Array.from(
-      new Set(prs.map((pr: PRLike) => pr.author?.login || '').filter((name: string) => name.length > 0)),
+      new Set(
+        prs.map((pr: PRLike) => pr.author?.login || '').filter((name: string) => name.length > 0)
+      )
     ).sort();
   }
 
@@ -764,8 +790,10 @@ export class DashboardController {
     const prs = await this.pullRequestsRepo.refreshPRs();
     return Array.from(
       new Set(
-        prs.flatMap((pr: PRLike) => (pr.labels || []).map((label) => label.name || '').filter((name) => name.length > 0)),
-      ),
+        prs.flatMap((pr: PRLike) =>
+          (pr.labels || []).map((label) => label.name || '').filter((name) => name.length > 0)
+        )
+      )
     ).sort();
   }
 
@@ -861,12 +889,18 @@ export class DashboardController {
 
       return records;
     } catch (error) {
-      this.logger.warn(`Failed to read CSV ${csvPath}: ${error instanceof Error ? error.message : String(error)}`);
+      this.logger.warn(
+        `Failed to read CSV ${csvPath}: ${error instanceof Error ? error.message : String(error)}`
+      );
       return [];
     }
   }
 
-  private filterEntities(rows: GenericRecord[], ignoreFiles?: string, includeOnly?: string): GenericRecord[] {
+  private filterEntities(
+    rows: GenericRecord[],
+    ignoreFiles?: string,
+    includeOnly?: string
+  ): GenericRecord[] {
     const ignorePatterns = this.parseCsvList(ignoreFiles);
     const includePatterns = this.parseCsvList(includeOnly);
 
@@ -999,7 +1033,7 @@ export class DashboardController {
   private toDayKey(value: string): string {
     const date = new Date(value);
     return `${date.getUTCFullYear()}-${String(date.getUTCMonth() + 1).padStart(2, '0')}-${String(
-      date.getUTCDate(),
+      date.getUTCDate()
     ).padStart(2, '0')}`;
   }
 
@@ -1014,7 +1048,7 @@ export class DashboardController {
     const day = temp.getUTCDay() || 7;
     temp.setUTCDate(temp.getUTCDate() + 4 - day);
     const yearStart = new Date(Date.UTC(temp.getUTCFullYear(), 0, 1));
-    const weekNo = Math.ceil((((temp.getTime() - yearStart.getTime()) / 86400000) + 1) / 7);
+    const weekNo = Math.ceil(((temp.getTime() - yearStart.getTime()) / 86400000 + 1) / 7);
     return `${temp.getUTCFullYear()}-W${String(weekNo).padStart(2, '0')}`;
   }
 
@@ -1034,8 +1068,29 @@ export class DashboardController {
 
   private extractTopThemes(prs: PRLike[]): Array<{ theme: string; count: number }> {
     const stopWords = new Set([
-      'the', 'a', 'an', 'and', 'or', 'of', 'to', 'for', 'in', 'on', 'with', 'by', 'from',
-      'fix', 'feat', 'chore', 'refactor', 'docs', 'test', 'tests', 'merge', 'pull', 'request',
+      'the',
+      'a',
+      'an',
+      'and',
+      'or',
+      'of',
+      'to',
+      'for',
+      'in',
+      'on',
+      'with',
+      'by',
+      'from',
+      'fix',
+      'feat',
+      'chore',
+      'refactor',
+      'docs',
+      'test',
+      'tests',
+      'merge',
+      'pull',
+      'request',
     ]);
 
     const frequencies = new Map<string, number>();

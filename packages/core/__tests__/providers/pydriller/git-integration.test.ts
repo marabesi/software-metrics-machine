@@ -48,9 +48,7 @@ describe('Git Commit Analysis - CommitTraverser', () => {
       expect(result.pairedCommits).toBeLessThanOrEqual(result.totalAnalyzedCommits);
 
       // Check that paired commits actually have co-authors
-      const pairedCommits = result.commits.filter(
-        c => c.coAuthors && c.coAuthors.length > 0
-      );
+      const pairedCommits = result.commits.filter((c) => c.coAuthors && c.coAuthors.length > 0);
       expect(pairedCommits.length).toBe(result.pairedCommits);
     });
   });
@@ -63,11 +61,9 @@ describe('Git Commit Analysis - CommitTraverser', () => {
       });
 
       expect(result.commits).toBeDefined();
-      result.commits.forEach(commit => {
+      result.commits.forEach((commit) => {
         const commitDate = new Date(commit.timestamp);
-        expect(commitDate.getTime()).toBeGreaterThanOrEqual(
-          new Date('2024-01-01').getTime()
-        );
+        expect(commitDate.getTime()).toBeGreaterThanOrEqual(new Date('2024-01-01').getTime());
       });
     });
 
@@ -78,11 +74,9 @@ describe('Git Commit Analysis - CommitTraverser', () => {
       });
 
       expect(result.commits).toBeDefined();
-      result.commits.forEach(commit => {
+      result.commits.forEach((commit) => {
         const commitDate = new Date(commit.timestamp);
-        expect(commitDate.getTime()).toBeLessThanOrEqual(
-          new Date('2023-12-31').getTime()
-        );
+        expect(commitDate.getTime()).toBeLessThanOrEqual(new Date('2023-12-31').getTime());
       });
     });
 
@@ -93,14 +87,10 @@ describe('Git Commit Analysis - CommitTraverser', () => {
       });
 
       expect(result.commits).toBeDefined();
-      result.commits.forEach(commit => {
+      result.commits.forEach((commit) => {
         const commitDate = new Date(commit.timestamp);
-        expect(commitDate.getTime()).toBeGreaterThanOrEqual(
-          new Date('2024-01-01').getTime()
-        );
-        expect(commitDate.getTime()).toBeLessThanOrEqual(
-          new Date('2024-12-31').getTime()
-        );
+        expect(commitDate.getTime()).toBeGreaterThanOrEqual(new Date('2024-01-01').getTime());
+        expect(commitDate.getTime()).toBeLessThanOrEqual(new Date('2024-12-31').getTime());
       });
     });
   });
@@ -125,7 +115,7 @@ describe('Git Commit Analysis - CommitTraverser', () => {
         });
 
         expect(result.commits.length).toBeGreaterThan(0);
-        result.commits.forEach(commit => {
+        result.commits.forEach((commit) => {
           expect(commit.author.toLowerCase()).toBe(author.toLowerCase());
         });
       }
@@ -145,10 +135,8 @@ describe('Git Commit Analysis - CommitTraverser', () => {
         });
 
         expect(result.commits.length).toBeGreaterThan(0);
-        result.commits.forEach(commit => {
-          const matches = authors.some(
-            a => a.toLowerCase() === commit.author.toLowerCase()
-          );
+        result.commits.forEach((commit) => {
+          const matches = authors.some((a) => a.toLowerCase() === commit.author.toLowerCase());
           expect(matches).toBe(true);
         });
       }
@@ -164,10 +152,8 @@ describe('Git Commit Analysis - CommitTraverser', () => {
           excludedAuthors: [authorToExclude],
         });
 
-        result.commits.forEach(commit => {
-          expect(commit.author.toLowerCase()).not.toBe(
-            authorToExclude.toLowerCase()
-          );
+        result.commits.forEach((commit) => {
+          expect(commit.author.toLowerCase()).not.toBe(authorToExclude.toLowerCase());
         });
 
         // Should have fewer commits after exclusion
@@ -180,17 +166,15 @@ describe('Git Commit Analysis - CommitTraverser', () => {
     it('should detect co-authored commits', async () => {
       const result = await traverser.traverseCommits();
 
-      const coAuthoredCommits = result.commits.filter(
-        c => c.coAuthors && c.coAuthors.length > 0
-      );
+      const coAuthoredCommits = result.commits.filter((c) => c.coAuthors && c.coAuthors.length > 0);
 
       // Note: May be 0 if no co-authored commits in repo
       expect(Array.isArray(coAuthoredCommits)).toBe(true);
 
-      coAuthoredCommits.forEach(commit => {
+      coAuthoredCommits.forEach((commit) => {
         expect(Array.isArray(commit.coAuthors)).toBe(true);
         expect(commit.coAuthors.length).toBeGreaterThan(0);
-        commit.coAuthors.forEach(coAuthor => {
+        commit.coAuthors.forEach((coAuthor) => {
           expect(typeof coAuthor).toBe('string');
           expect(coAuthor.length).toBeGreaterThan(0);
         });
@@ -202,7 +186,7 @@ describe('Git Commit Analysis - CommitTraverser', () => {
 
       if (result.totalAnalyzedCommits > 0) {
         const expectedPaired = result.commits.filter(
-          c => c.coAuthors && c.coAuthors.length > 0
+          (c) => c.coAuthors && c.coAuthors.length > 0
         ).length;
         expect(result.pairedCommits).toBe(expectedPaired);
       }
@@ -222,15 +206,11 @@ describe('Git Commit Analysis - CommitTraverser', () => {
           endDate: '2024-12-31',
         });
 
-        result.commits.forEach(commit => {
+        result.commits.forEach((commit) => {
           expect(commit.author.toLowerCase()).toBe(author.toLowerCase());
           const commitDate = new Date(commit.timestamp);
-          expect(commitDate.getTime()).toBeGreaterThanOrEqual(
-            new Date('2024-01-01').getTime()
-          );
-          expect(commitDate.getTime()).toBeLessThanOrEqual(
-            new Date('2024-12-31').getTime()
-          );
+          expect(commitDate.getTime()).toBeGreaterThanOrEqual(new Date('2024-01-01').getTime());
+          expect(commitDate.getTime()).toBeLessThanOrEqual(new Date('2024-12-31').getTime());
         });
       }
     });

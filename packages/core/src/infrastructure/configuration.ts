@@ -136,7 +136,7 @@ export class Configuration implements IConfiguration {
   constructor(env: Record<string, string | undefined> = process.env) {
     // Convert env to plain object if it's process.env (has null prototype in some Node versions)
     const envObj = env === process.env ? { ...env } : env;
-    
+
     // Check if configuration file path is provided
     let configData: Record<string, any> = {};
     if (envObj.SMM_STORE_DATA_AT) {
@@ -151,27 +151,29 @@ export class Configuration implements IConfiguration {
         console.warn(`Warning: Failed to load configuration from ${configData}:`, error);
       }
     }
-    
+
     // Load configuration from JSON file (if available) or environment variables
     this.gitProvider = configData.git_provider || envObj.GIT_PROVIDER || 'github';
     this.githubToken = configData.github_token || envObj.GITHUB_TOKEN;
     this.gitlabToken = configData.gitlab_token || envObj.GITLAB_TOKEN;
     this.githubRepository = configData.github_repository || envObj.GITHUB_REPOSITORY;
     this.storeData = envObj.SMM_STORE_DATA_AT; // Keep as the path to the config file
-    this.gitRepositoryLocation = configData.git_repository_location || envObj.GIT_REPOSITORY_LOCATION;
-    this.deploymentFrequencyTargetPipeline = 
-      configData.deployment_frequency_target_pipeline || envObj.DEPLOYMENT_FREQUENCY_TARGET_PIPELINE;
-    this.deploymentFrequencyTargetJob = 
+    this.gitRepositoryLocation =
+      configData.git_repository_location || envObj.GIT_REPOSITORY_LOCATION;
+    this.deploymentFrequencyTargetPipeline =
+      configData.deployment_frequency_target_pipeline ||
+      envObj.DEPLOYMENT_FREQUENCY_TARGET_PIPELINE;
+    this.deploymentFrequencyTargetJob =
       configData.deployment_frequency_target_job || envObj.DEPLOYMENT_FREQUENCY_TARGET_JOB;
     this.mainBranch = configData.main_branch || envObj.MAIN_BRANCH || 'main';
     this.dashboardStartDate = configData.dashboard_start_date || envObj.DASHBOARD_START_DATE;
     this.dashboardEndDate = configData.dashboard_end_date || envObj.DASHBOARD_END_DATE;
     this.dashboardColor = configData.dashboard_color || envObj.DASHBOARD_COLOR || '#6b77e3';
-    
+
     // Map log_level to loggingLevel with proper type
     const logLevel = configData.log_level || envObj.LOGGING_LEVEL || 'CRITICAL';
     this.loggingLevel = logLevel.toUpperCase() as IConfiguration['loggingLevel'];
-    
+
     this.jiraUrl = configData.jira_url || envObj.JIRA_URL;
     this.jiraEmail = configData.jira_email || envObj.JIRA_EMAIL;
     this.jiraToken = configData.jira_token || envObj.JIRA_TOKEN;

@@ -35,9 +35,7 @@ export class CommitTraverser implements ICommitTraverser {
     endDate?: string;
   }): Promise<TraverserResult> {
     try {
-      this.logger.info(
-        `Traversing commits in ${this.gitRepositoryPath}`
-      );
+      this.logger.info(`Traversing commits in ${this.gitRepositoryPath}`);
 
       // Fetch all commits from git log
       const commits = await this.fetchCommits(options);
@@ -56,9 +54,7 @@ export class CommitTraverser implements ICommitTraverser {
       this.logger.info(`After filtering: ${filtered.length} commits`);
 
       // Calculate pairing statistics
-      const pairedCommits = filtered.filter(
-        c => c.author && c.author.length > 0
-      ).length;
+      const pairedCommits = filtered.filter((c) => c.author && c.author.length > 0).length;
 
       this.logger.info(`Paired commits: ${pairedCommits}`);
 
@@ -101,12 +97,8 @@ export class CommitTraverser implements ICommitTraverser {
 
       // Add date filters if provided
       if (options?.startDate || options?.endDate) {
-        const since = options?.startDate
-          ? `--since="${options.startDate}"`
-          : '';
-        const until = options?.endDate
-          ? `--until="${options.endDate}"`
-          : '';
+        const since = options?.startDate ? `--since="${options.startDate}"` : '';
+        const until = options?.endDate ? `--until="${options.endDate}"` : '';
         gitCommand = `${gitCommand} ${since} ${until}`;
       }
 
@@ -123,9 +115,7 @@ export class CommitTraverser implements ICommitTraverser {
       return commits;
     } catch (error) {
       if (error instanceof Error) {
-        this.logger.error(
-          `Git command failed: ${error.message}`
-        );
+        this.logger.error(`Git command failed: ${error.message}`);
         throw error;
       }
       throw error;
@@ -195,7 +185,7 @@ export class CommitTraverser implements ICommitTraverser {
       const start = startDate ? new Date(startDate).getTime() : null;
       const end = endDate ? new Date(endDate).getTime() : null;
 
-      filtered = filtered.filter(commit => {
+      filtered = filtered.filter((commit) => {
         const commitTime = new Date(commit.timestamp).getTime();
 
         if (start && commitTime < start) return false;
@@ -206,17 +196,13 @@ export class CommitTraverser implements ICommitTraverser {
 
     // Apply author filters
     if (selectedAuthors && selectedAuthors.length > 0) {
-      const authorSet = new Set(selectedAuthors.map(a => a.toLowerCase()));
-      filtered = filtered.filter(commit =>
-        authorSet.has(commit.author.toLowerCase())
-      );
+      const authorSet = new Set(selectedAuthors.map((a) => a.toLowerCase()));
+      filtered = filtered.filter((commit) => authorSet.has(commit.author.toLowerCase()));
     }
 
     if (excludedAuthors && excludedAuthors.length > 0) {
-      const excludedSet = new Set(excludedAuthors.map(a => a.toLowerCase()));
-      filtered = filtered.filter(
-        commit => !excludedSet.has(commit.author.toLowerCase())
-      );
+      const excludedSet = new Set(excludedAuthors.map((a) => a.toLowerCase()));
+      filtered = filtered.filter((commit) => !excludedSet.has(commit.author.toLowerCase()));
     }
 
     return filtered;

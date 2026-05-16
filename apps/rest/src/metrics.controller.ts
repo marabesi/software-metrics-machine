@@ -67,10 +67,13 @@ export class MetricsController {
         endDate: query.endDate,
       });
     } catch (error) {
-      this.logger.error(`Failed to fetch PR metrics: ${error}`, error instanceof Error ? error.stack : '');
+      this.logger.error(
+        `Failed to fetch PR metrics: ${error}`,
+        error instanceof Error ? error.stack : ''
+      );
       throw new HttpException(
         `Failed to fetch PR metrics: ${error instanceof Error ? error.message : String(error)}`,
-        HttpStatus.INTERNAL_SERVER_ERROR,
+        HttpStatus.INTERNAL_SERVER_ERROR
       );
     }
   }
@@ -109,10 +112,13 @@ export class MetricsController {
         frequency: query.frequency || 'week',
       });
     } catch (error) {
-      this.logger.error(`Failed to fetch deployment metrics: ${error}`, error instanceof Error ? error.stack : '');
+      this.logger.error(
+        `Failed to fetch deployment metrics: ${error}`,
+        error instanceof Error ? error.stack : ''
+      );
       throw new HttpException(
         `Failed to fetch deployment metrics: ${error instanceof Error ? error.message : String(error)}`,
-        HttpStatus.INTERNAL_SERVER_ERROR,
+        HttpStatus.INTERNAL_SERVER_ERROR
       );
     }
   }
@@ -157,10 +163,13 @@ export class MetricsController {
         endDate: query.endDate,
       });
     } catch (error) {
-      this.logger.error(`Failed to fetch code metrics: ${error}`, error instanceof Error ? error.stack : '');
+      this.logger.error(
+        `Failed to fetch code metrics: ${error}`,
+        error instanceof Error ? error.stack : ''
+      );
       throw new HttpException(
         `Failed to fetch code metrics: ${error instanceof Error ? error.message : String(error)}`,
-        HttpStatus.INTERNAL_SERVER_ERROR,
+        HttpStatus.INTERNAL_SERVER_ERROR
       );
     }
   }
@@ -199,10 +208,13 @@ export class MetricsController {
         endDate: query.endDate,
       });
     } catch (error) {
-      this.logger.error(`Failed to fetch issue metrics: ${error}`, error instanceof Error ? error.stack : '');
+      this.logger.error(
+        `Failed to fetch issue metrics: ${error}`,
+        error instanceof Error ? error.stack : ''
+      );
       throw new HttpException(
         `Failed to fetch issue metrics: ${error instanceof Error ? error.message : String(error)}`,
-        HttpStatus.INTERNAL_SERVER_ERROR,
+        HttpStatus.INTERNAL_SERVER_ERROR
       );
     }
   }
@@ -240,10 +252,13 @@ export class MetricsController {
 
       return await this.orchestrator.getQualityMetrics(measures);
     } catch (error) {
-      this.logger.error(`Failed to fetch quality metrics: ${error}`, error instanceof Error ? error.stack : '');
+      this.logger.error(
+        `Failed to fetch quality metrics: ${error}`,
+        error instanceof Error ? error.stack : ''
+      );
       throw new HttpException(
         `Failed to fetch quality metrics: ${error instanceof Error ? error.message : String(error)}`,
-        HttpStatus.INTERNAL_SERVER_ERROR,
+        HttpStatus.INTERNAL_SERVER_ERROR
       );
     }
   }
@@ -300,10 +315,13 @@ export class MetricsController {
         status: query.status,
       });
     } catch (error) {
-      this.logger.error(`Failed to fetch full report: ${error}`, error instanceof Error ? error.stack : '');
+      this.logger.error(
+        `Failed to fetch full report: ${error}`,
+        error instanceof Error ? error.stack : ''
+      );
       throw new HttpException(
         `Failed to fetch full report: ${error instanceof Error ? error.message : String(error)}`,
-        HttpStatus.INTERNAL_SERVER_ERROR,
+        HttpStatus.INTERNAL_SERVER_ERROR
       );
     }
   }

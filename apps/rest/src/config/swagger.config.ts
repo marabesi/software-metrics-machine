@@ -49,7 +49,7 @@ Errors return HTTP status codes with JSON error response:
   "path": "/api/metrics/pr"
 }
 \`\`\`
-      `,
+      `
     )
     .setVersion('1.0.0')
     .addTag('Metrics', 'All metrics endpoints')

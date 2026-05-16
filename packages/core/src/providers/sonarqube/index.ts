@@ -1,1 +1,6 @@
-export { SonarqubeMeasuresClient, type ISonarqubeMeasuresClient, type CodeMetric, type SonarqubeComponentMeasure } from './sonarqube-client';
+export {
+  SonarqubeMeasuresClient,
+  type ISonarqubeMeasuresClient,
+  type CodeMetric,
+  type SonarqubeComponentMeasure,
+} from './sonarqube-client';

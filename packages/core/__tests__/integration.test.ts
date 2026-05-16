@@ -25,8 +25,17 @@ describe('Full Business Logic Integration', () => {
     // Initialize providers
     const githubPrsClient = new GithubPrsClient('token', 'owner', 'repo');
     const githubWorkflowClient = new GithubWorkflowClient('token', 'owner', 'repo');
-    const jiraClient = new JiraIssuesClient('https://jira.example.com', 'user@example.com', 'token', 'PROJECT');
-    const sonarqubeClient = new SonarqubeMeasuresClient('https://sonar.example.com', 'token', 'project-key');
+    const jiraClient = new JiraIssuesClient(
+      'https://jira.example.com',
+      'user@example.com',
+      'token',
+      'PROJECT'
+    );
+    const sonarqubeClient = new SonarqubeMeasuresClient(
+      'https://sonar.example.com',
+      'token',
+      'project-key'
+    );
     const commitTraverser = new CommitTraverser('/path/to/repo');
     const codemaatAnalyzer = new CodemaatAnalyzer('/path/to/data');
 

@@ -20,7 +20,10 @@ export class QualityMetricsRepository implements IQualityMetricsRepository {
   private cacheDuration: number = 1000 * 60 * 60; // 1 hour
   private cache: FileSystemRepository<any>;
 
-  constructor(private sonarqubeClient: ISonarqubeMeasuresClient, cacheDir: string = './outputs/sonarqube') {
+  constructor(
+    private sonarqubeClient: ISonarqubeMeasuresClient,
+    cacheDir: string = './outputs/sonarqube'
+  ) {
     this.cache = new FileSystemRepository<any>(`${cacheDir}/measures.json`);
   }
 

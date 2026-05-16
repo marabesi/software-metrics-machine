@@ -25,10 +25,10 @@ export class PRMetricsQueryDto extends BaseQueryDto {}
  * Deployment Metrics Query DTO
  */
 export class DeploymentMetricsQueryDto extends BaseQueryDto {
-  @ApiPropertyOptional({ 
+  @ApiPropertyOptional({
     enum: ['day', 'week', 'month'],
     default: 'week',
-    description: 'Frequency for deployment metrics aggregation'
+    description: 'Frequency for deployment metrics aggregation',
   })
   @IsOptional()
   @IsEnum(['day', 'week', 'month'])
@@ -39,10 +39,10 @@ export class DeploymentMetricsQueryDto extends BaseQueryDto {
  * Code Metrics Query DTO
  */
 export class CodeMetricsQueryDto extends BaseQueryDto {
-  @ApiPropertyOptional({ 
+  @ApiPropertyOptional({
     type: [String],
     description: 'Filter by selected authors',
-    isArray: true
+    isArray: true,
   })
   @IsOptional()
   @IsArray()
@@ -64,10 +64,10 @@ export class IssueMetricsQueryDto extends BaseQueryDto {
  * Quality Metrics Query DTO
  */
 export class QualityMetricsQueryDto {
-  @ApiPropertyOptional({ 
+  @ApiPropertyOptional({
     type: [String],
     description: 'SonarQube measures to retrieve',
-    isArray: true
+    isArray: true,
   })
   @IsOptional()
   @IsArray()
@@ -79,10 +79,10 @@ export class QualityMetricsQueryDto {
  * Full Report Query DTO
  */
 export class FullReportQueryDto extends BaseQueryDto {
-  @ApiPropertyOptional({ 
+  @ApiPropertyOptional({
     type: [String],
     description: 'Filter by selected authors',
-    isArray: true
+    isArray: true,
   })
   @IsOptional()
   @IsArray()

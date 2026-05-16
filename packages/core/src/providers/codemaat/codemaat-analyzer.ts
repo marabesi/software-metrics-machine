@@ -30,14 +30,9 @@ export interface CodemaatAnalysisResult {
 }
 
 export interface ICodemaatAnalyzer {
-  getCodeChurn(options?: {
-    startDate?: string;
-    endDate?: string;
-  }): Promise<CodeChurnResult>;
+  getCodeChurn(options?: { startDate?: string; endDate?: string }): Promise<CodeChurnResult>;
 
-  getFileCoupling(options?: {
-    ignorePatterns?: string[];
-  }): Promise<FileCoupling[]>;
+  getFileCoupling(options?: { ignorePatterns?: string[] }): Promise<FileCoupling[]>;
 
   analyze(options?: {
     startDate?: string;
@@ -64,10 +59,7 @@ export class CodemaatAnalyzer implements ICodemaatAnalyzer {
     this.logger = new Logger('CodemaatAnalyzer');
   }
 
-  async getCodeChurn(options?: {
-    startDate?: string;
-    endDate?: string;
-  }): Promise<CodeChurnResult> {
+  async getCodeChurn(options?: { startDate?: string; endDate?: string }): Promise<CodeChurnResult> {
     try {
       const csvPath = path.join(this.dataDir, 'abs-churn.csv');
 
@@ -99,13 +91,17 @@ export class CodemaatAnalyzer implements ICodemaatAnalyzer {
       }
 
       // Parse header
-      const header = lines[0].split(',').map(h => h.trim().replace(/^"|"$/g, ''));
+      const header = lines[0].split(',').map((h) => h.trim().replace(/^"|"$/g, ''));
 
       // Find column indices
       const dateIdx = header.indexOf('date') >= 0 ? header.indexOf('date') : header.indexOf('Date');
-      const addedIdx = header.findIndex(h => h.toLowerCase().includes('added') || h.toLowerCase().includes('insertions'));
-      const deletedIdx = header.findIndex(h => h.toLowerCase().includes('deleted') || h.toLowerCase().includes('deletions'));
-      const commitsIdx = header.findIndex(h => h.toLowerCase().includes('commit'));
+      const addedIdx = header.findIndex(
+        (h) => h.toLowerCase().includes('added') || h.toLowerCase().includes('insertions')
+      );
+      const deletedIdx = header.findIndex(
+        (h) => h.toLowerCase().includes('deleted') || h.toLowerCase().includes('deletions')
+      );
+      const commitsIdx = header.findIndex((h) => h.toLowerCase().includes('commit'));
 
       if (dateIdx < 0 || addedIdx < 0 || deletedIdx < 0) {
         this.logger.warn('Invalid code churn CSV format. Missing required columns.');
@@ -120,7 +116,7 @@ export class CodemaatAnalyzer implements ICodemaatAnalyzer {
       const data: CodeChurn[] = [];
 
       for (let i = 1; i < lines.length; i++) {
-        const row = lines[i].split(',').map(v => v.trim().replace(/^"|"$/g, ''));
+        const row = lines[i].split(',').map((v) => v.trim().replace(/^"|"$/g, ''));
 
         if (row.length <= Math.max(dateIdx, addedIdx, deletedIdx)) {
           continue; // Skip malformed rows
@@ -129,7 +125,7 @@ export class CodemaatAnalyzer implements ICodemaatAnalyzer {
         const date = row[dateIdx];
         const added = parseInt(row[addedIdx], 10) || 0;
         const deleted = parseInt(row[deletedIdx], 10) || 0;
-        const commits = commitsIdx >= 0 ? (parseInt(row[commitsIdx], 10) || 0) : 1;
+        const commits = commitsIdx >= 0 ? parseInt(row[commitsIdx], 10) || 0 : 1;
 
         // Filter by date range if provided
         if (options?.startDate && date < options.startDate) {
@@ -156,9 +152,7 @@ export class CodemaatAnalyzer implements ICodemaatAnalyzer {
     }
   }
 
-  async getFileCoupling(options?: {
-    ignorePatterns?: string[];
-  }): Promise<FileCoupling[]> {
+  async getFileCoupling(options?: { ignorePatterns?: string[] }): Promise<FileCoupling[]> {
     try {
       const csvPath = path.join(this.dataDir, 'coupling.csv');
 
@@ -178,13 +172,17 @@ export class CodemaatAnalyzer implements ICodemaatAnalyzer {
       }
 
       // Parse header
-      const header = lines[0].split(',').map(h => h.trim().replace(/^"|"$/g, ''));
+      const header = lines[0].split(',').map((h) => h.trim().replace(/^"|"$/g, ''));
 
       // Find column indices
-      const file1Idx = header.findIndex(h => h.toLowerCase().includes('file1') || h.toLowerCase().includes('entity1'));
-      const file2Idx = header.findIndex(h => h.toLowerCase().includes('file2') || h.toLowerCase().includes('entity2'));
-      const couplingIdx = header.findIndex(h =>
-        h.toLowerCase().includes('coupl') || h.toLowerCase().includes('strength')
+      const file1Idx = header.findIndex(
+        (h) => h.toLowerCase().includes('file1') || h.toLowerCase().includes('entity1')
+      );
+      const file2Idx = header.findIndex(
+        (h) => h.toLowerCase().includes('file2') || h.toLowerCase().includes('entity2')
+      );
+      const couplingIdx = header.findIndex(
+        (h) => h.toLowerCase().includes('coupl') || h.toLowerCase().includes('strength')
       );
 
       if (file1Idx < 0 || file2Idx < 0 || couplingIdx < 0) {
@@ -196,7 +194,7 @@ export class CodemaatAnalyzer implements ICodemaatAnalyzer {
       const coupleData: FileCoupling[] = [];
 
       for (let i = 1; i < lines.length; i++) {
-        const row = lines[i].split(',').map(v => v.trim().replace(/^"|"$/g, ''));
+        const row = lines[i].split(',').map((v) => v.trim().replace(/^"|"$/g, ''));
 
         if (row.length <= Math.max(file1Idx, file2Idx, couplingIdx)) {
           continue; // Skip malformed rows

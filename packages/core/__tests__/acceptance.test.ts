@@ -45,9 +45,7 @@ describe('Metrics System Acceptance Tests', () => {
       process.env.SONARQUBE_PROJECT || 'project-key'
     );
 
-    const commitTraverser = new CommitTraverser(
-      process.env.REPO_PATH || '/path/to/repo'
-    );
+    const commitTraverser = new CommitTraverser(process.env.REPO_PATH || '/path/to/repo');
 
     const codemaatAnalyzer = new CodemaatAnalyzer(
       process.env.CODEMAAT_DATA_PATH || '/path/to/data'

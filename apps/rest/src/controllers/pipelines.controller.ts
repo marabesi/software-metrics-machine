@@ -11,7 +11,13 @@ interface RunLike {
   conclusion?: string;
   branch?: string;
   event?: string;
-  jobs?: Array<{ name?: string; status?: string; conclusion?: string; startedAt?: string; completedAt?: string }>;
+  jobs?: Array<{
+    name?: string;
+    status?: string;
+    conclusion?: string;
+    startedAt?: string;
+    completedAt?: string;
+  }>;
 }
 
 /**
@@ -25,7 +31,7 @@ export class PipelinesController {
 
   constructor(
     private readonly pipelinesRepo: PipelinesRepository,
-    private readonly config: Configuration,
+    private readonly config: Configuration
   ) {}
 
   @Get('/pipelines/summary')
@@ -37,7 +43,7 @@ export class PipelinesController {
     @Query('conclusion') conclusion?: string,
     @Query('branch') branch?: string,
     @Query('job_name') jobName?: string,
-    @Query('event') event?: string,
+    @Query('event') event?: string
   ) {
     const runs = await this.loadRunsWithFilters({
       startDate,
@@ -51,7 +57,9 @@ export class PipelinesController {
       includeJobs: false,
     });
 
-    const sortedByDate = [...runs].sort((a, b) => this.toTimestamp(a.createdAt) - this.toTimestamp(b.createdAt));
+    const sortedByDate = [...runs].sort(
+      (a, b) => this.toTimestamp(a.createdAt) - this.toTimestamp(b.createdAt)
+    );
     return {
       total_runs: runs.length,
       first_run: sortedByDate.length > 0 ? sortedByDate[0] : null,
@@ -70,7 +78,7 @@ export class PipelinesController {
     @Query('conclusion') conclusion?: string,
     @Query('branch') branch?: string,
     @Query('job_name') jobName?: string,
-    @Query('event') event?: string,
+    @Query('event') event?: string
   ) {
     const runs = await this.loadRunsWithFilters({
       startDate,
@@ -104,7 +112,7 @@ export class PipelinesController {
     @Query('conclusion') conclusion?: string,
     @Query('branch') branch?: string,
     @Query('job_name') jobName?: string,
-    @Query('event') event?: string,
+    @Query('event') event?: string
   ) {
     const runs = await this.loadRunsWithFilters({
       startDate,
@@ -142,7 +150,7 @@ export class PipelinesController {
     @Query('conclusion') conclusion?: string,
     @Query('branch') branch?: string,
     @Query('job_name') jobName?: string,
-    @Query('event') event?: string,
+    @Query('event') event?: string
   ) {
     const runs = await this.loadRunsWithFilters({
       startDate,
@@ -172,7 +180,8 @@ export class PipelinesController {
     return Array.from(grouped.entries())
       .map(([workflow, durations]) => ({
         workflow,
-        avg_duration: durations.length > 0 ? durations.reduce((a, b) => a + b, 0) / durations.length : 0,
+        avg_duration:
+          durations.length > 0 ? durations.reduce((a, b) => a + b, 0) / durations.length : 0,
         total_runs: durations.length,
       }))
       .sort((a, b) => b.total_runs - a.total_runs);
@@ -187,7 +196,7 @@ export class PipelinesController {
     @Query('status') status?: string,
     @Query('conclusion') conclusion?: string,
     @Query('branch') branch?: string,
-    @Query('event') event?: string,
+    @Query('event') event?: string
   ) {
     const runs = await this.loadRunsWithFilters({
       startDate,
@@ -249,7 +258,7 @@ export class PipelinesController {
     @Query('conclusion') conclusion?: string,
     @Query('branch') branch?: string,
     @Query('job_name') jobName?: string,
-    @Query('event') event?: string,
+    @Query('event') event?: string
   ) {
     const runs = await this.loadRunsWithFilters({
       startDate,
@@ -296,7 +305,7 @@ export class PipelinesController {
     @Query('job_name') jobName?: string,
     @Query('exclude_jobs') excludeJobs?: string,
     @Query('event') event?: string,
-    @Query('top') top?: string,
+    @Query('top') top?: string
   ) {
     const runs = await this.loadRunsWithFilters({
       startDate,
@@ -334,7 +343,8 @@ export class PipelinesController {
     const result = Array.from(grouped.entries())
       .map(([jobNameValue, durations]) => ({
         job_name: jobNameValue,
-        avg_time: durations.length > 0 ? durations.reduce((a, b) => a + b, 0) / durations.length : 0,
+        avg_time:
+          durations.length > 0 ? durations.reduce((a, b) => a + b, 0) / durations.length : 0,
         count: durations.length,
       }))
       .sort((a, b) => b.count - a.count)
@@ -347,41 +357,34 @@ export class PipelinesController {
   async workflows() {
     const runs = await this.pipelinesRepo.refreshPipelines();
     const values = Array.from(
-      new Set(runs.map((run: RunLike) => run.path || '').filter((value: string) => value.length > 0)),
+      new Set(
+        runs.map((run: RunLike) => run.path || '').filter((value: string) => value.length > 0)
+      )
     ).sort();
     return values.map((workflow) => ({ name: workflow, path: workflow }));
   }
 
   @Get('/pipelines/statuses')
-  async statuses(
-    @Query('start_date') startDate?: string,
-    @Query('end_date') endDate?: string,
-  ) {
+  async statuses(@Query('start_date') startDate?: string, @Query('end_date') endDate?: string) {
     const runs = await this.loadRunsWithFilters({ startDate, endDate, includeJobs: false });
     return Array.from(
-      new Set(runs.map((run) => run.status || '').filter((value) => value.length > 0)),
+      new Set(runs.map((run) => run.status || '').filter((value) => value.length > 0))
     ).sort();
   }
 
   @Get('/pipelines/conclusions')
-  async conclusions(
-    @Query('start_date') startDate?: string,
-    @Query('end_date') endDate?: string,
-  ) {
+  async conclusions(@Query('start_date') startDate?: string, @Query('end_date') endDate?: string) {
     const runs = await this.loadRunsWithFilters({ startDate, endDate, includeJobs: false });
     return Array.from(
-      new Set(runs.map((run) => run.conclusion || '').filter((value) => value.length > 0)),
+      new Set(runs.map((run) => run.conclusion || '').filter((value) => value.length > 0))
     ).sort();
   }
 
   @Get('/pipelines/branches')
-  async branches(
-    @Query('start_date') startDate?: string,
-    @Query('end_date') endDate?: string,
-  ) {
+  async branches(@Query('start_date') startDate?: string, @Query('end_date') endDate?: string) {
     const runs = await this.loadRunsWithFilters({ startDate, endDate, includeJobs: false });
     return Array.from(
-      new Set(runs.map((run) => run.branch || '').filter((value) => value.length > 0)),
+      new Set(runs.map((run) => run.branch || '').filter((value) => value.length > 0))
     ).sort();
   }
 
@@ -389,7 +392,9 @@ export class PipelinesController {
   async events() {
     const runs = await this.pipelinesRepo.refreshPipelines();
     return Array.from(
-      new Set(runs.map((run: RunLike) => run.event || '').filter((value: string) => value.length > 0)),
+      new Set(
+        runs.map((run: RunLike) => run.event || '').filter((value: string) => value.length > 0)
+      )
     ).sort();
   }
 
@@ -406,7 +411,9 @@ export class PipelinesController {
       }
     }
 
-    return Array.from(names).sort().map((name) => ({ name, id: name }));
+    return Array.from(names)
+      .sort()
+      .map((name) => ({ name, id: name }));
   }
 
   // ========== PRIVATE HELPERS ==========
@@ -451,7 +458,9 @@ export class PipelinesController {
     const diff = date.getDate() - dayOfWeek + (dayOfWeek === 0 ? -6 : 1);
     const monday = new Date(date.setDate(diff));
     const year = monday.getFullYear();
-    const week = Math.ceil((monday.getTime() - new Date(year, 0, 1).getTime()) / (24 * 60 * 60 * 1000 / 7));
+    const week = Math.ceil(
+      (monday.getTime() - new Date(year, 0, 1).getTime()) / ((24 * 60 * 60 * 1000) / 7)
+    );
     return `${year}-W${week.toString().padStart(2, '0')}`;
   }
 
@@ -475,7 +484,10 @@ export class PipelinesController {
   }): Promise<RunLike[]> {
     const runs = await this.pipelinesRepo.refreshPipelines();
     return runs.filter((run: RunLike) => {
-      if (filters.startDate && this.toTimestamp(run.createdAt) < this.toTimestamp(filters.startDate)) {
+      if (
+        filters.startDate &&
+        this.toTimestamp(run.createdAt) < this.toTimestamp(filters.startDate)
+      ) {
         return false;
       }
       if (filters.endDate && this.toTimestamp(run.createdAt) > this.toTimestamp(filters.endDate)) {
@@ -487,7 +499,10 @@ export class PipelinesController {
       if (filters.status && (run.status || '').toLowerCase() !== filters.status.toLowerCase()) {
         return false;
       }
-      if (filters.conclusion && (run.conclusion || '').toLowerCase() !== filters.conclusion.toLowerCase()) {
+      if (
+        filters.conclusion &&
+        (run.conclusion || '').toLowerCase() !== filters.conclusion.toLowerCase()
+      ) {
         return false;
       }
       if (filters.branch && run.branch !== filters.branch) {

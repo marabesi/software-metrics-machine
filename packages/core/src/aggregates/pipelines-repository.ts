@@ -203,9 +203,7 @@ export class PipelinesRepository implements IPipelinesRepository {
       }
 
       let page =
-        progress.partial?.runId === runId && progress.partial?.page
-          ? progress.partial.page
-          : 1;
+        progress.partial?.runId === runId && progress.partial?.page ? progress.partial.page : 1;
 
       while (true) {
         try {
@@ -292,10 +290,7 @@ export class PipelinesRepository implements IPipelinesRepository {
   /**
    * Get deployment frequency
    */
-  async getDeploymentFrequency(
-    interval: 'day' | 'week' | 'month',
-    filters?: any
-  ): Promise<any> {
+  async getDeploymentFrequency(interval: 'day' | 'week' | 'month', filters?: any): Promise<any> {
     await this.refreshPipelines(filters);
     return this.pipelineService.getDeploymentFrequency(interval, filters);
   }

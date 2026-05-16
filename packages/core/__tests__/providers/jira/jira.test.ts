@@ -1,4 +1,4 @@
-import {JiraIssuesClient} from "../../../src";
+import { JiraIssuesClient } from '../../../src';
 
 describe('JiraIssuesClient', () => {
   let client: JiraIssuesClient;

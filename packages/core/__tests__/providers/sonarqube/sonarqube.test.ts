@@ -1,4 +1,4 @@
-import {SonarqubeMeasuresClient} from "../../../src";
+import { SonarqubeMeasuresClient } from '../../../src';
 
 describe('SonarqubeMeasuresClient', () => {
   let client: SonarqubeMeasuresClient;

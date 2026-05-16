@@ -1,4 +1,4 @@
-import {CodemaatAnalyzer} from "../../../src";
+import { CodemaatAnalyzer } from '../../../src';
 
 describe('CodemaatAnalyzer', () => {
   let analyzer: CodemaatAnalyzer;

@@ -41,7 +41,7 @@ async function bootstrap() {
           .join('; ');
         return new BadRequestException(message);
       },
-    }),
+    })
   );
 
   // Global exception filters (order matters: specific to general)

@@ -15,9 +15,7 @@ export interface SonarqubeComponentMeasure {
 }
 
 export interface ISonarqubeMeasuresClient {
-  fetchComponentMeasures(options?: {
-    metrics?: string[];
-  }): Promise<SonarqubeComponentMeasure>;
+  fetchComponentMeasures(options?: { metrics?: string[] }): Promise<SonarqubeComponentMeasure>;
 
   fetchHistoricalMeasures(options?: {
     metrics?: string[];
@@ -118,11 +116,7 @@ export class SonarqubeMeasuresClient implements ISonarqubeMeasuresClient {
   }): Promise<CodeMetric[]> {
     try {
       // Default metrics if not specified
-      const metrics = options?.metrics || [
-        'sqale_rating',
-        'coverage',
-        'duplicated_lines_density',
-      ];
+      const metrics = options?.metrics || ['sqale_rating', 'coverage', 'duplicated_lines_density'];
 
       this.logger.info(
         `Fetching SonarQube historical metrics for project ${this.projectKey}` +

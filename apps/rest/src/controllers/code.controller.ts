@@ -17,14 +17,14 @@ export class CodeController {
 
   constructor(
     private readonly codeRepo: CodeMetricsRepository,
-    private readonly config: Configuration,
+    private readonly config: Configuration
   ) {}
 
   @Get('/code/pairing-index')
   async pairingIndex(
     @Query('start_date') startDate?: string,
     @Query('end_date') endDate?: string,
-    @Query('authors') authors?: string,
+    @Query('authors') authors?: string
   ) {
     const selectedAuthors = this.parseCsvList(authors);
     const pairing = await this.codeRepo.getPairingIndex({
@@ -44,34 +44,36 @@ export class CodeController {
   async codeChurn(
     @Query('start_date') startDate?: string,
     @Query('end_date') endDate?: string,
-    @Query('type_churn') typeChurn?: string,
+    @Query('type_churn') typeChurn?: string
   ) {
     const churn = await this.codeRepo.getCodeChurn({ startDate, endDate });
     const churnType = (typeChurn || 'total').toLowerCase();
 
-    return (churn?.data || []).map((row: { date: string; added: number; deleted: number; commits: number }) => {
-      const value =
-        churnType === 'added'
-          ? row.added
-          : churnType === 'deleted'
-          ? row.deleted
-          : churnType === 'commits'
-          ? row.commits
-          : row.added + row.deleted;
+    return (churn?.data || []).map(
+      (row: { date: string; added: number; deleted: number; commits: number }) => {
+        const value =
+          churnType === 'added'
+            ? row.added
+            : churnType === 'deleted'
+              ? row.deleted
+              : churnType === 'commits'
+                ? row.commits
+                : row.added + row.deleted;
 
-      return {
-        date: row.date,
-        type: churnType,
-        value,
-      };
-    });
+        return {
+          date: row.date,
+          type: churnType,
+          value,
+        };
+      }
+    );
   }
 
   @Get('/code/coupling')
   async coupling(
     @Query('ignore_files') ignoreFiles?: string,
     @Query('include_only') includeOnly?: string,
-    @Query('top') top?: string,
+    @Query('top') top?: string
   ) {
     const ignorePatterns = this.parseCsvList(ignoreFiles);
     const includePatterns = this.parseCsvList(includeOnly);
@@ -80,26 +82,32 @@ export class CodeController {
     });
 
     const filtered = coupling
-      .filter((row: { file1: string; file2: string; couplingStrength: number }) =>
-        this.matchesIncludeOnly(row.file1, includePatterns) ||
-        this.matchesIncludeOnly(row.file2, includePatterns) ||
-        includePatterns.length === 0,
+      .filter(
+        (row: { file1: string; file2: string; couplingStrength: number }) =>
+          this.matchesIncludeOnly(row.file1, includePatterns) ||
+          this.matchesIncludeOnly(row.file2, includePatterns) ||
+          includePatterns.length === 0
       )
-      .sort((a: { couplingStrength: number }, b: { couplingStrength: number }) => b.couplingStrength - a.couplingStrength);
+      .sort(
+        (a: { couplingStrength: number }, b: { couplingStrength: number }) =>
+          b.couplingStrength - a.couplingStrength
+      );
 
     const maxRows = top ? Number(top) : 20;
-    return filtered.slice(0, Number.isFinite(maxRows) ? maxRows : 20).map((row: { file1: string; file2: string; couplingStrength: number }) => ({
-      entity: row.file1,
-      coupled: row.file2,
-      degree: row.couplingStrength,
-    }));
+    return filtered
+      .slice(0, Number.isFinite(maxRows) ? maxRows : 20)
+      .map((row: { file1: string; file2: string; couplingStrength: number }) => ({
+        entity: row.file1,
+        coupled: row.file2,
+        degree: row.couplingStrength,
+      }));
   }
 
   @Get('/code/entity-churn')
   async entityChurn(
     @Query('ignore_files') ignoreFiles?: string,
     @Query('include_only') includeOnly?: string,
-    @Query('top') top?: string,
+    @Query('top') top?: string
   ) {
     const rows = await this.readCsvRecords('entity-churn.csv');
     const filtered = this.filterEntities(rows, ignoreFiles, includeOnly)
@@ -119,7 +127,7 @@ export class CodeController {
   async entityEffort(
     @Query('ignore_files') ignoreFiles?: string,
     @Query('include_only') includeOnly?: string,
-    @Query('top') top?: string,
+    @Query('top') top?: string
   ) {
     const rows = await this.readCsvRecords('entity-effort.csv');
     const filtered = this.filterEntities(rows, ignoreFiles, includeOnly)
@@ -138,7 +146,7 @@ export class CodeController {
     @Query('ignore_files') ignoreFiles?: string,
     @Query('include_only') includeOnly?: string,
     @Query('authors') authors?: string,
-    @Query('top') top?: string,
+    @Query('top') top?: string
   ) {
     const authorFilter = new Set(this.parseCsvList(authors).map((author) => author.toLowerCase()));
     const rows = await this.readCsvRecords('entity-ownership.csv');
@@ -167,7 +175,9 @@ export class CodeController {
   async codeAuthors() {
     const rows = await this.readCsvRecords('entity-ownership.csv');
     return Array.from(
-      new Set(rows.map((row) => String(row.author || '').trim()).filter((author) => author.length > 0)),
+      new Set(
+        rows.map((row) => String(row.author || '').trim()).filter((author) => author.length > 0)
+      )
     ).sort();
   }
 
@@ -242,12 +252,18 @@ export class CodeController {
 
       return records;
     } catch (error) {
-      this.logger.warn(`Failed to read CSV ${csvPath}: ${error instanceof Error ? error.message : String(error)}`);
+      this.logger.warn(
+        `Failed to read CSV ${csvPath}: ${error instanceof Error ? error.message : String(error)}`
+      );
       return [];
     }
   }
 
-  private filterEntities(rows: GenericRecord[], ignoreFiles?: string, includeOnly?: string): GenericRecord[] {
+  private filterEntities(
+    rows: GenericRecord[],
+    ignoreFiles?: string,
+    includeOnly?: string
+  ): GenericRecord[] {
     const ignorePatterns = this.parseCsvList(ignoreFiles);
     const includePatterns = this.parseCsvList(includeOnly);
 

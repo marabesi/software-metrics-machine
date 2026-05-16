@@ -33,24 +33,20 @@ export class PipelinesService implements IPipelinesService {
   async getMetrics(filters?: PipelineFilters): Promise<PipelineMetrics> {
     const runs = await this.filterRuns(filters);
 
-    const completedRuns = runs.filter(r => r.conclusion);
-    const successful = completedRuns.filter(r => r.conclusion === 'success');
-    const failed = completedRuns.filter(r => r.conclusion === 'failure');
+    const completedRuns = runs.filter((r) => r.conclusion);
+    const successful = completedRuns.filter((r) => r.conclusion === 'success');
+    const failed = completedRuns.filter((r) => r.conclusion === 'failure');
 
     const successRate =
-      completedRuns.length > 0
-        ? (successful.length / completedRuns.length) * 100
-        : 0;
+      completedRuns.length > 0 ? (successful.length / completedRuns.length) * 100 : 0;
 
     // Calculate average duration
     const durations = this.extractDurations(runs);
     const averageDuration =
-      durations.length > 0
-        ? durations.reduce((a, b) => a + b, 0) / durations.length
-        : 0;
+      durations.length > 0 ? durations.reduce((a, b) => a + b, 0) / durations.length : 0;
 
     this.logger.info(
-      `Pipeline Metrics: ${runs.length} total, ${successful.length} successful, ${(successRate).toFixed(2)}% success rate`
+      `Pipeline Metrics: ${runs.length} total, ${successful.length} successful, ${successRate.toFixed(2)}% success rate`
     );
 
     return {
@@ -72,7 +68,7 @@ export class PipelinesService implements IPipelinesService {
     const runs = await this.filterRuns(filters);
 
     // Only count successful runs for deployment frequency
-    const deployments = runs.filter(r => r.conclusion === 'success');
+    const deployments = runs.filter((r) => r.conclusion === 'success');
 
     // Group by time interval
     const byInterval = new Map<string, PipelineRun[]>();
@@ -95,20 +91,11 @@ export class PipelinesService implements IPipelinesService {
       const intervalRuns = byInterval.get(intervalKey) || [];
       const durations = this.extractDurations(intervalRuns);
       const averageDuration =
-        durations.length > 0
-          ? durations.reduce((a, b) => a + b, 0) / durations.length
-          : 0;
+        durations.length > 0 ? durations.reduce((a, b) => a + b, 0) / durations.length : 0;
 
-      const successCount = intervalRuns.filter(
-        r => r.conclusion === 'success'
-      ).length;
-      const failureCount = intervalRuns.filter(
-        r => r.conclusion === 'failure'
-      ).length;
-      const successRate =
-        intervalRuns.length > 0
-          ? (successCount / intervalRuns.length) * 100
-          : 0;
+      const successCount = intervalRuns.filter((r) => r.conclusion === 'success').length;
+      const failureCount = intervalRuns.filter((r) => r.conclusion === 'failure').length;
+      const successRate = intervalRuns.length > 0 ? (successCount / intervalRuns.length) * 100 : 0;
 
       result.push({
         period: intervalKey,
@@ -167,7 +154,7 @@ export class PipelinesService implements IPipelinesService {
       // Extract durations for this job
       const durations: number[] = [];
       for (const run of runs) {
-        const job = (run.jobs || []).find(j => j.name === jobName);
+        const job = (run.jobs || []).find((j) => j.name === jobName);
         if (job && job.startedAt && job.completedAt) {
           const duration = this.calculateJobDuration(job);
           if (duration !== null) {
@@ -178,9 +165,7 @@ export class PipelinesService implements IPipelinesService {
 
       metrics.averageDurationMinutes =
         durations.length > 0
-          ? Math.round(
-              (durations.reduce((a, b) => a + b, 0) / durations.length) * 100
-            ) / 100
+          ? Math.round((durations.reduce((a, b) => a + b, 0) / durations.length) * 100) / 100
           : 0;
 
       metrics.successRate =
@@ -191,9 +176,7 @@ export class PipelinesService implements IPipelinesService {
       result.push(metrics);
     }
 
-    return result.sort(
-      (a, b) => b.totalRuns - a.totalRuns
-    );
+    return result.sort((a, b) => b.totalRuns - a.totalRuns);
   }
 
   /**
@@ -248,7 +231,7 @@ export class PipelinesService implements IPipelinesService {
     const start = startDate ? new Date(startDate) : null;
     const end = endDate ? new Date(endDate) : null;
 
-    return runs.filter(run => {
+    return runs.filter((run) => {
       const runDate = new Date(run.createdAt);
       if (start && runDate < start) return false;
       if (end && runDate > end) return false;
@@ -256,32 +239,20 @@ export class PipelinesService implements IPipelinesService {
     });
   }
 
-  private filterByBranch(
-    runs: PipelineRun[],
-    branch: string
-  ): PipelineRun[] {
-    return runs.filter(run => run.branch === branch);
+  private filterByBranch(runs: PipelineRun[], branch: string): PipelineRun[] {
+    return runs.filter((run) => run.branch === branch);
   }
 
-  private filterByWorkflowPath(
-    runs: PipelineRun[],
-    path: string
-  ): PipelineRun[] {
-    return runs.filter(run => run.path.includes(path));
+  private filterByWorkflowPath(runs: PipelineRun[], path: string): PipelineRun[] {
+    return runs.filter((run) => run.path.includes(path));
   }
 
-  private filterByConclusion(
-    runs: PipelineRun[],
-    conclusion: string
-  ): PipelineRun[] {
-    return runs.filter(run => run.conclusion === conclusion);
+  private filterByConclusion(runs: PipelineRun[], conclusion: string): PipelineRun[] {
+    return runs.filter((run) => run.conclusion === conclusion);
   }
 
-  private filterByStatus(
-    runs: PipelineRun[],
-    status: string
-  ): PipelineRun[] {
-    return runs.filter(run => run.status === status);
+  private filterByStatus(runs: PipelineRun[], status: string): PipelineRun[] {
+    return runs.filter((run) => run.status === status);
   }
 
   private extractDurations(runs: PipelineRun[]): number[] {
@@ -309,10 +280,7 @@ export class PipelinesService implements IPipelinesService {
     return (completed - started) / (1000 * 60); // Convert to minutes
   }
 
-  private getIntervalKey(
-    date: Date,
-    interval: 'day' | 'week' | 'month'
-  ): string {
+  private getIntervalKey(date: Date, interval: 'day' | 'week' | 'month'): string {
     if (interval === 'day') {
       const year = date.getFullYear();
       const month = String(date.getMonth() + 1).padStart(2, '0');
@@ -326,8 +294,7 @@ export class PipelinesService implements IPipelinesService {
       const firstDay = new Date(temp.setUTCDate(diff));
 
       const week = Math.ceil(
-        (firstDay.getTime() - new Date(firstDay.getUTCFullYear(), 0, 1).getTime()) /
-          604800000
+        (firstDay.getTime() - new Date(firstDay.getUTCFullYear(), 0, 1).getTime()) / 604800000
       );
       const year = firstDay.getUTCFullYear();
 

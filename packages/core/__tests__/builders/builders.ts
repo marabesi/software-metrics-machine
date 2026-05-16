@@ -3,7 +3,14 @@
  * Mirrors: api/tests/builders.py and related test builder files
  */
 
-import { Commit, PullRequest, PipelineRun, Issue, CodeChange, CodeMetric } from '../../src/domain-types';
+import {
+  Commit,
+  PullRequest,
+  PipelineRun,
+  Issue,
+  CodeChange,
+  CodeMetric,
+} from '../../src/domain-types';
 
 /**
  * Builder for creating mock Commit objects
@@ -253,4 +260,3 @@ export class TestDataFactory {
     return runs;
   }
 }
-

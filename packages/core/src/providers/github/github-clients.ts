@@ -13,17 +13,11 @@ export interface IGithubPrsClient {
 }
 
 export interface IGithubWorkflowClient {
-  fetchWorkflows(options?: {
-    startDate?: string;
-    endDate?: string;
-  }): Promise<any[]>;
+  fetchWorkflows(options?: { startDate?: string; endDate?: string }): Promise<any[]>;
 
   fetchJobsForWorkflows(workflowIds: string[]): Promise<any[]>;
 
-  fetchWorkflowRunsPage(
-    page: number,
-    perPage?: number
-  ): Promise<{ runs: any[]; hasNext: boolean }>;
+  fetchWorkflowRunsPage(page: number, perPage?: number): Promise<{ runs: any[]; hasNext: boolean }>;
 
   fetchJobsPage(
     runId: string,
@@ -78,18 +72,15 @@ export class GithubPrsClient implements IGithubPrsClient {
           `Fetching PRs page ${page} for ${this.owner}/${this.repo} (state: ${state})`
         );
 
-        const response = await this.axiosInstance.get(
-          `/repos/${this.owner}/${this.repo}/pulls`,
-          {
-            params: {
-              state,
-              sort: 'created',
-              direction: 'desc',
-              per_page,
-              page,
-            },
-          }
-        );
+        const response = await this.axiosInstance.get(`/repos/${this.owner}/${this.repo}/pulls`, {
+          params: {
+            state,
+            sort: 'created',
+            direction: 'desc',
+            per_page,
+            page,
+          },
+        });
 
         const prs = response.data;
 
@@ -116,17 +107,11 @@ export class GithubPrsClient implements IGithubPrsClient {
           };
 
           // Filter by date if provided
-          if (
-            options?.startDate &&
-            new Date(pr.created_at) < new Date(options.startDate)
-          ) {
+          if (options?.startDate && new Date(pr.created_at) < new Date(options.startDate)) {
             break; // Stop pagination if we've gone past startDate
           }
 
-          if (
-            !options?.endDate ||
-            new Date(pr.created_at) <= new Date(options.endDate)
-          ) {
+          if (!options?.endDate || new Date(pr.created_at) <= new Date(options.endDate)) {
             allPRs.push(prDetail);
           }
         }
@@ -157,9 +142,7 @@ export class GithubPrsClient implements IGithubPrsClient {
 
   async fetchPRComments(prNumber: number): Promise<any[]> {
     try {
-      this.logger.info(
-        `Fetching comments for PR #${prNumber} in ${this.owner}/${this.repo}`
-      );
+      this.logger.info(`Fetching comments for PR #${prNumber} in ${this.owner}/${this.repo}`);
 
       const response = await this.axiosInstance.get(
         `/repos/${this.owner}/${this.repo}/pulls/${prNumber}/comments`,
@@ -174,9 +157,7 @@ export class GithubPrsClient implements IGithubPrsClient {
       return response.data;
     } catch (error) {
       if (axios.isAxiosError(error)) {
-        this.logger.error(
-          `GitHub API error fetching PR comments: ${error.message}`
-        );
+        this.logger.error(`GitHub API error fetching PR comments: ${error.message}`);
         throw new Error(`Failed to fetch PR comments: ${error.message}`);
       }
       throw error;
@@ -213,10 +194,7 @@ export class GithubWorkflowClient implements IGithubWorkflowClient {
     });
   }
 
-  async fetchWorkflows(options?: {
-    startDate?: string;
-    endDate?: string;
-  }): Promise<any[]> {
+  async fetchWorkflows(options?: { startDate?: string; endDate?: string }): Promise<any[]> {
     const per_page = 100;
     let page = 1;
     const allRuns: any[] = [];
@@ -224,9 +202,7 @@ export class GithubWorkflowClient implements IGithubWorkflowClient {
     try {
       // Fetch all workflow runs with pagination
       while (true) {
-        this.logger.info(
-          `Fetching workflow runs page ${page} for ${this.owner}/${this.repo}`
-        );
+        this.logger.info(`Fetching workflow runs page ${page} for ${this.owner}/${this.repo}`);
 
         const response = await this.fetchWorkflowRunsPage(page, per_page);
         const runs = response.runs;
@@ -237,18 +213,12 @@ export class GithubWorkflowClient implements IGithubWorkflowClient {
 
         for (const run of runs) {
           // Filter by date if provided
-          if (
-            options?.startDate &&
-            new Date(run.created_at) < new Date(options.startDate)
-          ) {
+          if (options?.startDate && new Date(run.created_at) < new Date(options.startDate)) {
             page = -1; // Signal to break outer loop
             break;
           }
 
-          if (
-            !options?.endDate ||
-            new Date(run.created_at) <= new Date(options.endDate)
-          ) {
+          if (!options?.endDate || new Date(run.created_at) <= new Date(options.endDate)) {
             allRuns.push({
               ...run,
               createdAt: run.created_at,
@@ -291,9 +261,7 @@ export class GithubWorkflowClient implements IGithubWorkflowClient {
     try {
       // Fetch jobs for each workflow run
       for (const runId of workflowIds) {
-        this.logger.info(
-          `Fetching jobs for workflow run ${runId} in ${this.owner}/${this.repo}`
-        );
+        this.logger.info(`Fetching jobs for workflow run ${runId} in ${this.owner}/${this.repo}`);
 
         let page = 1;
         while (true) {
@@ -322,9 +290,7 @@ export class GithubWorkflowClient implements IGithubWorkflowClient {
       return allJobs;
     } catch (error) {
       if (axios.isAxiosError(error)) {
-        this.logger.error(
-          `GitHub API error fetching jobs: ${error.message}`
-        );
+        this.logger.error(`GitHub API error fetching jobs: ${error.message}`);
         throw new Error(`Failed to fetch jobs: ${error.message}`);
       }
       throw error;
@@ -333,9 +299,7 @@ export class GithubWorkflowClient implements IGithubWorkflowClient {
 
   private calculateDuration(startedAt: string, completedAt: string): number {
     if (!startedAt || !completedAt) return 0;
-    return (
-      new Date(completedAt).getTime() - new Date(startedAt).getTime()
-    ) / 1000; // Duration in seconds
+    return (new Date(completedAt).getTime() - new Date(startedAt).getTime()) / 1000; // Duration in seconds
   }
 
   async fetchWorkflowRunsPage(

@@ -1,12 +1,6 @@
 import { Logger, logger } from '@smmachine/utils';
 import { IRepository } from '../../infrastructure/repository';
-import {
-  PRDetails,
-  PRFilters,
-  PRMetrics,
-  PRsByTimeframe,
-  LabelSummary,
-} from './pr-types';
+import { PRDetails, PRFilters, PRMetrics, PRsByTimeframe, LabelSummary } from './pr-types';
 
 export interface IPRsService {
   getMetrics(filters?: PRFilters): Promise<PRMetrics>;
@@ -30,19 +24,16 @@ export class PRsService implements IPRsService {
   async getMetrics(filters?: PRFilters): Promise<PRMetrics> {
     const prs = await this.filterPRs(filters);
 
-    const mergedPRs = prs.filter(pr => pr.mergedAt);
-    const closedPRs = prs.filter(pr => pr.closedAt && !pr.mergedAt);
-    const openPRs = prs.filter(pr => !pr.closedAt && !pr.mergedAt);
+    const mergedPRs = prs.filter((pr) => pr.mergedAt);
+    const closedPRs = prs.filter((pr) => pr.closedAt && !pr.mergedAt);
+    const openPRs = prs.filter((pr) => !pr.closedAt && !pr.mergedAt);
 
-    const openDays = mergedPRs.map(pr => this.calculateOpenDays(pr));
+    const openDays = mergedPRs.map((pr) => this.calculateOpenDays(pr));
     const averageOpenDays =
-      openDays.length > 0
-        ? openDays.reduce((a, b) => a + b, 0) / openDays.length
-        : 0;
+      openDays.length > 0 ? openDays.reduce((a, b) => a + b, 0) / openDays.length : 0;
 
     const totalComments = prs.reduce((sum, pr) => sum + (pr.comments || 0), 0);
-    const averageComments =
-      prs.length > 0 ? totalComments / prs.length : 0;
+    const averageComments = prs.length > 0 ? totalComments / prs.length : 0;
 
     this.logger.debug(
       `PR Metrics: ${prs.length} total, ${mergedPRs.length} merged, avg ${averageOpenDays.toFixed(2)} days open`
@@ -70,7 +61,7 @@ export class PRsService implements IPRsService {
     for (const pr of prs) {
       const createdDate = new Date(pr.createdAt);
       const monthKey = this.getMonthKey(createdDate);
-      
+
       if (!byMonth.has(monthKey)) {
         byMonth.set(monthKey, []);
       }
@@ -145,11 +136,9 @@ export class PRsService implements IPRsService {
     const result: LabelSummary[] = [];
 
     for (const [label, labelPRs] of labelMap.entries()) {
-      const openDays = labelPRs.map(pr => this.calculateOpenDays(pr));
+      const openDays = labelPRs.map((pr) => this.calculateOpenDays(pr));
       const averageOpenDays =
-        openDays.length > 0
-          ? openDays.reduce((a, b) => a + b, 0) / openDays.length
-          : 0;
+        openDays.length > 0 ? openDays.reduce((a, b) => a + b, 0) / openDays.length : 0;
 
       result.push({
         label,
@@ -196,11 +185,7 @@ export class PRsService implements IPRsService {
     return result;
   }
 
-  private filterByDateRange(
-    prs: PRDetails[],
-    startDate?: string,
-    endDate?: string
-  ): PRDetails[] {
+  private filterByDateRange(prs: PRDetails[], startDate?: string, endDate?: string): PRDetails[] {
     if (!startDate && !endDate) {
       return prs;
     }
@@ -208,7 +193,7 @@ export class PRsService implements IPRsService {
     const start = startDate ? new Date(startDate) : null;
     const end = endDate ? new Date(endDate) : null;
 
-    return prs.filter(pr => {
+    return prs.filter((pr) => {
       const createdDate = new Date(pr.createdAt);
       if (start && createdDate < start) return false;
       if (end && createdDate > end) return false;
@@ -216,38 +201,23 @@ export class PRsService implements IPRsService {
     });
   }
 
-  private filterByAuthors(
-    prs: PRDetails[],
-    authors: string[]
-  ): PRDetails[] {
-    const authorSet = new Set(authors.map(a => a.toLowerCase()));
-    return prs.filter(pr =>
-      authorSet.has(pr.author.login.toLowerCase())
-    );
+  private filterByAuthors(prs: PRDetails[], authors: string[]): PRDetails[] {
+    const authorSet = new Set(authors.map((a) => a.toLowerCase()));
+    return prs.filter((pr) => authorSet.has(pr.author.login.toLowerCase()));
   }
 
-  private filterByLabels(
-    prs: PRDetails[],
-    labels: string[]
-  ): PRDetails[] {
-    const labelSet = new Set(labels.map(l => l.toLowerCase()));
-    return prs.filter(pr =>
-      pr.labels.some(label =>
-        labelSet.has(label.name.toLowerCase())
-      )
-    );
+  private filterByLabels(prs: PRDetails[], labels: string[]): PRDetails[] {
+    const labelSet = new Set(labels.map((l) => l.toLowerCase()));
+    return prs.filter((pr) => pr.labels.some((label) => labelSet.has(label.name.toLowerCase())));
   }
 
-  private filterByState(
-    prs: PRDetails[],
-    state: 'merged' | 'closed' | 'open'
-  ): PRDetails[] {
+  private filterByState(prs: PRDetails[], state: 'merged' | 'closed' | 'open'): PRDetails[] {
     if (state === 'merged') {
-      return prs.filter(pr => pr.mergedAt !== undefined);
+      return prs.filter((pr) => pr.mergedAt !== undefined);
     } else if (state === 'closed') {
-      return prs.filter(pr => pr.closedAt !== undefined && !pr.mergedAt);
+      return prs.filter((pr) => pr.closedAt !== undefined && !pr.mergedAt);
     } else if (state === 'open') {
-      return prs.filter(pr => !pr.closedAt && !pr.mergedAt);
+      return prs.filter((pr) => !pr.closedAt && !pr.mergedAt);
     }
     return prs;
   }
@@ -257,8 +227,8 @@ export class PRsService implements IPRsService {
     const closed = pr.mergedAt
       ? new Date(pr.mergedAt)
       : pr.closedAt
-      ? new Date(pr.closedAt)
-      : new Date(); // Use current time if still open
+        ? new Date(pr.closedAt)
+        : new Date(); // Use current time if still open
 
     const diffMs = closed.getTime() - created.getTime();
     return Math.ceil(diffMs / (1000 * 60 * 60 * 24)); // Convert to days
@@ -277,25 +247,21 @@ export class PRsService implements IPRsService {
     const diff = temp.getUTCDate() - dayOfWeek + (dayOfWeek === 0 ? -6 : 1); // Adjust when day is Sunday
     const firstDay = new Date(temp.setUTCDate(diff));
 
-    const week = Math.ceil((firstDay.getTime() - new Date(firstDay.getUTCFullYear(), 0, 1).getTime()) / 604800000);
+    const week = Math.ceil(
+      (firstDay.getTime() - new Date(firstDay.getUTCFullYear(), 0, 1).getTime()) / 604800000
+    );
     const year = firstDay.getUTCFullYear();
-    
+
     return `${year}-W${String(week).padStart(2, '0')}`;
   }
 
-  private calculateTimeframeMetrics(
-    period: string,
-    prs: PRDetails[]
-  ): PRsByTimeframe {
-    const openDays = prs.map(pr => this.calculateOpenDays(pr));
+  private calculateTimeframeMetrics(period: string, prs: PRDetails[]): PRsByTimeframe {
+    const openDays = prs.map((pr) => this.calculateOpenDays(pr));
     const averageOpenDays =
-      openDays.length > 0
-        ? openDays.reduce((a, b) => a + b, 0) / openDays.length
-        : 0;
+      openDays.length > 0 ? openDays.reduce((a, b) => a + b, 0) / openDays.length : 0;
 
     const totalComments = prs.reduce((sum, pr) => sum + (pr.comments || 0), 0);
-    const averageComments =
-      prs.length > 0 ? totalComments / prs.length : 0;
+    const averageComments = prs.length > 0 ? totalComments / prs.length : 0;
 
     return {
       period,

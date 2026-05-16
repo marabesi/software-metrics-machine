@@ -22,7 +22,7 @@ export class PullRequestsController {
 
   constructor(
     private readonly pullRequestsRepo: PullRequestsRepository,
-    private readonly config: Configuration,
+    private readonly config: Configuration
   ) {}
 
   @Get('/pull-requests/summary')
@@ -30,7 +30,7 @@ export class PullRequestsController {
     @Query('start_date') startDate?: string,
     @Query('end_date') endDate?: string,
     @Query('authors') authors?: string,
-    @Query('labels') labels?: string,
+    @Query('labels') labels?: string
   ) {
     const prs = await this.loadPRsWithFilters({ startDate, endDate, authors, labels });
 
@@ -39,12 +39,18 @@ export class PullRequestsController {
     const open = prs.filter((pr) => !pr.closedAt && !pr.mergedAt).length;
     const totalComments = prs.reduce((sum, pr) => sum + (pr.comments || 0), 0);
     const avgComments = prs.length > 0 ? totalComments / prs.length : 0;
-    const authorsSet = new Set(prs.map((pr) => pr.author?.login || '').filter((name) => name.length > 0));
+    const authorsSet = new Set(
+      prs.map((pr) => pr.author?.login || '').filter((name) => name.length > 0)
+    );
     const labelsSet = new Set(
-      prs.flatMap((pr) => (pr.labels || []).map((label) => label.name || '').filter((name) => name.length > 0)),
+      prs.flatMap((pr) =>
+        (pr.labels || []).map((label) => label.name || '').filter((name) => name.length > 0)
+      )
     );
 
-    const sorted = [...prs].sort((a, b) => this.toTimestamp(a.createdAt) - this.toTimestamp(b.createdAt));
+    const sorted = [...prs].sort(
+      (a, b) => this.toTimestamp(a.createdAt) - this.toTimestamp(b.createdAt)
+    );
 
     return {
       result: {
@@ -67,7 +73,7 @@ export class PullRequestsController {
     @Query('start_date') startDate?: string,
     @Query('end_date') endDate?: string,
     @Query('authors') authors?: string,
-    @Query('labels') labels?: string,
+    @Query('labels') labels?: string
   ) {
     const prs = await this.loadPRsWithFilters({ startDate, endDate, authors, labels });
     const counts = new Map<string, { Opened: number; Closed: number }>();
@@ -105,7 +111,7 @@ export class PullRequestsController {
     @Query('end_date') endDate?: string,
     @Query('labels') labels?: string,
     @Query('top') top?: string,
-    @Query('authors') authors?: string,
+    @Query('authors') authors?: string
   ) {
     const prs = await this.loadPRsWithFilters({ startDate, endDate, authors, labels });
     const grouped = new Map<string, number>();
@@ -130,7 +136,7 @@ export class PullRequestsController {
     @Query('end_date') endDate?: string,
     @Query('labels') labels?: string,
     @Query('top') top?: string,
-    @Query('authors') authors?: string,
+    @Query('authors') authors?: string
   ) {
     const prs = await this.loadPRsWithFilters({ startDate, endDate, authors, labels });
     const merged = prs.filter((pr) => Boolean(pr.mergedAt) || Boolean(pr.closedAt));
@@ -164,14 +170,15 @@ export class PullRequestsController {
     @Query('end_date') endDate?: string,
     @Query('aggregate_by') aggregateBy?: string,
     @Query('labels') labels?: string,
-    @Query('authors') authors?: string,
+    @Query('authors') authors?: string
   ) {
     const mode = (aggregateBy || 'week').toLowerCase();
     const prs = await this.loadPRsWithFilters({ startDate, endDate, authors, labels });
     const grouped = new Map<string, number[]>();
 
     for (const pr of prs) {
-      const period = mode === 'month' ? this.toMonthKey(pr.createdAt) : this.toWeekKey(pr.createdAt);
+      const period =
+        mode === 'month' ? this.toMonthKey(pr.createdAt) : this.toWeekKey(pr.createdAt);
       const start = this.toTimestamp(pr.createdAt);
       const end = this.toTimestamp(pr.mergedAt || pr.closedAt || pr.createdAt);
       const days = (end - start) / (1000 * 60 * 60 * 24);
@@ -193,7 +200,7 @@ export class PullRequestsController {
     @Query('start_date') startDate?: string,
     @Query('end_date') endDate?: string,
     @Query('labels') labels?: string,
-    @Query('authors') authors?: string,
+    @Query('authors') authors?: string
   ) {
     const prs = await this.loadPRsWithFilters({ startDate, endDate, authors, labels });
     const totalComments = prs.reduce((sum, pr) => sum + (pr.comments || 0), 0);
@@ -205,7 +212,9 @@ export class PullRequestsController {
   async authors() {
     const prs = await this.pullRequestsRepo.refreshPRs();
     return Array.from(
-      new Set(prs.map((pr: PRLike) => pr.author?.login || '').filter((name: string) => name.length > 0)),
+      new Set(
+        prs.map((pr: PRLike) => pr.author?.login || '').filter((name: string) => name.length > 0)
+      )
     ).sort();
   }
 
@@ -214,8 +223,10 @@ export class PullRequestsController {
     const prs = await this.pullRequestsRepo.refreshPRs();
     return Array.from(
       new Set(
-        prs.flatMap((pr: PRLike) => (pr.labels || []).map((label) => label.name || '').filter((name) => name.length > 0)),
-      ),
+        prs.flatMap((pr: PRLike) =>
+          (pr.labels || []).map((label) => label.name || '').filter((name) => name.length > 0)
+        )
+      )
     ).sort();
   }
 
@@ -252,7 +263,9 @@ export class PullRequestsController {
     const diff = date.getDate() - dayOfWeek + (dayOfWeek === 0 ? -6 : 1);
     const monday = new Date(date.setDate(diff));
     const year = monday.getFullYear();
-    const week = Math.ceil((monday.getTime() - new Date(year, 0, 1).getTime()) / (24 * 60 * 60 * 1000 / 7));
+    const week = Math.ceil(
+      (monday.getTime() - new Date(year, 0, 1).getTime()) / ((24 * 60 * 60 * 1000) / 7)
+    );
     return `${year}-W${week.toString().padStart(2, '0')}`;
   }
 
@@ -290,7 +303,10 @@ export class PullRequestsController {
     const selectedLabels = this.parseCsvList(filters.labels);
 
     return prs.filter((pr: PRLike) => {
-      if (filters.startDate && this.toTimestamp(pr.createdAt) < this.toTimestamp(filters.startDate)) {
+      if (
+        filters.startDate &&
+        this.toTimestamp(pr.createdAt) < this.toTimestamp(filters.startDate)
+      ) {
         return false;
       }
       if (filters.endDate && this.toTimestamp(pr.createdAt) > this.toTimestamp(filters.endDate)) {

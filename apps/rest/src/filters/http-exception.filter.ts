@@ -26,9 +26,10 @@ export class HttpExceptionFilter implements ExceptionFilter {
 
     const errorResponse: ErrorResponse = {
       statusCode: status,
-      message: typeof exceptionResponse === 'object' && 'message' in exceptionResponse
-        ? (exceptionResponse as any).message
-        : exception.message,
+      message:
+        typeof exceptionResponse === 'object' && 'message' in exceptionResponse
+          ? (exceptionResponse as any).message
+          : exception.message,
       error: exception.name,
       timestamp: new Date().toISOString(),
       path: request.url,
@@ -36,7 +37,7 @@ export class HttpExceptionFilter implements ExceptionFilter {
 
     this.logger.error(
       `HTTP Exception - Status: ${status}, Message: ${errorResponse.message}, Path: ${request.url}`,
-      exception.stack,
+      exception.stack
     );
 
     response.status(status).json(errorResponse);
@@ -69,7 +70,7 @@ export class AllExceptionsFilter implements ExceptionFilter {
 
     this.logger.error(
       `Unhandled Exception - Status: ${status}, Message: ${errorMessage}, Path: ${request.url}`,
-      errorStack,
+      errorStack
     );
 
     response.status(status).json(errorResponse);

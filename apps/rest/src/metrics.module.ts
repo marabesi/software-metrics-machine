@@ -53,7 +53,13 @@ function buildDataDirectories(config: Configuration) {
  * - MetricsOrchestrator: Business logic orchestration
  */
 @Module({
-  controllers: [MetricsController, CodeController, PipelinesController, PullRequestsController, ConfigurationController],
+  controllers: [
+    MetricsController,
+    CodeController,
+    PipelinesController,
+    PullRequestsController,
+    ConfigurationController,
+  ],
   providers: [
     // Configuration
     {
@@ -66,11 +72,7 @@ function buildDataDirectories(config: Configuration) {
       provide: GithubPrsClient,
       useFactory: (config: Configuration) => {
         const [githubOwner, githubRepo] = (config.githubRepository || '/').split('/');
-        return new GithubPrsClient(
-          config.githubToken || '',
-          githubOwner || '',
-          githubRepo || '',
-        );
+        return new GithubPrsClient(config.githubToken || '', githubOwner || '', githubRepo || '');
       },
       inject: [Configuration],
     },
@@ -81,7 +83,7 @@ function buildDataDirectories(config: Configuration) {
         return new GithubWorkflowClient(
           config.githubToken || '',
           githubOwner || '',
-          githubRepo || '',
+          githubRepo || ''
         );
       },
       inject: [Configuration],
@@ -95,7 +97,7 @@ function buildDataDirectories(config: Configuration) {
           config.jiraUrl || '',
           config.jiraEmail || '',
           config.jiraToken || '',
-          config.jiraProject || '',
+          config.jiraProject || ''
         ),
       inject: [Configuration],
     },
@@ -107,7 +109,7 @@ function buildDataDirectories(config: Configuration) {
         new SonarqubeMeasuresClient(
           config.sonarUrl || '',
           config.sonarToken || '',
-          config.sonarProject || '',
+          config.sonarProject || ''
         ),
       inject: [Configuration],
     },
@@ -150,7 +152,7 @@ function buildDataDirectories(config: Configuration) {
       useFactory: (
         traverser: CommitTraverser,
         analyzer: CodemaatAnalyzer,
-        config: Configuration,
+        config: Configuration
       ) => {
         const paths = buildDataDirectories(config);
         return new CodeMetricsRepository(traverser, analyzer, paths.codemaatDirectory);
@@ -182,15 +184,8 @@ function buildDataDirectories(config: Configuration) {
         pipelinesRepo: PipelinesRepository,
         codeRepo: CodeMetricsRepository,
         issuesRepo: IssuesRepository,
-        qualityRepo: QualityMetricsRepository,
-      ) =>
-        new MetricsOrchestrator(
-          prsRepo,
-          pipelinesRepo,
-          codeRepo,
-          issuesRepo,
-          qualityRepo,
-        ),
+        qualityRepo: QualityMetricsRepository
+      ) => new MetricsOrchestrator(prsRepo, pipelinesRepo, codeRepo, issuesRepo, qualityRepo),
       inject: [
         PullRequestsRepository,
         PipelinesRepository,

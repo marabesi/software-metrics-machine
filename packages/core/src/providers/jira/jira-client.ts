@@ -43,7 +43,7 @@ export class JiraIssuesClient implements IJiraIssuesClient {
       baseURL,
       headers: {
         Authorization: `Basic ${Buffer.from(`${email}:${token}`).toString('base64')}`,
-        'Accept': 'application/json',
+        Accept: 'application/json',
         'Content-Type': 'application/json',
       },
       timeout: 30000,
@@ -92,9 +92,7 @@ export class JiraIssuesClient implements IJiraIssuesClient {
 
       // Fetch all issues with pagination
       while (true) {
-        this.logger.info(
-          `Fetching Jira issues (startAt: ${startAt}, maxResults: ${maxResults})`
-        );
+        this.logger.info(`Fetching Jira issues (startAt: ${startAt}, maxResults: ${maxResults})`);
 
         const response = await this.axiosInstance.get('/rest/api/3/search/jql', {
           params: {
@@ -102,7 +100,18 @@ export class JiraIssuesClient implements IJiraIssuesClient {
             startAt,
             maxResults,
             expand: 'changelog',
-            fields: ['key', 'summary', 'status', 'created', 'updated', 'assignee', 'creator', 'issuetype', 'priority', 'labels'],
+            fields: [
+              'key',
+              'summary',
+              'status',
+              'created',
+              'updated',
+              'assignee',
+              'creator',
+              'issuetype',
+              'priority',
+              'labels',
+            ],
           },
         });
 
@@ -161,14 +170,11 @@ export class JiraIssuesClient implements IJiraIssuesClient {
     try {
       this.logger.info(`Fetching changelog for Jira issue: ${issueKey}`);
 
-      const response = await this.axiosInstance.get(
-        `/rest/api/3/issue/${issueKey}`,
-        {
-          params: {
-            expand: 'changelog',
-          },
-        }
-      );
+      const response = await this.axiosInstance.get(`/rest/api/3/issue/${issueKey}`, {
+        params: {
+          expand: 'changelog',
+        },
+      });
 
       const changelog = response.data.changelog?.histories || [];
       this.logger.info(`Fetched ${changelog.length} changelog entries for ${issueKey}`);
@@ -192,9 +198,7 @@ export class JiraIssuesClient implements IJiraIssuesClient {
     try {
       this.logger.info(`Fetching comments for Jira issue: ${issueKey}`);
 
-      const response = await this.axiosInstance.get(
-        `/rest/api/3/issue/${issueKey}/comment`
-      );
+      const response = await this.axiosInstance.get(`/rest/api/3/issue/${issueKey}/comment`);
 
       const comments = response.data.comments || [];
       this.logger.info(`Fetched ${comments.length} comments for ${issueKey}`);

@@ -1,6 +1,6 @@
 /**
  * Integration tests for Jira API client
- * 
+ *
  * WARNING: These tests make real HTTP calls to Jira API.
  * They require:
  * - Valid JIRA_URL, JIRA_EMAIL, JIRA_TOKEN in environment
@@ -27,98 +27,80 @@ describe('Jira API Integration Tests', () => {
   });
 
   describe('JiraIssuesClient', () => {
-    it.skipIf(skipRealApiTests)(
-      'should fetch issues from Jira API',
-      async () => {
-        const issues = await jiraClient.fetchIssues();
+    it.skipIf(skipRealApiTests)('should fetch issues from Jira API', async () => {
+      const issues = await jiraClient.fetchIssues();
 
-        expect(Array.isArray(issues)).toBe(true);
-        if (issues.length > 0) {
-          const issue = issues[0];
-          expect(issue).toHaveProperty('key');
-          expect(issue).toHaveProperty('title');
-          expect(issue).toHaveProperty('status');
-          expect(issue).toHaveProperty('createdAt');
-        }
+      expect(Array.isArray(issues)).toBe(true);
+      if (issues.length > 0) {
+        const issue = issues[0];
+        expect(issue).toHaveProperty('key');
+        expect(issue).toHaveProperty('title');
+        expect(issue).toHaveProperty('status');
+        expect(issue).toHaveProperty('createdAt');
       }
-    );
+    });
 
-    it.skipIf(skipRealApiTests)(
-      'should filter issues by project',
-      async () => {
-        const issues = await jiraClient.fetchIssues({
-          project: JIRA_PROJECT,
-        });
+    it.skipIf(skipRealApiTests)('should filter issues by project', async () => {
+      const issues = await jiraClient.fetchIssues({
+        project: JIRA_PROJECT,
+      });
 
-        expect(Array.isArray(issues)).toBe(true);
+      expect(Array.isArray(issues)).toBe(true);
+    });
+
+    it.skipIf(skipRealApiTests)('should filter issues by date range', async () => {
+      const issues = await jiraClient.fetchIssues({
+        startDate: '2024-01-01',
+        endDate: '2024-12-31',
+        project: JIRA_PROJECT,
+      });
+
+      expect(Array.isArray(issues)).toBe(true);
+      issues.forEach((issue) => {
+        const createdDate = new Date(issue.createdAt);
+        expect(createdDate.getTime()).toBeLessThanOrEqual(
+          new Date('2024-12-31T23:59:59').getTime()
+        );
+      });
+    });
+
+    it.skipIf(skipRealApiTests)('should filter issues by status', async () => {
+      const issues = await jiraClient.fetchIssues({
+        status: 'Done',
+        project: JIRA_PROJECT,
+      });
+
+      expect(Array.isArray(issues)).toBe(true);
+      issues.forEach((issue) => {
+        expect(issue.status).toBe('Done');
+      });
+    });
+
+    it.skipIf(skipRealApiTests)('should fetch issue changelog', async () => {
+      const issues = await jiraClient.fetchIssues({
+        project: JIRA_PROJECT,
+      });
+
+      if (issues.length > 0) {
+        const issueKey = issues[0].key;
+        const changelog = await jiraClient.fetchIssueChanges(issueKey);
+
+        expect(Array.isArray(changelog)).toBe(true);
       }
-    );
+    });
 
-    it.skipIf(skipRealApiTests)(
-      'should filter issues by date range',
-      async () => {
-        const issues = await jiraClient.fetchIssues({
-          startDate: '2024-01-01',
-          endDate: '2024-12-31',
-          project: JIRA_PROJECT,
-        });
+    it.skipIf(skipRealApiTests)('should fetch issue comments', async () => {
+      const issues = await jiraClient.fetchIssues({
+        project: JIRA_PROJECT,
+      });
 
-        expect(Array.isArray(issues)).toBe(true);
-        issues.forEach((issue) => {
-          const createdDate = new Date(issue.createdAt);
-          expect(createdDate.getTime()).toBeLessThanOrEqual(
-            new Date('2024-12-31T23:59:59').getTime()
-          );
-        });
+      if (issues.length > 0) {
+        const issueKey = issues[0].key;
+        const comments = await jiraClient.fetchIssueComments(issueKey);
+
+        expect(Array.isArray(comments)).toBe(true);
       }
-    );
-
-    it.skipIf(skipRealApiTests)(
-      'should filter issues by status',
-      async () => {
-        const issues = await jiraClient.fetchIssues({
-          status: 'Done',
-          project: JIRA_PROJECT,
-        });
-
-        expect(Array.isArray(issues)).toBe(true);
-        issues.forEach((issue) => {
-          expect(issue.status).toBe('Done');
-        });
-      }
-    );
-
-    it.skipIf(skipRealApiTests)(
-      'should fetch issue changelog',
-      async () => {
-        const issues = await jiraClient.fetchIssues({
-          project: JIRA_PROJECT,
-        });
-
-        if (issues.length > 0) {
-          const issueKey = issues[0].key;
-          const changelog = await jiraClient.fetchIssueChanges(issueKey);
-
-          expect(Array.isArray(changelog)).toBe(true);
-        }
-      }
-    );
-
-    it.skipIf(skipRealApiTests)(
-      'should fetch issue comments',
-      async () => {
-        const issues = await jiraClient.fetchIssues({
-          project: JIRA_PROJECT,
-        });
-
-        if (issues.length > 0) {
-          const issueKey = issues[0].key;
-          const comments = await jiraClient.fetchIssueComments(issueKey);
-
-          expect(Array.isArray(comments)).toBe(true);
-        }
-      }
-    );
+    });
 
     it('should throw error on invalid authentication', async () => {
       const invalidClient = new JiraIssuesClient(

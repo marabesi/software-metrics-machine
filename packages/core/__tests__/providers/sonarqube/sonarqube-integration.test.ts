@@ -1,6 +1,6 @@
 /**
  * Integration tests for SonarQube API client
- * 
+ *
  * WARNING: These tests make real HTTP calls to SonarQube API.
  * They require:
  * - Valid SONARQUBE_URL, SONARQUBE_TOKEN, SONARQUBE_PROJECT in environment
@@ -22,65 +22,52 @@ describe('SonarQube API Integration Tests', () => {
   let sonarClient: SonarqubeMeasuresClient;
 
   beforeAll(() => {
-    sonarClient = new SonarqubeMeasuresClient(
-      SONARQUBE_URL,
-      SONARQUBE_TOKEN,
-      SONARQUBE_PROJECT
-    );
+    sonarClient = new SonarqubeMeasuresClient(SONARQUBE_URL, SONARQUBE_TOKEN, SONARQUBE_PROJECT);
   });
 
   describe('SonarqubeMeasuresClient', () => {
-    it.skipIf(skipRealApiTests)(
-      'should fetch current component measures',
-      async () => {
-        const result = await sonarClient.fetchComponentMeasures();
+    it.skipIf(skipRealApiTests)('should fetch current component measures', async () => {
+      const result = await sonarClient.fetchComponentMeasures();
 
-        expect(result).toBeDefined();
-        expect(result).toHaveProperty('key');
-        expect(result).toHaveProperty('name');
-        expect(result).toHaveProperty('measures');
-        expect(Array.isArray(result.measures)).toBe(true);
+      expect(result).toBeDefined();
+      expect(result).toHaveProperty('key');
+      expect(result).toHaveProperty('name');
+      expect(result).toHaveProperty('measures');
+      expect(Array.isArray(result.measures)).toBe(true);
 
-        if (result.measures.length > 0) {
-          const measure = result.measures[0];
-          expect(measure).toHaveProperty('key');
-          expect(measure).toHaveProperty('value');
-        }
+      if (result.measures.length > 0) {
+        const measure = result.measures[0];
+        expect(measure).toHaveProperty('key');
+        expect(measure).toHaveProperty('value');
       }
-    );
+    });
 
-    it.skipIf(skipRealApiTests)(
-      'should fetch specific metrics',
-      async () => {
-        const result = await sonarClient.fetchComponentMeasures({
-          metrics: ['ncloc', 'complexity', 'coverage'],
-        });
+    it.skipIf(skipRealApiTests)('should fetch specific metrics', async () => {
+      const result = await sonarClient.fetchComponentMeasures({
+        metrics: ['ncloc', 'complexity', 'coverage'],
+      });
 
-        expect(result).toBeDefined();
-        expect(result.measures).toBeDefined();
-        expect(Array.isArray(result.measures)).toBe(true);
+      expect(result).toBeDefined();
+      expect(result.measures).toBeDefined();
+      expect(Array.isArray(result.measures)).toBe(true);
 
-        // At least some of the requested metrics should be present
-        const measureKeys = result.measures.map(m => m.key);
-        const hasRequestedMetric = measureKeys.some(key =>
-          ['ncloc', 'complexity', 'coverage'].includes(key)
-        );
-        expect(hasRequestedMetric || result.measures.length === 0).toBe(true);
-      }
-    );
+      // At least some of the requested metrics should be present
+      const measureKeys = result.measures.map((m) => m.key);
+      const hasRequestedMetric = measureKeys.some((key) =>
+        ['ncloc', 'complexity', 'coverage'].includes(key)
+      );
+      expect(hasRequestedMetric || result.measures.length === 0).toBe(true);
+    });
 
-    it.skipIf(skipRealApiTests)(
-      'should fetch historical measures',
-      async () => {
-        const result = await sonarClient.fetchHistoricalMeasures({
-          metrics: ['coverage', 'sqale_rating'],
-          startDate: '2024-01-01',
-          endDate: '2024-12-31',
-        });
+    it.skipIf(skipRealApiTests)('should fetch historical measures', async () => {
+      const result = await sonarClient.fetchHistoricalMeasures({
+        metrics: ['coverage', 'sqale_rating'],
+        startDate: '2024-01-01',
+        endDate: '2024-12-31',
+      });
 
-        expect(Array.isArray(result)).toBe(true);
-      }
-    );
+      expect(Array.isArray(result)).toBe(true);
+    });
 
     it('should throw error on invalid project', async () => {
       const invalidClient = new SonarqubeMeasuresClient(
@@ -128,38 +115,22 @@ describe('SonarQube API Integration Tests', () => {
 
 describe('SonarQube API Unit Tests', () => {
   it('should initialize client with credentials', () => {
-    const client = new SonarqubeMeasuresClient(
-      'http://localhost:9000',
-      'token123',
-      'my-project'
-    );
+    const client = new SonarqubeMeasuresClient('http://localhost:9000', 'token123', 'my-project');
 
     expect(client).toBeDefined();
   });
 
   it('should handle URL with trailing slash', () => {
-    const client1 = new SonarqubeMeasuresClient(
-      'http://localhost:9000/',
-      'token123',
-      'my-project'
-    );
+    const client1 = new SonarqubeMeasuresClient('http://localhost:9000/', 'token123', 'my-project');
 
-    const client2 = new SonarqubeMeasuresClient(
-      'http://localhost:9000',
-      'token123',
-      'my-project'
-    );
+    const client2 = new SonarqubeMeasuresClient('http://localhost:9000', 'token123', 'my-project');
 
     expect(client1).toBeDefined();
     expect(client2).toBeDefined();
   });
 
   it('should create client with default metrics', async () => {
-    const client = new SonarqubeMeasuresClient(
-      'http://localhost:9000',
-      'token123',
-      'test-project'
-    );
+    const client = new SonarqubeMeasuresClient('http://localhost:9000', 'token123', 'test-project');
 
     // This should not throw even though we won't hit the API
     expect(client).toBeDefined();

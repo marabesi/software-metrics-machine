@@ -1,6 +1,6 @@
 /**
  * Provider Integrations
- * 
+ *
  * Clients for integrating with external services:
  * - GitHub: PRs, workflows, jobs
  * - GitLab: Merge requests, pipelines, jobs

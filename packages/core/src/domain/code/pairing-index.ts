@@ -21,9 +21,7 @@ export interface IPairingIndexService {
 export class PairingIndexService implements IPairingIndexService {
   private logger: Logger = logger;
 
-  constructor(
-    private commitRepository: IRepository<Commit>
-  ) {}
+  constructor(private commitRepository: IRepository<Commit>) {}
 
   async getPairingIndex(options?: {
     selectedAuthors?: string[];
@@ -42,8 +40,8 @@ export class PairingIndexService implements IPairingIndexService {
     if (includeAuthorsStr) {
       const parsed = includeAuthorsStr
         .split(',')
-        .map(a => a.trim())
-        .filter(a => a.length > 0);
+        .map((a) => a.trim())
+        .filter((a) => a.length > 0);
       selectedAuthors = [...selectedAuthors, ...parsed];
     }
 
@@ -53,8 +51,8 @@ export class PairingIndexService implements IPairingIndexService {
       excludedList = new Set(
         excludeAuthorsStr
           .split(',')
-          .map(a => a.trim().toLowerCase())
-          .filter(a => a.length > 0)
+          .map((a) => a.trim().toLowerCase())
+          .filter((a) => a.length > 0)
       );
     }
 
@@ -73,17 +71,13 @@ export class PairingIndexService implements IPairingIndexService {
 
     // Filter by authors
     if (selectedAuthors.length > 0 || excludedList.size > 0) {
-      filteredCommits = this.filterByAuthors(
-        filteredCommits,
-        selectedAuthors,
-        excludedList
-      );
+      filteredCommits = this.filterByAuthors(filteredCommits, selectedAuthors, excludedList);
     }
 
     // Count paired commits (those with co-authors)
     const totalCommits = filteredCommits.length;
     const pairedCommits = filteredCommits.filter(
-      commit => commit.files && commit.files.length > 0
+      (commit) => commit.files && commit.files.length > 0
     ).length;
 
     this.logger.info(`Total commits analyzed: ${totalCommits}`);
@@ -107,11 +101,7 @@ export class PairingIndexService implements IPairingIndexService {
     };
   }
 
-  private filterByDateRange(
-    commits: Commit[],
-    startDate?: string,
-    endDate?: string
-  ): Commit[] {
+  private filterByDateRange(commits: Commit[], startDate?: string, endDate?: string): Commit[] {
     if (!startDate && !endDate) {
       return commits;
     }
@@ -119,7 +109,7 @@ export class PairingIndexService implements IPairingIndexService {
     const start = startDate ? new Date(startDate) : null;
     const end = endDate ? new Date(endDate) : null;
 
-    return commits.filter(commit => {
+    return commits.filter((commit) => {
       const commitDate = new Date(commit.timestamp);
       if (start && commitDate < start) return false;
       if (end && commitDate > end) return false;
@@ -132,9 +122,9 @@ export class PairingIndexService implements IPairingIndexService {
     selectedAuthors: string[],
     excludedList: Set<string>
   ): Commit[] {
-    return commits.filter(commit => {
+    return commits.filter((commit) => {
       const authorLower = commit.author.toLowerCase();
-      
+
       if (excludedList.has(authorLower)) {
         return false;
       }
@@ -143,9 +133,7 @@ export class PairingIndexService implements IPairingIndexService {
         return true;
       }
 
-      return selectedAuthors.some(
-        author => author.toLowerCase() === authorLower
-      );
+      return selectedAuthors.some((author) => author.toLowerCase() === authorLower);
     });
   }
 }

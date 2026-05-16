@@ -1,4 +1,4 @@
-import {CommitTraverser} from "../../../src";
+import { CommitTraverser } from '../../../src';
 
 describe('CommitTraverser', () => {
   let traverser: CommitTraverser;
