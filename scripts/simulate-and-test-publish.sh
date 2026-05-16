@@ -46,4 +46,4 @@ docker build \
 
 echo "Done. Package install simulation completed via Docker build."
 
-docker run --rm "$DOCKER_IMAGE"
+rm -f "$PACKED_FILE"

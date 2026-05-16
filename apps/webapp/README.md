@@ -9,8 +9,6 @@ This Next.js application provides a comprehensive dashboard for analyzing softwa
 
 The dashboard consumes a REST API running at `http://localhost:8000`.
 
-For detailed migration notes and architecture, see [DASHBOARD_MIGRATION.md](./DASHBOARD_MIGRATION.md).
-
 ## Getting Started
 
 ### 1. Install Dependencies
@@ -29,28 +27,13 @@ cp .env.local.example .env.local
 
 Default configuration:
 ```
-NEXT_PUBLIC_API_URL=http://localhost:8000
+SMM_REST_BASE_URL=http://localhost:8000
 ```
 
-### 3. Ensure API is Running
-
-The dashboard requires the FastAPI backend to be running:
+### 3. Run Development Server
 
 ```bash
-# In another terminal, navigate to the api directory and start the server
-# Make sure it's running on port 8000
-```
-
-### 4. Run Development Server
-
-```bash
-npm run dev
-# or
-yarn dev
-# or
 pnpm dev
-# or
-bun dev
 ```
 
 Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
