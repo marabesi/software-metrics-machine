@@ -8,21 +8,79 @@ import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, Responsive
 import { buildPullRequestApiParams } from '@/lib/utils/apiParams';
 import { ensureArray } from '@/lib/utils/chartData';
 
+type ResultWrapper<T> = {
+  result: T;
+};
+
+interface ByAuthorData {
+  author: string;
+  count: number;
+}
+
+interface AvgReviewTimeData {
+  author: string;
+  avg_days?: number;
+  avg_hours?: number;
+}
+
+interface OpenThroughTimeResponseItem {
+  date: string;
+  kind?: 'Opened' | 'Closed';
+  count?: number;
+  open_prs?: number;
+}
+
+interface OpenThroughTimeData {
+  date: string;
+  opened: number;
+  closed: number;
+}
+
+interface AvgOpenByData {
+  period: string;
+  avg_days: number;
+}
+
+interface AvgCommentsData {
+  avg_comments: number;
+}
+
+interface ThemeData {
+  theme: string;
+  count: number;
+}
+
+interface SummaryData {
+  total_prs?: number;
+  merged_prs?: number;
+  closed_prs?: number;
+  open_prs?: number;
+  avg_comments_per_pr?: number;
+  unique_authors?: number;
+  unique_labels?: number;
+  top_themes?: ThemeData[];
+}
+
+function unwrapResult<T>(data: T | ResultWrapper<T>): T {
+  if (typeof data === 'object' && data !== null && 'result' in data) {
+    return data.result;
+  }
+  return data;
+}
+
 export default function PullRequestsSection() {
   const { filters } = useFilters();
-  const [byAuthor, setByAuthor] = useState<any[]>([]);
-  const [avgReviewTime, setAvgReviewTime] = useState<any[]>([]);
-  const [openThroughTime, setOpenThroughTime] = useState<any[]>([]);
-  const [avgOpenBy, setAvgOpenBy] = useState<any[]>([]);
-  const [avgComments, setAvgComments] = useState<any>(null);
-  const [summary, setSummary] = useState<any>(null);
-  const [topThemes, setTopThemes] = useState<any[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [byAuthor, setByAuthor] = useState<ByAuthorData[]>([]);
+  const [avgReviewTime, setAvgReviewTime] = useState<AvgReviewTimeData[]>([]);
+  const [openThroughTime, setOpenThroughTime] = useState<OpenThroughTimeData[]>([]);
+  const [avgOpenBy, setAvgOpenBy] = useState<AvgOpenByData[]>([]);
+  const [avgComments, setAvgComments] = useState<AvgCommentsData | null>(null);
+  const [summary, setSummary] = useState<SummaryData | null>(null);
+  const [topThemes, setTopThemes] = useState<ThemeData[]>([]);
 
   useEffect(() => {
     const fetchData = async () => {
       try {
-        setLoading(true);
         const apiParams = buildPullRequestApiParams(filters);
         const [author, review, open, openBy, comments, summaryData] = await Promise.all([
           pullRequestAPI.byAuthor(apiParams),
@@ -33,34 +91,42 @@ export default function PullRequestsSection() {
           pullRequestAPI.summary(apiParams),
         ]);
         // Handle both direct array responses and wrapped responses
-        setByAuthor(Array.isArray(author) ? author : ((author as any)?.result || []));
-        setAvgReviewTime(Array.isArray(review) ? review : ((review as any)?.result || []));
-        let openData = Array.isArray(open) ? open : ((open as any)?.result || []);
+        setByAuthor(ensureArray<ByAuthorData>(unwrapResult(author as ByAuthorData[] | ResultWrapper<ByAuthorData[]>)));
+        setAvgReviewTime(ensureArray<AvgReviewTimeData>(unwrapResult(review as AvgReviewTimeData[] | ResultWrapper<AvgReviewTimeData[]>)));
+        let openData = ensureArray<OpenThroughTimeResponseItem>(
+          unwrapResult(open as OpenThroughTimeResponseItem[] | ResultWrapper<OpenThroughTimeResponseItem[]>)
+        );
         // Transform data: group by date and pivot kind into opened/closed
         if (openData.length > 0) {
-          const grouped = openData.reduce((acc: any, item: any) => {
-            const existing = acc.find((d: any) => d.date === item.date);
+          const grouped = openData.reduce((acc: OpenThroughTimeData[], item: OpenThroughTimeResponseItem) => {
+            const existing = acc.find((d: OpenThroughTimeData) => d.date === item.date);
             if (existing) {
               if (item.kind === 'Opened') {
-                existing.opened = item.count;
+                existing.opened = item.count || 0;
               } else if (item.kind === 'Closed') {
-                existing.closed = item.count;
+                existing.closed = item.count || 0;
               }
             } else {
               acc.push({
                 date: item.date,
-                opened: item.kind === 'Opened' ? item.count : 0,
-                closed: item.kind === 'Closed' ? item.count : 0,
+                opened: item.kind === 'Opened' ? (item.count || 0) : 0,
+                closed: item.kind === 'Closed' ? (item.count || 0) : 0,
               });
             }
             return acc;
           }, []);
           openData = grouped;
+        } else {
+          openData = openData.map((item): OpenThroughTimeData => ({
+            date: item.date,
+            opened: item.open_prs || 0,
+            closed: 0,
+          }));
         }
         setOpenThroughTime(openData);
-        setAvgOpenBy(Array.isArray(openBy) ? openBy : ((openBy as any)?.result || []));
-        setAvgComments((comments as any)?.result !== undefined ? (comments as any).result : comments);
-        const summaryResult = (summaryData as any)?.result !== undefined ? (summaryData as any).result : summaryData;
+        setAvgOpenBy(ensureArray<AvgOpenByData>(unwrapResult(openBy as AvgOpenByData[] | ResultWrapper<AvgOpenByData[]>)));
+        setAvgComments(unwrapResult(comments as AvgCommentsData | ResultWrapper<AvgCommentsData>));
+        const summaryResult = unwrapResult(summaryData as SummaryData | ResultWrapper<SummaryData>);
         setSummary(summaryResult);
         // Extract top themes from summary and limit to top 10
         const themes = summaryResult?.top_themes || [];
@@ -75,8 +141,6 @@ export default function PullRequestsSection() {
         setAvgComments(null);
         setSummary(null);
         setTopThemes([]);
-      } finally {
-        setLoading(false);
       }
     };
 

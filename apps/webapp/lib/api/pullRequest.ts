@@ -8,8 +8,8 @@ export const pullRequestAPI = {
       merged: number;
       closed: number;
       open: number;
-      first_pr: any;
-      last_pr: any;
+      first_pr: string | null;
+      last_pr: string | null;
     }>('/pull-requests/summary', params),
   
   byAuthor: (params?: ApiParams) =>

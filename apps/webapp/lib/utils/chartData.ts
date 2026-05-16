@@ -2,11 +2,19 @@
  * Safely converts API response data to an array suitable for charts.
  * Handles wrapped responses, null/undefined, and already-formatted arrays.
  */
-export function ensureArray<T>(data: any): T[] {
+type WrappedResult = {
+  result: unknown;
+};
+
+function hasWrappedResult(data: unknown): data is WrappedResult {
+  return typeof data === 'object' && data !== null && 'result' in data;
+}
+
+export function ensureArray<T>(data: unknown): T[] {
   if (Array.isArray(data)) {
     return data;
   }
-  if (data?.result !== undefined) {
+  if (hasWrappedResult(data)) {
     if (Array.isArray(data.result)) {
       return data.result;
     }

@@ -8,17 +8,60 @@ import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, Responsive
 import { buildPipelineApiParams } from '@/lib/utils/apiParams';
 import { ensureArray } from '@/lib/utils/chartData';
 
+type ResultWrapper<T> = {
+  result: T;
+};
+
+interface JobByStatusResponseItem {
+  Status?: string;
+  Count?: number;
+}
+
+interface JobByStatusData {
+  status: string;
+  count: number;
+}
+
+interface RunsDurationResponseItem {
+  workflow?: string;
+  avg_duration?: number;
+  name?: string;
+  value?: number;
+}
+
+interface RunsDurationData {
+  workflow: string;
+  avg_duration: number;
+  name?: string;
+  value?: number;
+}
+
+interface JobsAverageTimeResponseItem {
+  job_name?: string;
+  avg_time?: number;
+}
+
+interface JobsAverageTimeData {
+  job_name: string;
+  avg_time: number;
+}
+
+function unwrapResult<T>(data: T | ResultWrapper<T>): T {
+  if (typeof data === 'object' && data !== null && 'result' in data) {
+    return data.result;
+  }
+  return data;
+}
+
 export default function PipelineSection() {
   const { filters } = useFilters();
-  const [jobsByStatus, setJobsByStatus] = useState<any[]>([]);
-  const [runsDuration, setRunsDuration] = useState<any[]>([]);
-  const [jobsAvgTime, setJobsAvgTime] = useState<any[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [jobsByStatus, setJobsByStatus] = useState<JobByStatusData[]>([]);
+  const [runsDuration, setRunsDuration] = useState<RunsDurationData[]>([]);
+  const [jobsAvgTime, setJobsAvgTime] = useState<JobsAverageTimeData[]>([]);
 
   useEffect(() => {
     const fetchData = async () => {
       try {
-        setLoading(true);
         const apiParams = buildPipelineApiParams(filters);
         const [jobs, duration, avgTime] = await Promise.all([
           pipelineAPI.jobsByStatus(apiParams),
@@ -27,28 +70,30 @@ export default function PipelineSection() {
         ]);
         
         // Handle jobsByStatus - Status and Count fields
-        const jobsData = Array.isArray(jobs) ? jobs.map((j: any) => ({
+        const jobsResult = unwrapResult(jobs as JobByStatusResponseItem[] | ResultWrapper<JobByStatusResponseItem[]>);
+        const jobsData = Array.isArray(jobsResult) ? jobsResult.map((j: JobByStatusResponseItem): JobByStatusData => ({
           status: (j.Status || 'unknown').toLowerCase(),
           count: j.Count || 0,
         })) : [];
         
         // Handle runsDuration - transform name/value to workflow/avg_duration
-        const durationData = Array.isArray(duration) ? duration.map((d: any) => ({
+        const durationResult = unwrapResult(
+          duration as RunsDurationResponseItem[] | ResultWrapper<RunsDurationResponseItem[]>
+        );
+        const durationData = Array.isArray(durationResult) ? durationResult.map((d: RunsDurationResponseItem): RunsDurationData => ({
           workflow: d.workflow || d.name || 'Unknown',
           avg_duration: d.avg_duration || d.value || 0,
           name: d.name,
           value: d.value
-        })) : ((duration as any)?.result || []);
+        })) : [];
         
         // Handle jobsAverageTime - unwrap if needed and transform
-        let avgTimeData = [];
-        if (Array.isArray(avgTime)) {
-          avgTimeData = avgTime.map((a: any) => ({
-            job_name: a.job_name || 'Unknown',
-            avg_time: a.avg_time || 0
-          }));
-        } else if ((avgTime as any)?.result && Array.isArray((avgTime as any).result)) {
-          avgTimeData = (avgTime as any).result.map((a: any) => ({
+        let avgTimeData: JobsAverageTimeData[] = [];
+        const avgTimeResult = unwrapResult(
+          avgTime as JobsAverageTimeResponseItem[] | ResultWrapper<JobsAverageTimeResponseItem[]>
+        );
+        if (Array.isArray(avgTimeResult)) {
+          avgTimeData = avgTimeResult.map((a: JobsAverageTimeResponseItem): JobsAverageTimeData => ({
             job_name: a.job_name || 'Unknown',
             avg_time: a.avg_time || 0
           }));
@@ -63,8 +108,6 @@ export default function PipelineSection() {
         setJobsByStatus([]);
         setRunsDuration([]);
         setJobsAvgTime([]);
-      } finally {
-        setLoading(false);
       }
     };
 

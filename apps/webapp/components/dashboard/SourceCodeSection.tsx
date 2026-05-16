@@ -8,13 +8,55 @@ import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, Responsive
 import { buildSourceCodeApiParams } from '@/lib/utils/apiParams';
 import { ensureArray } from '@/lib/utils/chartData';
 
+type ResultWrapper<T> = {
+  result: T;
+};
+
+interface EntityChurnData {
+  entity: string;
+  added: number;
+  deleted: number;
+  commits: number;
+}
+
+interface CouplingData {
+  entity: string;
+  coupled: string;
+  degree: number;
+}
+
+interface EntityEffortData {
+  entity: string;
+  'total-revs': number;
+}
+
+interface CodeChurnData {
+  date: string;
+  type: string;
+  value: number;
+}
+
+interface EntityOwnershipData {
+  entity: string;
+  author: string;
+  added: number;
+  deleted: number;
+}
+
+function unwrapResult<T>(data: T | ResultWrapper<T>): T {
+  if (typeof data === 'object' && data !== null && 'result' in data) {
+    return data.result;
+  }
+  return data;
+}
+
 export default function SourceCodeSection() {
   const { filters } = useFilters();
-  const [entityChurn, setEntityChurn] = useState<any[]>([]);
-  const [coupling, setCoupling] = useState<any[]>([]);
-  const [entityEffort, setEntityEffort] = useState<any[]>([]);
-  const [codeChurn, setCodeChurn] = useState<any[]>([]);
-  const [entityOwnership, setEntityOwnership] = useState<any[]>([]);
+  const [entityChurn, setEntityChurn] = useState<EntityChurnData[]>([]);
+  const [coupling, setCoupling] = useState<CouplingData[]>([]);
+  const [entityEffort, setEntityEffort] = useState<EntityEffortData[]>([]);
+  const [codeChurn, setCodeChurn] = useState<CodeChurnData[]>([]);
+  const [entityOwnership, setEntityOwnership] = useState<EntityOwnershipData[]>([]);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -28,11 +70,11 @@ export default function SourceCodeSection() {
           sourceCodeAPI.entityOwnership(apiParams),
         ]);
         // Handle both direct array responses and wrapped responses
-        setEntityChurn(Array.isArray(churn) ? churn : ((churn as any)?.result || []));
-        setCoupling(Array.isArray(coup) ? coup : ((coup as any)?.result || []));
-        setEntityEffort(Array.isArray(effort) ? effort : ((effort as any)?.result || []));
-        setCodeChurn(Array.isArray(churnOverTime) ? churnOverTime : ((churnOverTime as any)?.result || []));
-        setEntityOwnership(Array.isArray(ownership) ? ownership : ((ownership as any)?.result || []));
+        setEntityChurn(ensureArray<EntityChurnData>(unwrapResult(churn as EntityChurnData[] | ResultWrapper<EntityChurnData[]>)));
+        setCoupling(ensureArray<CouplingData>(unwrapResult(coup as CouplingData[] | ResultWrapper<CouplingData[]>)));
+        setEntityEffort(ensureArray<EntityEffortData>(unwrapResult(effort as EntityEffortData[] | ResultWrapper<EntityEffortData[]>)));
+        setCodeChurn(ensureArray<CodeChurnData>(unwrapResult(churnOverTime as CodeChurnData[] | ResultWrapper<CodeChurnData[]>)));
+        setEntityOwnership(ensureArray<EntityOwnershipData>(unwrapResult(ownership as EntityOwnershipData[] | ResultWrapper<EntityOwnershipData[]>)));
       } catch (error) {
         console.error('Error fetching source code data:', error);
         // Set empty arrays on error

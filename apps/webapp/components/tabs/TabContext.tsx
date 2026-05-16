@@ -1,6 +1,6 @@
 'use client';
 
-import React, { createContext, useContext, useEffect } from 'react';
+import React, { createContext, useContext } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import Box from "@mui/material/Box";
 import {Tab, Tabs} from "@mui/material";
@@ -25,24 +25,10 @@ export const useTabContext = () => {
 };
 
 export const TabProvider = ({ children }: { children?: React.ReactNode }) => {
-  const [value, setValue] = React.useState('one');
-  const [mounted, setMounted] = React.useState(false);
-  const router = useRouter();
   const searchParams = useSearchParams();
-
-  // Initialize from URL on mount
-  useEffect(() => {
-    setMounted(true);
-  }, []);
-
-  // Update tab from URL when searchParams change
-  useEffect(() => {
-    if (!mounted) return;
-    const tabParam = searchParams.get('tab');
-    if (tabParam && ['one', 'two', 'three', 'four'].includes(tabParam)) {
-      setValue(tabParam);
-    }
-  }, [searchParams, mounted]);
+  const tabParam = searchParams.get('tab') || 'one';
+  const [value, setValue] = React.useState<string>(['one', 'two', 'three', 'four'].includes(tabParam) ? tabParam : 'one');
+  const router = useRouter();
 
   const setActiveTab = (tab: string) => {
     setValue(tab);
@@ -63,7 +49,7 @@ export const TabProvider = ({ children }: { children?: React.ReactNode }) => {
 export const TabContent = () => {
   const { activeTab: value, setActiveTab } = useTabContext();
 
-  const handleChange = (event: React.SyntheticEvent, newValue: string) => {
+  const handleChange = (_: React.SyntheticEvent, newValue: string) => {
     setActiveTab(newValue);
   };
 

@@ -1,8 +1,3 @@
-/**
- * Logger Utility
- * Migrated from: api/src/software_metrics_machine/core/infrastructure/logger.py
- */
-
 export type LogLevel = 'DEBUG' | 'INFO' | 'WARN' | 'ERROR';
 
 const LOG_LEVELS = {
@@ -32,12 +27,14 @@ export class Logger {
 
   debug(message: string, data?: unknown): void {
     if (this.shouldLog('DEBUG')) {
+      // eslint-disable-next-line no-console
       console.info(this.formatMessage('DEBUG', message), data);
     }
   }
 
   info(message: string, data?: unknown): void {
     if (this.shouldLog('INFO')) {
+      // eslint-disable-next-line no-console
       console.log(this.formatMessage('INFO', message), data);
     }
   }

@@ -11,6 +11,15 @@ import SliderFilter from "@/components/filters/SliderFilter";
 import { useEffect, useState } from "react";
 import { pipelineAPI, pullRequestAPI, sourceCodeAPI, configurationAPI } from "@/lib/api";
 
+interface WorkflowOption {
+  name?: string;
+  path?: string;
+}
+
+interface JobOption {
+  name?: string;
+}
+
 export default function FiltersContainer() {
   const { filters, updateFilter, resetFilters } = useFilters();
   const pathname = usePathname();
@@ -54,7 +63,7 @@ export default function FiltersContainer() {
 
         // Try to fetch filter options, but provide defaults if endpoints don't exist yet
         const workflows = await pipelineAPI.getWorkflows().catch(() => []);
-        setWorkflowOptions([...workflows.map((w: any) => w.name || w.path).filter(Boolean)]);
+        setWorkflowOptions([...workflows.map((w: WorkflowOption) => w.name || w.path).filter(Boolean) as string[]]);
 
         const statuses = await pipelineAPI.getStatuses().catch(() => []);
         setStatusOptions(statuses.length > 0 ? statuses : ['completed', 'in_progress', 'queued']);
@@ -78,7 +87,7 @@ export default function FiltersContainer() {
         setLabelOptions(labels);
 
         const jobs = await pipelineAPI.getJobs().catch(() => []);
-        setJobOptions(jobs.map((j: any) => j.name).filter(Boolean));
+        setJobOptions(jobs.map((j: JobOption) => j.name).filter(Boolean) as string[]);
       } catch (error) {
         console.warn('Some filter options could not be loaded:', error);
         // All fallbacks are already set in individual catch blocks

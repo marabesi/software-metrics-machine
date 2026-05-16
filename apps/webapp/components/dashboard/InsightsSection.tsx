@@ -4,11 +4,60 @@ import { useEffect, useState } from 'react';
 import Card from '@mui/material/Card';
 import {CardContent, CardHeader} from '@mui/material';
 import { sourceCodeAPI, pipelineAPI, pullRequestAPI, ApiParams } from '@/lib/api';
-import { useFilters } from '@/components/filters/FiltersContext';
+import { useFilters, DashboardFilters } from '@/components/filters/FiltersContext';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, ReferenceLine } from 'recharts';
 import { ensureArray } from '@/lib/utils/chartData';
 
-function buildApiParams(filters: any): ApiParams {
+type ResultWrapper<T> = {
+  result: T;
+};
+
+interface PairingIndex {
+  pairing_index_percentage: number;
+  paired_commits: number;
+  total_analyzed_commits: number;
+}
+
+interface PipelineSummary {
+  total_runs: number;
+  in_progress: number;
+  queued: number;
+}
+
+interface PullRequestSummary {
+  total_prs?: number;
+  total?: number;
+  merged_prs?: number;
+  merged?: number;
+  closed_prs?: number;
+  closed?: number;
+  open_prs?: number;
+  open?: number;
+}
+
+interface DeploymentFrequencyResponseItem {
+  days?: string;
+  daily_counts?: number;
+  weekly_counts?: number;
+  monthly_counts?: number;
+}
+
+interface DeploymentFrequencyPoint {
+  date: string;
+  month: string;
+  day_count: number;
+  week_count: number;
+  month_count: number;
+}
+
+function unwrapResult<T>(data: T | ResultWrapper<T>): T {
+  if (typeof data === 'object' && data !== null && 'result' in data) {
+    return data.result;
+  }
+  return data;
+}
+
+function buildApiParams(filters: DashboardFilters): ApiParams {
   return {
     start_date: filters.startDate,
     end_date: filters.endDate,
@@ -16,7 +65,7 @@ function buildApiParams(filters: any): ApiParams {
   };
 }
 
-function buildPipelineApiParams(filters: any): ApiParams {
+function buildPipelineApiParams(filters: DashboardFilters): ApiParams {
   return {
     start_date: filters.startDate,
     end_date: filters.endDate,
@@ -32,16 +81,14 @@ function buildPipelineApiParams(filters: any): ApiParams {
 
 export default function InsightsSection() {
   const { filters } = useFilters();
-  const [pairingIndex, setPairingIndex] = useState<any>(null);
-  const [pipelineSummary, setPipelineSummary] = useState<any>(null);
-  const [prSummary, setPrSummary] = useState<any>(null);
-  const [deploymentFrequency, setDeploymentFrequency] = useState<any[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [pairingIndex, setPairingIndex] = useState<PairingIndex | null>(null);
+  const [pipelineSummary, setPipelineSummary] = useState<PipelineSummary | null>(null);
+  const [prSummary, setPrSummary] = useState<PullRequestSummary | null>(null);
+  const [deploymentFrequency, setDeploymentFrequency] = useState<DeploymentFrequencyPoint[]>([]);
 
   useEffect(() => {
     const fetchData = async () => {
       try {
-        setLoading(true);
         const apiParams = buildApiParams(filters);
         const pipelineParams = buildPipelineApiParams(filters);
         const [pairing, pipeline, pr, deployment] = await Promise.all([
@@ -50,12 +97,14 @@ export default function InsightsSection() {
           pullRequestAPI.summary(apiParams),
           pipelineAPI.deploymentFrequency(pipelineParams),
         ]);
-        // Handle both direct object responses and wrapped responses
-        const prData = pr && typeof pr === 'object' && 'result' in pr ? pr.result : pr;
-        const pairingData = pairing && typeof pairing === 'object' && 'result' in pairing ? pairing.result : pairing;
-        const pipelineData = pipeline && typeof pipeline === 'object' && 'result' in pipeline ? pipeline.result : pipeline;
-        const deploymentData = Array.isArray(deployment) ? deployment
-          .map((d: any) => {
+        const prData = unwrapResult(pr as PullRequestSummary | ResultWrapper<PullRequestSummary>);
+        const pairingData = unwrapResult(pairing as PairingIndex | ResultWrapper<PairingIndex>);
+        const pipelineData = unwrapResult(pipeline as PipelineSummary | ResultWrapper<PipelineSummary>);
+        const deploymentResult = unwrapResult(
+          deployment as DeploymentFrequencyResponseItem[] | ResultWrapper<DeploymentFrequencyResponseItem[]>
+        );
+        const deploymentData = Array.isArray(deploymentResult) ? deploymentResult
+          .map((d: DeploymentFrequencyResponseItem): DeploymentFrequencyPoint => {
             const dateStr = d.days || 'Unknown';
             // Extract month from date (YYYY-MM-DD -> YYYY-MM)
             const month = dateStr !== 'Unknown' ? dateStr.substring(0, 7) : 'Unknown';
@@ -68,7 +117,7 @@ export default function InsightsSection() {
             };
           })
           // Deduplicate by date (in case multiple records for same day) and sum counts
-          .reduce((acc: any[], item: any) => {
+          .reduce((acc: DeploymentFrequencyPoint[], item: DeploymentFrequencyPoint) => {
             const existing = acc.find(a => a.date === item.date);
             if (existing) {
               existing.day_count = Math.max(existing.day_count, item.day_count);
@@ -92,9 +141,7 @@ export default function InsightsSection() {
         setPipelineSummary(null);
         setPrSummary(null);
         setDeploymentFrequency([]);
-      } finally {
-        setLoading(false);
-      }
+      }  
     };
 
     fetchData();
