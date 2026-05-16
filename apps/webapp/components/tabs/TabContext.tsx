@@ -1,112 +1,47 @@
 'use client';
 
-import React, { createContext, useContext } from 'react';
-import { useRouter, useSearchParams } from 'next/navigation';
-import Box from "@mui/material/Box";
-import {Tab, Tabs} from "@mui/material";
-import InsightsSection from "@/components/dashboard/InsightsSection";
-import PipelineSection from "@/components/dashboard/PipelineSection";
-import PullRequestsSection from "@/components/dashboard/PullRequestsSection";
-import SourceCodeSection from "@/components/dashboard/SourceCodeSection";
+import Link from 'next/link';
+import { usePathname, useSearchParams } from 'next/navigation';
+import Box from '@mui/material/Box';
+import { Tab, Tabs } from '@mui/material';
 
-interface TabsContextInterface {
-  activeTab: string;
-  setActiveTab: (tab: string) => void;
+const dashboardTabs = [
+  { value: 'insights', label: 'Insights', href: '/dashboard/insights/' },
+  { value: 'pipelines', label: 'Pipelines', href: '/dashboard/pipelines/' },
+  { value: 'pull-requests', label: 'Pull Requests', href: '/dashboard/pull-requests/' },
+  { value: 'source-code', label: 'Source Code', href: '/dashboard/source-code/' },
+];
+
+function getActiveTab(pathname: string): string {
+  const tab = dashboardTabs.find((item) => item.href === pathname);
+  return tab ? tab.value : 'insights';
 }
 
-const TabContext = createContext<TabsContextInterface | undefined>(undefined);
-
-export const useTabContext = () => {
-  const context = useContext(TabContext);
-  if (context === undefined) {
-    throw new Error('useTabContext must be used within a TabProvider');
-  }
-  return context;
-};
-
-export const TabProvider = ({ children }: { children?: React.ReactNode }) => {
+export default function DashboardTabs() {
+  const pathname = usePathname();
   const searchParams = useSearchParams();
-  const tabParam = searchParams.get('tab') || 'one';
-  const [value, setValue] = React.useState<string>(['one', 'two', 'three', 'four'].includes(tabParam) ? tabParam : 'one');
-  const router = useRouter();
-
-  const setActiveTab = (tab: string) => {
-    setValue(tab);
-    // Update URL with new tab
-    router.push(`?tab=${tab}`, { scroll: false });
-  };
+  const activeTab = getActiveTab(pathname);
+  const queryString = searchParams.toString();
 
   return (
-    <TabContext.Provider value={{
-      activeTab: value,
-      setActiveTab
-    }}>
-      {children}
-    </TabContext.Provider>
-  );
-};
-
-export const TabContent = () => {
-  const { activeTab: value, setActiveTab } = useTabContext();
-
-  const handleChange = (_: React.SyntheticEvent, newValue: string) => {
-    setActiveTab(newValue);
-  };
-
-  return (
-    <>
-      <Box sx={{ width: '100%' }}>
-        <Tabs
-          value={value}
-          onChange={handleChange}
-          textColor="secondary"
-          indicatorColor="secondary"
-          aria-label="dashboard tabs"
-        >
-          <Tab value="one" label="Insights" />
-          <Tab value="two" label="Pipelines" />
-          <Tab value="three" label="Pull Requests" />
-          <Tab value="four" label="Source Code" />
-        </Tabs>
-      </Box>
-      <TabPanel key="panel-insights" value="one" active={value}>
-        <InsightsSection />
-      </TabPanel>
-      <TabPanel key="panel-pipelines" value="two" active={value}>
-        <PipelineSection />
-      </TabPanel>
-      <TabPanel key="panel-prs" value="three" active={value}>
-        <PullRequestsSection />
-      </TabPanel>
-      <TabPanel key="panel-source-code" value="four" active={value}>
-        <SourceCodeSection />
-      </TabPanel>
-    </>
-  );
-};
-
-interface TabPanelProps {
-  children?: React.ReactNode;
-  dir?: string;
-  active: string;
-  value: string;
-}
-function TabPanel(props: TabPanelProps) {
-  const { children, value, active, ...other } = props;
-
-  return (
-    <div
-      role="tabpanel"
-      hidden={value !== active}
-      id={`tabpanel-${value}`}
-      aria-labelledby={`tab-${value}`}
-      {...other}
-    >
-      {value === active && (
-        <Box sx={{ p: 3 }}>
-          {children}
-        </Box>
-      )}
-    </div>
+    <Box sx={{ width: '100%', mb: 3 }}>
+      <Tabs
+        value={activeTab}
+        textColor="secondary"
+        indicatorColor="secondary"
+        aria-label="dashboard tabs"
+      >
+        {dashboardTabs.map((tab) => (
+          <Tab
+            key={tab.value}
+            component={Link}
+            href={queryString ? `${tab.href}?${queryString}` : tab.href}
+            value={tab.value}
+            label={tab.label}
+            scroll={false}
+          />
+        ))}
+      </Tabs>
+    </Box>
   );
 }

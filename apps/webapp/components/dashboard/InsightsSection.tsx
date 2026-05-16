@@ -1,54 +1,9 @@
-'use client';
-
-import { useEffect, useState } from 'react';
 import Card from '@mui/material/Card';
 import {CardContent, CardHeader} from '@mui/material';
 import { sourceCodeAPI, pipelineAPI, pullRequestAPI, ApiParams } from '@/lib/api';
-import { useFilters, DashboardFilters } from '@/components/filters/FiltersContext';
-import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, ReferenceLine } from 'recharts';
-import { ensureArray } from '@/lib/utils/chartData';
-
-type ResultWrapper<T> = {
-  result: T;
-};
-
-interface PairingIndex {
-  pairing_index_percentage: number;
-  paired_commits: number;
-  total_analyzed_commits: number;
-}
-
-interface PipelineSummary {
-  total_runs: number;
-  in_progress: number;
-  queued: number;
-}
-
-interface PullRequestSummary {
-  total_prs?: number;
-  total?: number;
-  merged_prs?: number;
-  merged?: number;
-  closed_prs?: number;
-  closed?: number;
-  open_prs?: number;
-  open?: number;
-}
-
-interface DeploymentFrequencyResponseItem {
-  days?: string;
-  daily_counts?: number;
-  weekly_counts?: number;
-  monthly_counts?: number;
-}
-
-interface DeploymentFrequencyPoint {
-  date: string;
-  month: string;
-  day_count: number;
-  week_count: number;
-  month_count: number;
-}
+import { DashboardFilters } from '../filters/DashboardFilters';
+import { ResultWrapper, PairingIndex, PipelineSummary, PullRequestSummary, DeploymentFrequencyPoint, DeploymentFrequencyResponseItem } from '../../app/dashboard/insights/insights-types';
+import { DeploymentFrequency } from '../charts/DeploymentFrequency';
 
 function unwrapResult<T>(data: T | ResultWrapper<T>): T {
   if (typeof data === 'object' && data !== null && 'result' in data) {
@@ -79,77 +34,66 @@ function buildPipelineApiParams(filters: DashboardFilters): ApiParams {
   };
 }
 
-export default function InsightsSection() {
-  const { filters } = useFilters();
-  const [pairingIndex, setPairingIndex] = useState<PairingIndex | null>(null);
-  const [pipelineSummary, setPipelineSummary] = useState<PipelineSummary | null>(null);
-  const [prSummary, setPrSummary] = useState<PullRequestSummary | null>(null);
-  const [deploymentFrequency, setDeploymentFrequency] = useState<DeploymentFrequencyPoint[]>([]);
+export default async function InsightsSection({ filters }: { filters: DashboardFilters }) {
+  let pairingIndex: PairingIndex | null = null;
+  let pipelineSummary: PipelineSummary | null = null;
+  let prSummary: PullRequestSummary | null = null;
+  let deploymentFrequency: DeploymentFrequencyPoint[] = [];
 
-  useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const apiParams = buildApiParams(filters);
-        const pipelineParams = buildPipelineApiParams(filters);
-        const [pairing, pipeline, pr, deployment] = await Promise.all([
-          sourceCodeAPI.pairingIndex(apiParams),
-          pipelineAPI.summary(apiParams),
-          pullRequestAPI.summary(apiParams),
-          pipelineAPI.deploymentFrequency(pipelineParams),
-        ]);
-        const prData = unwrapResult(pr as PullRequestSummary | ResultWrapper<PullRequestSummary>);
-        const pairingData = unwrapResult(pairing as PairingIndex | ResultWrapper<PairingIndex>);
-        const pipelineData = unwrapResult(pipeline as PipelineSummary | ResultWrapper<PipelineSummary>);
-        const deploymentResult = unwrapResult(
-          deployment as DeploymentFrequencyResponseItem[] | ResultWrapper<DeploymentFrequencyResponseItem[]>
-        );
-        const deploymentData = Array.isArray(deploymentResult) ? deploymentResult
-          .map((d: DeploymentFrequencyResponseItem): DeploymentFrequencyPoint => {
-            const dateStr = d.days || 'Unknown';
-            // Extract month from date (YYYY-MM-DD -> YYYY-MM)
-            const month = dateStr !== 'Unknown' ? dateStr.substring(0, 7) : 'Unknown';
-            return {
-              date: dateStr,
-              month: month,
-              day_count: d.daily_counts || 0,
-              week_count: d.weekly_counts || 0,
-              month_count: d.monthly_counts || 0,
-            };
-          })
-          // Deduplicate by date (in case multiple records for same day) and sum counts
-          .reduce((acc: DeploymentFrequencyPoint[], item: DeploymentFrequencyPoint) => {
-            const existing = acc.find(a => a.date === item.date);
-            if (existing) {
-              existing.day_count = Math.max(existing.day_count, item.day_count);
-              existing.week_count = Math.max(existing.week_count, item.week_count);
-              existing.month_count = Math.max(existing.month_count, item.month_count);
-            } else {
-              acc.push(item);
-            }
-            return acc;
-          }, [])
-          .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime())
-        : [];
-        
-        setPairingIndex(pairingData || null);
-        setPipelineSummary(pipelineData || null);
-        setPrSummary(prData);
-        setDeploymentFrequency(deploymentData);
-      } catch (error) {
-        console.error('Error fetching insights:', error);
-        setPairingIndex(null);
-        setPipelineSummary(null);
-        setPrSummary(null);
-        setDeploymentFrequency([]);
-      }  
-    };
-
-    fetchData();
-  }, [filters]);
-
-  // if (loading) {
-  //   return <div className="text-center p-8">Loading insights...</div>;
-  // }
+  try {
+    const apiParams = buildApiParams(filters);
+    const pipelineParams = buildPipelineApiParams(filters);
+    const [pairing, pipeline, pr, deployment] = await Promise.all([
+      sourceCodeAPI.pairingIndex(apiParams),
+      pipelineAPI.summary(apiParams),
+      pullRequestAPI.summary(apiParams),
+      pipelineAPI.deploymentFrequency(pipelineParams),
+    ]);
+    const prData = unwrapResult(pr as PullRequestSummary | ResultWrapper<PullRequestSummary>);
+    const pairingData = unwrapResult(pairing as PairingIndex | ResultWrapper<PairingIndex>);
+    const pipelineData = unwrapResult(pipeline as PipelineSummary | ResultWrapper<PipelineSummary>);
+    const deploymentResult = unwrapResult(
+      deployment as DeploymentFrequencyResponseItem[] | ResultWrapper<DeploymentFrequencyResponseItem[]>
+    );
+    const deploymentData = Array.isArray(deploymentResult) ? deploymentResult
+      .map((d: DeploymentFrequencyResponseItem): DeploymentFrequencyPoint => {
+        const dateStr = d.days || 'Unknown';
+        // Extract month from date (YYYY-MM-DD -> YYYY-MM)
+        const month = dateStr !== 'Unknown' ? dateStr.substring(0, 7) : 'Unknown';
+        return {
+          date: dateStr,
+          month: month,
+          day_count: d.daily_counts || 0,
+          week_count: d.weekly_counts || 0,
+          month_count: d.monthly_counts || 0,
+        };
+      })
+      // Deduplicate by date (in case multiple records for same day) and sum counts
+      .reduce((acc: DeploymentFrequencyPoint[], item: DeploymentFrequencyPoint) => {
+        const existing = acc.find(a => a.date === item.date);
+        if (existing) {
+          existing.day_count = Math.max(existing.day_count, item.day_count);
+          existing.week_count = Math.max(existing.week_count, item.week_count);
+          existing.month_count = Math.max(existing.month_count, item.month_count);
+        } else {
+          acc.push(item);
+        }
+        return acc;
+      }, [])
+      .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime())
+    : [];
+    
+    pairingIndex = pairingData || null;
+    pipelineSummary = pipelineData || null;
+    prSummary = prData;
+    deploymentFrequency = deploymentData
+  } catch (error) {
+    console.error('Error fetching insights:', error);
+    pairingIndex = null;
+    pipelineSummary = null;
+    prSummary = null;
+    deploymentFrequency = [];
+  }  
 
   // Get month transition indices for reference lines
   const monthTransitionIndices = deploymentFrequency
@@ -220,33 +164,7 @@ export default function InsightsSection() {
       <Card>
         <CardHeader title="Deployment Frequency" />
         <CardContent>
-          <ResponsiveContainer width="100%" height={300}>
-            <LineChart data={ensureArray(deploymentFrequency)}>
-              <CartesianGrid strokeDasharray="3 3" />
-              {monthTransitionIndices.map((date) => (
-                <ReferenceLine key={date} x={date} stroke="#000" strokeWidth={2} />
-              ))}
-              <XAxis dataKey="date" angle={-45} textAnchor="end" height={100} />
-              <YAxis />
-              <Tooltip />
-              <Legend />
-              <Line type="monotone" dataKey="day_count" stroke="#8884d8" name="Daily" dot={false} isAnimationActive={false} />
-            </LineChart>
-          </ResponsiveContainer>
-          <ResponsiveContainer width="100%" height={300}>
-            <LineChart data={ensureArray(deploymentFrequency)}>
-              <CartesianGrid strokeDasharray="3 3" />
-              {monthTransitionIndices.map((date) => (
-                <ReferenceLine key={date} x={date} stroke="#000" strokeWidth={2} />
-              ))}
-              <XAxis dataKey="date" angle={-45} textAnchor="end" height={100} />
-              <YAxis />
-              <Tooltip />
-              <Legend />
-              <Line type="monotone" dataKey="week_count" stroke="#82ca9d" name="Weekly" dot={false} isAnimationActive={false} />
-              <Line type="monotone" dataKey="month_count" stroke="#ffc658" name="Monthly" dot={false} isAnimationActive={false} />
-            </LineChart>
-          </ResponsiveContainer>
+          <DeploymentFrequency deploymentFrequency={deploymentFrequency} monthTransitionIndices={monthTransitionIndices} />
         </CardContent>
       </Card>
     </div>

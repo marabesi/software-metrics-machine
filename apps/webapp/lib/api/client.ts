@@ -8,6 +8,16 @@ type RuntimeConfigResponse = {
   apiBaseUrl?: string;
 };
 
+function resolveServerApiBaseUrl(): string {
+  const apiBaseUrl = process.env.SMM_REST_BASE_URL;
+
+  if (!apiBaseUrl) {
+    throw new Error('Missing runtime API base URL. Set SMM_REST_BASE_URL.');
+  }
+
+  return apiBaseUrl;
+}
+
 async function browserApiBaseUrl(): Promise<string> {
   return new Promise((resolve, reject) => {
     fetch('/api/runtime-config', {
@@ -36,7 +46,8 @@ async function browserApiBaseUrl(): Promise<string> {
 }
 
 export async function fetchAPI<T>(endpoint: string, params?: ApiParams): Promise<T> {
-  const url = new URL(endpoint, await browserApiBaseUrl());
+  const apiBaseUrl = resolveServerApiBaseUrl();
+  const url = new URL(endpoint, apiBaseUrl);
   
   if (params) {
     Object.entries(params).forEach(([key, value]) => {

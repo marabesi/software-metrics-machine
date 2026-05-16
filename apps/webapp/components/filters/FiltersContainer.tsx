@@ -48,19 +48,6 @@ export default function FiltersContainer() {
   useEffect(() => {
     const fetchFilterOptions = async () => {
       try {
-        // Fetch and apply configuration defaults if dates are not set
-        if (!filters.startDate || !filters.endDate) {
-          const config = await configurationAPI.getConfiguration().catch(() => null);
-          if (config?.result) {
-            if (!filters.startDate && config.result.dashboard_start_date) {
-              updateFilter('startDate', config.result.dashboard_start_date);
-            }
-            if (!filters.endDate && config.result.dashboard_end_date) {
-              updateFilter('endDate', config.result.dashboard_end_date);
-            }
-          }
-        }
-
         // Try to fetch filter options, but provide defaults if endpoints don't exist yet
         const workflows = await pipelineAPI.getWorkflows().catch(() => []);
         setWorkflowOptions([...workflows.map((w: WorkflowOption) => w.name || w.path).filter(Boolean) as string[]]);
@@ -95,7 +82,7 @@ export default function FiltersContainer() {
     };
 
     fetchFilterOptions();
-  }, []);
+  }, [pathname]);
 
   return (
     <Paper sx={{ p: 2, mb: 3 }}>

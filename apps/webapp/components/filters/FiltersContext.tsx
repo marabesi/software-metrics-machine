@@ -1,55 +1,8 @@
 'use client';
 
-import { createContext, ReactElement, useContext, useState } from 'react';
-
-export interface DashboardFilters {
-  // Date filters
-  startDate: string;
-  endDate: string;
-
-  // Pipeline filters
-  workflowSelector?: string;
-  workflowStatus: string[];
-  workflowConclusions: string[];
-  jobSelector: string[];
-  branch: string[];
-  event: string[];
-
-  // PR filters
-  authorSelect: string[];
-  labelSelector: string[];
-  aggregateBy: string;
-
-  // Source code filters
-  ignorePatternFiles: string;
-  includePatternFiles: string;
-  authorSelectSourceCode: string[];
-  topEntries: number;
-  typeChurn: string;
-
-  // Metrics filters
-  aggregateMetric: string;
-}
-
-const defaultFilters: DashboardFilters = {
-  startDate: '',
-  endDate: '',
-  workflowSelector: undefined,
-  workflowStatus: [],
-  workflowConclusions: [],
-  jobSelector: [],
-  branch: [],
-  event: [],
-  authorSelect: [],
-  labelSelector: [],
-  aggregateBy: 'week',
-  ignorePatternFiles: '',
-  includePatternFiles: '',
-  authorSelectSourceCode: [],
-  topEntries: 20,
-  typeChurn: 'added',
-  aggregateMetric: 'avg',
-};
+import { createContext, ReactElement, useCallback, useContext, useEffect, useMemo, useState } from 'react';
+import { usePathname, useRouter, useSearchParams } from 'next/navigation';
+import { DashboardFilters, defaultFilters, parseDashboardFilters, serializeDashboardFilters } from './DashboardFilters';
 
 interface FiltersContextInterface {
   filters: DashboardFilters;
@@ -67,22 +20,52 @@ export const useFilters = () => {
   return context;
 };
 
-export const FiltersProvider = ({ children }: { children?: ReactElement | undefined }) => {
-  const [filters, setFilters] = useState<DashboardFilters>(defaultFilters);
+export const FiltersProvider = ({ initialFilters, children }: { initialFilters: DashboardFilters; children?: ReactElement | undefined }) => {
+  const router = useRouter();
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
 
-  const updateFilter = <K extends keyof DashboardFilters>(key: K, value: DashboardFilters[K]) => {
-    setFilters((prev) => ({
-      ...prev,
-      [key]: value,
-    }));
-  };
+  const initialUrlFilters = useMemo(
+    () => parseDashboardFilters(Object.fromEntries(searchParams.entries()), initialFilters),
+    [initialFilters, searchParams],
+  );
 
-  const resetFilters = () => {
+  const [filters, setFilters] = useState<DashboardFilters>(initialUrlFilters);
+
+  useEffect(() => {
+    setFilters((currentFilters) => {
+      const nextFilters = parseDashboardFilters(Object.fromEntries(searchParams.entries()), initialFilters);
+      return JSON.stringify(currentFilters) === JSON.stringify(nextFilters) ? currentFilters : nextFilters;
+    });
+  }, [initialFilters, searchParams]);
+
+  const syncFiltersToUrl = useCallback((nextFilters: DashboardFilters) => {
+    const nextParams = serializeDashboardFilters(nextFilters);
+    const queryString = nextParams.toString();
+    router.replace(queryString ? `${pathname}?${queryString}` : pathname, { scroll: false });
+  }, [pathname, router]);
+
+  const updateFilter = useCallback(<K extends keyof DashboardFilters>(key: K, value: DashboardFilters[K]) => {
+    setFilters((prev) => {
+      const nextFilters = {
+        ...prev,
+        [key]: value,
+      };
+
+      syncFiltersToUrl(nextFilters);
+      return nextFilters;
+    });
+  }, [syncFiltersToUrl]);
+
+  const resetFilters = useCallback(() => {
     setFilters(defaultFilters);
-  };
+    syncFiltersToUrl(defaultFilters);
+  }, [syncFiltersToUrl]);
+
+  const contextValue = useMemo(() => ({ filters, updateFilter, resetFilters }), [filters, resetFilters, updateFilter]);
 
   return (
-    <FiltersContext.Provider value={{ filters, updateFilter, resetFilters }}>
+    <FiltersContext.Provider value={contextValue}>
       {children}
     </FiltersContext.Provider>
   );
