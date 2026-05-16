@@ -1,6 +1,6 @@
 import axios, { AxiosInstance } from 'axios';
 import { PRDetails } from '../../domain-types';
-import { Logger } from '@smm/utils';
+import { Logger } from '@smmachine/utils';
 
 export interface IGithubPrsClient {
   fetchPRs(options?: {

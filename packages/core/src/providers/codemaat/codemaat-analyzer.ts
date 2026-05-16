@@ -1,6 +1,6 @@
 import * as fs from 'fs';
 import * as path from 'path';
-import { Logger } from '@smm/utils';
+import { Logger } from '@smmachine/utils';
 
 export interface CodeChurn {
   date: string;

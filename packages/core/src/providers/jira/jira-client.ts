@@ -1,6 +1,6 @@
 import axios, { AxiosInstance } from 'axios';
 import { Issue } from '../../domain-types';
-import { Logger } from '@smm/utils';
+import { Logger } from '@smmachine/utils';
 
 export interface IJiraIssuesClient {
   fetchIssues(options?: {

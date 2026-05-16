@@ -1,5 +1,5 @@
 /**
- * Package: @smm/utils
+ * Package: @smmachine/utils
  * Test setup and utilities
  */
 

@@ -1,4 +1,4 @@
-# @smm/utils
+# @smmachine/utils
 
 Shared utility functions for Software Metrics Machine.
 

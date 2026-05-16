@@ -1,4 +1,4 @@
-import { logger } from '@smm/utils';
+import { logger } from '@smmachine/utils';
 import { type ISonarqubeMeasuresClient } from '../providers/sonarqube';
 import { FileSystemRepository } from '../infrastructure/repository';
 

@@ -18,6 +18,8 @@
   "license": "MIT",
   "scripts": {
     "build": "pnpm run -r build",
+    "clean": "pnpm run -r clean",
+    "clean:full": "rm -rf node_modules && (cd apps/cli && rm -rf node_modules) && (cd apps/rest && rm -rf node_modules) && (cd apps/webapp && rm -rf node_modules) && (cd packages/core && rm -rf node_modules) && (cd packages/utils && rm -rf node_modules)",
     "build:npm": "pnpm run -r clean && pnpm --filter @smmachine/utils build && pnpm --filter @smmachine/core build && pnpm --filter @smmachine/rest build && pnpm --filter @smmachine/webapp build && pnpm exec tsup",
     "dev": "concurrently \"pnpm --filter=webapp run dev --port=3000\" \"PORT=8000 pnpm --filter=rest run dev\"",
     "build:packages": "cd ./packages/utils && npm run build && cd ../core && npm run build",

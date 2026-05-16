@@ -1,5 +1,5 @@
 import axios, { AxiosInstance } from 'axios';
-import { Logger } from '@smm/utils';
+import { Logger } from '@smmachine/utils';
 
 export interface CodeMetric {
   key: string;

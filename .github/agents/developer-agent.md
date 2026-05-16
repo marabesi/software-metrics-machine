@@ -224,9 +224,9 @@ This agent assists developers in contributing to Software Metrics Machine, a dat
 
 **Key Directory Relationships**:
 - `packages/*` - Compiled to `dist/` folders, consumed by `apps/*`
-- `apps/cli` - Imports from `@smm/core` and `@smm/utils` (ESM → CJS)
-- `apps/rest` - Imports from `@smm/core` and `@smm/utils` (CJS → CJS)
-- `apps/webapp` - Imports from `@smm/core` and `@smm/utils` (ESM → CJS)
+- `apps/cli` - Imports from `@smm/core` and `@smmachine/utils` (ESM → CJS)
+- `apps/rest` - Imports from `@smm/core` and `@smmachine/utils` (CJS → CJS)
+- `apps/webapp` - Imports from `@smm/core` and `@smmachine/utils` (ESM → CJS)
 - `api/` - Independent Python codebase, shares data with TypeScript apps
 
 ### Key Patterns
@@ -614,10 +614,10 @@ The project uses pnpm workspaces with a dual-module architecture:
 pnpm --filter=@smm/core build
 
 # Build utils package
-pnpm --filter=@smm/utils build
+pnpm --filter=@smmachine/utils build
 
 # Build both
-pnpm --filter=@smm/utils build && pnpm --filter=@smm/core build
+pnpm --filter=@smmachine/utils build && pnpm --filter=@smm/core build
 ```
 
 #### CLI Application (ES Modules)
@@ -794,7 +794,7 @@ import { Configuration } from '@smm/core';
 # Run this sequence after ANY package change:
 
 # 1. Rebuild core/utils
-pnpm --filter=@smm/utils build && pnpm --filter=@smm/core build
+pnpm --filter=@smmachine/utils build && pnpm --filter=@smm/core build
 
 # 2. Test CLI
 pnpm --filter=cli run dev
@@ -815,7 +815,7 @@ Core and utils must be built BEFORE apps can run:
 
 ```bash
 # Correct order
-pnpm --filter=@smm/utils build
+pnpm --filter=@smmachine/utils build
 pnpm --filter=@smm/core build
 pnpm --filter=rest run dev
 
@@ -872,7 +872,7 @@ pnpm --filter=rest run dev
 # If CLI fails to start:
 # 1. Verify core/utils are built
 pnpm --filter=@smm/core build
-pnpm --filter=@smm/utils build
+pnpm --filter=@smmachine/utils build
 
 # 2. Check for .js extensions in imports
 # CLI requires explicit .js extensions in import paths
@@ -986,7 +986,7 @@ pnpm install
 ```bash
 # BUILD COMMANDS
 pnpm --filter=@smm/core build          # Build core package
-pnpm --filter=@smm/utils build         # Build utils package
+pnpm --filter=@smmachine/utils build         # Build utils package
 pnpm --filter=rest run build           # Build REST API
 pnpm --filter=webapp run build         # Build webapp
 pnpm --filter=cli run build            # Build CLI

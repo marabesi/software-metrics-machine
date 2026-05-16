@@ -1,4 +1,4 @@
-import { logger } from '@smm/utils';
+import { logger } from '@smmachine/utils';
 import { FileSystemRepository } from '../infrastructure/repository';
 import { PRDetails } from '../domain-types';
 import { type IGithubPrsClient } from '../providers/github';

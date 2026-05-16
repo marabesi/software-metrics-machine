@@ -1,4 +1,4 @@
-import { Logger, logger } from '@smm/utils';
+import { Logger, logger } from '@smmachine/utils';
 
 export interface CodeMetadataResult {
   message: string;

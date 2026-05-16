@@ -1,4 +1,4 @@
-import { Logger, logger } from '@smm/utils';
+import { Logger, logger } from '@smmachine/utils';
 import { IRepository } from '../../infrastructure/repository';
 import {
   PRDetails,
