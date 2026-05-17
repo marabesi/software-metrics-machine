@@ -2,12 +2,12 @@ import { pullRequestAPI } from '@/lib/api';
 import { DashboardFilters } from '@/components/filters/DashboardFilters';
 import { buildPullRequestApiParams } from '@/lib/utils/apiParams';
 import { ensureArray } from '@/lib/utils/chartData';
-import PRsByAuthorCard from './pull-requests/PRsByAuthorCard';
-import AverageReviewTimeCard from './pull-requests/AverageReviewTimeCard';
-import OpenPRsThroughTimeCard from './pull-requests/OpenPRsThroughTimeCard';
-import TopThemesCard from './pull-requests/TopThemesCard';
-import AverageDaysPRsRemainOpenCard from './pull-requests/AverageDaysPRsRemainOpenCard';
-import PRStatisticsCard from './pull-requests/PRStatisticsCard';
+import PRsByAuthorCard from '../charts/pull-requests/PRsByAuthorCard';
+import AverageReviewTimeCard from '../charts/pull-requests/AverageReviewTimeCard';
+import OpenPRsThroughTimeCard from '../charts/pull-requests/OpenPRsThroughTimeCard';
+import TopThemesCard from '../charts/pull-requests/TopThemesCard';
+import AverageDaysPRsRemainOpenCard from '../charts/pull-requests/AverageDaysPRsRemainOpenCard';
+import PRStatisticsCard from '../charts/pull-requests/PRStatisticsCard';
 import {
   AvgCommentsData,
   AvgOpenByData,
@@ -17,7 +17,7 @@ import {
   OpenThroughTimeResponseItem,
   SummaryData,
   ThemeData,
-} from './pull-requests/types';
+} from '../charts/pull-requests/types';
 
 type ResultWrapper<T> = {
   result: T;

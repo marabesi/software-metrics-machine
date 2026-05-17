@@ -1,9 +1,9 @@
 import { pipelineAPI } from '@/lib/api';
 import { DashboardFilters } from '@/components/filters/DashboardFilters';
 import { buildPipelineApiParams } from '@/lib/utils/apiParams';
-import PipelineRunsDurationCard from './pipeline/PipelineRunsDurationCard';
-import JobsAverageTimeCard from './pipeline/JobsAverageTimeCard';
-import JobsByStatusCard from './pipeline/JobsByStatusCard';
+import PipelineRunsDurationCard from '../charts/pipeline/PipelineRunsDurationCard';
+import JobsAverageTimeCard from '../charts/pipeline/JobsAverageTimeCard';
+import JobsByStatusCard from '../charts/pipeline/JobsByStatusCard';
 import {
   JobsAverageTimeData,
   JobsAverageTimeResponseItem,
@@ -11,7 +11,7 @@ import {
   JobByStatusResponseItem,
   RunsDurationData,
   RunsDurationResponseItem,
-} from './pipeline/types';
+} from '../charts/pipeline/types';
 
 type ResultWrapper<T> = {
   result: T;

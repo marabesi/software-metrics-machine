@@ -2,18 +2,18 @@ import { sourceCodeAPI } from '@/lib/api';
 import { DashboardFilters } from '@/components/filters/DashboardFilters';
 import { buildSourceCodeApiParams } from '@/lib/utils/apiParams';
 import { ensureArray } from '@/lib/utils/chartData';
-import EntityChurnCard from './source-code/EntityChurnCard';
-import EntityEffortCard from './source-code/EntityEffortCard';
-import CodeChurnOverTimeCard from './source-code/CodeChurnOverTimeCard';
-import EntityOwnershipCard from './source-code/EntityOwnershipCard';
-import CodeCouplingCard from './source-code/CodeCouplingCard';
+import EntityChurnCard from '../charts/source-code/EntityChurnCard';
+import EntityEffortCard from '../charts/source-code/EntityEffortCard';
+import CodeChurnOverTimeCard from '../charts/source-code/CodeChurnOverTimeCard';
+import EntityOwnershipCard from '../charts/source-code/EntityOwnershipCard';
+import CodeCouplingCard from '../charts/source-code/CodeCouplingCard';
 import {
   CodeChurnData,
   CouplingData,
   EntityChurnData,
   EntityEffortData,
   EntityOwnershipData,
-} from './source-code/types';
+} from '../charts/source-code/types';
 
 type ResultWrapper<T> = {
   result: T;
