@@ -4,6 +4,7 @@ on:
   workflow_dispatch:
 
 env:
+  NODE_VERSION: 25.2.1
   NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
   PNPM_VERSION: 10.0.0
 
