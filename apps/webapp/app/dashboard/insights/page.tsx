@@ -2,8 +2,8 @@ import Card from '@mui/material/Card';
 import { DashboardFilters, defaultFilters, parseDashboardFilters } from "@/components/filters/DashboardFilters";
 import { CardContent, CardHeader } from '@mui/material';
 import { sourceCodeAPI, pipelineAPI, pullRequestAPI, ApiParams } from '@/lib/api';
-import { ResultWrapper, PairingIndex, PipelineSummary, PullRequestSummary, DeploymentFrequencyPoint, DeploymentFrequencyResponseItem } from '../../app/dashboard/insights/insights-types';
 import { DeploymentFrequency } from '@/components/charts/DeploymentFrequency';
+import { DeploymentFrequencyPoint, DeploymentFrequencyResponseItem, PairingIndex, PipelineSummary, PullRequestSummary, ResultWrapper } from './insights-types';
 
 function unwrapResult<T>(data: T | ResultWrapper<T>): T {
   if (typeof data === 'object' && data !== null && 'result' in data) {
