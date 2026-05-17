@@ -24,11 +24,6 @@ export interface AvgCommentsData {
   avg_comments: number;
 }
 
-export interface ThemeData {
-  theme: string;
-  count: number;
-}
-
 export interface SummaryData {
   total_prs?: number;
   merged_prs?: number;
@@ -37,7 +32,8 @@ export interface SummaryData {
   avg_comments_per_pr?: number;
   unique_authors?: number;
   unique_labels?: number;
-  top_themes?: ThemeData[];
+  top_themes?: string[];
+  labels?: Array<{ label: string; prs: number }>;
 }
 
 export interface OpenThroughTimeResponseItem {

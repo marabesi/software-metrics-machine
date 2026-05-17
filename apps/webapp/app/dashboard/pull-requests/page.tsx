@@ -16,7 +16,6 @@ import {
   OpenThroughTimeData,
   OpenThroughTimeResponseItem,
   SummaryData,
-  ThemeData,
 } from '@/components/charts/pull-requests/types';
 
 type ResultWrapper<T> = {
@@ -43,7 +42,7 @@ export default async function PullRequestsPage({
   let avgOpenBy: AvgOpenByData[] = [];
   let avgComments: AvgCommentsData | null = null;
   let summary: SummaryData | null = null;
-  let topThemes: ThemeData[] = [];
+  let topThemes: string[] = [];
 
   try {
     const apiParams = buildPullRequestApiParams(filters);
@@ -92,9 +91,9 @@ export default async function PullRequestsPage({
     avgComments = unwrapResult(comments as AvgCommentsData | ResultWrapper<AvgCommentsData>);
     const summaryResult = unwrapResult(summaryData as SummaryData | ResultWrapper<SummaryData>);
     summary = summaryResult;
-    // Extract top themes from summary and limit to top 10
-    const themes = summaryResult?.top_themes || [];
-    topThemes = Array.isArray(themes) ? themes.slice(0, 10) : [];
+    topThemes = Array.isArray(summaryResult?.top_themes)
+      ? summaryResult.top_themes.filter((theme): theme is string => typeof theme === 'string').slice(0, 10)
+      : [];
   } catch (error) {
     console.error('Error fetching PR data:', error);
     // Set empty arrays on error

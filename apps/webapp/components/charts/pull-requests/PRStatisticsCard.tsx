@@ -10,6 +10,8 @@ export default function PRStatisticsCard({
   summary: SummaryData | null;
   avgComments: AvgCommentsData | null;
 }) {
+  const labels = summary?.labels || [];
+
   return (
     <Card>
       <CardHeader>
@@ -46,6 +48,26 @@ export default function PRStatisticsCard({
           <div className="p-4 bg-blue-50 rounded-lg">
             <p className="text-sm text-gray-600">Average Comments Per PR (Detailed)</p>
             <p className="text-3xl font-bold text-blue-600">{avgComments?.avg_comments?.toFixed(2) || 0}</p>
+          </div>
+
+          <div className="p-4 bg-slate-50 rounded-lg">
+            <p className="text-sm text-gray-600 mb-2">Labels</p>
+
+            {labels.length === 0 ? (
+              <p className="text-sm text-gray-500">No labels available.</p>
+            ) : (
+              <ul className="space-y-2">
+                {labels.map((item) => (
+                  <li
+                    key={item.label}
+                    className="flex items-center justify-between rounded border bg-white px-3 py-2"
+                  >
+                    <span className="text-sm font-medium text-slate-700">{item.label}</span>
+                    <span className="text-sm text-slate-500">{item.prs} PRs</span>
+                  </li>
+                ))}
+              </ul>
+            )}
           </div>
         </div>
       </CardContent>

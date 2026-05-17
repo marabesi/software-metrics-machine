@@ -42,11 +42,7 @@ export class PullRequestsController {
     const authorsSet = new Set(
       prs.map((pr) => pr.author?.login || '').filter((name) => name.length > 0)
     );
-    const labelsSet = new Set(
-      prs.flatMap((pr) =>
-        (pr.labels || []).map((label) => label.name || '').filter((name) => name.length > 0)
-      )
-    );
+    const labelSummary = this.extractLabelSummary(prs);
 
     const sorted = [...prs].sort(
       (a, b) => this.toTimestamp(a.createdAt) - this.toTimestamp(b.createdAt)
@@ -60,7 +56,8 @@ export class PullRequestsController {
         open_prs: open,
         avg_comments_per_pr: avgComments,
         unique_authors: authorsSet.size,
-        unique_labels: labelsSet.size,
+        unique_labels: labelSummary.length,
+        labels: labelSummary,
         first_pr: sorted.length > 0 ? sorted[0] : null,
         last_pr: sorted.length > 0 ? sorted[sorted.length - 1] : null,
         top_themes: this.extractTopThemes(prs),
@@ -290,6 +287,27 @@ export class PullRequestsController {
       .sort((a, b) => b[1] - a[1])
       .slice(0, 3)
       .map((entry) => entry[0]);
+  }
+
+  private extractLabelSummary(prs: PRLike[]): Array<{ label: string; prs: number }> {
+    const labelToPrs = new Map<string, number>();
+
+    for (const pr of prs) {
+      // Count each label at most once per PR.
+      const uniqueLabels = new Set(
+        (pr.labels || [])
+          .map((label) => (label.name || '').trim())
+          .filter((name) => name.length > 0)
+      );
+
+      for (const label of uniqueLabels) {
+        labelToPrs.set(label, (labelToPrs.get(label) || 0) + 1);
+      }
+    }
+
+    return Array.from(labelToPrs.entries())
+      .map(([label, count]) => ({ label, prs: count }))
+      .sort((a, b) => b.prs - a.prs || a.label.localeCompare(b.label));
   }
 
   private async loadPRsWithFilters(filters: {

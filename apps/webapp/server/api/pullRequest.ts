@@ -10,6 +10,8 @@ export const pullRequestAPI = {
       open: number;
       first_pr: string | null;
       last_pr: string | null;
+      top_themes: string[];
+      labels: Array<{ label: string; prs: number }>;
     }>('/pull-requests/summary', params),
   
   byAuthor: (params?: ApiParams) =>
