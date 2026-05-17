@@ -2,20 +2,10 @@ import { Controller, Get, Query, HttpException, HttpStatus, Logger } from '@nest
 import { ApiTags, ApiOperation, ApiQuery, ApiResponse, ApiOkResponse } from '@nestjs/swagger';
 import { MetricsOrchestrator } from '@smmachine/core';
 import {
-  PRMetricsQueryDto,
-  DeploymentMetricsQueryDto,
-  CodeMetricsQueryDto,
   IssueMetricsQueryDto,
   QualityMetricsQueryDto,
-  FullReportQueryDto,
 } from './dtos/index';
 import {
-  PullRequestMetricsResponse,
-  DeploymentMetricsResponse,
-  CodeMetricsResponse,
-  IssueMetricsResponse,
-  QualityMetricsResponse,
-  FullReportResponse,
   ErrorResponse,
 } from './dtos/response.dto';
 

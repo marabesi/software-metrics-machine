@@ -83,28 +83,24 @@ export class CodeController {
 
     const filtered = coupling
       .filter(
-        (row: { file1: string; file2: string; couplingStrength: number }) =>
-          !this.matchesIgnore(row.file1, ignorePatterns) &&
-          !this.matchesIgnore(row.file2, ignorePatterns) &&
+        (row: { entity: string; coupled: string; degree: number; averageRevs: number }) =>
+          !this.matchesIgnore(row.entity, ignorePatterns) &&
+          !this.matchesIgnore(row.coupled, ignorePatterns) &&
           (
-            this.matchesIncludeOnly(row.file1, includePatterns) ||
-            this.matchesIncludeOnly(row.file2, includePatterns) ||
+            this.matchesIncludeOnly(row.entity, includePatterns) ||
+            this.matchesIncludeOnly(row.coupled, includePatterns) ||
             includePatterns.length === 0
           )
       )
       .sort(
-        (a: { couplingStrength: number }, b: { couplingStrength: number }) =>
-          b.couplingStrength - a.couplingStrength
+        (a: { degree: number }, b: { degree: number }) =>
+          b.degree - a.degree
       );
 
     const maxRows = top ? Number(top) : 20;
     return filtered
       .slice(0, Number.isFinite(maxRows) ? maxRows : 20)
-      .map((row: { file1: string; file2: string; couplingStrength: number }) => ({
-        entity: row.file1,
-        coupled: row.file2,
-        degree: row.couplingStrength,
-      }));
+      .map((row: { entity: string; coupled: string; degree: number; averageRevs: number }) => row);
   }
 
   @Get('/code/entity-churn')

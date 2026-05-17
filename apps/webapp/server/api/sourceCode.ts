@@ -20,7 +20,7 @@ export const sourceCodeAPI = {
     ),
   
   coupling: (params?: ApiParams) =>
-    fetchAPI<Array<{ entity: string; coupled: string; degree: number }>>(
+    fetchAPI<Array<{ entity: string; coupled: string; degree: number; averageRevs: number }>>(
       '/code/coupling',
       params
     ),

@@ -40,7 +40,7 @@ export default async function SourceCodePage({
 
   try {
     const apiParams = buildSourceCodeApiParams(filters);
-    const [churn, coup, effort, churnOverTime, ownership] = await Promise.all([
+    const [churn, couplingData, effort, churnOverTime, ownership] = await Promise.all([
       sourceCodeAPI.entityChurn(apiParams),
       sourceCodeAPI.coupling(apiParams),
       sourceCodeAPI.entityEffort(apiParams),
@@ -49,7 +49,7 @@ export default async function SourceCodePage({
     ]);
     // Handle both direct array responses and wrapped responses
     entityChurn = ensureArray<EntityChurnData>(unwrapResult(churn as EntityChurnData[] | ResultWrapper<EntityChurnData[]>));
-    coupling = ensureArray<CouplingData>(unwrapResult(coup as CouplingData[] | ResultWrapper<CouplingData[]>));
+    coupling = ensureArray<CouplingData>(unwrapResult(couplingData as CouplingData[] | ResultWrapper<CouplingData[]>));
     entityEffort = ensureArray<EntityEffortData>(unwrapResult(effort as EntityEffortData[] | ResultWrapper<EntityEffortData[]>));
     codeChurn = ensureArray<CodeChurnData>(unwrapResult(churnOverTime as CodeChurnData[] | ResultWrapper<CodeChurnData[]>));
     entityOwnership = ensureArray<EntityOwnershipData>(unwrapResult(ownership as EntityOwnershipData[] | ResultWrapper<EntityOwnershipData[]>));

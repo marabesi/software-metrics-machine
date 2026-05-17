@@ -164,6 +164,30 @@ src/api.ts,src/utils.ts,78`;
 
       expect(result.length).toBe(2);
     });
+
+    it('should parse Code Maat coupling format (entity,coupled,degree)', async () => {
+      const csvContent = `entity,coupled,degree,average-revs
+src/index.ts,src/utils.ts,45,2
+src/api.ts,src/utils.ts,78,5`;
+
+      fs.writeFileSync(path.join(tempDir, 'coupling.csv'), csvContent);
+
+      const result = await analyzer.getFileCoupling();
+
+      expect(result.length).toBe(2);
+      expect(result[0]).toEqual({
+        entity: 'src/index.ts',
+        coupled: 'src/utils.ts',
+        degree: 45,
+        averageRevs: 2,
+      });
+      expect(result[1]).toEqual({
+        entity: 'src/api.ts',
+        coupled: 'src/utils.ts',
+        degree: 78,
+        averageRevs: 5,
+      });
+    });
   });
 
   describe('Full Analysis', () => {

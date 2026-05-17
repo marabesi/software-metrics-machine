@@ -9,6 +9,7 @@ export interface CouplingData {
   entity: string;
   coupled: string;
   degree: number;
+  averageRevs: number;
 }
 
 export interface EntityEffortData {

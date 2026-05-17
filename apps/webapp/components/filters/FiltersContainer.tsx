@@ -186,7 +186,7 @@ export default function FiltersContainer() {
               label="Ignore Pattern Files"
               value={filters.ignorePatternFiles}
               onChange={(value) => updateFilter('ignorePatternFiles', value)}
-              placeholder="e.g., *.test.ts, node_modules/*"
+              placeholder="e.g., *.test.ts, node_modules/*, *.json"
             />
             <TextInputFilter
               label="Include Pattern Files"

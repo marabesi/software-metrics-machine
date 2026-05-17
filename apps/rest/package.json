@@ -17,8 +17,6 @@
     "@nestjs/core": "catalog:",
     "@nestjs/platform-express": "catalog:",
     "@nestjs/swagger": "catalog:",
-    "@smmachine/core": "workspace:*",
-    "@smmachine/utils": "workspace:*",
     "class-transformer": "catalog:",
     "class-validator": "catalog:",
     "reflect-metadata": "catalog:",
@@ -26,6 +24,8 @@
     "swagger-ui-express": "catalog:"
   },
   "devDependencies": {
+    "@smmachine/core": "workspace:*",
+    "@smmachine/utils": "workspace:*",
     "@nestjs/testing": "catalog:",
     "@types/express": "catalog:",
     "@types/jest": "^29.5.2",

@@ -35,23 +35,6 @@ export interface DeploymentMetricsResponse {
   filters?: Record<string, any>;
 }
 
-export interface CodeMetricsResponse {
-  pairingIndex: {
-    pairingIndexPercentage: number;
-  };
-  codeChurn?: {
-    data: {
-      additions: number;
-      deletions: number;
-    };
-  };
-  fileCoupling: Array<{
-    file1: string;
-    file2: string;
-    couplingStrength: number;
-  }>;
-  filters?: Record<string, any>;
-}
 
 export interface IssueMetricsResponse {
   totalIssues: number;
@@ -67,22 +50,6 @@ export interface IssueMetricsResponse {
 export interface QualityMetricsResponse {
   [metric: string]: number | string | Record<string, any> | undefined;
   filters?: Record<string, any>;
-}
-
-export interface FullReportResponse {
-  timestamp: string;
-  pullRequests: PullRequestMetricsResponse;
-  deployment: DeploymentMetricsResponse;
-  code: CodeMetricsResponse;
-  issues: IssueMetricsResponse;
-  quality: QualityMetricsResponse;
-  filters: {
-    startDate?: string;
-    endDate?: string;
-    selectedAuthors?: string[];
-    status?: string;
-    [key: string]: any;
-  };
 }
 
 export class ErrorResponse {

@@ -17,6 +17,7 @@ export default function CodeCouplingCard({ data }: { data: CouplingData[] }) {
                 <th className="text-left p-2">Entity</th>
                 <th className="text-left p-2">Coupled With</th>
                 <th className="text-right p-2">Degree</th>
+                <th className="text-right p-2">Avg. Revs</th>
               </tr>
             </thead>
             <tbody>
@@ -26,6 +27,9 @@ export default function CodeCouplingCard({ data }: { data: CouplingData[] }) {
                   <td className="p-2 font-mono text-xs">{item.coupled}</td>
                   <td className="p-2 text-right">
                     <span className="px-2 py-1 rounded bg-blue-100 text-blue-800">{item.degree}</span>
+                  </td>
+                  <td className="p-2 text-right">
+                    <span className="px-2 py-1 rounded bg-green-100 text-green-800">{item.averageRevs}</span>
                   </td>
                 </tr>
               ))}

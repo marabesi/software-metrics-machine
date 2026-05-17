@@ -1,12 +1,12 @@
 'use client';
 
-import React from 'react';
 import { TextField } from '@mui/material';
 
 interface TextInputFilterProps {
   label: string;
   value: string;
-  onChange: (value: string) => void;
+  onChange?: (value: string) => void;
+  onBlur?: (value: string) => void;
   placeholder?: string;
   multiline?: boolean;
   disabled?: boolean;
@@ -16,6 +16,7 @@ export default function TextInputFilter({
   label, 
   value, 
   onChange, 
+  onBlur,
   placeholder, 
   multiline = false,
   disabled = false 
@@ -24,7 +25,8 @@ export default function TextInputFilter({
     <TextField
       label={label}
       value={value}
-      onChange={(e) => onChange(e.target.value)}
+      onChange={(e) => onChange && onChange(e.target.value)}
+      onBlur={(e) => onBlur && onBlur(e.target.value)}
       placeholder={placeholder}
       size="small"
       multiline={multiline}

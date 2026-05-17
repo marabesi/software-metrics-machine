@@ -16,9 +16,10 @@ export interface CodeChurnResult {
 }
 
 export interface FileCoupling {
-  file1: string;
-  file2: string;
-  couplingStrength: number;
+  entity: string;
+  coupled: string;
+  degree: number;
+  averageRevs: number;
 }
 
 export interface CodemaatAnalysisResult {
@@ -171,18 +172,27 @@ export class CodemaatAnalyzer implements ICodemaatAnalyzer {
         return [];
       }
 
+      const delimiter = this.detectCsvDelimiter(lines[0]);
+
       // Parse header
-      const header = lines[0].split(',').map((h) => h.trim().replace(/^"|"$/g, ''));
+      const header = this.parseCsvLine(lines[0], delimiter).map((h) => h.trim().replace(/^"|"$/g, ''));
 
       // Find column indices
       const file1Idx = header.findIndex(
-        (h) => h.toLowerCase().includes('file1') || h.toLowerCase().includes('entity1')
+        (h) =>
+          h.toLowerCase() === 'entity'
       );
       const file2Idx = header.findIndex(
-        (h) => h.toLowerCase().includes('file2') || h.toLowerCase().includes('entity2')
+        (h) =>
+          h.toLowerCase() === 'coupled'
       );
       const couplingIdx = header.findIndex(
-        (h) => h.toLowerCase().includes('coupl') || h.toLowerCase().includes('strength')
+        (h) =>
+          h.toLowerCase() === 'degree'
+      );
+
+      const averageRevsIdx = header.findIndex(
+        (h) => h.toLowerCase().includes('average-revs')
       );
 
       if (file1Idx < 0 || file2Idx < 0 || couplingIdx < 0) {
@@ -194,26 +204,32 @@ export class CodemaatAnalyzer implements ICodemaatAnalyzer {
       const coupleData: FileCoupling[] = [];
 
       for (let i = 1; i < lines.length; i++) {
-        const row = lines[i].split(',').map((v) => v.trim().replace(/^"|"$/g, ''));
+        const row = this.parseCsvLine(lines[i], delimiter).map((v) => v.trim().replace(/^"|"$/g, ''));
 
         if (row.length <= Math.max(file1Idx, file2Idx, couplingIdx)) {
           continue; // Skip malformed rows
         }
 
-        const file1 = row[file1Idx];
-        const file2 = row[file2Idx];
-        const couplingStrength = parseInt(row[couplingIdx], 10) || 0;
+        const entity = row[file1Idx];
+        const coupled = row[file2Idx];
+        const degree = parseInt(row[couplingIdx], 10) || 0;
+        const averageRevs = averageRevsIdx >= 0 ? parseInt(row[averageRevsIdx], 10) || 0 : 0;
 
         // Apply ignore patterns if provided
-        if (
-          options?.ignorePatterns &&
-          (this.isIgnoredPath(file1, options.ignorePatterns) ||
-            this.isIgnoredPath(file2, options.ignorePatterns))
-        ) {
-          continue;
-        }
+        // if (
+        //   options?.ignorePatterns &&
+        //   (this.isIgnoredPath(entity, options.ignorePatterns) ||
+        //     this.isIgnoredPath(coupled, options.ignorePatterns))
+        // ) {
+        //   continue;
+        // }
 
-        coupleData.push({ file1, file2, couplingStrength });
+        coupleData.push({
+          entity,
+          coupled,
+          degree,
+          averageRevs,
+        });
       }
 
       this.logger.info(`Parsed ${coupleData.length} file coupling relationships`);
@@ -224,6 +240,45 @@ export class CodemaatAnalyzer implements ICodemaatAnalyzer {
       this.logger.error(`Failed to read file coupling: ${errorMsg}`);
       throw error;
     }
+  }
+
+  private detectCsvDelimiter(headerLine: string): string {
+    const semicolons = (headerLine.match(/;/g) || []).length;
+    const commas = (headerLine.match(/,/g) || []).length;
+    return semicolons > commas ? ';' : ',';
+  }
+
+  private parseCsvLine(line: string, delimiter: string): string[] {
+    const values: string[] = [];
+    let current = '';
+    let inQuotes = false;
+
+    for (let i = 0; i < line.length; i++) {
+      const char = line[i];
+
+      if (char === '"') {
+        // Handle escaped quote
+        if (inQuotes && line[i + 1] === '"') {
+          current += '"';
+          i += 1;
+          continue;
+        }
+
+        inQuotes = !inQuotes;
+        continue;
+      }
+
+      if (!inQuotes && char === delimiter) {
+        values.push(current);
+        current = '';
+        continue;
+      }
+
+      current += char;
+    }
+
+    values.push(current);
+    return values;
   }
 
   async analyze(options?: {
