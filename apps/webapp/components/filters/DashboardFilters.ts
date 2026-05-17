@@ -14,14 +14,14 @@ export interface DashboardFilters {
   // PR filters
   authorSelect: string[];
   labelSelector: string[];
-  aggregateBy: string;
+  aggregateBy?: string;
 
   // Source code filters
   ignorePatternFiles: string;
   includePatternFiles: string;
   authorSelectSourceCode: string[];
   topEntries: number;
-  typeChurn: string;
+  typeChurn?: string;
 
   // Metrics filters
   aggregateMetric: string;
