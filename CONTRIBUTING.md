@@ -94,7 +94,7 @@ Before opening a PR, at minimum run:
 
 ```bash
 pnpm test
-pnpm build
+pnpm run clean:full && pnpm i && pnpm run build
 ```
 
 ## Pull Request Checklist

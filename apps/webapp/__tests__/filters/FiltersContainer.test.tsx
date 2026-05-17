@@ -2,7 +2,7 @@ import React from 'react';
 import { render, screen } from '@testing-library/react';
 import { FiltersProvider } from '@/components/filters/FiltersContext';
 import FiltersContainer from '@/components/filters/FiltersContainer';
-import * as api from '@/lib/api';
+import * as api from '@/server/api';
 
 // Mock next/navigation
 jest.mock('next/navigation', () => ({

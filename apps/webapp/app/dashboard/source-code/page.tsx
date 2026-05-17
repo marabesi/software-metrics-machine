@@ -1,7 +1,7 @@
 import { defaultFilters, parseDashboardFilters } from "@/components/filters/DashboardFilters";
-import { sourceCodeAPI } from '@/lib/api';
-import { buildSourceCodeApiParams } from '@/lib/utils/apiParams';
-import { ensureArray } from '@/lib/utils/chartData';
+import { sourceCodeAPI } from '@/server/api';
+import { buildSourceCodeApiParams } from '@/server/utils/apiParams';
+import { ensureArray } from '@/server/utils/chartData';
 import EntityChurnCard from '@/components/charts/source-code/EntityChurnCard';
 import EntityEffortCard from '@/components/charts/source-code/EntityEffortCard';
 import CodeChurnOverTimeCard from '@/components/charts/source-code/CodeChurnOverTimeCard';

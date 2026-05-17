@@ -2,7 +2,7 @@
 
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
-import { ensureArray } from '@/lib/utils/chartData';
+import { ensureArray } from '@/server/utils/chartData';
 import { AvgReviewTimeData } from './types';
 
 export default function AverageReviewTimeCard({ data }: { data: AvgReviewTimeData[] }) {

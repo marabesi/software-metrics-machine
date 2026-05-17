@@ -1,6 +1,8 @@
+import { getServerEnv } from '@/server/config/server-env';
 import Link from 'next/link';
 
 export default function Home() {
+  const { smmRestBaseUrl: apiBaseUrl } = getServerEnv();
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 to-indigo-100">
       <div className="text-center space-y-8 p-8">
@@ -19,7 +21,7 @@ export default function Home() {
             View Dashboard
           </Link>
           <a
-            href="http://localhost:8000/api/docs"
+            href={`${apiBaseUrl}/api/docs`}
             target="_blank"
             rel="noopener noreferrer"
             className="px-8 py-3 bg-gray-200 text-gray-900 rounded-lg hover:bg-gray-300 transition-colors font-semibold"

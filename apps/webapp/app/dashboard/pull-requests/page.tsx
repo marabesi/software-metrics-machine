@@ -1,7 +1,7 @@
 import { defaultFilters, parseDashboardFilters } from "@/components/filters/DashboardFilters";
-import { pullRequestAPI } from '@/lib/api';
-import { buildPullRequestApiParams } from '@/lib/utils/apiParams';
-import { ensureArray } from '@/lib/utils/chartData';
+import { pullRequestAPI } from '@/server/api';
+import { buildPullRequestApiParams } from '@/server/utils/apiParams';
+import { ensureArray } from '@/server/utils/chartData';
 import PRsByAuthorCard from '@/components/charts/pull-requests/PRsByAuthorCard';
 import AverageReviewTimeCard from '@/components/charts/pull-requests/AverageReviewTimeCard';
 import OpenPRsThroughTimeCard from '@/components/charts/pull-requests/OpenPRsThroughTimeCard';

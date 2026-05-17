@@ -9,7 +9,7 @@ import MultiSelectFilter from "@/components/filters/MultiSelectFilter";
 import TextInputFilter from "@/components/filters/TextInputFilter";
 import SliderFilter from "@/components/filters/SliderFilter";
 import { useEffect, useState } from "react";
-import { pipelineAPI, pullRequestAPI, sourceCodeAPI } from "@/lib/api";
+import { pipelineAPI, pullRequestAPI, sourceCodeAPI } from "@/server/api";
 
 interface WorkflowOption {
   name?: string;

@@ -1,5 +1,5 @@
-import { pipelineAPI } from '@/lib/api';
-import { buildPipelineApiParams } from '@/lib/utils/apiParams';
+import { pipelineAPI } from '@/server/api';
+import { buildPipelineApiParams } from '@/server/utils/apiParams';
 import {
   JobsAverageTimeData,
   JobsAverageTimeResponseItem,

@@ -1,7 +1,7 @@
 'use client';
 
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, ReferenceLine } from 'recharts';
-import { ensureArray } from '@/lib/utils/chartData';
+import { ensureArray } from '@/server/utils/chartData';
 import { DeploymentFrequencyPoint } from '@/app/dashboard/insights/insights-types';
 
 export function DeploymentFrequency({ deploymentFrequency, monthTransitionIndices }: { deploymentFrequency: DeploymentFrequencyPoint[]; monthTransitionIndices: string[] }) {

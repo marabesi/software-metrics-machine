@@ -1,7 +1,7 @@
 import Card from '@mui/material/Card';
 import { DashboardFilters, defaultFilters, parseDashboardFilters } from "@/components/filters/DashboardFilters";
 import { CardContent, CardHeader } from '@mui/material';
-import { sourceCodeAPI, pipelineAPI, pullRequestAPI, ApiParams } from '@/lib/api';
+import { sourceCodeAPI, pipelineAPI, pullRequestAPI, ApiParams } from '@/server/api';
 import { DeploymentFrequency } from '@/components/charts/DeploymentFrequency';
 import { DeploymentFrequencyPoint, DeploymentFrequencyResponseItem, PairingIndex, PipelineSummary, PullRequestSummary, ResultWrapper } from './insights-types';
 

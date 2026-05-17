@@ -2,7 +2,7 @@
 
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
-import { ensureArray } from '@/lib/utils/chartData';
+import { ensureArray } from '@/server/utils/chartData';
 import { CodeChurnData } from './types';
 
 export default function CodeChurnOverTimeCard({ data }: { data: CodeChurnData[] }) {

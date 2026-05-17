@@ -1,4 +1,4 @@
-import { ApiParams } from '@/lib/api';
+import { ApiParams } from '@/server/api';
 
 export interface DashboardFilters {
   startDate: string;
