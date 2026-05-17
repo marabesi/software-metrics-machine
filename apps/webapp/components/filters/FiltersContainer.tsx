@@ -8,8 +8,10 @@ import SelectFilter from "@/components/filters/SelectFilter";
 import MultiSelectFilter from "@/components/filters/MultiSelectFilter";
 import TextInputFilter from "@/components/filters/TextInputFilter";
 import SliderFilter from "@/components/filters/SliderFilter";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { pipelineAPI, pullRequestAPI, sourceCodeAPI } from "@/server/api";
+import { dashboardSectionFromPathname } from './saved-filters-store';
+import SavedFiltersSection from './SavedFiltersSection';
 
 interface WorkflowOption {
   name?: string;
@@ -23,17 +25,7 @@ interface JobOption {
 export default function FiltersContainer() {
   const { filters, updateFilter, resetFilters } = useFilters();
   const pathname = usePathname();
-  
-  // Determine active section from pathname
-  const getActiveSection = () => {
-    if (pathname.includes('/insights')) return 'insights';
-    if (pathname.includes('/pipelines')) return 'pipelines';
-    if (pathname.includes('/pull-requests')) return 'pull-requests';
-    if (pathname.includes('/source-code')) return 'source-code';
-    return 'insights';
-  };
-  
-  const activeSection = getActiveSection();
+  const activeSection = useMemo(() => dashboardSectionFromPathname(pathname), [pathname]);
   const [workflowOptions, setWorkflowOptions] = useState<string[]>([]);
   const [jobOptions, setJobOptions] = useState<string[]>([]);
   const [statusOptions, setStatusOptions] = useState<string[]>([]);
@@ -227,7 +219,8 @@ export default function FiltersContainer() {
       )}
 
       {/* Action Buttons */}
-      <Box sx={{ mt: 2, display: 'flex', gap: 1 }}>
+      <Stack direction="column" spacing={2} sx={{ mt: 2 }}>
+        <Box sx={{ display: 'flex', gap: 1, justifyContent: 'flex-end' }}>
         <Button
           variant="contained"
           size="small"
@@ -235,7 +228,9 @@ export default function FiltersContainer() {
         >
           Reset Filters
         </Button>
-      </Box>
+        </Box>
+        <SavedFiltersSection activeSection={activeSection} pathname={pathname} />
+      </Stack>
     </Paper>
   );
 }

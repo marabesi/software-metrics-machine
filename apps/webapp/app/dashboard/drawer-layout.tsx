@@ -10,6 +10,7 @@ import Typography from '@mui/material/Typography';
 import Divider from '@mui/material/Divider';
 import IconButton from '@mui/material/IconButton';
 import MenuIcon from '@mui/icons-material/Menu';
+import GitHubIcon from '@mui/icons-material/GitHub';
 import ChevronLeftIcon from '@mui/icons-material/ChevronLeft';
 import ChevronRightIcon from '@mui/icons-material/ChevronRight';
 import FiltersContainer from '@/components/filters/FiltersContainer';
@@ -76,8 +77,10 @@ const DrawerHeader = styled('div')(({ theme }) => ({
 }));
 
 export default function DrawerLayout({
+  repository,
   children,
 }: {
+  repository?: string,
   children: React.ReactNode;
 }) {
   const theme = useTheme();
@@ -96,8 +99,20 @@ export default function DrawerLayout({
         <AppBar position="fixed" open={open}>
           <Toolbar>
             <Typography variant="h6" noWrap component="div" sx={{ flexGrow: 1 }}>
-              Dashboard
+              Software Metrics Machine {repository && `- ${repository}`}
             </Typography>
+            <IconButton
+              color="inherit"
+              aria-label="open repository in github"
+              component="a"
+              href="https://github.com/marabesi/software-metrics-machine"
+              target="_blank"
+              rel="noreferrer"
+              edge="end"
+              sx={{ ml: 1 }}
+            >
+              <GitHubIcon />
+            </IconButton>
             <IconButton
               color="inherit"
               aria-label="open drawer"

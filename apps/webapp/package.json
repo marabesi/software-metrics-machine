@@ -31,6 +31,8 @@
     "tailwind-merge": "catalog:"
   },
   "devDependencies": {
+    "@smmachine/core": "workspace:*",
+    "@smmachine/utils": "workspace:*",
     "@tailwindcss/postcss": "catalog:",
     "@testing-library/dom": "catalog:",
     "@testing-library/jest-dom": "catalog:",
