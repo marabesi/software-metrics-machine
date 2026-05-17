@@ -1,7 +1,7 @@
-import { defaultFilters, parseDashboardFilters } from "@/components/filters/DashboardFilters";
-import { pullRequestAPI } from '@/server/api';
-import { buildPullRequestApiParams } from '@/server/utils/apiParams';
-import { ensureArray } from '@/server/utils/chartData';
+import {defaultFilters, parseDashboardFilters} from "@/components/filters/DashboardFilters";
+import {pullRequestAPI} from '@/server/api';
+import {buildPullRequestApiParams} from '@/server/utils/apiParams';
+import {ensureArray} from '@/server/utils/chartData';
 import PRsByAuthorCard from '@/components/charts/pull-requests/PRsByAuthorCard';
 import AverageReviewTimeCard from '@/components/charts/pull-requests/AverageReviewTimeCard';
 import OpenPRsThroughTimeCard from '@/components/charts/pull-requests/OpenPRsThroughTimeCard';
@@ -62,7 +62,7 @@ export default async function PullRequestsPage({
     );
     // Transform data: group by date and pivot kind into opened/closed
     if (openData.length > 0) {
-      const grouped = openData.reduce((acc: OpenThroughTimeData[], item: OpenThroughTimeResponseItem) => {
+      openThroughTime = openData.reduce((acc: OpenThroughTimeData[], item: OpenThroughTimeResponseItem) => {
         const existing = acc.find((d: OpenThroughTimeData) => d.date === item.date);
         if (existing) {
           if (item.kind === 'Opened') {
@@ -79,7 +79,6 @@ export default async function PullRequestsPage({
         }
         return acc;
       }, []);
-      openThroughTime = grouped;
     } else {
       openThroughTime = openData.map((item): OpenThroughTimeData => ({
         date: item.date,
@@ -97,13 +96,6 @@ export default async function PullRequestsPage({
   } catch (error) {
     console.error('Error fetching PR data:', error);
     // Set empty arrays on error
-    byAuthor = [];
-    avgReviewTime = [];
-    openThroughTime = [];
-    avgOpenBy = [];
-    avgComments = null;
-    summary = null;
-    topThemes = [];
   }
 
   return (

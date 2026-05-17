@@ -22,6 +22,12 @@ export interface ISonarqubeMeasuresClient {
     startDate?: string;
     endDate?: string;
   }): Promise<CodeMetric[]>;
+
+  fetchComponentTree(options?: {
+    component?: string;
+    depth?: number;
+    metrics?: string[];
+  }): Promise<SonarqubeComponentMeasure[]>;
 }
 
 /**
@@ -167,6 +173,67 @@ export class SonarqubeMeasuresClient implements ISonarqubeMeasuresClient {
       if (axios.isAxiosError(error)) {
         if (error.response?.status === 401) {
           throw new Error('SonarQube authentication failed. Check token.');
+        } else if (error.code === 'ECONNABORTED') {
+          throw new Error('SonarQube API request timeout (30s).');
+        }
+      }
+
+      throw error;
+    }
+  }
+
+  async fetchComponentTree(options?: {
+    component?: string;
+    depth?: number;
+    metrics?: string[];
+  }): Promise<SonarqubeComponentMeasure[]> {
+    try {
+      const component = options?.component || this.projectKey;
+      const depth = options?.depth ?? -1; // -1 means all depths
+      const metrics = options?.metrics || [
+        'complexity',
+        'cognitive_complexity',
+        'ncloc',
+        'sqale_rating',
+        'coverage',
+      ];
+
+      this.logger.info(
+        `Fetching SonarQube component tree for component ${component} ` +
+          `with depth ${depth}: ${metrics.join(', ')}`
+      );
+
+      const response = await this.axiosInstance.get('/api/measures/component_tree', {
+        params: {
+          component,
+          depth,
+          metricKeys: metrics.join(','),
+          ps: 500, // Max results per page
+        },
+      });
+
+      const { baseComponent, components } = response.data;
+
+      if (!baseComponent) {
+        throw new Error(`Component ${component} not found in SonarQube.`);
+      }
+
+      const allComponents = [baseComponent, ...(components || [])];
+
+      this.logger.info(
+        `Fetched component tree with ${allComponents.length} components for ${component}`
+      );
+
+      return allComponents;
+    } catch (error) {
+      const errorMsg = error instanceof Error ? error.message : String(error);
+      this.logger.error(`Failed to fetch SonarQube component tree: ${errorMsg}`);
+
+      if (axios.isAxiosError(error)) {
+        if (error.response?.status === 401) {
+          throw new Error('SonarQube authentication failed. Check token.');
+        } else if (error.response?.status === 404) {
+          throw new Error(`SonarQube component ${options?.component || this.projectKey} not found.`);
         } else if (error.code === 'ECONNABORTED') {
           throw new Error('SonarQube API request timeout (30s).');
         }

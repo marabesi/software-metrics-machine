@@ -5,6 +5,7 @@ import { CodeController } from './controllers/code.controller';
 import { PipelinesController } from './controllers/pipelines.controller';
 import { PullRequestsController } from './controllers/pull-requests.controller';
 import { ConfigurationController } from './controllers/configuration.controller';
+import { SonarqubeController } from './controllers/sonarqube.controller';
 import { LoggingMiddleware } from './middleware/logging.middleware';
 import {
   MetricsOrchestrator,
@@ -59,6 +60,7 @@ function buildDataDirectories(config: Configuration) {
     PipelinesController,
     PullRequestsController,
     ConfigurationController,
+    SonarqubeController,
   ],
   providers: [
     // Configuration

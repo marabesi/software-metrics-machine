@@ -76,6 +76,37 @@ export class QualityMetricsQueryDto {
 }
 
 /**
+ * SonarQube Component Tree Query DTO
+ */
+export class ComponentTreeQueryDto {
+  @ApiPropertyOptional({
+    type: String,
+    description: 'Component key to fetch tree for',
+  })
+  @IsOptional()
+  @IsString()
+  component?: string;
+
+  @ApiPropertyOptional({
+    type: Number,
+    description: 'Depth of tree traversal (-1 for all depths)',
+    default: -1,
+  })
+  @IsOptional()
+  depth?: number;
+
+  @ApiPropertyOptional({
+    type: [String],
+    description: 'SonarQube metrics to include in component tree',
+    isArray: true,
+  })
+  @IsOptional()
+  @IsArray()
+  @IsString({ each: true })
+  metrics?: string[];
+}
+
+/**
  * Full Report Query DTO
  */
 export class FullReportQueryDto extends BaseQueryDto {
