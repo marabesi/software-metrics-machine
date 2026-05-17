@@ -19,7 +19,7 @@ export default function Home() {
             View Dashboard
           </Link>
           <a
-            href="http://localhost:8000/docs"
+            href="http://localhost:8000/api/docs"
             target="_blank"
             rel="noopener noreferrer"
             className="px-8 py-3 bg-gray-200 text-gray-900 rounded-lg hover:bg-gray-300 transition-colors font-semibold"
