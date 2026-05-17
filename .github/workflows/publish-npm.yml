@@ -4,9 +4,7 @@ on:
   workflow_dispatch:
 
 env:
-  NODE_VERSION: 25.2.1
   NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
-  PNPM_VERSION: 10.0.0
 
 jobs:
   publish:
@@ -17,6 +15,7 @@ jobs:
 
     steps:
     - uses: actions/checkout@v6
+
     - name: Set Environment Variables
       uses: tw3lveparsecs/github-actions-setvars@v0.1
       with:
