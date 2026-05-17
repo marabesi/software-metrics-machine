@@ -1,9 +1,9 @@
 [![CI](https://github.com/marabesi/software-metrics-machine/actions/workflows/ci.yml/badge.svg)](https://github.com/marabesi/software-metrics-machine/actions/workflows/ci.yml)
 [![Coverage Status](https://coveralls.io/repos/github/marabesi/software-metrics-machine/badge.svg?branch=main)](https://coveralls.io/github/marabesi/software-metrics-machine?branch=main)
-[![Docs](https://github.com/marabesi/software-metrics-machine/actions/workflows/static.yml/badge.svg)](https://github.com/marabesi/software-metrics-machine/actions/workflows/static.yml)
+[![Docs](https://github.com/marabesi/software-metrics-machine/actions/workflows/docs.yml/badge.svg)](https://github.com/marabesi/software-metrics-machine/actions/workflows/docs.yml)
 [![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=marabesi_software-metrics-machine&metric=alert_status)](https://sonarcloud.io/summary/new_code?id=marabesi_software-metrics-machine)
-[![PyPI version](https://badge.fury.io/py/software-metrics-machine.svg)](https://badge.fury.io/py/software-metrics-machine)
-![PyPI - Downloads](https://img.shields.io/pypi/dm/software-metrics-machine)
+![NPM Downloads](https://img.shields.io/npm/dw/%40smmachine%2Flauncher)
+![NPM Version](https://img.shields.io/npm/v/%40smmachine%2Flauncher)
 
 # Software Metrics Machine
 
@@ -56,7 +56,28 @@ npm install -g @smmachine/launcher
 ```
 
 ```sh
-smm 
+smm
+```
+
+```sh
+Usage: smm [options] [command]
+
+Software Metrics Machine - High-performing team metrics
+
+Options:
+  -V, --version  output the version number
+  --debug        Enable debug logging
+  -h, --help     display help for command
+
+Commands:
+  prs            Pull request operations
+  pipelines      Pipeline/workflow operations
+  code           Code analysis operations
+  jira           Jira integration operations
+  sonarqube      SonarQube integration operations
+  dashboard      Dashboard operations
+  tools          Utility tools
+  help           Show help information
 ```
 
 The official documentation is hosted at [github pages](https://marabesi.github.io/software-metrics-machine/getting-started.html).
