@@ -14,27 +14,30 @@ jobs:
       id-token: write
 
     steps:
-    - uses: actions/checkout@v6
+      - name: Checkout
+        uses: actions/checkout@v6
 
-    - name: Set Environment Variables
-      uses: tw3lveparsecs/github-actions-setvars@v0.1
-      with:
-        envFilePath: ./envvars.for.actions
+      - name: Set Environment Variables
+        uses: tw3lveparsecs/github-actions-setvars@v0.1
+        with:
+          envFilePath: ./envvars.for.actions
 
-    - name: Use Node.js
-      uses: actions/setup-node@v6
-      with:
-        node-version: ${{ env.NODE_VERSION }}
-        registry-url: 'https://registry.npmjs.org'
-        cache: pnpm
+      - name: Set up pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: ${{ env.PNPM_VERSION }}
 
-    - name: Set up pnpm
-      uses: pnpm/action-setup@v4
-      with:
-        version: ${{ env.PNPM_VERSION }}
+      - name: Set up Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: pnpm
 
-    - name: Publish to npm
-      run: |
-        pnpm install --frozen-lockfile
-        pnpm publish --access public --no-git-checks
+      - name: Set env variables
+        run: cp apps/webapp/.env.local.example apps/webapp/.env
+
+      - name: Publish to npm
+        run: |
+          pnpm install --frozen-lockfile
+          pnpm publish --access public --no-git-checks
     
