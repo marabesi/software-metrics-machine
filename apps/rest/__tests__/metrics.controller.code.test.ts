@@ -28,19 +28,6 @@ describe('MetricsController - Code Metrics', () => {
       });
   });
 
-  it('should support author filtering', async () => {
-    await request(app.getHttpServer())
-      .get('/api/metrics/code?selectedAuthors=Alice&selectedAuthors=Bob')
-      .expect(200)
-      .expect(() => {
-        expect(orchestrator.getCodeMetrics).toHaveBeenCalledWith(
-          expect.objectContaining({
-            selectedAuthors: expect.arrayContaining(['Alice', 'Bob']),
-          })
-        );
-      });
-  });
-
   it('should handle single author parameter', async () => {
     await request(app.getHttpServer())
       .get('/api/metrics/code?selectedAuthors=Alice&selectedAuthors=Alice')

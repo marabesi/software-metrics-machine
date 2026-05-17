@@ -7,10 +7,47 @@ Accept: application/json
 
 ## Code
 
+### fetch authors
+
+GET {{url}}/code/authors
+Accept: application/json
+
 ### fetch code churn
 
 GET {{url}}/code/code-churn?start_date={{start_date}}&end_date={{end_date}}
 Accept: application/json
+
+### fetch coupling
+
+GET {{url}}/code/coupling
+Accept: application/json
+
+### fetch entity churn
+
+GET {{url}}/code/entity-churn
+Accept: application/json
+
+
+### fetch entity effort
+
+GET {{url}}/code/entity-effort
+Accept: application/json
+
+
+### fetch entity ownership
+
+GET {{url}}/code/entity-ownership
+Accept: application/json
+
+
+### fetch pairing index
+
+GET {{url}}/code/pairing-index
+Accept: application/json
+
+
+
+
 
 ## Pipelines
 

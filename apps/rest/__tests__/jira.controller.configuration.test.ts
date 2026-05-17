@@ -3,7 +3,7 @@ import request from 'supertest';
 import { afterAll, beforeAll, describe, expect, it, vi } from 'vitest';
 import { createMetricsTestApp, MockedMetricsOrchestrator } from './helpers/metrics-test-app';
 
-describe('MetricsController - Configuration and Cross-Cutting Behavior', () => {
+describe('Jira', () => {
   let app: INestApplication;
   let orchestrator: MockedMetricsOrchestrator;
 
@@ -17,18 +17,26 @@ describe('MetricsController - Configuration and Cross-Cutting Behavior', () => {
     await app.close();
   });
 
-  it('should return complete metrics report', async () => {
+  it('should return issue metrics', async () => {
     await request(app.getHttpServer())
-      .get('/configuration')
+      .get('/api/metrics/issues')
       .expect(200)
       .expect((res) => {
-        expect(res.body).toHaveProperty('timestamp');
-        expect(res.body).toHaveProperty('pullRequests');
-        expect(res.body).toHaveProperty('deployment');
-        expect(res.body).toHaveProperty('code');
-        expect(res.body).toHaveProperty('issues');
-        expect(res.body).toHaveProperty('quality');
-        expect(res.body).toHaveProperty('filters');
+        expect(res.body).toHaveProperty('totalIssues');
+        expect(res.body.totalIssues).toBe(320);
+      });
+  });
+
+  it('should support issue status filtering', async () => {
+    await request(app.getHttpServer())
+      .get('/api/metrics/issues?status=Done')
+      .expect(200)
+      .expect(() => {
+        expect(orchestrator.getIssueMetrics).toHaveBeenCalledWith(
+          expect.objectContaining({
+            status: 'Done',
+          })
+        );
       });
   });
 });

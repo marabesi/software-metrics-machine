@@ -84,9 +84,13 @@ export class CodeController {
     const filtered = coupling
       .filter(
         (row: { file1: string; file2: string; couplingStrength: number }) =>
-          this.matchesIncludeOnly(row.file1, includePatterns) ||
-          this.matchesIncludeOnly(row.file2, includePatterns) ||
-          includePatterns.length === 0
+          !this.matchesIgnore(row.file1, ignorePatterns) &&
+          !this.matchesIgnore(row.file2, ignorePatterns) &&
+          (
+            this.matchesIncludeOnly(row.file1, includePatterns) ||
+            this.matchesIncludeOnly(row.file2, includePatterns) ||
+            includePatterns.length === 0
+          )
       )
       .sort(
         (a: { couplingStrength: number }, b: { couplingStrength: number }) =>
@@ -208,16 +212,69 @@ export class CodeController {
     if (includePatterns.length === 0) {
       return true;
     }
-    const normalized = entity.toLowerCase();
-    return includePatterns.some((pattern) => normalized.includes(pattern.toLowerCase()));
+
+    return includePatterns.some((pattern) => this.matchesPattern(entity, pattern));
   }
 
   private matchesIgnore(entity: string, ignorePatterns: string[]): boolean {
     if (ignorePatterns.length === 0) {
       return false;
     }
-    const normalized = entity.toLowerCase();
-    return ignorePatterns.some((pattern) => normalized.includes(pattern.toLowerCase()));
+
+    return ignorePatterns.some((pattern) => this.matchesPattern(entity, pattern));
+  }
+
+  private matchesPattern(entity: string, pattern: string): boolean {
+    const normalizedEntity = entity.toLowerCase().replace(/\\/g, '/');
+    const normalizedPattern = pattern.toLowerCase();
+
+    if (!this.containsGlobToken(normalizedPattern)) {
+      return normalizedEntity.includes(normalizedPattern);
+    }
+
+    const regex = this.globToRegExp(normalizedPattern);
+
+    // If the pattern doesn't include path separators, apply it to filename only.
+    if (!normalizedPattern.includes('/')) {
+      const basename = path.posix.basename(normalizedEntity);
+      return regex.test(basename);
+    }
+
+    return regex.test(normalizedEntity);
+  }
+
+  private containsGlobToken(value: string): boolean {
+    return /[*?[\]]/.test(value);
+  }
+
+  private globToRegExp(globPattern: string): RegExp {
+    let regexPattern = '^';
+
+    for (let index = 0; index < globPattern.length; index += 1) {
+      const current = globPattern[index];
+      const next = globPattern[index + 1];
+
+      if (current === '*' && next === '*') {
+        regexPattern += '.*';
+        index += 1;
+        continue;
+      }
+
+      if (current === '*') {
+        regexPattern += '[^/]*';
+        continue;
+      }
+
+      if (current === '?') {
+        regexPattern += '[^/]';
+        continue;
+      }
+
+      regexPattern += current.replace(/[|\\{}()[\]^$+?.]/g, '\\$&');
+    }
+
+    regexPattern += '$';
+    return new RegExp(regexPattern);
   }
 
   private async readCsvRecords(fileName: string): Promise<GenericRecord[]> {
