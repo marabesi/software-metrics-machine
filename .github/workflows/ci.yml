@@ -29,6 +29,9 @@ jobs:
           node-version: ${{ env.NODE_VERSION }}
           cache: pnpm
 
+      - name: Set env variables
+        run: cp apps/webapp/.env.local.example apps/webapp/.env
+
       - name: Install dependencies
         run: pnpm install
 
