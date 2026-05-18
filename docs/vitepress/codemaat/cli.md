@@ -8,7 +8,7 @@ This document provides a guide for developers to run Codemaat-related analyses u
 ### Fetch Historical Data from Git Repository
 
 ```bash
-smm code fetch
+smm code codemaat-fetch
 ```
 
 Fetches historical data from a git repository using Codemaat for analysis.
