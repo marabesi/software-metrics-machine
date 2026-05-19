@@ -25,7 +25,11 @@ The way this project works goes through three main steps:
 ### Via npm
 
 ```bash
-npm install -g @smmachine/cli
+npx @smmachine/launcher
+
+or
+
+npm i -g @smmachine/launcher
 ```
 
 Once installed, you can run the `smm` command in your terminal:
