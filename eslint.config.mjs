@@ -17,6 +17,7 @@ export default [
   },
   {
     files: ['**/src/**/*.ts'],
+    ignores: ['**/*.d.ts'],
     languageOptions: {
       parser: tsParser,
       parserOptions: {

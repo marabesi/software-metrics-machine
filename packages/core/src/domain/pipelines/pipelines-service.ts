@@ -1,5 +1,5 @@
-import {Logger, logger} from '@smmachine/utils';
-import {IRepository} from '../../infrastructure';
+import { Logger, logger } from '@smmachine/utils';
+import { IRepository } from '../../infrastructure';
 import {
   DeploymentFrequencyByInterval,
   JobMetrics,
@@ -25,8 +25,10 @@ export interface IPipelinesService {
 export class PipelinesService implements IPipelinesService {
   private logger: Logger = logger;
 
-  constructor(private pipelineRepository: IRepository<PipelineRun>, private pipelineJobRepository: IRepository<PipelineJob>) {
-  }
+  constructor(
+    private pipelineRepository: IRepository<PipelineRun>,
+    private pipelineJobRepository: IRepository<PipelineJob>
+  ) {}
 
   /**
    * Get overall pipeline metrics for the given filters.
@@ -130,7 +132,11 @@ export class PipelinesService implements IPipelinesService {
             successCount: 0,
             failureCount: 0,
             successRate: 0,
-            actionRequiredCount: 0, cancelledCount: 0, skippedCount: 0, timedOutCount: 0, unknownCount: 0,
+            actionRequiredCount: 0,
+            cancelledCount: 0,
+            skippedCount: 0,
+            timedOutCount: 0,
+            unknownCount: 0,
           });
         }
 

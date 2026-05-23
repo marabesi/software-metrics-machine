@@ -150,11 +150,9 @@ export class Configuration implements IConfiguration {
     this.gitlabToken = configData.gitlab_token;
     this.githubRepository = configData.github_repository;
     this.storeData = envObj.SMM_STORE_DATA_AT; // Keep as the path to the config file
-    this.gitRepositoryLocation =
-      configData.git_repository_location;
-    this.deploymentFrequencyTargetPipeline = configData.deployment_frequency_target_pipeline
-    this.deploymentFrequencyTargetJob =
-      configData.deployment_frequency_target_job;
+    this.gitRepositoryLocation = configData.git_repository_location;
+    this.deploymentFrequencyTargetPipeline = configData.deployment_frequency_target_pipeline;
+    this.deploymentFrequencyTargetJob = configData.deployment_frequency_target_job;
     this.mainBranch = configData.main_branch;
     this.dashboardStartDate = configData.dashboard_start_date;
     this.dashboardEndDate = configData.dashboard_end_date;
@@ -164,7 +162,7 @@ export class Configuration implements IConfiguration {
     if (configData.log_level) {
       logLevel = configData.log_level;
     }
-    if(envObj.LOGGING_LEVEL) {
+    if (envObj.LOGGING_LEVEL) {
       logLevel = envObj.LOGGING_LEVEL;
     }
     this.loggingLevel = logLevel as IConfiguration['loggingLevel'];

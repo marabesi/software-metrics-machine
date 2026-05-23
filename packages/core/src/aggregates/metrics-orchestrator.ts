@@ -3,7 +3,7 @@ import { PullRequestsRepository } from './pull-requests-repository';
 import { CodeMetricsRepository } from './code-metrics-repository';
 import { IssuesRepository } from './issues-repository';
 import { SonarqubeMetricsRepository } from './sonarqube-metrics-repository';
-import {PipelinesService} from "../domain";
+import { PipelinesService } from '../domain';
 
 export interface IMetricsOrchestrator {
   getPRMetrics(filters?: any): Promise<any>;

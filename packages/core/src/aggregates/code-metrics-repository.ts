@@ -1,7 +1,7 @@
 import { logger } from '@smmachine/utils';
-import {Commit, PairingIndexResult} from '../domain-types';
+import { Commit, PairingIndexResult } from '../domain-types';
 import { type ICommitTraverser } from '../providers/git';
-import {CodeChurnResult, FileCoupling, type ICodemaatAnalyzer} from '../providers/codemaat';
+import { CodeChurnResult, FileCoupling, type ICodemaatAnalyzer } from '../providers/codemaat';
 import { PairingIndexService } from '../domain/code/pairing-index';
 import { FileSystemRepository } from '../infrastructure/repository';
 

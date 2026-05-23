@@ -42,11 +42,12 @@ describe('PipelinesRepository pagination resume', () => {
     const githubWorkflowClient: IGithubWorkflowClient = {
       fetchJobsForWorkflows(workflowIds: string[]): Promise<any[]> {
         return Promise.resolve([]);
-      }, fetchWorkflows(options?: { created?: string; rawFilters?: string }): Promise<any[]> {
+      },
+      fetchWorkflows(options?: { created?: string; rawFilters?: string }): Promise<any[]> {
         return Promise.resolve([]);
       },
       fetchWorkflowRunsPage,
-      fetchJobsPage: vi.fn()
+      fetchJobsPage: vi.fn(),
     };
 
     const repository = new PipelinesRepository(githubWorkflowClient, cacheDir);
@@ -105,16 +106,21 @@ describe('PipelinesRepository pagination resume', () => {
       });
 
     const githubWorkflowClient: IGithubWorkflowClient = {
-      fetchWorkflowRunsPage(page: number, perPage?: number, options?: {
-        rawFilters?: string;
-        created?: string
-      }): Promise<{ runs: any[]; hasNext: boolean }> {
-        return Promise.resolve({hasNext: false, runs: []});
-      }, fetchWorkflows(options?: { created?: string; rawFilters?: string }): Promise<any[]> {
+      fetchWorkflowRunsPage(
+        page: number,
+        perPage?: number,
+        options?: {
+          rawFilters?: string;
+          created?: string;
+        }
+      ): Promise<{ runs: any[]; hasNext: boolean }> {
+        return Promise.resolve({ hasNext: false, runs: [] });
+      },
+      fetchWorkflows(options?: { created?: string; rawFilters?: string }): Promise<any[]> {
         return Promise.resolve([]);
       },
       fetchJobsForWorkflows: vi.fn(),
-      fetchJobsPage: vi.fn()
+      fetchJobsPage: vi.fn(),
     };
 
     const repository = new PipelinesRepository(githubWorkflowClient, cacheDir);

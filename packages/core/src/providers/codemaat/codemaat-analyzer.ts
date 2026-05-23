@@ -175,25 +175,16 @@ export class CodemaatAnalyzer implements ICodemaatAnalyzer {
       const delimiter = this.detectCsvDelimiter(lines[0]);
 
       // Parse header
-      const header = this.parseCsvLine(lines[0], delimiter).map((h) => h.trim().replace(/^"|"$/g, ''));
+      const header = this.parseCsvLine(lines[0], delimiter).map((h) =>
+        h.trim().replace(/^"|"$/g, '')
+      );
 
       // Find column indices
-      const file1Idx = header.findIndex(
-        (h) =>
-          h.toLowerCase() === 'entity'
-      );
-      const file2Idx = header.findIndex(
-        (h) =>
-          h.toLowerCase() === 'coupled'
-      );
-      const couplingIdx = header.findIndex(
-        (h) =>
-          h.toLowerCase() === 'degree'
-      );
+      const file1Idx = header.findIndex((h) => h.toLowerCase() === 'entity');
+      const file2Idx = header.findIndex((h) => h.toLowerCase() === 'coupled');
+      const couplingIdx = header.findIndex((h) => h.toLowerCase() === 'degree');
 
-      const averageRevsIdx = header.findIndex(
-        (h) => h.toLowerCase().includes('average-revs')
-      );
+      const averageRevsIdx = header.findIndex((h) => h.toLowerCase().includes('average-revs'));
 
       if (file1Idx < 0 || file2Idx < 0 || couplingIdx < 0) {
         this.logger.warn('Invalid file coupling CSV format. Missing required columns.');
@@ -204,7 +195,9 @@ export class CodemaatAnalyzer implements ICodemaatAnalyzer {
       const coupleData: FileCoupling[] = [];
 
       for (let i = 1; i < lines.length; i++) {
-        const row = this.parseCsvLine(lines[i], delimiter).map((v) => v.trim().replace(/^"|"$/g, ''));
+        const row = this.parseCsvLine(lines[i], delimiter).map((v) =>
+          v.trim().replace(/^"|"$/g, '')
+        );
 
         if (row.length <= Math.max(file1Idx, file2Idx, couplingIdx)) {
           continue; // Skip malformed rows

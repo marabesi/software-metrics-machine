@@ -10,7 +10,7 @@ export interface IGithubWorkflowClient {
   fetchWorkflowRunsPage(
     page: number,
     perPage?: number,
-    options?: { rawFilters?: string, created?: string }
+    options?: { rawFilters?: string; created?: string }
   ): Promise<{ runs: any[]; hasNext: boolean }>;
 
   fetchJobsPage(
@@ -50,7 +50,11 @@ export class GithubWorkflowClient implements IGithubWorkflowClient {
     });
   }
 
-  async fetchWorkflows(options?: { startDate?: string; endDate?: string; rawFilters?: string }): Promise<any[]> {
+  async fetchWorkflows(options?: {
+    startDate?: string;
+    endDate?: string;
+    rawFilters?: string;
+  }): Promise<any[]> {
     const per_page = 100;
     let page = 1;
     const allRuns: any[] = [];
@@ -118,7 +122,9 @@ export class GithubWorkflowClient implements IGithubWorkflowClient {
       // Fetch jobs for each workflow run
       for (const runId of workflowIds) {
         let page = 1;
-        this.logger.info(`Fetching jobs for workflow run ${runId} in ${this.owner}/${this.repo} - page ${page}`);
+        this.logger.info(
+          `Fetching jobs for workflow run ${runId} in ${this.owner}/${this.repo} - page ${page}`
+        );
 
         while (true) {
           const response = await this.fetchJobsPage(runId, page, 100);
@@ -167,21 +173,18 @@ export class GithubWorkflowClient implements IGithubWorkflowClient {
       params: {
         per_page: perPage,
         page,
-        ...(options?.created ? {created: options.created} : {}),
+        ...(options?.created ? { created: options.created } : {}),
         ...this.parseRawFilters(options?.rawFilters),
       },
     };
     const url = `/repos/${this.owner}/${this.repo}/actions/runs`;
 
-    logger.info(`${url} ${JSON.stringify(requestParams.params)}`)
+    logger.info(`${url} ${JSON.stringify(requestParams.params)}`);
 
-    const response = await this.axiosInstance.get(
-      url,
-      requestParams
-    );
+    const response = await this.axiosInstance.get(url, requestParams);
 
     const runs = response.data.workflow_runs || [];
-    logger.info(`Fetched ${runs.length} workflow runs`)
+    logger.info(`Fetched ${runs.length} workflow runs`);
 
     const hasNext = this.hasNextLink(response.headers?.link) || runs.length === perPage;
     return { runs, hasNext };
@@ -200,12 +203,9 @@ export class GithubWorkflowClient implements IGithubWorkflowClient {
       },
     };
 
-    logger.info(`${url} ${JSON.stringify(requestParams.params)}`)
+    logger.info(`${url} ${JSON.stringify(requestParams.params)}`);
 
-    const response = await this.axiosInstance.get(
-      url,
-      requestParams
-    );
+    const response = await this.axiosInstance.get(url, requestParams);
 
     const jobs = response.data.jobs || [];
     const hasNext = this.hasNextLink(response.headers?.link) || jobs.length === perPage;

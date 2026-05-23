@@ -233,7 +233,9 @@ export class SonarqubeMeasuresClient implements ISonarqubeMeasuresClient {
         if (error.response?.status === 401) {
           throw new Error('SonarQube authentication failed. Check token.');
         } else if (error.response?.status === 404) {
-          throw new Error(`SonarQube component ${options?.component || this.projectKey} not found.`);
+          throw new Error(
+            `SonarQube component ${options?.component || this.projectKey} not found.`
+          );
         } else if (error.code === 'ECONNABORTED') {
           throw new Error('SonarQube API request timeout (30s).');
         }
