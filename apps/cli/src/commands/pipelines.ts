@@ -126,11 +126,11 @@ export function createPipelinesCommands(program: Command): void {
           console.log(JSON.stringify(metrics, null, 2));
         } else {
           console.log('\n=== Pipeline Summary ===\n');
-          console.log(`Total Runs: ${metrics.totalDeployments}`);
-          console.log(`Successful Runs: ${metrics.successfulDeployments}`);
-          console.log(`Failed Runs: ${metrics.failedDeployments}`);
+          console.log(`Total Runs: ${metrics.totalRuns}`);
+          console.log(`Successful Runs: ${metrics.successfulRuns}`);
+          console.log(`Failed Runs: ${metrics.failedRuns}`);
           console.log(`Success Rate: ${(metrics.successRate * 100).toFixed(1)}%`);
-          console.log(`Average Duration: ${metrics.averageDuration.toFixed(2)} minutes`);
+          console.log(`Average Duration: ${metrics.averageDurationMinutes.toFixed(2)} minutes`);
         }
       } catch (error) {
         logger.error('Failed to generate pipeline summary', error);
@@ -162,9 +162,9 @@ export function createPipelinesCommands(program: Command): void {
           console.log(
             JSON.stringify(
               {
-                successful: metrics.successfulDeployments,
-                failed: metrics.failedDeployments,
-                total: metrics.totalDeployments,
+                successful: metrics.successfulRuns,
+                failed: metrics.failedRuns,
+                total: metrics.totalRuns,
               },
               null,
               2
@@ -172,9 +172,9 @@ export function createPipelinesCommands(program: Command): void {
           );
         } else {
           console.log('\n=== Pipelines by Status ===\n');
-          console.log(`✅ Successful: ${metrics.successfulDeployments}`);
-          console.log(`❌ Failed: ${metrics.failedDeployments}`);
-          console.log(`📊 Total: ${metrics.totalDeployments}`);
+          console.log(`✅ Successful: ${metrics.successfulRuns}`);
+          console.log(`❌ Failed: ${metrics.failedRuns}`);
+          console.log(`📊 Total: ${metrics.totalRuns}`);
         }
       } catch (error) {
         logger.error('Failed to analyze pipelines by status', error);
@@ -204,14 +204,14 @@ export function createPipelinesCommands(program: Command): void {
         });
 
         if (options.output === 'json') {
-          console.log(JSON.stringify({ averageDuration: metrics.averageDuration }, null, 2));
+          console.log(JSON.stringify({ averageDuration: metrics.averageDurationMinutes }, null, 2));
         } else {
           console.log('\n=== Pipeline Run Durations ===\n');
           if (options.workflow) {
             console.log(`Workflow: ${options.workflow}`);
           }
-          console.log(`Average Duration: ${metrics.averageDuration.toFixed(2)} minutes`);
-          console.log(`Total Runs: ${metrics.totalDeployments}`);
+          console.log(`Average Duration: ${metrics.averageDurationMinutes.toFixed(2)} minutes`);
+          console.log(`Total Runs: ${metrics.totalRuns}`);
         }
       } catch (error) {
         logger.error('Failed to analyze pipeline run durations', error);
@@ -246,8 +246,8 @@ export function createPipelinesCommands(program: Command): void {
         } else {
           console.log('\n=== Pipeline Runs by Period ===\n');
           console.log(`Period: ${options.period}`);
-          console.log(`Total Runs: ${metrics.totalDeployments}`);
-          console.log(`Deployment Frequency: ${metrics.deploymentFrequency} per ${options.period}`);
+          console.log(`Total Runs: ${metrics.totalRuns}`);
+          console.log(`Deployment Frequency: ${metrics.successfulRuns} per ${options.period}`);
         }
       } catch (error) {
         logger.error('Failed to analyze pipeline runs by period', error);
@@ -436,7 +436,7 @@ export function createPipelinesCommands(program: Command): void {
           endDate: options.endDate,
         });
 
-        const leadTime = metrics.leadTime || metrics.averageDuration;
+        const leadTime = metrics.averageDurationMinutes;
 
         if (options.output === 'json') {
           console.log(JSON.stringify({ leadTime }, null, 2));

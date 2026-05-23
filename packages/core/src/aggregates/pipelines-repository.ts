@@ -308,7 +308,6 @@ export class PipelinesRepository implements IPipelinesRepository {
    * Get pipeline metrics
    */
   async getPipelineMetrics(filters?: any): Promise<PipelineMetrics> {
-    await this.refreshPipelines(filters);
     return this.pipelineService.getMetrics(filters);
   }
 
@@ -316,7 +315,6 @@ export class PipelinesRepository implements IPipelinesRepository {
    * Get deployment frequency
    */
   async getDeploymentFrequency(interval: 'day' | 'week' | 'month', filters?: any): Promise<any> {
-    await this.refreshPipelines(filters);
     return this.pipelineService.getDeploymentFrequency(interval, filters);
   }
 
@@ -324,7 +322,6 @@ export class PipelinesRepository implements IPipelinesRepository {
    * Get job metrics
    */
   async getJobMetrics(filters?: any): Promise<any> {
-    await this.refreshPipelines(filters);
     return this.pipelineService.getJobMetrics(filters);
   }
 }

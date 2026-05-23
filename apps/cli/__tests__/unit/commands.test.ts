@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it } from 'vitest';
-import { commands } from '../src';
+import { commands } from '../../src';
 import {
   formatCodeMetrics,
   formatCompleteReport,
@@ -9,7 +9,7 @@ import {
   formatLoading,
   formatQualityMetrics,
   formatSuccess,
-} from '../src/formatters';
+} from '../../src/formatters';
 import { Command } from 'commander';
 
 describe('CLI Commands', () => {

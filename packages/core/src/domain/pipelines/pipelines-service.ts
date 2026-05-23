@@ -1,5 +1,5 @@
 import { Logger, logger } from '@smmachine/utils';
-import { IRepository } from '../../infrastructure/repository';
+import { IRepository } from '../../infrastructure';
 import {
   PipelineRun,
   PipelineJob,
