@@ -21,24 +21,6 @@ function createPipelinesOrchestrator(): PipelinesRepository {
   return pipelinesRepository
 }
 
-/**
- * Pipelines Command Group
- *
- * Provides CLI commands for pipeline/workflow operations matching Python CLI functionality.
- *
- * Commands:
- *   smm pipelines fetch                Fetch pipeline runs from GitHub
- *   smm pipelines fetch-jobs           Fetch pipeline jobs from GitHub
- *   smm pipelines summary              Display pipeline run summary
- *   smm pipelines by-status            View pipelines grouped by status
- *   smm pipelines runs-duration        View pipeline run durations
- *   smm pipelines runs-by              View pipeline runs by time period
- *   smm pipelines jobs-summary         Display pipeline jobs summary
- *   smm pipelines jobs-time-execution  View job execution times
- *   smm pipelines jobs-by-status       View jobs grouped by status
- *   smm pipelines deployment-frequency Calculate deployment frequency
- *   smm pipelines lead-time            Calculate lead time for changes
- */
 export function createPipelinesCommands(program: Command): void {
   const pipelinesGroup = program.command('pipelines').description('Pipeline/workflow operations');
 
@@ -62,6 +44,7 @@ export function createPipelinesCommands(program: Command): void {
           forceRefresh: options.force,
           startDate: options.startDate,
           endDate: options.endDate,
+          rawFilters: options.rawFilters,
         });
 
         console.log('✅ Fetch pipeline data has been completed and stored on disk');

@@ -52,12 +52,15 @@ export class PipelinesRepository implements IPipelinesRepository {
   async refreshPipelines(options?: {
     startDate?: string;
     endDate?: string;
+    rawFilters?: string;
     forceRefresh?: boolean;
     includeJobs?: boolean;
   }): Promise<PipelineRun[]> {
     const fromCache = await this.cache.loadAll();
+    const shouldBypassCache =
+      !!options?.startDate || !!options?.endDate || !!options?.rawFilters;
 
-    if (!options?.forceRefresh && fromCache.length > 0) {
+    if (!options?.forceRefresh && fromCache.length > 0 && !shouldBypassCache) {
       if (options?.includeJobs) {
         const missingJobs = fromCache.filter((run) => !run.jobs || run.jobs.length === 0);
 
@@ -91,6 +94,7 @@ export class PipelinesRepository implements IPipelinesRepository {
     const freshWorkflows = await this.fetchWorkflowsWithResume({
       startDate: options?.startDate,
       endDate: options?.endDate,
+      rawFilters: options?.rawFilters,
     });
 
     let workflows = freshWorkflows as PipelineRun[];
@@ -122,6 +126,7 @@ export class PipelinesRepository implements IPipelinesRepository {
   private async fetchWorkflowsWithResume(options?: {
     startDate?: string;
     endDate?: string;
+    rawFilters?: string;
   }): Promise<PipelineRun[]> {
     const progressPath = this.fileInCache('workflows_progress.json');
     const incompletedPath = this.fileInCache('workflows_incompleted.json');
@@ -136,7 +141,9 @@ export class PipelinesRepository implements IPipelinesRepository {
     while (!stopPagination) {
       try {
         logger.info(`Fetching workflows total of ${perPage} in page ${page} from GitHub...`);
-        const response = await this.githubWorkflowClient.fetchWorkflowRunsPage(page, perPage);
+        const response = await this.githubWorkflowClient.fetchWorkflowRunsPage(page, perPage, {
+          rawFilters: options?.rawFilters,
+        });
         const fetchedRuns = response.runs || [];
 
         if (fetchedRuns.length === 0) {

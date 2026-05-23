@@ -13,11 +13,15 @@ export interface IGithubPrsClient {
 }
 
 export interface IGithubWorkflowClient {
-  fetchWorkflows(options?: { startDate?: string; endDate?: string }): Promise<any[]>;
+  fetchWorkflows(options?: { startDate?: string; endDate?: string; rawFilters?: string }): Promise<any[]>;
 
   fetchJobsForWorkflows(workflowIds: string[]): Promise<any[]>;
 
-  fetchWorkflowRunsPage(page: number, perPage?: number): Promise<{ runs: any[]; hasNext: boolean }>;
+  fetchWorkflowRunsPage(
+    page: number,
+    perPage?: number,
+    options?: { rawFilters?: string }
+  ): Promise<{ runs: any[]; hasNext: boolean }>;
 
   fetchJobsPage(
     runId: string,
@@ -194,7 +198,7 @@ export class GithubWorkflowClient implements IGithubWorkflowClient {
     });
   }
 
-  async fetchWorkflows(options?: { startDate?: string; endDate?: string }): Promise<any[]> {
+  async fetchWorkflows(options?: { startDate?: string; endDate?: string; rawFilters?: string }): Promise<any[]> {
     const per_page = 100;
     let page = 1;
     const allRuns: any[] = [];
@@ -204,7 +208,9 @@ export class GithubWorkflowClient implements IGithubWorkflowClient {
       while (true) {
         this.logger.info(`Fetching workflow runs page ${page} for ${this.owner}/${this.repo}`);
 
-        const response = await this.fetchWorkflowRunsPage(page, per_page);
+        const response = await this.fetchWorkflowRunsPage(page, per_page, {
+          rawFilters: options?.rawFilters,
+        });
         const runs = response.runs;
 
         if (!runs || runs.length === 0) {
@@ -304,7 +310,8 @@ export class GithubWorkflowClient implements IGithubWorkflowClient {
 
   async fetchWorkflowRunsPage(
     page: number,
-    perPage: number = 100
+    perPage: number = 100,
+    options?: { rawFilters?: string }
   ): Promise<{ runs: any[]; hasNext: boolean }> {
     const response = await this.axiosInstance.get(
       `/repos/${this.owner}/${this.repo}/actions/runs`,
@@ -312,6 +319,7 @@ export class GithubWorkflowClient implements IGithubWorkflowClient {
         params: {
           per_page: perPage,
           page,
+          ...this.parseRawFilters(options?.rawFilters),
         },
       }
     );
@@ -346,5 +354,33 @@ export class GithubWorkflowClient implements IGithubWorkflowClient {
       return false;
     }
     return linkHeader.includes('rel="next"');
+  }
+
+  private parseRawFilters(rawFilters?: string): Record<string, string> {
+    if (!rawFilters) {
+      return {};
+    }
+
+    return rawFilters.split(',').reduce<Record<string, string>>((filters, entry) => {
+      const trimmedEntry = entry.trim();
+      if (!trimmedEntry) {
+        return filters;
+      }
+
+      const separatorIndex = trimmedEntry.indexOf('=');
+      if (separatorIndex <= 0) {
+        return filters;
+      }
+
+      const key = trimmedEntry.slice(0, separatorIndex).trim();
+      const value = trimmedEntry.slice(separatorIndex + 1).trim();
+
+      if (!key || !value) {
+        return filters;
+      }
+
+      filters[key] = value;
+      return filters;
+    }, {});
   }
 }

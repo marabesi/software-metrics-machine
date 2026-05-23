@@ -60,4 +60,73 @@ describe('PipelinesRepository pagination resume', () => {
     expect(cachedWorkflows).toHaveLength(1);
     expect(cachedWorkflows[0].id).toBe('run-1');
   });
+
+  it('forwards date and raw filters to the workflow fetch and bypasses cached runs when filters are present', async () => {
+    cacheDir = await fs.mkdtemp(path.join(os.tmpdir(), 'smm-workflows-'));
+
+    const fetchWorkflowRunsPage = vi
+      .fn()
+      .mockResolvedValueOnce({
+        runs: [
+          {
+            id: 'cached-run',
+            created_at: '2026-05-01T00:00:00Z',
+            updated_at: '2026-05-01T00:05:00Z',
+            run_number: 1,
+            html_url: 'https://github.com/example/repo/actions/runs/1',
+            run_started_at: '2026-05-01T00:00:00Z',
+            head_branch: 'main',
+            path: '.github/workflows/ci.yml',
+            status: 'completed',
+            name: 'CI',
+          },
+        ],
+        hasNext: false,
+      })
+      .mockResolvedValueOnce({
+        runs: [
+          {
+            id: 'filtered-run',
+            created_at: '2026-05-10T00:00:00Z',
+            updated_at: '2026-05-10T00:05:00Z',
+            run_number: 2,
+            html_url: 'https://github.com/example/repo/actions/runs/2',
+            run_started_at: '2026-05-10T00:00:00Z',
+            head_branch: 'main',
+            path: '.github/workflows/ci.yml',
+            status: 'completed',
+            name: 'CI',
+          },
+        ],
+        hasNext: false,
+      });
+
+    const githubWorkflowClient: IGithubWorkflowClient = {
+      fetchWorkflowRuns: vi.fn(),
+      fetchWorkflowRunsPage,
+      fetchJobsForWorkflows: vi.fn(),
+      fetchJobsPage: vi.fn(),
+    };
+
+    const repository = new PipelinesRepository(githubWorkflowClient, cacheDir);
+
+    const initialRuns = await repository.refreshPipelines({ forceRefresh: true });
+    expect(initialRuns).toHaveLength(1);
+    expect(initialRuns[0].id).toBe('cached-run');
+
+    fetchWorkflowRunsPage.mockClear();
+
+    const filteredRuns = await repository.refreshPipelines({
+      startDate: '2026-05-05T00:00:00Z',
+      endDate: '2026-05-15T00:00:00Z',
+      rawFilters: 'status=success,branch=main',
+    });
+
+    expect(filteredRuns).toHaveLength(1);
+    expect(filteredRuns[0].id).toBe('filtered-run');
+    expect(fetchWorkflowRunsPage).toHaveBeenCalledTimes(1);
+    expect(fetchWorkflowRunsPage).toHaveBeenCalledWith(1, 100, {
+      rawFilters: 'status=success,branch=main',
+    });
+  });
 });
