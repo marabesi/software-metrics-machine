@@ -5,12 +5,14 @@ import * as fs from 'fs/promises';
 import * as os from 'os';
 import * as path from 'path';
 import {
-  FileSystemRepository,
+  PipelineJobBuilder,
   PipelineJob,
+  PipelinesRunBuilder,
   PipelineRun,
   PipelinesRepository,
   type IGithubWorkflowClient,
 } from '../../src';
+import { InMemoryRepository } from '../../src/test/in-memory-repository';
 
 async function createTempDir(): Promise<string> {
   const tmpdir = path.join(os.tmpdir(), 'unit-test-');
@@ -24,12 +26,8 @@ describe('PipelinesRepository pagination resume', () => {
       getPipelinePath: () => tempDir,
     } as any;
 
-    const pipelineRunRepository = new FileSystemRepository<PipelineRun>(
-      path.join(tempDir, 'workflows.json')
-    );
-    const pipelineJobsRepository = new FileSystemRepository<PipelineJob>(
-      path.join(tempDir, 'jobs.json')
-    );
+    const pipelineRunRepository = new InMemoryRepository<PipelineRun>();
+    const pipelineJobsRepository = new InMemoryRepository<PipelineJob>();
 
     return new PipelinesRepository(
       configuration,
@@ -76,10 +74,22 @@ describe('PipelinesRepository pagination resume', () => {
 
     const repository = await createRepository(githubWorkflowClient);
 
-    const runs = await repository.refreshPipelines({ forceRefresh: true });
+    const runs = await repository.fetchPipelines({ forceRefresh: true });
+    const expectedRun = new PipelinesRunBuilder()
+      .id('run-1')
+      .number(1)
+      .name('CI')
+      .status('completed')
+      .createdAt('2026-05-10T00:00:00Z')
+      .updatedAt('2026-05-10T00:05:00Z')
+      .startedAt('2026-05-10T00:00:00Z')
+      .completedAt('2026-05-10T00:05:00Z')
+      .branch('main')
+      .path('.github/workflows/ci.yml')
+      .build();
 
     expect(runs).toHaveLength(1);
-    expect(runs[0].id).toBe('run-1');
+    expect(runs[0]).toMatchObject(expectedRun);
     expect(fetchWorkflowRunsPage).toHaveBeenCalledTimes(2);
 
     // const cachedWorkflowsRaw = await fs.readFile(path.join(cacheDir, 'workflows.json'), 'utf-8');
@@ -147,20 +157,32 @@ describe('PipelinesRepository pagination resume', () => {
 
     const repository = await createRepository(githubWorkflowClient);
 
-    const initialRuns = await repository.refreshPipelines({ forceRefresh: true });
+    const initialRuns = await repository.fetchPipelines({ forceRefresh: true });
     expect(initialRuns).toHaveLength(1);
     expect(initialRuns[0].id).toBe('cached-run');
 
     fetchWorkflowRunsPage.mockClear();
 
-    const filteredRuns = await repository.refreshPipelines({
+    const filteredRuns = await repository.fetchPipelines({
       startDate: '2026-05-05T00:00:00Z',
       endDate: '2026-05-15T00:00:00Z',
       rawFilters: 'status=success,branch=main',
     });
+    const expectedFilteredRun = new PipelinesRunBuilder()
+      .id('filtered-run')
+      .number(2)
+      .name('CI')
+      .status('completed')
+      .createdAt('2026-05-10T00:00:00Z')
+      .updatedAt('2026-05-10T00:05:00Z')
+      .startedAt('2026-05-10T00:00:00Z')
+      .completedAt('2026-05-10T00:05:00Z')
+      .branch('main')
+      .path('.github/workflows/ci.yml')
+      .build();
 
     expect(filteredRuns).toHaveLength(1);
-    expect(filteredRuns[0].id).toBe('filtered-run');
+    expect(filteredRuns[0]).toMatchObject(expectedFilteredRun);
     expect(fetchWorkflowRunsPage).toHaveBeenCalledTimes(1);
     expect(fetchWorkflowRunsPage).toHaveBeenCalledWith(1, 100, {
       created: '2026-05-05T00:00:00Z..2026-05-15T00:00:00Z',
@@ -214,12 +236,33 @@ describe('PipelinesRepository pagination resume', () => {
 
     const repository = await createRepository(githubWorkflowClient);
 
-    const runs = await repository.refreshPipelines({ forceRefresh: true, includeJobs: true });
+    const runs = await repository.fetchPipelines({ forceRefresh: true, includeJobs: true });
+    const expectedRunWithJobs = new PipelinesRunBuilder()
+      .id('run-with-jobs')
+      .number(3)
+      .name('CI')
+      .status('completed')
+      .createdAt('2026-05-10T00:00:00Z')
+      .updatedAt('2026-05-10T00:05:00Z')
+      .startedAt('2026-05-10T00:00:00Z')
+      .completedAt('2026-05-10T00:05:00Z')
+      .branch('main')
+      .path('.github/workflows/ci.yml')
+      .build();
+    const expectedJob = new PipelineJobBuilder()
+      .id('job-1')
+      .runId('run-with-jobs')
+      .name('build')
+      .startedAt('2026-05-10T00:01:00Z')
+      .completedAt('2026-05-10T00:02:00Z')
+      .status('completed')
+      .conclusion('success')
+      .build();
 
     expect(runs).toHaveLength(1);
-    expect(runs[0].id).toBe('run-with-jobs');
+    expect(runs[0]).toMatchObject(expectedRunWithJobs);
     expect(runs[0].jobs).toHaveLength(1);
-    expect(runs[0].jobs?.[0].runId).toBe('run-with-jobs');
+    expect(runs[0].jobs?.[0]).toMatchObject(expectedJob);
 
     // const cachedWorkflowsRaw = await fs.readFile(path.join(cacheDir, 'workflows.json'), 'utf-8');
     // const cachedWorkflows = JSON.parse(cachedWorkflowsRaw);

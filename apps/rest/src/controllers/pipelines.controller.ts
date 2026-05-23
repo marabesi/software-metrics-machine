@@ -355,7 +355,7 @@ export class PipelinesController {
 
   @Get('/pipelines/workflows')
   async workflows() {
-    const runs = await this.pipelinesRepo.refreshPipelines();
+    const runs = await this.pipelinesRepo.fetchPipelines();
     const values = Array.from(
       new Set(
         runs.map((run: RunLike) => run.path || '').filter((value: string) => value.length > 0)
@@ -390,7 +390,7 @@ export class PipelinesController {
 
   @Get('/pipelines/events')
   async events() {
-    const runs = await this.pipelinesRepo.refreshPipelines();
+    const runs = await this.pipelinesRepo.fetchPipelines();
     return Array.from(
       new Set(
         runs.map((run: RunLike) => run.event || '').filter((value: string) => value.length > 0)
@@ -482,7 +482,7 @@ export class PipelinesController {
     event?: string;
     includeJobs: boolean;
   }): Promise<RunLike[]> {
-    const runs = await this.pipelinesRepo.refreshPipelines();
+    const runs = await this.pipelinesRepo.fetchPipelines();
     return runs.filter((run: RunLike) => {
       if (
         filters.startDate &&

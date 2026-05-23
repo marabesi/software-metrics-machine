@@ -27,7 +27,7 @@ export class PipelinesRepository implements IPipelinesRepository {
     private pipelineJobsFileSystemRepository: IRepository<PipelineJob>
   ) {}
 
-  async refreshPipelines(options?: {
+  async fetchPipelines(options?: {
     startDate?: string;
     endDate?: string;
     rawFilters?: string;
@@ -138,7 +138,7 @@ export class PipelinesRepository implements IPipelinesRepository {
     return `${startDate || ''}..${endDate || ''}`;
   }
 
-  async refreshJobs(filters: {
+  async fetchJobs(filters: {
     forceRefresh?: boolean;
     startDate?: string;
     endDate?: string;
@@ -146,8 +146,8 @@ export class PipelinesRepository implements IPipelinesRepository {
   }): Promise<any[]> {
     const fromCache = await this.pipelineRunFileSystemRepository.loadAll();
 
-    // apply filters to cached runs to determine which jobs to fetch
-    const filteredRuns = fromCache.filter((run) => {
+    const filteredRuns = fromCache
+      .filter((run) => {
       if (filters.startDate && new Date(run.createdAt) < new Date(filters.startDate)) {
         return false;
       }
@@ -158,7 +158,7 @@ export class PipelinesRepository implements IPipelinesRepository {
       return true;
     });
 
-    console.log(`Fetching jobs for ${filteredRuns.length} workflow runs...`);
+    logger.info(`Fetching jobs for ${filteredRuns.length} workflow runs...`);
 
     return this.fetchJobsWithResume(filteredRuns, filters.rawFilters);
   }

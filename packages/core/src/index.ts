@@ -13,3 +13,4 @@ export * from './infrastructure/index';
 export * from './domain/index';
 export * from './providers/index';
 export * from './aggregates/index';
+export * from './test/index';

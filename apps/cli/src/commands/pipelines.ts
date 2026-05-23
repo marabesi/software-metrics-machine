@@ -55,7 +55,7 @@ export function createPipelinesCommands(program: Command): void {
         logger.info('🔄 Fetching pipeline runs from GitHub...');
 
         const orchestrator = pipelineRepository();
-        await orchestrator.refreshPipelines({
+        await orchestrator.fetchPipelines({
           forceRefresh: options.force,
           startDate: options.startDate,
           endDate: options.endDate,
@@ -81,7 +81,7 @@ export function createPipelinesCommands(program: Command): void {
         logger.info('🔄 Fetching pipeline jobs from GitHub...');
 
         const orchestrator = pipelineRepository();
-        await orchestrator.refreshJobs({
+        await orchestrator.fetchJobs({
           startDate: options.runStartDate,
           endDate: options.runEndDate,
           rawFilters: options.rawFilters,
