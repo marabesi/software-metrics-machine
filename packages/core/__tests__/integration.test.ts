@@ -7,6 +7,9 @@ import { CodemaatAnalyzer } from '../src';
 import {
   PullRequestsRepository,
   PipelinesRepository,
+  FileSystemRepository,
+  PipelineJob,
+  PipelineRun,
   CodeMetricsRepository,
   IssuesRepository,
   SonarqubeMetricsRepository,
@@ -42,7 +45,14 @@ describe('Full Business Logic Integration', () => {
     // Initialize repositories
     const cacheDir = '/tmp/smm-cache';
     prsRepo = new PullRequestsRepository(githubPrsClient, cacheDir);
-    pipelinesRepo = new PipelinesRepository(githubWorkflowClient, cacheDir);
+    pipelinesRepo = new PipelinesRepository(
+      {
+        getPipelinePath: () => cacheDir,
+      } as any,
+      githubWorkflowClient,
+      new FileSystemRepository<PipelineRun>(`${cacheDir}/workflows.json`),
+      new FileSystemRepository<PipelineJob>(`${cacheDir}/jobs.json`)
+    );
     codeRepo = new CodeMetricsRepository(commitTraverser, codemaatAnalyzer, cacheDir);
     issuesRepo = new IssuesRepository(jiraClient, cacheDir);
     qualityRepo = new SonarqubeMetricsRepository(sonarqubeClient);

@@ -203,19 +203,19 @@ export class Configuration implements IConfiguration {
     return path.join(baseDir, `${gitProvider}_${repoSlug}`);
   }
 
-  public getCodeMaatPath(): string {
+  getCodeMaatPath(): string {
     return path.join(this.getBaseDirectory(), 'codemaat');
   }
 
-  public getSonarqubePath(): string {
+  getSonarqubePath(): string {
     return path.join(this.getBaseDirectory(), 'sonarqube');
   }
 
-  public getJiraPath(): string {
+  getJiraPath(): string {
     return path.join(this.getBaseDirectory(), 'jira');
   }
 
-  public getPipelinePath(): string {
+  getPipelinePath(): string {
     return path.join(this.getBaseDirectory(), this.gitProvider!);
   }
 }

@@ -1,6 +1,9 @@
 import { describe, it, expect, beforeEach } from 'vitest';
 import { PullRequestsRepository } from '../src';
 import { PipelinesRepository } from '../src';
+import { FileSystemRepository } from '../src';
+import { PipelineJob } from '../src';
+import { PipelineRun } from '../src';
 import { CodeMetricsRepository } from '../src';
 import { IssuesRepository } from '../src';
 import { SonarqubeMetricsRepository } from '../src';
@@ -54,7 +57,14 @@ describe('Metrics System Acceptance Tests', () => {
     // Set up repositories
     const cacheDir = process.env.CACHE_DIR || '/tmp/smm-cache';
     const prsRepo = new PullRequestsRepository(githubPrsClient, cacheDir);
-    const pipelinesRepo = new PipelinesRepository(githubWorkflowClient, cacheDir);
+    const pipelinesRepo = new PipelinesRepository(
+      {
+        getPipelinePath: () => cacheDir,
+      } as any,
+      githubWorkflowClient,
+      new FileSystemRepository<PipelineRun>(`${cacheDir}/workflows.json`),
+      new FileSystemRepository<PipelineJob>(`${cacheDir}/jobs.json`)
+    );
     const codeRepo = new CodeMetricsRepository(commitTraverser, codemaatAnalyzer, cacheDir);
     const issuesRepo = new IssuesRepository(jiraClient, cacheDir);
     const qualityRepo = new SonarqubeMetricsRepository(sonarqubeClient);
