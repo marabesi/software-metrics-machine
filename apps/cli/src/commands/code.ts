@@ -191,11 +191,10 @@ export function createCodeCommands(program: Command): void {
 
         const repository = createCodeDependencies(loadConfiguration());
 
-        const metrics = await repository.codeRepository.getFileCoupling({
+        const coupling = await repository.codeRepository.getFileCoupling({
           startDate: options.startDate,
           endDate: options.endDate,
         });
-        const coupling = Array.isArray(metrics.fileCoupling) ? metrics.fileCoupling : [];
 
         if (options.output === 'json') {
           logger.info(JSON.stringify({ coupling }, null, 2));
@@ -320,11 +319,10 @@ export function createCodeCommands(program: Command): void {
         logger.info('👥 Calculating developer pairing index...');
 
         const repository = createCodeDependencies(loadConfiguration());
-        const metrics = await repository.codeRepository.getPairingIndex({
+        const pairing = await repository.codeRepository.getPairingIndex({
           startDate: options.startDate,
           endDate: options.endDate,
         });
-        const pairing = metrics.pairingIndex || {};
 
         if (options.output === 'json') {
           logger.info(JSON.stringify({ pairingIndex: pairing }, null, 2));

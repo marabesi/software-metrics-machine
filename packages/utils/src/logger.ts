@@ -34,7 +34,7 @@ export class Logger {
 
   info(message: string, data?: unknown): void {
     if (!this.shouldLog('INFO')) {
-      return
+      return;
     }
 
     if (data) {

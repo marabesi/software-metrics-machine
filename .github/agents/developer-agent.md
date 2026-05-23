@@ -107,7 +107,7 @@ This agent assists developers in contributing to Software Metrics Machine, a dat
 │   │   │   │   └── quality-metrics.repository.ts
 │   │   │   └── providers/             # Provider clients
 │   │   │       ├── github/            # GitHub API clients
-│   │   │       │   ├── github-clients.ts
+│   │   │       │   ├── github-pr.ts
 │   │   │       │   └── index.ts
 │   │   │       ├── git/               # Git analysis
 │   │   │       │   ├── commit-traverser.ts
