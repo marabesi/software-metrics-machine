@@ -1,12 +1,12 @@
-import { Logger, logger } from '@smmachine/utils';
-import { IRepository } from '../../infrastructure';
+import {Logger, logger} from '@smmachine/utils';
+import {IRepository} from '../../infrastructure';
 import {
-  PipelineRun,
-  PipelineJob,
-  PipelineFilters,
-  PipelineMetrics,
   DeploymentFrequencyByInterval,
   JobMetrics,
+  PipelineFilters,
+  PipelineJob,
+  PipelineMetrics,
+  PipelineRun,
 } from './pipeline-types';
 
 export interface IPipelinesService {
@@ -25,22 +25,7 @@ export interface IPipelinesService {
 export class PipelinesService implements IPipelinesService {
   private logger: Logger = logger;
 
-  constructor(private pipelineRepository: IRepository<PipelineRun>) {
-    // logger.info(`Fetching jobs for ${workflows.length} workflow runs...`);
-    // const jobs = await this.fetchJobsWithResume(workflows);
-    //
-    // const jobsByRunId = new Map<string, any[]>();
-    // for (const job of jobs) {
-    //   const runId = String(job.runId);
-    //   const existing = jobsByRunId.get(runId) || [];
-    //   existing.push(job);
-    //   jobsByRunId.set(runId, existing);
-    // }
-    //
-    // workflows = workflows.map((run) => ({
-    //   ...run,
-    //   jobs: jobsByRunId.get(String(run.id)) || [],
-    // }));
+  constructor(private pipelineRepository: IRepository<PipelineRun>, private pipelineJobRepository: IRepository<PipelineJob>) {
   }
 
   /**
@@ -136,10 +121,6 @@ export class PipelinesService implements IPipelinesService {
       const jobs = run.jobs || [];
 
       for (const job of jobs) {
-        if (job.conclusion === 'skipped') {
-          continue;
-        }
-
         const jobName = job.name;
         if (!jobMetricsMap.has(jobName)) {
           jobMetricsMap.set(jobName, {
@@ -149,6 +130,7 @@ export class PipelinesService implements IPipelinesService {
             successCount: 0,
             failureCount: 0,
             successRate: 0,
+            actionRequiredCount: 0, cancelledCount: 0, skippedCount: 0, timedOutCount: 0, unknownCount: 0,
           });
         }
 
@@ -159,6 +141,16 @@ export class PipelinesService implements IPipelinesService {
           metrics.successCount += 1;
         } else if (job.conclusion === 'failure') {
           metrics.failureCount += 1;
+        } else if (job.conclusion === 'cancelled') {
+          metrics.cancelledCount += 1;
+        } else if (job.conclusion === 'timed_out') {
+          metrics.timedOutCount += 1;
+        } else if (job.conclusion === 'action_required') {
+          metrics.actionRequiredCount += 1;
+        } else if (job.conclusion === 'skipped') {
+          metrics.skippedCount += 1;
+        } else {
+          metrics.unknownCount += 1;
         }
       }
     }
@@ -199,9 +191,7 @@ export class PipelinesService implements IPipelinesService {
    * Filter runs by the provided criteria.
    */
   private async filterRuns(filters?: PipelineFilters): Promise<PipelineRun[]> {
-    const allRuns = await this.pipelineRepository.loadAll();
-
-    let result = allRuns;
+    let result = await this.loadCachedWorkflowsWithJobs();
 
     if (!filters) {
       return result;
@@ -321,5 +311,27 @@ export class PipelinesService implements IPipelinesService {
       const month = String(date.getMonth() + 1).padStart(2, '0');
       return `${year}-${month}`;
     }
+  }
+
+  private async loadCachedWorkflowsWithJobs(): Promise<PipelineRun[]> {
+    const runs = await this.pipelineRepository.loadAll();
+    const jobs = await this.pipelineJobRepository.loadAll();
+
+    if (jobs.length === 0) {
+      return runs;
+    }
+
+    const jobsByRunId = new Map<string, any[]>();
+    for (const job of jobs) {
+      const runId = String(job.runId);
+      const existing = jobsByRunId.get(runId) || [];
+      existing.push(job);
+      jobsByRunId.set(runId, existing);
+    }
+
+    return runs.map((run) => ({
+      ...run,
+      jobs: jobsByRunId.get(String(run.id)) || run.jobs || [],
+    }));
   }
 }

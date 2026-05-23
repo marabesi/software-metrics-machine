@@ -139,4 +139,73 @@ describe('PipelinesRepository pagination resume', () => {
       rawFilters: 'status=success,branch=main',
     });
   });
+
+  it('persists fetched jobs into jobs cache when includeJobs is enabled on fresh refresh', async () => {
+    cacheDir = await fs.mkdtemp(path.join(os.tmpdir(), 'smm-workflows-'));
+
+    const fetchWorkflowRunsPage = vi.fn().mockResolvedValueOnce({
+      runs: [
+        {
+          id: 'run-with-jobs',
+          created_at: '2026-05-10T00:00:00Z',
+          updated_at: '2026-05-10T00:05:00Z',
+          run_number: 3,
+          html_url: 'https://github.com/example/repo/actions/runs/3',
+          run_started_at: '2026-05-10T00:00:00Z',
+          head_branch: 'main',
+          path: '.github/workflows/ci.yml',
+          status: 'completed',
+          name: 'CI',
+        },
+      ],
+      hasNext: false,
+    });
+
+    const fetchJobsPage = vi.fn().mockResolvedValueOnce({
+      jobs: [
+        {
+          id: 'job-1',
+          started_at: '2026-05-10T00:01:00Z',
+          completed_at: '2026-05-10T00:02:00Z',
+          status: 'completed',
+          conclusion: 'success',
+          name: 'build',
+        },
+      ],
+      hasNext: false,
+    });
+
+    const githubWorkflowClient: IGithubWorkflowClient = {
+      fetchJobsForWorkflows(workflowIds: string[]): Promise<any[]> {
+        return Promise.resolve([]);
+      },
+      fetchWorkflows(options?: { created?: string; rawFilters?: string }): Promise<any[]> {
+        return Promise.resolve([]);
+      },
+      fetchWorkflowRunsPage,
+      fetchJobsPage,
+    };
+
+    const repository = new PipelinesRepository(githubWorkflowClient, cacheDir);
+
+    const runs = await repository.refreshPipelines({ forceRefresh: true, includeJobs: true });
+
+    expect(runs).toHaveLength(1);
+    expect(runs[0].id).toBe('run-with-jobs');
+    expect(runs[0].jobs).toHaveLength(1);
+    expect(runs[0].jobs?.[0].runId).toBe('run-with-jobs');
+
+    const cachedWorkflowsRaw = await fs.readFile(path.join(cacheDir, 'workflows.json'), 'utf-8');
+    const cachedWorkflows = JSON.parse(cachedWorkflowsRaw);
+    const cachedJobsRaw = await fs.readFile(path.join(cacheDir, 'jobs.json'), 'utf-8');
+    const cachedJobs = JSON.parse(cachedJobsRaw);
+
+    expect(cachedWorkflows).toHaveLength(1);
+    expect(cachedWorkflows[0].id).toBe('run-with-jobs');
+    expect(cachedWorkflows[0].jobs).toBeUndefined();
+
+    expect(cachedJobs).toHaveLength(1);
+    expect(cachedJobs[0].runId).toBe('run-with-jobs');
+    expect(cachedJobs[0].id).toBe('job-1');
+  });
 });

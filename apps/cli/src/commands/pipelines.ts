@@ -1,12 +1,22 @@
 import {Command} from 'commander';
 import {Configuration} from '@smmachine/core/infrastructure/configuration';
 import {Logger} from '@smmachine/utils';
-import {GithubWorkflowClient, PipelinesRepository} from "@smmachine/core";
+import {
+  FileSystemRepository,
+  GithubWorkflowClient,
+  PipelineJob,
+  PipelineRun,
+  PipelinesRepository, PipelinesService
+} from "@smmachine/core";
 
 const logger = new Logger('PipelinesCommand');
 
-function createPipelinesOrchestrator(): PipelinesRepository {
-  const config = new Configuration(process.env);
+const config = new Configuration(process.env);
+
+const fileSystemRepository = new FileSystemRepository<PipelineRun>(`${config.getPipelinePath()}/workflows.json`);
+const pipelineJobsFileSystemRepository = new FileSystemRepository<PipelineJob>(`${config.getPipelinePath()}/jobs.json`);
+
+function pipelineRepository(): PipelinesRepository {
   const [githubOwner, githubRepo] = config.githubRepository!.split('/');
   const githubToken = config.githubToken!;
 
@@ -15,8 +25,19 @@ function createPipelinesOrchestrator(): PipelinesRepository {
     githubOwner,
     githubRepo
   );
+  return new PipelinesRepository(
+    config,
+    githubWorkflowClient,
+    fileSystemRepository,
+    pipelineJobsFileSystemRepository,
+  )
+}
 
-  return new PipelinesRepository(githubWorkflowClient, config.getPipelinePath())
+function pipelineService(): PipelinesService {
+  return new PipelinesService(
+    fileSystemRepository,
+    pipelineJobsFileSystemRepository
+  )
 }
 
 export function createPipelinesCommands(program: Command): void {
@@ -33,7 +54,7 @@ export function createPipelinesCommands(program: Command): void {
       try {
         logger.info('🔄 Fetching pipeline runs from GitHub...');
 
-        const orchestrator = createPipelinesOrchestrator();
+        const orchestrator = pipelineRepository();
         await orchestrator.refreshPipelines({
           forceRefresh: options.force,
           startDate: options.startDate,
@@ -59,7 +80,7 @@ export function createPipelinesCommands(program: Command): void {
       try {
         logger.info('🔄 Fetching pipeline jobs from GitHub...');
 
-        const orchestrator = createPipelinesOrchestrator();
+        const orchestrator = pipelineRepository();
         await orchestrator.refreshJobs({
           startDate: options.runStartDate,
           endDate: options.runEndDate,
@@ -85,8 +106,7 @@ export function createPipelinesCommands(program: Command): void {
       try {
         console.log('📊 Generating pipeline summary...');
 
-        const orchestrator = createPipelinesOrchestrator();
-        const metrics = await orchestrator.getPipelineMetrics({
+        const metrics = await pipelineService().getMetrics({
           startDate: options.startDate,
           endDate: options.endDate,
         });
@@ -117,8 +137,7 @@ export function createPipelinesCommands(program: Command): void {
       try {
         console.log('📊 Analyzing pipelines by status...');
 
-        const orchestrator = createPipelinesOrchestrator();
-        const metrics = await orchestrator.getPipelineMetrics({
+        const metrics = await pipelineService().getMetrics({
           startDate: options.startDate,
           endDate: options.endDate,
         });
@@ -158,8 +177,7 @@ export function createPipelinesCommands(program: Command): void {
       try {
         console.log('⏱️  Analyzing pipeline run durations...');
 
-        const orchestrator = createPipelinesOrchestrator();
-        const metrics = await orchestrator.getPipelineMetrics({
+        const metrics = await pipelineService().getMetrics({
           startDate: options.startDate,
           endDate: options.endDate,
         });
@@ -180,10 +198,6 @@ export function createPipelinesCommands(program: Command): void {
       }
     });
 
-  /**
-   * smm pipelines runs-by [options]
-   * View pipeline runs by time period
-   */
   pipelinesGroup
     .command('runs-by')
     .description('View pipeline runs by time period')
@@ -195,20 +209,20 @@ export function createPipelinesCommands(program: Command): void {
       try {
         console.log('📈 Analyzing pipeline runs by time period...');
 
-        const orchestrator = createPipelinesOrchestrator();
-        const metrics = await orchestrator.getPipelineMetrics({
-          startDate: options.startDate,
-          endDate: options.endDate,
-          frequency: options.period as 'day' | 'week' | 'month',
-        });
+        const metrics = await pipelineService().getDeploymentFrequency(
+          options.period, { startDate: options.startDate, endDate: options.endDate, }
+        );
 
         if (options.output === 'json') {
           console.log(JSON.stringify(metrics, null, 2));
         } else {
           console.log('\n=== Pipeline Runs by Period ===\n');
           console.log(`Period: ${options.period}`);
-          console.log(`Total Runs: ${metrics.totalRuns}`);
-          console.log(`Deployment Frequency: ${metrics.successfulRuns} per ${options.period}`);
+          metrics.forEach(item => {
+            console.log(`Total Runs: ${item.count}`);
+            console.log(`Duration in minutes: ${item.averageDurationMinutes} per ${options.period}`);
+            console.log(`Sucess rate: ${item.successRate} per ${options.period}`);
+          });
         }
       } catch (error) {
         logger.error('Failed to analyze pipeline runs by period', error);
@@ -216,10 +230,6 @@ export function createPipelinesCommands(program: Command): void {
       }
     });
 
-  /**
-   * smm pipelines jobs-summary [options]
-   * Display pipeline jobs summary
-   */
   pipelinesGroup
     .command('jobs-summary')
     .description('Display a summary of pipeline jobs')
@@ -231,8 +241,7 @@ export function createPipelinesCommands(program: Command): void {
       try {
         console.log('📊 Generating pipeline jobs summary...');
 
-        const orchestrator = createPipelinesOrchestrator();
-        const metrics = await orchestrator.getJobMetrics({
+        const metrics = await pipelineService().getJobMetrics({
           startDate: options.startDate,
           endDate: options.endDate,
         });
@@ -240,10 +249,16 @@ export function createPipelinesCommands(program: Command): void {
         if (options.output === 'json') {
           console.log(JSON.stringify(metrics, null, 2));
         } else {
-          console.log('\n=== Pipeline Jobs Summary ===\n');
-          console.log(`Total Jobs: ${metrics.totalDeployments}`);
-          console.log(`Max Jobs to Display: ${options.maxJobs}`);
-          console.log('\nNote: Detailed jobs breakdown requires enhanced metrics implementation');
+          console.log('\n=== Pipeline Jobs Summary ===\n\n');
+
+          metrics.forEach(item => {
+            console.log(`Job name: ${item.jobName}`);
+            console.log(`Total Jobs: ${item.totalRuns}`);
+            console.log(`Success rate: ${item.successRate}`);
+            console.log(`Average Duration Minutes: ${item.averageDurationMinutes}`);
+            console.log(`Failure count: ${item.failureCount}`);
+            console.log('\n\n');
+          });
         }
       } catch (error) {
         logger.error('Failed to generate jobs summary', error);
@@ -251,10 +266,6 @@ export function createPipelinesCommands(program: Command): void {
       }
     });
 
-  /**
-   * smm pipelines jobs-time-execution [options]
-   * View job execution times
-   */
   pipelinesGroup
     .command('jobs-time-execution')
     .description('View pipeline job execution times')
@@ -266,20 +277,22 @@ export function createPipelinesCommands(program: Command): void {
       try {
         console.log('⏱️  Analyzing job execution times...');
 
-        const orchestrator = createPipelinesOrchestrator();
-        const metrics = await orchestrator.getJobMetrics({
+        const metrics = await pipelineService().getJobMetrics({
           startDate: options.startDate,
           endDate: options.endDate,
         });
 
         if (options.output === 'json') {
-          console.log(JSON.stringify({ averageDuration: metrics.averageDuration }, null, 2));
+          console.log(JSON.stringify(metrics, null, 2));
         } else {
           console.log('\n=== Job Execution Times ===\n');
-          if (options.job) {
-            console.log(`Job: ${options.job}`);
-          }
-          console.log(`Average Execution Time: ${metrics.averageDuration.toFixed(2)} minutes`);
+          metrics.forEach(item => {
+            console.log(`Job: ${item.jobName}\n`);
+            console.log(`Total runs: ${item.totalRuns}`);
+            console.log(`Failure count: ${item.failureCount}`);
+            console.log(`Success rate: ${item.successRate}`);
+            console.log(`Average Execution Time: ${item.averageDurationMinutes.toFixed(2)} minutes`);
+          });
         }
       } catch (error) {
         logger.error('Failed to analyze job execution times', error);
@@ -301,8 +314,8 @@ export function createPipelinesCommands(program: Command): void {
       try {
         console.log('📊 Analyzing jobs by status...');
 
-        const orchestrator = createPipelinesOrchestrator();
-        const metrics = await orchestrator.getJobMetrics({
+        const orchestrator = pipelineRepository();
+        const metrics = await pipelineService().getJobMetrics({
           startDate: options.startDate,
           endDate: options.endDate,
         });
@@ -310,18 +323,19 @@ export function createPipelinesCommands(program: Command): void {
         if (options.output === 'json') {
           console.log(
             JSON.stringify(
-              {
-                successful: metrics.successfulDeployments,
-                failed: metrics.failedDeployments,
-              },
+              metrics,
               null,
               2
             )
           );
         } else {
-          console.log('\n=== Jobs by Status ===\n');
-          console.log(`✅ Successful: ${metrics.successfulDeployments}`);
-          console.log(`❌ Failed: ${metrics.failedDeployments}`);
+          metrics.forEach(item => {
+            console.log('\n=== Jobs by Status ===\n');
+            console.log(`Name: ${item.jobName}`);
+            console.log(`✅ Successful: ${item.successCount}, success rate: ${item.successCount}`);
+            console.log(`❌ Failed: ${item.failureCount}`);
+            console.log(`Average duration in minutes: ${item.averageDurationMinutes}`);
+          })
         }
       } catch (error) {
         logger.error('Failed to analyze jobs by status', error);
@@ -329,10 +343,6 @@ export function createPipelinesCommands(program: Command): void {
       }
     });
 
-  /**
-   * smm pipelines deployment-frequency [options]
-   * Calculate deployment frequency (DORA metric)
-   */
   pipelinesGroup
     .command('deployment-frequency')
     .description('Calculate deployment frequency (DORA metric)')
@@ -344,32 +354,34 @@ export function createPipelinesCommands(program: Command): void {
       try {
         console.log('🚀 Calculating deployment frequency...');
 
-        const orchestrator = createPipelinesOrchestrator();
-        const metrics = await orchestrator.getDeploymentFrequency(options.period as 'day' | 'week' | 'month', {
+        const metrics = await pipelineService().getDeploymentFrequency(
+          options.period as 'day' | 'week' | 'month', {
           startDate: options.startDate,
           endDate: options.endDate,
         });
 
         if (options.output === 'json') {
           console.log(
-            JSON.stringify({ deploymentFrequency: metrics.deploymentFrequency }, null, 2)
+            JSON.stringify(metrics, null, 2)
           );
         } else {
           console.log('\n=== Deployment Frequency (DORA) ===\n');
-          console.log(`Period: ${options.period}`);
-          console.log(`Deployment Frequency: ${metrics.deploymentFrequency} per ${options.period}`);
-          console.log(`Total Deployments: ${metrics.totalDeployments}`);
 
-          // DORA rating
-          let rating = 'Low';
-          if (options.period === 'day' && metrics.deploymentFrequency >= 1) {
-            rating = 'Elite';
-          } else if (options.period === 'week' && metrics.deploymentFrequency >= 1) {
-            rating = 'High';
-          } else if (options.period === 'month' && metrics.deploymentFrequency >= 1) {
-            rating = 'Medium';
-          }
-          console.log(`\n📈 DORA Rating: ${rating}`);
+          metrics.forEach(item => {
+            console.log(`Period: ${item.period}`);
+            console.log(`Total Deployments: ${item.count}`);
+
+            // DORA rating
+            let rating = 'Low';
+            if (options.period === 'day' && item.count >= 1) {
+              rating = 'Elite';
+            } else if (options.period === 'week' && item.count >= 1) {
+              rating = 'High';
+            } else if (options.period === 'month' && item.count >= 1) {
+              rating = 'Medium';
+            }
+            console.log(`\n📈 DORA Rating: ${rating}`);
+          })
         }
       } catch (error) {
         logger.error('Failed to calculate deployment frequency', error);
@@ -391,8 +403,7 @@ export function createPipelinesCommands(program: Command): void {
       try {
         console.log('⏱️  Calculating lead time for changes...');
 
-        const orchestrator = createPipelinesOrchestrator();
-        const metrics = await orchestrator.getPipelineMetrics({
+        const metrics = await pipelineService().getMetrics({
           startDate: options.startDate,
           endDate: options.endDate,
         });

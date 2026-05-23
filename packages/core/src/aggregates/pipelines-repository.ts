@@ -1,10 +1,9 @@
 import { logger } from '@smmachine/utils';
 import * as fs from 'fs/promises';
 import * as path from 'path';
-import { FileSystemRepository } from '../infrastructure';
-import { PipelineRun } from '../domain-types';
+import {Configuration, FileSystemRepository, IRepository} from '../infrastructure';
 import { type IGithubWorkflowClient } from '../providers';
-import {PipelineMetrics, PipelinesService} from '../domain';
+import {PipelineJob, PipelineRun} from '../domain';
 
 interface WorkflowsProgress {
   page: number;
@@ -19,32 +18,16 @@ interface JobsProgress {
 }
 
 export interface IPipelinesRepository {
-  getPipelineMetrics(filters?: any): Promise<any>;
-  getDeploymentFrequency(interval: 'day' | 'week' | 'month', filters?: any): Promise<any>;
-  getJobMetrics(filters?: any): Promise<any>;
 }
 
-/**
- * Combines GitHub Workflows provider with Pipeline domain logic
- * Handles:
- * - Fetching workflows/jobs from GitHub
- * - Caching locally
- * - Computing deployment frequency
- * - Computing job metrics
- */
 export class PipelinesRepository implements IPipelinesRepository {
-  private pipelineService: PipelinesService;
-  private pipelineRunFileSystemRepository: FileSystemRepository<PipelineRun>;
-  private cacheDir: string;
 
   constructor(
+    private configuration: Configuration,
     private githubWorkflowClient: IGithubWorkflowClient,
-    cacheDir: string
-  ) {
-    this.cacheDir = cacheDir;
-    this.pipelineRunFileSystemRepository = new FileSystemRepository<PipelineRun>(`${cacheDir}/workflows.json`);
-    this.pipelineService = new PipelinesService(this.pipelineRunFileSystemRepository);
-  }
+    private pipelineRunFileSystemRepository: IRepository<PipelineRun>,
+    private pipelineJobsFileSystemRepository: IRepository<PipelineJob>
+  ) { }
 
   /**
    * Refresh pipeline data from GitHub
@@ -66,23 +49,9 @@ export class PipelinesRepository implements IPipelinesRepository {
 
         if (missingJobs.length > 0) {
           logger.info(`Fetching jobs for ${missingJobs.length} cached workflow runs...`);
-          const jobs = await this.fetchJobsWithResume(missingJobs);
-
-          const jobsByRunId = new Map<string, any[]>();
-          for (const job of jobs) {
-            const runId = String(job.runId);
-            const existing = jobsByRunId.get(runId) || [];
-            existing.push(job);
-            jobsByRunId.set(runId, existing);
-          }
-
-          const enrichedRuns = fromCache.map((run) => ({
-            ...run,
-            jobs: jobsByRunId.get(String(run.id)) || run.jobs || [],
-          }));
-
-          await this.pipelineRunFileSystemRepository.saveAll(enrichedRuns);
-          return enrichedRuns;
+          await this.fetchJobsWithResume(missingJobs, options?.rawFilters);
+          logger.info(`Done`);
+          return this.pipelineRunFileSystemRepository.loadAll();
         }
       }
 
@@ -101,7 +70,8 @@ export class PipelinesRepository implements IPipelinesRepository {
     await this.pipelineRunFileSystemRepository.saveAll(workflows);
 
     if (options?.includeJobs) {
-      await this.fetchJobsWithResume(workflows);
+      await this.fetchJobsWithResume(workflows, options?.rawFilters);
+      workflows = await this.pipelineRunFileSystemRepository.loadAll();
     }
 
     return workflows;
@@ -273,13 +243,26 @@ export class PipelinesRepository implements IPipelinesRepository {
       }
     }
 
+    const existingJobs = await this.pipelineJobsFileSystemRepository.loadAll();
+    const mergedJobsByKey = new Map<string, any>();
+
+    for (const job of existingJobs) {
+      mergedJobsByKey.set(`${String(job.runId)}:${String(job.id)}`, job);
+    }
+
+    for (const job of allJobs) {
+      mergedJobsByKey.set(`${String(job.runId)}:${String(job.id)}`, job);
+    }
+
+    await this.pipelineJobsFileSystemRepository.saveAll(Array.from(mergedJobsByKey.values()));
+
     await this.deleteFile(progressPath);
     await this.deleteFile(incompletedPath);
     return allJobs;
   }
 
   private fileInCache(fileName: string): string {
-    return path.join(this.cacheDir, fileName);
+    return path.join(this.configuration.getPipelinePath(), fileName);
   }
 
   private async readJson<T>(filePath: string, fallback: T): Promise<T> {
@@ -322,26 +305,5 @@ export class PipelinesRepository implements IPipelinesRepository {
     };
 
     return maybeError.status === 422 || maybeError.response?.status === 422;
-  }
-
-  /**
-   * Get pipeline metrics
-   */
-  async getPipelineMetrics(filters?: any): Promise<PipelineMetrics> {
-    return this.pipelineService.getMetrics(filters);
-  }
-
-  /**
-   * Get deployment frequency
-   */
-  async getDeploymentFrequency(interval: 'day' | 'week' | 'month', filters?: any): Promise<any> {
-    return this.pipelineService.getDeploymentFrequency(interval, filters);
-  }
-
-  /**
-   * Get job metrics
-   */
-  async getJobMetrics(filters?: any): Promise<any> {
-    return this.pipelineService.getJobMetrics(filters);
   }
 }

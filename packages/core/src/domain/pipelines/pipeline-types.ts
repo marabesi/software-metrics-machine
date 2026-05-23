@@ -9,6 +9,7 @@ export interface PipelineJobConclusion {
 
 export interface PipelineJob {
   id: string;
+  runId: string;
   name: string;
   startedAt: string; // ISO format
   completedAt?: string;
@@ -72,6 +73,11 @@ export interface JobMetrics {
   successCount: number;
   failureCount: number;
   successRate: number;
+  cancelledCount: number;
+  skippedCount: number;
+  timedOutCount: number;
+  actionRequiredCount: number;
+  unknownCount: number;
 }
 
 export interface PipelineComputedDurations {

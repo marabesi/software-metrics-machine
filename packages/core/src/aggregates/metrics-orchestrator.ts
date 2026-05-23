@@ -1,9 +1,9 @@
 import { logger } from '@smmachine/utils';
 import { PullRequestsRepository } from './pull-requests-repository';
-import { PipelinesRepository } from './pipelines-repository';
 import { CodeMetricsRepository } from './code-metrics-repository';
 import { IssuesRepository } from './issues-repository';
 import { SonarqubeMetricsRepository } from './sonarqube-metrics-repository';
+import {PipelinesService} from "../domain";
 
 export interface IMetricsOrchestrator {
   getPRMetrics(filters?: any): Promise<any>;
@@ -20,7 +20,7 @@ export interface IMetricsOrchestrator {
 export class MetricsOrchestrator implements IMetricsOrchestrator {
   constructor(
     private prsRepo: PullRequestsRepository,
-    private pipelinesRepo: PipelinesRepository,
+    private pipelinesRepo: PipelinesService,
     private codeRepo: CodeMetricsRepository,
     private issuesRepo: IssuesRepository,
     private qualityRepo: SonarqubeMetricsRepository
@@ -40,7 +40,7 @@ export class MetricsOrchestrator implements IMetricsOrchestrator {
   async getDeploymentMetrics(filters?: any): Promise<any> {
     logger.info('Orchestrating deployment metrics...');
 
-    const metrics = await this.pipelinesRepo.getPipelineMetrics(filters);
+    const metrics = await this.pipelinesRepo.getMetrics(filters);
     const frequency = await this.pipelinesRepo.getDeploymentFrequency('month', filters);
     const jobMetrics = await this.pipelinesRepo.getJobMetrics(filters);
 
