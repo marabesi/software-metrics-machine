@@ -1,5 +1,6 @@
 import * as fs from 'fs/promises';
 import { dirname } from 'path';
+import {logger} from "@smmachine/utils";
 
 /**
  * Generic repository interface for file system operations
@@ -80,6 +81,7 @@ export class FileSystemRepository<T> implements IRepository<T> {
 
   async loadAll(): Promise<T[]> {
     try {
+      logger.debug(`Loading all items from ${this.filePath}`);
       const data = await fs.readFile(this.filePath, 'utf-8');
       const parsed = JSON.parse(data);
 

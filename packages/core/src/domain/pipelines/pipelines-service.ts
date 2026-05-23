@@ -25,7 +25,23 @@ export interface IPipelinesService {
 export class PipelinesService implements IPipelinesService {
   private logger: Logger = logger;
 
-  constructor(private pipelineRepository: IRepository<PipelineRun>) {}
+  constructor(private pipelineRepository: IRepository<PipelineRun>) {
+    // logger.info(`Fetching jobs for ${workflows.length} workflow runs...`);
+    // const jobs = await this.fetchJobsWithResume(workflows);
+    //
+    // const jobsByRunId = new Map<string, any[]>();
+    // for (const job of jobs) {
+    //   const runId = String(job.runId);
+    //   const existing = jobsByRunId.get(runId) || [];
+    //   existing.push(job);
+    //   jobsByRunId.set(runId, existing);
+    // }
+    //
+    // workflows = workflows.map((run) => ({
+    //   ...run,
+    //   jobs: jobsByRunId.get(String(run.id)) || [],
+    // }));
+  }
 
   /**
    * Get overall pipeline metrics for the given filters.

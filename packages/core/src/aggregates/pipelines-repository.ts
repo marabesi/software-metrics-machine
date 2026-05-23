@@ -1,10 +1,10 @@
 import { logger } from '@smmachine/utils';
 import * as fs from 'fs/promises';
 import * as path from 'path';
-import { FileSystemRepository } from '../infrastructure/repository';
+import { FileSystemRepository } from '../infrastructure';
 import { PipelineRun } from '../domain-types';
-import { type IGithubWorkflowClient } from '../providers/github';
-import {PipelineMetrics, PipelinesService} from '../domain/pipelines';
+import { type IGithubWorkflowClient } from '../providers';
+import {PipelineMetrics, PipelinesService} from '../domain';
 
 interface WorkflowsProgress {
   page: number;
@@ -34,7 +34,7 @@ export interface IPipelinesRepository {
  */
 export class PipelinesRepository implements IPipelinesRepository {
   private pipelineService: PipelinesService;
-  private cache: FileSystemRepository<PipelineRun>;
+  private pipelineRunFileSystemRepository: FileSystemRepository<PipelineRun>;
   private cacheDir: string;
 
   constructor(
@@ -42,8 +42,8 @@ export class PipelinesRepository implements IPipelinesRepository {
     cacheDir: string
   ) {
     this.cacheDir = cacheDir;
-    this.cache = new FileSystemRepository<PipelineRun>(`${cacheDir}/workflows.json`);
-    this.pipelineService = new PipelinesService(this.cache);
+    this.pipelineRunFileSystemRepository = new FileSystemRepository<PipelineRun>(`${cacheDir}/workflows.json`);
+    this.pipelineService = new PipelinesService(this.pipelineRunFileSystemRepository);
   }
 
   /**
@@ -56,7 +56,7 @@ export class PipelinesRepository implements IPipelinesRepository {
     forceRefresh?: boolean;
     includeJobs?: boolean;
   }): Promise<PipelineRun[]> {
-    const fromCache = await this.cache.loadAll();
+    const fromCache = await this.pipelineRunFileSystemRepository.loadAll();
     const shouldBypassCache =
       !!options?.startDate || !!options?.endDate || !!options?.rawFilters;
 
@@ -81,7 +81,7 @@ export class PipelinesRepository implements IPipelinesRepository {
             jobs: jobsByRunId.get(String(run.id)) || run.jobs || [],
           }));
 
-          await this.cache.saveAll(enrichedRuns);
+          await this.pipelineRunFileSystemRepository.saveAll(enrichedRuns);
           return enrichedRuns;
         }
       }
@@ -97,27 +97,12 @@ export class PipelinesRepository implements IPipelinesRepository {
     });
 
     let workflows = freshWorkflows as PipelineRun[];
-
-    if (options?.includeJobs && workflows.length > 0) {
-      logger.info(`Fetching jobs for ${workflows.length} workflow runs...`);
-      const jobs = await this.fetchJobsWithResume(workflows);
-
-      const jobsByRunId = new Map<string, any[]>();
-      for (const job of jobs) {
-        const runId = String(job.runId);
-        const existing = jobsByRunId.get(runId) || [];
-        existing.push(job);
-        jobsByRunId.set(runId, existing);
-      }
-
-      workflows = workflows.map((run) => ({
-        ...run,
-        jobs: jobsByRunId.get(String(run.id)) || [],
-      }));
-    }
-
     // Persist fetched workflows/jobs so metrics commands can run from local data.
-    await this.cache.saveAll(workflows);
+    await this.pipelineRunFileSystemRepository.saveAll(workflows);
+
+    if (options?.includeJobs) {
+      await this.fetchJobsWithResume(workflows);
+    }
 
     return workflows;
   }
@@ -202,7 +187,32 @@ export class PipelinesRepository implements IPipelinesRepository {
     return `${startDate || ''}..${endDate || ''}`;
   }
 
-  private async fetchJobsWithResume(workflows: PipelineRun[]): Promise<any[]> {
+  async refreshJobs(filters: {
+    forceRefresh?: boolean,
+    startDate?: string,
+    endDate?: string,
+    rawFilters?: string;
+  }): Promise<any[]> {
+    const fromCache = await this.pipelineRunFileSystemRepository.loadAll();
+
+    // apply filters to cached runs to determine which jobs to fetch
+    const filteredRuns = fromCache.filter((run) => {
+      if (filters.startDate && new Date(run.createdAt) < new Date(filters.startDate)) {
+        return false;
+      }
+      if (filters.endDate && new Date(run.createdAt) > new Date(filters.endDate)) {
+        return false;
+      }
+      // Add more filter conditions as needed
+      return true;
+    });
+
+    logger.info(`Fetching jobs for ${filteredRuns.length} workflow runs...`);
+    
+    return this.fetchJobsWithResume(filteredRuns, filters.rawFilters);
+  }
+
+  async fetchJobsWithResume(workflows: PipelineRun[], rawFilters?: string): Promise<any[]> {
     const progressPath = this.fileInCache('jobs_progress.json');
     const incompletedPath = this.fileInCache('jobs_incompleted.json');
 
@@ -226,7 +236,8 @@ export class PipelinesRepository implements IPipelinesRepository {
 
       while (true) {
         try {
-          const response = await this.githubWorkflowClient.fetchJobsPage(runId, page, perPage);
+          logger.info(`Fetching jobs for workflow run ${runId} in page ${page}...`);
+          const response = await this.githubWorkflowClient.fetchJobsPage(runId, page, perPage, { rawFilters });
           const pageJobs = (response.jobs || []).map((job: any) => ({
             ...job,
             startedAt: job.started_at,

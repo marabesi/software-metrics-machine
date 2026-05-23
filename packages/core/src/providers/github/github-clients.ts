@@ -1,4 +1,5 @@
 import axios, { AxiosInstance } from 'axios';
+import { logger } from '@smmachine/utils';
 import { PRDetails } from '../../domain-types';
 import { Logger } from '@smmachine/utils';
 
@@ -26,7 +27,8 @@ export interface IGithubWorkflowClient {
   fetchJobsPage(
     runId: string,
     page: number,
-    perPage?: number
+    perPage?: number,
+    options?: { rawFilters?: string }
   ): Promise<{ jobs: any[]; hasNext: boolean }>;
 }
 
@@ -265,9 +267,9 @@ export class GithubWorkflowClient implements IGithubWorkflowClient {
     try {
       // Fetch jobs for each workflow run
       for (const runId of workflowIds) {
-        this.logger.info(`Fetching jobs for workflow run ${runId} in ${this.owner}/${this.repo}`);
-
         let page = 1;
+        this.logger.info(`Fetching jobs for workflow run ${runId} in ${this.owner}/${this.repo} - page ${page}`);
+
         while (true) {
           const response = await this.fetchJobsPage(runId, page, 100);
           const jobs = response.jobs || [];
@@ -311,19 +313,25 @@ export class GithubWorkflowClient implements IGithubWorkflowClient {
     perPage: number = 100,
     options?: { created?: string; rawFilters?: string }
   ): Promise<{ runs: any[]; hasNext: boolean }> {
+    const requestParams = {
+      params: {
+        per_page: perPage,
+        page,
+        ...(options?.created ? {created: options.created} : {}),
+        ...this.parseRawFilters(options?.rawFilters),
+      },
+    };
+    const url = `/repos/${this.owner}/${this.repo}/actions/runs`;
+
+    logger.info(`${url} ${JSON.stringify(requestParams.params)}`)
+
     const response = await this.axiosInstance.get(
-      `/repos/${this.owner}/${this.repo}/actions/runs`,
-      {
-        params: {
-          per_page: perPage,
-          page,
-          ...(options?.created ? { created: options.created } : {}),
-          ...this.parseRawFilters(options?.rawFilters),
-        },
-      }
+      url,
+      requestParams
     );
 
     const runs = response.data.workflow_runs || [];
+    logger.info(`Fetched ${runs.length} workflow runs`)
     const hasNext = this.hasNextLink(response.headers?.link) || runs.length === perPage;
     return { runs, hasNext };
   }
@@ -333,14 +341,19 @@ export class GithubWorkflowClient implements IGithubWorkflowClient {
     page: number,
     perPage: number = 100
   ): Promise<{ jobs: any[]; hasNext: boolean }> {
+    const url = `/repos/${this.owner}/${this.repo}/actions/runs/${runId}/jobs`;
+    const requestParams = {
+      params: {
+        per_page: perPage,
+        page,
+      },
+    };
+
+    logger.info(`${url} ${JSON.stringify(requestParams.params)}`)
+
     const response = await this.axiosInstance.get(
-      `/repos/${this.owner}/${this.repo}/actions/runs/${runId}/jobs`,
-      {
-        params: {
-          per_page: perPage,
-          page,
-        },
-      }
+      url,
+      requestParams
     );
 
     const jobs = response.data.jobs || [];

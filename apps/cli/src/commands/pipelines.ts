@@ -1,7 +1,7 @@
-import { Command } from 'commander';
-import { Configuration } from '@smmachine/core/infrastructure/configuration';
-import { Logger } from '@smmachine/utils';
-import { GithubWorkflowClient, PipelinesRepository} from "@smmachine/core";
+import {Command} from 'commander';
+import {Configuration} from '@smmachine/core/infrastructure/configuration';
+import {Logger} from '@smmachine/utils';
+import {GithubWorkflowClient, PipelinesRepository} from "@smmachine/core";
 
 const logger = new Logger('PipelinesCommand');
 
@@ -16,28 +16,22 @@ function createPipelinesOrchestrator(): PipelinesRepository {
     githubRepo
   );
 
-  const pipelinesRepository = new PipelinesRepository(githubWorkflowClient, config.gitRepositoryLocation!);
-
-  return pipelinesRepository
+  return new PipelinesRepository(githubWorkflowClient, config.getPipelinePath())
 }
 
 export function createPipelinesCommands(program: Command): void {
   const pipelinesGroup = program.command('pipelines').description('Pipeline/workflow operations');
 
-  /**
-   * smm pipelines fetch [options]
-   * Fetch pipeline runs from GitHub
-   */
   pipelinesGroup
     .command('fetch')
     .description('Fetch pipeline runs from GitHub')
-    .option('--force', 'Force re-fetching pipelines even if already fetched')
+    .option('--force', 'Force re-fetching pipelines even if already fetched', false)
     .option('--start-date <date>', 'Filter runs created on or after this date (ISO 8601)')
     .option('--end-date <date>', 'Filter runs created on or before this date (ISO 8601)')
     .option('--raw-filters <filters>', 'Raw filters (e.g., status=success,branch=main)')
     .action(async (options) => {
       try {
-        console.log('🔄 Fetching pipeline runs from GitHub...');
+        logger.info('🔄 Fetching pipeline runs from GitHub...');
 
         const orchestrator = createPipelinesOrchestrator();
         await orchestrator.refreshPipelines({
@@ -47,33 +41,29 @@ export function createPipelinesCommands(program: Command): void {
           rawFilters: options.rawFilters,
         });
 
-        console.log('✅ Fetch pipeline data has been completed and stored on disk');
+        logger.info('✅ Fetch pipeline data has been completed and stored on disk');
       } catch (error) {
         logger.error('Failed to fetch pipeline runs', error);
         process.exit(1);
       }
     });
 
-  /**
-   * smm pipelines fetch-jobs [options]
-   * Fetch pipeline jobs from GitHub
-   */
   pipelinesGroup
     .command('fetch-jobs')
     .description('Fetch pipeline jobs from GitHub')
     .option('--force', 'Force re-fetching jobs even if already fetched')
-    .option('--start-date <date>', 'Filter jobs created on or after this date')
-    .option('--end-date <date>', 'Filter jobs created on or before this date')
+    .option('--run-start-date <date>', 'Filter pipelines created on or after this date')
+    .option('--run-end-date <date>', 'Filter pipelines created on or before this date')
+    .option('--raw-filters <filters>', 'Raw filters (e.g., status=success,branch=main)')
     .action(async (options) => {
       try {
-        console.log('🔄 Fetching pipeline jobs from GitHub...');
+        logger.info('🔄 Fetching pipeline jobs from GitHub...');
 
         const orchestrator = createPipelinesOrchestrator();
-        await orchestrator.refreshPipelines({
-          forceRefresh: options.force,
-          includeJobs: true,
-          startDate: options.startDate,
-          endDate: options.endDate,
+        await orchestrator.refreshJobs({
+          startDate: options.runStartDate,
+          endDate: options.runEndDate,
+          rawFilters: options.rawFilters,
         });
 
         console.log('✅ Fetch pipeline jobs has been completed and stored on disk');
@@ -83,10 +73,6 @@ export function createPipelinesCommands(program: Command): void {
       }
     });
 
-  /**
-   * smm pipelines summary [options]
-   * Display pipeline run summary
-   */
   pipelinesGroup
     .command('summary')
     .description('Display a summary of pipeline runs')
@@ -121,10 +107,6 @@ export function createPipelinesCommands(program: Command): void {
       }
     });
 
-  /**
-   * smm pipelines by-status [options]
-   * View pipelines grouped by status
-   */
   pipelinesGroup
     .command('by-status')
     .description('View pipeline runs grouped by status')
@@ -165,10 +147,6 @@ export function createPipelinesCommands(program: Command): void {
       }
     });
 
-  /**
-   * smm pipelines runs-duration [options]
-   * View pipeline run durations
-   */
   pipelinesGroup
     .command('runs-duration')
     .description('View pipeline run durations')
