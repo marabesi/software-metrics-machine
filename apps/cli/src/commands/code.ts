@@ -28,29 +28,9 @@ function createCodeDependencies(config: Configuration): {
   };
 }
 
-/**
- * Code Command Group
- *
- * Provides CLI commands for code analysis operations matching Python CLI functionality.
- *
- * Commands:
- *   smm code change-set         Analyze change sets using PyDriller
- *   smm code codemaat-fetch     Fetch code metrics using CodeMaat
- *   smm code churn              Calculate code churn
- *   smm code coupling           Analyze code coupling
- *   smm code entity-churn       Calculate entity churn
- *   smm code entity-effort      Calculate entity effort
- *   smm code entity-ownership   Analyze entity ownership
- *   smm code pairing-index      Calculate developer pairing index
- *   smm code metadata           View code metadata
- */
 export function createCodeCommands(program: Command): void {
   const codeGroup = program.command('code').description('Code analysis operations');
 
-  /**
-   * smm code change-set [options]
-   * Analyze change sets using Git traversal
-   */
   codeGroup
     .command('change-set')
     .description('Analyze change sets from git repository')
@@ -60,7 +40,7 @@ export function createCodeCommands(program: Command): void {
     .option('--output <format>', 'Output format (text|json)', 'text')
     .action(async (options) => {
       try {
-        console.log('🔍 Analyzing change sets...');
+        logger.info('🔍 Analyzing change sets...');
 
         const config = loadConfiguration();
         const repoPath = config.gitRepositoryLocation
@@ -76,13 +56,13 @@ export function createCodeCommands(program: Command): void {
         const commits = result.commits;
 
         if (options.output === 'json') {
-          console.log(JSON.stringify({ commits: commits.length }, null, 2));
+          logger.info(JSON.stringify({ commits: commits.length }, null, 2));
         } else {
-          console.log('\n=== Change Set Analysis ===\n');
-          console.log(`Repository: ${repoPath}`);
-          console.log(`Total Commits: ${commits.length}`);
-          if (options.startDate) console.log(`Start Date: ${options.startDate}`);
-          if (options.endDate) console.log(`End Date: ${options.endDate}`);
+          logger.info('\n=== Change Set Analysis ===\n');
+          logger.info(`Repository: ${repoPath}`);
+          logger.info(`Total Commits: ${commits.length}`);
+          if (options.startDate) logger.info(`Start Date: ${options.startDate}`);
+          if (options.endDate) logger.info(`End Date: ${options.endDate}`);
         }
       } catch (error) {
         logger.error('Failed to analyze change sets', error);
@@ -90,10 +70,6 @@ export function createCodeCommands(program: Command): void {
       }
     });
 
-  /**
-   * smm code codemaat-fetch [options]
-   * Fetch code metrics using CodeMaat analyzer
-   */
   codeGroup
     .command('codemaat-fetch')
     .description('Fetch CodeMaat CSV data from the git repository')
@@ -104,7 +80,7 @@ export function createCodeCommands(program: Command): void {
     .option('--output <format>', 'Output format (text|json)', 'text')
     .action(async (options) => {
       try {
-        console.log('🔍 Running CodeMaat analysis...');
+        logger.info('🔍 Running CodeMaat analysis...');
         const currentDir = __dirname;
         const workspaceRoot = path.resolve(currentDir, '../../../../');
         const cliRoot = path.join(workspaceRoot, 'apps/cli');
@@ -134,7 +110,7 @@ export function createCodeCommands(program: Command): void {
         );
 
         if (options.output === 'json') {
-          console.log(
+          logger.info(
             JSON.stringify(
               {
                 repository: repoPath,
@@ -146,9 +122,9 @@ export function createCodeCommands(program: Command): void {
             )
           );
         } else {
-          console.log('\n=== CodeMaat Fetch ===\n');
-          console.log(`Repository: ${repoPath}`);
-          console.log(`Output Directory: ${codemaatDir}`);
+          logger.info('\n=== CodeMaat Fetch ===\n');
+          logger.info(`Repository: ${repoPath}`);
+          logger.info(`Output Directory: ${codemaatDir}`);
           process.stdout.write(stdout);
         }
       } catch (error) {
@@ -157,10 +133,6 @@ export function createCodeCommands(program: Command): void {
       }
     });
 
-  /**
-   * smm code churn [options]
-   * Calculate code churn metrics
-   */
   codeGroup
     .command('churn')
     .description('Calculate code churn metrics')
@@ -170,7 +142,7 @@ export function createCodeCommands(program: Command): void {
     .option('--output <format>', 'Output format (text|json|csv)', 'text')
     .action(async (options) => {
       try {
-        console.log('📊 Calculating code churn...');
+        logger.info('📊 Calculating code churn...');
         const churn = createCodeDependencies(loadConfiguration());
         const metrics = await churn.codeRepository.getCodeChurn({
           selectedAuthors: options.authors
@@ -179,7 +151,7 @@ export function createCodeCommands(program: Command): void {
           startDate: options.startDate,
           endDate: options.endDate,
         });
-        const churnRows = Array.isArray(metrics.codeChurn?.data) ? metrics.codeChurn.data : [];
+        const churnRows = metrics.data
         const totalCommits = churnRows.reduce(
           (sum: number, row: any) => sum + (row.commits || 0),
           0
@@ -191,14 +163,14 @@ export function createCodeCommands(program: Command): void {
         );
 
         if (options.output === 'json') {
-          console.log(JSON.stringify({ codeChurn: churnRows }, null, 2));
+          logger.info(JSON.stringify({ codeChurn: churnRows }, null, 2));
         } else {
-          console.log('\n=== Code Churn Metrics ===\n');
-          console.log(`Data Points: ${churnRows.length}`);
-          console.log(`Total Commits: ${totalCommits}`);
-          console.log(`Lines Added: ${linesAdded}`);
-          console.log(`Lines Removed: ${linesRemoved}`);
-          console.log(`Churn: ${linesAdded + linesRemoved}`);
+          logger.info('\n=== Code Churn Metrics ===\n');
+          logger.info(`Data Points: ${churnRows.length}`);
+          logger.info(`Total Commits: ${totalCommits}`);
+          logger.info(`Lines Added: ${linesAdded}`);
+          logger.info(`Lines Removed: ${linesRemoved}`);
+          logger.info(`Churn: ${linesAdded + linesRemoved}`);
         }
       } catch (error) {
         logger.error('Failed to calculate code churn', error);
@@ -206,10 +178,6 @@ export function createCodeCommands(program: Command): void {
       }
     });
 
-  /**
-   * smm code coupling [options]
-   * Analyze code coupling between modules
-   */
   codeGroup
     .command('coupling')
     .description('Analyze code coupling between modules')
@@ -219,7 +187,7 @@ export function createCodeCommands(program: Command): void {
     .option('--output <format>', 'Output format (text|json|csv)', 'text')
     .action(async (options) => {
       try {
-        console.log('🔗 Analyzing code coupling...');
+        logger.info('🔗 Analyzing code coupling...');
 
         const repository = createCodeDependencies(loadConfiguration());
 
@@ -230,11 +198,11 @@ export function createCodeCommands(program: Command): void {
         const coupling = Array.isArray(metrics.fileCoupling) ? metrics.fileCoupling : [];
 
         if (options.output === 'json') {
-          console.log(JSON.stringify({ coupling }, null, 2));
+          logger.info(JSON.stringify({ coupling }, null, 2));
         } else {
-          console.log('\n=== Code Coupling Analysis ===\n');
-          console.log(`Min Coupling Threshold: ${options.minCoupling}`);
-          console.log(`Relationships: ${coupling.length}`);
+          logger.info('\n=== Code Coupling Analysis ===\n');
+          logger.info(`Min Coupling Threshold: ${options.minCoupling}`);
+          logger.info(`Relationships: ${coupling.length}`);
         }
       } catch (error) {
         logger.error('Failed to analyze code coupling', error);
@@ -242,10 +210,6 @@ export function createCodeCommands(program: Command): void {
       }
     });
 
-  /**
-   * smm code entity-churn [options]
-   * Calculate entity-level churn metrics
-   */
   codeGroup
     .command('entity-churn')
     .description('Calculate entity-level churn metrics')
@@ -263,18 +227,18 @@ export function createCodeCommands(program: Command): void {
           startDate: options.startDate,
           endDate: options.endDate,
         });
-        const churnRows = Array.isArray(metrics.codeChurn?.data) ? metrics.codeChurn.data : [];
+        const churnRows = metrics.data
         const totalChurn = churnRows.reduce(
           (sum: number, row: any) => sum + (row.added || 0) + (row.deleted || 0),
           0
         );
 
         if (options.output === 'json') {
-          console.log(JSON.stringify({ codeChurn: churnRows }, null, 2));
+          logger.info(JSON.stringify({ codeChurn: churnRows }, null, 2));
         } else {
-          console.log('\n=== Entity Churn Metrics ===\n');
-          console.log(`Top Entities: ${options.top}`);
-          console.log(`Total Churn: ${totalChurn}`);
+          logger.info('\n=== Entity Churn Metrics ===\n');
+          logger.info(`Top Entities: ${options.top}`);
+          logger.info(`Total Churn: ${totalChurn}`);
         }
       } catch (error) {
         logger.error('Failed to calculate entity churn', error);
@@ -282,10 +246,6 @@ export function createCodeCommands(program: Command): void {
       }
     });
 
-  /**
-   * smm code entity-effort [options]
-   * Calculate entity effort metrics
-   */
   codeGroup
     .command('entity-effort')
     .description('Calculate entity effort metrics')
@@ -304,11 +264,11 @@ export function createCodeCommands(program: Command): void {
         });
 
         if (options.output === 'json') {
-          console.log(JSON.stringify({ entityEffort: metrics.entityEffort || [] }, null, 2));
+          logger.info(JSON.stringify({ entityEffort: metrics.entityEffort || [] }, null, 2));
         } else {
-          console.log('\n=== Entity Effort Metrics ===\n');
-          console.log(`Top Entities: ${options.top}`);
-          console.log('\nNote: Detailed effort calculation requires enhanced implementation');
+          logger.info('\n=== Entity Effort Metrics ===\n');
+          logger.info(`Top Entities: ${options.top}`);
+          logger.info('\nNote: Detailed effort calculation requires enhanced implementation');
         }
       } catch (error) {
         logger.error('Failed to calculate entity effort', error);
@@ -316,10 +276,6 @@ export function createCodeCommands(program: Command): void {
       }
     });
 
-  /**
-   * smm code entity-ownership [options]
-   * Analyze entity ownership by developers
-   */
   codeGroup
     .command('entity-ownership')
     .description('Analyze entity ownership by developers')
@@ -329,7 +285,7 @@ export function createCodeCommands(program: Command): void {
     .option('--output <format>', 'Output format (text|json|csv)', 'text')
     .action(async (options) => {
       try {
-        console.log('👥 Analyzing entity ownership...');
+        logger.info('👥 Analyzing entity ownership...');
 
         const repository = createCodeDependencies(loadConfiguration());
         const metrics = await repository.codeRepository.getEntityOwnership({
@@ -338,13 +294,13 @@ export function createCodeCommands(program: Command): void {
         });
 
         if (options.output === 'json') {
-          console.log(JSON.stringify({ ownership: metrics.ownership || {} }, null, 2));
+          logger.info(JSON.stringify({ ownership: metrics.ownership || {} }, null, 2));
         } else {
-          console.log('\n=== Entity Ownership Analysis ===\n');
+          logger.info('\n=== Entity Ownership Analysis ===\n');
           if (options.entity) {
-            console.log(`Entity: ${options.entity}`);
+            logger.info(`Entity: ${options.entity}`);
           }
-          console.log('\nNote: Detailed ownership analysis requires enhanced implementation');
+          logger.info('\nNote: Detailed ownership analysis requires enhanced implementation');
         }
       } catch (error) {
         logger.error('Failed to analyze entity ownership', error);
@@ -352,10 +308,6 @@ export function createCodeCommands(program: Command): void {
       }
     });
 
-  /**
-   * smm code pairing-index [options]
-   * Calculate developer pairing index
-   */
   codeGroup
     .command('pairing-index')
     .description('Calculate developer pairing index')
@@ -365,7 +317,7 @@ export function createCodeCommands(program: Command): void {
     .option('--output <format>', 'Output format (text|json|csv)', 'text')
     .action(async (options) => {
       try {
-        console.log('👥 Calculating developer pairing index...');
+        logger.info('👥 Calculating developer pairing index...');
 
         const repository = createCodeDependencies(loadConfiguration());
         const metrics = await repository.codeRepository.getPairingIndex({
@@ -375,13 +327,13 @@ export function createCodeCommands(program: Command): void {
         const pairing = metrics.pairingIndex || {};
 
         if (options.output === 'json') {
-          console.log(JSON.stringify({ pairingIndex: pairing }, null, 2));
+          logger.info(JSON.stringify({ pairingIndex: pairing }, null, 2));
         } else {
-          console.log('\n=== Developer Pairing Index ===\n');
-          console.log(`Min Shared Commits: ${options.minShared}`);
-          console.log(`Pairing Index: ${pairing.pairingIndexPercentage ?? 0}%`);
-          console.log(`Total Commits: ${pairing.totalAnalyzedCommits ?? 0}`);
-          console.log(`Paired Commits: ${pairing.pairedCommits ?? 0}`);
+          logger.info('\n\n=== Developer Pairing Index ===\n');
+          logger.info(`Min Shared Commits: ${options.minShared}`);
+          logger.info(`Pairing Index: ${pairing.pairingIndexPercentage ?? 0}%`);
+          logger.info(`Total Commits: ${pairing.totalAnalyzedCommits ?? 0}`);
+          logger.info(`Paired Commits: ${pairing.pairedCommits ?? 0}`);
         }
       } catch (error) {
         logger.error('Failed to calculate pairing index', error);

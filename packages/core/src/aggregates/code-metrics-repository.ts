@@ -1,7 +1,7 @@
 import { logger } from '@smmachine/utils';
-import { Commit } from '../domain-types';
+import {Commit, PairingIndexResult} from '../domain-types';
 import { type ICommitTraverser } from '../providers/git';
-import { type ICodemaatAnalyzer } from '../providers/codemaat';
+import {CodeChurnResult, FileCoupling, type ICodemaatAnalyzer} from '../providers/codemaat';
 import { PairingIndexService } from '../domain/code/pairing-index';
 import { FileSystemRepository } from '../infrastructure/repository';
 
@@ -64,7 +64,7 @@ export class CodeMetricsRepository implements ICodeMetricsRepository {
   /**
    * Get pairing index (co-author percentage)
    */
-  async getPairingIndex(options?: any): Promise<any> {
+  async getPairingIndex(options?: any): Promise<PairingIndexResult> {
     await this.refreshCommits(options);
     return this.pairingService.getPairingIndex({
       selectedAuthors: options?.selectedAuthors,
@@ -78,7 +78,7 @@ export class CodeMetricsRepository implements ICodeMetricsRepository {
   /**
    * Get code churn metrics
    */
-  async getCodeChurn(options?: any): Promise<any> {
+  async getCodeChurn(options?: any): Promise<CodeChurnResult> {
     logger.info('Fetching code churn from CodeMaat...');
     return this.codemaatAnalyzer.getCodeChurn({
       startDate: options?.startDate,
@@ -89,7 +89,7 @@ export class CodeMetricsRepository implements ICodeMetricsRepository {
   /**
    * Get file coupling metrics
    */
-  async getFileCoupling(options?: any): Promise<any> {
+  async getFileCoupling(options?: any): Promise<FileCoupling[]> {
     logger.info('Fetching file coupling from CodeMaat...');
     return this.codemaatAnalyzer.getFileCoupling({
       ignorePatterns: options?.ignorePatterns,

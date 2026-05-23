@@ -33,10 +33,18 @@ export class Logger {
   }
 
   info(message: string, data?: unknown): void {
-    if (this.shouldLog('INFO')) {
+    if (!this.shouldLog('INFO')) {
+      return
+    }
+
+    if (data) {
       // eslint-disable-next-line no-console
       console.log(this.formatMessage('INFO', message), data);
+      return;
     }
+
+    // eslint-disable-next-line no-console
+    console.log(this.formatMessage('INFO', message));
   }
 
   warn(message: string, data?: unknown): void {

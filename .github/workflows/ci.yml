@@ -36,9 +36,6 @@ jobs:
       - name: Set project example
         run: |
           git clone --depth 500 https://github.com/facebook/react.git docs/project-example/react
-          ls -la docs/
-          ls -la docs/project-example/
-          ls -la docs/project-example/react
 
       - name: Install dependencies
         run: pnpm install
