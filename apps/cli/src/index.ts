@@ -7,7 +7,6 @@ import { createSonarQubeCommands } from './commands/sonarqube';
 import { createDashboardCommands } from './commands/dashboard';
 import { createToolsCommands } from './commands/tools';
 import { Logger } from '@smmachine/utils';
-import { validateConfiguration } from './orchestrator-factory';
 
 const logger = new Logger('smm-cli');
 
@@ -25,16 +24,6 @@ export function commands() {
         logger.setLevel('DEBUG');
       }
     })
-    .hook('preAction', () => {
-      // Validate configuration before executing commands
-      const validation = validateConfiguration();
-      if (!validation.valid) {
-        for (const error of validation.errors) {
-          logger.error(error);
-        }
-        process.exit(1);
-      }
-    });
 
   // Register command groups
   createPRsCommands(program);

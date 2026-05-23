@@ -7,11 +7,9 @@ import {
   formatError,
   formatIssueMetrics,
   formatLoading,
-  formatPullRequestMetrics,
   formatQualityMetrics,
   formatSuccess,
 } from '../src/formatters';
-import { validateConfiguration } from '../src/orchestrator-factory';
 import { Command } from 'commander';
 
 describe('CLI Commands', () => {
@@ -21,115 +19,7 @@ describe('CLI Commands', () => {
     program = commands();
   });
 
-  describe('Metrics Command Structure', () => {
-    it.only('should have metrics command group', async () => {
-      const metricsCmd = program.commands.find((cmd) => {
-        return cmd.name() === 'prs';
-      });
-      expect(metricsCmd).toBeDefined();
-    });
-
-    it('should have pr subcommand', () => {
-      const metricsCmd = program.commands.find((cmd) => cmd.name() === 'metrics');
-      const prCmd = metricsCmd?.commands.find((cmd) => cmd.name() === 'pr');
-      expect(prCmd).toBeDefined();
-    });
-
-    it('should have deployment subcommand', () => {
-      const metricsCmd = program.commands.find((cmd) => cmd.name() === 'metrics');
-      const depCmd = metricsCmd?.commands.find((cmd) => cmd.name() === 'deployment');
-      expect(depCmd).toBeDefined();
-    });
-
-    it('should have code subcommand', () => {
-      const metricsCmd = program.commands.find((cmd) => cmd.name() === 'metrics');
-      const codeCmd = metricsCmd?.commands.find((cmd) => cmd.name() === 'code');
-      expect(codeCmd).toBeDefined();
-    });
-
-    it('should have issues subcommand', () => {
-      const metricsCmd = program.commands.find((cmd) => cmd.name() === 'metrics');
-      const issuesCmd = metricsCmd?.commands.find((cmd) => cmd.name() === 'issues');
-      expect(issuesCmd).toBeDefined();
-    });
-
-    it('should have quality subcommand', () => {
-      const metricsCmd = program.commands.find((cmd) => cmd.name() === 'metrics');
-      const qualityCmd = metricsCmd?.commands.find((cmd) => cmd.name() === 'quality');
-      expect(qualityCmd).toBeDefined();
-    });
-
-    it('should have report subcommand', () => {
-      const metricsCmd = program.commands.find((cmd) => cmd.name() === 'metrics');
-      const reportCmd = metricsCmd?.commands.find((cmd) => cmd.name() === 'report');
-      expect(reportCmd).toBeDefined();
-    });
-  });
-
-  describe('Command Options', () => {
-    it('pr command should support format options', () => {
-      const metricsCmd = program.commands.find((cmd) => cmd.name() === 'metrics');
-      const prCmd = metricsCmd?.commands.find((cmd) => cmd.name() === 'pr');
-      expect(prCmd?.options).toBeDefined();
-    });
-
-    it('deployment command should support frequency option', () => {
-      const metricsCmd = program.commands.find((cmd) => cmd.name() === 'metrics');
-      const depCmd = metricsCmd?.commands.find((cmd) => cmd.name() === 'deployment');
-      const frequencyOpt = depCmd?.options.find((opt) => opt.long === '--frequency');
-      expect(frequencyOpt).toBeDefined();
-    });
-
-    it('report command should support all filter options', () => {
-      const metricsCmd = program.commands.find((cmd) => cmd.name() === 'metrics');
-      const reportCmd = metricsCmd?.commands.find((cmd) => cmd.name() === 'report');
-      const hasDateOptions = reportCmd?.options.some((opt) => opt.long === '--start-date');
-      const hasAuthorsOption = reportCmd?.options.some((opt) => opt.long === '--authors');
-      expect(hasDateOptions && hasAuthorsOption).toBe(true);
-    });
-  });
-
   describe('Output Formatters', () => {
-    describe('Pull Request Metrics Formatter', () => {
-      it('should format PR metrics in text format', () => {
-        const data = {
-          totalPRs: 42,
-          leadTime: { average: 2.5, unit: 'days' },
-          commentSummary: { total: 156 },
-          labelSummary: { bug: 8, feature: 15 },
-        };
-
-        const output = formatPullRequestMetrics(data, { format: 'text' });
-        expect(output).toContain('Pull Request Metrics');
-        expect(output).toContain('42');
-        expect(output).toContain('2.5 days');
-      });
-
-      it('should format PR metrics in JSON format', () => {
-        const data = {
-          totalPRs: 42,
-          leadTime: { average: 2.5, unit: 'days' },
-        };
-
-        const output = formatPullRequestMetrics(data, { format: 'json' });
-        const parsed = JSON.parse(output);
-        expect(parsed.totalPRs).toBe(42);
-        expect(parsed.leadTime.average).toBe(2.5);
-      });
-
-      it('should format PR metrics in CSV format', () => {
-        const data = {
-          totalPRs: 42,
-          leadTime: { average: 2.5, unit: 'days' },
-          commentSummary: { total: 156 },
-        };
-
-        const output = formatPullRequestMetrics(data, { format: 'csv' });
-        expect(output).toContain('metric,value');
-        expect(output).toContain('total_prs,42');
-        expect(output).toContain('lead_time_days,2.5');
-      });
-    });
 
     describe('Deployment Metrics Formatter', () => {
       it('should format deployment metrics in text format', () => {
@@ -309,34 +199,6 @@ describe('CLI Commands', () => {
   });
 
   describe('Configuration Validation', () => {
-    it('should warn about missing providers', () => {
-      // Save original env
-      const originalEnv = process.env;
-      process.env = {};
-
-      const validation = validateConfiguration();
-
-      // At least it should indicate no valid config
-      expect(validation).toBeDefined();
-      expect(validation.errors || validation.valid === false).toBeTruthy();
-
-      // Restore env
-      process.env = originalEnv;
-    });
-
-    it('should accept configuration with at least one provider', () => {
-      const originalEnv = process.env;
-      process.env = {
-        GITHUB_TOKEN: 'test',
-        GITHUB_OWNER: 'test',
-        GITHUB_REPO: 'test',
-      };
-
-      const validation = validateConfiguration();
-      expect(validation.valid).toBe(true);
-
-      process.env = originalEnv;
-    });
 
     it('deployment command should have frequency option', () => {
       const metricsCmd = program.commands.find((cmd) => cmd.name() === 'metrics');

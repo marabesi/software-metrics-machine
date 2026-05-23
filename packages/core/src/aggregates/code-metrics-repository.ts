@@ -9,6 +9,8 @@ export interface ICodeMetricsRepository {
   getPairingIndex(options?: any): Promise<any>;
   getCodeChurn(options?: any): Promise<any>;
   getFileCoupling(options?: any): Promise<any>;
+  getEntityEffort(options?: any): Promise<any>;
+  getEntityOwnership(options?: any): Promise<any>;
 }
 
 /**
@@ -92,5 +94,13 @@ export class CodeMetricsRepository implements ICodeMetricsRepository {
     return this.codemaatAnalyzer.getFileCoupling({
       ignorePatterns: options?.ignorePatterns,
     });
+  }
+
+  async getEntityEffort(options?: any): Promise<any> {
+    throw new Error('getEntityEffort: Method not implemented.');
+  }
+
+  async getEntityOwnership(options?: any): Promise<any> {
+    throw new Error('getEntityOwnership: Method not implemented.');
   }
 }

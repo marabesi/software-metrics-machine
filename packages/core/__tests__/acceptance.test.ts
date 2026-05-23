@@ -3,7 +3,7 @@ import { PullRequestsRepository } from '../src';
 import { PipelinesRepository } from '../src';
 import { CodeMetricsRepository } from '../src';
 import { IssuesRepository } from '../src';
-import { QualityMetricsRepository } from '../src';
+import { SonarqubeMetricsRepository } from '../src';
 import { MetricsOrchestrator } from '../src';
 import { GithubPrsClient, GithubWorkflowClient } from '../src';
 import { JiraIssuesClient } from '../src';
@@ -57,7 +57,7 @@ describe('Metrics System Acceptance Tests', () => {
     const pipelinesRepo = new PipelinesRepository(githubWorkflowClient, cacheDir);
     const codeRepo = new CodeMetricsRepository(commitTraverser, codemaatAnalyzer, cacheDir);
     const issuesRepo = new IssuesRepository(jiraClient, cacheDir);
-    const qualityRepo = new QualityMetricsRepository(sonarqubeClient);
+    const qualityRepo = new SonarqubeMetricsRepository(sonarqubeClient);
 
     // Set up orchestrator
     orchestrator = new MetricsOrchestrator(

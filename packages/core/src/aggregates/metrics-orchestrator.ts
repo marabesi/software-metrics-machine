@@ -3,7 +3,7 @@ import { PullRequestsRepository } from './pull-requests-repository';
 import { PipelinesRepository } from './pipelines-repository';
 import { CodeMetricsRepository } from './code-metrics-repository';
 import { IssuesRepository } from './issues-repository';
-import { QualityMetricsRepository } from './quality-metrics-repository';
+import { SonarqubeMetricsRepository } from './sonarqube-metrics-repository';
 
 export interface IMetricsOrchestrator {
   getPRMetrics(filters?: any): Promise<any>;
@@ -11,7 +11,6 @@ export interface IMetricsOrchestrator {
   getCodeMetrics(filters?: any): Promise<any>;
   getIssueMetrics(filters?: any): Promise<any>;
   getQualityMetrics(filters?: any): Promise<any>;
-  getFullReport(filters?: any): Promise<any>;
 }
 
 /**
@@ -24,7 +23,7 @@ export class MetricsOrchestrator implements IMetricsOrchestrator {
     private pipelinesRepo: PipelinesRepository,
     private codeRepo: CodeMetricsRepository,
     private issuesRepo: IssuesRepository,
-    private qualityRepo: QualityMetricsRepository
+    private qualityRepo: SonarqubeMetricsRepository
   ) {}
 
   /**
@@ -90,30 +89,5 @@ export class MetricsOrchestrator implements IMetricsOrchestrator {
     logger.info('Orchestrating quality metrics...');
 
     return this.qualityRepo.getQualityMetrics(filters);
-  }
-
-  /**
-   * Get full report across all sources
-   */
-  async getFullReport(filters?: any): Promise<any> {
-    logger.info('Generating full report...');
-
-    const [pr, deployment, code, issues, quality] = await Promise.all([
-      this.getPRMetrics(filters),
-      this.getDeploymentMetrics(filters),
-      this.getCodeMetrics(filters),
-      this.getIssueMetrics(filters),
-      this.getQualityMetrics(filters),
-    ]);
-
-    return {
-      timestamp: new Date().toISOString(),
-      filters,
-      pullRequests: pr,
-      deployment,
-      code,
-      issues,
-      quality,
-    };
   }
 }

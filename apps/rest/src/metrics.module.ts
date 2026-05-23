@@ -13,7 +13,7 @@ import {
   PipelinesRepository,
   CodeMetricsRepository,
   IssuesRepository,
-  QualityMetricsRepository,
+  SonarqubeMetricsRepository,
   GithubPrsClient,
   GithubWorkflowClient,
   JiraIssuesClient,
@@ -170,10 +170,10 @@ function buildDataDirectories(config: Configuration) {
       inject: [JiraIssuesClient, Configuration],
     },
     {
-      provide: QualityMetricsRepository,
+      provide: SonarqubeMetricsRepository,
       useFactory: (client: SonarqubeMeasuresClient, config: Configuration) => {
         const paths = buildDataDirectories(config);
-        return new QualityMetricsRepository(client, paths.sonarqubeDirectory);
+        return new SonarqubeMetricsRepository(client, paths.sonarqubeDirectory);
       },
       inject: [SonarqubeMeasuresClient, Configuration],
     },
@@ -186,14 +186,14 @@ function buildDataDirectories(config: Configuration) {
         pipelinesRepo: PipelinesRepository,
         codeRepo: CodeMetricsRepository,
         issuesRepo: IssuesRepository,
-        qualityRepo: QualityMetricsRepository
+        qualityRepo: SonarqubeMetricsRepository
       ) => new MetricsOrchestrator(prsRepo, pipelinesRepo, codeRepo, issuesRepo, qualityRepo),
       inject: [
         PullRequestsRepository,
         PipelinesRepository,
         CodeMetricsRepository,
         IssuesRepository,
-        QualityMetricsRepository,
+        SonarqubeMetricsRepository,
       ],
     },
   ],

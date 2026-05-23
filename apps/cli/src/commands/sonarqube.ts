@@ -1,8 +1,15 @@
 import { Command } from 'commander';
+import { Configuration } from '@smmachine/core/infrastructure/configuration';
 import { Logger } from '@smmachine/utils';
-import { createOrchestrator } from '../orchestrator-factory';
+import { createSonarqubeDependencies } from '../factories/sonarqube-factory';
 
 const logger = new Logger('SonarQubeCommand');
+
+function createSonarqubeOrchestrator() {
+  const config = new Configuration(process.env);
+  const { qualityRepository } = createSonarqubeDependencies(config);
+  return qualityRepository;
+}
 
 /**
  * SonarQube Command Group
@@ -33,7 +40,7 @@ export function createSonarQubeCommands(program: Command): void {
       try {
         console.log('🔄 Fetching quality measures from SonarQube...');
 
-        const orchestrator = createOrchestrator();
+        const orchestrator = createSonarqubeOrchestrator();
 
         const metricsParam = options.metrics
           ? { metrics: options.metrics.split(',').map((m: string) => m.trim()) }

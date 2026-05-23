@@ -178,7 +178,7 @@ export class GithubWorkflowClient implements IGithubWorkflowClient {
   private readonly baseUrl = 'https://api.github.com';
 
   constructor(
-    private token: string,
+    token: string,
     private owner: string,
     private repo: string
   ) {

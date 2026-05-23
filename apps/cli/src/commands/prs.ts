@@ -1,8 +1,19 @@
-import { Command } from 'commander';
-import { Logger } from '@smmachine/utils';
-import { createOrchestrator } from '../orchestrator-factory';
+import {Command} from 'commander';
+import {Configuration} from '@smmachine/core/infrastructure/configuration';
+import {Logger} from '@smmachine/utils';
+import {GithubPrsClient, PullRequestsRepository} from "@smmachine/core";
 
 const logger = new Logger('PRsCommand');
+
+function createPRsOrchestrator(): PullRequestsRepository {
+  const config = new Configuration(process.env);
+
+  const [githubOwner, githubRepo] = config.githubRepository!.split('/');
+  const githubToken = config.githubToken!;
+
+  const githubPrsClient = new GithubPrsClient(githubToken, githubOwner, githubRepo);
+  return new PullRequestsRepository(githubPrsClient, config.gitRepositoryLocation!);
+}
 
 /**
  * PRs Command Group
@@ -30,11 +41,9 @@ export function createPRsCommands(program: Command): void {
     .option('--end-date <date>', 'Filter PRs created on or before this date (ISO 8601)')
     .action(async (options) => {
       try {
-        console.log('🔄 Fetching pull requests from GitHub...');
-
-        const orchestrator = createOrchestrator();
-        // Call getPRMetrics which internally calls refreshPRs
-        await orchestrator.getPRMetrics({
+        logger.info('🔄 Fetching pull requests from GitHub...');
+        const orchestrator = createPRsOrchestrator();
+        await orchestrator.refreshPRs({
           startDate: options.startDate,
           endDate: options.endDate,
           forceRefresh: options.force,
@@ -43,7 +52,6 @@ export function createPRsCommands(program: Command): void {
         console.log('✅ Fetch data has been completed');
       } catch (error) {
         logger.error('Failed to fetch pull requests', error);
-        process.exit(1);
       }
     });
 
@@ -61,7 +69,7 @@ export function createPRsCommands(program: Command): void {
       try {
         console.log('📊 Generating PR summary...');
 
-        const orchestrator = createOrchestrator();
+        const orchestrator = createPRsOrchestrator();
         const summary = await orchestrator.getPRMetrics({
           startDate: options.startDate,
           endDate: options.endDate,
@@ -100,8 +108,8 @@ export function createPRsCommands(program: Command): void {
       try {
         console.log('📊 Analyzing PRs by month...');
 
-        const orchestrator = createOrchestrator();
-        const metrics = await orchestrator.getPRMetrics({
+        const orchestrator = createPRsOrchestrator();
+        const metrics = await orchestrator.getPRsByMonth({
           startDate: options.startDate,
           endDate: options.endDate,
         });
@@ -134,8 +142,8 @@ export function createPRsCommands(program: Command): void {
       try {
         console.log('📊 Analyzing PRs by week...');
 
-        const orchestrator = createOrchestrator();
-        const metrics = await orchestrator.getPRMetrics({
+        const orchestrator = createPRsOrchestrator();
+        const metrics = await orchestrator.getPRsByWeek({
           startDate: options.startDate,
           endDate: options.endDate,
         });

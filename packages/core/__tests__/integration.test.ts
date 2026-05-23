@@ -9,7 +9,7 @@ import {
   PipelinesRepository,
   CodeMetricsRepository,
   IssuesRepository,
-  QualityMetricsRepository,
+  SonarqubeMetricsRepository,
   MetricsOrchestrator,
 } from '../src';
 
@@ -18,7 +18,7 @@ describe('Full Business Logic Integration', () => {
   let pipelinesRepo: PipelinesRepository;
   let codeRepo: CodeMetricsRepository;
   let issuesRepo: IssuesRepository;
-  let qualityRepo: QualityMetricsRepository;
+  let qualityRepo: SonarqubeMetricsRepository;
   let orchestrator: MetricsOrchestrator;
 
   beforeEach(() => {
@@ -45,7 +45,7 @@ describe('Full Business Logic Integration', () => {
     pipelinesRepo = new PipelinesRepository(githubWorkflowClient, cacheDir);
     codeRepo = new CodeMetricsRepository(commitTraverser, codemaatAnalyzer, cacheDir);
     issuesRepo = new IssuesRepository(jiraClient, cacheDir);
-    qualityRepo = new QualityMetricsRepository(sonarqubeClient);
+    qualityRepo = new SonarqubeMetricsRepository(sonarqubeClient);
 
     // Initialize orchestrator
     orchestrator = new MetricsOrchestrator(

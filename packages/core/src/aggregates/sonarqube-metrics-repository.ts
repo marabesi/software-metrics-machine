@@ -1,6 +1,6 @@
 import { logger } from '@smmachine/utils';
-import { type ISonarqubeMeasuresClient } from '../providers/sonarqube';
-import { FileSystemRepository } from '../infrastructure/repository';
+import { type ISonarqubeMeasuresClient } from '../providers';
+import { FileSystemRepository } from '../infrastructure';
 
 export interface IQualityMetricsRepository {
   getQualityMetrics(options?: any): Promise<any>;
@@ -14,7 +14,7 @@ export interface IQualityMetricsRepository {
  * - Caching locally
  * - Providing filtered metric access
  */
-export class QualityMetricsRepository implements IQualityMetricsRepository {
+export class SonarqubeMetricsRepository implements IQualityMetricsRepository {
   private lastFetch?: any;
   private lastFetchTime: number = 0;
   private cacheDuration: number = 1000 * 60 * 60; // 1 hour

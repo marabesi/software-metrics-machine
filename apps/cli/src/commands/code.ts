@@ -2,57 +2,30 @@ import { Command } from 'commander';
 import { execFileSync } from 'child_process';
 import * as fs from 'fs';
 import * as path from 'path';
+import { CodeMetricsRepository } from '@smmachine/core/aggregates/code-metrics-repository';
+import { CodemaatAnalyzer } from '@smmachine/core/providers/codemaat/codemaat-analyzer';
 import { Logger } from '@smmachine/utils';
-import { CommitTraverser, Configuration } from '@smmachine/core';
-import { createOrchestrator } from '../orchestrator-factory';
+import { CommitTraverser } from '@smmachine/core/providers/git/commit-traverser';
+import { Configuration } from '@smmachine/core/infrastructure/configuration';
 
 const logger = new Logger('CodeCommand');
-const currentDir = __dirname;
-const workspaceRoot = path.resolve(currentDir, '../../../../');
-const cliRoot = path.join(workspaceRoot, 'apps/cli');
 
 function loadConfiguration(): Configuration {
   return new Configuration(process.env);
 }
 
-function resolveDataDirectory(config: Configuration): string {
-  const baseDir = config.storeData || './outputs';
-  const gitProvider = config.gitProvider || 'github';
-  const repoSlug = (config.githubRepository || '').replace('/', '_');
-  return path.join(baseDir, `${gitProvider}_${repoSlug}`);
-}
+function createCodeDependencies(config: Configuration): {
+  codeRepository: CodeMetricsRepository;
+} {
+  const dataDirectory = config.storeData!;
+  const codemaatDirectory = config.getCodeMaatPath();
+  const repositoryPath = config.gitRepositoryLocation;
+  const commitTraverser = new CommitTraverser(repositoryPath);
+  const codemaatAnalyzer = new CodemaatAnalyzer(codemaatDirectory);
 
-function resolveRepositoryFromConfig(config: Configuration): string {
-  if (!config.gitRepositoryLocation) {
-    throw new Error('git_repository_location is required in smm_config.json');
-  }
-
-  const configuredPath = config.gitRepositoryLocation;
-
-  if (fs.existsSync(configuredPath)) {
-    return configuredPath;
-  }
-
-  // Try common workspace-relative variants while keeping config as source of truth.
-  const candidates: string[] = [];
-
-  if (!path.isAbsolute(configuredPath)) {
-    candidates.push(path.resolve(workspaceRoot, configuredPath));
-    candidates.push(path.resolve(workspaceRoot, 'api', configuredPath));
-  } else {
-    const relativeToWorkspace = path.relative(workspaceRoot, configuredPath);
-    if (!relativeToWorkspace.startsWith('..') && !path.isAbsolute(relativeToWorkspace)) {
-      candidates.push(path.join(workspaceRoot, 'api', relativeToWorkspace));
-    }
-  }
-
-  for (const candidate of candidates) {
-    if (fs.existsSync(candidate)) {
-      return candidate;
-    }
-  }
-
-  throw new Error(`git_repository_location from smm_config.json was not found: ${configuredPath}`);
+  return {
+    codeRepository: new CodeMetricsRepository(commitTraverser, codemaatAnalyzer, dataDirectory),
+  };
 }
 
 /**
@@ -76,7 +49,7 @@ export function createCodeCommands(program: Command): void {
 
   /**
    * smm code change-set [options]
-   * Analyze change sets using PyDriller/Git traversal
+   * Analyze change sets using Git traversal
    */
   codeGroup
     .command('change-set')
@@ -90,7 +63,7 @@ export function createCodeCommands(program: Command): void {
         console.log('🔍 Analyzing change sets...');
 
         const config = loadConfiguration();
-        const repoPath = resolveRepositoryFromConfig(config);
+        const repoPath = config.gitRepositoryLocation
 
         const traverser = new CommitTraverser(repoPath);
         const result = await traverser.traverseCommits({
@@ -132,10 +105,13 @@ export function createCodeCommands(program: Command): void {
     .action(async (options) => {
       try {
         console.log('🔍 Running CodeMaat analysis...');
+        const currentDir = __dirname;
+        const workspaceRoot = path.resolve(currentDir, '../../../../');
+        const cliRoot = path.join(workspaceRoot, 'apps/cli');
 
         const config = loadConfiguration();
-        const repoPath = resolveRepositoryFromConfig(config);
-        const codemaatDir = path.join(resolveDataDirectory(config), 'codemaat');
+        const repoPath = config.gitRepositoryLocation
+        const codemaatDir = config.getCodeMaatPath();
         const scriptPath = path.join(cliRoot, 'fetch-codemaat.sh');
 
         fs.mkdirSync(codemaatDir, { recursive: true });
@@ -195,9 +171,8 @@ export function createCodeCommands(program: Command): void {
     .action(async (options) => {
       try {
         console.log('📊 Calculating code churn...');
-
-        const orchestrator = createOrchestrator();
-        const metrics = await orchestrator.getCodeMetrics({
+        const churn = createCodeDependencies(loadConfiguration());
+        const metrics = await churn.codeRepository.getCodeChurn({
           selectedAuthors: options.authors
             ? options.authors.split(',').map((a: string) => a.trim())
             : undefined,
@@ -246,8 +221,9 @@ export function createCodeCommands(program: Command): void {
       try {
         console.log('🔗 Analyzing code coupling...');
 
-        const orchestrator = createOrchestrator();
-        const metrics = await orchestrator.getCodeMetrics({
+        const repository = createCodeDependencies(loadConfiguration());
+
+        const metrics = await repository.codeRepository.getFileCoupling({
           startDate: options.startDate,
           endDate: options.endDate,
         });
@@ -279,10 +255,11 @@ export function createCodeCommands(program: Command): void {
     .option('--output <format>', 'Output format (text|json|csv)', 'text')
     .action(async (options) => {
       try {
-        console.log('📊 Calculating entity churn...');
+        logger.info('📊 Calculating entity churn...');
 
-        const orchestrator = createOrchestrator();
-        const metrics = await orchestrator.getCodeMetrics({
+        const repository = createCodeDependencies(loadConfiguration());
+
+        const metrics = await repository.codeRepository.getCodeChurn({
           startDate: options.startDate,
           endDate: options.endDate,
         });
@@ -318,10 +295,10 @@ export function createCodeCommands(program: Command): void {
     .option('--output <format>', 'Output format (text|json|csv)', 'text')
     .action(async (options) => {
       try {
-        console.log('⏱️  Calculating entity effort...');
+        logger.info('⏱️  Calculating entity effort...');
 
-        const orchestrator = createOrchestrator();
-        const metrics = await orchestrator.getCodeMetrics({
+        const repository = createCodeDependencies(loadConfiguration());
+        const metrics = await repository.codeRepository.getEntityEffort({
           startDate: options.startDate,
           endDate: options.endDate,
         });
@@ -354,8 +331,8 @@ export function createCodeCommands(program: Command): void {
       try {
         console.log('👥 Analyzing entity ownership...');
 
-        const orchestrator = createOrchestrator();
-        const metrics = await orchestrator.getCodeMetrics({
+        const repository = createCodeDependencies(loadConfiguration());
+        const metrics = await repository.codeRepository.getEntityOwnership({
           startDate: options.startDate,
           endDate: options.endDate,
         });
@@ -390,8 +367,8 @@ export function createCodeCommands(program: Command): void {
       try {
         console.log('👥 Calculating developer pairing index...');
 
-        const orchestrator = createOrchestrator();
-        const metrics = await orchestrator.getCodeMetrics({
+        const repository = createCodeDependencies(loadConfiguration());
+        const metrics = await repository.codeRepository.getPairingIndex({
           startDate: options.startDate,
           endDate: options.endDate,
         });
@@ -408,52 +385,6 @@ export function createCodeCommands(program: Command): void {
         }
       } catch (error) {
         logger.error('Failed to calculate pairing index', error);
-        process.exit(1);
-      }
-    });
-
-  /**
-   * smm code metadata [options]
-   * View code metadata and statistics
-   */
-  codeGroup
-    .command('metadata')
-    .description('View code metadata and statistics')
-    .option('--start-date <date>', 'Start date (YYYY-MM-DD)')
-    .option('--end-date <date>', 'End date (YYYY-MM-DD)')
-    .option('--output <format>', 'Output format (text|json)', 'text')
-    .action(async (options) => {
-      try {
-        console.log('📋 Retrieving code metadata...');
-
-        const orchestrator = createOrchestrator();
-        const metrics = await orchestrator.getCodeMetrics({
-          startDate: options.startDate,
-          endDate: options.endDate,
-        });
-        const pairing = metrics.pairingIndex || {};
-        const churnRows = Array.isArray(metrics.codeChurn?.data) ? metrics.codeChurn.data : [];
-        const linesAdded = churnRows.reduce((sum: number, row: any) => sum + (row.added || 0), 0);
-        const linesRemoved = churnRows.reduce(
-          (sum: number, row: any) => sum + (row.deleted || 0),
-          0
-        );
-
-        if (options.output === 'json') {
-          console.log(JSON.stringify(metrics, null, 2));
-        } else {
-          console.log('\n=== Code Metadata ===\n');
-          console.log(`Total Commits: ${pairing.totalAnalyzedCommits ?? 0}`);
-          console.log(`Paired Commits: ${pairing.pairedCommits ?? 0}`);
-          console.log(`Code Churn Data Points: ${churnRows.length}`);
-          console.log(`Lines Added: ${linesAdded}`);
-          console.log(`Lines Removed: ${linesRemoved}`);
-          console.log(
-            `Coupling Relationships: ${Array.isArray(metrics.fileCoupling) ? metrics.fileCoupling.length : 0}`
-          );
-        }
-      } catch (error) {
-        logger.error('Failed to retrieve code metadata', error);
         process.exit(1);
       }
     });

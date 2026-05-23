@@ -4,7 +4,7 @@ import * as path from 'path';
 import { FileSystemRepository } from '../infrastructure/repository';
 import { PipelineRun } from '../domain-types';
 import { type IGithubWorkflowClient } from '../providers/github';
-import { PipelinesService } from '../domain/pipelines';
+import {PipelineMetrics, PipelinesService} from '../domain/pipelines';
 
 interface WorkflowsProgress {
   page: number;
@@ -87,7 +87,7 @@ export class PipelinesRepository implements IPipelinesRepository {
       return fromCache;
     }
 
-    logger.info('Fetching workflows from GitHub...');
+    logger.info(`Fetching workflows from GitHub ${options?.startDate} - ${options?.endDate}...`);
     const freshWorkflows = await this.fetchWorkflowsWithResume({
       startDate: options?.startDate,
       endDate: options?.endDate,
@@ -135,6 +135,7 @@ export class PipelinesRepository implements IPipelinesRepository {
 
     while (!stopPagination) {
       try {
+        logger.info(`Fetching workflows total of ${perPage} in page ${page} from GitHub...`);
         const response = await this.githubWorkflowClient.fetchWorkflowRunsPage(page, perPage);
         const fetchedRuns = response.runs || [];
 
@@ -172,6 +173,15 @@ export class PipelinesRepository implements IPipelinesRepository {
         page += 1;
         await this.writeJson(progressPath, { page });
       } catch (error) {
+        if (this.isUnprocessableEntityError(error)) {
+          logger.info(
+            `GitHub returned 422 while fetching workflows page ${page}; treating as pagination end.`
+          );
+          await this.writeJson(incompletedPath, runs);
+          await this.writeJson(progressPath, { page });
+          break;
+        }
+
         await this.writeJson(incompletedPath, runs);
         await this.writeJson(progressPath, { page });
         throw error;
@@ -279,10 +289,25 @@ export class PipelinesRepository implements IPipelinesRepository {
     }
   }
 
+  private isUnprocessableEntityError(error: unknown): boolean {
+    if (!error || typeof error !== 'object') {
+      return false;
+    }
+
+    const maybeError = error as {
+      status?: number;
+      response?: {
+        status?: number;
+      };
+    };
+
+    return maybeError.status === 422 || maybeError.response?.status === 422;
+  }
+
   /**
    * Get pipeline metrics
    */
-  async getPipelineMetrics(filters?: any): Promise<any> {
+  async getPipelineMetrics(filters?: any): Promise<PipelineMetrics> {
     await this.refreshPipelines(filters);
     return this.pipelineService.getMetrics(filters);
   }

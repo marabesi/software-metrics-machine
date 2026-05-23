@@ -3,7 +3,7 @@ export { PipelinesRepository, type IPipelinesRepository } from './pipelines-repo
 export { CodeMetricsRepository, type ICodeMetricsRepository } from './code-metrics-repository';
 export { IssuesRepository, type IIssuesRepository } from './issues-repository';
 export {
-  QualityMetricsRepository,
+  SonarqubeMetricsRepository,
   type IQualityMetricsRepository,
-} from './quality-metrics-repository';
+} from './sonarqube-metrics-repository';
 export { MetricsOrchestrator, type IMetricsOrchestrator } from './metrics-orchestrator';

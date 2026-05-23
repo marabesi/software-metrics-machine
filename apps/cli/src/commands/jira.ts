@@ -1,8 +1,17 @@
 import { Command } from 'commander';
+import { Configuration } from '@smmachine/core/infrastructure/configuration';
 import { Logger } from '@smmachine/utils';
-import { createOrchestrator } from '../orchestrator-factory';
+import { createJiraDependencies } from '../factories/jira-factory';
 
 const logger = new Logger('JiraCommand');
+
+function createJiraOrchestrator() {
+  const config = new Configuration(process.env);
+  const directories = config
+  const { issuesRepository } = createJiraDependencies(config, config.getJiraPath());
+
+  return issuesRepository
+}
 
 /**
  * Jira Command Group
@@ -33,8 +42,8 @@ export function createJiraCommands(program: Command): void {
       try {
         console.log('🔄 Fetching issues from Jira...');
 
-        const orchestrator = createOrchestrator();
-        const issues = await orchestrator.getIssueMetrics({
+        const orchestrator = createJiraOrchestrator();
+        const issues = await orchestrator.getIssues({
           forceRefresh: options.force,
           startDate: options.startDate,
           endDate: options.endDate,
@@ -44,7 +53,7 @@ export function createJiraCommands(program: Command): void {
         if (options.output === 'json') {
           console.log(JSON.stringify(issues, null, 2));
         } else {
-          console.log(`\n✅ Fetched ${issues.totalIssues || 0} issues from Jira`);
+          console.log(`\n✅ Fetched ${issues.length || 0} issues from Jira`);
         }
       } catch (error) {
         logger.error('Failed to fetch Jira issues', error);
@@ -70,7 +79,6 @@ export function createJiraCommands(program: Command): void {
 
         console.log(`🔄 Fetching changelog for issue ${options.issue}...`);
 
-        const orchestrator = createOrchestrator();
         // Note: This uses the issuesRepo directly via the orchestrator
         // The orchestrator doesn't expose getIssueChanges, so we'd need to enhance it
         console.log('⚠️  Note: Changelog fetching requires direct repository access.');
@@ -102,7 +110,6 @@ export function createJiraCommands(program: Command): void {
 
         console.log(`🔄 Fetching comments for issue ${options.issue}...`);
 
-        const orchestrator = createOrchestrator();
         // Note: This uses the issuesRepo directly via the orchestrator
         // The orchestrator doesn't expose getIssueComments, so we'd need to enhance it
         console.log('⚠️  Note: Comment fetching requires direct repository access.');

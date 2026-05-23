@@ -9,8 +9,8 @@
     "allowSyntheticDefaultImports": true,
     "baseUrl": "../..",
     "paths": {
-      "@smmachine/core": ["packages/core/dist"],
-      "@smmachine/utils": ["packages/utils/dist"]
+      "@smmachine/utils": ["packages/utils/src/*"],
+      "@smmachine/core": ["packages/core/src/*"]
     }
   },
   "ts-node": {

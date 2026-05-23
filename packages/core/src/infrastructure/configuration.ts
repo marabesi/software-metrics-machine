@@ -1,8 +1,3 @@
-/**
- * Core Infrastructure Configuration
- * Migrated from: api/src/software_metrics_machine/core/infrastructure/configuration/
- */
-
 import * as fs from 'fs';
 import * as path from 'path';
 
@@ -30,7 +25,7 @@ export interface IConfiguration {
   /**
    * Path to store data
    */
-  storeData?: string;
+  storeData: string;
 
   /**
    * Git repository location (local path)
@@ -70,7 +65,7 @@ export interface IConfiguration {
   /**
    * Log level (DEBUG, INFO, WARN, ERROR, CRITICAL)
    */
-  loggingLevel?: 'DEBUG' | 'INFO' | 'WARN' | 'ERROR' | 'CRITICAL';
+  loggingLevel: 'DEBUG' | 'INFO' | 'WARN' | 'ERROR' | 'CRITICAL';
 
   /**
    * Jira URL
@@ -116,15 +111,15 @@ export class Configuration implements IConfiguration {
   githubToken?: string;
   gitlabToken?: string;
   githubRepository?: string;
-  storeData?: string;
-  gitRepositoryLocation?: string;
+  storeData: string;
+  gitRepositoryLocation: string;
   deploymentFrequencyTargetPipeline?: string;
   deploymentFrequencyTargetJob?: string;
   mainBranch?: string;
   dashboardStartDate?: string;
   dashboardEndDate?: string;
   dashboardColor?: string;
-  loggingLevel?: 'DEBUG' | 'INFO' | 'WARN' | 'ERROR' | 'CRITICAL';
+  loggingLevel: 'DEBUG' | 'INFO' | 'WARN' | 'ERROR' | 'CRITICAL';
   jiraUrl?: string;
   jiraEmail?: string;
   jiraToken?: string;
@@ -139,40 +134,40 @@ export class Configuration implements IConfiguration {
 
     // Check if configuration file path is provided
     let configData: Record<string, any> = {};
-    if (envObj.SMM_STORE_DATA_AT) {
-      try {
-        const configPath = path.resolve(`${envObj.SMM_STORE_DATA_AT}/smm_config.json`);
-        if (fs.existsSync(configPath)) {
-          const fileContent = fs.readFileSync(configPath, 'utf-8');
-          configData = JSON.parse(fileContent);
-        }
-      } catch (error) {
-        // If JSON parsing or file reading fails, fall back to env variables
-        console.warn(`Warning: Failed to load configuration from ${configData}:`, error);
-      }
+    if (!envObj.SMM_STORE_DATA_AT) {
+      throw new Error(`Warning: Failed to load configuration from ${configData}:`);
+    }
+
+    const configPath = path.resolve(`${envObj.SMM_STORE_DATA_AT}/smm_config.json`);
+    if (fs.existsSync(configPath)) {
+      const fileContent = fs.readFileSync(configPath, 'utf-8');
+      configData = JSON.parse(fileContent);
     }
 
     // Load configuration from JSON file (if available) or environment variables
-    this.gitProvider = configData.git_provider || envObj.GIT_PROVIDER || 'github';
-    this.githubToken = configData.github_token || envObj.GITHUB_TOKEN;
-    this.gitlabToken = configData.gitlab_token || envObj.GITLAB_TOKEN;
-    this.githubRepository = configData.github_repository || envObj.GITHUB_REPOSITORY;
+    this.gitProvider = configData.git_provider;
+    this.githubToken = configData.github_token;
+    this.gitlabToken = configData.gitlab_token;
+    this.githubRepository = configData.github_repository;
     this.storeData = envObj.SMM_STORE_DATA_AT; // Keep as the path to the config file
     this.gitRepositoryLocation =
-      configData.git_repository_location || envObj.GIT_REPOSITORY_LOCATION;
-    this.deploymentFrequencyTargetPipeline =
-      configData.deployment_frequency_target_pipeline ||
-      envObj.DEPLOYMENT_FREQUENCY_TARGET_PIPELINE;
+      configData.git_repository_location;
+    this.deploymentFrequencyTargetPipeline = configData.deployment_frequency_target_pipeline
     this.deploymentFrequencyTargetJob =
-      configData.deployment_frequency_target_job || envObj.DEPLOYMENT_FREQUENCY_TARGET_JOB;
-    this.mainBranch = configData.main_branch || envObj.MAIN_BRANCH || 'main';
-    this.dashboardStartDate = configData.dashboard_start_date || envObj.DASHBOARD_START_DATE;
-    this.dashboardEndDate = configData.dashboard_end_date || envObj.DASHBOARD_END_DATE;
-    this.dashboardColor = configData.dashboard_color || envObj.DASHBOARD_COLOR || '#6b77e3';
+      configData.deployment_frequency_target_job;
+    this.mainBranch = configData.main_branch;
+    this.dashboardStartDate = configData.dashboard_start_date;
+    this.dashboardEndDate = configData.dashboard_end_date;
+    this.dashboardColor = configData.dashboard_color;
 
-    // Map log_level to loggingLevel with proper type
-    const logLevel = configData.log_level || envObj.LOGGING_LEVEL || 'CRITICAL';
-    this.loggingLevel = logLevel.toUpperCase() as IConfiguration['loggingLevel'];
+    let logLevel: string = 'CRITICAL';
+    if (configData.log_level) {
+      logLevel = configData.log_level;
+    }
+    if(envObj.LOGGING_LEVEL) {
+      logLevel = envObj.LOGGING_LEVEL;
+    }
+    this.loggingLevel = logLevel as IConfiguration['loggingLevel'];
 
     this.jiraUrl = configData.jira_url || envObj.JIRA_URL;
     this.jiraEmail = configData.jira_email || envObj.JIRA_EMAIL;
@@ -181,11 +176,9 @@ export class Configuration implements IConfiguration {
     this.sonarUrl = configData.sonar_url || envObj.SONAR_URL;
     this.sonarToken = configData.sonar_token || envObj.SONAR_TOKEN;
     this.sonarProject = configData.sonar_project || envObj.SONAR_PROJECT;
+    this.validate();
   }
 
-  /**
-   * Validate that required configuration is present
-   */
   validate(): { valid: boolean; errors: string[] } {
     const errors: string[] = [];
 
@@ -203,5 +196,24 @@ export class Configuration implements IConfiguration {
       valid: errors.length === 0,
       errors,
     };
+  }
+
+  getBaseDirectory(): string {
+    const baseDir = this.storeData || './outputs';
+    const gitProvider = this.gitProvider || 'github';
+    const repoSlug = (this.githubRepository || '').replace('/', '_');
+    return path.join(baseDir, `${gitProvider}_${repoSlug}`);
+  }
+
+  public getCodeMaatPath(): string {
+    return path.join(this.getBaseDirectory(), 'codemaat');
+  }
+
+  public getSonarqubePath(): string {
+    return path.join(this.getBaseDirectory(), 'sonarqube');
+  }
+
+  public getJiraPath(): string {
+    return path.join(this.getBaseDirectory(), 'jira');
   }
 }

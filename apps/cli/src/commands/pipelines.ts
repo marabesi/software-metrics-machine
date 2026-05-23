@@ -1,8 +1,25 @@
 import { Command } from 'commander';
+import { Configuration } from '@smmachine/core/infrastructure/configuration';
 import { Logger } from '@smmachine/utils';
-import { createOrchestrator } from '../orchestrator-factory';
+import { GithubWorkflowClient, PipelinesRepository} from "@smmachine/core";
 
 const logger = new Logger('PipelinesCommand');
+
+function createPipelinesOrchestrator(): PipelinesRepository {
+  const config = new Configuration(process.env);
+  const [githubOwner, githubRepo] = config.githubRepository!.split('/');
+  const githubToken = config.githubToken!;
+
+  const githubWorkflowClient = new GithubWorkflowClient(
+    githubToken,
+    githubOwner,
+    githubRepo
+  );
+
+  const pipelinesRepository = new PipelinesRepository(githubWorkflowClient, config.gitRepositoryLocation!);
+
+  return pipelinesRepository
+}
 
 /**
  * Pipelines Command Group
@@ -40,12 +57,11 @@ export function createPipelinesCommands(program: Command): void {
       try {
         console.log('🔄 Fetching pipeline runs from GitHub...');
 
-        const orchestrator = createOrchestrator();
-        await orchestrator.getDeploymentMetrics({
+        const orchestrator = createPipelinesOrchestrator();
+        await orchestrator.refreshPipelines({
           forceRefresh: options.force,
           startDate: options.startDate,
           endDate: options.endDate,
-          rawFilters: options.rawFilters,
         });
 
         console.log('✅ Fetch pipeline data has been completed and stored on disk');
@@ -69,8 +85,8 @@ export function createPipelinesCommands(program: Command): void {
       try {
         console.log('🔄 Fetching pipeline jobs from GitHub...');
 
-        const orchestrator = createOrchestrator();
-        await orchestrator.getDeploymentMetrics({
+        const orchestrator = createPipelinesOrchestrator();
+        await orchestrator.refreshPipelines({
           forceRefresh: options.force,
           includeJobs: true,
           startDate: options.startDate,
@@ -100,8 +116,8 @@ export function createPipelinesCommands(program: Command): void {
       try {
         console.log('📊 Generating pipeline summary...');
 
-        const orchestrator = createOrchestrator();
-        const metrics = await orchestrator.getDeploymentMetrics({
+        const orchestrator = createPipelinesOrchestrator();
+        const metrics = await orchestrator.getPipelineMetrics({
           startDate: options.startDate,
           endDate: options.endDate,
         });
@@ -136,8 +152,8 @@ export function createPipelinesCommands(program: Command): void {
       try {
         console.log('📊 Analyzing pipelines by status...');
 
-        const orchestrator = createOrchestrator();
-        const metrics = await orchestrator.getDeploymentMetrics({
+        const orchestrator = createPipelinesOrchestrator();
+        const metrics = await orchestrator.getPipelineMetrics({
           startDate: options.startDate,
           endDate: options.endDate,
         });
@@ -181,8 +197,8 @@ export function createPipelinesCommands(program: Command): void {
       try {
         console.log('⏱️  Analyzing pipeline run durations...');
 
-        const orchestrator = createOrchestrator();
-        const metrics = await orchestrator.getDeploymentMetrics({
+        const orchestrator = createPipelinesOrchestrator();
+        const metrics = await orchestrator.getPipelineMetrics({
           startDate: options.startDate,
           endDate: options.endDate,
         });
@@ -218,8 +234,8 @@ export function createPipelinesCommands(program: Command): void {
       try {
         console.log('📈 Analyzing pipeline runs by time period...');
 
-        const orchestrator = createOrchestrator();
-        const metrics = await orchestrator.getDeploymentMetrics({
+        const orchestrator = createPipelinesOrchestrator();
+        const metrics = await orchestrator.getPipelineMetrics({
           startDate: options.startDate,
           endDate: options.endDate,
           frequency: options.period as 'day' | 'week' | 'month',
@@ -254,8 +270,8 @@ export function createPipelinesCommands(program: Command): void {
       try {
         console.log('📊 Generating pipeline jobs summary...');
 
-        const orchestrator = createOrchestrator();
-        const metrics = await orchestrator.getDeploymentMetrics({
+        const orchestrator = createPipelinesOrchestrator();
+        const metrics = await orchestrator.getJobMetrics({
           startDate: options.startDate,
           endDate: options.endDate,
         });
@@ -289,8 +305,8 @@ export function createPipelinesCommands(program: Command): void {
       try {
         console.log('⏱️  Analyzing job execution times...');
 
-        const orchestrator = createOrchestrator();
-        const metrics = await orchestrator.getDeploymentMetrics({
+        const orchestrator = createPipelinesOrchestrator();
+        const metrics = await orchestrator.getJobMetrics({
           startDate: options.startDate,
           endDate: options.endDate,
         });
@@ -324,8 +340,8 @@ export function createPipelinesCommands(program: Command): void {
       try {
         console.log('📊 Analyzing jobs by status...');
 
-        const orchestrator = createOrchestrator();
-        const metrics = await orchestrator.getDeploymentMetrics({
+        const orchestrator = createPipelinesOrchestrator();
+        const metrics = await orchestrator.getJobMetrics({
           startDate: options.startDate,
           endDate: options.endDate,
         });
@@ -367,11 +383,10 @@ export function createPipelinesCommands(program: Command): void {
       try {
         console.log('🚀 Calculating deployment frequency...');
 
-        const orchestrator = createOrchestrator();
-        const metrics = await orchestrator.getDeploymentMetrics({
+        const orchestrator = createPipelinesOrchestrator();
+        const metrics = await orchestrator.getDeploymentFrequency(options.period as 'day' | 'week' | 'month', {
           startDate: options.startDate,
           endDate: options.endDate,
-          frequency: options.period as 'day' | 'week' | 'month',
         });
 
         if (options.output === 'json') {
@@ -415,8 +430,8 @@ export function createPipelinesCommands(program: Command): void {
       try {
         console.log('⏱️  Calculating lead time for changes...');
 
-        const orchestrator = createOrchestrator();
-        const metrics = await orchestrator.getDeploymentMetrics({
+        const orchestrator = createPipelinesOrchestrator();
+        const metrics = await orchestrator.getPipelineMetrics({
           startDate: options.startDate,
           endDate: options.endDate,
         });
