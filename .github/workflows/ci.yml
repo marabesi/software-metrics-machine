@@ -33,8 +33,17 @@ jobs:
       - name: Set env variables
         run: cp apps/webapp/.env.local.example apps/webapp/.env
 
+      - name: Set project example
+        run: |
+          git clone --depth 500 https://github.com/facebook/react.git docs/project-example/react
+          ls -la docs/
+          ls -la docs/project-example/
+          ls -la docs/project-example/react
+
       - name: Install dependencies
         run: pnpm install
 
       - name: Build workspace
+        env:
+          SMM_STORE_DATA_AT: /home/runner/work/software-metrics-machine/software-metrics-machine/docs/project-example
         run: pnpm run build

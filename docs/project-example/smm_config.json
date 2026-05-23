@@ -1,0 +1,19 @@
+  {
+    "git_provider": "github",
+    "github_token": "xxxxxxxxxxxxxxxxxxxxxx",
+    "github_repository": "facebook/react",
+    "git_repository_location": "/home/runner/work/software-metrics-machine/software-metrics-machine/docs/project-example/react",
+    "deployment_frequency_target_pipeline": "",
+    "deployment_frequency_target_job": "",
+    "main_branch": "main",
+    "jira_url": "https://xxx.atlassian.net",
+    "jira_token": "",
+    "jira_project": "KAN",
+    "jira_email": "xxxx",
+    "sonar_url": "https://sonarcloud.io",
+    "sonar_token": "xxxxxxxxx",
+    "sonar_project": "xxxxx",
+    "log_level": "DEBUG",
+    "dashboard_start_date": "2025-01-01",
+    "dashboard_end_date": "2025-01-12"
+  }

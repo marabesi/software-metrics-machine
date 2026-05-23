@@ -135,7 +135,7 @@ export class Configuration implements IConfiguration {
     // Check if configuration file path is provided
     let configData: Record<string, any> = {};
     if (!envObj.SMM_STORE_DATA_AT) {
-      throw new Error(`Warning: Failed to load configuration from ${configData}:`);
+      throw new Error(`Warning: Failed to load configuration from ${configData.toString()}:`);
     }
 
     const configPath = path.resolve(`${envObj.SMM_STORE_DATA_AT}/smm_config.json`);
