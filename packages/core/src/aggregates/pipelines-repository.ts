@@ -92,8 +92,7 @@ export class PipelinesRepository implements IPipelinesRepository {
 
     logger.info(`Fetching workflows from GitHub ${options?.startDate} - ${options?.endDate}...`);
     const freshWorkflows = await this.fetchWorkflowsWithResume({
-      startDate: options?.startDate,
-      endDate: options?.endDate,
+      created: this.buildCreatedFilter(options?.startDate, options?.endDate),
       rawFilters: options?.rawFilters,
     });
 
@@ -124,6 +123,7 @@ export class PipelinesRepository implements IPipelinesRepository {
   }
 
   private async fetchWorkflowsWithResume(options?: {
+    created?: string;
     startDate?: string;
     endDate?: string;
     rawFilters?: string;
@@ -142,6 +142,7 @@ export class PipelinesRepository implements IPipelinesRepository {
       try {
         logger.info(`Fetching workflows total of ${perPage} in page ${page} from GitHub...`);
         const response = await this.githubWorkflowClient.fetchWorkflowRunsPage(page, perPage, {
+          created: options?.created,
           rawFilters: options?.rawFilters,
         });
         const fetchedRuns = response.runs || [];
@@ -151,24 +152,17 @@ export class PipelinesRepository implements IPipelinesRepository {
         }
 
         for (const run of fetchedRuns) {
-          if (options?.startDate && new Date(run.created_at) < new Date(options.startDate)) {
-            stopPagination = true;
-            break;
-          }
-
-          if (!options?.endDate || new Date(run.created_at) <= new Date(options.endDate)) {
-            runs.push({
-              ...run,
-              createdAt: run.created_at,
-              updatedAt: run.updated_at,
-              runNumber: run.run_number,
-              htmlUrl: run.html_url,
-              startedAt: run.run_started_at,
-              completedAt: run.updated_at,
-              branch: run.head_branch,
-              path: run.path || run.workflow_url || '',
-            });
-          }
+          runs.push({
+            ...run,
+            createdAt: run.created_at,
+            updatedAt: run.updated_at,
+            runNumber: run.run_number,
+            htmlUrl: run.html_url,
+            startedAt: run.run_started_at,
+            completedAt: run.updated_at,
+            branch: run.head_branch,
+            path: run.path || run.workflow_url || '',
+          });
         }
 
         await this.writeJson(incompletedPath, runs);
@@ -198,6 +192,14 @@ export class PipelinesRepository implements IPipelinesRepository {
     await this.deleteFile(progressPath);
     await this.deleteFile(incompletedPath);
     return runs as PipelineRun[];
+  }
+
+  private buildCreatedFilter(startDate?: string, endDate?: string): string | undefined {
+    if (!startDate && !endDate) {
+      return undefined;
+    }
+
+    return `${startDate || ''}..${endDate || ''}`;
   }
 
   private async fetchJobsWithResume(workflows: PipelineRun[]): Promise<any[]> {

@@ -7,6 +7,7 @@
   "scripts": {
     "build": "rm -rf dist && tsc -p tsconfig.json",
     "dev": "ts-node src/main.ts",
+    "watch": "tsc -p tsconfig.json --watch",
     "test": "vitest",
     "test:ci": "vitest run",
     "clean": "rm -rf dist",

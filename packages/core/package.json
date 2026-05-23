@@ -25,6 +25,7 @@
     "clean": "rm -rf dist",
     "lint": "eslint .",
     "dev": "tsc --watch",
+    "watch": "tsc --watch",
     "test": "vitest",
     "test:run": "vitest run",
     "test:coverage": "vitest run --coverage",

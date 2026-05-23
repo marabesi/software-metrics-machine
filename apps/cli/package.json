@@ -17,6 +17,7 @@
     "build": "tsup",
     "build:deps": "pnpm --filter @smmachine/utils build && pnpm --filter @smmachine/core build",
     "dev": "tsx src/index.ts",
+    "watch": "tsup --watch",
     "prepack": "pnpm run build:deps && pnpm run build",
     "test": "vitest --watch=false",
     "test:ci": "vitest run ./__tests__",

@@ -13,14 +13,14 @@ export interface IGithubPrsClient {
 }
 
 export interface IGithubWorkflowClient {
-  fetchWorkflows(options?: { startDate?: string; endDate?: string; rawFilters?: string }): Promise<any[]>;
+  fetchWorkflows(options?: { created?: string; rawFilters?: string }): Promise<any[]>;
 
   fetchJobsForWorkflows(workflowIds: string[]): Promise<any[]>;
 
   fetchWorkflowRunsPage(
     page: number,
     perPage?: number,
-    options?: { rawFilters?: string }
+    options?: { rawFilters?: string, created?: string }
   ): Promise<{ runs: any[]; hasNext: boolean }>;
 
   fetchJobsPage(
@@ -208,9 +208,15 @@ export class GithubWorkflowClient implements IGithubWorkflowClient {
       while (true) {
         this.logger.info(`Fetching workflow runs page ${page} for ${this.owner}/${this.repo}`);
 
-        const response = await this.fetchWorkflowRunsPage(page, per_page, {
+        const optionsParams: any = {
           rawFilters: options?.rawFilters,
-        });
+        };
+
+        if (options?.startDate && options?.endDate) {
+          optionsParams.created = `${options.startDate}..${options.endDate}`;
+        }
+
+        const response = await this.fetchWorkflowRunsPage(page, per_page, optionsParams);
         const runs = response.runs;
 
         if (!runs || runs.length === 0) {
@@ -218,25 +224,17 @@ export class GithubWorkflowClient implements IGithubWorkflowClient {
         }
 
         for (const run of runs) {
-          // Filter by date if provided
-          if (options?.startDate && new Date(run.created_at) < new Date(options.startDate)) {
-            page = -1; // Signal to break outer loop
-            break;
-          }
-
-          if (!options?.endDate || new Date(run.created_at) <= new Date(options.endDate)) {
-            allRuns.push({
-              ...run,
-              createdAt: run.created_at,
-              updatedAt: run.updated_at,
-              runNumber: run.run_number,
-              htmlUrl: run.html_url,
-              startedAt: run.run_started_at,
-              completedAt: run.updated_at,
-              branch: run.head_branch,
-              path: run.path || run.workflow_url || '',
-            });
-          }
+          allRuns.push({
+            ...run,
+            createdAt: run.created_at,
+            updatedAt: run.updated_at,
+            runNumber: run.run_number,
+            htmlUrl: run.html_url,
+            startedAt: run.run_started_at,
+            completedAt: run.updated_at,
+            branch: run.head_branch,
+            path: run.path || run.workflow_url || '',
+          });
         }
 
         if (page < 0) break;
@@ -311,7 +309,7 @@ export class GithubWorkflowClient implements IGithubWorkflowClient {
   async fetchWorkflowRunsPage(
     page: number,
     perPage: number = 100,
-    options?: { rawFilters?: string }
+    options?: { created?: string; rawFilters?: string }
   ): Promise<{ runs: any[]; hasNext: boolean }> {
     const response = await this.axiosInstance.get(
       `/repos/${this.owner}/${this.repo}/actions/runs`,
@@ -319,6 +317,7 @@ export class GithubWorkflowClient implements IGithubWorkflowClient {
         params: {
           per_page: perPage,
           page,
+          ...(options?.created ? { created: options.created } : {}),
           ...this.parseRawFilters(options?.rawFilters),
         },
       }
