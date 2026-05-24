@@ -36,7 +36,13 @@ jobs:
       - name: Set env variables
         run: cp apps/webapp/.env.local.example apps/webapp/.env
 
+      - name: Set project example
+        run: |
+          git clone --depth 500 https://github.com/facebook/react.git docs/project-example/react
+
       - name: Publish to npm
+        env:
+          SMM_STORE_DATA_AT: /home/runner/work/software-metrics-machine/software-metrics-machine/docs/project-example
         run: |
           pnpm install --frozen-lockfile
           pnpm publish --access public --no-git-checks
