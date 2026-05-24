@@ -38,20 +38,29 @@ export class PipelinesJobFetchRepository {
     }
 
     const cachedRuns = await this.pipelineRunFileSystemRepository.loadAll();
-    const filteredRuns = cachedRuns.filter((run) => {
-      const startDate = filters.startDate;
-      const endDate = filters.endDate;
-      const createdAt = run.created_at;
-      const runDate = new Date(createdAt);
+    const startDate = this.toDateBoundary(filters.startDate, 'start');
+    const endDate = this.toDateBoundary(filters.endDate, 'end');
 
-      if (startDate && endDate) {
-        return runDate >= new Date(startDate) && runDate <= new Date(endDate);
-      }
-      if (startDate && runDate < new Date(startDate)) {
+    const filteredRuns = cachedRuns.filter((run) => {
+      const createdAt = run.created_at;
+      if (!createdAt || createdAt.trim().length === 0) {
         return false;
       }
 
-      if (endDate && runDate > new Date(endDate)) {
+      const runDate = new Date(createdAt);
+      if (Number.isNaN(runDate.getTime())) {
+        return false;
+      }
+
+      if (!startDate && !endDate) {
+        return true;
+      }
+
+      if (startDate && runDate < startDate) {
+        return false;
+      }
+
+      if (endDate && runDate > endDate) {
         return false;
       }
 
@@ -170,5 +179,21 @@ export class PipelinesJobFetchRepository {
         throw error;
       }
     }
+  }
+
+  private toDateBoundary(dateValue?: string, boundary: 'start' | 'end' = 'start'): Date | undefined {
+    if (!dateValue) {
+      return undefined;
+    }
+
+    const isDateOnly = /^\d{4}-\d{2}-\d{2}$/.test(dateValue);
+    const normalizedDateValue = isDateOnly
+      ? boundary === 'start'
+        ? `${dateValue}T00:00:00.000Z`
+        : `${dateValue}T23:59:59.999Z`
+      : dateValue;
+
+    const parsed = new Date(normalizedDateValue);
+    return Number.isNaN(parsed.getTime()) ? undefined : parsed;
   }
 }

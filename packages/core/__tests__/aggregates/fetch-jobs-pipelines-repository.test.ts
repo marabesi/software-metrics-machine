@@ -272,7 +272,61 @@ describe('Fetch jobs pipeline repository', () => {
       endDate: '2026-05-05',
     });
 
-    expect(githubWorkflowClient.fetchJobsPage).toHaveBeenCalled()
+    expect(githubWorkflowClient.fetchJobsPage).toHaveBeenCalledWith('run-early', 1, 100, {
+      rawFilters: undefined,
+    });
+  });
+
+  it('should ignore workflows with empty created_at', async () => {
+    const existingRuns = [
+      {
+        ...new PipelineGitHubRunBuilder()
+          .id('invalid-run')
+          .number('1')
+          .name('CI')
+          .status('completed')
+          .createdAt('')
+          .updatedAt('2026-05-05T00:05:00Z')
+          .startedAt('2026-05-05T01:00:00Z')
+          .branch('main')
+          .path('.github/workflows/ci.yml')
+          .build(),
+      } as any,
+      new PipelineGitHubRunBuilder()
+        .id('valid-run')
+        .number('2')
+        .name('CI')
+        .status('completed')
+        .createdAt('2026-05-05T01:00:00Z')
+        .updatedAt('2026-05-05T00:05:00Z')
+        .startedAt('2026-05-05T01:00:00Z')
+        .branch('main')
+        .path('.github/workflows/ci.yml')
+        .build(),
+    ];
+
+    const fetchJobsPage = vi.fn().mockResolvedValueOnce({
+      jobs: [],
+      hasNext: false,
+    });
+
+    const githubWorkflowClient: IGithubWorkflowJobClient = {
+      fetchJobsPage,
+    };
+
+    const { repository } = await createRepository(githubWorkflowClient);
+
+    await storeFetchedWorkflows(existingRuns);
+
+    await repository.fetchJobs({
+      startDate: '2026-05-05',
+      endDate: '2026-05-05',
+    });
+
+    expect(fetchJobsPage).toHaveBeenCalledTimes(1);
+    expect(fetchJobsPage).toHaveBeenCalledWith('valid-run', 1, 100, {
+      rawFilters: undefined,
+    });
   });
 
   it('should handle job pagination', async () => {
