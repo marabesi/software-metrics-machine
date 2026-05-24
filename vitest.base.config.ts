@@ -6,9 +6,10 @@ export default defineConfig({
   },
   test: {
     globals: true,
+    clearMocks: true,
     environment: 'node',
     silent: false,
-    disableConsoleIntercept: true,
+    disableConsoleIntercept: false,
     reporters: ['verbose'],
     pool: 'forks',
     fileParallelism: false,

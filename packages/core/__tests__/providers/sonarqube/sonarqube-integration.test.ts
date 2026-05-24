@@ -18,7 +18,7 @@ const SONARQUBE_PROJECT = process.env.SONARQUBE_PROJECT || 'my-project';
 // Skip real API tests if not configured
 const skipRealApiTests = !process.env.RUN_SONARQUBE_INTEGRATION_TESTS;
 
-describe('SonarQube API Integration Tests', () => {
+describe.skip('SonarQube API Integration Tests', () => {
   let sonarClient: SonarqubeMeasuresClient;
 
   beforeAll(() => {

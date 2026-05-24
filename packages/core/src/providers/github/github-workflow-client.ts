@@ -29,50 +29,28 @@ export class GithubWorkflowClient implements IGithubWorkflowClient {
     startDate?: string;
     endDate?: string;
     rawFilters?: string;
+    byDay?: boolean;
   }): Promise<PipelineRun[]> {
-    const per_page = 100;
-    let page = 1;
     const allRuns: PipelineRun[] = [];
 
     try {
-      // Fetch all workflow runs with pagination
-      while (true) {
-        this.logger.info(`Fetching workflow runs page ${page} for ${this.owner}/${this.repo}`);
+      if (options?.byDay && options?.startDate && options?.endDate) {
+        // Fetch workflows day by day
+        const days = this.generateDayRange(options.startDate, options.endDate);
+        this.logger.info(`Fetching workflows by day: ${days.length} day(s)`);
 
-        const optionsParams: any = {
-          rawFilters: options?.rawFilters,
-        };
-
-        if (options?.startDate && options?.endDate) {
-          optionsParams.created = `${options.startDate}..${options.endDate}`;
+        for (const day of days) {
+          const dayRuns = await this.fetchWorkflowsForDay(day.start, day.end, options.rawFilters);
+          allRuns.push(...dayRuns);
         }
-
-        const response = await this.fetchWorkflowRunsPage(page, per_page, optionsParams);
-        const runs = response.runs;
-
-        if (!runs || runs.length === 0) {
-          break; // No more runs
-        }
-
-        for (const run of runs) {
-          allRuns.push({
-            ...run,
-            commit: run.head_sha,
-            jobs: [],
-            number: Number(run.run_number),
-            createdAt: run.created_at,
-            updatedAt: run.updated_at,
-            startedAt: run.run_started_at,
-            completedAt: run.updated_at,
-            branch: run.head_branch,
-            path: run.path,
-          });
-        }
-
-        if (page < 0) break;
-        if (!response.hasNext) break;
-
-        page++;
+      } else {
+        // Fetch workflows with original behavior (all at once)
+        const dayRuns = await this.fetchWorkflowsForDay(
+          options?.startDate,
+          options?.endDate,
+          options?.rawFilters
+        );
+        allRuns.push(...dayRuns);
       }
 
       this.logger.info(`Fetched ${allRuns.length} workflow runs total`);
@@ -89,6 +67,83 @@ export class GithubWorkflowClient implements IGithubWorkflowClient {
       }
       throw error;
     }
+  }
+
+  private async fetchWorkflowsForDay(
+    startDate?: string,
+    endDate?: string,
+    rawFilters?: string
+  ): Promise<PipelineRun[]> {
+    const per_page = 100;
+    let page = 1;
+    const dayRuns: PipelineRun[] = [];
+
+    while (true) {
+      this.logger.info(`Fetching workflow runs page ${page} for ${this.owner}/${this.repo}`);
+
+      const optionsParams: any = {
+        rawFilters,
+      };
+
+      if (startDate && endDate) {
+        optionsParams.created = `${startDate}..${endDate}`;
+      }
+
+      const response = await this.fetchWorkflowRunsPage(page, per_page, optionsParams);
+      const runs = response.runs;
+
+      if (!runs || runs.length === 0) {
+        break; // No more runs
+      }
+
+      for (const run of runs) {
+        dayRuns.push({
+          ...run,
+          commit: run.head_sha,
+          jobs: [],
+          number: Number(run.run_number),
+          createdAt: run.created_at,
+          updatedAt: run.updated_at,
+          startedAt: run.run_started_at,
+          completedAt: run.updated_at,
+          branch: run.head_branch,
+          path: run.path,
+        });
+      }
+
+      if (page < 0) break;
+      if (!response.hasNext) break;
+
+      page++;
+    }
+
+    return dayRuns;
+  }
+
+  private generateDayRange(
+    startDate: string,
+    endDate: string
+  ): Array<{ start: string; end: string }> {
+    const days: Array<{ start: string; end: string }> = [];
+    const current = new Date(startDate);
+    const end = new Date(endDate);
+
+    while (current <= end) {
+      const dayStart = new Date(current);
+      dayStart.setUTCHours(0, 0, 0, 0);
+
+      const dayEnd = new Date(current);
+      dayEnd.setUTCHours(23, 59, 59, 999);
+
+      days.push({
+        start: dayStart.toISOString().split('T')[0] + 'T00:00:00Z',
+        end: dayEnd.toISOString().split('T')[0] + 'T23:59:59Z',
+      });
+
+      current.setUTCDate(current.getUTCDate() + 1);
+    }
+
+    return days;
   }
 
   async fetchWorkflowRunsPage(

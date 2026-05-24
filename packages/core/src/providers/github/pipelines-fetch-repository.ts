@@ -21,6 +21,7 @@ export class PipelinesFetchRepository {
     endDate?: string;
     rawFilters?: string;
     forceRefresh?: boolean;
+    byDay?: boolean;
   }): Promise<WorkflowJsonResponse[]> {
     const fromCache = await this.pipelineRunFileSystemRepository.loadAll();
 
@@ -30,14 +31,57 @@ export class PipelinesFetchRepository {
     }
 
     console.log(`Fetching workflows from GitHub ${options?.startDate} - ${options?.endDate}...`);
-    const workflows = await this.fetchWorkflowsWithResume({
-      created: this.buildCreatedFilter(options?.startDate, options?.endDate),
-      rawFilters: options?.rawFilters,
-    });
+    let workflows: WorkflowJsonResponse[];
+
+    if (options?.byDay && options?.startDate && options?.endDate) {
+      workflows = await this.fetchWorkflowsByDay(
+        options.startDate,
+        options.endDate,
+        options.rawFilters
+      );
+    } else {
+      workflows = await this.fetchWorkflowsWithResume({
+        created: this.buildCreatedFilter(options?.startDate, options?.endDate),
+        rawFilters: options?.rawFilters,
+      });
+    }
     // Persist fetched workflows/jobs so metrics commands can run from local data.
     await this.pipelineRunFileSystemRepository.saveAll(workflows);
 
     return workflows;
+  }
+
+  private async fetchWorkflowsByDay(
+    startDate: string,
+    endDate: string,
+    rawFilters?: string
+  ): Promise<WorkflowJsonResponse[]> {
+    const allRuns: WorkflowJsonResponse[] = [];
+    const current = new Date(startDate);
+    const end = new Date(endDate);
+
+    while (current <= end) {
+      const dayStart = new Date(current);
+      dayStart.setUTCHours(0, 0, 0, 0);
+
+      const dayEnd = new Date(current);
+      dayEnd.setUTCHours(23, 59, 59, 999);
+
+      const dayStartStr = dayStart.toISOString().split('T')[0] + 'T00:00:00Z';
+      const dayEndStr = dayEnd.toISOString().split('T')[0] + 'T23:59:59Z';
+
+      logger.info(`Fetching workflows for day ${dayStartStr}...`);
+
+      const dayRuns = await this.fetchWorkflowsWithResume({
+        created: `${dayStartStr}..${dayEndStr}`,
+        rawFilters,
+      });
+
+      allRuns.push(...dayRuns);
+      current.setUTCDate(current.getUTCDate() + 1);
+    }
+
+    return allRuns;
   }
 
   private async fetchWorkflowsWithResume(options?: {

@@ -1,7 +1,7 @@
 import { PipelineRun } from '../../domain';
 import { WorkflowJobJsonResponse, WorkflowJsonResponse } from './github-response-types';
 
-export type GitHubWorkflowFilters = { rawFilters?: string; created?: string };
+export type GitHubWorkflowFilters = { rawFilters?: string; created?: string; byDay?: boolean };
 export type GitHubWorkflowResponse = { runs: WorkflowJsonResponse[]; hasNext: boolean };
 export type GitHubWorkflowJobFilters = { rawFilters?: string };
 export type GitHubWorkflowJobResponse = { jobs: WorkflowJobJsonResponse[]; hasNext: boolean };

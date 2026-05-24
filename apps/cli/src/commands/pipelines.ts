@@ -22,6 +22,7 @@ export function createPipelinesCommands(program: Command): void {
     .option('--start-date <date>', 'Filter runs created on or after this date (ISO 8601)')
     .option('--end-date <date>', 'Filter runs created on or before this date (ISO 8601)')
     .option('--raw-filters <filters>', 'Raw filters (e.g., status=success,branch=main)')
+    .option('--by-day', 'Fetch workflows day by day instead of all at once', false)
     .action(async (options) => {
       try {
         logger.info('🔄 Fetching pipeline runs from GitHub...');
@@ -31,6 +32,7 @@ export function createPipelinesCommands(program: Command): void {
           startDate: options.startDate,
           endDate: options.endDate,
           rawFilters: options.rawFilters,
+          byDay: options.byDay,
         });
 
         logger.info('✅ Fetch pipeline data has been completed and stored on disk');
