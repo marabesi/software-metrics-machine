@@ -207,7 +207,7 @@ export class PullRequestsController {
 
   @Get('/pull-requests/authors')
   async authors() {
-    const prs = await this.pullRequestsRepo.refreshPRs();
+    const prs = await this.pullRequestsRepo.fetchPRs();
     return Array.from(
       new Set(
         prs.map((pr: PRLike) => pr.author?.login || '').filter((name: string) => name.length > 0)
@@ -217,7 +217,7 @@ export class PullRequestsController {
 
   @Get('/pull-requests/labels')
   async labels() {
-    const prs = await this.pullRequestsRepo.refreshPRs();
+    const prs = await this.pullRequestsRepo.fetchPRs();
     return Array.from(
       new Set(
         prs.flatMap((pr: PRLike) =>
@@ -316,7 +316,7 @@ export class PullRequestsController {
     authors?: string;
     labels?: string;
   }): Promise<PRLike[]> {
-    const prs = await this.pullRequestsRepo.refreshPRs();
+    const prs = await this.pullRequestsRepo.fetchPRs();
     const selectedAuthors = this.parseCsvList(filters.authors);
     const selectedLabels = this.parseCsvList(filters.labels);
 

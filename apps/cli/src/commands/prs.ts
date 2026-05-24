@@ -43,7 +43,7 @@ export function createPRsCommands(program: Command): void {
       try {
         logger.info('🔄 Fetching pull requests from GitHub...');
         const orchestrator = createPRsOrchestrator();
-        await orchestrator.refreshPRs({
+        await orchestrator.fetchPRs({
           startDate: options.startDate,
           endDate: options.endDate,
           forceRefresh: options.force,

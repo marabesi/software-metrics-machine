@@ -32,7 +32,7 @@ export class PullRequestsRepository implements IPullRequestsRepository {
   /**
    * Refresh PR data from GitHub
    */
-  async refreshPRs(options?: {
+  async fetchPRs(options?: {
     startDate?: string;
     endDate?: string;
     forceRefresh?: boolean;
@@ -60,7 +60,7 @@ export class PullRequestsRepository implements IPullRequestsRepository {
    * Get PR metrics
    */
   async getPRMetrics(filters?: any): Promise<any> {
-    await this.refreshPRs(filters);
+    await this.fetchPRs(filters);
     return this.prService.getMetrics(filters);
   }
 
@@ -68,7 +68,7 @@ export class PullRequestsRepository implements IPullRequestsRepository {
    * Get PR metrics by month
    */
   async getPRsByMonth(filters?: any): Promise<any> {
-    await this.refreshPRs(filters);
+    await this.fetchPRs(filters);
     return this.prService.getMetricsByMonth(filters);
   }
 
@@ -76,7 +76,7 @@ export class PullRequestsRepository implements IPullRequestsRepository {
    * Get PR metrics by week
    */
   async getPRsByWeek(filters?: any): Promise<any> {
-    await this.refreshPRs(filters);
+    await this.fetchPRs(filters);
     return this.prService.getMetricsByWeek(filters);
   }
 }
