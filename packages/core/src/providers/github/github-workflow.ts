@@ -1,33 +1,30 @@
 import axios, { AxiosInstance } from 'axios';
 import { logger } from '@smmachine/utils';
 import { Logger } from '@smmachine/utils';
+import {PipelineRun} from "../../domain";
+
+export type GitHubWorkflowFilters = { rawFilters?: string; created?: string };
+export type GitHubWorkflowResponse = { runs: any[]; hasNext: boolean };
+export type GitHubWorkflowJobFilters = { rawFilters?: string };
+export type GitHubWorkflowJobResponse = { jobs: any[]; hasNext: boolean };
 
 export interface IGithubWorkflowClient {
-  fetchWorkflows(options?: { created?: string; rawFilters?: string }): Promise<any[]>;
-
-  fetchJobsForWorkflows(workflowIds: string[]): Promise<any[]>;
+  fetchWorkflows(options?: GitHubWorkflowFilters): Promise<PipelineRun[]>;
 
   fetchWorkflowRunsPage(
     page: number,
     perPage?: number,
-    options?: { rawFilters?: string; created?: string }
-  ): Promise<{ runs: any[]; hasNext: boolean }>;
+    options?: GitHubWorkflowFilters
+  ): Promise<GitHubWorkflowResponse>;
 
   fetchJobsPage(
     runId: string,
     page: number,
     perPage?: number,
-    options?: { rawFilters?: string }
-  ): Promise<{ jobs: any[]; hasNext: boolean }>;
+    options?: GitHubWorkflowJobFilters
+  ): Promise<GitHubWorkflowJobResponse>;
 }
 
-/**
- * GitHub API client for Workflows (CI/CD)
- * Real implementation using GitHub REST API v3
- * Endpoints utilized:
- *   - GET /repos/{owner}/{repo}/actions/runs - List workflow runs
- *   - GET /repos/{owner}/{repo}/actions/runs/{run_id}/jobs - Get jobs for a run
- */
 export class GithubWorkflowClient implements IGithubWorkflowClient {
   private axiosInstance: AxiosInstance;
   private logger: Logger;
@@ -54,10 +51,10 @@ export class GithubWorkflowClient implements IGithubWorkflowClient {
     startDate?: string;
     endDate?: string;
     rawFilters?: string;
-  }): Promise<any[]> {
+  }): Promise<PipelineRun[]> {
     const per_page = 100;
     let page = 1;
-    const allRuns: any[] = [];
+    const allRuns: PipelineRun[] = [];
 
     try {
       // Fetch all workflow runs with pagination
@@ -115,60 +112,11 @@ export class GithubWorkflowClient implements IGithubWorkflowClient {
     }
   }
 
-  async fetchJobsForWorkflows(workflowIds: string[]): Promise<any[]> {
-    const allJobs: any[] = [];
-
-    try {
-      // Fetch jobs for each workflow run
-      for (const runId of workflowIds) {
-        let page = 1;
-        this.logger.info(
-          `Fetching jobs for workflow run ${runId} in ${this.owner}/${this.repo} - page ${page}`
-        );
-
-        while (true) {
-          const response = await this.fetchJobsPage(runId, page, 100);
-          const jobs = response.jobs || [];
-
-          for (const job of jobs) {
-            allJobs.push({
-              ...job,
-              startedAt: job.started_at,
-              completedAt: job.completed_at,
-              duration: this.calculateDuration(job.started_at, job.completed_at),
-              runId,
-            });
-          }
-
-          if (!response.hasNext) {
-            break;
-          }
-
-          page += 1;
-        }
-      }
-
-      this.logger.info(`Fetched ${allJobs.length} jobs total`);
-      return allJobs;
-    } catch (error) {
-      if (axios.isAxiosError(error)) {
-        this.logger.error(`GitHub API error fetching jobs: ${error.message}`);
-        throw new Error(`Failed to fetch jobs: ${error.message}`);
-      }
-      throw error;
-    }
-  }
-
-  private calculateDuration(startedAt: string, completedAt: string): number {
-    if (!startedAt || !completedAt) return 0;
-    return (new Date(completedAt).getTime() - new Date(startedAt).getTime()) / 1000; // Duration in seconds
-  }
-
   async fetchWorkflowRunsPage(
     page: number,
     perPage: number = 100,
     options?: { created?: string; rawFilters?: string }
-  ): Promise<{ runs: any[]; hasNext: boolean }> {
+  ): Promise<GitHubWorkflowResponse> {
     const requestParams = {
       params: {
         per_page: perPage,
@@ -194,7 +142,7 @@ export class GithubWorkflowClient implements IGithubWorkflowClient {
     runId: string,
     page: number,
     perPage: number = 100
-  ): Promise<{ jobs: any[]; hasNext: boolean }> {
+  ): Promise<GitHubWorkflowJobResponse> {
     const url = `/repos/${this.owner}/${this.repo}/actions/runs/${runId}/jobs`;
     const requestParams = {
       params: {

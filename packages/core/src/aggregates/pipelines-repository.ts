@@ -144,17 +144,23 @@ export class PipelinesRepository implements IPipelinesRepository {
     endDate?: string;
     rawFilters?: string;
   }): Promise<any[]> {
-    const fromCache = await this.pipelineRunFileSystemRepository.loadAll();
+    const cachedJobs = await this.pipelineJobsFileSystemRepository.loadAll();
 
-    const filteredRuns = fromCache
-      .filter((run) => {
+    if (cachedJobs.length > 0 && !filters?.forceRefresh) {
+      logger.info(`Using cached jobs: ${cachedJobs.length} records`);
+      return cachedJobs;
+    }
+
+    const cachedRuns = await this.pipelineRunFileSystemRepository.loadAll();
+    const filteredRuns = cachedRuns.filter((run) => {
       if (filters.startDate && new Date(run.createdAt) < new Date(filters.startDate)) {
         return false;
       }
+
       if (filters.endDate && new Date(run.createdAt) > new Date(filters.endDate)) {
         return false;
       }
-      // Add more filter conditions as needed
+
       return true;
     });
 
@@ -163,7 +169,7 @@ export class PipelinesRepository implements IPipelinesRepository {
     return this.fetchJobsWithResume(filteredRuns, filters.rawFilters);
   }
 
-  async fetchJobsWithResume(workflows: PipelineRun[], rawFilters?: string): Promise<any[]> {
+  async fetchJobsWithResume(workflows: PipelineRun[], rawFilters?: string): Promise<PipelineJob[]> {
     const progressPath = this.fileInCache('jobs_progress.json');
     const incompletedPath = this.fileInCache('jobs_incompleted.json');
 
@@ -173,7 +179,7 @@ export class PipelinesRepository implements IPipelinesRepository {
     });
 
     const processedRunIds = new Set(progress.processedRunIds || []);
-    const allJobs = await this.readJson<any[]>(incompletedPath, []);
+    const allJobs: PipelineJob[] = await this.readJson<any[]>(incompletedPath, []);
     const perPage = 100;
 
     for (const run of workflows) {

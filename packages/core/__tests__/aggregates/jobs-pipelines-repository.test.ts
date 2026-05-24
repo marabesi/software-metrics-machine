@@ -4,14 +4,14 @@ import {
   PipelineJob,
   PipelineRun,
   PipelinesRepository,
-  PipelineJobBuilder,
+  PipelineGitHubJobBuilder,
   PipelinesRunBuilder,
   type IGithubWorkflowClient,
 } from '../../src';
 import { InMemoryRepository } from '../../src/test/in-memory-repository';
+import {GitHubWorkflowFilters, GitHubWorkflowResponse} from '../../src/providers/github/github-workflow';
 
 describe('Jobs PipelinesRepository', () => {
-
   const createRepository = async (githubWorkflowClient: IGithubWorkflowClient) => {
     const configuration = {
       getPipelinePath: () => '/tmp',
@@ -69,40 +69,39 @@ describe('Jobs PipelinesRepository', () => {
       .fn()
       .mockResolvedValueOnce({
         jobs: [
-          {
-            id: 'job-1',
-            started_at: '2026-05-10T00:01:00Z',
-            completed_at: '2026-05-10T00:02:00Z',
-            status: 'completed',
-            conclusion: 'success',
-            name: 'build',
-          },
+          new PipelineGitHubJobBuilder()
+            .id('job-1')
+            .name('build')
+            .startedAt('2026-05-10T00:01:00Z')
+            .completedAt('2026-05-10T00:02:00Z')
+            .status('completed')
+            .conclusion('success')
+            .build(),
         ],
         hasNext: false,
       })
       .mockResolvedValueOnce({
         jobs: [
-          {
-            id: 'job-2',
-            started_at: '2026-05-11T00:01:00Z',
-            completed_at: '2026-05-11T00:02:00Z',
-            status: 'completed',
-            conclusion: 'success',
-            name: 'build',
-          },
+          new PipelineGitHubJobBuilder()
+            .id('job-2')
+            .name('build')
+            .startedAt('2026-05-11T00:01:00Z')
+            .completedAt('2026-05-11T00:02:00Z')
+            .status('completed')
+            .conclusion('success')
+            .build(),
         ],
         hasNext: false,
       });
 
     const githubWorkflowClient: IGithubWorkflowClient = {
-      fetchJobsForWorkflows(): Promise<any[]> {
-        return Promise.resolve([]);
+      fetchWorkflowRunsPage(page: number, perPage?: number, options?: GitHubWorkflowFilters): Promise<GitHubWorkflowResponse> {
+        return Promise.resolve({ runs: [], hasNext: false });
       },
       fetchWorkflows(): Promise<any[]> {
         return Promise.resolve([]);
       },
-      fetchWorkflowRunsPage: vi.fn(),
-      fetchJobsPage,
+      fetchJobsPage
     };
 
     const { repository, pipelineRunRepository, pipelineJobsRepository } = await createRepository(
@@ -118,9 +117,7 @@ describe('Jobs PipelinesRepository', () => {
     expect(jobs[1].runId).toBe('run-2');
     expect(fetchJobsPage).toHaveBeenCalledTimes(2);
 
-    const persistedJobs = await pipelineJobsRepository.loadAll();
-
-    const expectedJob = new PipelineJobBuilder()
+    const expectedJob = new PipelineGitHubJobBuilder()
       .id('job-1')
       .runId('run-1')
       .name('build')
@@ -129,6 +126,8 @@ describe('Jobs PipelinesRepository', () => {
       .status('completed')
       .conclusion('success')
       .build();
+
+    const persistedJobs = await pipelineJobsRepository.loadAll();
 
     expect(persistedJobs).toHaveLength(2);
     expect(persistedJobs[0]).toMatchObject(expectedJob);
@@ -164,22 +163,19 @@ describe('Jobs PipelinesRepository', () => {
 
     const fetchJobsPage = vi.fn().mockResolvedValueOnce({
       jobs: [
-        {
-          id: 'job-new',
-          started_at: '2026-05-15T00:01:00Z',
-          completed_at: '2026-05-15T00:02:00Z',
-          status: 'completed',
-          conclusion: 'success',
-          name: 'build',
-        },
+        new PipelineGitHubJobBuilder()
+          .id('job-new')
+          .name('build')
+          .startedAt('2026-05-15T00:01:00Z')
+          .completedAt('2026-05-15T00:02:00Z')
+          .status('completed')
+          .conclusion('success')
+          .build(),
       ],
       hasNext: false,
     });
 
     const githubWorkflowClient: IGithubWorkflowClient = {
-      fetchJobsForWorkflows(): Promise<any[]> {
-        return Promise.resolve([]);
-      },
       fetchWorkflows(): Promise<any[]> {
         return Promise.resolve([]);
       },
@@ -230,22 +226,19 @@ describe('Jobs PipelinesRepository', () => {
 
     const fetchJobsPage = vi.fn().mockResolvedValueOnce({
       jobs: [
-        {
-          id: 'job-early',
-          started_at: '2026-05-05T00:01:00Z',
-          completed_at: '2026-05-05T00:02:00Z',
-          status: 'completed',
-          conclusion: 'success',
-          name: 'build',
-        },
+        new PipelineGitHubJobBuilder()
+          .id('job-early')
+          .name('build')
+          .startedAt('2026-05-05T00:01:00Z')
+          .completedAt('2026-05-05T00:02:00Z')
+          .status('completed')
+          .conclusion('success')
+          .build(),
       ],
       hasNext: false,
     });
 
     const githubWorkflowClient: IGithubWorkflowClient = {
-      fetchJobsForWorkflows(): Promise<any[]> {
-        return Promise.resolve([]);
-      },
       fetchWorkflows(): Promise<any[]> {
         return Promise.resolve([]);
       },
@@ -264,6 +257,81 @@ describe('Jobs PipelinesRepository', () => {
     expect(jobs).toHaveLength(1);
     expect(jobs[0].runId).toBe('run-early');
     expect(fetchJobsPage).toHaveBeenCalledTimes(1);
+  });
+
+  it('should filter workflows by start and end date', async () => {
+    const cachedRuns = [
+      new PipelinesRunBuilder()
+        .id('run-early')
+        .number(1)
+        .name('CI')
+        .status('completed')
+        .createdAt('2026-05-05T00:00:00Z')
+        .updatedAt('2026-05-05T00:05:00Z')
+        .startedAt('2026-05-05T00:00:00Z')
+        .completedAt('2026-05-05T00:05:00Z')
+        .branch('main')
+        .path('.github/workflows/ci.yml')
+        .build(),
+      new PipelinesRunBuilder()
+        .id('run-late')
+        .number(2)
+        .name('CI')
+        .status('completed')
+        .createdAt('2026-05-20T00:00:00Z')
+        .updatedAt('2026-05-20T00:05:00Z')
+        .startedAt('2026-05-20T00:00:00Z')
+        .completedAt('2026-05-20T00:05:00Z')
+        .branch('main')
+        .path('.github/workflows/ci.yml')
+        .build(),
+    ];
+
+    const fetchJobsPage = vi.fn().mockResolvedValueOnce({
+      jobs: [
+        new PipelineGitHubJobBuilder()
+          .id('job-early')
+          .name('build')
+          .startedAt('2026-05-05T00:01:00Z')
+          .completedAt('2026-05-05T00:02:00Z')
+          .status('completed')
+          .conclusion('success')
+          .build(),
+      ],
+      hasNext: false,
+    }).mockResolvedValueOnce({
+      jobs: [
+        new PipelineGitHubJobBuilder()
+          .id('job-late')
+          .name('build')
+          .startedAt('2026-05-20T00:01:00Z')
+          .completedAt('2026-05-20T00:02:00Z')
+          .status('completed')
+          .conclusion('success')
+          .build(),
+      ],
+      hasNext: false,
+    });
+
+    const githubWorkflowClient: IGithubWorkflowClient = {
+      fetchWorkflows(options?: GitHubWorkflowFilters): Promise<PipelineRun[]> {
+        return Promise.resolve([]);
+      },
+      fetchWorkflowRunsPage: vi.fn(),
+      fetchJobsPage
+    };
+
+    const { repository, pipelineRunRepository } = await createRepository(githubWorkflowClient);
+
+    await createCachedWorkflows(pipelineRunRepository, cachedRuns);
+
+    const jobs = await repository.fetchJobs({
+      startDate: '2026-05-05',
+      endDate: '2026-05-20',
+    });
+
+    expect(jobs).toHaveLength(2);
+    expect(jobs[0].runId).toBe('run-early');
   });
 
   it('should handle job pagination', async () => {
@@ -286,35 +354,32 @@ describe('Jobs PipelinesRepository', () => {
       .fn()
       .mockResolvedValueOnce({
         jobs: [
-          {
-            id: 'job-1',
-            started_at: '2026-05-10T00:01:00Z',
-            completed_at: '2026-05-10T00:02:00Z',
-            status: 'completed',
-            conclusion: 'success',
-            name: 'build',
-          },
+          new PipelineGitHubJobBuilder()
+            .id('job-1')
+            .name('build')
+            .startedAt('2026-05-10T00:01:00Z')
+            .completedAt('2026-05-10T00:02:00Z')
+            .status('completed')
+            .conclusion('success')
+            .build(),
         ],
         hasNext: true,
       })
       .mockResolvedValueOnce({
         jobs: [
-          {
-            id: 'job-2',
-            started_at: '2026-05-10T00:03:00Z',
-            completed_at: '2026-05-10T00:04:00Z',
-            status: 'completed',
-            conclusion: 'success',
-            name: 'test',
-          },
+          new PipelineGitHubJobBuilder()
+            .id('job-2')
+            .name('test')
+            .startedAt('2026-05-10T00:03:00Z')
+            .completedAt('2026-05-10T00:04:00Z')
+            .status('completed')
+            .conclusion('success')
+            .build(),
         ],
         hasNext: false,
       });
 
     const githubWorkflowClient: IGithubWorkflowClient = {
-      fetchJobsForWorkflows(): Promise<any[]> {
-        return Promise.resolve([]);
-      },
       fetchWorkflows(): Promise<any[]> {
         return Promise.resolve([]);
       },
@@ -352,22 +417,19 @@ describe('Jobs PipelinesRepository', () => {
 
     const fetchJobsPage = vi.fn().mockResolvedValueOnce({
       jobs: [
-        {
-          id: 'job-1',
-          started_at: '2026-05-10T00:01:00Z',
-          completed_at: '2026-05-10T00:02:00Z',
-          status: 'completed',
-          conclusion: 'success',
-          name: 'build',
-        },
+        new PipelineGitHubJobBuilder()
+          .id('job-1')
+          .name('build')
+          .startedAt('2026-05-10T00:01:00Z')
+          .completedAt('2026-05-10T00:02:00Z')
+          .status('completed')
+          .conclusion('success')
+          .build(),
       ],
       hasNext: false,
     });
 
     const githubWorkflowClient: IGithubWorkflowClient = {
-      fetchJobsForWorkflows(): Promise<any[]> {
-        return Promise.resolve([]);
-      },
       fetchWorkflows(): Promise<any[]> {
         return Promise.resolve([]);
       },
@@ -391,9 +453,6 @@ describe('Jobs PipelinesRepository', () => {
 
   it('should handle empty cached workflows gracefully', async () => {
     const githubWorkflowClient: IGithubWorkflowClient = {
-      fetchJobsForWorkflows(): Promise<any[]> {
-        return Promise.resolve([]);
-      },
       fetchWorkflows(): Promise<any[]> {
         return Promise.resolve([]);
       },

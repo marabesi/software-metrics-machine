@@ -340,4 +340,9 @@ export class PipelinesService implements IPipelinesService {
       jobs: jobsByRunId.get(String(run.id)) || run.jobs || [],
     }));
   }
+
+  private calculateDuration(startedAt: string, completedAt: string): number {
+    if (!startedAt || !completedAt) return 0;
+    return (new Date(completedAt).getTime() - new Date(startedAt).getTime()) / 1000; // Duration in seconds
+  }
 }

@@ -82,6 +82,7 @@ export function createPipelinesCommands(program: Command): void {
 
         const orchestrator = pipelineRepository();
         await orchestrator.fetchJobs({
+          forceRefresh: options.force,
           startDate: options.runStartDate,
           endDate: options.runEndDate,
           rawFilters: options.rawFilters,

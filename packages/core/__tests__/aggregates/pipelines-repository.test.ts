@@ -1,11 +1,9 @@
-/// <reference types="node" />
-
 import { describe, expect, it, vi } from 'vitest';
 import * as fs from 'fs/promises';
 import * as os from 'os';
 import * as path from 'path';
 import {
-  PipelineJobBuilder,
+  PipelineGitHubJobBuilder,
   PipelineJob,
   PipelinesRunBuilder,
   PipelineRun,
@@ -62,9 +60,6 @@ describe('PipelinesRepository pagination resume', () => {
       });
 
     const githubWorkflowClient: IGithubWorkflowClient = {
-      fetchJobsForWorkflows(workflowIds: string[]): Promise<any[]> {
-        return Promise.resolve([]);
-      },
       fetchWorkflows(options?: { created?: string; rawFilters?: string }): Promise<any[]> {
         return Promise.resolve([]);
       },
@@ -151,7 +146,6 @@ describe('PipelinesRepository pagination resume', () => {
       fetchWorkflows(options?: { created?: string; rawFilters?: string }): Promise<any[]> {
         return Promise.resolve([]);
       },
-      fetchJobsForWorkflows: vi.fn(),
       fetchJobsPage: vi.fn(),
     };
 
@@ -224,9 +218,6 @@ describe('PipelinesRepository pagination resume', () => {
     });
 
     const githubWorkflowClient: IGithubWorkflowClient = {
-      fetchJobsForWorkflows(workflowIds: string[]): Promise<any[]> {
-        return Promise.resolve([]);
-      },
       fetchWorkflows(options?: { created?: string; rawFilters?: string }): Promise<any[]> {
         return Promise.resolve([]);
       },
@@ -249,7 +240,7 @@ describe('PipelinesRepository pagination resume', () => {
       .branch('main')
       .path('.github/workflows/ci.yml')
       .build();
-    const expectedJob = new PipelineJobBuilder()
+    const expectedJob = new PipelineGitHubJobBuilder()
       .id('job-1')
       .runId('run-with-jobs')
       .name('build')
