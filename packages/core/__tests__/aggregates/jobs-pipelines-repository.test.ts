@@ -1,7 +1,6 @@
 import { describe, expect, it, vi } from 'vitest';
 import {
   IRepository,
-  PipelineJob,
   PipelineRun,
   PipelinesRepository,
   PipelineGitHubJobBuilder,
@@ -48,7 +47,7 @@ describe('Jobs PipelinesRepository', () => {
     const cachedRuns = [
       new PipelineGitHubRunBuilder()
         .id('run-1')
-        .number('1')
+        .number('8888')
         .name('CI')
         .status('completed')
         .createdAt('2026-05-10T00:00:00Z')
@@ -60,7 +59,7 @@ describe('Jobs PipelinesRepository', () => {
         .build(),
       new PipelineGitHubRunBuilder()
         .id('run-2')
-        .number('2')
+        .number('9999')
         .name('CI')
         .status('completed')
         .createdAt('2026-05-11T00:00:00Z')
@@ -78,6 +77,7 @@ describe('Jobs PipelinesRepository', () => {
         jobs: [
           new PipelineGitHubJobBuilder()
             .id('job-1')
+            .runId('run-1')
             .name('build')
             .startedAt('2026-05-10T00:01:00Z')
             .completedAt('2026-05-10T00:02:00Z')
@@ -92,6 +92,7 @@ describe('Jobs PipelinesRepository', () => {
           new PipelineGitHubJobBuilder()
             .id('job-2')
             .name('build')
+            .runId('run-2')
             .startedAt('2026-05-11T00:01:00Z')
             .completedAt('2026-05-11T00:02:00Z')
             .status('completed')
@@ -176,6 +177,7 @@ describe('Jobs PipelinesRepository', () => {
         new PipelineGitHubJobBuilder()
           .id('job-new')
           .name('build')
+          .runId('run-new')
           .startedAt('2026-05-15T00:01:00Z')
           .completedAt('2026-05-15T00:02:00Z')
           .status('completed')
@@ -239,6 +241,7 @@ describe('Jobs PipelinesRepository', () => {
         new PipelineGitHubJobBuilder()
           .id('job-early')
           .name('build')
+          .runId('run-early')
           .startedAt('2026-05-05T00:01:00Z')
           .completedAt('2026-05-05T00:02:00Z')
           .status('completed')
@@ -303,6 +306,7 @@ describe('Jobs PipelinesRepository', () => {
         jobs: [
           new PipelineGitHubJobBuilder()
             .id('job-early')
+            .runId('run-early')
             .name('build')
             .startedAt('2026-05-05T00:01:00Z')
             .completedAt('2026-05-05T00:02:00Z')
@@ -317,6 +321,7 @@ describe('Jobs PipelinesRepository', () => {
           new PipelineGitHubJobBuilder()
             .id('job-late')
             .name('build')
+            .runId('run-late')
             .startedAt('2026-05-20T00:01:00Z')
             .completedAt('2026-05-20T00:02:00Z')
             .status('completed')
