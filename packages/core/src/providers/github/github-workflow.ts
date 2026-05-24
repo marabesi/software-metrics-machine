@@ -14,7 +14,9 @@ export interface IGithubWorkflowClient {
     perPage?: number,
     options?: GitHubWorkflowFilters
   ): Promise<GitHubWorkflowResponse>;
+}
 
+export interface IGithubWorkflowJobClient {
   fetchJobsPage(
     runId: string,
     page: number,

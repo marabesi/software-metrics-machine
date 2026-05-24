@@ -1,0 +1,174 @@
+import { logger } from '@smmachine/utils';
+import * as fs from 'fs/promises';
+import * as path from 'path';
+import { Configuration, IRepository } from '../infrastructure';
+import {
+  WorkflowJobJsonResponse,
+  WorkflowJsonResponse,
+} from '../providers/github/github-response-types';
+import { IGithubWorkflowJobClient } from '../providers/github/github-workflow';
+
+interface JobsProgress {
+  processedRunIds: string[];
+  partial?: {
+    runId: string;
+    page: number;
+  } | null;
+}
+
+export class PipelinesJobFetchRepository {
+  constructor(
+    private configuration: Configuration,
+    private githubWorkflowClient: IGithubWorkflowJobClient,
+    private pipelineRunFileSystemRepository: IRepository<WorkflowJsonResponse>,
+    private pipelineJobsFileSystemRepository: IRepository<WorkflowJobJsonResponse>
+  ) {}
+
+  async fetchJobs(filters: {
+    forceRefresh?: boolean;
+    startDate?: string;
+    endDate?: string;
+    rawFilters?: string;
+  }): Promise<WorkflowJobJsonResponse[]> {
+    const cachedJobs = await this.pipelineJobsFileSystemRepository.loadAll();
+
+    if (cachedJobs.length > 0 && !filters?.forceRefresh) {
+      logger.info(`Using cached jobs: ${cachedJobs.length} records`);
+      return cachedJobs;
+    }
+
+    const cachedRuns = await this.pipelineRunFileSystemRepository.loadAll();
+    const filteredRuns = cachedRuns.filter((run) => {
+      const startDate = filters.startDate;
+      const endDate = filters.endDate;
+      const createdAt = run.created_at;
+      const runDate = new Date(createdAt);
+
+      if (startDate && endDate) {
+        return runDate >= new Date(startDate) && runDate <= new Date(endDate);
+      }
+      if (startDate && runDate < new Date(startDate)) {
+        return false;
+      }
+
+      if (endDate && runDate > new Date(endDate)) {
+        return false;
+      }
+
+      return true;
+    });
+
+    logger.info(`Fetching jobs for ${filteredRuns.length} workflow runs...`);
+
+    return this.fetchJobsWithResume(filteredRuns, filters.rawFilters);
+  }
+
+  async fetchJobsWithResume(
+    workflows: WorkflowJsonResponse[],
+    rawFilters?: string
+  ): Promise<WorkflowJobJsonResponse[]> {
+    const progressPath = this.fileInCache('jobs_progress.json');
+    const incompletedPath = this.fileInCache('jobs_incompleted.json');
+
+    const progress = await this.readJson<JobsProgress>(progressPath, {
+      processedRunIds: [],
+      partial: null,
+    });
+
+    const processedRunIds = new Set(progress.processedRunIds || []);
+    const allJobs: WorkflowJobJsonResponse[] = await this.readJson<any[]>(incompletedPath, []);
+    const perPage = 100;
+
+    for (const run of workflows) {
+      const runId = String((run as any).id);
+      if (!runId || processedRunIds.has(runId)) {
+        continue;
+      }
+
+      let page =
+        progress.partial?.runId === runId && progress.partial?.page ? progress.partial.page : 1;
+
+      while (true) {
+        try {
+          console.log(`Fetching jobs for workflow run ${runId} in page ${page}...`);
+          const response = await this.githubWorkflowClient.fetchJobsPage(runId, page, perPage, {
+            rawFilters,
+          });
+          allJobs.push(...response.jobs);
+          await this.writeJson(incompletedPath, allJobs);
+
+          if (response.hasNext) {
+            page += 1;
+            await this.writeJson(progressPath, {
+              processedRunIds: Array.from(processedRunIds),
+              partial: { runId, page },
+            });
+            continue;
+          }
+
+          processedRunIds.add(runId);
+          await this.writeJson(progressPath, {
+            processedRunIds: Array.from(processedRunIds),
+            partial: null,
+          });
+          break;
+        } catch (error) {
+          await this.writeJson(incompletedPath, allJobs);
+          await this.writeJson(progressPath, {
+            processedRunIds: Array.from(processedRunIds),
+            partial: { runId, page },
+          });
+          throw error;
+        }
+      }
+    }
+
+    const existingJobs = await this.pipelineJobsFileSystemRepository.loadAll();
+    const mergedJobsByKey = new Map<string, any>();
+
+    for (const job of existingJobs) {
+      mergedJobsByKey.set(`${String(job.run_id)}:${String(job.id)}`, job);
+    }
+
+    for (const job of allJobs) {
+      mergedJobsByKey.set(`${String(job.run_id)}:${String(job.id)}`, job);
+    }
+
+    await this.pipelineJobsFileSystemRepository.saveAll(Array.from(mergedJobsByKey.values()));
+
+    await this.deleteFile(progressPath);
+    await this.deleteFile(incompletedPath);
+    return allJobs;
+  }
+
+  private fileInCache(fileName: string): string {
+    return path.join(this.configuration.getPipelinePath(), fileName);
+  }
+
+  private async readJson<T>(filePath: string, fallback: T): Promise<T> {
+    try {
+      const contents = await fs.readFile(filePath, 'utf-8');
+      return JSON.parse(contents) as T;
+    } catch (error) {
+      if ((error as NodeJS.ErrnoException).code === 'ENOENT') {
+        return fallback;
+      }
+      throw error;
+    }
+  }
+
+  private async writeJson(filePath: string, value: unknown): Promise<void> {
+    await fs.mkdir(path.dirname(filePath), { recursive: true });
+    await fs.writeFile(filePath, JSON.stringify(value, null, 2), 'utf-8');
+  }
+
+  private async deleteFile(filePath: string): Promise<void> {
+    try {
+      await fs.unlink(filePath);
+    } catch (error) {
+      if ((error as NodeJS.ErrnoException).code !== 'ENOENT') {
+        throw error;
+      }
+    }
+  }
+}

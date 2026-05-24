@@ -1,33 +1,16 @@
 import {Command} from 'commander';
 import {Configuration} from '@smmachine/core/infrastructure/configuration';
 import {Logger} from '@smmachine/utils';
-import {
-  GithubWorkflowClient,
-  PipelinesRepository, PipelinesService
-} from "@smmachine/core";
+import { PipelinesService } from "@smmachine/core";
 import PipelineFactory from "@smmachine/core/aggregates/pipeline-factory";
 
 const logger = new Logger('PipelinesCommand');
 
-function pipelineRepository(): PipelinesRepository {
-  const config = new Configuration(process.env);
-  const [githubOwner, githubRepo] = config.githubRepository!.split('/');
-  const githubToken = config.githubToken!;
+const config = new Configuration(process.env);
 
-  const githubWorkflowClient = new GithubWorkflowClient(
-    githubToken,
-    githubOwner,
-    githubRepo
-  );
-  return PipelineFactory.create(
-    config,
-    githubWorkflowClient,
-  )
-}
+const { pipelineRepository, workflowRepository, workflowJobRepository}  = PipelineFactory.create(config)
 
-function pipelineService(): PipelinesService {
-  return new PipelinesService(pipelineRepository())
-}
+const pipelineService = new PipelinesService(pipelineRepository)
 
 export function createPipelinesCommands(program: Command): void {
   const pipelinesGroup = program.command('pipelines').description('Pipeline/workflow operations');
@@ -43,8 +26,7 @@ export function createPipelinesCommands(program: Command): void {
       try {
         logger.info('🔄 Fetching pipeline runs from GitHub...');
 
-        const orchestrator = pipelineRepository();
-        await orchestrator.fetchPipelines({
+        await workflowRepository.fetchPipelines({
           forceRefresh: options.force,
           startDate: options.startDate,
           endDate: options.endDate,
@@ -69,8 +51,7 @@ export function createPipelinesCommands(program: Command): void {
       try {
         logger.info('🔄 Fetching pipeline jobs from GitHub...');
 
-        const orchestrator = pipelineRepository();
-        await orchestrator.fetchJobs({
+        await workflowJobRepository.fetchJobs({
           forceRefresh: options.force,
           startDate: options.runStartDate,
           endDate: options.runEndDate,
@@ -96,7 +77,7 @@ export function createPipelinesCommands(program: Command): void {
       try {
         console.log('📊 Generating pipeline summary...');
 
-        const metrics = await pipelineService().getMetrics({
+        const metrics = await pipelineService.getMetrics({
           startDate: options.startDate,
           endDate: options.endDate,
         });
@@ -127,7 +108,7 @@ export function createPipelinesCommands(program: Command): void {
       try {
         console.log('📊 Analyzing pipelines by status...');
 
-        const metrics = await pipelineService().getMetrics({
+        const metrics = await pipelineService.getMetrics({
           startDate: options.startDate,
           endDate: options.endDate,
         });
@@ -167,7 +148,7 @@ export function createPipelinesCommands(program: Command): void {
       try {
         console.log('⏱️  Analyzing pipeline run durations...');
 
-        const metrics = await pipelineService().getMetrics({
+        const metrics = await pipelineService.getMetrics({
           startDate: options.startDate,
           endDate: options.endDate,
         });
@@ -199,7 +180,7 @@ export function createPipelinesCommands(program: Command): void {
       try {
         console.log('📈 Analyzing pipeline runs by time period...');
 
-        const metrics = await pipelineService().getDeploymentFrequency(
+        const metrics = await pipelineService.getDeploymentFrequency(
           options.period, { startDate: options.startDate, endDate: options.endDate, }
         );
 
@@ -231,7 +212,7 @@ export function createPipelinesCommands(program: Command): void {
       try {
         console.log('📊 Generating pipeline jobs summary...');
 
-        const metrics = await pipelineService().getJobMetrics({
+        const metrics = await pipelineService.getJobMetrics({
           startDate: options.startDate,
           endDate: options.endDate,
         });
@@ -267,7 +248,7 @@ export function createPipelinesCommands(program: Command): void {
       try {
         console.log('⏱️  Analyzing job execution times...');
 
-        const metrics = await pipelineService().getJobMetrics({
+        const metrics = await pipelineService.getJobMetrics({
           startDate: options.startDate,
           endDate: options.endDate,
         });
@@ -304,7 +285,7 @@ export function createPipelinesCommands(program: Command): void {
       try {
         console.log('📊 Analyzing jobs by status...');
 
-        const metrics = await pipelineService().getJobMetrics({
+        const metrics = await pipelineService.getJobMetrics({
           startDate: options.startDate,
           endDate: options.endDate,
         });
@@ -343,7 +324,7 @@ export function createPipelinesCommands(program: Command): void {
       try {
         console.log('🚀 Calculating deployment frequency...');
 
-        const metrics = await pipelineService().getDeploymentFrequency(
+        const metrics = await pipelineService.getDeploymentFrequency(
           options.period as 'day' | 'week' | 'month', {
           startDate: options.startDate,
           endDate: options.endDate,
@@ -392,7 +373,7 @@ export function createPipelinesCommands(program: Command): void {
       try {
         console.log('⏱️  Calculating lead time for changes...');
 
-        const metrics = await pipelineService().getMetrics({
+        const metrics = await pipelineService.getMetrics({
           startDate: options.startDate,
           endDate: options.endDate,
         });

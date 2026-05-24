@@ -1,11 +1,7 @@
 import axios, { AxiosInstance } from 'axios';
 import { Logger } from '@smmachine/utils';
 import { PipelineRun } from '../../domain';
-import {
-  GitHubWorkflowJobResponse,
-  GitHubWorkflowResponse,
-  IGithubWorkflowClient,
-} from './github-workflow';
+import { GitHubWorkflowResponse, IGithubWorkflowClient } from './github-workflow';
 
 export class GithubWorkflowClient implements IGithubWorkflowClient {
   private axiosInstance: AxiosInstance;
@@ -119,28 +115,6 @@ export class GithubWorkflowClient implements IGithubWorkflowClient {
 
     const hasNext = this.hasNextLink(response.headers?.link) || runs.length === perPage;
     return { runs, hasNext };
-  }
-
-  async fetchJobsPage(
-    runId: string,
-    page: number,
-    perPage: number = 100
-  ): Promise<GitHubWorkflowJobResponse> {
-    const url = `/repos/${this.owner}/${this.repo}/actions/runs/${runId}/jobs`;
-    const requestParams = {
-      params: {
-        per_page: perPage,
-        page,
-      },
-    };
-
-    this.logger.info(`${url} ${JSON.stringify(requestParams.params)}`);
-
-    const response = await this.axiosInstance.get(url, requestParams);
-
-    const jobs = response.data.jobs || [];
-    const hasNext = this.hasNextLink(response.headers?.link) || jobs.length === perPage;
-    return { jobs, hasNext };
   }
 
   private hasNextLink(linkHeader?: string): boolean {

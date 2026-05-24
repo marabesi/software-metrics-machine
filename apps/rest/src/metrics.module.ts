@@ -144,10 +144,10 @@ function buildDataDirectories(config: Configuration) {
     },
     {
       provide: PipelinesRepository,
-      useFactory: (client: GithubWorkflowClient, config: Configuration) => {
-          return PipelineFactory.create(config, client)
+      useFactory: (config: Configuration) => {
+          return PipelineFactory.create(config).pipelineRepository
       },
-      inject: [GithubWorkflowClient, Configuration],
+      inject: [Configuration],
     },
     {
       provide: PipelinesService,
