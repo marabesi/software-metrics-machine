@@ -29,6 +29,7 @@ export class PipelinesJobFetchRepository {
     startDate?: string;
     endDate?: string;
     rawFilters?: string;
+    byDay?: boolean;
   }): Promise<WorkflowJobJsonResponse[]> {
     const cachedJobs = await this.pipelineJobsFileSystemRepository.loadAll();
 
@@ -38,10 +39,76 @@ export class PipelinesJobFetchRepository {
     }
 
     const cachedRuns = await this.pipelineRunFileSystemRepository.loadAll();
-    const startDate = this.toDateBoundary(filters.startDate, 'start');
-    const endDate = this.toDateBoundary(filters.endDate, 'end');
 
-    const filteredRuns = cachedRuns.filter((run) => {
+    if (filters?.byDay && filters?.startDate && filters?.endDate) {
+      return this.fetchJobsByDay(
+        cachedRuns,
+        filters.startDate,
+        filters.endDate,
+        filters.rawFilters
+      );
+    } else {
+      const startDate = this.toDateBoundary(filters.startDate, 'start');
+      const endDate = this.toDateBoundary(filters.endDate, 'end');
+
+      const filteredRuns = this.filterRunsByDateRange(cachedRuns, startDate, endDate);
+      logger.info(`Fetching jobs for ${filteredRuns.length} workflow runs...`);
+      return this.fetchJobsWithResume(filteredRuns, filters.rawFilters);
+    }
+  }
+
+  private async fetchJobsByDay(
+    cachedRuns: WorkflowJsonResponse[],
+    startDate: string,
+    endDate: string,
+    rawFilters?: string
+  ): Promise<WorkflowJobJsonResponse[]> {
+    const allJobs: WorkflowJobJsonResponse[] = [];
+    const current = new Date(startDate);
+    const end = new Date(endDate);
+
+    while (current <= end) {
+      const dayStart = new Date(current);
+      dayStart.setUTCHours(0, 0, 0, 0);
+
+      const dayEnd = new Date(current);
+      dayEnd.setUTCHours(23, 59, 59, 999);
+
+      logger.info(
+        `Fetching jobs for day ${dayStart.toISOString().split('T')[0]}...`
+      );
+
+      const runsForDay = cachedRuns.filter((run) => {
+        const createdAt = run.created_at;
+        if (!createdAt || createdAt.trim().length === 0) {
+          return false;
+        }
+
+        const runDate = new Date(createdAt);
+        if (Number.isNaN(runDate.getTime())) {
+          return false;
+        }
+
+        return runDate >= dayStart && runDate <= dayEnd;
+      });
+
+      if (runsForDay.length > 0) {
+        const dayJobs = await this.fetchJobsWithResume(runsForDay, rawFilters);
+        allJobs.push(...dayJobs);
+      }
+
+      current.setUTCDate(current.getUTCDate() + 1);
+    }
+
+    return allJobs;
+  }
+
+  private filterRunsByDateRange(
+    runs: WorkflowJsonResponse[],
+    startDate: Date | undefined,
+    endDate: Date | undefined
+  ): WorkflowJsonResponse[] {
+    return runs.filter((run) => {
       const createdAt = run.created_at;
       if (!createdAt || createdAt.trim().length === 0) {
         return false;
@@ -66,10 +133,6 @@ export class PipelinesJobFetchRepository {
 
       return true;
     });
-
-    logger.info(`Fetching jobs for ${filteredRuns.length} workflow runs...`);
-
-    return this.fetchJobsWithResume(filteredRuns, filters.rawFilters);
   }
 
   async fetchJobsWithResume(

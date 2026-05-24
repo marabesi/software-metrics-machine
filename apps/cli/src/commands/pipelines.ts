@@ -49,6 +49,7 @@ export function createPipelinesCommands(program: Command): void {
     .option('--run-start-date <date>', 'Filter pipelines created on or after this date')
     .option('--run-end-date <date>', 'Filter pipelines created on or before this date')
     .option('--raw-filters <filters>', 'Raw filters (e.g., status=success,branch=main)')
+    .option('--by-day', 'Fetch jobs day by day instead of all at once', false)
     .action(async (options) => {
       try {
         logger.info('🔄 Fetching pipeline jobs from GitHub...');
@@ -58,6 +59,7 @@ export function createPipelinesCommands(program: Command): void {
           startDate: options.runStartDate,
           endDate: options.runEndDate,
           rawFilters: options.rawFilters,
+          byDay: options.byDay,
         });
 
         console.log('✅ Fetch pipeline jobs has been completed and stored on disk');
