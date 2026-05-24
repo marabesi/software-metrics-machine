@@ -2,21 +2,15 @@ import {Command} from 'commander';
 import {Configuration} from '@smmachine/core/infrastructure/configuration';
 import {Logger} from '@smmachine/utils';
 import {
-  FileSystemRepository,
   GithubWorkflowClient,
-  PipelineJob,
-  PipelineRun,
   PipelinesRepository, PipelinesService
 } from "@smmachine/core";
+import PipelineFactory from "@smmachine/core/aggregates/pipeline-factory";
 
 const logger = new Logger('PipelinesCommand');
 
-const config = new Configuration(process.env);
-
-const fileSystemRepository = new FileSystemRepository<PipelineRun>(`${config.getPipelinePath()}/workflows.json`);
-const pipelineJobsFileSystemRepository = new FileSystemRepository<PipelineJob>(`${config.getPipelinePath()}/jobs.json`);
-
 function pipelineRepository(): PipelinesRepository {
+  const config = new Configuration(process.env);
   const [githubOwner, githubRepo] = config.githubRepository!.split('/');
   const githubToken = config.githubToken!;
 
@@ -25,19 +19,14 @@ function pipelineRepository(): PipelinesRepository {
     githubOwner,
     githubRepo
   );
-  return new PipelinesRepository(
+  return PipelineFactory.create(
     config,
     githubWorkflowClient,
-    fileSystemRepository,
-    pipelineJobsFileSystemRepository,
   )
 }
 
 function pipelineService(): PipelinesService {
-  return new PipelinesService(
-    fileSystemRepository,
-    pipelineJobsFileSystemRepository
-  )
+  return new PipelinesService(pipelineRepository())
 }
 
 export function createPipelinesCommands(program: Command): void {
@@ -315,7 +304,6 @@ export function createPipelinesCommands(program: Command): void {
       try {
         console.log('📊 Analyzing jobs by status...');
 
-        const orchestrator = pipelineRepository();
         const metrics = await pipelineService().getJobMetrics({
           startDate: options.startDate,
           endDate: options.endDate,

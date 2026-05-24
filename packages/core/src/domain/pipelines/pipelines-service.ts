@@ -8,6 +8,7 @@ import {
   PipelineMetrics,
   PipelineRun,
 } from './pipeline-types';
+import { PipelinesRepository } from '../../aggregates';
 
 export interface IPipelinesService {
   getMetrics(filters?: PipelineFilters): Promise<PipelineMetrics>;
@@ -18,17 +19,10 @@ export interface IPipelinesService {
   getJobMetrics(filters?: PipelineFilters): Promise<JobMetrics[]>;
 }
 
-/**
- * PipelinesService provides analytics on CI/CD pipeline runs.
- * Calculates deployment frequency, lead time, and job metrics.
- */
 export class PipelinesService implements IPipelinesService {
   private logger: Logger = logger;
 
-  constructor(
-    private pipelineRepository: IRepository<PipelineRun>,
-    private pipelineJobRepository: IRepository<PipelineJob>
-  ) {}
+  constructor(private pipelineRepository: PipelinesRepository) {}
 
   /**
    * Get overall pipeline metrics for the given filters.
@@ -320,8 +314,8 @@ export class PipelinesService implements IPipelinesService {
   }
 
   private async loadCachedWorkflowsWithJobs(): Promise<PipelineRun[]> {
-    const runs = await this.pipelineRepository.loadAll();
-    const jobs = await this.pipelineJobRepository.loadAll();
+    const runs = await this.pipelineRepository.loadPipelines();
+    const jobs = await this.pipelineRepository.loadPipelineJobs();
 
     if (jobs.length === 0) {
       return runs;
@@ -339,10 +333,5 @@ export class PipelinesService implements IPipelinesService {
       ...run,
       jobs: jobsByRunId.get(String(run.id)) || run.jobs || [],
     }));
-  }
-
-  private calculateDuration(startedAt: string, completedAt: string): number {
-    if (!startedAt || !completedAt) return 0;
-    return (new Date(completedAt).getTime() - new Date(startedAt).getTime()) / 1000; // Duration in seconds
   }
 }

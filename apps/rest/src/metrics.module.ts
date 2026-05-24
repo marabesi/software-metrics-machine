@@ -20,8 +20,9 @@ import {
   SonarqubeMeasuresClient,
   CommitTraverser,
   CodemaatAnalyzer,
-  Configuration, PipelinesService, FileSystemRepository, PipelineRun, PipelineJob,
+  Configuration, PipelinesService,
 } from '@smmachine/core';
+import PipelineFactory from "@smmachine/core/aggregates/pipeline-factory";
 
 function buildDataDirectories(config: Configuration) {
   const baseDir = config.storeData || './outputs';
@@ -144,20 +145,16 @@ function buildDataDirectories(config: Configuration) {
     {
       provide: PipelinesRepository,
       useFactory: (client: GithubWorkflowClient, config: Configuration) => {
-          return new PipelinesRepository(config, client, new FileSystemRepository<PipelineRun>(`${config.getPipelinePath()}/workflows.json`), new FileSystemRepository<PipelineJob>(`${config.getPipelinePath()}/jobs.json`)
-        )
+          return PipelineFactory.create(config, client)
       },
       inject: [GithubWorkflowClient, Configuration],
     },
     {
       provide: PipelinesService,
-      useFactory: (client: GithubWorkflowClient, config: Configuration) => {
-        return new PipelinesService(
-          new FileSystemRepository<PipelineRun>(`${config.getPipelinePath()}/workflows.json`),
-          new FileSystemRepository<PipelineJob>(`${config.getPipelinePath()}/jobs.json`),
-        );
+      useFactory: (pipelineRepository: PipelinesRepository) => {
+        return new PipelinesService(pipelineRepository);
       },
-      inject: [PipelinesRepository, Configuration],
+      inject: [PipelinesRepository],
     },
     {
       provide: CodeMetricsRepository,

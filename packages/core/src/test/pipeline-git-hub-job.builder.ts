@@ -1,7 +1,16 @@
-import type { PipelineJob as PipelineJobType } from '../domain/pipelines/pipeline-types';
+import { WorkflowJobJsonResponse } from '../providers/github/github-response-types';
 
 export class PipelineGitHubJobBuilder {
-  private data: any = {
+  private data: WorkflowJobJsonResponse = {
+    created_at: '',
+    head_branch: '',
+    head_sha: '',
+    html_url: '',
+    node_id: '',
+    run_attempt: '',
+    run_url: '',
+    url: '',
+    workflow_name: '',
     id: 'job-1',
     run_id: 'run-1',
     name: 'build',
@@ -31,7 +40,7 @@ export class PipelineGitHubJobBuilder {
     return this;
   }
 
-  completedAt(value?: string): PipelineGitHubJobBuilder {
+  completedAt(value: string): PipelineGitHubJobBuilder {
     this.data.completed_at = value;
     return this;
   }
@@ -46,12 +55,7 @@ export class PipelineGitHubJobBuilder {
     return this;
   }
 
-  durationSeconds(value?: number): PipelineGitHubJobBuilder {
-    this.data.durationSeconds = value;
-    return this;
-  }
-
-  build(): PipelineJobType {
+  build(): WorkflowJobJsonResponse {
     return { ...this.data };
   }
 }

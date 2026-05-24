@@ -9,7 +9,14 @@ import {
   type IGithubWorkflowClient,
 } from '../../src';
 import { InMemoryRepository } from '../../src/test/in-memory-repository';
-import {GitHubWorkflowFilters, GitHubWorkflowResponse} from '../../src/providers/github/github-workflow';
+import {
+  GitHubWorkflowFilters,
+  GitHubWorkflowResponse,
+} from '../../src/providers/github/github-workflow';
+import {
+  WorkflowJobJsonResponse,
+  WorkflowJsonResponse,
+} from '../../src/providers/github/github-response-types';
 
 describe('Jobs PipelinesRepository', () => {
   const createRepository = async (githubWorkflowClient: IGithubWorkflowClient) => {
@@ -17,8 +24,8 @@ describe('Jobs PipelinesRepository', () => {
       getPipelinePath: () => '/tmp',
     } as any;
 
-    const pipelineRunRepository = new InMemoryRepository<PipelineRun>();
-    const pipelineJobsRepository = new InMemoryRepository<PipelineJob>();
+    const pipelineRunRepository = new InMemoryRepository<WorkflowJsonResponse>();
+    const pipelineJobsRepository = new InMemoryRepository<WorkflowJobJsonResponse>();
 
     const repository = new PipelinesRepository(
       configuration,
@@ -31,8 +38,8 @@ describe('Jobs PipelinesRepository', () => {
   };
 
   const createCachedWorkflows = async (
-    pipelineRunRepository: IRepository<PipelineRun>,
-    runs: PipelineRun[]
+    pipelineRunRepository: IRepository<WorkflowJsonResponse>,
+    runs: WorkflowJsonResponse[]
   ) => {
     await pipelineRunRepository.saveAll(runs);
   };
@@ -41,25 +48,25 @@ describe('Jobs PipelinesRepository', () => {
     const cachedRuns = [
       new PipelineGitHubRunBuilder()
         .id('run-1')
-        .number(1)
+        .number('1')
         .name('CI')
         .status('completed')
         .createdAt('2026-05-10T00:00:00Z')
         .updatedAt('2026-05-10T00:05:00Z')
         .startedAt('2026-05-10T00:00:00Z')
-        .completedAt('2026-05-10T00:05:00Z')
+        .updatedAt('2026-05-10T00:05:00Z')
         .branch('main')
         .path('.github/workflows/ci.yml')
         .build(),
       new PipelineGitHubRunBuilder()
         .id('run-2')
-        .number(2)
+        .number('2')
         .name('CI')
         .status('completed')
         .createdAt('2026-05-11T00:00:00Z')
         .updatedAt('2026-05-11T00:05:00Z')
         .startedAt('2026-05-11T00:00:00Z')
-        .completedAt('2026-05-11T00:05:00Z')
+        .updatedAt('2026-05-11T00:05:00Z')
         .branch('main')
         .path('.github/workflows/ci.yml')
         .build(),
@@ -95,26 +102,29 @@ describe('Jobs PipelinesRepository', () => {
       });
 
     const githubWorkflowClient: IGithubWorkflowClient = {
-      fetchWorkflowRunsPage(page: number, perPage?: number, options?: GitHubWorkflowFilters): Promise<GitHubWorkflowResponse> {
+      fetchWorkflowRunsPage(
+        page: number,
+        perPage?: number,
+        options?: GitHubWorkflowFilters
+      ): Promise<GitHubWorkflowResponse> {
         return Promise.resolve({ runs: [], hasNext: false });
       },
       fetchWorkflows(): Promise<any[]> {
         return Promise.resolve([]);
       },
-      fetchJobsPage
+      fetchJobsPage,
     };
 
-    const { repository, pipelineRunRepository, pipelineJobsRepository } = await createRepository(
-      githubWorkflowClient
-    );
+    const { repository, pipelineRunRepository, pipelineJobsRepository } =
+      await createRepository(githubWorkflowClient);
 
     await createCachedWorkflows(pipelineRunRepository, cachedRuns);
 
     const jobs = await repository.fetchJobs({});
 
     expect(jobs).toHaveLength(2);
-    expect(jobs[0].runId).toBe('run-1');
-    expect(jobs[1].runId).toBe('run-2');
+    expect(jobs[0].run_id).toBe('run-1');
+    expect(jobs[1].run_id).toBe('run-2');
     expect(fetchJobsPage).toHaveBeenCalledTimes(2);
 
     const expectedJob = new PipelineGitHubJobBuilder()
@@ -137,25 +147,25 @@ describe('Jobs PipelinesRepository', () => {
     const cachedRuns = [
       new PipelineGitHubRunBuilder()
         .id('run-old')
-        .number(1)
+        .number('1')
         .name('CI')
         .status('completed')
         .createdAt('2026-05-05T00:00:00Z')
         .updatedAt('2026-05-05T00:05:00Z')
         .startedAt('2026-05-05T00:00:00Z')
-        .completedAt('2026-05-05T00:05:00Z')
+        .updatedAt('2026-05-05T00:05:00Z')
         .branch('main')
         .path('.github/workflows/ci.yml')
         .build(),
       new PipelineGitHubRunBuilder()
         .id('run-new')
-        .number(2)
+        .number('2')
         .name('CI')
         .status('completed')
         .createdAt('2026-05-15T00:00:00Z')
         .updatedAt('2026-05-15T00:05:00Z')
         .startedAt('2026-05-15T00:00:00Z')
-        .completedAt('2026-05-15T00:05:00Z')
+        .updatedAt('2026-05-15T00:05:00Z')
         .branch('main')
         .path('.github/workflows/ci.yml')
         .build(),
@@ -192,7 +202,7 @@ describe('Jobs PipelinesRepository', () => {
     });
 
     expect(jobs).toHaveLength(1);
-    expect(jobs[0].runId).toBe('run-new');
+    expect(jobs[0].run_id).toBe('run-new');
     expect(fetchJobsPage).toHaveBeenCalledTimes(1);
   });
 
@@ -200,25 +210,25 @@ describe('Jobs PipelinesRepository', () => {
     const cachedRuns = [
       new PipelineGitHubRunBuilder()
         .id('run-early')
-        .number(1)
+        .number('1')
         .name('CI')
         .status('completed')
         .createdAt('2026-05-05T00:00:00Z')
         .updatedAt('2026-05-05T00:05:00Z')
         .startedAt('2026-05-05T00:00:00Z')
-        .completedAt('2026-05-05T00:05:00Z')
+        .updatedAt('2026-05-05T00:05:00Z')
         .branch('main')
         .path('.github/workflows/ci.yml')
         .build(),
       new PipelineGitHubRunBuilder()
         .id('run-late')
-        .number(2)
+        .number('2')
         .name('CI')
         .status('completed')
         .createdAt('2026-05-20T00:00:00Z')
         .updatedAt('2026-05-20T00:05:00Z')
         .startedAt('2026-05-20T00:00:00Z')
-        .completedAt('2026-05-20T00:05:00Z')
+        .updatedAt('2026-05-20T00:05:00Z')
         .branch('main')
         .path('.github/workflows/ci.yml')
         .build(),
@@ -255,7 +265,7 @@ describe('Jobs PipelinesRepository', () => {
     });
 
     expect(jobs).toHaveLength(1);
-    expect(jobs[0].runId).toBe('run-early');
+    expect(jobs[0].run_id).toBe('run-early');
     expect(fetchJobsPage).toHaveBeenCalledTimes(1);
   });
 
@@ -263,62 +273,65 @@ describe('Jobs PipelinesRepository', () => {
     const cachedRuns = [
       new PipelineGitHubRunBuilder()
         .id('run-early')
-        .number(1)
+        .number('1')
         .name('CI')
         .status('completed')
         .createdAt('2026-05-05T00:00:00Z')
         .updatedAt('2026-05-05T00:05:00Z')
         .startedAt('2026-05-05T00:00:00Z')
-        .completedAt('2026-05-05T00:05:00Z')
+        .updatedAt('2026-05-05T00:05:00Z')
         .branch('main')
         .path('.github/workflows/ci.yml')
         .build(),
       new PipelineGitHubRunBuilder()
         .id('run-late')
-        .number(2)
+        .number('2')
         .name('CI')
         .status('completed')
         .createdAt('2026-05-20T00:00:00Z')
         .updatedAt('2026-05-20T00:05:00Z')
         .startedAt('2026-05-20T00:00:00Z')
-        .completedAt('2026-05-20T00:05:00Z')
+        .updatedAt('2026-05-20T00:05:00Z')
         .branch('main')
         .path('.github/workflows/ci.yml')
         .build(),
     ];
 
-    const fetchJobsPage = vi.fn().mockResolvedValueOnce({
-      jobs: [
-        new PipelineGitHubJobBuilder()
-          .id('job-early')
-          .name('build')
-          .startedAt('2026-05-05T00:01:00Z')
-          .completedAt('2026-05-05T00:02:00Z')
-          .status('completed')
-          .conclusion('success')
-          .build(),
-      ],
-      hasNext: false,
-    }).mockResolvedValueOnce({
-      jobs: [
-        new PipelineGitHubJobBuilder()
-          .id('job-late')
-          .name('build')
-          .startedAt('2026-05-20T00:01:00Z')
-          .completedAt('2026-05-20T00:02:00Z')
-          .status('completed')
-          .conclusion('success')
-          .build(),
-      ],
-      hasNext: false,
-    });
+    const fetchJobsPage = vi
+      .fn()
+      .mockResolvedValueOnce({
+        jobs: [
+          new PipelineGitHubJobBuilder()
+            .id('job-early')
+            .name('build')
+            .startedAt('2026-05-05T00:01:00Z')
+            .completedAt('2026-05-05T00:02:00Z')
+            .status('completed')
+            .conclusion('success')
+            .build(),
+        ],
+        hasNext: false,
+      })
+      .mockResolvedValueOnce({
+        jobs: [
+          new PipelineGitHubJobBuilder()
+            .id('job-late')
+            .name('build')
+            .startedAt('2026-05-20T00:01:00Z')
+            .completedAt('2026-05-20T00:02:00Z')
+            .status('completed')
+            .conclusion('success')
+            .build(),
+        ],
+        hasNext: false,
+      });
 
     const githubWorkflowClient: IGithubWorkflowClient = {
       fetchWorkflows(options?: GitHubWorkflowFilters): Promise<PipelineRun[]> {
         return Promise.resolve([]);
       },
       fetchWorkflowRunsPage: vi.fn(),
-      fetchJobsPage
+      fetchJobsPage,
     };
 
     const { repository, pipelineRunRepository } = await createRepository(githubWorkflowClient);
@@ -331,20 +344,20 @@ describe('Jobs PipelinesRepository', () => {
     });
 
     expect(jobs).toHaveLength(2);
-    expect(jobs[0].runId).toBe('run-early');
+    expect(jobs[0].run_id).toBe('run-early');
   });
 
   it('should handle job pagination', async () => {
     const cachedRuns = [
       new PipelineGitHubRunBuilder()
         .id('run-1')
-        .number(1)
+        .number('1')
         .name('CI')
         .status('completed')
         .createdAt('2026-05-10T00:00:00Z')
         .updatedAt('2026-05-10T00:05:00Z')
         .startedAt('2026-05-10T00:00:00Z')
-        .completedAt('2026-05-10T00:05:00Z')
+        .updatedAt('2026-05-10T00:05:00Z')
         .branch('main')
         .path('.github/workflows/ci.yml')
         .build(),
@@ -403,13 +416,13 @@ describe('Jobs PipelinesRepository', () => {
     const cachedRuns = [
       new PipelineGitHubRunBuilder()
         .id('run-1')
-        .number(1)
+        .number('1')
         .name('CI')
         .status('completed')
         .createdAt('2026-05-10T00:00:00Z')
         .updatedAt('2026-05-10T00:05:00Z')
         .startedAt('2026-05-10T00:00:00Z')
-        .completedAt('2026-05-10T00:05:00Z')
+        .updatedAt('2026-05-10T00:05:00Z')
         .branch('main')
         .path('.github/workflows/ci.yml')
         .build(),

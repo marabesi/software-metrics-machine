@@ -1,2 +1,3 @@
 export { GithubPrsClient, type IGithubPrsClient } from './github-pr';
-export { GithubWorkflowClient, type IGithubWorkflowClient } from './github-workflow';
+export { type IGithubWorkflowClient } from './github-workflow';
+export { GithubWorkflowClient } from './github-workflow-client';

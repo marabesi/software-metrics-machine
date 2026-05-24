@@ -1,18 +1,27 @@
-import type { PipelineJob, PipelineRun } from '../domain/pipelines/pipeline-types';
+import { WorkflowJsonResponse } from '../providers/github/github-response-types';
 
-/**
- * Chainable builder for pipeline runs in tests.
- */
 export class PipelineGitHubRunBuilder {
-  private data: PipelineRun = {
+  private data: WorkflowJsonResponse = {
     id: 'run-1',
-    number: 1,
+    run_number: '1',
     name: 'CI',
     status: 'completed',
-    createdAt: new Date().toISOString(),
-    updatedAt: new Date().toISOString(),
-    branch: 'main',
+    created_at: new Date().toISOString(),
+    updated_at: new Date().toISOString(),
+    run_started_at: new Date().toISOString(),
+    head_branch: 'main',
+    head_sha: '1mna9sd',
     path: '.github/workflows/ci.yml',
+    check_suite_id: '',
+    check_suite_node_id: '',
+    conclusion: '',
+    display_title: '',
+    event: '',
+    html_url: '',
+    node_id: '',
+    run_attempt: '',
+    url: '',
+    workflow_id: '',
   };
 
   id(value: string): PipelineGitHubRunBuilder {
@@ -20,8 +29,8 @@ export class PipelineGitHubRunBuilder {
     return this;
   }
 
-  number(value: number): PipelineGitHubRunBuilder {
-    this.data.number = value;
+  number(value: string): PipelineGitHubRunBuilder {
+    this.data.run_number = value;
     return this;
   }
 
@@ -35,38 +44,33 @@ export class PipelineGitHubRunBuilder {
     return this;
   }
 
-  conclusion(value?: string): PipelineGitHubRunBuilder {
+  conclusion(value: string): PipelineGitHubRunBuilder {
     this.data.conclusion = value;
     return this;
   }
 
   createdAt(value: string): PipelineGitHubRunBuilder {
-    this.data.createdAt = value;
+    this.data.created_at = value;
     return this;
   }
 
   updatedAt(value: string): PipelineGitHubRunBuilder {
-    this.data.updatedAt = value;
+    this.data.updated_at = value;
     return this;
   }
 
-  startedAt(value?: string): PipelineGitHubRunBuilder {
-    this.data.startedAt = value;
-    return this;
-  }
-
-  completedAt(value?: string): PipelineGitHubRunBuilder {
-    this.data.completedAt = value;
+  startedAt(value: string): PipelineGitHubRunBuilder {
+    this.data.run_started_at = value;
     return this;
   }
 
   branch(value: string): PipelineGitHubRunBuilder {
-    this.data.branch = value;
+    this.data.head_branch = value;
     return this;
   }
 
-  commit(value?: string): PipelineGitHubRunBuilder {
-    this.data.commit = value;
+  commit(value: string): PipelineGitHubRunBuilder {
+    this.data.head_sha = value;
     return this;
   }
 
@@ -75,12 +79,7 @@ export class PipelineGitHubRunBuilder {
     return this;
   }
 
-  jobs(value?: PipelineJob[]): PipelineGitHubRunBuilder {
-    this.data.jobs = value;
-    return this;
-  }
-
-  build(): PipelineRun {
+  build(): WorkflowJsonResponse {
     return { ...this.data };
   }
 }

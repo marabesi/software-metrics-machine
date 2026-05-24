@@ -3,6 +3,10 @@ import * as fs from 'fs/promises';
 import * as path from 'path';
 import { Configuration, IRepository } from '../infrastructure';
 import { type IGithubWorkflowClient } from '../providers';
+import {
+  WorkflowJobJsonResponse,
+  WorkflowJsonResponse,
+} from '../providers/github/github-response-types';
 import { PipelineJob, PipelineRun } from '../domain';
 
 interface WorkflowsProgress {
@@ -23,8 +27,8 @@ export class PipelinesRepository implements IPipelinesRepository {
   constructor(
     private configuration: Configuration,
     private githubWorkflowClient: IGithubWorkflowClient,
-    private pipelineRunFileSystemRepository: IRepository<PipelineRun>,
-    private pipelineJobsFileSystemRepository: IRepository<PipelineJob>
+    private pipelineRunFileSystemRepository: IRepository<WorkflowJsonResponse>,
+    private pipelineJobsFileSystemRepository: IRepository<WorkflowJobJsonResponse>
   ) {}
 
   async fetchPipelines(options?: {
@@ -33,7 +37,7 @@ export class PipelinesRepository implements IPipelinesRepository {
     rawFilters?: string;
     forceRefresh?: boolean;
     includeJobs?: boolean;
-  }): Promise<PipelineRun[]> {
+  }): Promise<WorkflowJsonResponse[]> {
     const fromCache = await this.pipelineRunFileSystemRepository.loadAll();
 
     if (fromCache.length > 0 && !options?.forceRefresh) {
@@ -63,12 +67,12 @@ export class PipelinesRepository implements IPipelinesRepository {
     startDate?: string;
     endDate?: string;
     rawFilters?: string;
-  }): Promise<PipelineRun[]> {
+  }): Promise<WorkflowJsonResponse[]> {
     const progressPath = this.fileInCache('workflows_progress.json');
     const incompletedPath = this.fileInCache('workflows_incompleted.json');
 
     const progress = await this.readJson<WorkflowsProgress | null>(progressPath, null);
-    const runs = await this.readJson<any[]>(incompletedPath, []);
+    const runs: WorkflowJsonResponse[] = await this.readJson<any[]>(incompletedPath, []);
 
     let page = progress?.page || 1;
     const perPage = 100;
@@ -88,17 +92,7 @@ export class PipelinesRepository implements IPipelinesRepository {
         }
 
         for (const run of fetchedRuns) {
-          runs.push({
-            ...run,
-            createdAt: run.created_at,
-            updatedAt: run.updated_at,
-            runNumber: run.run_number,
-            htmlUrl: run.html_url,
-            startedAt: run.run_started_at,
-            completedAt: run.updated_at,
-            branch: run.head_branch,
-            path: run.path || run.workflow_url || '',
-          });
+          runs.push(run);
         }
 
         await this.writeJson(incompletedPath, runs);
@@ -127,7 +121,7 @@ export class PipelinesRepository implements IPipelinesRepository {
 
     await this.deleteFile(progressPath);
     await this.deleteFile(incompletedPath);
-    return runs as PipelineRun[];
+    return runs;
   }
 
   private buildCreatedFilter(startDate?: string, endDate?: string): string | undefined {
@@ -143,7 +137,7 @@ export class PipelinesRepository implements IPipelinesRepository {
     startDate?: string;
     endDate?: string;
     rawFilters?: string;
-  }): Promise<any[]> {
+  }): Promise<WorkflowJobJsonResponse[]> {
     const cachedJobs = await this.pipelineJobsFileSystemRepository.loadAll();
 
     if (cachedJobs.length > 0 && !filters?.forceRefresh) {
@@ -153,11 +147,19 @@ export class PipelinesRepository implements IPipelinesRepository {
 
     const cachedRuns = await this.pipelineRunFileSystemRepository.loadAll();
     const filteredRuns = cachedRuns.filter((run) => {
-      if (filters.startDate && new Date(run.createdAt) < new Date(filters.startDate)) {
+      const startDate = filters.startDate;
+      const endDate = filters.endDate;
+      const createdAt = run.created_at;
+      const runDate = new Date(createdAt);
+
+      if (startDate && endDate) {
+        return runDate >= new Date(startDate) && runDate <= new Date(endDate);
+      }
+      if (startDate && runDate < new Date(startDate)) {
         return false;
       }
 
-      if (filters.endDate && new Date(run.createdAt) > new Date(filters.endDate)) {
+      if (endDate && runDate > new Date(endDate)) {
         return false;
       }
 
@@ -169,7 +171,10 @@ export class PipelinesRepository implements IPipelinesRepository {
     return this.fetchJobsWithResume(filteredRuns, filters.rawFilters);
   }
 
-  async fetchJobsWithResume(workflows: PipelineRun[], rawFilters?: string): Promise<PipelineJob[]> {
+  async fetchJobsWithResume(
+    workflows: WorkflowJsonResponse[],
+    rawFilters?: string
+  ): Promise<WorkflowJobJsonResponse[]> {
     const progressPath = this.fileInCache('jobs_progress.json');
     const incompletedPath = this.fileInCache('jobs_incompleted.json');
 
@@ -179,7 +184,7 @@ export class PipelinesRepository implements IPipelinesRepository {
     });
 
     const processedRunIds = new Set(progress.processedRunIds || []);
-    const allJobs: PipelineJob[] = await this.readJson<any[]>(incompletedPath, []);
+    const allJobs: WorkflowJobJsonResponse[] = await this.readJson<any[]>(incompletedPath, []);
     const perPage = 100;
 
     for (const run of workflows) {
@@ -197,7 +202,7 @@ export class PipelinesRepository implements IPipelinesRepository {
           const response = await this.githubWorkflowClient.fetchJobsPage(runId, page, perPage, {
             rawFilters,
           });
-          const pageJobs = (response.jobs || []).map((job: any) => ({
+          const pageJobs: WorkflowJobJsonResponse[] = (response.jobs || []).map((job: any) => ({
             ...job,
             startedAt: job.started_at,
             completedAt: job.completed_at,
@@ -236,11 +241,11 @@ export class PipelinesRepository implements IPipelinesRepository {
     const mergedJobsByKey = new Map<string, any>();
 
     for (const job of existingJobs) {
-      mergedJobsByKey.set(`${String(job.runId)}:${String(job.id)}`, job);
+      mergedJobsByKey.set(`${String(job.run_id)}:${String(job.id)}`, job);
     }
 
     for (const job of allJobs) {
-      mergedJobsByKey.set(`${String(job.runId)}:${String(job.id)}`, job);
+      mergedJobsByKey.set(`${String(job.run_id)}:${String(job.id)}`, job);
     }
 
     await this.pipelineJobsFileSystemRepository.saveAll(Array.from(mergedJobsByKey.values()));
@@ -294,5 +299,46 @@ export class PipelinesRepository implements IPipelinesRepository {
     };
 
     return maybeError.status === 422 || maybeError.response?.status === 422;
+  }
+
+  async loadPipelines(): Promise<PipelineRun[]> {
+    const runs = await this.pipelineRunFileSystemRepository.loadAll();
+    return runs.map(this.mapPipelinesToDomain);
+  }
+
+  async loadPipelineJobs(): Promise<PipelineJob[]> {
+    const jobs = await this.pipelineJobsFileSystemRepository.loadAll();
+    return jobs.map(this.mapPipelineJobsToDomain);
+  }
+
+  private mapPipelinesToDomain(run: WorkflowJsonResponse): PipelineRun {
+    return {
+      ...run,
+      createdAt: run.created_at,
+      updatedAt: run.updated_at,
+      number: Number(run.run_number),
+      startedAt: run.run_started_at,
+      completedAt: run.updated_at,
+      branch: run.head_branch,
+      path: run.path,
+    };
+  }
+
+  private mapPipelineJobsToDomain(job: WorkflowJobJsonResponse): PipelineJob {
+    return {
+      completedAt: job.completed_at,
+      conclusion: job.conclusion,
+      durationSeconds: this.calculateDurationInSeconds(job.started_at, job.completed_at),
+      id: job.id,
+      name: job.name,
+      runId: job.run_id,
+      startedAt: job.started_at,
+      status: job.status,
+    };
+  }
+
+  private calculateDurationInSeconds(startedAt: string, completedAt: string): number {
+    if (!startedAt || !completedAt) return 0;
+    return (new Date(completedAt).getTime() - new Date(startedAt).getTime()) / 1000;
   }
 }
