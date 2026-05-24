@@ -4,6 +4,7 @@ import {
   WorkflowJsonResponse,
 } from '../providers/github/github-response-types';
 import { PipelineJob, PipelineRun } from '../domain';
+import { logger } from '@smmachine/utils';
 
 export class PipelinesRepository {
   constructor(
@@ -13,7 +14,34 @@ export class PipelinesRepository {
 
   async loadPipelines(): Promise<PipelineRun[]> {
     const runs = await this.pipelineRunFileSystemRepository.loadAll();
-    return runs.map(this.mapPipelinesToDomain);
+    const pipelineRuns = runs.map(this.mapPipelinesToDomain);
+
+    logger.info(`Loaded ${pipelineRuns.length} pipeline runs from file system repository`);
+
+    const jobs = await this.pipelineJobsFileSystemRepository.loadAll();
+    if (jobs.length === 0 || pipelineRuns.length === 0) {
+      return pipelineRuns;
+    }
+
+    const runsById = new Map<string, PipelineRun>();
+    for (const run of pipelineRuns) {
+      runsById.set(String(run.id), run);
+    }
+
+    for (const job of jobs) {
+      const run = runsById.get(String(job.run_id));
+      if (!run) {
+        continue;
+      }
+
+      if (!run.jobs) {
+        run.jobs = [];
+      }
+
+      run.jobs.push(this.mapPipelineJobsToDomain(job));
+    }
+
+    return pipelineRuns;
   }
 
   async loadPipelineJobs(): Promise<PipelineJob[]> {

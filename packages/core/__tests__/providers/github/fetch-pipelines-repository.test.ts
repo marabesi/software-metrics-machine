@@ -1,9 +1,9 @@
 import { describe, expect, it, vi } from 'vitest';
-import { PipelineGitHubRunBuilder } from '../../src';
-import { InMemoryRepository } from '../../src/test/in-memory-repository';
-import { IGithubWorkflowClient } from '../../src';
-import { WorkflowJsonResponse } from '../../src/providers/github/github-response-types';
-import { PipelinesFetchRepository } from '../../src/aggregates/pipelines-fetch-repository';
+import { PipelineGitHubRunBuilder } from '../../../src';
+import { InMemoryRepository } from '../../../src/test/in-memory-repository';
+import { IGithubWorkflowClient } from '../../../src';
+import { WorkflowJsonResponse } from '../../../src/providers/github/github-response-types';
+import { PipelinesFetchRepository } from '../../../src/providers/github/pipelines-fetch-repository';
 
 describe('PipelinesRepository', () => {
   const configuration = {

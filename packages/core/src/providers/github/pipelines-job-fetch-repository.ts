@@ -1,12 +1,12 @@
 import { logger } from '@smmachine/utils';
 import * as fs from 'fs/promises';
 import * as path from 'path';
-import { Configuration, IRepository } from '../infrastructure';
+import { Configuration, IRepository } from '../../infrastructure';
 import {
   WorkflowJobJsonResponse,
   WorkflowJsonResponse,
-} from '../providers/github/github-response-types';
-import { IGithubWorkflowJobClient } from '../providers/github/github-workflow';
+} from './github-response-types';
+import { IGithubWorkflowJobClient } from './github-workflow';
 
 interface JobsProgress {
   processedRunIds: string[];

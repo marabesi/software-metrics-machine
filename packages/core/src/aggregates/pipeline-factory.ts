@@ -4,9 +4,9 @@ import {
   WorkflowJobJsonResponse,
   WorkflowJsonResponse,
 } from '../providers/github/github-response-types';
-import { PipelinesFetchRepository } from './pipelines-fetch-repository';
+import { PipelinesFetchRepository } from '../providers/github/pipelines-fetch-repository';
 import { GithubWorkflowClient, GithubWorkflowJobClient } from '../providers';
-import { PipelinesJobFetchRepository } from './pipelines-job-fetch-repository';
+import { PipelinesJobFetchRepository } from '../providers/github/pipelines-job-fetch-repository';
 
 export default class PipelineFactory {
   static create(config: Configuration) {

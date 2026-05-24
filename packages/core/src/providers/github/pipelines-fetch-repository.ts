@@ -1,9 +1,9 @@
 import { logger } from '@smmachine/utils';
 import * as fs from 'fs/promises';
 import * as path from 'path';
-import { Configuration, IRepository } from '../infrastructure';
-import { type IGithubWorkflowClient } from '../providers';
-import { WorkflowJsonResponse } from '../providers/github/github-response-types';
+import { Configuration, IRepository } from '../../infrastructure';
+import { type IGithubWorkflowClient } from '../index';
+import { WorkflowJsonResponse } from './github-response-types';
 
 interface WorkflowsProgress {
   page: number;

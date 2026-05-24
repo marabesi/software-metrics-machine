@@ -314,24 +314,6 @@ export class PipelinesService implements IPipelinesService {
   }
 
   private async loadCachedWorkflowsWithJobs(): Promise<PipelineRun[]> {
-    const runs = await this.pipelineRepository.loadPipelines();
-    const jobs = await this.pipelineRepository.loadPipelineJobs();
-
-    if (jobs.length === 0) {
-      return runs;
-    }
-
-    const jobsByRunId = new Map<string, any[]>();
-    for (const job of jobs) {
-      const runId = String(job.runId);
-      const existing = jobsByRunId.get(runId) || [];
-      existing.push(job);
-      jobsByRunId.set(runId, existing);
-    }
-
-    return runs.map((run) => ({
-      ...run,
-      jobs: jobsByRunId.get(String(run.id)) || run.jobs || [],
-    }));
+    return this.pipelineRepository.loadPipelines();
   }
 }
