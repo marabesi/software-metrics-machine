@@ -5,7 +5,7 @@ import {
   PipelineRun,
   PipelinesRepository,
   PipelineGitHubJobBuilder,
-  PipelinesRunBuilder,
+  PipelineGitHubRunBuilder,
   type IGithubWorkflowClient,
 } from '../../src';
 import { InMemoryRepository } from '../../src/test/in-memory-repository';
@@ -39,7 +39,7 @@ describe('Jobs PipelinesRepository', () => {
 
   it('should fetch jobs for workflows without date filters', async () => {
     const cachedRuns = [
-      new PipelinesRunBuilder()
+      new PipelineGitHubRunBuilder()
         .id('run-1')
         .number(1)
         .name('CI')
@@ -51,7 +51,7 @@ describe('Jobs PipelinesRepository', () => {
         .branch('main')
         .path('.github/workflows/ci.yml')
         .build(),
-      new PipelinesRunBuilder()
+      new PipelineGitHubRunBuilder()
         .id('run-2')
         .number(2)
         .name('CI')
@@ -135,7 +135,7 @@ describe('Jobs PipelinesRepository', () => {
 
   it('should filter workflows by start date', async () => {
     const cachedRuns = [
-      new PipelinesRunBuilder()
+      new PipelineGitHubRunBuilder()
         .id('run-old')
         .number(1)
         .name('CI')
@@ -147,7 +147,7 @@ describe('Jobs PipelinesRepository', () => {
         .branch('main')
         .path('.github/workflows/ci.yml')
         .build(),
-      new PipelinesRunBuilder()
+      new PipelineGitHubRunBuilder()
         .id('run-new')
         .number(2)
         .name('CI')
@@ -198,7 +198,7 @@ describe('Jobs PipelinesRepository', () => {
 
   it('should filter workflows by end date', async () => {
     const cachedRuns = [
-      new PipelinesRunBuilder()
+      new PipelineGitHubRunBuilder()
         .id('run-early')
         .number(1)
         .name('CI')
@@ -210,7 +210,7 @@ describe('Jobs PipelinesRepository', () => {
         .branch('main')
         .path('.github/workflows/ci.yml')
         .build(),
-      new PipelinesRunBuilder()
+      new PipelineGitHubRunBuilder()
         .id('run-late')
         .number(2)
         .name('CI')
@@ -261,7 +261,7 @@ describe('Jobs PipelinesRepository', () => {
 
   it('should filter workflows by start and end date', async () => {
     const cachedRuns = [
-      new PipelinesRunBuilder()
+      new PipelineGitHubRunBuilder()
         .id('run-early')
         .number(1)
         .name('CI')
@@ -273,7 +273,7 @@ describe('Jobs PipelinesRepository', () => {
         .branch('main')
         .path('.github/workflows/ci.yml')
         .build(),
-      new PipelinesRunBuilder()
+      new PipelineGitHubRunBuilder()
         .id('run-late')
         .number(2)
         .name('CI')
@@ -336,7 +336,7 @@ describe('Jobs PipelinesRepository', () => {
 
   it('should handle job pagination', async () => {
     const cachedRuns = [
-      new PipelinesRunBuilder()
+      new PipelineGitHubRunBuilder()
         .id('run-1')
         .number(1)
         .name('CI')
@@ -401,7 +401,7 @@ describe('Jobs PipelinesRepository', () => {
 
   it('should apply raw filters when fetching jobs', async () => {
     const cachedRuns = [
-      new PipelinesRunBuilder()
+      new PipelineGitHubRunBuilder()
         .id('run-1')
         .number(1)
         .name('CI')

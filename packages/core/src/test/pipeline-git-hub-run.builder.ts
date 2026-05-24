@@ -3,7 +3,7 @@ import type { PipelineJob, PipelineRun } from '../domain/pipelines/pipeline-type
 /**
  * Chainable builder for pipeline runs in tests.
  */
-export class PipelinesRunBuilder {
+export class PipelineGitHubRunBuilder {
   private data: PipelineRun = {
     id: 'run-1',
     number: 1,
@@ -15,67 +15,67 @@ export class PipelinesRunBuilder {
     path: '.github/workflows/ci.yml',
   };
 
-  id(value: string): PipelinesRunBuilder {
+  id(value: string): PipelineGitHubRunBuilder {
     this.data.id = value;
     return this;
   }
 
-  number(value: number): PipelinesRunBuilder {
+  number(value: number): PipelineGitHubRunBuilder {
     this.data.number = value;
     return this;
   }
 
-  name(value: string): PipelinesRunBuilder {
+  name(value: string): PipelineGitHubRunBuilder {
     this.data.name = value;
     return this;
   }
 
-  status(value: string): PipelinesRunBuilder {
+  status(value: string): PipelineGitHubRunBuilder {
     this.data.status = value;
     return this;
   }
 
-  conclusion(value?: string): PipelinesRunBuilder {
+  conclusion(value?: string): PipelineGitHubRunBuilder {
     this.data.conclusion = value;
     return this;
   }
 
-  createdAt(value: string): PipelinesRunBuilder {
+  createdAt(value: string): PipelineGitHubRunBuilder {
     this.data.createdAt = value;
     return this;
   }
 
-  updatedAt(value: string): PipelinesRunBuilder {
+  updatedAt(value: string): PipelineGitHubRunBuilder {
     this.data.updatedAt = value;
     return this;
   }
 
-  startedAt(value?: string): PipelinesRunBuilder {
+  startedAt(value?: string): PipelineGitHubRunBuilder {
     this.data.startedAt = value;
     return this;
   }
 
-  completedAt(value?: string): PipelinesRunBuilder {
+  completedAt(value?: string): PipelineGitHubRunBuilder {
     this.data.completedAt = value;
     return this;
   }
 
-  branch(value: string): PipelinesRunBuilder {
+  branch(value: string): PipelineGitHubRunBuilder {
     this.data.branch = value;
     return this;
   }
 
-  commit(value?: string): PipelinesRunBuilder {
+  commit(value?: string): PipelineGitHubRunBuilder {
     this.data.commit = value;
     return this;
   }
 
-  path(value: string): PipelinesRunBuilder {
+  path(value: string): PipelineGitHubRunBuilder {
     this.data.path = value;
     return this;
   }
 
-  jobs(value?: PipelineJob[]): PipelinesRunBuilder {
+  jobs(value?: PipelineJob[]): PipelineGitHubRunBuilder {
     this.data.jobs = value;
     return this;
   }

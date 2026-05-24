@@ -5,7 +5,7 @@ import * as path from 'path';
 import {
   PipelineGitHubJobBuilder,
   PipelineJob,
-  PipelinesRunBuilder,
+  PipelineGitHubRunBuilder,
   PipelineRun,
   PipelinesRepository,
   type IGithubWorkflowClient,
@@ -70,7 +70,7 @@ describe('PipelinesRepository pagination resume', () => {
     const repository = await createRepository(githubWorkflowClient);
 
     const runs = await repository.fetchPipelines({ forceRefresh: true });
-    const expectedRun = new PipelinesRunBuilder()
+    const expectedRun = new PipelineGitHubRunBuilder()
       .id('run-1')
       .number(1)
       .name('CI')
@@ -162,7 +162,7 @@ describe('PipelinesRepository pagination resume', () => {
       endDate: '2026-05-15T00:00:00Z',
       rawFilters: 'status=success,branch=main',
     });
-    const expectedFilteredRun = new PipelinesRunBuilder()
+    const expectedFilteredRun = new PipelineGitHubRunBuilder()
       .id('filtered-run')
       .number(2)
       .name('CI')
@@ -228,7 +228,7 @@ describe('PipelinesRepository pagination resume', () => {
     const repository = await createRepository(githubWorkflowClient);
 
     const runs = await repository.fetchPipelines({ forceRefresh: true, includeJobs: true });
-    const expectedRunWithJobs = new PipelinesRunBuilder()
+    const expectedRunWithJobs = new PipelineGitHubRunBuilder()
       .id('run-with-jobs')
       .number(3)
       .name('CI')

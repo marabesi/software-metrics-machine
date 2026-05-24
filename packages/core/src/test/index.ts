@@ -1,2 +1,2 @@
 export { PipelineGitHubJobBuilder } from './pipeline-git-hub-job.builder';
-export { PipelinesRunBuilder } from './pipelines-run.builder';
+export { PipelineGitHubRunBuilder } from './pipeline-git-hub-run.builder';
