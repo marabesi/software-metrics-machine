@@ -4,6 +4,8 @@ RUN apt-get update \
 	&& apt-get install -y --no-install-recommends git \
 	&& rm -rf /var/lib/apt/lists/*
 
+RUN	git config --global --add safe.directory /app/react
+
 WORKDIR /tmp/smm-install-test
 
 ARG PACKED_FILE
