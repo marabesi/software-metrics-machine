@@ -28,6 +28,27 @@ function createCodeDependencies(config: Configuration): {
   };
 }
 
+function resolveCliRoot(): string {
+  const candidates = [
+    path.resolve(__dirname, '../apps/cli'),
+    path.resolve(__dirname, '../../apps/cli'),
+    path.resolve(__dirname, '../../../apps/cli'),
+    path.resolve(__dirname, '..'),
+    path.resolve(__dirname, '../..'),
+    path.resolve(__dirname, '../../../../apps/cli'),
+  ];
+
+  for (const candidate of candidates) {
+    const executablePath = path.join(candidate, 'fetch-codemaat.sh');
+    if (fs.existsSync(executablePath)) {
+      logger.debug(`Checking for fetch-codemaat.sh at: ${executablePath}`);
+      return candidate;
+    }
+  }
+
+  throw new Error('Could not locate fetch-codemaat.sh. Ensure CLI package includes runtime scripts.');
+}
+
 export function createCodeCommands(program: Command): void {
   const codeGroup = program.command('code').description('Code analysis operations');
 
@@ -81,9 +102,7 @@ export function createCodeCommands(program: Command): void {
     .action(async (options) => {
       try {
         logger.info('🔍 Running CodeMaat analysis...');
-        const currentDir = __dirname;
-        const workspaceRoot = path.resolve(currentDir, '../../../../');
-        const cliRoot = path.join(workspaceRoot, 'apps/cli');
+        const cliRoot = resolveCliRoot();
 
         const config = loadConfiguration();
         const repoPath = config.gitRepositoryLocation
@@ -93,7 +112,7 @@ export function createCodeCommands(program: Command): void {
         fs.mkdirSync(codemaatDir, { recursive: true });
 
         const stdout = execFileSync(
-          '/bin/sh',
+          'sh',
           [
             scriptPath,
             repoPath,

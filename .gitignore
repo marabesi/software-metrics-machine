@@ -260,3 +260,5 @@ apps/*/src/**/*.js.map
 
 *.tar.gz
 *.tgz
+
+tmp/**

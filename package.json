@@ -12,6 +12,8 @@
   },
   "files": [
     "dist",
+    "apps/cli/fetch-codemaat.sh",
+    "apps/cli/tools",
     "apps/webapp/.next",
     "apps/webapp/public",
     "README.md",

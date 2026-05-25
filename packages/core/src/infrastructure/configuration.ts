@@ -1,3 +1,4 @@
+import { logger } from '@smmachine/utils';
 import * as fs from 'fs';
 import * as path from 'path';
 
@@ -135,13 +136,16 @@ export class Configuration implements IConfiguration {
     // Check if configuration file path is provided
     let configData: Record<string, any> = {};
     if (!envObj.SMM_STORE_DATA_AT) {
-      throw new Error(`Warning: Failed to load configuration from ${configData.toString()}:`);
+      throw new Error(`Failed to load configuration from ${configData.toString()}:`);
     }
-
+    
+    
     const configPath = path.resolve(`${envObj.SMM_STORE_DATA_AT}/smm_config.json`);
+    logger.debug(`Configuration loaded from file: ${configPath}`);
     if (fs.existsSync(configPath)) {
       const fileContent = fs.readFileSync(configPath, 'utf-8');
       configData = JSON.parse(fileContent);
+      logger.debug(`Configuration loaded: ${JSON.stringify(configData)}`);
     }
 
     // Load configuration from JSON file (if available) or environment variables

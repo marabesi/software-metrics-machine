@@ -11,7 +11,9 @@
   "types": "dist/index.d.ts",
   "files": [
     "dist",
-    "README.md"
+    "README.md",
+    "fetch-codemaat.sh",
+    "tools"
   ],
   "scripts": {
     "build": "tsup",
