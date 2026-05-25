@@ -21,6 +21,8 @@ import {
   CommitTraverser,
   CodemaatAnalyzer,
   Configuration, PipelinesService,
+  PRsService,
+  PullRequestFactory,
 } from '@smmachine/core';
 import PipelineFactory from "@smmachine/core/aggregates/pipeline-factory";
 
@@ -136,11 +138,10 @@ function buildDataDirectories(config: Configuration) {
     // Repositories
     {
       provide: PullRequestsRepository,
-      useFactory: (client: GithubPrsClient, config: Configuration) => {
-        const paths = buildDataDirectories(config);
-        return new PullRequestsRepository(client, paths.gitProviderDirectory);
+      useFactory: (config: Configuration) => {
+        return PullRequestFactory.create(config);
       },
-      inject: [GithubPrsClient, Configuration],
+      inject: [Configuration],
     },
     {
       provide: PipelinesRepository,
@@ -184,20 +185,27 @@ function buildDataDirectories(config: Configuration) {
       },
       inject: [SonarqubeMeasuresClient, Configuration],
     },
+    {
+      provide: PRsService,
+      useFactory: (pullRequestRepository: PullRequestsRepository) => {
+        return new PRsService(pullRequestRepository);
+      },
+      inject: [PullRequestsRepository],
+    },
 
     // Orchestrator
     {
       provide: MetricsOrchestrator,
       useFactory: (
-        prsRepo: PullRequestsRepository,
-        pipelinesRepo: PipelinesService,
-        codeRepo: CodeMetricsRepository,
-        issuesRepo: IssuesRepository,
-        qualityRepo: SonarqubeMetricsRepository
-      ) => new MetricsOrchestrator(prsRepo, pipelinesRepo, codeRepo, issuesRepo, qualityRepo),
+        prsService: PRsService,
+        pipelinesService: PipelinesService,
+        codeMetricsRepository: CodeMetricsRepository,
+        issuesRepository: IssuesRepository,
+        sonarqubeMetricsRepository: SonarqubeMetricsRepository
+      ) => new MetricsOrchestrator(prsService, pipelinesService, codeMetricsRepository, issuesRepository, sonarqubeMetricsRepository),
       inject: [
-        PullRequestsRepository,
-        PipelinesRepository,
+        PRsService,
+        PipelinesService,
         CodeMetricsRepository,
         IssuesRepository,
         SonarqubeMetricsRepository,

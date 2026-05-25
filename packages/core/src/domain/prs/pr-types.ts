@@ -33,7 +33,6 @@ export interface PRFilters {
   authors?: string[];
   labels?: string[];
   state?: 'merged' | 'closed' | 'open';
-  rawFilters?: string; // key=value,key2=value2
 }
 
 export interface PRMetrics {

@@ -1,9 +1,8 @@
 import { logger } from '@smmachine/utils';
-import { PullRequestsRepository } from './pull-requests-repository';
 import { CodeMetricsRepository } from './code-metrics-repository';
 import { IssuesRepository } from './issues-repository';
 import { SonarqubeMetricsRepository } from './sonarqube-metrics-repository';
-import { PipelinesService } from '../domain';
+import { PipelinesService, PRsService } from '../domain';
 
 export interface IMetricsOrchestrator {
   getPRMetrics(filters?: any): Promise<any>;
@@ -19,7 +18,7 @@ export interface IMetricsOrchestrator {
  */
 export class MetricsOrchestrator implements IMetricsOrchestrator {
   constructor(
-    private prsRepo: PullRequestsRepository,
+    private prsRepo: PRsService,
     private pipelinesRepo: PipelinesService,
     private codeRepo: CodeMetricsRepository,
     private issuesRepo: IssuesRepository,
@@ -31,7 +30,7 @@ export class MetricsOrchestrator implements IMetricsOrchestrator {
    */
   async getPRMetrics(filters?: any): Promise<any> {
     logger.debug('Orchestrating PR metrics...');
-    return this.prsRepo.getPRMetrics(filters);
+    return this.prsRepo.getMetrics(filters);
   }
 
   /**

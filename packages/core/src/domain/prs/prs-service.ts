@@ -1,6 +1,6 @@
 import { Logger, logger } from '@smmachine/utils';
-import { IRepository } from '../../infrastructure/repository';
 import { PRDetails, PRFilters, PRMetrics, PRsByTimeframe, LabelSummary } from './pr-types';
+import { PullRequestsRepository } from 'src';
 
 export interface IPRsService {
   getMetrics(filters?: PRFilters): Promise<PRMetrics>;
@@ -16,7 +16,7 @@ export interface IPRsService {
 export class PRsService implements IPRsService {
   private logger: Logger = logger;
 
-  constructor(private prRepository: IRepository<PRDetails>) {}
+  constructor(private prRepository: PullRequestsRepository) {}
 
   /**
    * Get overall PR metrics for the given filters.
@@ -154,7 +154,7 @@ export class PRsService implements IPRsService {
    * Filter PRs by the provided criteria.
    */
   private async filterPRs(filters?: PRFilters): Promise<PRDetails[]> {
-    const allPRs = await this.prRepository.loadAll();
+    const allPRs = await this.prRepository.loadPrsWithFilters(filters);
 
     let result = allPRs;
 

@@ -1,82 +1,18 @@
-import { logger } from '@smmachine/utils';
 import { FileSystemRepository } from '../infrastructure/repository';
 import { PRDetails } from '../domain-types';
-import { type IGithubPrsClient } from '../providers/github';
-import { PRsService } from '../domain/prs';
 
-export interface IPullRequestsRepository {
-  getPRMetrics(filters?: any): Promise<any>;
-  getPRsByMonth(filters?: any): Promise<any>;
-  getPRsByWeek(filters?: any): Promise<any>;
-}
-
-/**
- * Combines GitHub provider with PR domain logic
- * Handles:
- * - Fetching PRs from GitHub
- * - Caching locally
- * - Computing PR metrics (lead time, etc.)
- */
-export class PullRequestsRepository implements IPullRequestsRepository {
-  private prService: PRsService;
-  private cache: FileSystemRepository<PRDetails>;
-
+export class PullRequestsRepository {
   constructor(
-    private githubPrsClient: IGithubPrsClient,
-    cacheDir: string
+    private cache: FileSystemRepository<PRDetails>
   ) {
-    this.cache = new FileSystemRepository<PRDetails>(`${cacheDir}/prs.json`);
-    this.prService = new PRsService(this.cache);
   }
 
-  /**
-   * Refresh PR data from GitHub
-   */
-  async fetchPRs(options?: {
+  async loadPrsWithFilters(options?: {
     startDate?: string;
     endDate?: string;
-    forceRefresh?: boolean;
   }): Promise<PRDetails[]> {
     const fromCache = await this.cache.loadAll();
 
-    if (!options?.forceRefresh && fromCache.length > 0) {
-      logger.debug(`Using cached PRs: ${fromCache.length} records`);
-      return fromCache;
-    }
-
-    logger.info('Fetching PRs from GitHub...');
-    const freshPRs = await this.githubPrsClient.fetchPRs({
-      startDate: options?.startDate,
-      endDate: options?.endDate,
-    });
-
-    // Persist fetched data to disk so subsequent commands can reuse cached data.
-    await this.cache.saveAll(freshPRs);
-
-    return freshPRs;
-  }
-
-  /**
-   * Get PR metrics
-   */
-  async getPRMetrics(filters?: any): Promise<any> {
-    await this.fetchPRs(filters);
-    return this.prService.getMetrics(filters);
-  }
-
-  /**
-   * Get PR metrics by month
-   */
-  async getPRsByMonth(filters?: any): Promise<any> {
-    await this.fetchPRs(filters);
-    return this.prService.getMetricsByMonth(filters);
-  }
-
-  /**
-   * Get PR metrics by week
-   */
-  async getPRsByWeek(filters?: any): Promise<any> {
-    await this.fetchPRs(filters);
-    return this.prService.getMetricsByWeek(filters);
+    return fromCache;
   }
 }
