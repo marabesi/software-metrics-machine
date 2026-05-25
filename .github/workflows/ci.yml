@@ -44,6 +44,7 @@ jobs:
         env:
           SMM_STORE_DATA_AT: /home/runner/work/software-metrics-machine/software-metrics-machine/docs/project-example
         run: pnpm run build
+
   check-distribution:
     name: Check Distribution
     runs-on: ubuntu-latest
@@ -72,5 +73,7 @@ jobs:
         run: pnpm install
 
       - name: Check package distribution
+        env:
+          SMM_STORE_DATA_AT: /home/runner/work/software-metrics-machine/software-metrics-machine/docs/project-example
         run: ./scripts/simulate-and-test-publish.sh true
 
