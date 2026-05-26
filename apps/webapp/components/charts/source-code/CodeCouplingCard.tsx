@@ -8,6 +8,10 @@ export default function CodeCouplingCard({ data }: { data: CouplingData[] }) {
     <Card>
       <CardHeader>
         <CardTitle>Code Coupling (Top 20)</CardTitle>
+        <p className="mt-2 text-sm text-gray-600">
+          Lists file pairs that often change together. Higher Degree means stronger coupling;
+          Avg. Revs indicates average shared revision activity.
+        </p>
       </CardHeader>
       <CardContent>
         <div className="overflow-x-auto">

@@ -10,6 +10,9 @@ export default function CodeChurnOverTimeCard({ data }: { data: CodeChurnData[] 
     <Card>
       <CardHeader>
         <CardTitle>Code Churn Over Time</CardTitle>
+        <p className="mt-2 text-sm text-gray-600">
+          Trend of code changes by date. Higher points mean more lines changed in that period.
+        </p>
       </CardHeader>
       <CardContent>
         <ResponsiveContainer width="100%" height={300}>

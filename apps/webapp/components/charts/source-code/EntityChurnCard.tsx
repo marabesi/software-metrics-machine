@@ -16,6 +16,10 @@ export default function EntityChurnCard({
     <Card>
       <CardHeader>
         <CardTitle>Entity Churn (Top {topEntries})</CardTitle>
+        <p className="mt-2 text-sm text-gray-600">
+          Compares files with the highest change volume. Each bar is one file: green is lines added
+          and red is lines deleted.
+        </p>
       </CardHeader>
       <CardContent>
         <ResponsiveContainer width="100%" height={300}>

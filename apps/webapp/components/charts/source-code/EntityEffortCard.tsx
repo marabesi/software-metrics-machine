@@ -16,6 +16,10 @@ export default function EntityEffortCard({
     <Card>
       <CardHeader>
         <CardTitle>Entity Effort (Top {topEntries})</CardTitle>
+        <p className="mt-2 text-sm text-gray-600">
+          Shows files touched most often. Taller bars mean more revisions, indicating higher
+          maintenance effort.
+        </p>
       </CardHeader>
       <CardContent>
         <ResponsiveContainer width="100%" height={300}>
