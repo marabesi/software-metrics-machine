@@ -18,7 +18,7 @@ export interface IPairingIndexService {
  *
  * Formula: (paired_commits / total_analyzed_commits) * 100
  */
-export class PairingIndexService implements IPairingIndexService {
+export class PairingService implements IPairingIndexService {
   private logger: Logger = logger;
 
   constructor(private commitRepository: IRepository<Commit>) {}

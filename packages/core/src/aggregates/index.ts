@@ -1,10 +1,18 @@
 export { PullRequestsRepository } from './pull-requests-repository';
 export { PullRequestFactory } from './pull-request-factory';
 export { PipelinesRepository } from './pipelines-repository';
-export { CodeMetricsRepository, type ICodeMetricsRepository } from './code-metrics-repository';
+export {
+  CodeMaatMetricsRepository as CodeMetricsRepository,
+  type ICodeMetricsRepository,
+} from '../providers/codemaat/codemaat-metrics-repository';
 export { IssuesRepository, type IIssuesRepository } from './issues-repository';
 export {
-  SonarqubeMetricsRepository,
+  SonarqubeFetchMetricsRepository,
   type IQualityMetricsRepository,
-} from './sonarqube-metrics-repository';
+} from '../providers/sonarqube/sonarqube-fetch-metrics-repository';
+export { SonarqubeFactory } from './sonarqube-factory';
+export { SonarqubeRepository } from './sonarqube-repository';
 export { MetricsOrchestrator, type IMetricsOrchestrator } from './metrics-orchestrator';
+export { GitFactory } from './git-factory';
+export { CodemaatFactory } from './codemaat-factory';
+export { PairingFactory } from './pairing-factory';

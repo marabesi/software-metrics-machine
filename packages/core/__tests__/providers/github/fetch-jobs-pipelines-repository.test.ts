@@ -24,7 +24,7 @@ describe('Fetch jobs pipeline repository', () => {
       pipelineJobsRepository
     );
 
-    return { repository  };
+    return { repository };
   };
 
   const storeFetchedWorkflows = async (runs: WorkflowJsonResponse[]) => {
@@ -259,8 +259,8 @@ describe('Fetch jobs pipeline repository', () => {
 
     const githubWorkflowClient: IGithubWorkflowJobClient = {
       fetchJobsPage: vi.fn(() => {
-        return Promise.resolve({ jobs: [], hasNext: false })
-      })
+        return Promise.resolve({ jobs: [], hasNext: false });
+      }),
     };
 
     const { repository } = await createRepository(githubWorkflowClient);
@@ -446,7 +446,7 @@ describe('Fetch jobs pipeline repository', () => {
     const { repository } = await createRepository(githubWorkflowClient);
 
     await storeFetchedWorkflows([]);
-    
+
     const jobs = await repository.fetchJobs({});
 
     expect(jobs).toHaveLength(0);

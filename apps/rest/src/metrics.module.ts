@@ -13,18 +13,21 @@ import {
   PipelinesRepository,
   CodeMetricsRepository,
   IssuesRepository,
-  SonarqubeMetricsRepository,
   GithubPrsClient,
   GithubWorkflowClient,
   JiraIssuesClient,
   SonarqubeMeasuresClient,
   CommitTraverser,
-  CodemaatAnalyzer,
   Configuration, PipelinesService,
   PRsService,
   PullRequestFactory,
+  SonarQubeService,
+  SonarqubeRepository,
+  SonarqubeFactory,
+  PairingFactory,
 } from '@smmachine/core';
 import PipelineFactory from "@smmachine/core/aggregates/pipeline-factory";
+import { PairingService } from '@smmachine/core/domain/code/pairing-service';
 
 function buildDataDirectories(config: Configuration) {
   const baseDir = config.storeData || './outputs';
@@ -126,15 +129,6 @@ function buildDataDirectories(config: Configuration) {
         new CommitTraverser(config.gitRepositoryLocation || '.'),
       inject: [Configuration],
     },
-    {
-      provide: CodemaatAnalyzer,
-      useFactory: (config: Configuration) => {
-        const paths = buildDataDirectories(config);
-        return new CodemaatAnalyzer(paths.codemaatDirectory);
-      },
-      inject: [Configuration],
-    },
-
     // Repositories
     {
       provide: PullRequestsRepository,
@@ -160,14 +154,11 @@ function buildDataDirectories(config: Configuration) {
     {
       provide: CodeMetricsRepository,
       useFactory: (
-        traverser: CommitTraverser,
-        analyzer: CodemaatAnalyzer,
         config: Configuration
       ) => {
-        const paths = buildDataDirectories(config);
-        return new CodeMetricsRepository(traverser, analyzer, paths.codemaatDirectory);
+        return new CodeMetricsRepository(config);
       },
-      inject: [CommitTraverser, CodemaatAnalyzer, Configuration],
+      inject: [Configuration],
     },
     {
       provide: IssuesRepository,
@@ -178,12 +169,12 @@ function buildDataDirectories(config: Configuration) {
       inject: [JiraIssuesClient, Configuration],
     },
     {
-      provide: SonarqubeMetricsRepository,
-      useFactory: (client: SonarqubeMeasuresClient, config: Configuration) => {
-        const paths = buildDataDirectories(config);
-        return new SonarqubeMetricsRepository(client, paths.sonarqubeDirectory);
+      provide: SonarqubeRepository,
+      useFactory: (config: Configuration) => {
+        const repo = SonarqubeFactory.create(config);
+        return repo;
       },
-      inject: [SonarqubeMeasuresClient, Configuration],
+      inject: [Configuration],
     },
     {
       provide: PRsService,
@@ -192,6 +183,20 @@ function buildDataDirectories(config: Configuration) {
       },
       inject: [PullRequestsRepository],
     },
+    {
+      provide: SonarQubeService,
+      useFactory: (sonarqubeRepository: SonarqubeRepository) => {
+        return new SonarQubeService(sonarqubeRepository);
+      },
+      inject: [SonarqubeRepository],
+    },
+    {
+      provide: PairingService,
+      useFactory: (config: Configuration) => {
+        return PairingFactory.create(config);
+      },
+      inject: [Configuration],
+    },
 
     // Orchestrator
     {
@@ -199,16 +204,18 @@ function buildDataDirectories(config: Configuration) {
       useFactory: (
         prsService: PRsService,
         pipelinesService: PipelinesService,
+        pairingService: PairingService,
         codeMetricsRepository: CodeMetricsRepository,
         issuesRepository: IssuesRepository,
-        sonarqubeMetricsRepository: SonarqubeMetricsRepository
-      ) => new MetricsOrchestrator(prsService, pipelinesService, codeMetricsRepository, issuesRepository, sonarqubeMetricsRepository),
+        sonarqubeService: SonarQubeService
+      ) => new MetricsOrchestrator(prsService, pipelinesService, codeMetricsRepository, issuesRepository, sonarqubeService, pairingService),
       inject: [
         PRsService,
         PipelinesService,
+        PairingService,
         CodeMetricsRepository,
         IssuesRepository,
-        SonarqubeMetricsRepository,
+        SonarQubeService,
       ],
     },
   ],

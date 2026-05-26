@@ -1,8 +1,7 @@
 import { logger } from '@smmachine/utils';
-import { CodeMetricsRepository } from './code-metrics-repository';
+import { CodeMaatMetricsRepository } from '../providers/codemaat/codemaat-metrics-repository';
 import { IssuesRepository } from './issues-repository';
-import { SonarqubeMetricsRepository } from './sonarqube-metrics-repository';
-import { PipelinesService, PRsService } from '../domain';
+import { PairingIndexService, PipelinesService, PRsService, SonarQubeService } from '../domain';
 
 export interface IMetricsOrchestrator {
   getPRMetrics(filters?: any): Promise<any>;
@@ -20,9 +19,10 @@ export class MetricsOrchestrator implements IMetricsOrchestrator {
   constructor(
     private prsRepo: PRsService,
     private pipelinesRepo: PipelinesService,
-    private codeRepo: CodeMetricsRepository,
+    private codeRepo: CodeMaatMetricsRepository,
     private issuesRepo: IssuesRepository,
-    private qualityRepo: SonarqubeMetricsRepository
+    private sonarqubeService: SonarQubeService,
+    private pairingIndexService: PairingIndexService
   ) {}
 
   /**
@@ -56,7 +56,7 @@ export class MetricsOrchestrator implements IMetricsOrchestrator {
   async getCodeMetrics(filters?: any): Promise<any> {
     logger.info('Orchestrating code metrics...');
 
-    const pairing = await this.codeRepo.getPairingIndex(filters);
+    const pairing = await this.pairingIndexService.getPairingIndex(filters);
     const churn = await this.codeRepo.getCodeChurn(filters);
     const coupling = await this.codeRepo.getFileCoupling(filters);
 
@@ -87,6 +87,6 @@ export class MetricsOrchestrator implements IMetricsOrchestrator {
   async getQualityMetrics(filters?: any): Promise<any> {
     logger.info('Orchestrating quality metrics...');
 
-    return this.qualityRepo.getQualityMetrics(filters);
+    return this.sonarqubeService.getQualityMetrics(filters);
   }
 }

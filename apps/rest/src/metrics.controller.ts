@@ -3,7 +3,6 @@ import { ApiTags, ApiOperation, ApiQuery, ApiResponse, ApiOkResponse } from '@ne
 import { MetricsOrchestrator } from '@smmachine/core';
 import {
   IssueMetricsQueryDto,
-  QualityMetricsQueryDto,
 } from './dtos/index';
 import {
   ErrorResponse,
@@ -20,7 +19,7 @@ import {
  * - endDate: ISO 8601 format (YYYY-MM-DD)
  */
 @ApiTags('Metrics')
-@Controller('api/metrics')
+@Controller('jira')
 export class MetricsController {
   private readonly logger = new Logger('MetricsController');
 
@@ -66,50 +65,6 @@ export class MetricsController {
       );
       throw new HttpException(
         `Failed to fetch issue metrics: ${error instanceof Error ? error.message : String(error)}`,
-        HttpStatus.INTERNAL_SERVER_ERROR
-      );
-    }
-  }
-
-  /**
-   * GET /api/metrics/quality
-   * Retrieve quality metrics from SonarQube
-   *
-   * Query Parameters:
-   * - measures: Specific metrics to retrieve (can be repeated)
-   *   Available: coverage, complexity, sqale_rating, duplicated_lines_density, ncloc, vulnerability_rating
-   *
-   * Example: GET /api/metrics/quality?measures=coverage&measures=complexity
-   */
-  @Get('quality')
-  @ApiOperation({ summary: 'Get code quality metrics' })
-  @ApiQuery({ name: 'measures', required: false, type: [String], example: 'coverage' })
-  @ApiOkResponse({
-    description: 'Quality metrics retrieved successfully',
-    type: Object,
-  })
-  @ApiResponse({
-    status: 400,
-    description: 'Invalid query parameters',
-    type: ErrorResponse,
-  })
-  async getQualityMetrics(@Query() query: QualityMetricsQueryDto) {
-    try {
-      this.logger.debug(`Fetching quality metrics: ${JSON.stringify(query)}`);
-      const measures = query.measures
-        ? Array.isArray(query.measures)
-          ? query.measures
-          : [query.measures]
-        : undefined;
-
-      return await this.orchestrator.getQualityMetrics(measures);
-    } catch (error) {
-      this.logger.error(
-        `Failed to fetch quality metrics: ${error}`,
-        error instanceof Error ? error.stack : ''
-      );
-      throw new HttpException(
-        `Failed to fetch quality metrics: ${error instanceof Error ? error.message : String(error)}`,
         HttpStatus.INTERNAL_SERVER_ERROR
       );
     }

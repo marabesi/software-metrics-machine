@@ -1,18 +1,6 @@
 import axios, { AxiosInstance } from 'axios';
 import { Logger } from '@smmachine/utils';
-
-export interface CodeMetric {
-  key: string;
-  name: string;
-  value: string | number;
-  formatter: string;
-}
-
-export interface SonarqubeComponentMeasure {
-  key: string;
-  name: string;
-  measures: CodeMetric[];
-}
+import { SonarqubeComponentMeasure, CodeMetric } from '.';
 
 export interface ISonarqubeMeasuresClient {
   fetchComponentMeasures(options?: { metrics?: string[] }): Promise<SonarqubeComponentMeasure>;

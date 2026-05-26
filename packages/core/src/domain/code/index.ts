@@ -1,2 +1,5 @@
-export { PairingIndexService, type IPairingIndexService } from './pairing-index';
-export { CodeMetricService, type ICodeMetricService, type CodeMetadataResult } from './code-metric';
+export {
+  PairingService as PairingIndexService,
+  type IPairingIndexService,
+} from './pairing-service';
+export { SonarQubeService } from './sonarqube-service';

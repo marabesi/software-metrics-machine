@@ -1,6 +1,7 @@
 import { Controller, Get, Logger, Query } from '@nestjs/common';
-import { ApiTags } from '@nestjs/swagger';
-import { CodeMetricsRepository, Configuration } from '@smmachine/core';
+import { ApiQuery, ApiTags } from '@nestjs/swagger';
+import { CodeMaatMetricsRepository, Configuration } from '@smmachine/core';
+import { PairingService } from '@smmachine/core/domain/code/pairing-service';
 import * as fs from 'fs/promises';
 import * as path from 'path';
 
@@ -16,18 +17,37 @@ export class CodeController {
   private readonly logger = new Logger('CodeController');
 
   constructor(
-    private readonly codeRepo: CodeMetricsRepository,
+    private readonly pairingService: PairingService,
+    private readonly codemaat: CodeMaatMetricsRepository,
     private readonly config: Configuration
   ) {}
 
   @Get('/code/pairing-index')
+  @ApiQuery({
+    name: 'start_date',
+    required: false,
+    type: String,
+    description: 'Start date filter (YYYY-MM-DD)',
+  })
+  @ApiQuery({
+    name: 'end_date',
+    required: false,
+    type: String,
+    description: 'End date filter (YYYY-MM-DD)',
+  })
+  @ApiQuery({
+    name: 'authors',
+    required: false,
+    type: String,
+    description: 'Comma-separated list of authors to filter by',
+  })
   async pairingIndex(
     @Query('start_date') startDate?: string,
     @Query('end_date') endDate?: string,
     @Query('authors') authors?: string
   ) {
     const selectedAuthors = this.parseCsvList(authors);
-    const pairing = await this.codeRepo.getPairingIndex({
+    const pairing = await this.pairingService.getPairingIndex({
       startDate,
       endDate,
       selectedAuthors: selectedAuthors.length > 0 ? selectedAuthors : undefined,
@@ -46,7 +66,7 @@ export class CodeController {
     @Query('end_date') endDate?: string,
     @Query('type_churn') typeChurn?: string
   ) {
-    const churn = await this.codeRepo.getCodeChurn({ startDate, endDate });
+    const churn = await this.codemaat.getCodeChurn({ startDate, endDate });
     const churnType = (typeChurn || 'total').toLowerCase();
 
     return (churn?.data || []).map(
@@ -77,7 +97,7 @@ export class CodeController {
   ) {
     const ignorePatterns = this.parseCsvList(ignoreFiles);
     const includePatterns = this.parseCsvList(includeOnly);
-    const coupling = await this.codeRepo.getFileCoupling({
+    const coupling = await this.codemaat.getFileCoupling({
       ignorePatterns: ignorePatterns.length > 0 ? ignorePatterns : undefined,
     });
 

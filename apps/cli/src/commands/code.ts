@@ -2,30 +2,18 @@ import { Command } from 'commander';
 import { execFileSync } from 'child_process';
 import * as fs from 'fs';
 import * as path from 'path';
-import { CodeMetricsRepository } from '@smmachine/core/aggregates/code-metrics-repository';
+import { CodeMaatMetricsRepository } from '@smmachine/core/aggregates/code-metrics-repository';
 import { CodemaatAnalyzer } from '@smmachine/core/providers/codemaat/codemaat-analyzer';
+import { GitFactory } from '@smmachine/core/aggregates/git-factory';
 import { Logger } from '@smmachine/utils';
 import { CommitTraverser } from '@smmachine/core/providers/git/commit-traverser';
 import { Configuration } from '@smmachine/core/infrastructure/configuration';
+import { CodemaatFactory } from '@smmachine/core/aggregates/codemaat-factory';
 
 const logger = new Logger('CodeCommand');
 
 function loadConfiguration(): Configuration {
   return new Configuration(process.env);
-}
-
-function createCodeDependencies(config: Configuration): {
-  codeRepository: CodeMetricsRepository;
-} {
-  const dataDirectory = config.storeData!;
-  const codemaatDirectory = config.getCodeMaatPath();
-  const repositoryPath = config.gitRepositoryLocation;
-  const commitTraverser = new CommitTraverser(repositoryPath);
-  const codemaatAnalyzer = new CodemaatAnalyzer(codemaatDirectory);
-
-  return {
-    codeRepository: new CodeMetricsRepository(commitTraverser, codemaatAnalyzer, dataDirectory),
-  };
 }
 
 function resolveCliRoot(): string {
@@ -53,7 +41,7 @@ export function createCodeCommands(program: Command): void {
   const codeGroup = program.command('code').description('Code analysis operations');
 
   codeGroup
-    .command('change-set')
+    .command('fetch-commits')
     .description('Analyze change sets from git repository')
     .option('--start-date <date>', 'Start date (YYYY-MM-DD)')
     .option('--end-date <date>', 'End date (YYYY-MM-DD)')
@@ -65,16 +53,14 @@ export function createCodeCommands(program: Command): void {
 
         const config = loadConfiguration();
         const repoPath = config.gitRepositoryLocation
+        
+        const factory = GitFactory.create(config)
 
-        const traverser = new CommitTraverser(repoPath);
-        const result = await traverser.traverseCommits({
+        const result = await factory.fetchCommits({
           startDate: options.startDate,
           endDate: options.endDate,
-          selectedAuthors: options.authors
-            ? options.authors.split(',').map((a: string) => a.trim())
-            : undefined,
         });
-        const commits = result.commits;
+        const commits = result;
 
         if (options.output === 'json') {
           logger.info(JSON.stringify({ commits: commits.length }, null, 2));
@@ -162,6 +148,7 @@ export function createCodeCommands(program: Command): void {
     .action(async (options) => {
       try {
         logger.info('📊 Calculating code churn...');
+        const codemaatFactory = CodemaatFactory.create(loadConfiguration());
         const churn = createCodeDependencies(loadConfiguration());
         const metrics = await churn.codeRepository.getCodeChurn({
           selectedAuthors: options.authors

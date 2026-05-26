@@ -1,63 +1,31 @@
 import * as fs from 'fs';
-import * as path from 'path';
 import { Logger } from '@smmachine/utils';
+import { CodeChurn, CodeChurnResult, CodemaatAnalysisResult, FileCoupling } from '.';
+import { Configuration } from 'src';
+import path from 'path';
 
-export interface CodeChurn {
-  date: string;
-  added: number;
-  deleted: number;
-  commits: number;
-}
-
-export interface CodeChurnResult {
-  data: CodeChurn[];
-  startDate?: string;
-  endDate?: string;
-}
-
-export interface FileCoupling {
-  entity: string;
-  coupled: string;
-  degree: number;
-  averageRevs: number;
-}
-
-export interface CodemaatAnalysisResult {
-  churn?: CodeChurnResult;
-  coupling?: FileCoupling[];
-  entityChurn?: any[];
-  entityEffort?: any[];
-  entityOwnership?: any[];
-}
-
-export interface ICodemaatAnalyzer {
-  getCodeChurn(options?: { startDate?: string; endDate?: string }): Promise<CodeChurnResult>;
-
-  getFileCoupling(options?: { ignorePatterns?: string[] }): Promise<FileCoupling[]>;
-
-  analyze(options?: {
-    startDate?: string;
-    endDate?: string;
-    ignorePatterns?: string[];
-  }): Promise<CodemaatAnalysisResult>;
+export interface ICodeMetricsRepository {
+  getCodeChurn(options?: any): Promise<any>;
+  getFileCoupling(options?: any): Promise<any>;
+  getEntityEffort(options?: any): Promise<any>;
+  getEntityOwnership(options?: any): Promise<any>;
 }
 
 /**
- * CodeMaat analyzer for code metrics
- * Reads pre-generated CSV analysis files:
- * - abs-churn.csv: Lines added/deleted per commit
- * - coupling.csv: File coupling analysis
- * - entity-churn.csv: Per-entity (file/class) churn
- * - entity-effort.csv: Effort metrics
- * - entity-ownership.csv: Author ownership
- *
- * Mirrors: api/src/software_metrics_machine/providers/codemaat/codemaat_repository.py
+ * Combines Git and CodeMaat providers with code metrics domain logic
+ * Handles:
+ * - Analyzing commits from git repository
+ * - Calculating pairing index
+ * - Loading code churn metrics
+ * - Analyzing file coupling
  */
-export class CodemaatAnalyzer implements ICodemaatAnalyzer {
+export class CodeMaatMetricsRepository implements ICodeMetricsRepository {
   private logger: Logger;
+  private dataDir: string;
 
-  constructor(private dataDir: string) {
-    this.logger = new Logger('CodemaatAnalyzer');
+  constructor(configuration: Configuration) {
+    this.dataDir = configuration.getCodeMaatPath();
+    this.logger = new Logger('CodeMaatMetricsRepository');
   }
 
   async getCodeChurn(options?: { startDate?: string; endDate?: string }): Promise<CodeChurnResult> {
@@ -307,36 +275,17 @@ export class CodemaatAnalyzer implements ICodemaatAnalyzer {
     }
   }
 
-  /**
-   * Check if a file path should be ignored
-   */
-  private isIgnoredPath(filePath: string, ignorePatterns: string[]): boolean {
-    if (!ignorePatterns || ignorePatterns.length === 0) {
-      return false;
-    }
+  async getEntityEffort(options?: any): Promise<any> {
+    throw new Error('getEntityEffort: Method not implemented.');
+  }
 
-    const normalizedPath = filePath.replace(/\\/g, '/');
-
-    for (const pattern of ignorePatterns) {
-      // Handle glob patterns like *.js
-      if (pattern.startsWith('*.')) {
-        const ext = pattern.substring(1);
-        if (normalizedPath.endsWith(ext)) {
-          return true;
-        }
-      }
-
-      // Handle folder/path matches
-      if (normalizedPath.includes(pattern)) {
-        return true;
-      }
-
-      // Handle prefix matches
-      if (normalizedPath.startsWith(pattern)) {
-        return true;
-      }
-    }
-
-    return false;
+  async getEntityOwnership(options?: any): Promise<any> {
+    // const rows = await this.readCsvRecords('entity-ownership.csv');
+    // return Array.from(
+    //   new Set(
+    //     rows.map((row) => String(row.author || '').trim()).filter((author) => author.length > 0)
+    //   )
+    // ).sort();
+    throw new Error('getEntityOwnership: Method not implemented.');
   }
 }

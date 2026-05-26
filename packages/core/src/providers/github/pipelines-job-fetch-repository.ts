@@ -2,10 +2,7 @@ import { logger } from '@smmachine/utils';
 import * as fs from 'fs/promises';
 import * as path from 'path';
 import { Configuration, IRepository } from '../../infrastructure';
-import {
-  WorkflowJobJsonResponse,
-  WorkflowJsonResponse,
-} from './github-response-types';
+import { WorkflowJobJsonResponse, WorkflowJsonResponse } from './github-response-types';
 import { IGithubWorkflowJobClient } from './github-workflow';
 
 interface JobsProgress {
@@ -74,9 +71,7 @@ export class PipelinesJobFetchRepository {
       const dayEnd = new Date(current);
       dayEnd.setUTCHours(23, 59, 59, 999);
 
-      logger.info(
-        `Fetching jobs for day ${dayStart.toISOString().split('T')[0]}...`
-      );
+      logger.info(`Fetching jobs for day ${dayStart.toISOString().split('T')[0]}...`);
 
       const runsForDay = cachedRuns.filter((run) => {
         const createdAt = run.created_at;
@@ -244,7 +239,10 @@ export class PipelinesJobFetchRepository {
     }
   }
 
-  private toDateBoundary(dateValue?: string, boundary: 'start' | 'end' = 'start'): Date | undefined {
+  private toDateBoundary(
+    dateValue?: string,
+    boundary: 'start' | 'end' = 'start'
+  ): Date | undefined {
     if (!dateValue) {
       return undefined;
     }

@@ -138,8 +138,7 @@ export class Configuration implements IConfiguration {
     if (!envObj.SMM_STORE_DATA_AT) {
       throw new Error(`Failed to load configuration from ${configData.toString()}:`);
     }
-    
-    
+
     const configPath = path.resolve(`${envObj.SMM_STORE_DATA_AT}/smm_config.json`);
     logger.debug(`Configuration loaded from file: ${configPath}`);
     if (fs.existsSync(configPath)) {
@@ -221,5 +220,9 @@ export class Configuration implements IConfiguration {
 
   getPipelinePath(): string {
     return path.join(this.getBaseDirectory(), this.gitProvider!);
+  }
+
+  getGitPath(): string {
+    return path.join(this.getBaseDirectory(), 'git');
   }
 }

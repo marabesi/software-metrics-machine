@@ -1,7 +1,7 @@
 import { Controller, Get, Query, HttpException, HttpStatus, Logger } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiQuery, ApiResponse, ApiOkResponse } from '@nestjs/swagger';
-import { SonarqubeMeasuresClient, SonarqubeComponentMeasure } from '@smmachine/core';
-import { ComponentTreeQueryDto } from '../dtos/index';
+import { SonarqubeMeasuresClient, SonarqubeComponentMeasure, SonarqubeRepository } from '@smmachine/core';
+import { ComponentTreeQueryDto, QualityMetricsQueryDto } from '../dtos/index';
 import { ErrorResponse } from '../dtos/response.dto';
 
 /**
@@ -11,11 +11,11 @@ import { ErrorResponse } from '../dtos/response.dto';
  * Delegates to SonarqubeMeasuresClient for business logic.
  */
 @ApiTags('SonarQube')
-@Controller('api/measures')
+@Controller('sonarqube')
 export class SonarqubeController {
   private readonly logger = new Logger('SonarqubeController');
 
-  constructor(private sonarqubeClient: SonarqubeMeasuresClient) {}
+  constructor(private sonarqubeClient: SonarqubeMeasuresClient, private sonarqubeRepository: SonarqubeRepository) {}
 
   /**
    * GET /api/measures/component_tree
@@ -28,7 +28,7 @@ export class SonarqubeController {
    *
    * Example: GET /api/measures/component_tree?component=my:project&depth=-1&metrics=complexity,cognitive_complexity
    */
-  @Get('component_tree')
+  @Get('component-tree')
   @ApiOperation({ summary: 'Get component tree with metrics' })
   @ApiQuery({
     name: 'component',
@@ -88,6 +88,50 @@ export class SonarqubeController {
       );
       throw new HttpException(
         `Failed to fetch component tree: ${error instanceof Error ? error.message : String(error)}`,
+        HttpStatus.INTERNAL_SERVER_ERROR
+      );
+    }
+  }
+
+  /**
+ * GET /api/metrics/quality
+ * Retrieve quality metrics from SonarQube
+ *
+ * Query Parameters:
+ * - measures: Specific metrics to retrieve (can be repeated)
+ *   Available: coverage, complexity, sqale_rating, duplicated_lines_density, ncloc, vulnerability_rating
+ *
+ * Example: GET /api/metrics/quality?measures=coverage&measures=complexity
+ */
+  @Get('quality')
+  @ApiOperation({ summary: 'Get code quality metrics' })
+  @ApiQuery({ name: 'measures', required: false, type: [String], example: 'coverage' })
+  @ApiOkResponse({
+    description: 'Quality metrics retrieved successfully',
+    type: Object,
+  })
+  @ApiResponse({
+    status: 400,
+    description: 'Invalid query parameters',
+    type: ErrorResponse,
+  })
+  async getQualityMetrics(@Query() query: QualityMetricsQueryDto) {
+    try {
+      this.logger.debug(`Fetching quality metrics: ${JSON.stringify(query)}`);
+      const measures = query.measures
+        ? Array.isArray(query.measures)
+          ? query.measures
+          : [query.measures]
+        : undefined;
+
+      return await this.sonarqubeRepository.loadComponentTree(measures);
+    } catch (error) {
+      this.logger.error(
+        `Failed to fetch quality metrics: ${error}`,
+        error instanceof Error ? error.stack : ''
+      );
+      throw new HttpException(
+        `Failed to fetch quality metrics: ${error instanceof Error ? error.message : String(error)}`,
         HttpStatus.INTERNAL_SERVER_ERROR
       );
     }
