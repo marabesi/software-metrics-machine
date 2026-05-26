@@ -1,5 +1,24 @@
 import { IsOptional, IsDateString, IsEnum, IsArray, IsString } from 'class-validator';
 import { ApiPropertyOptional } from '@nestjs/swagger';
+import { Transform } from 'class-transformer';
+
+function normalizeArrayQueryParam(value: unknown): string[] | undefined {
+  if (value === undefined || value === null || value === '') {
+    return undefined;
+  }
+
+  if (Array.isArray(value)) {
+    return value
+      .flatMap((item) => String(item).split(','))
+      .map((item) => item.trim())
+      .filter(Boolean);
+  }
+
+  return String(value)
+    .split(',')
+    .map((item) => item.trim())
+    .filter(Boolean);
+}
 
 /**
  * Base DTO for common query parameters
@@ -70,6 +89,7 @@ export class QualityMetricsQueryDto {
     isArray: true,
   })
   @IsOptional()
+  @Transform(({ value }) => normalizeArrayQueryParam(value))
   @IsArray()
   @IsString({ each: true })
   measures?: string[];
@@ -101,6 +121,7 @@ export class ComponentTreeQueryDto {
     isArray: true,
   })
   @IsOptional()
+  @Transform(({ value }) => normalizeArrayQueryParam(value))
   @IsArray()
   @IsString({ each: true })
   metrics?: string[];

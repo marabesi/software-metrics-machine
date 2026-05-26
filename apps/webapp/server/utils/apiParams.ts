@@ -18,6 +18,9 @@ export interface DashboardFilters {
   authorSelect?: string[];
   labelSelector?: string[];
   aggregateBy?: string;
+  sonarqubeComponent?: string;
+  sonarqubeDepth?: number;
+  sonarqubeMetrics?: string[];
 }
 
 /**
@@ -68,10 +71,22 @@ export function buildPullRequestApiParams(filters: DashboardFilters): ApiParams 
 }
 
 /**
+ * Convert SonarQube section filters to API parameters
+ */
+export function buildSonarqubeApiParams(filters: DashboardFilters): ApiParams {
+  return {
+    component: filters.sonarqubeComponent || undefined,
+    depth: filters.sonarqubeDepth,
+    metrics: filters.sonarqubeMetrics?.length ? filters.sonarqubeMetrics.join(',') : undefined,
+  };
+}
+
+/**
  * Batch export for easy access to all builders
  */
 export const apiParamBuilders = {
   pipeline: buildPipelineApiParams,
   sourceCode: buildSourceCodeApiParams,
   pullRequest: buildPullRequestApiParams,
+  sonarqube: buildSonarqubeApiParams,
 };

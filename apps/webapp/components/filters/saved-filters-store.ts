@@ -1,6 +1,11 @@
 import { DashboardFilters } from './DashboardFilters';
 
-export type DashboardSection = 'insights' | 'pipelines' | 'pull-requests' | 'source-code';
+export type DashboardSection =
+  | 'insights'
+  | 'pipelines'
+  | 'pull-requests'
+  | 'source-code'
+  | 'sonarqube';
 
 export type SavedFilterEntry = {
   id: string;
@@ -103,6 +108,10 @@ export function dashboardSectionFromPathname(pathname: string): DashboardSection
 
   if (pathname.includes('/source-code')) {
     return 'source-code';
+  }
+
+  if (pathname.includes('/sonarqube')) {
+    return 'sonarqube';
   }
 
   return 'insights';

@@ -10,6 +10,7 @@ const dashboardTabs = [
   { value: 'pipelines', label: 'Pipelines', href: '/dashboard/pipelines/' },
   { value: 'pull-requests', label: 'Pull Requests', href: '/dashboard/pull-requests/' },
   { value: 'source-code', label: 'Source Code', href: '/dashboard/source-code/' },
+  { value: 'sonarqube', label: 'SonarQube', href: '/dashboard/sonarqube/' },
 ];
 
 function getActiveTab(pathname: string): string {

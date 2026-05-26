@@ -25,6 +25,11 @@ export interface DashboardFilters {
 
   // Metrics filters
   aggregateMetric: string;
+
+  // SonarQube filters
+  sonarqubeComponent: string;
+  sonarqubeDepth: number;
+  sonarqubeMetrics: string[];
 }
 
 export const defaultFilters: DashboardFilters = {
@@ -45,6 +50,9 @@ export const defaultFilters: DashboardFilters = {
   topEntries: 20,
   typeChurn: 'added',
   aggregateMetric: 'avg',
+  sonarqubeComponent: '',
+  sonarqubeDepth: -1,
+  sonarqubeMetrics: ['complexity', 'cognitive_complexity', 'ncloc', 'coverage', 'sqale_rating'],
 };
 
 type SearchParamValue = string | string[] | undefined;
@@ -103,6 +111,11 @@ export function parseDashboardFilters(
     authorSelect: getArrayValue(searchParams.authorSelect),
     labelSelector: getArrayValue(searchParams.labelSelector),
     aggregateBy: getSingleValue(searchParams.aggregateBy) || fallback.aggregateBy,
+    sonarqubeComponent: getSingleValue(searchParams.sonarqubeComponent) || fallback.sonarqubeComponent,
+    sonarqubeDepth: toNumber(getSingleValue(searchParams.sonarqubeDepth), fallback.sonarqubeDepth) || fallback.sonarqubeDepth,
+    sonarqubeMetrics: getArrayValue(searchParams.sonarqubeMetrics).length
+      ? getArrayValue(searchParams.sonarqubeMetrics)
+      : fallback.sonarqubeMetrics,
   };
 }
 
@@ -138,6 +151,9 @@ export function serializeDashboardFilters(filters: DashboardFilters): URLSearchP
   appendList('authorSelect', filters.authorSelect);
   appendList('labelSelector', filters.labelSelector);
   append('aggregateBy', filters.aggregateBy);
+  append('sonarqubeComponent', filters.sonarqubeComponent);
+  append('sonarqubeDepth', filters.sonarqubeDepth);
+  appendList('sonarqubeMetrics', filters.sonarqubeMetrics);
 
   return params;
 }

@@ -175,11 +175,12 @@ export default function FiltersContainer() {
         </Box>
       )}
 
-      {/* Source Code Tab - Source Code Filters */}
+
+      {/* Source Code / SonarQube Tab - Source Code-like Filters */}
       {activeSection === 'source-code' && (
         <Box sx={{ mb: 3 }}>
           <Typography variant="subtitle2" sx={{ mb: 1, fontWeight: 600 }}>
-            Source Code Filters
+            {activeSection === 'source-code' ? 'Source Code Filters' : 'SonarQube Filters'}
           </Typography>
           <Stack direction="column" spacing={2} flexWrap="wrap">
             <TextInputFilter
@@ -205,6 +206,50 @@ export default function FiltersContainer() {
               value={filters.typeChurn}
               options={['added', 'deleted']}
               onChange={(value) => updateFilter('typeChurn', value)}
+            />
+            <SliderFilter
+              label="Top Entries"
+              value={filters.topEntries}
+              onChange={(value) => updateFilter('topEntries', value)}
+              min={1}
+              max={100}
+              step={5}
+            />
+          </Stack>
+        </Box>
+      )}
+
+      {activeSection === 'sonarqube' && (
+        <Box sx={{ mb: 3 }}>
+          <Typography variant="subtitle2" sx={{ mb: 1, fontWeight: 600 }}>
+            SonarQube Filters
+          </Typography>
+          <Stack direction="column" spacing={2} flexWrap="wrap">
+            <TextInputFilter
+              label="Component Key"
+              value={filters.sonarqubeComponent}
+              onChange={(value) => updateFilter('sonarqubeComponent', value)}
+              placeholder="e.g., org.project:service-name"
+            />
+            <SelectFilter
+              label="Tree Depth"
+              value={String(filters.sonarqubeDepth)}
+              options={['-1', '0', '1', '2', '3']}
+              onChange={(value) => updateFilter('sonarqubeDepth', Number(value))}
+            />
+            <MultiSelectFilter
+              label="Metrics"
+              values={filters.sonarqubeMetrics}
+              options={[
+                'complexity',
+                'cognitive_complexity',
+                'ncloc',
+                'coverage',
+                'sqale_rating',
+                'duplicated_lines_density',
+                'vulnerability_rating',
+              ]}
+              onChange={(values) => updateFilter('sonarqubeMetrics', values)}
             />
             <SliderFilter
               label="Top Entries"

@@ -2,6 +2,7 @@
 export { sourceCodeAPI } from './api/sourceCode';
 export { pipelineAPI } from './api/pipeline';
 export { pullRequestAPI } from './api/pullRequest';
+export { sonarqubeAPI } from './api/sonarqube';
 export { configurationAPI } from './api/configuration';
 export type { ApiParams } from './api/client';
 export { fetchAPI } from './api/client';
