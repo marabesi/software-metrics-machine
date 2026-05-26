@@ -5,6 +5,8 @@ import {
   JobsAverageTimeResponseItem,
   JobByStatusData,
   JobByStatusResponseItem,
+  RunsByDayData,
+  RunsByResponseItem,
   RunsDurationData,
   RunsDurationResponseItem,
 } from '@/components/charts/pipeline/types';
@@ -32,13 +34,15 @@ export default async function PipelinesPage({
   const filters = parseDashboardFilters(await searchParams ?? {}, defaultFilters);
   let jobsByStatus: JobByStatusData[] = [];
   let runsDuration: RunsDurationData[] = [];
+  let runsByDay: RunsByDayData[] = [];
   let jobsAvgTime: JobsAverageTimeData[] = [];
 
   try {
     const apiParams = buildPipelineApiParams(filters);
-    const [jobs, duration, avgTime] = await Promise.all([
+    const [jobs, duration, runsBy, avgTime] = await Promise.all([
       pipelineAPI.jobsByStatus(apiParams),
       pipelineAPI.runsDuration(apiParams),
+      pipelineAPI.runsBy({ ...apiParams, aggregate_by: 'day' }),
       pipelineAPI.jobsAverageTime(apiParams),
     ]);
 
@@ -60,6 +64,21 @@ export default async function PipelinesPage({
       value: d.value
     })) : [];
 
+    const runsByResult = unwrapResult(
+      runsBy as RunsByResponseItem[] | ResultWrapper<RunsByResponseItem[]>
+    );
+    const runsByDayData = Array.isArray(runsByResult)
+      ? runsByResult.reduce((acc: Map<string, number>, item: RunsByResponseItem) => {
+          const day = item.period || '';
+          if (!day) {
+            return acc;
+          }
+
+          acc.set(day, (acc.get(day) || 0) + Number(item.runs || 0));
+          return acc;
+        }, new Map<string, number>())
+      : new Map<string, number>();
+
     // Handle jobsAverageTime - unwrap if needed and transform
     let avgTimeData: JobsAverageTimeData[] = [];
     const avgTimeResult = unwrapResult(
@@ -74,19 +93,23 @@ export default async function PipelinesPage({
 
     jobsByStatus = jobsData;
     runsDuration = durationData;
+    runsByDay = Array.from(runsByDayData.entries())
+      .map(([day, runs]) => ({ day, runs }))
+      .sort((a, b) => a.day.localeCompare(b.day));
     jobsAvgTime = avgTimeData;
   } catch (error) {
     console.error('Error fetching pipeline data:', error);
     // Set empty arrays on error to prevent map errors
     jobsByStatus = [];
     runsDuration = [];
+    runsByDay = [];
     jobsAvgTime = [];
   }
 
   return (
     <div className="space-y-6">
       <div className="grid grid-cols-1 gap-6">
-        <PipelineRunsDurationCard data={runsDuration} />
+        <PipelineRunsDurationCard data={runsDuration} runsByDay={runsByDay} />
         <JobsAverageTimeCard data={jobsAvgTime} />
       </div>
 

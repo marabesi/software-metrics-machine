@@ -31,3 +31,14 @@ export interface JobsAverageTimeData {
   job_name: string;
   avg_time: number;
 }
+
+export interface RunsByResponseItem {
+  period?: string;
+  workflow?: string;
+  runs?: number;
+}
+
+export interface RunsByDayData {
+  day: string;
+  runs: number;
+}

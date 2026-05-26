@@ -280,7 +280,12 @@ export class PipelinesController {
       if (!keyDate) {
         continue;
       }
-      const period = mode === 'month' ? this.toMonthKey(keyDate) : this.toWeekKey(keyDate);
+      const period =
+        mode === 'day'
+          ? this.toDayKey(keyDate)
+          : mode === 'month'
+            ? this.toMonthKey(keyDate)
+            : this.toWeekKey(keyDate);
       const workflow = run.path || 'unknown';
       const key = `${period}||${workflow}`;
       grouped.set(key, (grouped.get(key) || 0) + 1);
