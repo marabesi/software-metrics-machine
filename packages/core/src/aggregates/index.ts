@@ -4,7 +4,7 @@ export { PipelinesRepository } from './pipelines-repository';
 export {
   CodeMaatMetricsRepository as CodeMetricsRepository,
   type ICodeMetricsRepository,
-} from '../providers/codemaat/codemaat-metrics-repository';
+} from './codemaat-metrics-repository';
 export { IssuesRepository, type IIssuesRepository } from './issues-repository';
 export {
   SonarqubeFetchMetricsRepository,

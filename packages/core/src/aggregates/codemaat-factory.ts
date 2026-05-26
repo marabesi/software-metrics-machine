@@ -1,5 +1,5 @@
 import { Configuration } from 'src/infrastructure';
-import { CodeMaatMetricsRepository } from '../providers/codemaat/codemaat-metrics-repository';
+import { CodeMaatMetricsRepository } from './codemaat-metrics-repository';
 
 export class CodemaatFactory {
   static create(configuration: Configuration): CodeMaatMetricsRepository {

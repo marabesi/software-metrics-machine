@@ -1,6 +1,6 @@
 import * as fs from 'fs';
 import { Logger } from '@smmachine/utils';
-import { CodeChurn, CodeChurnResult, CodemaatAnalysisResult, FileCoupling } from '.';
+import { CodeChurn, CodeChurnResult, CodemaatAnalysisResult, FileCoupling } from '../providers/codemaat';
 import { Configuration } from 'src';
 import path from 'path';
 
@@ -276,16 +276,95 @@ export class CodeMaatMetricsRepository implements ICodeMetricsRepository {
   }
 
   async getEntityEffort(options?: any): Promise<any> {
-    throw new Error('getEntityEffort: Method not implemented.');
+    try {
+      const records = this.readCsvRecords('entity-effort.csv');
+
+      return records
+        .map((record) => ({
+          entity: String(record.entity || ''),
+          'total-revs': this.toNumber(record['total-revs'] || record.total_revs || record.revs),
+        }))
+        .filter((row) => row.entity.length > 0);
+    } catch (error) {
+      const errorMsg = error instanceof Error ? error.message : String(error);
+      this.logger.error(`Failed to read entity effort: ${errorMsg}`);
+      throw error;
+    }
   }
 
   async getEntityOwnership(options?: any): Promise<any> {
-    // const rows = await this.readCsvRecords('entity-ownership.csv');
-    // return Array.from(
-    //   new Set(
-    //     rows.map((row) => String(row.author || '').trim()).filter((author) => author.length > 0)
-    //   )
-    // ).sort();
-    throw new Error('getEntityOwnership: Method not implemented.');
+    try {
+      const records = this.readCsvRecords('entity-ownership.csv');
+
+      return records
+        .map((record) => ({
+          entity: String(record.entity || ''),
+          author: String(record.author || ''),
+          added: this.toNumber(record.added),
+          deleted: this.toNumber(record.deleted),
+        }))
+        .filter((row) => row.entity.length > 0 && row.author.length > 0);
+    } catch (error) {
+      const errorMsg = error instanceof Error ? error.message : String(error);
+      this.logger.error(`Failed to read entity ownership: ${errorMsg}`);
+      throw error;
+    }
+  }
+
+  private readCsvRecords(fileName: string): Array<Record<string, string>> {
+    const csvPath = path.join(this.dataDir, fileName);
+
+    if (!fs.existsSync(csvPath)) {
+      this.logger.warn(`CSV file not found: ${csvPath}`);
+      return [];
+    }
+
+    const content = fs.readFileSync(csvPath, 'utf-8');
+    const lines = content
+      .split('\n')
+      .map((line) => line.trim())
+      .filter((line) => line.length > 0);
+
+    if (lines.length < 2) {
+      return [];
+    }
+
+    const delimiter = this.detectCsvDelimiter(lines[0]);
+    const headers = this.parseCsvLine(lines[0], delimiter).map((header) =>
+      header.trim().replace(/^"|"$/g, '')
+    );
+
+    const records: Array<Record<string, string>> = [];
+    for (let index = 1; index < lines.length; index += 1) {
+      const values = this.parseCsvLine(lines[index], delimiter).map((value) =>
+        value.trim().replace(/^"|"$/g, '')
+      );
+
+      if (values.length === 0) {
+        continue;
+      }
+
+      const record: Record<string, string> = {};
+      for (let col = 0; col < headers.length; col += 1) {
+        record[headers[col]] = values[col] ?? '';
+      }
+
+      records.push(record);
+    }
+
+    return records;
+  }
+
+  private toNumber(value: string | number | undefined): number {
+    if (typeof value === 'number') {
+      return Number.isFinite(value) ? value : 0;
+    }
+
+    if (typeof value === 'string') {
+      const numeric = Number(value);
+      return Number.isFinite(numeric) ? numeric : 0;
+    }
+
+    return 0;
   }
 }

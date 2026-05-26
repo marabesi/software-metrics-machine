@@ -54,7 +54,7 @@ export class CommitTraverser implements ICommitTraverser {
       this.logger.info(`After filtering: ${filtered.length} commits`);
 
       // Calculate pairing statistics
-      const pairedCommits = filtered.filter((c) => c.author && c.author.length > 0).length;
+      const pairedCommits = filtered.filter((c) => (c.coAuthors || []).length > 0).length;
 
       this.logger.info(`Paired commits: ${pairedCommits}`);
 
@@ -136,11 +136,22 @@ export class CommitTraverser implements ICommitTraverser {
       const lines = trimmed.split('\n');
       if (lines.length < 5) continue; // Need at least: hash, author, email, date, subject
 
+      const hash = lines[0];
+      const author = lines[1];
+      const email = lines[2];
+      const timestamp = lines[3];
+      const subject = lines[4];
+      const body = lines.slice(5).join('\n');
+      const coAuthors = this.extractCoAuthors(body);
+
       const commit: Commit = {
-        hash: lines[0],
-        author: lines[1],
-        msg: lines[4],
-        timestamp: lines[3],
+        hash,
+        author,
+        email,
+        subject,
+        msg: subject,
+        timestamp,
+        coAuthors,
       };
 
       commits.push(commit);
@@ -155,7 +166,7 @@ export class CommitTraverser implements ICommitTraverser {
    */
   private extractCoAuthors(message: string): string[] {
     const coAuthors: string[] = [];
-    const coAuthorRegex = /Co-authored-by:\s*(.+?)\s*<(.+?)>/g;
+    const coAuthorRegex = /Co-authored-by:\s*(.+?)\s*<(.+?)>/gi;
     let match;
 
     while ((match = coAuthorRegex.exec(message)) !== null) {

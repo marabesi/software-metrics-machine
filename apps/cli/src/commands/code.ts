@@ -1,14 +1,11 @@
 import { Command } from 'commander';
-import { execFileSync } from 'child_process';
-import * as fs from 'fs';
-import * as path from 'path';
-import { CodeMaatMetricsRepository } from '@smmachine/core/aggregates/code-metrics-repository';
-import { CodemaatAnalyzer } from '@smmachine/core/providers/codemaat/codemaat-analyzer';
 import { GitFactory } from '@smmachine/core/aggregates/git-factory';
+import { CodemaatFetchRepository } from '@smmachine/core/providers/codemaat/codemaat-fetch-repository';
+import { CodemaatService } from '@smmachine/core/domain/code/codemaat-service';
 import { Logger } from '@smmachine/utils';
-import { CommitTraverser } from '@smmachine/core/providers/git/commit-traverser';
 import { Configuration } from '@smmachine/core/infrastructure/configuration';
 import { CodemaatFactory } from '@smmachine/core/aggregates/codemaat-factory';
+import { PairingFactory } from '@smmachine/core/aggregates/pairing-factory';
 
 const logger = new Logger('CodeCommand');
 
@@ -16,25 +13,9 @@ function loadConfiguration(): Configuration {
   return new Configuration(process.env);
 }
 
-function resolveCliRoot(): string {
-  const candidates = [
-    path.resolve(__dirname, '../apps/cli'),
-    path.resolve(__dirname, '../../apps/cli'),
-    path.resolve(__dirname, '../../../apps/cli'),
-    path.resolve(__dirname, '..'),
-    path.resolve(__dirname, '../..'),
-    path.resolve(__dirname, '../../../../apps/cli'),
-  ];
-
-  for (const candidate of candidates) {
-    const executablePath = path.join(candidate, 'fetch-codemaat.sh');
-    if (fs.existsSync(executablePath)) {
-      logger.debug(`Checking for fetch-codemaat.sh at: ${executablePath}`);
-      return candidate;
-    }
-  }
-
-  throw new Error('Could not locate fetch-codemaat.sh. Ensure CLI package includes runtime scripts.');
+function createCodemaatService(): CodemaatService {
+  const repository = CodemaatFactory.create(loadConfiguration());
+  return new CodemaatService(repository);
 }
 
 export function createCodeCommands(program: Command): void {
@@ -46,6 +27,7 @@ export function createCodeCommands(program: Command): void {
     .option('--start-date <date>', 'Start date (YYYY-MM-DD)')
     .option('--end-date <date>', 'End date (YYYY-MM-DD)')
     .option('--authors <list>', 'Comma-separated list of authors to filter')
+    .option('--force', 'Force refetch commits from git and bypass cache')
     .option('--output <format>', 'Output format (text|json)', 'text')
     .action(async (options) => {
       try {
@@ -59,6 +41,7 @@ export function createCodeCommands(program: Command): void {
         const result = await factory.fetchCommits({
           startDate: options.startDate,
           endDate: options.endDate,
+          forceRefresh: options.force,
         });
         const commits = result;
 
@@ -88,39 +71,22 @@ export function createCodeCommands(program: Command): void {
     .action(async (options) => {
       try {
         logger.info('🔍 Running CodeMaat analysis...');
-        const cliRoot = resolveCliRoot();
 
         const config = loadConfiguration();
-        const repoPath = config.gitRepositoryLocation
-        const codemaatDir = config.getCodeMaatPath();
-        const scriptPath = path.join(cliRoot, 'fetch-codemaat.sh');
-
-        fs.mkdirSync(codemaatDir, { recursive: true });
-
-        const stdout = execFileSync(
-          'sh',
-          [
-            scriptPath,
-            repoPath,
-            codemaatDir,
-            options.startDate,
-            options.subfolder,
-            options.force ? 'true' : 'false',
-          ],
-          {
-            cwd: cliRoot,
-            encoding: 'utf-8',
-            stdio: ['ignore', 'pipe', 'pipe'],
-          }
-        );
+        const fetchRepository = new CodemaatFetchRepository(config);
+        const result = fetchRepository.fetch({
+          startDate: options.startDate,
+          subfolder: options.subfolder,
+          force: options.force,
+        });
 
         if (options.output === 'json') {
           logger.info(
             JSON.stringify(
               {
-                repository: repoPath,
-                outputDirectory: codemaatDir,
-                stdout,
+                repository: result.repository,
+                outputDirectory: result.outputDirectory,
+                stdout: result.stdout,
               },
               null,
               2
@@ -128,9 +94,9 @@ export function createCodeCommands(program: Command): void {
           );
         } else {
           logger.info('\n=== CodeMaat Fetch ===\n');
-          logger.info(`Repository: ${repoPath}`);
-          logger.info(`Output Directory: ${codemaatDir}`);
-          process.stdout.write(stdout);
+          logger.info(`Repository: ${result.repository}`);
+          logger.info(`Output Directory: ${result.outputDirectory}`);
+          process.stdout.write(result.stdout);
         }
       } catch (error) {
         logger.error('Failed to run CodeMaat analysis', error);
@@ -148,16 +114,12 @@ export function createCodeCommands(program: Command): void {
     .action(async (options) => {
       try {
         logger.info('📊 Calculating code churn...');
-        const codemaatFactory = CodemaatFactory.create(loadConfiguration());
-        const churn = createCodeDependencies(loadConfiguration());
-        const metrics = await churn.codeRepository.getCodeChurn({
-          selectedAuthors: options.authors
-            ? options.authors.split(',').map((a: string) => a.trim())
-            : undefined,
+        const codemaatService = createCodemaatService();
+        const metrics = await codemaatService.getCodeChurn({
           startDate: options.startDate,
           endDate: options.endDate,
         });
-        const churnRows = metrics.data
+        const churnRows = metrics.data;
         const totalCommits = churnRows.reduce(
           (sum: number, row: any) => sum + (row.commits || 0),
           0
@@ -195,11 +157,9 @@ export function createCodeCommands(program: Command): void {
       try {
         logger.info('🔗 Analyzing code coupling...');
 
-        const repository = createCodeDependencies(loadConfiguration());
-
-        const coupling = await repository.codeRepository.getFileCoupling({
-          startDate: options.startDate,
-          endDate: options.endDate,
+        const codemaatService = createCodemaatService();
+        const coupling = await codemaatService.getFileCoupling({
+          ignorePatterns: undefined,
         });
 
         if (options.output === 'json') {
@@ -226,13 +186,12 @@ export function createCodeCommands(program: Command): void {
       try {
         logger.info('📊 Calculating entity churn...');
 
-        const repository = createCodeDependencies(loadConfiguration());
-
-        const metrics = await repository.codeRepository.getCodeChurn({
+        const codemaatService = createCodemaatService();
+        const metrics = await codemaatService.getCodeChurn({
           startDate: options.startDate,
           endDate: options.endDate,
         });
-        const churnRows = metrics.data
+        const churnRows = metrics.data;
         const totalChurn = churnRows.reduce(
           (sum: number, row: any) => sum + (row.added || 0) + (row.deleted || 0),
           0
@@ -262,18 +221,17 @@ export function createCodeCommands(program: Command): void {
       try {
         logger.info('⏱️  Calculating entity effort...');
 
-        const repository = createCodeDependencies(loadConfiguration());
-        const metrics = await repository.codeRepository.getEntityEffort({
-          startDate: options.startDate,
-          endDate: options.endDate,
+        const maxRows = Number(options.top);
+        const codemaatService = createCodemaatService();
+        const metrics = await codemaatService.getEntityEffort({
+          top: Number.isFinite(maxRows) ? maxRows : undefined,
         });
 
         if (options.output === 'json') {
-          logger.info(JSON.stringify({ entityEffort: metrics.entityEffort || [] }, null, 2));
+          logger.info(JSON.stringify({ entityEffort: metrics || [] }, null, 2));
         } else {
           logger.info('\n=== Entity Effort Metrics ===\n');
-          logger.info(`Top Entities: ${options.top}`);
-          logger.info('\nNote: Detailed effort calculation requires enhanced implementation');
+          logger.info(`Top Entities: ${metrics.length}`);
         }
       } catch (error) {
         logger.error('Failed to calculate entity effort', error);
@@ -292,20 +250,23 @@ export function createCodeCommands(program: Command): void {
       try {
         logger.info('👥 Analyzing entity ownership...');
 
-        const repository = createCodeDependencies(loadConfiguration());
-        const metrics = await repository.codeRepository.getEntityOwnership({
-          startDate: options.startDate,
-          endDate: options.endDate,
+        const codemaatService = createCodemaatService();
+        const metrics = await codemaatService.getEntityOwnership({
+          authors: undefined,
+          top: 100,
         });
+        const filteredMetrics = options.entity
+          ? metrics.filter((row) => row.entity.includes(options.entity))
+          : metrics;
 
         if (options.output === 'json') {
-          logger.info(JSON.stringify({ ownership: metrics.ownership || {} }, null, 2));
+          logger.info(JSON.stringify({ ownership: filteredMetrics }, null, 2));
         } else {
           logger.info('\n=== Entity Ownership Analysis ===\n');
           if (options.entity) {
             logger.info(`Entity: ${options.entity}`);
           }
-          logger.info('\nNote: Detailed ownership analysis requires enhanced implementation');
+          logger.info(`Ownership Records: ${filteredMetrics.length}`);
         }
       } catch (error) {
         logger.error('Failed to analyze entity ownership', error);
@@ -324,8 +285,8 @@ export function createCodeCommands(program: Command): void {
       try {
         logger.info('👥 Calculating developer pairing index...');
 
-        const repository = createCodeDependencies(loadConfiguration());
-        const pairing = await repository.codeRepository.getPairingIndex({
+        const pairingService = PairingFactory.create(loadConfiguration());
+        const pairing = await pairingService.getPairingIndex({
           startDate: options.startDate,
           endDate: options.endDate,
         });

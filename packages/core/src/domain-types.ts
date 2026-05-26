@@ -11,6 +11,9 @@ export interface Commit {
   msg: string;
   hash: string;
   timestamp: string | Date; // ISO format or Date object
+  email?: string;
+  subject?: string;
+  coAuthors?: string[];
   files?: CodeChange[];
 }
 

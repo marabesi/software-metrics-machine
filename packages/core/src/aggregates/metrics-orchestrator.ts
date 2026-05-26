@@ -1,5 +1,5 @@
 import { logger } from '@smmachine/utils';
-import { CodeMaatMetricsRepository } from '../providers/codemaat/codemaat-metrics-repository';
+import { CodeMaatMetricsRepository } from './codemaat-metrics-repository';
 import { IssuesRepository } from './issues-repository';
 import { PairingIndexService, PipelinesService, PRsService, SonarQubeService } from '../domain';
 
