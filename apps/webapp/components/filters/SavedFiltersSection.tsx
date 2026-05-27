@@ -21,11 +21,13 @@ import {
 interface SavedFiltersSectionProps {
   activeSection: DashboardSection;
   pathname: string;
+  repository: string;
 }
 
 export default function SavedFiltersSection({
   activeSection,
   pathname,
+  repository,
 }: SavedFiltersSectionProps) {
   const { filters } = useFilters();
   const savedFiltersStore = useMemo(() => new SavedFiltersStore(), []);
@@ -34,7 +36,7 @@ export default function SavedFiltersSection({
   const [saveError, setSaveError] = useState<string | null>(null);
 
   const loadSavedFilters = async () => {
-    const entries = await savedFiltersStore.getBySection(activeSection);
+    const entries = await savedFiltersStore.getBySection(activeSection, repository);
     setSavedFilters(entries);
   };
 
@@ -42,7 +44,7 @@ export default function SavedFiltersSection({
     setSaveError(null);
 
     try {
-      await savedFiltersStore.save(activeSection, pathname, savedFilterName, filters);
+      await savedFiltersStore.save(activeSection, pathname, savedFilterName, filters, repository);
       setSavedFilterName('');
       await loadSavedFilters();
     } catch (error) {
@@ -65,7 +67,7 @@ export default function SavedFiltersSection({
     loadSavedFilters().catch((error) => {
       console.warn('Unable to load saved filters', error);
     });
-  }, [activeSection]);
+  }, [activeSection, repository]);
 
   return (
     <Stack direction="column" spacing={2}>

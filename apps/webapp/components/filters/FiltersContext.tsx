@@ -31,6 +31,7 @@ export const FiltersProvider = ({ initialFilters, children }: { initialFilters: 
   );
 
   const [filters, setFilters] = useState<DashboardFilters>(initialUrlFilters);
+  const [shouldSyncToUrl, setShouldSyncToUrl] = useState(false);
 
   useEffect(() => {
     setFilters((currentFilters) => {
@@ -39,28 +40,30 @@ export const FiltersProvider = ({ initialFilters, children }: { initialFilters: 
     });
   }, [initialFilters, searchParams]);
 
-  const syncFiltersToUrl = useCallback((nextFilters: DashboardFilters) => {
-    const nextParams = serializeDashboardFilters(nextFilters);
+  // Sync filters to URL after state updates complete (not during render)
+  useEffect(() => {
+    if (!shouldSyncToUrl) return;
+    
+    const nextParams = serializeDashboardFilters(filters);
     const queryString = nextParams.toString();
     router.replace(queryString ? `${pathname}?${queryString}` : pathname, { scroll: false });
-  }, [pathname, router]);
+    setShouldSyncToUrl(false);
+  }, [filters, pathname, shouldSyncToUrl]);
 
   const updateFilter = useCallback(<K extends keyof DashboardFilters>(key: K, value: DashboardFilters[K]) => {
     setFilters((prev) => {
-      const nextFilters = {
+      return {
         ...prev,
         [key]: value,
       };
-
-      syncFiltersToUrl(nextFilters);
-      return nextFilters;
     });
-  }, [syncFiltersToUrl]);
+    setShouldSyncToUrl(true);
+  }, []);
 
   const resetFilters = useCallback(() => {
     setFilters(defaultFilters);
-    syncFiltersToUrl(defaultFilters);
-  }, [syncFiltersToUrl]);
+    setShouldSyncToUrl(true);
+  }, []);
 
   const contextValue = useMemo(() => ({ filters, updateFilter, resetFilters }), [filters, resetFilters, updateFilter]);
 

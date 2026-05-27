@@ -262,3 +262,5 @@ apps/*/src/**/*.js.map
 *.tgz
 
 tmp/**
+
+sonarqube_data/

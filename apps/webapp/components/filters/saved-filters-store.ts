@@ -13,6 +13,7 @@ export type SavedFilterEntry = {
   section: DashboardSection;
   pathname: string;
   filters: DashboardFilters;
+  repository: string;
   createdAt: string;
 };
 
@@ -148,14 +149,14 @@ export class SavedFiltersStore {
     return [...document.filters];
   }
 
-  async getBySection(section: DashboardSection): Promise<SavedFilterEntry[]> {
+  async getBySection(section: DashboardSection, repository?: string): Promise<SavedFilterEntry[]> {
     const all = await this.getAll();
     return all
-      .filter((entry) => entry.section === section)
+      .filter((entry) => entry.section === section && (!repository || entry.repository === repository))
       .sort((a, b) => b.createdAt.localeCompare(a.createdAt));
   }
 
-  async save(section: DashboardSection, pathname: string, name: string, filters: DashboardFilters): Promise<SavedFilterEntry> {
+  async save(section: DashboardSection, pathname: string, name: string, filters: DashboardFilters, repository: string = ''): Promise<SavedFilterEntry> {
     const normalizedName = normalizeName(name);
     if (!normalizedName) {
       throw new Error('Filter name is required.');
@@ -163,7 +164,7 @@ export class SavedFiltersStore {
 
     const document = await this.readDocument();
     const existingNames = document.filters
-      .filter((entry) => entry.section === section)
+      .filter((entry) => entry.section === section && entry.repository === repository)
       .map((entry) => entry.name);
 
     const finalName = nextAvailableName(existingNames, normalizedName);
@@ -174,6 +175,7 @@ export class SavedFiltersStore {
       section,
       pathname,
       filters: cloneFilters(filters),
+      repository,
       createdAt: now,
     };
 

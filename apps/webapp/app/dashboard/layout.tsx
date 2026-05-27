@@ -12,11 +12,12 @@ export default async function DashboardLayout({
   const configuration = new Configuration()
   return (
     <Suspense fallback={<div>Loading...</div>}>
-       <FiltersProvider initialFilters={defaultFilters}>
-        <DrawerLayout repository={configuration.githubRepository}>
-          {children}
-        </DrawerLayout>
-      </FiltersProvider>
+      {configuration.githubRepository &&
+        <FiltersProvider initialFilters={defaultFilters}>
+          <DrawerLayout repository={configuration.githubRepository}>
+            {children}
+          </DrawerLayout>
+        </FiltersProvider>}
     </Suspense>
   );
 }

@@ -80,7 +80,7 @@ export default function DrawerLayout({
   repository,
   children,
 }: {
-  repository?: string,
+  repository: string,
   children: React.ReactNode;
 }) {
   const theme = useTheme();
@@ -154,7 +154,7 @@ export default function DrawerLayout({
           </DrawerHeader>
           <Divider />
           <Box sx={{ p: 2, overflowY: 'auto' }}>
-            <FiltersContainer />
+            <FiltersContainer repository={repository} />
           </Box>
         </Drawer>
       </Box>

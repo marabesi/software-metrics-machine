@@ -22,11 +22,11 @@ describe('saved-filters-store', () => {
   it('saves and reads filters by section', async () => {
     const store = new SavedFiltersStore(new InMemoryAdapter(), 'test.saved.filters');
 
-    await store.save('insights', '/dashboard/insights', 'My Insights', defaultFilters);
-    await store.save('pipelines', '/dashboard/pipelines', 'My Pipeline', defaultFilters);
+    await store.save('insights', '/dashboard/insights', 'My Insights', defaultFilters, 'repo1');
+    await store.save('pipelines', '/dashboard/pipelines', 'My Pipeline', defaultFilters, 'repo1');
 
-    const insights = await store.getBySection('insights');
-    const pipelines = await store.getBySection('pipelines');
+    const insights = await store.getBySection('insights', 'repo1');
+    const pipelines = await store.getBySection('pipelines', 'repo1');
 
     expect(insights).toHaveLength(1);
     expect(insights[0]?.name).toBe('My Insights');
@@ -34,22 +34,47 @@ describe('saved-filters-store', () => {
     expect(pipelines[0]?.name).toBe('My Pipeline');
   });
 
-  it('creates a unique suffix when names collide in same section', async () => {
+  it('filters are scoped by repository', async () => {
     const store = new SavedFiltersStore(new InMemoryAdapter(), 'test.saved.filters');
 
-    await store.save('insights', '/dashboard/insights', 'Team Alpha', defaultFilters);
-    const second = await store.save('insights', '/dashboard/insights', 'Team Alpha', defaultFilters);
+    await store.save('insights', '/dashboard/insights', 'My Insights', defaultFilters, 'repo1');
+    await store.save('insights', '/dashboard/insights', 'My Insights', defaultFilters, 'repo2');
+
+    const repo1Insights = await store.getBySection('insights', 'repo1');
+    const repo2Insights = await store.getBySection('insights', 'repo2');
+
+    expect(repo1Insights).toHaveLength(1);
+    expect(repo1Insights[0]?.repository).toBe('repo1');
+    expect(repo2Insights).toHaveLength(1);
+    expect(repo2Insights[0]?.repository).toBe('repo2');
+  });
+
+  it('creates a unique suffix when names collide in same section and repository', async () => {
+    const store = new SavedFiltersStore(new InMemoryAdapter(), 'test.saved.filters');
+
+    await store.save('insights', '/dashboard/insights', 'Team Alpha', defaultFilters, 'repo1');
+    const second = await store.save('insights', '/dashboard/insights', 'Team Alpha', defaultFilters, 'repo1');
 
     expect(second.name).toBe('Team Alpha (2)');
+  });
+
+  it('allows same name in different repositories', async () => {
+    const store = new SavedFiltersStore(new InMemoryAdapter(), 'test.saved.filters');
+
+    const repo1 = await store.save('insights', '/dashboard/insights', 'Team Alpha', defaultFilters, 'repo1');
+    const repo2 = await store.save('insights', '/dashboard/insights', 'Team Alpha', defaultFilters, 'repo2');
+
+    expect(repo1.name).toBe('Team Alpha');
+    expect(repo2.name).toBe('Team Alpha');
   });
 
   it('removes a saved filter by id', async () => {
     const store = new SavedFiltersStore(new InMemoryAdapter(), 'test.saved.filters');
 
-    const created = await store.save('source-code', '/dashboard/source-code', 'Churn Snapshot', defaultFilters);
+    const created = await store.save('source-code', '/dashboard/source-code', 'Churn Snapshot', defaultFilters, 'repo1');
     await store.remove(created.id);
 
-    const sourceCode = await store.getBySection('source-code');
+    const sourceCode = await store.getBySection('source-code', 'repo1');
     expect(sourceCode).toHaveLength(0);
   });
 

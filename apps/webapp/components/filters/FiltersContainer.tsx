@@ -22,7 +22,7 @@ interface JobOption {
   name?: string;
 }
 
-export default function FiltersContainer() {
+export default function FiltersContainer({ repository }: { repository: string }) {
   const { filters, updateFilter, resetFilters } = useFilters();
   const pathname = usePathname();
   const activeSection = useMemo(() => dashboardSectionFromPathname(pathname), [pathname]);
@@ -274,7 +274,7 @@ export default function FiltersContainer() {
           Reset Filters
         </Button>
         </Box>
-        <SavedFiltersSection activeSection={activeSection} pathname={pathname} />
+        <SavedFiltersSection activeSection={activeSection} pathname={pathname} repository={repository} />
       </Stack>
     </Paper>
   );
