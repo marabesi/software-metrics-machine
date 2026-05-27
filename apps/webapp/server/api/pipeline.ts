@@ -24,8 +24,22 @@ export const pipelineAPI = {
     }>('/pipelines/summary', params),
   
   runsDuration: (params?: ApiParams) =>
-    fetchAPI<Array<{ workflow: string; avg_duration: number; total_runs: number }>>(
+    fetchAPI<Array<{
+      workflow: string;
+      aggregation?: 'avg' | 'min' | 'max';
+      duration?: number;
+      avg_duration?: number;
+      min_duration?: number;
+      max_duration?: number;
+      total_runs: number;
+    }>>(
       '/pipelines/runs-duration',
+      params
+    ),
+
+  jobsDurationByWorkflow: (params?: ApiParams) =>
+    fetchAPI<Array<{ workflow: string; jobs: Record<string, number> }>>(
+      '/pipelines/jobs-duration-by-workflow',
       params
     ),
   

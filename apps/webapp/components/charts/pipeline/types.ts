@@ -10,7 +10,12 @@ export interface JobByStatusData {
 
 export interface RunsDurationResponseItem {
   workflow?: string;
+  aggregation?: 'avg' | 'min' | 'max';
+  duration?: number;
   avg_duration?: number;
+  min_duration?: number;
+  max_duration?: number;
+  total_runs?: number;
   name?: string;
   value?: number;
 }
@@ -18,8 +23,16 @@ export interface RunsDurationResponseItem {
 export interface RunsDurationData {
   workflow: string;
   avg_duration: number;
+  min_duration: number;
+  max_duration: number;
+  total_runs: number;
   name?: string;
   value?: number;
+}
+
+export interface JobsDurationByWorkflowItem {
+  workflow: string;
+  jobs: Record<string, number>;
 }
 
 export interface JobsAverageTimeResponseItem {

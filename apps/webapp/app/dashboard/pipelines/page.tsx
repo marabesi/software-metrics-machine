@@ -5,6 +5,7 @@ import {
   JobsAverageTimeResponseItem,
   JobByStatusData,
   JobByStatusResponseItem,
+  JobsDurationByWorkflowItem,
   RunsByDayData,
   RunsByResponseItem,
   RunsDurationData,
@@ -33,17 +34,23 @@ export default async function PipelinesPage({
 }) {
   const filters = parseDashboardFilters(await searchParams ?? {}, defaultFilters);
   let jobsByStatus: JobByStatusData[] = [];
-  let runsDuration: RunsDurationData[] = [];
+  let runsDurationByAggregation: Record<'avg' | 'min' | 'max', RunsDurationData[]> = {
+    avg: [],
+    min: [],
+    max: [],
+  };
   let runsByDay: RunsByDayData[] = [];
   let jobsAvgTime: JobsAverageTimeData[] = [];
+  let jobsDurationByWorkflow: JobsDurationByWorkflowItem[] = [];
 
   try {
     const apiParams = buildPipelineApiParams(filters);
-    const [jobs, duration, runsBy, avgTime] = await Promise.all([
+    const [jobs, duration, runsBy, avgTime, jobsDurationRaw] = await Promise.all([
       pipelineAPI.jobsByStatus(apiParams),
       pipelineAPI.runsDuration(apiParams),
       pipelineAPI.runsBy({ ...apiParams, aggregate_by: 'day' }),
       pipelineAPI.jobsAverageTime(apiParams),
+      pipelineAPI.jobsDurationByWorkflow(apiParams),
     ]);
 
     // Handle jobsByStatus - Status and Count fields
@@ -53,16 +60,21 @@ export default async function PipelinesPage({
       count: j.Count || 0,
     })) : [];
 
-    // Handle runsDuration - transform name/value to workflow/avg_duration
+    // Handle runsDuration - read all API-computed aggregations from a single response
     const durationResult = unwrapResult(
       duration as RunsDurationResponseItem[] | ResultWrapper<RunsDurationResponseItem[]>
     );
-    const durationData = Array.isArray(durationResult) ? durationResult.map((d: RunsDurationResponseItem): RunsDurationData => ({
-      workflow: d.workflow || d.name || 'Unknown',
-      avg_duration: d.avg_duration || d.value || 0,
-      name: d.name,
-      value: d.value
-    })) : [];
+    const durationData = Array.isArray(durationResult)
+      ? durationResult.map((d: RunsDurationResponseItem): RunsDurationData => ({
+          workflow: d.workflow || d.name || 'Unknown',
+          avg_duration: d.avg_duration ?? d.value ?? 0,
+          min_duration: d.min_duration ?? 0,
+          max_duration: d.max_duration ?? 0,
+          total_runs: d.total_runs ?? 0,
+          name: d.name,
+          value: d.value,
+        }))
+      : [];
 
     const runsByResult = unwrapResult(
       runsBy as RunsByResponseItem[] | ResultWrapper<RunsByResponseItem[]>
@@ -92,24 +104,34 @@ export default async function PipelinesPage({
     }
 
     jobsByStatus = jobsData;
-    runsDuration = durationData;
+    runsDurationByAggregation = {
+      avg: durationData,
+      min: durationData,
+      max: durationData,
+    };
     runsByDay = Array.from(runsByDayData.entries())
       .map(([day, runs]) => ({ day, runs }))
       .sort((a, b) => a.day.localeCompare(b.day));
     jobsAvgTime = avgTimeData;
+    jobsDurationByWorkflow = Array.isArray(jobsDurationRaw) ? jobsDurationRaw : [];
   } catch (error) {
     console.error('Error fetching pipeline data:', error);
     // Set empty arrays on error to prevent map errors
     jobsByStatus = [];
-    runsDuration = [];
+    runsDurationByAggregation = { avg: [], min: [], max: [] };
     runsByDay = [];
     jobsAvgTime = [];
+    jobsDurationByWorkflow = [];
   }
 
   return (
     <div className="space-y-6">
       <div className="grid grid-cols-1 gap-6">
-        <PipelineRunsDurationCard data={runsDuration} runsByDay={runsByDay} />
+        <PipelineRunsDurationCard
+          dataByAggregation={runsDurationByAggregation}
+          runsByDay={runsByDay}
+          jobsDurationByWorkflow={jobsDurationByWorkflow}
+        />
         <JobsAverageTimeCard data={jobsAvgTime} />
       </div>
 

@@ -145,6 +145,7 @@ export class PipelinesController {
   async runsDuration(
     @Query('start_date') startDate?: string,
     @Query('end_date') endDate?: string,
+    @Query('aggregation') aggregation?: string,
     @Query('workflow_path') workflowPath?: string,
     @Query('status') status?: string,
     @Query('conclusion') conclusion?: string,
@@ -177,14 +178,85 @@ export class PipelinesController {
       grouped.set(workflow, existing);
     }
 
+    const normalizedAggregation = (aggregation || '').toLowerCase();
+
     return Array.from(grouped.entries())
-      .map(([workflow, durations]) => ({
-        workflow,
-        avg_duration:
-          durations.length > 0 ? durations.reduce((a, b) => a + b, 0) / durations.length : 0,
-        total_runs: durations.length,
-      }))
+      .map(([workflow, durations]) => {
+        const n = durations.length;
+        const avgDuration = n > 0 ? durations.reduce((a, b) => a + b, 0) / n : 0;
+        const minDuration = n > 0 ? Math.min(...durations) : 0;
+        const maxDuration = n > 0 ? Math.max(...durations) : 0;
+
+        if (normalizedAggregation === 'avg' || normalizedAggregation === 'min' || normalizedAggregation === 'max') {
+          return {
+            workflow,
+            aggregation: normalizedAggregation,
+            duration: normalizedAggregation === 'avg' ? avgDuration : normalizedAggregation === 'min' ? minDuration : maxDuration,
+            total_runs: n,
+          };
+        }
+
+        return {
+          workflow,
+          avg_duration: avgDuration,
+          min_duration: minDuration,
+          max_duration: maxDuration,
+          total_runs: n,
+        };
+      })
       .sort((a, b) => b.total_runs - a.total_runs);
+  }
+
+  @Get('/pipelines/jobs-duration-by-workflow')
+  async jobsDurationByWorkflow(
+    @Query('start_date') startDate?: string,
+    @Query('end_date') endDate?: string,
+    @Query('workflow_path') workflowPath?: string,
+    @Query('status') status?: string,
+    @Query('conclusion') conclusion?: string,
+    @Query('branch') branch?: string,
+    @Query('job_name') jobName?: string,
+    @Query('event') event?: string
+  ) {
+    const runs = await this.loadRunsWithFilters({
+      startDate,
+      endDate,
+      workflowPath,
+      status,
+      conclusion,
+      branch,
+      jobName,
+      event,
+      includeJobs: true,
+    });
+
+    // Map: workflow -> job name -> list of durations
+    const grouped = new Map<string, Map<string, number[]>>();
+
+    for (const run of runs) {
+      const workflow = run.path || 'unknown';
+      const jobs = run.jobs || [];
+      for (const job of jobs) {
+        const name = (job.name || '').trim();
+        if (!name) continue;
+        const duration = this.getDurationMinutes(job.startedAt, job.completedAt);
+        if (duration === null) continue;
+        if (!grouped.has(workflow)) grouped.set(workflow, new Map());
+        const jobMap = grouped.get(workflow)!;
+        const existing = jobMap.get(name) || [];
+        existing.push(duration);
+        jobMap.set(name, existing);
+      }
+    }
+
+    // Return one row per workflow with each job's avg duration as a key
+    return Array.from(grouped.entries()).map(([workflow, jobMap]) => {
+      const jobs: Record<string, number> = {};
+      for (const [name, durations] of jobMap.entries()) {
+        jobs[name] = durations.reduce((a, b) => a + b, 0) / durations.length;
+      }
+      return { workflow, jobs };
+    }).sort((a, b) => a.workflow.localeCompare(b.workflow));
   }
 
   @Get('/pipelines/deployment-frequency')
