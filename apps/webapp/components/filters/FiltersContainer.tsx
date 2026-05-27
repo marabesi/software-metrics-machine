@@ -36,11 +36,10 @@ export default function FiltersContainer({ repository }: { repository: string })
   const [authorSourceCodeOptions, setAuthorSourceCodeOptions] = useState<string[]>([]);
   const [labelOptions, setLabelOptions] = useState<string[]>([]);
 
-  // Fetch filter options from API on component mount
+  // Fetch all filter options on component mount
   useEffect(() => {
     const fetchFilterOptions = async () => {
       try {
-        // Try to fetch filter options, but provide defaults if endpoints don't exist yet
         const workflows = await pipelineAPI.getWorkflows().catch(() => []);
         setWorkflowOptions([...workflows.map((w: WorkflowOption) => w.name || w.path).filter(Boolean) as string[]]);
 
@@ -64,17 +63,31 @@ export default function FiltersContainer({ repository }: { repository: string })
 
         const labels = await pullRequestAPI.getLabels().catch(() => []);
         setLabelOptions(labels);
-
-        const jobs = await pipelineAPI.getJobs().catch(() => []);
-        setJobOptions(jobs.map((j: JobOption) => j.name).filter(Boolean) as string[]);
       } catch (error) {
         console.warn('Some filter options could not be loaded:', error);
-        // All fallbacks are already set in individual catch blocks
       }
     };
 
     fetchFilterOptions();
   }, [pathname]);
+
+  // Fetch jobs when workflow changes (only in pipelines section)
+  useEffect(() => {
+    const fetchJobs = async () => {
+      try {
+        const params = filters.workflowSelector ? { workflow_path: filters.workflowSelector } : undefined;
+        const jobs = await pipelineAPI.getJobs(params).catch(() => []);
+        setJobOptions(jobs.map((j: JobOption) => j.name).filter(Boolean) as string[]);
+      } catch (error) {
+        console.warn('Failed to load jobs:', error);
+        setJobOptions([]);
+      }
+    };
+
+    if (activeSection === 'pipelines') {
+      fetchJobs();
+    }
+  }, [filters.workflowSelector, activeSection]);
 
   return (
     <Paper sx={{ p: 2, mb: 3 }}>

@@ -77,6 +77,6 @@ export const pipelineAPI = {
   getEvents: () =>
     fetchAPI<string[]>('/pipelines/events'),
 
-  getJobs: () =>
-    fetchAPI<Array<{ name: string; id?: string }>>('/pipelines/jobs'),
+  getJobs: (params?: ApiParams) =>
+    fetchAPI<Array<{ name: string; id?: string }>>('/pipelines/jobs', params),
 };
