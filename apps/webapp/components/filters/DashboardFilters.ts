@@ -30,6 +30,7 @@ export interface DashboardFilters {
   // SonarQube filters
   sonarqubeComponent: string;
   sonarqubeDepth: number;
+  sonarqubeIgnorePatternFiles: string;
   sonarqubeMetrics: string[];
 }
 
@@ -53,6 +54,7 @@ export const defaultFilters: DashboardFilters = {
   aggregateMetric: 'avg',
   sonarqubeComponent: '',
   sonarqubeDepth: -1,
+  sonarqubeIgnorePatternFiles: '',
   sonarqubeMetrics: ['complexity', 'cognitive_complexity', 'ncloc', 'coverage', 'sqale_rating'],
 };
 
@@ -115,6 +117,8 @@ export function parseDashboardFilters(
     aggregateBy: getSingleValue(searchParams.aggregateBy) || fallback.aggregateBy,
     sonarqubeComponent: getSingleValue(searchParams.sonarqubeComponent) || fallback.sonarqubeComponent,
     sonarqubeDepth: toNumber(getSingleValue(searchParams.sonarqubeDepth), fallback.sonarqubeDepth) || fallback.sonarqubeDepth,
+    sonarqubeIgnorePatternFiles:
+      getSingleValue(searchParams.sonarqubeIgnorePatternFiles) || fallback.sonarqubeIgnorePatternFiles,
     sonarqubeMetrics: getArrayValue(searchParams.sonarqubeMetrics).length
       ? getArrayValue(searchParams.sonarqubeMetrics)
       : fallback.sonarqubeMetrics,
@@ -156,6 +160,7 @@ export function serializeDashboardFilters(filters: DashboardFilters): URLSearchP
   append('aggregateBy', filters.aggregateBy);
   append('sonarqubeComponent', filters.sonarqubeComponent);
   append('sonarqubeDepth', filters.sonarqubeDepth);
+  append('sonarqubeIgnorePatternFiles', filters.sonarqubeIgnorePatternFiles);
   appendList('sonarqubeMetrics', filters.sonarqubeMetrics);
 
   return params;

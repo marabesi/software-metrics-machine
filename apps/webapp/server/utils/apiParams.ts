@@ -21,6 +21,7 @@ export interface DashboardFilters {
   aggregateBy?: string;
   sonarqubeComponent?: string;
   sonarqubeDepth?: number;
+  sonarqubeIgnorePatternFiles?: string;
   sonarqubeMetrics?: string[];
 }
 
@@ -79,6 +80,7 @@ export function buildSonarqubeApiParams(filters: DashboardFilters): ApiParams {
   return {
     component: filters.sonarqubeComponent || undefined,
     depth: filters.sonarqubeDepth,
+    ignore_files: filters.sonarqubeIgnorePatternFiles || undefined,
     metrics: filters.sonarqubeMetrics?.length ? filters.sonarqubeMetrics.join(',') : undefined,
   };
 }

@@ -245,6 +245,12 @@ export default function FiltersContainer({ repository }: { repository: string })
           </Typography>
           <Stack direction="column" spacing={2} flexWrap="wrap">
             <TextInputFilter
+              label="Ignore Pattern Files"
+              value={filters.sonarqubeIgnorePatternFiles}
+              onChange={(value) => updateFilter('sonarqubeIgnorePatternFiles', value)}
+              placeholder="e.g., *.test.ts, node_modules/*, *.json"
+            />
+            <TextInputFilter
               label="Component Key"
               value={filters.sonarqubeComponent}
               onChange={(value) => updateFilter('sonarqubeComponent', value)}

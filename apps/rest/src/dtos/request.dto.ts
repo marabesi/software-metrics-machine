@@ -125,6 +125,17 @@ export class ComponentTreeQueryDto {
   @IsArray()
   @IsString({ each: true })
   metrics?: string[];
+
+  @ApiPropertyOptional({
+    type: [String],
+    description: 'File/component patterns to ignore (supports CSV and glob patterns)',
+    isArray: true,
+  })
+  @IsOptional()
+  @Transform(({ value }) => normalizeArrayQueryParam(value))
+  @IsArray()
+  @IsString({ each: true })
+  ignore_files?: string[];
 }
 
 /**

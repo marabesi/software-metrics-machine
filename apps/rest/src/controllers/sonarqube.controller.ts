@@ -3,6 +3,7 @@ import { ApiTags, ApiOperation, ApiQuery, ApiResponse, ApiOkResponse } from '@ne
 import { SonarqubeMeasuresClient, SonarqubeComponentMeasure, SonarqubeRepository } from '@smmachine/core';
 import { ComponentTreeQueryDto, QualityMetricsQueryDto } from '../dtos/index';
 import { ErrorResponse } from '../dtos/response.dto';
+import path from 'path';
 
 /**
  * SonarQube API Controller
@@ -51,6 +52,13 @@ export class SonarqubeController {
     example: 'complexity,cognitive_complexity',
     description: 'Comma-separated metrics',
   })
+  @ApiQuery({
+    name: 'ignore_files',
+    required: false,
+    type: [String],
+    example: '*.test.ts,node_modules/*',
+    description: 'Comma-separated file/component ignore patterns (supports glob)',
+  })
   @ApiOkResponse({
     description: 'Component tree retrieved successfully',
     type: Object,
@@ -76,10 +84,21 @@ export class SonarqubeController {
     try {
       this.logger.debug(`Fetching component tree: ${JSON.stringify(query)}`);
 
-      return await this.sonarqubeClient.fetchComponentTree({
+      const components = await this.sonarqubeClient.fetchComponentTree({
         component: query.component,
         depth: query.depth,
         metrics: query.metrics,
+      });
+
+      const ignorePatterns = query.ignore_files || [];
+      if (ignorePatterns.length === 0) {
+        return components;
+      }
+
+      return components.filter((component) => {
+        const key = component.key || '';
+        const name = component.name || '';
+        return !this.matchesIgnore(key, ignorePatterns) && !this.matchesIgnore(name, ignorePatterns);
       });
     } catch (error) {
       this.logger.error(
@@ -135,5 +154,65 @@ export class SonarqubeController {
         HttpStatus.INTERNAL_SERVER_ERROR
       );
     }
+  }
+
+  private matchesIgnore(entity: string, ignorePatterns: string[]): boolean {
+    if (!entity || ignorePatterns.length === 0) {
+      return false;
+    }
+
+    return ignorePatterns.some((pattern) => this.matchesPattern(entity, pattern));
+  }
+
+  private matchesPattern(entity: string, pattern: string): boolean {
+    const normalizedEntity = entity.toLowerCase().replace(/\\/g, '/');
+    const normalizedPattern = pattern.toLowerCase();
+
+    if (!this.containsGlobToken(normalizedPattern)) {
+      return normalizedEntity.includes(normalizedPattern);
+    }
+
+    const regex = this.globToRegExp(normalizedPattern);
+
+    if (!normalizedPattern.includes('/')) {
+      const basename = path.posix.basename(normalizedEntity);
+      return regex.test(basename);
+    }
+
+    return regex.test(normalizedEntity);
+  }
+
+  private containsGlobToken(value: string): boolean {
+    return /[*?[\]]/.test(value);
+  }
+
+  private globToRegExp(globPattern: string): RegExp {
+    let regexPattern = '^';
+
+    for (let index = 0; index < globPattern.length; index += 1) {
+      const current = globPattern[index];
+      const next = globPattern[index + 1];
+
+      if (current === '*' && next === '*') {
+        regexPattern += '.*';
+        index += 1;
+        continue;
+      }
+
+      if (current === '*') {
+        regexPattern += '[^/]*';
+        continue;
+      }
+
+      if (current === '?') {
+        regexPattern += '[^/]';
+        continue;
+      }
+
+      regexPattern += current.replace(/[|\\{}()[\]^$+?.]/g, '\\$&');
+    }
+
+    regexPattern += '$';
+    return new RegExp(regexPattern);
   }
 }
