@@ -6,6 +6,8 @@ interface PRLike {
   createdAt?: string;
   mergedAt?: string;
   closedAt?: string;
+  state?: string;
+  draft?: boolean;
   author?: { login?: string };
   labels?: Array<{ name?: string }>;
   comments?: number;
@@ -30,9 +32,10 @@ export class PullRequestsController {
     @Query('start_date') startDate?: string,
     @Query('end_date') endDate?: string,
     @Query('authors') authors?: string,
-    @Query('labels') labels?: string
+    @Query('labels') labels?: string,
+    @Query('status') status?: string
   ) {
-    const prs = await this.loadPRsWithFilters({ startDate, endDate, authors, labels });
+    const prs = await this.loadPRsWithFilters({ startDate, endDate, authors, labels, status });
 
     const merged = prs.filter((pr) => Boolean(pr.mergedAt)).length;
     const closed = prs.filter((pr) => Boolean(pr.closedAt) && !pr.mergedAt).length;
@@ -70,9 +73,10 @@ export class PullRequestsController {
     @Query('start_date') startDate?: string,
     @Query('end_date') endDate?: string,
     @Query('authors') authors?: string,
-    @Query('labels') labels?: string
+    @Query('labels') labels?: string,
+    @Query('status') status?: string
   ) {
-    const prs = await this.loadPRsWithFilters({ startDate, endDate, authors, labels });
+    const prs = await this.loadPRsWithFilters({ startDate, endDate, authors, labels, status });
     const counts = new Map<string, { Opened: number; Closed: number }>();
 
     for (const pr of prs) {
@@ -108,9 +112,10 @@ export class PullRequestsController {
     @Query('end_date') endDate?: string,
     @Query('labels') labels?: string,
     @Query('top') top?: string,
-    @Query('authors') authors?: string
+    @Query('authors') authors?: string,
+    @Query('status') status?: string
   ) {
-    const prs = await this.loadPRsWithFilters({ startDate, endDate, authors, labels });
+    const prs = await this.loadPRsWithFilters({ startDate, endDate, authors, labels, status });
     const grouped = new Map<string, number>();
 
     for (const pr of prs) {
@@ -133,9 +138,10 @@ export class PullRequestsController {
     @Query('end_date') endDate?: string,
     @Query('labels') labels?: string,
     @Query('top') top?: string,
-    @Query('authors') authors?: string
+    @Query('authors') authors?: string,
+    @Query('status') status?: string
   ) {
-    const prs = await this.loadPRsWithFilters({ startDate, endDate, authors, labels });
+    const prs = await this.loadPRsWithFilters({ startDate, endDate, authors, labels, status });
     const merged = prs.filter((pr) => Boolean(pr.mergedAt) || Boolean(pr.closedAt));
     const grouped = new Map<string, number[]>();
 
@@ -167,10 +173,11 @@ export class PullRequestsController {
     @Query('end_date') endDate?: string,
     @Query('aggregate_by') aggregateBy?: string,
     @Query('labels') labels?: string,
-    @Query('authors') authors?: string
+    @Query('authors') authors?: string,
+    @Query('status') status?: string
   ) {
     const mode = (aggregateBy || 'week').toLowerCase();
-    const prs = await this.loadPRsWithFilters({ startDate, endDate, authors, labels });
+    const prs = await this.loadPRsWithFilters({ startDate, endDate, authors, labels, status });
     const grouped = new Map<string, number[]>();
 
     for (const pr of prs) {
@@ -197,9 +204,10 @@ export class PullRequestsController {
     @Query('start_date') startDate?: string,
     @Query('end_date') endDate?: string,
     @Query('labels') labels?: string,
-    @Query('authors') authors?: string
+    @Query('authors') authors?: string,
+    @Query('status') status?: string
   ) {
-    const prs = await this.loadPRsWithFilters({ startDate, endDate, authors, labels });
+    const prs = await this.loadPRsWithFilters({ startDate, endDate, authors, labels, status });
     const totalComments = prs.reduce((sum, pr) => sum + (pr.comments || 0), 0);
     const avgComments = prs.length > 0 ? totalComments / prs.length : 0;
     return { avg_comments: avgComments };
@@ -315,10 +323,12 @@ export class PullRequestsController {
     endDate?: string;
     authors?: string;
     labels?: string;
+    status?: string;
   }): Promise<PRLike[]> {
     const prs = await this.pullRequestsRepo.loadPrsWithFilters(filters);
     const selectedAuthors = this.parseCsvList(filters.authors);
     const selectedLabels = this.parseCsvList(filters.labels);
+    const selectedStatus = (filters.status || '').trim().toLowerCase();
 
     return prs.filter((pr: PRLike) => {
       if (
@@ -342,7 +352,32 @@ export class PullRequestsController {
           return false;
         }
       }
+      if (selectedStatus && !this.matchesStatus(pr, selectedStatus)) {
+        return false;
+      }
       return true;
     });
+  }
+
+  private matchesStatus(pr: PRLike, status: string): boolean {
+    if (status === 'draft') {
+      return Boolean(pr.draft);
+    }
+
+    if (status === 'merged') {
+      return Boolean(pr.mergedAt);
+    }
+
+    if (status === 'open') {
+      // Draft PRs are tracked separately when explicitly selected.
+      return !pr.mergedAt && !pr.closedAt && !pr.draft;
+    }
+
+    if (status === 'closed') {
+      return Boolean(pr.closedAt) && !pr.mergedAt;
+    }
+
+    // Fall back to state if a non-standard status is provided.
+    return (pr.state || '').toLowerCase() === status;
   }
 }

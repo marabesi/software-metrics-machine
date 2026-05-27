@@ -143,6 +143,7 @@ describe('FiltersContext', () => {
     // PR filters
     expect(filters).toHaveProperty('authorSelect');
     expect(filters).toHaveProperty('labelSelector');
+    expect(filters).toHaveProperty('pullRequestStatus');
     expect(filters).toHaveProperty('aggregateBy');
 
     // Source code filters

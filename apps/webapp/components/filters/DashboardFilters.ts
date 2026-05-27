@@ -14,6 +14,7 @@ export interface DashboardFilters {
   // PR filters
   authorSelect: string[];
   labelSelector: string[];
+  pullRequestStatus?: 'open' | 'closed' | 'merged' | 'draft';
   aggregateBy?: string;
 
   // Source code filters
@@ -110,6 +111,7 @@ export function parseDashboardFilters(
     typeChurn: getSingleValue(searchParams.typeChurn) || fallback.typeChurn,
     authorSelect: getArrayValue(searchParams.authorSelect),
     labelSelector: getArrayValue(searchParams.labelSelector),
+    pullRequestStatus: getSingleValue(searchParams.pullRequestStatus) as DashboardFilters['pullRequestStatus'] || fallback.pullRequestStatus,
     aggregateBy: getSingleValue(searchParams.aggregateBy) || fallback.aggregateBy,
     sonarqubeComponent: getSingleValue(searchParams.sonarqubeComponent) || fallback.sonarqubeComponent,
     sonarqubeDepth: toNumber(getSingleValue(searchParams.sonarqubeDepth), fallback.sonarqubeDepth) || fallback.sonarqubeDepth,
@@ -150,6 +152,7 @@ export function serializeDashboardFilters(filters: DashboardFilters): URLSearchP
   append('typeChurn', filters.typeChurn);
   appendList('authorSelect', filters.authorSelect);
   appendList('labelSelector', filters.labelSelector);
+  append('pullRequestStatus', filters.pullRequestStatus);
   append('aggregateBy', filters.aggregateBy);
   append('sonarqubeComponent', filters.sonarqubeComponent);
   append('sonarqubeDepth', filters.sonarqubeDepth);

@@ -166,6 +166,12 @@ export default function FiltersContainer({ repository }: { repository: string })
               onChange={(values) => updateFilter('labelSelector', values)}
             />
             <SelectFilter
+              label="Status"
+              value={filters.pullRequestStatus}
+              options={['open', 'closed', 'merged', 'draft']}
+              onChange={(value) => updateFilter('pullRequestStatus', value as 'open' | 'closed' | 'merged' | 'draft')}
+            />
+            <SelectFilter
               label="Aggregate By"
               value={filters.aggregateBy}
               options={['week', 'month']}

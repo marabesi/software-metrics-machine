@@ -17,6 +17,7 @@ export interface DashboardFilters {
   typeChurn?: string;
   authorSelect?: string[];
   labelSelector?: string[];
+  pullRequestStatus?: 'open' | 'closed' | 'merged' | 'draft';
   aggregateBy?: string;
   sonarqubeComponent?: string;
   sonarqubeDepth?: number;
@@ -66,6 +67,7 @@ export function buildPullRequestApiParams(filters: DashboardFilters): ApiParams 
     end_date: filters.endDate,
     authors: filters.authorSelect?.length ? filters.authorSelect.join(',') : undefined,
     labels: filters.labelSelector?.length ? filters.labelSelector.join(',') : undefined,
+    status: filters.pullRequestStatus,
     aggregate_by: filters.aggregateBy,
   };
 }
