@@ -15,7 +15,7 @@ export class SonarqubeRepository {
   load(): Promise<any> {
     throw new Error('Method not implemented.');
   }
-  async loadAll(): Promise<any[]> {
+  async loadAll(options?: any): Promise<any[]> {
     const fromDisk = await this.measurementRepository.load();
     return fromDisk || [];
   }

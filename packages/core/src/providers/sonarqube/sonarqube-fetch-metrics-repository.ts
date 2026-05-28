@@ -5,6 +5,11 @@ import { Configuration, FileSystemRepository } from '../../infrastructure';
 export interface IQualityMetricsRepository {
   fetchQualityMetrics(options?: any): Promise<any>;
   fetchComponentTree(options?: any): Promise<any>;
+  fetchHistoricalMeasures(options?: {
+    metrics?: string[];
+    startDate?: string;
+    endDate?: string;
+  }): Promise<any[]>;
 }
 
 export class SonarqubeFetchMetricsRepository implements IQualityMetricsRepository {
@@ -13,6 +18,7 @@ export class SonarqubeFetchMetricsRepository implements IQualityMetricsRepositor
   private cacheDuration: number = 1000 * 60 * 60; // 1 hour
   private cache: FileSystemRepository<any>;
   private cacheComponentTree: FileSystemRepository<SonarqubeComponentMeasure[]>;
+  private cacheHistorical: FileSystemRepository<any[]>;
 
   constructor(
     private sonarqubeClient: ISonarqubeMeasuresClient,
@@ -22,6 +28,9 @@ export class SonarqubeFetchMetricsRepository implements IQualityMetricsRepositor
     this.cache = new FileSystemRepository<any>(`${cacheDir}/measures.json`);
     this.cacheComponentTree = new FileSystemRepository<SonarqubeComponentMeasure[]>(
       `${cacheDir}/component-tree.json`
+    );
+    this.cacheHistorical = new FileSystemRepository<any[]>(
+      `${cacheDir}/historical-measures.json`
     );
   }
 
@@ -88,6 +97,29 @@ export class SonarqubeFetchMetricsRepository implements IQualityMetricsRepositor
       );
       throw new Error(
         `Failed to fetch component tree: ${error instanceof Error ? error.message : String(error)}`
+      );
+    }
+  }
+
+  async fetchHistoricalMeasures(options?: {
+    metrics?: string[];
+    startDate?: string;
+    endDate?: string;
+  }): Promise<any[]> {
+    try {
+      logger.debug(`Fetching historical measures: ${JSON.stringify(options)}`);
+
+      const historical = await this.sonarqubeClient.fetchHistoricalMeasures(options);
+      await this.cacheHistorical.save(historical);
+
+      return historical;
+    } catch (error) {
+      logger.error(
+        `Failed to fetch historical measures: ${error}`,
+        error instanceof Error ? error.stack : ''
+      );
+      throw new Error(
+        `Failed to fetch historical measures: ${error instanceof Error ? error.message : String(error)}`
       );
     }
   }

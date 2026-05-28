@@ -16,7 +16,7 @@ import path from 'path';
 export class SonarqubeController {
   private readonly logger = new Logger('SonarqubeController');
 
-  constructor(private sonarqubeClient: SonarqubeMeasuresClient, private sonarqubeRepository: SonarqubeRepository) {}
+  constructor(private sonarqubeRepository: SonarqubeRepository) {}
 
   /**
    * GET /api/measures/component_tree
@@ -82,9 +82,9 @@ export class SonarqubeController {
     @Query() query: ComponentTreeQueryDto
   ): Promise<SonarqubeComponentMeasure[]> {
     try {
-      this.logger.debug(`Fetching component tree: ${JSON.stringify(query)}`);
+      this.logger.debug(`Loading component tree: ${JSON.stringify(query)}`);
 
-      const components = await this.sonarqubeClient.fetchComponentTree({
+      const components = await this.sonarqubeRepository.loadComponentTree({
         component: query.component,
         depth: query.depth,
         metrics: query.metrics,
@@ -136,14 +136,14 @@ export class SonarqubeController {
   })
   async getQualityMetrics(@Query() query: QualityMetricsQueryDto) {
     try {
-      this.logger.debug(`Fetching quality metrics: ${JSON.stringify(query)}`);
+      this.logger.debug(`Loading quality metrics: ${JSON.stringify(query)}`);
       const measures = query.measures
         ? Array.isArray(query.measures)
           ? query.measures
           : [query.measures]
         : undefined;
 
-      return await this.sonarqubeRepository.loadComponentTree(measures);
+      return await this.sonarqubeRepository.loadAll(measures);
     } catch (error) {
       this.logger.error(
         `Failed to fetch quality metrics: ${error}`,

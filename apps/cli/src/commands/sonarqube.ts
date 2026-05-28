@@ -1,3 +1,4 @@
+import { writeFileSync } from 'node:fs';
 import { Command } from 'commander';
 import { Configuration } from '@smmachine/core/infrastructure/configuration';
 import { Logger } from '@smmachine/utils';
@@ -140,6 +141,56 @@ export function createSonarQubeCommands(program: Command): void {
         console.log('\n✅ Fetch component tree has been completed');
       } catch (error) {
         logger.error('Failed to fetch SonarQube component tree', error);
+        process.exit(1);
+      }
+    });
+
+  /**
+   * smm sonarqube fetch-historical-measures [options]
+   * Fetch historical measures from SonarQube and optionally store as JSON
+   */
+  sonarqubeGroup
+    .command('fetch-historical-measures')
+    .description('Fetch historical measures from SonarQube')
+    .option(
+      '--metrics <list>',
+      'Comma-separated list of metrics to fetch (default: sqale_rating,coverage,duplicated_lines_density)'
+    )
+    .option('--start-date <date>', 'Start date in YYYY-MM-DD format')
+    .option('--end-date <date>', 'End date in YYYY-MM-DD format')
+    .option('--output <format>', 'Output format (text|json)', 'text')
+    .option('--save <file>', 'Save results to a JSON file at the given path')
+    .action(async (options) => {
+      try {
+        console.log('🔄 Fetching historical measures from SonarQube...');
+
+        const orchestrator = createSonarqubeOrchestrator();
+
+        const fetchOptions = {
+          metrics: options.metrics
+            ? options.metrics.split(',').map((m: string) => m.trim())
+            : undefined,
+          startDate: options.startDate,
+          endDate: options.endDate,
+        };
+
+        const measures = await orchestrator.fetchHistoricalMeasures(fetchOptions);
+
+        if (options.save) {
+          writeFileSync(options.save, JSON.stringify(measures, null, 2), 'utf-8');
+          console.log(`\n💾 Results saved to ${options.save}`);
+        }
+
+        if (options.output === 'json') {
+          console.log(JSON.stringify(measures, null, 2));
+        } else {
+          console.log('\n=== SonarQube Historical Measures ===\n');
+          console.log(`Measurements Fetched: ${measures.length}`);
+        }
+
+        console.log('\n✅ Fetch historical measures has been completed');
+      } catch (error) {
+        logger.error('Failed to fetch SonarQube historical measures', error);
         process.exit(1);
       }
     });

@@ -24,11 +24,12 @@ export interface ISonarqubeMeasuresClient {
  * Endpoints utilized:
  *   - GET /api/measures/component - Get current component measures
  *   - GET /api/measures/search_history - Get historical measures over time
- * Auth: Bearer token (query parameter)
+ * Auth: SonarCloud (sonarcloud.io) uses ?token= query param; self-hosted uses HTTP Basic.
  */
 export class SonarqubeMeasuresClient implements ISonarqubeMeasuresClient {
   private axiosInstance: AxiosInstance;
   private logger: Logger;
+  private isSonarCloud: boolean;
 
   constructor(
     private url: string,
@@ -39,13 +40,14 @@ export class SonarqubeMeasuresClient implements ISonarqubeMeasuresClient {
 
     // Ensure URL ends without slash for consistency
     const baseURL = this.url.endsWith('/') ? this.url.slice(0, -1) : this.url;
+    this.isSonarCloud = baseURL === 'https://sonarcloud.io';
 
     this.axiosInstance = axios.create({
       baseURL,
-      params: {
-        token: this.token,
-      },
       timeout: 30000,
+      ...(this.isSonarCloud
+        ? { params: { token: this.token } }
+        : { auth: { username: this.token, password: '' } }),
     });
   }
 
@@ -92,6 +94,11 @@ export class SonarqubeMeasuresClient implements ISonarqubeMeasuresClient {
       if (axios.isAxiosError(error)) {
         if (error.response?.status === 401) {
           throw new Error('SonarQube authentication failed. Check token.');
+        } else if (error.response?.status === 403) {
+          throw new Error(
+            `SonarQube access denied for project ${this.projectKey}. ` +
+              'Ensure the token user has Browse permission for this project.'
+          );
         } else if (error.response?.status === 404) {
           throw new Error(`SonarQube project ${this.projectKey} not found.`);
         } else if (error.code === 'ECONNABORTED') {
@@ -161,6 +168,11 @@ export class SonarqubeMeasuresClient implements ISonarqubeMeasuresClient {
       if (axios.isAxiosError(error)) {
         if (error.response?.status === 401) {
           throw new Error('SonarQube authentication failed. Check token.');
+        } else if (error.response?.status === 403) {
+          throw new Error(
+            `SonarQube access denied for project ${this.projectKey}. ` +
+              'Ensure the token user has Browse permission for this project.'
+          );
         } else if (error.code === 'ECONNABORTED') {
           throw new Error('SonarQube API request timeout (30s).');
         }
@@ -186,18 +198,20 @@ export class SonarqubeMeasuresClient implements ISonarqubeMeasuresClient {
         'coverage',
       ];
 
+      const treeParams: Record<string, string | number> = {
+        component,
+        metricKeys: metrics.join(','),
+        ps: 500,
+        ...(this.isSonarCloud ? { depth } : { strategy: 'all' }),
+      };
+
       this.logger.info(
         `Fetching SonarQube component tree for component ${component} ` +
           `with depth ${depth}: ${metrics.join(', ')}`
       );
 
       const response = await this.axiosInstance.get('/api/measures/component_tree', {
-        params: {
-          component,
-          depth,
-          metricKeys: metrics.join(','),
-          ps: 500, // Max results per page
-        },
+        params: treeParams,
       });
 
       const { baseComponent, components } = response.data;
@@ -220,6 +234,11 @@ export class SonarqubeMeasuresClient implements ISonarqubeMeasuresClient {
       if (axios.isAxiosError(error)) {
         if (error.response?.status === 401) {
           throw new Error('SonarQube authentication failed. Check token.');
+        } else if (error.response?.status === 403) {
+          throw new Error(
+            `SonarQube access denied for component ${options?.component || this.projectKey}. ` +
+              'Ensure the token user has Browse permission for this project/component.'
+          );
         } else if (error.response?.status === 404) {
           throw new Error(
             `SonarQube component ${options?.component || this.projectKey} not found.`
