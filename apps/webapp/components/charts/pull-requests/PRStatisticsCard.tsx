@@ -2,6 +2,7 @@
 
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { AvgCommentsData, SummaryData } from './types';
+import { useLinkBuilder } from '@/components/providers/LinkBuilderContext';
 
 export default function PRStatisticsCard({
   summary,
@@ -10,7 +11,18 @@ export default function PRStatisticsCard({
   summary: SummaryData | null;
   avgComments: AvgCommentsData | null;
 }) {
+  const { urlBuilder } = useLinkBuilder();
   const labels = summary?.labels || [];
+
+  const StatBoxLink = ({ label, value, filters }: { label: string; value: number; filters?: { status?: string; author?: string; label?: string } }) => {
+    const href = urlBuilder.getPRsUrl(filters);
+    return (
+      <a href={href} target="_blank" rel="noopener noreferrer" className="block p-4 bg-blue-50 rounded-lg hover:bg-blue-100 transition-colors">
+        <p className="text-sm text-gray-600">{label}</p>
+        <p className="text-3xl font-bold text-blue-600">{value}</p>
+      </a>
+    );
+  };
 
   return (
     <Card>
@@ -20,18 +32,15 @@ export default function PRStatisticsCard({
       <CardContent>
         <div className="space-y-4">
           <div className="grid grid-cols-2 gap-4">
-            <div className="p-4 bg-blue-50 rounded-lg">
-              <p className="text-sm text-gray-600">Total PRs</p>
-              <p className="text-3xl font-bold text-blue-600">{summary?.total_prs || 0}</p>
-            </div>
-            <div className="p-4 bg-green-50 rounded-lg">
+            <StatBoxLink label="Total PRs" value={summary?.total_prs || 0} />
+            <a href={urlBuilder.getPRsUrl({ status: 'merged' })} target="_blank" rel="noopener noreferrer" className="block p-4 bg-green-50 rounded-lg hover:bg-green-100 transition-colors">
               <p className="text-sm text-gray-600">Merged</p>
               <p className="text-3xl font-bold text-green-600">{summary?.merged_prs || 0}</p>
-            </div>
-            <div className="p-4 bg-gray-50 rounded-lg">
+            </a>
+            <a href={urlBuilder.getPRsUrl({ status: 'closed' })} target="_blank" rel="noopener noreferrer" className="block p-4 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors">
               <p className="text-sm text-gray-600">Closed</p>
               <p className="text-3xl font-bold text-gray-600">{summary?.closed_prs || 0}</p>
-            </div>
+            </a>
             <div className="p-4 bg-purple-50 rounded-lg">
               <p className="text-sm text-gray-600">Avg Comments</p>
               <p className="text-3xl font-bold text-purple-600">{summary?.avg_comments_per_pr?.toFixed(2) || 0}</p>
@@ -60,9 +69,16 @@ export default function PRStatisticsCard({
                 {labels.map((item) => (
                   <li
                     key={item.label}
-                    className="flex items-center justify-between rounded border bg-white px-3 py-2"
+                    className="flex items-center justify-between rounded border bg-white px-3 py-2 hover:bg-gray-50"
                   >
-                    <span className="text-sm font-medium text-slate-700">{item.label}</span>
+                    <a
+                      href={urlBuilder.getPRsUrl({ label: item.label })}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-sm font-medium text-slate-700 hover:text-blue-600"
+                    >
+                      {item.label}
+                    </a>
                     <span className="text-sm text-slate-500">{item.prs} PRs</span>
                   </li>
                 ))}

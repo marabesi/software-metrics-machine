@@ -32,6 +32,8 @@ export class ConfigurationController {
         jira_email: this.config.jiraEmail || null,
         jira_token: this.config.jiraToken || null,
         jira_project: this.config.jiraProject || null,
+        sonar_url: this.config.sonarUrl || null,
+        sonar_project: this.config.sonarProject || null,
       },
     };
   }

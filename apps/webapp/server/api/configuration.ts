@@ -17,6 +17,8 @@ export interface DashboardConfiguration {
     jira_email: string | null;
     jira_token: string | null;
     jira_project: string | null;
+    sonar_url: string | null;
+    sonar_project: string | null;
   };
 }
 

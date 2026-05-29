@@ -64,12 +64,12 @@ export default async function SonarqubePage({
   const topComplexity = [...components]
     .sort((a, b) => b.complexity - a.complexity)
     .slice(0, topEntries)
-    .map((item) => ({ name: item.name, value: item.complexity }));
+    .map((item) => ({ name: item.name, value: item.complexity, componentKey: item.key }));
 
   const topNcloc = [...components]
     .sort((a, b) => b.ncloc - a.ncloc)
     .slice(0, topEntries)
-    .map((item) => ({ name: item.name, value: item.ncloc }));
+    .map((item) => ({ name: item.name, value: item.ncloc, componentKey: item.key }));
 
   const tableData = [...components]
     .sort((a, b) => b.complexity - a.complexity)

@@ -11,4 +11,6 @@ export interface SonarqubeComponentChartData {
 export interface SonarqubeTopMetricData {
   name: string;
   value: number;
+  componentKey?: string; // Optional key for linking to SonarQube
 }
+

@@ -4,12 +4,21 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
 import { ensureArray } from '@/server/utils/chartData';
 import { AvgReviewTimeData } from './types';
+import { useLinkBuilder } from '@/components/providers/LinkBuilderContext';
 
 export default function AverageReviewTimeCard({ data }: { data: AvgReviewTimeData[] }) {
+  const { urlBuilder } = useLinkBuilder();
+
+  const handleBarClick = (entry: AvgReviewTimeData) => {
+    const url = urlBuilder.getPRsUrl({ author: entry.author });
+    window.open(url, '_blank');
+  };
+
   return (
     <Card>
       <CardHeader>
         <CardTitle>Average Review Time</CardTitle>
+        <p className="text-xs text-gray-500 mt-1">Click on bars to view author's PRs</p>
       </CardHeader>
       <CardContent>
         <ResponsiveContainer width="100%" height={300}>
@@ -19,7 +28,7 @@ export default function AverageReviewTimeCard({ data }: { data: AvgReviewTimeDat
             <YAxis />
             <Tooltip />
             <Legend />
-            <Bar dataKey="avg_days" fill="#82ca9d" name="Avg Days" />
+            <Bar dataKey="avg_days" fill="#82ca9d" name="Avg Days" onClick={(e) => handleBarClick(e.payload)} style={{ cursor: 'pointer' }} />
           </BarChart>
         </ResponsiveContainer>
       </CardContent>

@@ -7,6 +7,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, Scatter, ComposedChart } from 'recharts';
 import { ensureArray } from '@/server/utils/chartData';
 import { JobsDurationByWorkflowItem, RunsByDayData, RunsDurationData } from './types';
+import { useLinkBuilder } from '@/components/providers/LinkBuilderContext';
 
 type ActiveTab = 'duration' | 'job-breakdown' | 'daily-runs';
 
@@ -27,6 +28,7 @@ export default function PipelineRunsDurationCard({
   runsByDay: RunsByDayData[];
   jobsDurationByWorkflow: JobsDurationByWorkflowItem[];
 }) {
+  const { urlBuilder } = useLinkBuilder();
   const [activeTab, setActiveTab] = useState<ActiveTab>('duration');
 
   const sortedDailyRuns = useMemo(
@@ -97,7 +99,7 @@ export default function PipelineRunsDurationCard({
         </Box>
         {activeTab === 'duration' && (
           <p className="mt-2 text-sm text-gray-600">
-            Min-Max duration range in minutes for each workflow, with average marked as a point.
+            Min-Max duration range in minutes for each workflow, with average marked as a point. Click workflow names below to view runs.
           </p>
         )}
         {activeTab === 'job-breakdown' && (
@@ -113,18 +115,51 @@ export default function PipelineRunsDurationCard({
       </CardHeader>
       <CardContent>
         {activeTab === 'duration' && (
-          <ResponsiveContainer width="100%" height={300}>
-            <ComposedChart data={durationRangeData}>
-              <CartesianGrid strokeDasharray="3 3" />
-              <XAxis dataKey="workflow" angle={-45} textAnchor="end" height={100} />
-              <YAxis unit=" min" />
-              <Tooltip formatter={(v: number) => `${v.toFixed(1)} min`} />
-              <Legend />
-              <Bar dataKey="min" stackId="r" fill="rgba(0,0,0,0)" stroke="rgba(0,0,0,0)" legendType="none" />
-              <Bar dataKey="range" stackId="r" fill="#93c5fd" name="Min-Max Range (min)" />
-              <Scatter data={avgPoints} dataKey="avg" fill="#1d4ed8" name="Avg (min)" />
-            </ComposedChart>
-          </ResponsiveContainer>
+          <>
+            <ResponsiveContainer width="100%" height={300}>
+              <ComposedChart data={durationRangeData}>
+                <CartesianGrid strokeDasharray="3 3" />
+                <XAxis dataKey="workflow" angle={-45} textAnchor="end" height={100} />
+                <YAxis unit=" min" />
+                <Tooltip formatter={(v: number) => `${v.toFixed(1)} min`} />
+                <Legend />
+                <Bar dataKey="min" stackId="r" fill="rgba(0,0,0,0)" stroke="rgba(0,0,0,0)" legendType="none" />
+                <Bar dataKey="range" stackId="r" fill="#93c5fd" name="Min-Max Range (min)" />
+                <Scatter data={avgPoints} dataKey="avg" fill="#1d4ed8" name="Avg (min)" />
+              </ComposedChart>
+            </ResponsiveContainer>
+            <div className="mt-6 overflow-x-auto">
+              <table className="w-full text-sm">
+                <thead>
+                  <tr className="border-b">
+                    <th className="text-left p-2">Workflow</th>
+                    <th className="text-right p-2">Avg (min)</th>
+                    <th className="text-right p-2">Min (min)</th>
+                    <th className="text-right p-2">Max (min)</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {durationRangeData.map((item, idx) => (
+                    <tr key={`workflow-${idx}`} className="border-b hover:bg-gray-50">
+                      <td className="p-2">
+                        <a
+                          href={urlBuilder.getPipelinesUrl({ workflow: item.workflow })}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="text-blue-600 hover:text-blue-800 hover:underline"
+                        >
+                          {item.workflow}
+                        </a>
+                      </td>
+                      <td className="p-2 text-right">{item.avg.toFixed(2)}</td>
+                      <td className="p-2 text-right">{item.min.toFixed(2)}</td>
+                      <td className="p-2 text-right">{item.max.toFixed(2)}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </>
         )}
 
         {activeTab === 'job-breakdown' && (
