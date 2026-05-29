@@ -22,6 +22,8 @@ export interface DashboardFilters {
   sonarqubeComponent?: string;
   sonarqubeDepth?: number;
   sonarqubeIgnorePatternFiles?: string;
+  sonarqubeIncludePatternFiles?: string;
+  sonarqubeRemoveFolders?: boolean;
   sonarqubeMetrics?: string[];
 }
 
@@ -81,6 +83,8 @@ export function buildSonarqubeApiParams(filters: DashboardFilters): ApiParams {
     component: filters.sonarqubeComponent || undefined,
     depth: filters.sonarqubeDepth,
     ignore_files: filters.sonarqubeIgnorePatternFiles || undefined,
+    include_files: filters.sonarqubeIncludePatternFiles || undefined,
+    remove_folders: filters.sonarqubeRemoveFolders ? 'true' : undefined,
     metrics: filters.sonarqubeMetrics?.length ? filters.sonarqubeMetrics.join(',') : undefined,
   };
 }

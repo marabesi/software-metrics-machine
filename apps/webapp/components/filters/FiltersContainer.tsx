@@ -22,6 +22,10 @@ interface JobOption {
   name?: string;
 }
 
+const TOP_ENTRIES_MAX = 400;
+const MIN_TOP_ENTRIES = 1;
+const STEP = 5;
+
 export default function FiltersContainer({ repository }: { repository: string }) {
   const { filters, updateFilter, resetFilters } = useFilters();
   const pathname = usePathname();
@@ -230,9 +234,9 @@ export default function FiltersContainer({ repository }: { repository: string })
               label="Top Entries"
               value={filters.topEntries}
               onChange={(value) => updateFilter('topEntries', value)}
-              min={1}
-              max={100}
-              step={5}
+              min={MIN_TOP_ENTRIES}
+              max={TOP_ENTRIES_MAX}
+              step={STEP}
             />
           </Stack>
         </Box>
@@ -251,6 +255,20 @@ export default function FiltersContainer({ repository }: { repository: string })
               placeholder="e.g., *.test.ts, node_modules/*, *.json"
             />
             <TextInputFilter
+              label="Include Pattern Files"
+              value={filters.sonarqubeIncludePatternFiles}
+              onChange={(value) => updateFilter('sonarqubeIncludePatternFiles', value)}
+              placeholder="e.g., *.ts, src/**, app/**"
+            />            <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+              <Typography variant="body2">Remove Folders</Typography>
+              <Box
+                component="input"
+                type="checkbox"
+                checked={filters.sonarqubeRemoveFolders}
+                onChange={(e) => updateFilter('sonarqubeRemoveFolders', e.target.checked)}
+                sx={{ cursor: 'pointer' }}
+              />
+            </Box>            <TextInputFilter
               label="Component Key"
               value={filters.sonarqubeComponent}
               onChange={(value) => updateFilter('sonarqubeComponent', value)}
@@ -280,9 +298,9 @@ export default function FiltersContainer({ repository }: { repository: string })
               label="Top Entries"
               value={filters.topEntries}
               onChange={(value) => updateFilter('topEntries', value)}
-              min={1}
-              max={100}
-              step={5}
+              min={MIN_TOP_ENTRIES}
+              max={TOP_ENTRIES_MAX}
+              step={STEP}
             />
           </Stack>
         </Box>

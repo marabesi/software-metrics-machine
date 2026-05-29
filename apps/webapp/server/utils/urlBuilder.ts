@@ -78,7 +78,7 @@ function createGitHubBuilder(config: UrlBuilderConfig): UrlBuilder {
       
       // Otherwise, link to actions with status filter if provided
       if (filters?.status) {
-        return `${baseUrl}/actions?status=${encodeURIComponent(filters.status)}`;
+        return `${baseUrl}/actions?query=is%3A${encodeURIComponent(filters.status)}`;
       }
       
       return `${baseUrl}/actions`;

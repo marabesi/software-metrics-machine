@@ -31,6 +31,8 @@ export interface DashboardFilters {
   sonarqubeComponent: string;
   sonarqubeDepth: number;
   sonarqubeIgnorePatternFiles: string;
+  sonarqubeIncludePatternFiles: string;
+  sonarqubeRemoveFolders: boolean;
   sonarqubeMetrics: string[];
 }
 
@@ -55,6 +57,8 @@ export const defaultFilters: DashboardFilters = {
   sonarqubeComponent: '',
   sonarqubeDepth: -1,
   sonarqubeIgnorePatternFiles: '',
+  sonarqubeIncludePatternFiles: '',
+  sonarqubeRemoveFolders: false,
   sonarqubeMetrics: ['complexity', 'cognitive_complexity', 'ncloc', 'coverage', 'sqale_rating'],
 };
 
@@ -119,6 +123,9 @@ export function parseDashboardFilters(
     sonarqubeDepth: toNumber(getSingleValue(searchParams.sonarqubeDepth), fallback.sonarqubeDepth) || fallback.sonarqubeDepth,
     sonarqubeIgnorePatternFiles:
       getSingleValue(searchParams.sonarqubeIgnorePatternFiles) || fallback.sonarqubeIgnorePatternFiles,
+    sonarqubeIncludePatternFiles:
+      getSingleValue(searchParams.sonarqubeIncludePatternFiles) || fallback.sonarqubeIncludePatternFiles,
+    sonarqubeRemoveFolders: searchParams.sonarqubeRemoveFolders === 'true' || fallback.sonarqubeRemoveFolders,
     sonarqubeMetrics: getArrayValue(searchParams.sonarqubeMetrics).length
       ? getArrayValue(searchParams.sonarqubeMetrics)
       : fallback.sonarqubeMetrics,
@@ -161,6 +168,8 @@ export function serializeDashboardFilters(filters: DashboardFilters): URLSearchP
   append('sonarqubeComponent', filters.sonarqubeComponent);
   append('sonarqubeDepth', filters.sonarqubeDepth);
   append('sonarqubeIgnorePatternFiles', filters.sonarqubeIgnorePatternFiles);
+  append('sonarqubeIncludePatternFiles', filters.sonarqubeIncludePatternFiles);
+  append('sonarqubeRemoveFolders', filters.sonarqubeRemoveFolders ? 'true' : 'false');
   appendList('sonarqubeMetrics', filters.sonarqubeMetrics);
 
   return params;

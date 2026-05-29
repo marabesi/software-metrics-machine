@@ -136,6 +136,25 @@ export class ComponentTreeQueryDto {
   @IsArray()
   @IsString({ each: true })
   ignore_files?: string[];
+
+  @ApiPropertyOptional({
+    type: [String],
+    description: 'File/component patterns to include (supports CSV and glob patterns). When set, only matching components are returned.',
+    isArray: true,
+  })
+  @IsOptional()
+  @Transform(({ value }) => normalizeArrayQueryParam(value))
+  @IsArray()
+  @IsString({ each: true })
+  include_files?: string[];
+
+  @ApiPropertyOptional({
+    type: Boolean,
+    description: 'Remove directory components from results (type=DIR)',
+  })
+  @IsOptional()
+  @Transform(({ value }) => value === 'true' || value === true)
+  remove_folders?: boolean;
 }
 
 /**

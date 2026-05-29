@@ -59,6 +59,20 @@ export class SonarqubeController {
     example: '*.test.ts,node_modules/*',
     description: 'Comma-separated file/component ignore patterns (supports glob)',
   })
+  @ApiQuery({
+    name: 'include_files',
+    required: false,
+    type: [String],
+    example: '*.ts,src/**',
+    description: 'Comma-separated file/component include patterns (supports glob). When set, only matching components are returned.',
+  })
+  @ApiQuery({
+    name: 'remove_folders',
+    required: false,
+    type: Boolean,
+    example: true,
+    description: 'Remove directory components (type=DIR) from results',
+  })
   @ApiOkResponse({
     description: 'Component tree retrieved successfully',
     type: Object,
@@ -91,13 +105,35 @@ export class SonarqubeController {
       });
 
       const ignorePatterns = query.ignore_files || [];
-      if (ignorePatterns.length === 0) {
+      const includePatterns = query.include_files || [];
+      const removeFolders = query.remove_folders || false;
+
+      if (ignorePatterns.length === 0 && includePatterns.length === 0 && !removeFolders) {
         return components;
       }
 
       return components.filter((component) => {
+        // Remove directories if flag is set
+        // SonarQube uses 'qualifier' field for component type (FIL=file, DIR=directory, TRK=project, etc.)
+        const componentType = component.type || component.qualifier;
+        if (removeFolders && (componentType === 'DIR' || componentType === 'TRK')) {
+          return false;
+        }
+
         const key = component.key || '';
         const name = component.name || '';
+
+        // If include patterns are specified, component must match at least one
+        if (includePatterns.length > 0) {
+          const matchesInclude = includePatterns.some(
+            (pattern) => this.matchesIgnore(key, [pattern]) || this.matchesIgnore(name, [pattern])
+          );
+          if (!matchesInclude) {
+            return false;
+          }
+        }
+
+        // Component must not match any ignore patterns
         return !this.matchesIgnore(key, ignorePatterns) && !this.matchesIgnore(name, ignorePatterns);
       });
     } catch (error) {
