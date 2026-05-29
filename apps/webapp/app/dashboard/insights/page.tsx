@@ -1,4 +1,5 @@
 import Card from '@mui/material/Card';
+import Link from 'next/link';
 import { DashboardFilters, defaultFilters, parseDashboardFilters } from "@/components/filters/DashboardFilters";
 import { CardContent, CardHeader } from '@mui/material';
 import { sourceCodeAPI, pipelineAPI, pullRequestAPI, ApiParams } from '@/server/api';
@@ -153,15 +154,21 @@ export default async function InsightsSection({
           <CardContent>
             <div className="text-4xl font-bold">{prSummary?.total_prs || prSummary?.total || 0}</div>
             <div className="grid grid-cols-3 gap-2 mt-4 text-sm">
-              <div>
-                <div className="text-green-600 font-semibold">{prSummary?.merged_prs || prSummary?.merged || 0} Merged</div>
-              </div>
-              <div>
-                <div className="text-gray-600 font-semibold">{prSummary?.closed_prs || prSummary?.closed || 0} Closed</div>
-              </div>
-              <div>
-                <div className="text-blue-600 font-semibold">{prSummary?.open_prs || prSummary?.open || 0} Open</div>
-              </div>
+              <Link href="/dashboard/pull-requests?pullRequestStatus=merged">
+                <div className="text-green-600 font-semibold cursor-pointer hover:text-green-800 hover:underline transition-colors">
+                  {prSummary?.merged_prs || prSummary?.merged || 0} Merged
+                </div>
+              </Link>
+              <Link href="/dashboard/pull-requests?pullRequestStatus=closed">
+                <div className="text-gray-600 font-semibold cursor-pointer hover:text-gray-800 hover:underline transition-colors">
+                  {prSummary?.closed_prs || prSummary?.closed || 0} Closed
+                </div>
+              </Link>
+              <Link href="/dashboard/pull-requests?pullRequestStatus=open">
+                <div className="text-blue-600 font-semibold cursor-pointer hover:text-blue-800 hover:underline transition-colors">
+                  {prSummary?.open_prs || prSummary?.open || 0} Open
+                </div>
+              </Link>
             </div>
           </CardContent>
         </Card>
