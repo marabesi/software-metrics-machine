@@ -99,6 +99,7 @@ export default async function PipelinesPage({
     if (Array.isArray(avgTimeResult)) {
       avgTimeData = avgTimeResult.map((a: JobsAverageTimeResponseItem): JobsAverageTimeData => ({
         job_name: a.job_name || 'Unknown',
+        workflow_name: a.workflow_name,
         avg_time: a.avg_time || 0
       }));
     }

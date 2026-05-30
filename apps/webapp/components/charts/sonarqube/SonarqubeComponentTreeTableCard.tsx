@@ -45,8 +45,26 @@ export default function SonarqubeComponentTreeTableCard({
                       {item.name || item.key}
                     </a>
                   </td>
-                  <td className="p-2 text-right">{item.complexity.toFixed(0)}</td>
-                  <td className="p-2 text-right">{item.cognitiveComplexity.toFixed(0)}</td>
+                  <td className="p-2 text-right">
+                    <a
+                      href={urlBuilder.getSonarqubeComponentMeasuresUrl(item.key, 'complexity')}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-blue-600 hover:text-blue-800 hover:underline"
+                    >
+                      {item.complexity.toFixed(0)}
+                    </a>
+                  </td>
+                  <td className="p-2 text-right">
+                    <a
+                      href={urlBuilder.getSonarqubeComponentMeasuresUrl(item.key, 'cognitive_complexity')}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-blue-600 hover:text-blue-800 hover:underline"
+                    >
+                      {item.cognitiveComplexity.toFixed(0)}
+                    </a>
+                  </td>
                   <td className="p-2 text-right">{item.ncloc.toFixed(0)}</td>
                   <td className="p-2 text-right">{item.coverage.toFixed(1)}%</td>
                 </tr>

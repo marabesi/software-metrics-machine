@@ -1,9 +1,5 @@
 import path from 'path';
-import {
-  CodeChurnResult,
-  CodeMaatMetricsRepository,
-  FileCoupling,
-} from 'src/providers/codemaat';
+import { CodeChurnResult, CodeMaatMetricsRepository, FileCoupling } from 'src/providers/codemaat';
 
 type EntityEffortRow = { entity: string; 'total-revs': number };
 type EntityOwnershipRow = { entity: string; author: string; added: number; deleted: number };
@@ -11,10 +7,7 @@ type EntityOwnershipRow = { entity: string; author: string; added: number; delet
 export class CodemaatService {
   constructor(private metricsRepository: CodeMaatMetricsRepository) {}
 
-  async getCodeChurn(options?: {
-    startDate?: string;
-    endDate?: string;
-  }): Promise<CodeChurnResult> {
+  async getCodeChurn(options?: { startDate?: string; endDate?: string }): Promise<CodeChurnResult> {
     return this.metricsRepository.getCodeChurn(options);
   }
 

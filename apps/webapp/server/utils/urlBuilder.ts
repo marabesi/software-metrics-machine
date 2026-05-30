@@ -19,10 +19,11 @@ export interface UrlBuilder {
   // Pipeline/Workflow links
   getPipelinesUrl(filters?: { status?: string; workflow?: string }): string;
   getPipelineRunUrl(runId: string, runNumber?: number): string;
-  getJobRunsUrl(jobName: string): string;
+  getJobRunsUrl(jobName: string, workflowName?: string): string;
   
   // SonarQube links
-    getSonarqubeComponentUrl(componentKey: string): string;
+  getSonarqubeComponentUrl(componentKey: string): string;
+  getSonarqubeComponentMeasuresUrl(componentKey: string, metric: string): string;
   getSonarqubeProjectUrl(): string;
 }
 
@@ -88,9 +89,12 @@ function createGitHubBuilder(config: UrlBuilderConfig): UrlBuilder {
       return `${baseUrl}/actions/runs/${runId}`;
     },
     
-    getJobRunsUrl(jobName) {
-      // GitHub doesn't have a direct job filter, but we can search
-      return `${baseUrl}/actions?query=${encodeURIComponent(jobName)}`;
+    getJobRunsUrl(jobName, workflowName) {
+      const encodedJobName = jobName.includes(' ') ? encodeURIComponent(`"${jobName}"`) : encodeURIComponent(jobName);
+      if (!workflowName) {
+      return `${baseUrl}/actions/metrics/performance?tab=jobs&filters=job_name%3A${encodedJobName}`;
+      }
+      return `${baseUrl}/actions/metrics/performance/?tab=jobs&filters=workflow_file_name=${encodeURIComponent(workflowName)}&job_name%3A${encodedJobName}`;
     },
     
     getSonarqubeComponentUrl(componentKey) {
@@ -98,6 +102,13 @@ function createGitHubBuilder(config: UrlBuilderConfig): UrlBuilder {
         return '#';
       }
       return `${config.sonarqubeUrl}/code?id=${encodeURIComponent(config.sonarqubeProject || '')}&selected=${encodeURIComponent(componentKey)}`;
+    },
+
+    getSonarqubeComponentMeasuresUrl(componentKey, metric) {
+      if (!config.sonarqubeUrl) {
+        return '#';
+      }
+      return `${config.sonarqubeUrl}/component_measures?id=${encodeURIComponent(config.sonarqubeProject || '')}&metric=${encodeURIComponent(metric)}&selected=${encodeURIComponent(componentKey)}`;
     },
     
     getSonarqubeProjectUrl() {
@@ -164,8 +175,8 @@ function createGitLabBuilder(config: UrlBuilderConfig): UrlBuilder {
       return `${baseUrl}/-/pipelines/${runId}`;
     },
     
-    getJobRunsUrl(jobName) {
-      // GitLab pipeline jobs can be filtered by name
+    getJobRunsUrl(jobName, workflowName) {
+      // GitLab pipeline jobs can be filtered by name - best effort without direct filter
       return `${baseUrl}/-/pipelines?scope=all`;
     },
     
@@ -174,6 +185,13 @@ function createGitLabBuilder(config: UrlBuilderConfig): UrlBuilder {
         return '#';
       }
       return `${config.sonarqubeUrl}/code?id=${encodeURIComponent(config.sonarqubeProject || '')}&selected=${encodeURIComponent(componentKey)}`;
+    },
+
+    getSonarqubeComponentMeasuresUrl(componentKey, metric) {
+      if (!config.sonarqubeUrl) {
+        return '#';
+      }
+      return `${config.sonarqubeUrl}/component_measures?id=${encodeURIComponent(config.sonarqubeProject || '')}&metric=${encodeURIComponent(metric)}&selected=${encodeURIComponent(componentKey)}`;
     },
     
     getSonarqubeProjectUrl() {

@@ -1,6 +1,11 @@
 import * as fs from 'fs';
 import { Logger } from '@smmachine/utils';
-import { CodeChurn, CodeChurnResult, CodemaatAnalysisResult, FileCoupling } from '../providers/codemaat';
+import {
+  CodeChurn,
+  CodeChurnResult,
+  CodemaatAnalysisResult,
+  FileCoupling,
+} from '../providers/codemaat';
 import { Configuration } from 'src';
 import path from 'path';
 

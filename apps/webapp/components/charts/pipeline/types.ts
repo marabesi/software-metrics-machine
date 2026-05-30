@@ -37,11 +37,14 @@ export interface JobsDurationByWorkflowItem {
 
 export interface JobsAverageTimeResponseItem {
   job_name?: string;
+  workflow_name?: string;
   avg_time?: number;
+  count?: number;
 }
 
 export interface JobsAverageTimeData {
   job_name: string;
+  workflow_name?: string;
   avg_time: number;
 }
 

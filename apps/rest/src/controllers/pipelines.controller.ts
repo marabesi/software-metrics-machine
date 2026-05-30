@@ -2,6 +2,11 @@ import { Controller, Get, Logger, Query } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
 import { PipelinesRepository, Configuration } from '@smmachine/core';
 
+type PipelineDurationsMetrics = {
+  durations: number[];
+  workflowName?: string;
+};
+
 interface RunLike {
   path?: string;
   createdAt?: string;
@@ -397,7 +402,7 @@ export class PipelinesController {
     });
 
     const excluded = new Set(this.parseCsvList(excludeJobs).map((name) => name.toLowerCase()));
-    const grouped = new Map<string, number[]>();
+    const grouped = new Map<string, PipelineDurationsMetrics>();
 
     for (const run of runs) {
       const jobs = run.jobs || [];
@@ -410,19 +415,21 @@ export class PipelinesController {
         if (duration === null) {
           continue;
         }
-        const existing = grouped.get(name) || [];
-        existing.push(duration);
+
+        const existing: PipelineDurationsMetrics = grouped.get(name) || { durations: [], workflowName: (job as any).workflow_name };
+        existing.durations.push(duration);
         grouped.set(name, existing);
       }
     }
 
     const maxRows = top ? Number(top) : 20;
     const result = Array.from(grouped.entries())
-      .map(([jobNameValue, durations]) => ({
+      .map(([jobNameValue, data]) => ({
         job_name: jobNameValue,
+        workflow_name: data.workflowName,
         avg_time:
-          durations.length > 0 ? durations.reduce((a, b) => a + b, 0) / durations.length : 0,
-        count: durations.length,
+          data.durations.length > 0 ? data.durations.reduce((a, b) => a + b, 0) / data.durations.length : 0,
+        count: data.durations.length,
       }))
       .sort((a, b) => b.count - a.count)
       .slice(0, Number.isFinite(maxRows) ? maxRows : 20);

@@ -29,9 +29,7 @@ export class SonarqubeFetchMetricsRepository implements IQualityMetricsRepositor
     this.cacheComponentTree = new FileSystemRepository<SonarqubeComponentMeasure[]>(
       `${cacheDir}/component-tree.json`
     );
-    this.cacheHistorical = new FileSystemRepository<any[]>(
-      `${cacheDir}/historical-measures.json`
-    );
+    this.cacheHistorical = new FileSystemRepository<any[]>(`${cacheDir}/historical-measures.json`);
   }
 
   /**

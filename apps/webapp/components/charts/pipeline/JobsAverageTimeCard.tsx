@@ -10,7 +10,7 @@ export default function JobsAverageTimeCard({ data }: { data: JobsAverageTimeDat
   const { urlBuilder } = useLinkBuilder();
 
   const handleBarClick = (entry: JobsAverageTimeData) => {
-    const url = urlBuilder.getJobRunsUrl(entry.job_name);
+    const url = urlBuilder.getJobRunsUrl(entry.job_name, entry.workflow_name);
     window.open(url, '_blank');
   };
 

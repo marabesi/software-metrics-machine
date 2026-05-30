@@ -1,6 +1,6 @@
 'use client';
 
-import { Box, Paper, Typography, Divider, Button, Stack } from "@mui/material";
+import { Box, Paper, Typography, Divider, Button, Stack, FormControlLabel } from "@mui/material";
 import { useFilters } from "@/components/filters/FiltersContext";
 import { usePathname } from "next/navigation";
 import DateRangePicker from "@/components/filters/DateRangePicker";
@@ -259,16 +259,20 @@ export default function FiltersContainer({ repository }: { repository: string })
               value={filters.sonarqubeIncludePatternFiles}
               onChange={(value) => updateFilter('sonarqubeIncludePatternFiles', value)}
               placeholder="e.g., *.ts, src/**, app/**"
-            />            <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-              <Typography variant="body2">Remove Folders</Typography>
-              <Box
-                component="input"
-                type="checkbox"
-                checked={filters.sonarqubeRemoveFolders}
-                onChange={(e) => updateFilter('sonarqubeRemoveFolders', e.target.checked)}
-                sx={{ cursor: 'pointer' }}
-              />
-            </Box>            <TextInputFilter
+            />
+            <FormControlLabel
+              classes={{ label: 'pl-2' }}
+              control={
+                <Box
+                  component="input"
+                  type="checkbox"
+                  checked={filters.sonarqubeRemoveFolders}
+                  onChange={(e) => updateFilter('sonarqubeRemoveFolders', e.target.checked)}
+                  sx={{ cursor: 'pointer' }}
+                />}
+              label="Remove Folders"
+            />
+            <TextInputFilter
               label="Component Key"
               value={filters.sonarqubeComponent}
               onChange={(value) => updateFilter('sonarqubeComponent', value)}
