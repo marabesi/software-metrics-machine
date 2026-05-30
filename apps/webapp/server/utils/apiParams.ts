@@ -19,12 +19,9 @@ export interface DashboardFilters {
   labelSelector?: string[];
   pullRequestStatus?: 'open' | 'closed' | 'merged' | 'draft';
   aggregateBy?: string;
-  sonarqubeComponent?: string;
-  sonarqubeDepth?: number;
   sonarqubeIgnorePatternFiles?: string;
   sonarqubeIncludePatternFiles?: string;
   sonarqubeRemoveFolders?: boolean;
-  sonarqubeMetrics?: string[];
 }
 
 /**
@@ -80,12 +77,9 @@ export function buildPullRequestApiParams(filters: DashboardFilters): ApiParams 
  */
 export function buildSonarqubeApiParams(filters: DashboardFilters): ApiParams {
   return {
-    component: filters.sonarqubeComponent || undefined,
-    depth: filters.sonarqubeDepth,
     ignore_files: filters.sonarqubeIgnorePatternFiles || undefined,
     include_files: filters.sonarqubeIncludePatternFiles || undefined,
     remove_folders: filters.sonarqubeRemoveFolders ? 'true' : undefined,
-    metrics: filters.sonarqubeMetrics?.length ? filters.sonarqubeMetrics.join(',') : undefined,
   };
 }
 

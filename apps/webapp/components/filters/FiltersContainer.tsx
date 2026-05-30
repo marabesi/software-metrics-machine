@@ -272,32 +272,6 @@ export default function FiltersContainer({ repository }: { repository: string })
                 />}
               label="Remove Folders"
             />
-            <TextInputFilter
-              label="Component Key"
-              value={filters.sonarqubeComponent}
-              onChange={(value) => updateFilter('sonarqubeComponent', value)}
-              placeholder="e.g., org.project:service-name"
-            />
-            <SelectFilter
-              label="Tree Depth"
-              value={String(filters.sonarqubeDepth)}
-              options={['-1', '0', '1', '2', '3']}
-              onChange={(value) => updateFilter('sonarqubeDepth', Number(value))}
-            />
-            <MultiSelectFilter
-              label="Metrics"
-              values={filters.sonarqubeMetrics}
-              options={[
-                'complexity',
-                'cognitive_complexity',
-                'ncloc',
-                'coverage',
-                'sqale_rating',
-                'duplicated_lines_density',
-                'vulnerability_rating',
-              ]}
-              onChange={(values) => updateFilter('sonarqubeMetrics', values)}
-            />
             <SliderFilter
               label="Top Entries"
               value={filters.topEntries}

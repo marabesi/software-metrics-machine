@@ -28,12 +28,9 @@ export interface DashboardFilters {
   aggregateMetric: string;
 
   // SonarQube filters
-  sonarqubeComponent: string;
-  sonarqubeDepth: number;
   sonarqubeIgnorePatternFiles: string;
   sonarqubeIncludePatternFiles: string;
   sonarqubeRemoveFolders: boolean;
-  sonarqubeMetrics: string[];
 }
 
 export const defaultFilters: DashboardFilters = {
@@ -54,12 +51,9 @@ export const defaultFilters: DashboardFilters = {
   topEntries: 20,
   typeChurn: 'added',
   aggregateMetric: 'avg',
-  sonarqubeComponent: '',
-  sonarqubeDepth: -1,
   sonarqubeIgnorePatternFiles: '',
   sonarqubeIncludePatternFiles: '',
   sonarqubeRemoveFolders: false,
-  sonarqubeMetrics: ['complexity', 'cognitive_complexity', 'ncloc', 'coverage', 'sqale_rating'],
 };
 
 type SearchParamValue = string | string[] | undefined;
@@ -119,16 +113,11 @@ export function parseDashboardFilters(
     labelSelector: getArrayValue(searchParams.labelSelector),
     pullRequestStatus: getSingleValue(searchParams.pullRequestStatus) as DashboardFilters['pullRequestStatus'] || fallback.pullRequestStatus,
     aggregateBy: getSingleValue(searchParams.aggregateBy) || fallback.aggregateBy,
-    sonarqubeComponent: getSingleValue(searchParams.sonarqubeComponent) || fallback.sonarqubeComponent,
-    sonarqubeDepth: toNumber(getSingleValue(searchParams.sonarqubeDepth), fallback.sonarqubeDepth) || fallback.sonarqubeDepth,
     sonarqubeIgnorePatternFiles:
       getSingleValue(searchParams.sonarqubeIgnorePatternFiles) || fallback.sonarqubeIgnorePatternFiles,
     sonarqubeIncludePatternFiles:
       getSingleValue(searchParams.sonarqubeIncludePatternFiles) || fallback.sonarqubeIncludePatternFiles,
     sonarqubeRemoveFolders: searchParams.sonarqubeRemoveFolders === 'true' || fallback.sonarqubeRemoveFolders,
-    sonarqubeMetrics: getArrayValue(searchParams.sonarqubeMetrics).length
-      ? getArrayValue(searchParams.sonarqubeMetrics)
-      : fallback.sonarqubeMetrics,
   };
 }
 
@@ -165,12 +154,9 @@ export function serializeDashboardFilters(filters: DashboardFilters): URLSearchP
   appendList('labelSelector', filters.labelSelector);
   append('pullRequestStatus', filters.pullRequestStatus);
   append('aggregateBy', filters.aggregateBy);
-  append('sonarqubeComponent', filters.sonarqubeComponent);
-  append('sonarqubeDepth', filters.sonarqubeDepth);
   append('sonarqubeIgnorePatternFiles', filters.sonarqubeIgnorePatternFiles);
   append('sonarqubeIncludePatternFiles', filters.sonarqubeIncludePatternFiles);
   append('sonarqubeRemoveFolders', filters.sonarqubeRemoveFolders ? 'true' : 'false');
-  appendList('sonarqubeMetrics', filters.sonarqubeMetrics);
 
   return params;
 }
