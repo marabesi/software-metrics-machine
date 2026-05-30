@@ -17,6 +17,21 @@ import {
 import { ensureArray } from '@/server/utils/chartData';
 import { EntityOwnershipData } from './types';
 
+interface AuthorData {
+  author: string;
+  added: number;
+  deleted: number;
+  topEntity: string;
+  topEntityChanges: number;
+}
+
+interface TooltipPayloadEntry {
+  name?: string;
+  value?: number;
+  color?: string;
+  payload?: AuthorData;
+}
+
 export default function EntityOwnershipCard({ data }: { data: EntityOwnershipData[] }) {
   const [activeTab, setActiveTab] = useState<'by-author' | 'by-file'>('by-author');
 
@@ -123,14 +138,22 @@ export default function EntityOwnershipCard({ data }: { data: EntityOwnershipDat
       .slice(0, 20);
   }, [data]);
 
-  const tooltipFormatter = (value: number, name: string) => [value, name] as [number, string];
-
-  const tooltipLabelFormatter = (
-    _label: string,
-    payload: Array<{ payload?: { topEntity?: string } }>
-  ) => {
-    const topEntity = payload?.[0]?.payload?.topEntity || '-';
-    return `Top file changed: ${topEntity}`;
+  const AuthorTooltip = ({ active, payload, label }: { active?: boolean; payload?: TooltipPayloadEntry[]; label?: string }) => {
+    if (active && payload && payload.length) {
+      const topEntity = (payload[0].payload as AuthorData)?.topEntity || '-';
+      return (
+        <div className="bg-white p-3 border border-gray-300 rounded shadow">
+          <p className="font-semibold">{label}</p>
+          <p className="text-sm text-gray-600">Top file: {topEntity}</p>
+          {payload.map((entry, index: number) => (
+            <p key={index} style={{ color: entry.color }} className="text-sm">
+              {entry.name}: {entry.value}
+            </p>
+          ))}
+        </div>
+      );
+    }
+    return null;
   };
 
   return (
@@ -168,7 +191,7 @@ export default function EntityOwnershipCard({ data }: { data: EntityOwnershipDat
               <CartesianGrid strokeDasharray="3 3" />
               <XAxis dataKey="author" angle={-45} textAnchor="end" height={100} />
               <YAxis />
-              <Tooltip formatter={tooltipFormatter} labelFormatter={tooltipLabelFormatter} />
+              <Tooltip content={<AuthorTooltip />} />
               <Legend />
               <Bar dataKey="added" stackId="a" fill="#82ca9d" name="Added" />
               <Bar dataKey="deleted" stackId="a" fill="#ff6b6b" name="Deleted" />
