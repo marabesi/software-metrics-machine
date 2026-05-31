@@ -7,6 +7,7 @@ import EntityEffortCard from '@/components/charts/source-code/EntityEffortCard';
 import CodeChurnOverTimeCard from '@/components/charts/source-code/CodeChurnOverTimeCard';
 import EntityOwnershipCard from '@/components/charts/source-code/EntityOwnershipCard';
 import CodeCouplingCard from '@/components/charts/source-code/CodeCouplingCard';
+import EntityEffortTreemap from '@/components/entity-effort-treemap';
 import {
   CodeChurnData,
   CouplingData,
@@ -70,6 +71,7 @@ export default async function SourceCodePage({
       </div>
       <div className="grid grid-cols-1 gap-6">
         <EntityEffortCard data={entityEffort} topEntries={filters.topEntries} />
+        <EntityEffortTreemap data={entityEffort} />
       </div>
 
       <div className="grid grid-cols-1 gap-6">
