@@ -1,6 +1,7 @@
 import { Logger, logger } from '@smmachine/utils';
 import { PRDetails, PRFilters, PRMetrics, PRsByTimeframe, LabelSummary } from './pr-types';
 import { PullRequestsRepository } from 'src';
+import { stopWords } from './stop-words';
 
 export interface IPRsService {
   getMetrics(filters?: PRFilters): Promise<PRMetrics>;
@@ -32,18 +33,18 @@ export class PRsService implements IPRsService {
     const averageOpenDays =
       openDays.length > 0 ? openDays.reduce((a, b) => a + b, 0) / openDays.length : 0;
 
-    const totalComments = prs.reduce((sum, pr) => sum + (pr.comments || 0), 0);
+    const totalComments = prs.reduce((sum, pr) => sum + (pr.totalComments || 0), 0);
     const averageComments = prs.length > 0 ? totalComments / prs.length : 0;
 
     const mostCommentedPRs = prs
-      .filter((pr) => pr.comments > 0)
-      .sort((a, b) => b.comments - a.comments)
+      .filter((pr) => pr.totalComments > 0)
+      .sort((a, b) => b.totalComments - a.totalComments)
       .slice(0, 10)
       .map((pr) => ({
         pull_request_id: pr.id,
         pull_request_title: pr.title,
         pull_request_url: pr.url,
-        comments_count: pr.comments,
+        comments_count: pr.totalComments,
       }));
 
     this.logger.debug(
@@ -162,76 +163,56 @@ export class PRsService implements IPRsService {
     return result.sort((a, b) => b.count - a.count);
   }
 
+  async getSummary(filters?: PRFilters): Promise<any> {
+    const prs = await this.filterPRs(filters);
+    const merged = prs.filter((pr) => Boolean(pr.mergedAt)).length;
+    const closed = prs.filter((pr) => Boolean(pr.closedAt) && !pr.mergedAt).length;
+    const open = prs.filter((pr) => !pr.closedAt && !pr.mergedAt).length;
+    const totalComments = prs.reduce((sum, pr) => sum + (pr.totalComments || 0), 0);
+    const avgComments = prs.length > 0 ? totalComments / prs.length : 0;
+    const authorsSet = new Set(
+      prs.map((pr) => pr.author?.login || '').filter((name) => name.length > 0)
+    );
+    const labelSummary = this.extractLabelSummary(prs);
+
+    const sorted = [...prs].sort(
+      (a, b) => this.toTimestamp(a.createdAt) - this.toTimestamp(b.createdAt)
+    );
+
+    const mostCommentedPRs = prs
+      .filter((pr) => (pr.totalComments || 0) > 0 && pr.id && pr.title && pr.url)
+      .sort((a, b) => (b.totalComments || 0) - (a.totalComments || 0))
+      .slice(0, 10)
+      .map((pr) => ({
+        pull_request_id: pr.id!,
+        pull_request_title: pr.title!,
+        pull_request_url: pr.url!,
+        comments_count: pr.totalComments!,
+      }));
+
+    return {
+      result: {
+        total_prs: prs.length,
+        merged_prs: merged,
+        closed_prs: closed,
+        open_prs: open,
+        avg_comments_per_pr: avgComments,
+        unique_authors: authorsSet.size,
+        unique_labels: labelSummary.length,
+        labels: labelSummary,
+        first_pr: sorted.length > 0 ? sorted[0] : null,
+        last_pr: sorted.length > 0 ? sorted[sorted.length - 1] : null,
+        top_themes: this.extractTopThemes(prs),
+        most_commented_prs: mostCommentedPRs,
+      },
+    };
+  }
+
   /**
    * Filter PRs by the provided criteria.
    */
   private async filterPRs(filters?: PRFilters): Promise<PRDetails[]> {
-    const allPRs = await this.prRepository.loadPrsWithFilters(filters);
-
-    let result = allPRs;
-
-    if (!filters) {
-      return result;
-    }
-
-    // Filter by date range
-    if (filters.startDate || filters.endDate) {
-      result = this.filterByDateRange(result, filters.startDate, filters.endDate);
-    }
-
-    // Filter by authors
-    if (filters.authors && filters.authors.length > 0) {
-      result = this.filterByAuthors(result, filters.authors);
-    }
-
-    // Filter by labels
-    if (filters.labels && filters.labels.length > 0) {
-      result = this.filterByLabels(result, filters.labels);
-    }
-
-    // Filter by state
-    if (filters.state) {
-      result = this.filterByState(result, filters.state);
-    }
-
-    return result;
-  }
-
-  private filterByDateRange(prs: PRDetails[], startDate?: string, endDate?: string): PRDetails[] {
-    if (!startDate && !endDate) {
-      return prs;
-    }
-
-    const start = startDate ? new Date(startDate) : null;
-    const end = endDate ? new Date(endDate) : null;
-
-    return prs.filter((pr) => {
-      const createdDate = new Date(pr.createdAt);
-      if (start && createdDate < start) return false;
-      if (end && createdDate > end) return false;
-      return true;
-    });
-  }
-
-  private filterByAuthors(prs: PRDetails[], authors: string[]): PRDetails[] {
-    const authorSet = new Set(authors.map((a) => a.toLowerCase()));
-    return prs.filter((pr) => authorSet.has(pr.author.login.toLowerCase()));
-  }
-
-  private filterByLabels(prs: PRDetails[], labels: string[]): PRDetails[] {
-    const labelSet = new Set(labels.map((l) => l.toLowerCase()));
-    return prs.filter((pr) => pr.labels.some((label) => labelSet.has(label.name.toLowerCase())));
-  }
-
-  private filterByState(prs: PRDetails[], state: 'merged' | 'closed' | 'open'): PRDetails[] {
-    if (state === 'merged') {
-      return prs.filter((pr) => pr.mergedAt !== undefined);
-    } else if (state === 'closed') {
-      return prs.filter((pr) => pr.closedAt !== undefined && !pr.mergedAt);
-    } else if (state === 'open') {
-      return prs.filter((pr) => !pr.closedAt && !pr.mergedAt);
-    }
-    return prs;
+    return await this.prRepository.loadPrsWithFilters(filters);
   }
 
   private calculateOpenDays(pr: PRDetails): number {
@@ -272,7 +253,7 @@ export class PRsService implements IPRsService {
     const averageOpenDays =
       openDays.length > 0 ? openDays.reduce((a, b) => a + b, 0) / openDays.length : 0;
 
-    const totalComments = prs.reduce((sum, pr) => sum + (pr.comments || 0), 0);
+    const totalComments = prs.reduce((sum, pr) => sum + (pr.totalComments || 0), 0);
     const averageComments = prs.length > 0 ? totalComments / prs.length : 0;
 
     return {
@@ -281,5 +262,83 @@ export class PRsService implements IPRsService {
       averageOpenDays: Math.round(averageOpenDays * 100) / 100,
       averageComments: Math.round(averageComments * 100) / 100,
     };
+  }
+
+  private extractTopThemes(prs: PRDetails[]): Array<{ text: string; value: number }> {
+    const ngramCounts = new Map<string, number>();
+
+    for (const pr of prs) {
+      const commentsText = (pr.comments || [])
+        .map((comment) => comment.body)
+        .filter((body) => typeof body === 'string' && body.trim().length > 0)
+        .join(' ')
+        .toLowerCase();
+
+      if (!commentsText.trim()) {
+        continue;
+      }
+
+      const normalized = commentsText
+        .replace(/```[\s\S]*?```/g, ' ')
+        .replace(/`[^`]*`/g, ' ')
+        .replace(/\[[^\]]*\]\([^)]*\)/g, ' ')
+        .replace(/https?:\/\/\S+/g, ' ')
+        .replace(/[^a-z0-9\s]/g, ' ')
+        .replace(/\s+/g, ' ')
+        .trim();
+
+      const words = normalized
+        .split(' ')
+        .map((w) => w.trim())
+        .filter((w) => w.length >= 3)
+        .filter((w) => !stopWords.has(w))
+        .filter((w) => !/^\d+$/.test(w));
+
+      // unigrams, bigrams, trigrams
+      for (let n = 1; n <= 3; n++) {
+        for (let i = 0; i <= words.length - n; i++) {
+          const ngram = words.slice(i, i + n).join(' ');
+          // skip ngrams that start/end with a stop word (bigrams/trigrams only)
+          if (n > 1 && (stopWords.has(words[i]) || stopWords.has(words[i + n - 1]))) {
+            continue;
+          }
+          ngramCounts.set(ngram, (ngramCounts.get(ngram) || 0) + 1);
+        }
+      }
+    }
+
+    return Array.from(ngramCounts.entries())
+      .sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0]))
+      .slice(0, 30)
+      .map(([text, value]) => ({ text, value }));
+  }
+
+  private extractLabelSummary(prs: PRDetails[]): Array<{ label: string; prs: number }> {
+    const labelToPrs = new Map<string, number>();
+
+    for (const pr of prs) {
+      // Count each label at most once per PR.
+      const uniqueLabels = new Set(
+        (pr.labels || [])
+          .map((label) => (label.name || '').trim())
+          .filter((name) => name.length > 0)
+      );
+
+      for (const label of uniqueLabels) {
+        labelToPrs.set(label, (labelToPrs.get(label) || 0) + 1);
+      }
+    }
+
+    return Array.from(labelToPrs.entries())
+      .map(([label, count]) => ({ label, prs: count }))
+      .sort((a, b) => b.prs - a.prs || a.label.localeCompare(b.label));
+  }
+
+  private toTimestamp(value?: string): number {
+    if (!value) {
+      return 0;
+    }
+    const parsed = new Date(value).getTime();
+    return Number.isFinite(parsed) ? parsed : 0;
   }
 }

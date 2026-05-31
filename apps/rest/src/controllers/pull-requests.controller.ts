@@ -1,33 +1,13 @@
-import { Controller, Get, Logger, Query } from '@nestjs/common';
+import { Controller, Get, Query } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
-import { PullRequestsRepository, Configuration } from '@smmachine/core';
+import { PullRequestsRepository, PRsService, PRDetails } from '@smmachine/core';
 
-interface PRLike {
-  id?: number;
-  title?: string;
-  url?: string;
-  createdAt?: string;
-  mergedAt?: string;
-  closedAt?: string;
-  state?: string;
-  draft?: boolean;
-  author?: { login?: string };
-  labels?: Array<{ name?: string }>;
-  comments?: number;
-}
-
-/**
- * Pull Request Metrics REST Controller
- * Provides endpoints for pull request metrics and analysis
- */
 @ApiTags('Pull Request Metrics')
 @Controller()
 export class PullRequestsController {
-  private readonly logger = new Logger('PullRequestsController');
-
   constructor(
     private readonly pullRequestsRepo: PullRequestsRepository,
-    private readonly config: Configuration
+    private readonly prsService: PRsService,
   ) {}
 
   @Get('/pull-requests/summary')
@@ -36,51 +16,10 @@ export class PullRequestsController {
     @Query('end_date') endDate?: string,
     @Query('authors') authors?: string,
     @Query('labels') labels?: string,
-    @Query('status') status?: string
+    @Query('status') status?: PRDetails['state']
   ) {
-    const prs = await this.loadPRsWithFilters({ startDate, endDate, authors, labels, status });
-
-    const merged = prs.filter((pr) => Boolean(pr.mergedAt)).length;
-    const closed = prs.filter((pr) => Boolean(pr.closedAt) && !pr.mergedAt).length;
-    const open = prs.filter((pr) => !pr.closedAt && !pr.mergedAt).length;
-    const totalComments = prs.reduce((sum, pr) => sum + (pr.comments || 0), 0);
-    const avgComments = prs.length > 0 ? totalComments / prs.length : 0;
-    const authorsSet = new Set(
-      prs.map((pr) => pr.author?.login || '').filter((name) => name.length > 0)
-    );
-    const labelSummary = this.extractLabelSummary(prs);
-
-    const sorted = [...prs].sort(
-      (a, b) => this.toTimestamp(a.createdAt) - this.toTimestamp(b.createdAt)
-    );
-
-    const mostCommentedPRs = prs
-      .filter((pr) => (pr.comments || 0) > 0 && pr.id && pr.title && pr.url)
-      .sort((a, b) => (b.comments || 0) - (a.comments || 0))
-      .slice(0, 10)
-      .map((pr) => ({
-        pull_request_id: pr.id!,
-        pull_request_title: pr.title!,
-        pull_request_url: pr.url!,
-        comments_count: pr.comments!,
-      }));
-
-    return {
-      result: {
-        total_prs: prs.length,
-        merged_prs: merged,
-        closed_prs: closed,
-        open_prs: open,
-        avg_comments_per_pr: avgComments,
-        unique_authors: authorsSet.size,
-        unique_labels: labelSummary.length,
-        labels: labelSummary,
-        first_pr: sorted.length > 0 ? sorted[0] : null,
-        last_pr: sorted.length > 0 ? sorted[sorted.length - 1] : null,
-        top_themes: this.extractTopThemes(prs),
-        most_commented_prs: mostCommentedPRs,
-      },
-    };
+    const realFilters = { startDate, endDate, authors: authors?.split(',') || [], labels: labels?.split(',') || [], state: status };
+    return this.prsService.getSummary(realFilters);
   }
 
   @Get('/pull-requests/through-time')
@@ -89,7 +28,7 @@ export class PullRequestsController {
     @Query('end_date') endDate?: string,
     @Query('authors') authors?: string,
     @Query('labels') labels?: string,
-    @Query('status') status?: string
+    @Query('status') status?: PRDetails['state']
   ) {
     const prs = await this.loadPRsWithFilters({ startDate, endDate, authors, labels, status });
     const counts = new Map<string, { Opened: number; Closed: number }>();
@@ -128,7 +67,7 @@ export class PullRequestsController {
     @Query('labels') labels?: string,
     @Query('top') top?: string,
     @Query('authors') authors?: string,
-    @Query('status') status?: string
+    @Query('status') status?: PRDetails['state']
   ) {
     const prs = await this.loadPRsWithFilters({ startDate, endDate, authors, labels, status });
     const grouped = new Map<string, number>();
@@ -154,7 +93,7 @@ export class PullRequestsController {
     @Query('labels') labels?: string,
     @Query('top') top?: string,
     @Query('authors') authors?: string,
-    @Query('status') status?: string
+    @Query('status') status?: PRDetails['state']
   ) {
     const prs = await this.loadPRsWithFilters({ startDate, endDate, authors, labels, status });
     const merged = prs.filter((pr) => Boolean(pr.mergedAt) || Boolean(pr.closedAt));
@@ -189,7 +128,7 @@ export class PullRequestsController {
     @Query('aggregate_by') aggregateBy?: string,
     @Query('labels') labels?: string,
     @Query('authors') authors?: string,
-    @Query('status') status?: string
+    @Query('status') status?: PRDetails['state']
   ) {
     const mode = (aggregateBy || 'week').toLowerCase();
     const prs = await this.loadPRsWithFilters({ startDate, endDate, authors, labels, status });
@@ -220,10 +159,10 @@ export class PullRequestsController {
     @Query('end_date') endDate?: string,
     @Query('labels') labels?: string,
     @Query('authors') authors?: string,
-    @Query('status') status?: string
+    @Query('status') status?: PRDetails['state']
   ) {
     const prs = await this.loadPRsWithFilters({ startDate, endDate, authors, labels, status });
-    const totalComments = prs.reduce((sum, pr) => sum + (pr.comments || 0), 0);
+    const totalComments = prs.reduce((sum, pr) => sum + (pr.totalComments || 0), 0);
     const avgComments = prs.length > 0 ? totalComments / prs.length : 0;
     return { avg_comments: avgComments };
   }
@@ -233,7 +172,7 @@ export class PullRequestsController {
     const prs = await this.pullRequestsRepo.loadPrsWithFilters();
     return Array.from(
       new Set(
-        prs.map((pr: PRLike) => pr.author?.login || '').filter((name: string) => name.length > 0)
+        prs.map((pr: PRDetails) => pr.author?.login || '').filter((name: string) => name.length > 0)
       )
     ).sort();
   }
@@ -243,14 +182,12 @@ export class PullRequestsController {
     const prs = await this.pullRequestsRepo.loadPrsWithFilters();
     return Array.from(
       new Set(
-        prs.flatMap((pr: PRLike) =>
+        prs.flatMap((pr: PRDetails) =>
           (pr.labels || []).map((label) => label.name || '').filter((name) => name.length > 0)
         )
       )
     ).sort();
   }
-
-  // ========== PRIVATE HELPERS ==========
 
   private parseCsvList(value?: string): string[] {
     if (!value) {
@@ -296,103 +233,15 @@ export class PullRequestsController {
     return dateString.substring(0, 7);
   }
 
-  private extractTopThemes(prs: PRLike[]): string[] {
-    const themes = new Map<string, number>();
-    for (const pr of prs) {
-      for (const label of pr.labels || []) {
-        const name = label.name || '';
-        if (name.length > 0) {
-          themes.set(name, (themes.get(name) || 0) + 1);
-        }
-      }
-    }
-    return Array.from(themes.entries())
-      .sort((a, b) => b[1] - a[1])
-      .slice(0, 3)
-      .map((entry) => entry[0]);
-  }
-
-  private extractLabelSummary(prs: PRLike[]): Array<{ label: string; prs: number }> {
-    const labelToPrs = new Map<string, number>();
-
-    for (const pr of prs) {
-      // Count each label at most once per PR.
-      const uniqueLabels = new Set(
-        (pr.labels || [])
-          .map((label) => (label.name || '').trim())
-          .filter((name) => name.length > 0)
-      );
-
-      for (const label of uniqueLabels) {
-        labelToPrs.set(label, (labelToPrs.get(label) || 0) + 1);
-      }
-    }
-
-    return Array.from(labelToPrs.entries())
-      .map(([label, count]) => ({ label, prs: count }))
-      .sort((a, b) => b.prs - a.prs || a.label.localeCompare(b.label));
-  }
 
   private async loadPRsWithFilters(filters: {
     startDate?: string;
     endDate?: string;
     authors?: string;
     labels?: string;
-    status?: string;
-  }): Promise<PRLike[]> {
-    const prs = await this.pullRequestsRepo.loadPrsWithFilters(filters);
-    const selectedAuthors = this.parseCsvList(filters.authors);
-    const selectedLabels = this.parseCsvList(filters.labels);
-    const selectedStatus = (filters.status || '').trim().toLowerCase();
-
-    return prs.filter((pr: PRLike) => {
-      if (
-        filters.startDate &&
-        this.toTimestamp(pr.createdAt) < this.toTimestamp(filters.startDate)
-      ) {
-        return false;
-      }
-      if (filters.endDate && this.toTimestamp(pr.createdAt) > this.toTimestamp(filters.endDate)) {
-        return false;
-      }
-      if (selectedAuthors.length > 0) {
-        const prAuthor = (pr.author?.login || '').toLowerCase();
-        if (!selectedAuthors.some((author) => author.toLowerCase() === prAuthor)) {
-          return false;
-        }
-      }
-      if (selectedLabels.length > 0) {
-        const prLabels = (pr.labels || []).map((label) => (label.name || '').toLowerCase());
-        if (!selectedLabels.some((label) => prLabels.includes(label.toLowerCase()))) {
-          return false;
-        }
-      }
-      if (selectedStatus && !this.matchesStatus(pr, selectedStatus)) {
-        return false;
-      }
-      return true;
-    });
-  }
-
-  private matchesStatus(pr: PRLike, status: string): boolean {
-    if (status === 'draft') {
-      return Boolean(pr.draft);
-    }
-
-    if (status === 'merged') {
-      return Boolean(pr.mergedAt);
-    }
-
-    if (status === 'open') {
-      // Draft PRs are tracked separately when explicitly selected.
-      return !pr.mergedAt && !pr.closedAt && !pr.draft;
-    }
-
-    if (status === 'closed') {
-      return Boolean(pr.closedAt) && !pr.mergedAt;
-    }
-
-    // Fall back to state if a non-standard status is provided.
-    return (pr.state || '').toLowerCase() === status;
+    status?: PRDetails['state'];
+  }): Promise<PRDetails[]> {
+    const realFilters = { startDate: filters.startDate, endDate: filters.endDate, authors: filters.authors?.split(',') || [], labels: filters.labels?.split(',') || [], state: filters.status };
+    return await this.pullRequestsRepo.loadPrsWithFilters(realFilters);
   }
 }

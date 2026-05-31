@@ -43,7 +43,7 @@ export default async function PullRequestsPage({
   let avgOpenBy: AvgOpenByData[] = [];
   let avgComments: AvgCommentsData | null = null;
   let summary: SummaryData | null = null;
-  let topThemes: string[] = [];
+  let topThemes: Array<{ text: string; value: number }> = [];
 
   try {
     const apiParams = buildPullRequestApiParams(filters);
@@ -92,7 +92,7 @@ export default async function PullRequestsPage({
     const summaryResult = unwrapResult(summaryData as SummaryData | ResultWrapper<SummaryData>);
     summary = summaryResult;
     topThemes = Array.isArray(summaryResult?.top_themes)
-      ? summaryResult.top_themes.filter((theme): theme is string => typeof theme === 'string').slice(0, 10)
+      ? summaryResult.top_themes
       : [];
   } catch (error) {
     console.error('Error fetching PR data:', error);
@@ -108,17 +108,21 @@ export default async function PullRequestsPage({
         <PRsByAuthorCard data={byAuthor} />
       </div>
 
-      <OpenPRsThroughTimeCard data={openThroughTime} />
+      <div className="grid grid-cols-2 gap-6">
+        <MostCommentedPRsCard data={summary?.most_commented_prs || []} />
+        <TopThemesCard data={topThemes} />
+      </div>
 
-      <TopThemesCard data={topThemes} />
+      <div className="grid grid-cols-1 gap-6">
+        <OpenPRsThroughTimeCard data={openThroughTime} />
+      </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <AverageDaysPRsRemainOpenCard data={avgOpenBy} />
+      <div className="grid grid-cols-1 gap-6">
         <PRStatisticsCard summary={summary} avgComments={avgComments} />
       </div>
 
       <div className="grid grid-cols-1 gap-6">
-        <MostCommentedPRsCard data={summary?.most_commented_prs || []} />
+        <AverageDaysPRsRemainOpenCard data={avgOpenBy} />
       </div>
     </div>
   );

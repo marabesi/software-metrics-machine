@@ -12,19 +12,42 @@ export interface PRUser {
   id: number;
 }
 
+type PRStatus = 'open' | 'closed' | 'merged' | 'draft';
+
 export interface PRDetails {
   id: number;
   number: number;
   title: string;
+  description?: string;
   createdAt: string; // ISO format
   updatedAt: string;
   mergedAt?: string; // null if not merged
   closedAt?: string;
   author: PRUser;
   labels: PRLabel[];
-  state: 'open' | 'closed' | 'merged';
+  state: PRStatus;
   url: string;
-  comments: number;
+  totalComments: number;
+  comments: PRComment[];
+}
+
+export interface PRComment {
+  url: string;
+  body: string;
+  pull_request_review_id: number;
+  id: number;
+  reactions: {
+    url: string;
+    total_count: number;
+    '+1': number;
+    '-1': number;
+    laugh: number;
+    hooray: number;
+    confused: number;
+    heart: number;
+    rocket: number;
+    eyes: number;
+  };
 }
 
 export interface PRFilters {
@@ -32,7 +55,7 @@ export interface PRFilters {
   endDate?: string;
   authors?: string[];
   labels?: string[];
-  state?: 'merged' | 'closed' | 'open';
+  state?: PRStatus;
 }
 
 export interface PRMetrics {

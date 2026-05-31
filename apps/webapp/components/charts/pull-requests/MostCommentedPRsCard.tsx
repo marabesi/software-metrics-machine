@@ -1,6 +1,6 @@
 'use client';
 
-import React from 'react';
+import React, { useMemo } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import {
   Bar,
@@ -17,7 +17,16 @@ interface MostCommentedPRsCardProps {
   data: MostCommentedPRData[];
 }
 
-const CustomTooltip = ({ active, payload, label }: any) => {
+interface TooltipPayloadEntry {
+  payload: MostCommentedPRData;
+}
+
+interface CustomTooltipProps {
+  active?: boolean;
+  payload?: TooltipPayloadEntry[];
+}
+
+const CustomTooltip = ({ active, payload }: CustomTooltipProps) => {
   if (active && payload && payload.length) {
     const data = payload[0].payload;
     return (
@@ -32,16 +41,28 @@ const CustomTooltip = ({ active, payload, label }: any) => {
 };
 
 const MostCommentedPRsCard: React.FC<MostCommentedPRsCardProps> = ({ data }) => {
+  const chartData = useMemo(
+    () => [...data].sort((a, b) => b.comments_count - a.comments_count).slice(0, 10),
+    [data]
+  );
+
+  const openPullRequest = (entry?: MostCommentedPRData) => {
+    if (!entry?.pull_request_url) {
+      return;
+    }
+    window.open(entry.pull_request_url, '_blank', 'noopener,noreferrer');
+  };
+
   return (
     <Card>
       <CardHeader>
         <CardTitle>Most Commented Pull Requests</CardTitle>
       </CardHeader>
       <CardContent>
-        {data && data.length > 0 ? (
+        {chartData.length > 0 ? (
           <ResponsiveContainer width="100%" height={300}>
             <BarChart
-              data={data.sort((a, b) => b.comments_count - a.comments_count).slice(0, 10)}
+              data={chartData}
               margin={{
                 top: 20,
                 right: 30,
@@ -53,12 +74,21 @@ const MostCommentedPRsCard: React.FC<MostCommentedPRsCardProps> = ({ data }) => 
               <XAxis dataKey="pull_request_title" angle={-45} textAnchor="end" height={100} />
               <YAxis dataKey="comments_count" />
               <Tooltip content={<CustomTooltip />} />
-              <Bar dataKey="comments_count" fill="#8884d8" name="Comments" />
+              <Bar
+                dataKey="comments_count"
+                fill="#8884d8"
+                name="Comments"
+                cursor="pointer"
+                onClick={(entry) => openPullRequest(entry?.payload)}
+              />
             </BarChart>
           </ResponsiveContainer>
         ) : (
           <div className="text-center text-gray-500">No data available for most commented pull requests.</div>
         )}
+        {chartData.length > 0 ? (
+          <p className="mt-2 text-sm text-gray-600">Click a bar to open the pull request.</p>
+        ) : null}
       </CardContent>
     </Card>
   );

@@ -218,7 +218,7 @@ export class Configuration implements IConfiguration {
     return path.join(this.getBaseDirectory(), 'jira');
   }
 
-  getPipelinePath(): string {
+  getPathFromGitProvider(): string {
     return path.join(this.getBaseDirectory(), this.gitProvider!);
   }
 

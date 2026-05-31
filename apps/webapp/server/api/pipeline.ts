@@ -17,8 +17,8 @@ export const pipelineAPI = {
   summary: (params?: ApiParams) =>
     fetchAPI<{
       total_runs: number;
-      first_run: string | null;
-      last_run: string | null;
+      first_run: { createdAt?: string; created_at?: string } | string | null;
+      last_run: { createdAt?: string; created_at?: string } | string | null;
       in_progress: number;
       queued: number;
     }>('/pipelines/summary', params),

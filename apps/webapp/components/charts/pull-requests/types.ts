@@ -32,7 +32,9 @@ export interface SummaryData {
   avg_comments_per_pr?: number;
   unique_authors?: number;
   unique_labels?: number;
-  top_themes?: string[];
+  first_pr?: { createdAt?: string; created_at?: string } | string | null;
+  last_pr?: { createdAt?: string; created_at?: string } | string | null;
+  top_themes?: Array<{ text: string; value: number }>;
   labels?: Array<{ label: string; prs: number }>;
   most_commented_prs?: MostCommentedPRData[];
 }

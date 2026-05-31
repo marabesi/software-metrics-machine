@@ -209,7 +209,7 @@ export class PipelinesJobFetchRepository {
   }
 
   private fileInCache(fileName: string): string {
-    return path.join(this.configuration.getPipelinePath(), fileName);
+    return path.join(this.configuration.getPathFromGitProvider(), fileName);
   }
 
   private async readJson<T>(filePath: string, fallback: T): Promise<T> {

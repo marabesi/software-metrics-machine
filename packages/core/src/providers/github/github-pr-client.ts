@@ -1,15 +1,15 @@
 import axios, { AxiosInstance } from 'axios';
-import { PRDetails } from '../../domain-types';
 import { Logger } from '@smmachine/utils';
+import { PullRequestCommentJsonResponse, PullRequestJsonResponse } from './github-response-types';
 
 export interface IGithubPrsClient {
   fetchPRs(options?: {
     startDate?: string;
     endDate?: string;
     state?: 'open' | 'closed' | 'all';
-  }): Promise<PRDetails[]>;
+  }): Promise<PullRequestJsonResponse[]>;
 
-  fetchPRComments(prNumber: number): Promise<any[]>;
+  fetchPRComments(prNumber: number): Promise<PullRequestCommentJsonResponse[]>;
 }
 
 /**
@@ -45,11 +45,11 @@ export class GithubPrsClient implements IGithubPrsClient {
     startDate?: string;
     endDate?: string;
     state?: 'open' | 'closed' | 'all';
-  }): Promise<PRDetails[]> {
+  }): Promise<PullRequestJsonResponse[]> {
     const state = options?.state || 'all';
     const per_page = 100;
     let page = 1;
-    const allPRs: PRDetails[] = [];
+    const allPRs: PullRequestJsonResponse[] = [];
 
     try {
       // Fetch all PRs with pagination
@@ -76,21 +76,7 @@ export class GithubPrsClient implements IGithubPrsClient {
 
         // Keep the full GitHub payload and add compatibility aliases.
         for (const pr of prs) {
-          const prDetail: PRDetails = {
-            ...pr,
-            author: { login: pr.user?.login, id: pr.user?.id },
-            createdAt: pr.created_at,
-            updatedAt: pr.updated_at,
-            mergedAt: pr.merged_at,
-            closedAt: pr.closed_at,
-            url: pr.html_url,
-            comments: pr.comments || 0,
-            labels: (pr.labels || []).map((label: any) => ({
-              ...label,
-              name: label.name,
-              description: label.description,
-            })),
-          };
+          const prDetail: PullRequestJsonResponse = { ...pr };
 
           // Filter by date if provided
           if (options?.startDate && new Date(pr.created_at) < new Date(options.startDate)) {
@@ -126,21 +112,46 @@ export class GithubPrsClient implements IGithubPrsClient {
     }
   }
 
-  async fetchPRComments(prNumber: number): Promise<any[]> {
+  async fetchPRComments(prNumber: number): Promise<PullRequestCommentJsonResponse[]> {
+    let allComments: PullRequestCommentJsonResponse[] = [];
+    let page = 1;
+    const per_page = 100;
+
     try {
-      this.logger.info(`Fetching comments for PR #${prNumber} in ${this.owner}/${this.repo}`);
+      while (true) {
+        this.logger.info(
+          `Fetching comments for PR #${prNumber} page ${page} in ${this.owner}/${this.repo}`
+        );
 
-      const response = await this.axiosInstance.get(
-        `/repos/${this.owner}/${this.repo}/pulls/${prNumber}/comments`,
-        {
-          params: {
-            per_page: 100,
-          },
+        const response = await this.axiosInstance.get(
+          `/repos/${this.owner}/${this.repo}/pulls/${prNumber}/comments`,
+          {
+            params: {
+              per_page,
+              page,
+            },
+          }
+        );
+
+        const comments: PullRequestCommentJsonResponse[] = response.data.map(
+          (comment: any) => comment
+        );
+
+        if (comments.length === 0) {
+          break; // No more pages
         }
-      );
 
-      this.logger.info(`Fetched ${response.data.length} comments`);
-      return response.data;
+        allComments = allComments.concat(comments);
+
+        if (comments.length < per_page) {
+          break; // Last page
+        }
+
+        page++;
+      }
+
+      this.logger.info(`Fetched ${allComments.length} comments for PR #${prNumber} total`);
+      return allComments;
     } catch (error) {
       if (axios.isAxiosError(error)) {
         this.logger.error(`GitHub API error fetching PR comments: ${error.message}`);

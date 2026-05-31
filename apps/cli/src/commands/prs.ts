@@ -16,7 +16,7 @@ function createPRsOrchestratorFetch(): GitHubPullRequestsFetchRepository {
   const githubToken = config.githubToken!;
 
   const githubPrsClient = new GithubPrsClient(githubToken, githubOwner, githubRepo);
-  return new GitHubPullRequestsFetchRepository(githubPrsClient, config.gitRepositoryLocation!);
+  return new GitHubPullRequestsFetchRepository(githubPrsClient, config);
 }
 
 function createPRService(): PRsService {
@@ -61,6 +61,33 @@ export function createPRsCommands(program: Command): void {
         console.log('✅ Fetch data has been completed');
       } catch (error) {
         logger.error('Failed to fetch pull requests', error);
+      }
+    });
+
+  prsGroup
+    .command('fetch-comments')
+    .description('Fetch pull request comments from GitHub')
+    .option('--force', 'Force re-fetching PR comments even if already fetched')
+    .option('--start-date <date>', 'Filter PRs by creation date on or after this date (ISO 8601)')
+    .option('--end-date <date>', 'Filter PRs by creation date on or before this date (ISO 8601)')
+    .action(async (options) => {
+      try {
+        logger.info('🔄 Fetching pull request comments from GitHub...');
+        const orchestrator = createPRsOrchestratorRead();
+        const prs = await orchestrator.loadPrsWithFilters({
+          startDate: options.startDate,
+          endDate: options.endDate,
+        });
+
+        const orchestratorFetch = createPRsOrchestratorFetch();
+
+        for (const pr of prs) {
+          await orchestratorFetch.fetchPRComments(pr.number, { forceRefresh: options.force });
+        }
+
+        console.log('✅ Fetch PR comments data has been completed');
+      } catch (error) {
+        logger.error('Failed to fetch pull request comments', error);
       }
     });
 

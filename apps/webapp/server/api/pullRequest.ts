@@ -8,9 +8,9 @@ export const pullRequestAPI = {
       merged: number;
       closed: number;
       open: number;
-      first_pr: string | null;
-      last_pr: string | null;
-      top_themes: string[];
+      first_pr: { createdAt?: string; created_at?: string } | string | null;
+      last_pr: { createdAt?: string; created_at?: string } | string | null;
+      top_themes: Array<{ text: string; value: number }>;
       labels: Array<{ label: string; prs: number }>;
     }>('/pull-requests/summary', params),
   

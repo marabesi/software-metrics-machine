@@ -10,6 +10,8 @@ export interface PipelineSummary {
   total_runs: number;
   in_progress: number;
   queued: number;
+  first_run?: { createdAt?: string; created_at?: string } | string | null;
+  last_run?: { createdAt?: string; created_at?: string } | string | null;
 }
 export interface PullRequestSummary {
   total_prs?: number;
@@ -20,6 +22,8 @@ export interface PullRequestSummary {
   closed?: number;
   open_prs?: number;
   open?: number;
+  first_pr?: { createdAt?: string; created_at?: string } | string | null;
+  last_pr?: { createdAt?: string; created_at?: string } | string | null;
 }
 export interface DeploymentFrequencyResponseItem {
   days?: string;

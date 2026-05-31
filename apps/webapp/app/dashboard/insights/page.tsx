@@ -35,6 +35,36 @@ function buildPipelineApiParams(filters: DashboardFilters): ApiParams {
   };
 }
 
+function extractDate(value?: { createdAt?: string; created_at?: string } | string | null): string | null {
+  const formatDate = (rawDate: string): string | null => {
+    const parsed = new Date(rawDate);
+    if (Number.isNaN(parsed.getTime())) {
+      return null;
+    }
+
+    return parsed.toLocaleDateString('en-US', {
+      month: 'short',
+      day: '2-digit',
+      year: 'numeric',
+    });
+  };
+
+  if (!value) {
+    return null;
+  }
+
+  if (typeof value === 'string') {
+    return formatDate(value);
+  }
+
+  const raw = value.createdAt || value.created_at;
+  if (!raw) {
+    return null;
+  }
+
+  return formatDate(raw);
+}
+
 export default async function InsightsSection({
   searchParams,
 }: {
@@ -112,6 +142,11 @@ export default async function InsightsSection({
     .filter((d, idx) => idx === 0 || d.month !== deploymentFrequency[idx - 1]?.month)
     .map(d => d.date);
 
+  const pipelineFirstDataPoint = extractDate(pipelineSummary?.first_run);
+  const pipelineLastDataPoint = extractDate(pipelineSummary?.last_run);
+  const prFirstDataPoint = extractDate(prSummary?.first_pr);
+  const prLastDataPoint = extractDate(prSummary?.last_pr);
+
   return (
     <div className="space-y-6">
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -145,6 +180,9 @@ export default async function InsightsSection({
                 <div className="text-blue-600 font-semibold">{pipelineSummary?.queued || 0} Queued</div>
               </div>
             </div>
+            <p className="text-xs text-muted-foreground mt-3">
+              Data frame: {pipelineFirstDataPoint || '-'} to {pipelineLastDataPoint || '-'}
+            </p>
           </CardContent>
         </Card>
 
@@ -170,6 +208,9 @@ export default async function InsightsSection({
                 </div>
               </Link>
             </div>
+            <p className="text-xs text-muted-foreground mt-3">
+              Data frame: {prFirstDataPoint || '-'} to {prLastDataPoint || '-'}
+            </p>
           </CardContent>
         </Card>
       </div>

@@ -22,10 +22,10 @@ export default class PipelineFactory {
     );
 
     const pipelineRunFileSystemRepository = new FileSystemRepository<WorkflowJsonResponse>(
-      `${config.getPipelinePath()}/workflows.json`
+      `${config.getPathFromGitProvider()}/workflows.json`
     );
     const pipelineJobsFileSystemRepository = new FileSystemRepository<WorkflowJobJsonResponse>(
-      `${config.getPipelinePath()}/jobs.json`
+      `${config.getPathFromGitProvider()}/jobs.json`
     );
 
     const pipelineRepository = new PipelinesRepository(
