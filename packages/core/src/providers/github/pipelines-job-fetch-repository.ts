@@ -180,6 +180,22 @@ export class PipelinesJobFetchRepository {
           });
           break;
         } catch (error) {
+          const statusCode = this.getHttpStatusCode(error);
+
+          if (statusCode === 404) {
+            logger.error(
+              `Skipping workflow run ${runId} at page ${page}: jobs endpoint returned 404`
+            );
+
+            processedRunIds.add(runId);
+            await this.writeJson(incompletedPath, allJobs);
+            await this.writeJson(progressPath, {
+              processedRunIds: Array.from(processedRunIds),
+              partial: null,
+            });
+            break;
+          }
+
           await this.writeJson(incompletedPath, allJobs);
           await this.writeJson(progressPath, {
             processedRunIds: Array.from(processedRunIds),
@@ -237,6 +253,13 @@ export class PipelinesJobFetchRepository {
         throw error;
       }
     }
+  }
+
+  private getHttpStatusCode(error: unknown): number | undefined {
+    const err = error as
+      | { status?: number; response?: { status?: number } }
+      | undefined;
+    return err?.status ?? err?.response?.status;
   }
 
   private toDateBoundary(
