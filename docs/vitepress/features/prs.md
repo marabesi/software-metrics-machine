@@ -12,6 +12,28 @@ charts, each designed to highlight different aspects of PR management and team d
 Each chart in the dashboard is interactive and supports filtering by author, labels, and date range, allowing you to
 drill down into the data that matters most for your team. This enables you to monitor team flow and identify bottlenecks.
 
+## Dashboard filters
+
+Use these filters in the Pull Requests dashboard tab.
+
+### Date range filters
+
+| Dashboard filter | Backend query parameter |
+|------------------|-------------------------|
+| `startDate`      | `start_date`            |
+| `endDate`        | `end_date`              |
+
+### Pull Requests-specific filters
+
+| Dashboard filter      | Backend query parameter |
+|-----------------------|-------------------------|
+| `authorSelect[]`      | `authors`               |
+| `labelSelector[]`     | `labels`                |
+| `pullRequestStatus`   | `status`                |
+| `aggregateBy`         | `aggregate_by`          |
+
+For list filters (`[]`), the dashboard sends comma-separated values.
+
 ## Summary PRs data
 
 Show a summary of the PRs fetched from the repository, including total PRs, average open time, and other key metrics.

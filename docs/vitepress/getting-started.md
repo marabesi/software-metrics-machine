@@ -125,7 +125,6 @@ Commands:
   code
   pipelines
   prs
-  pydriller
   tools
 ```
 

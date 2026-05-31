@@ -4,4 +4,6 @@ This section covers utility tools available in Software Metrics Machine that hel
 
 ## Available Tools
 
-- **JSON File Merger**: Merges multiple JSON files containing lists of objects, with deduplication capabilities
+- **JSON merge**: Merges JSON files from the current directory into a single output file.
+
+See [Tools CLI](./tools/cli.md).

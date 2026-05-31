@@ -60,6 +60,31 @@ Computes the duration of each pipeline run over time and returns a time series p
 execution took to complete in minutes. The time taken is calculated based on the sum of all individual jobs executed in the
 pipeline, excluding skipped jobs.
 
+## Dashboard filters
+
+Use these filters in the Pipelines dashboard tab.
+
+### Date range filters
+
+| Dashboard filter | Backend query parameter |
+|------------------|-------------------------|
+| `startDate`      | `start_date`            |
+| `endDate`        | `end_date`              |
+
+### Pipelines-specific filters
+
+| Dashboard filter         | Backend query parameter |
+|--------------------------|-------------------------|
+| `workflowSelector`       | `workflow_path`         |
+| `workflowStatus[]`       | `status`                |
+| `workflowConclusions[]`  | `conclusion`            |
+| `jobSelector[]`          | `job_name`              |
+| `branch[]`               | `branch`                |
+| `event[]`                | `event`                 |
+| `aggregateMetric`        | `metric`                |
+
+For list filters (`[]`), the dashboard sends comma-separated values.
+
 :::tabs key:cli
 == Dashboard
 

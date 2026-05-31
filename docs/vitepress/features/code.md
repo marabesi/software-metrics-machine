@@ -225,3 +225,51 @@ smm code coupling
 
 :::
 
+
+## Dashboard coverage
+
+The Source Code tab is backed by:
+
+- `GET /code/code-churn`
+- `GET /code/coupling`
+- `GET /code/entity-churn`
+- `GET /code/entity-effort`
+- `GET /code/entity-ownership`
+- `GET /code/pairing-index`
+
+## Dashboard filters
+
+Use these filters in the Source Code dashboard tab.
+
+### Date range filters
+
+| Dashboard filter | Backend query parameter |
+|------------------|-------------------------|
+| `startDate`      | `start_date`            |
+| `endDate`        | `end_date`              |
+
+### Source Code-specific filters
+
+| Dashboard filter            | Backend query parameter |
+|-----------------------------|-------------------------|
+| `ignorePatternFiles`        | `ignore_files`          |
+| `includePatternFiles`       | `include_only`          |
+| `authorSelectSourceCode[]`  | `authors`               |
+| `topEntries`                | `top`                   |
+| `typeChurn`                 | `type_churn`            |
+
+For list filters (`[]`), the dashboard sends comma-separated values.
+
+### Pattern filtering notes
+
+For include and ignore patterns:
+
+- Plain text values perform substring match.
+- Glob-like patterns are supported (`*`, `**`, `?`).
+- If the pattern has no `/`, matching is applied to file name (basename).
+
+Examples:
+
+- `*.test.ts`
+- `src/**`
+- `node_modules/*`

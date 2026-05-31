@@ -53,7 +53,7 @@ Next step is to visualize the data from the jobs run duration analysis. The foll
 the visualization:
 
 ```bash
-smm pipelines jobs-by-execution-time \
+smm pipelines jobs-time-execution \
   --start-date 2025-08-17 \
   --end-date 2025-11-17 \
   --workflow-path=".github/workflows/ci.yml"

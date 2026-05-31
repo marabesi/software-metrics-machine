@@ -4,23 +4,58 @@ outline: deep
 
 # Configuration
 
-The configuration file `smm_config.json` is the central place to change features available in the software metrics machine.
-With the configuration file in json format you can set the provider you are using, the repository location and more.
-The following table depicts the supported configuration options.
+Configuration is stored in `smm_config.json` inside the folder referenced by `SMM_STORE_DATA_AT`.
 
-| Key                     |  Section      |  Description                                                            | Required | Default Value        |
-|-------------------------| -------       | ------------------------------------------------------------------------|----------|----------------------|
-| **PROVIDERS**           |               |                                                                         |          |                      |
-| git_provider            |  Provider     |  The git provider to use (github, gitlab, etc)                          | Yes      | github               |
-| [github_token](../github.md#generating-a-token)          |  Provider     |  The personal access token for GitHub  | Yes      |                      |
-| **REPOSITORY**          |               |                                                                         |          |                      |
-| github_repository       |  Repository   |  The GitHub repository in the format user/repo                          | Yes      |                      |
-| git_repository_location |  Repository   |  The local path to the git repository (for codemaat)                    | Yes      |                      |
-| **METRICS**             |               |                                                                         |          |                      |
-| deployment_frequency_target_pipeline    |  Metrics     |  The personal access token for GitLab                    | No       |                      |
-| deployment_frequency_target_job         |  Metrics     |  The personal access token for GitLab                    | No       |                      |
-| main_branch             |  Metrics      |  The main branch repository, usually main by default                    | No       |                      |
-| **DASHBOARD**           |               |                                                                         |          |                      |
-| dashboard_start_date    |  Dashboard    |  Specifies the start date to start the dashboard                        | No       |                      |
-| dashboard_end_date      |  Dashboard    |  Specifies the end date to start the dashboard                          | No       |                      |
-| loggin_level            |  CLI          |  Specifies the logging level to print in the terminal (INFO, CRITICAL, DEBUG)  |   No       |   CRITICAL  |
+## Required environment variable
+
+```bash
+export SMM_STORE_DATA_AT=/absolute/path/to/data-folder
+```
+
+## Example configuration
+
+```json
+{
+  "git_provider": "github",
+  "github_token": "your_github_token",
+  "github_repository": "owner/repo",
+  "git_repository_location": "/absolute/path/to/local/repository",
+  "deployment_frequency_target_pipeline": ".github/workflows/ci.yml",
+  "deployment_frequency_target_job": "deploy",
+  "main_branch": "main",
+  "dashboard_start_date": "2025-01-01",
+  "dashboard_end_date": "2025-12-31",
+  "dashboard_color": "#1976d2",
+  "log_level": "INFO",
+  "jira_url": "https://your-domain.atlassian.net",
+  "jira_email": "your-email@example.com",
+  "jira_token": "your_jira_token",
+  "jira_project": "PROJ",
+  "sonar_url": "https://sonarqube.example.com",
+  "sonar_token": "your_sonar_token",
+  "sonar_project": "project_key"
+}
+```
+
+## Key reference
+
+| Key | Description | Required |
+|-----|-------------|----------|
+| `git_provider` | Git provider (for example `github`) | Yes |
+| `github_token` | GitHub personal access token | Yes for GitHub PR/pipeline |
+| `github_repository` | Repository in `owner/repo` format | Yes |
+| `git_repository_location` | Local clone path for git/code metrics | Yes for source-code metrics |
+| `deployment_frequency_target_pipeline` | Workflow path used for deployment frequency semantics | No |
+| `deployment_frequency_target_job` | Job used for deployment frequency semantics | No |
+| `main_branch` | Main branch name | No |
+| `dashboard_start_date` | Default start date in dashboard | No |
+| `dashboard_end_date` | Default end date in dashboard | No |
+| `dashboard_color` | Dashboard color theme value | No |
+| `log_level` | Logging level (`DEBUG`, `INFO`, `WARN`, `ERROR`, `CRITICAL`) | No |
+| `jira_url` | Jira base URL | No |
+| `jira_email` | Jira account email | No |
+| `jira_token` | Jira API token | No |
+| `jira_project` | Jira project key | No |
+| `sonar_url` | SonarQube server URL | No |
+| `sonar_token` | SonarQube token | No |
+| `sonar_project` | SonarQube project key | No |

@@ -77,6 +77,8 @@ export default withMermaid(
             { text: 'Pull requests', link: '/features/prs' },
             { text: 'Pipelines', link: '/features/pipelines' },
             { text: 'Source code', link: '/features/code' },
+            { text: 'SonarQube', link: '/sonarqube' },
+            { text: 'REST API', link: '/rest-api' },
             { text: 'Configuration', link: '/features/configuration' },
           ]
         },
@@ -91,6 +93,15 @@ export default withMermaid(
               ]
             },
             {
+              text: 'Jira', link: '/jira'
+            },
+            {
+              text: 'GitLab', link: '/gitlab'
+            },
+            {
+              text: 'SonarQube', link: '/sonarqube'
+            },
+            {
               text: 'Codemaat', link: '/codemaat', items: [
                 { text: 'CLI', link: '/codemaat/cli' },
               ]
@@ -99,8 +110,7 @@ export default withMermaid(
               text: 'Tools', link: '/tools', items: [
                 { text: 'CLI', link: '/tools/cli' },
               ]
-            },
-            // { text: 'GitLab', link: '/gitlab' }
+            }
           ]
         },
         {
@@ -108,6 +118,9 @@ export default withMermaid(
           items: [
             {
               text: 'Team review process', link: '/investigations/review-process', items: [ ]
+            },
+            {
+              text: 'Pipeline run time', link: '/investigations/pipeline-run-time', items: [ ]
             },
           ]
         }

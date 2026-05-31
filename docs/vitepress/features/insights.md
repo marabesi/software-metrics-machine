@@ -83,5 +83,14 @@ smm code pairing-index \
   --authors=me@me.com,another@another.com
 ```
 
+## Dashboard filters
+
+Insights supports global date filters shared across dashboard tabs:
+
+| Dashboard filter | Backend query parameter |
+|------------------|-------------------------|
+| `startDate`      | `start_date`            |
+| `endDate`        | `end_date`              |
+
 :::
 

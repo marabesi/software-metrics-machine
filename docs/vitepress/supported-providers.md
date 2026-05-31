@@ -4,29 +4,28 @@ outline: deep
 
 # Supported providers
 
-This project is possible thanks to the integration with various source control providers and code analysis tools. Below
-is a list of the currently supported providers and tools.
+This project integrates with source control providers and code analysis systems to fetch and visualize development metrics.
 
 ## Supported Source Control Providers
 
 ### Github
 
-If your are using [GitHub/Github actions](./github.md), the following metrics are supported:
+If you are using [GitHub and GitHub Actions](./github.md), the following are supported:
 
 - Insights
-- Pipeline
+- Pipelines
 - Pull requests
-- Source code analysis via git
+- Source code analysis via local git repository
 
 ### GitLab
 
-If your are using [GitLab](./gitlab.md), the following metrics are supported:
+If you are using [GitLab](./gitlab.md), the following are currently supported:
 
 - Source code analysis via git
 
 ### Bitbucket
 
-If your are using BitBucket, the following metrics are supported:
+If you are using Bitbucket, the following are currently supported:
 
 - Source code analysis via git
 
@@ -34,29 +33,28 @@ If your are using BitBucket, the following metrics are supported:
 
 ### Jira
 
-If your are using [Jira](./jira.md), the following metrics are supported:
+If you are using [Jira](./jira.md), the following metrics are supported:
 
-- Issues and issue properties
-- Issue change history and timeline
-- Issue comments and discussions
-- Issue filtering by type, status, and date range
+- Issues and issue properties via REST and CLI fetch
+- Issue filtering by status and date range
 
 ## Code analysis tools
 
 ### Codemaat
 
-[Git](./codemaat.md) is the only common provider, as it is used to extract code churn and hotspots. Which
-means, it can be used regardless of the vendor. The following metrics are supported:
+[Git](./codemaat.md) is the common data source for code metrics regardless of hosting vendor.
+
+Supported metrics include:
 
 - Code churn
-- Hotspots
-- Age of code
-- Authors per file
-
-### PyDriller
-
-(comming soon)
+- File coupling
+- Entity churn
+- Entity effort
+- Entity ownership
+- Pairing index
 
 ### SonarQube
 
-(comming soon)
+SonarQube is supported in CLI, REST, and dashboard.
+
+See [SonarQube](./sonarqube.md) for setup and usage.

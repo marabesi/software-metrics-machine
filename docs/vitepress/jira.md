@@ -4,18 +4,18 @@ outline: deep
 
 # Jira provider
 
-This provider is focused on fetching and analyzing data from Jira Cloud instances. It leverages the Jira REST API to gather information about issues, their change history, and comments. This enables comprehensive tracking of issue lifecycle, timeline analysis, and development flow metrics.
+This provider is focused on fetching and analyzing issues from Jira Cloud.
 
 > [!IMPORTANT]
 > Before following the steps below, make sure you have followed the [Getting Started](./getting-started.md) guide to set up
-> the project and have Python, Poetry and Java installed.
+> the project.
 
-You should expect to have the Jira integration up and running in a few minutes after following the steps below. The steps are organized as follows:
+You should expect to have Jira integration running after these steps:
 
 1. Generating the Jira API token
 2. Configuring Jira connection
-3. Fetching data from Jira
-4. Analyzing and visualizing the data
+3. Fetching issues from Jira
+4. Querying issues via CLI or REST
 
 ## Generating the Jira API token
 
@@ -26,7 +26,7 @@ To interact with the Jira API and fetch the data needed for this project, you ne
 3. Give your token a meaningful label (e.g., "software-metrics-machine")
 4. Click "Create" and copy the generated token
 5. Store it securely - you won't be able to see it again after leaving the page
-6. Store it in the configuration file [smm_config.json](./getting-started.md#configuration-options) under the key `jira_token`
+6. Store it in `smm_config.json` under the key `jira_token`
 
 ### Check token is working
 
@@ -65,20 +65,20 @@ A JSON response should be returned with your user information, something similar
 }
 ```
 
-That's it! You are ready to go and start fetching your data!
+That is it, your Jira credentials are ready.
 
 ## Configuration
 
-The Jira provider requires the following configuration parameters in your `smm_config.json` file:
+The Jira provider requires these fields in `smm_config.json`:
 
 ```json
 {
   "git_provider": "github",
-  "github_token": "your_github_token",
   "github_repository": "owner/repo",
   "git_repository_location": "/path/to/repo",
-  "store_data": "/path/to/data/storage",
+  "github_token": "your_github_token",
   "jira_url": "https://your-domain.atlassian.net",
+  "jira_email": "your-email@example.com",
   "jira_token": "your_jira_api_token",
   "jira_project": "PROJ"
 }
@@ -87,126 +87,75 @@ The Jira provider requires the following configuration parameters in your `smm_c
 ### Configuration parameters
 
 - **`jira_url`**: The base URL of your Jira Cloud instance (e.g., `https://your-domain.atlassian.net`)
+- **`jira_email`**: Your Jira account email
 - **`jira_token`**: Your Jira API token generated from https://id.atlassian.com/manage-profile/security/api-tokens
 - **`jira_project`**: The Jira project key you want to analyze (e.g., `PROJ`, `DEV`, `BUG`)
 
-You can also set these as environment variables:
+You can also provide these as environment variables:
+
 ```bash
-export SMM_JIRA_URL="https://your-domain.atlassian.net"
-export SMM_JIRA_TOKEN="your_api_token"
-export SMM_JIRA_PROJECT="PROJ"
+export JIRA_URL="https://your-domain.atlassian.net"
+export JIRA_EMAIL="your-email@example.com"
+export JIRA_TOKEN="your_api_token"
+export JIRA_PROJECT="PROJ"
 ```
 
 ## Fetching data
 
-Fetching data from Jira is the first step to start analyzing metrics. The Jira provider supports three types of data fetching:
-
-> [!NOTE]
-> Fetching data may take a while depending on the number of issues in your project. By default, it fetches
-> all issues in the configured project. To fine tune the fetching process, use the options available in the
-> CLI commands below.
+Fetch issues first, then use metrics endpoints and dashboard.
 
 ### Issues
 
-Fetch issues from your Jira project with optional filtering:
+Fetch issues from your Jira project:
 
 ```bash
-smm jira fetch [OPTIONS]
+smm jira fetch-issues [OPTIONS]
 ```
 
 #### Options
 
-- `--months MONTHS`: Number of months back to fetch (default: 1)
 - `--start-date DATE`: Start date in ISO 8601 format (YYYY-MM-DD)
 - `--end-date DATE`: End date in ISO 8601 format (YYYY-MM-DD)
-- `--issue-type TYPE`: Filter by issue type (e.g., Bug, Story, Task)
 - `--status STATUS`: Filter by status (e.g., Open, In Progress, Done)
-- `--raw-filters FILTERS`: Additional JQL (Jira Query Language) filters
 - `--force`: Force re-fetching even if data is already cached
+- `--output`: `text` or `json`
 
 #### Examples
 
-Fetch all issues from the last 3 months:
-```bash
-smm jira fetch --months 3
-```
-
 Fetch issues with a specific date range:
-```bash
-smm jira fetch --start-date 2024-01-01 --end-date 2024-03-31
-```
 
-Fetch only Bug issues:
 ```bash
-smm jira fetch --issue-type Bug
+smm jira fetch-issues --start-date 2024-01-01 --end-date 2024-03-31
 ```
 
 Fetch issues in a specific status:
-```bash
-smm jira fetch --status "In Progress"
-```
-
-Fetch with custom JQL filters:
-```bash
-smm jira fetch --raw-filters 'assignee = currentUser()'
-```
-
-### Issue change history (changelog)
-
-Fetch the change history for all issues:
 
 ```bash
-smm jira fetch-changelog [OPTIONS]
+smm jira fetch-issues --status "In Progress"
 ```
 
-#### Options
+### Changelog and comments commands
 
-- `--force`: Force re-fetching changelog data
-
-#### Example
+The CLI currently exposes these commands:
 
 ```bash
-smm jira fetch-changelog --force
+smm jira fetch-changelog --issue PROJ-123
+smm jira fetch-comments --issue PROJ-123
 ```
 
-### Issue comments
-
-Fetch comments on all issues:
-
-```bash
-smm jira fetch-comments [OPTIONS]
-```
-
-#### Options
-
-- `--force`: Force re-fetching comments
-
-#### Example
-
-```bash
-smm jira fetch-comments
-```
+These two commands currently print guidance and are not full data-fetch implementations in this Node CLI.
 
 ## Data Storage
 
-The fetched Jira data is stored in the following structure:
+Fetched Jira data is stored under your data directory and provider/repository path.
+
+The Jira repository path follows this shape:
 
 ```
 <store_data>/
-└── jira_<project_key>/
-    ├── issues.json              # All fetched issues
-    ├── issues_changelog.json    # Issue change history
-    └── issues_comments.json     # Issue comments
-```
-
-For example, if your `store_data` is `/data/metrics` and project key is `PROJ`:
-
-```
-/data/metrics/
-└── jira_PROJ/
-    ├── issues.json
-    ├── issues_changelog.json
-    └── issues_comments.json
+└── <git_provider>_<owner_repo>/
+  └── jira/
+    └── issues data
 ```
 
 ## Limitations
@@ -229,36 +178,6 @@ Ensure that:
 - You have the necessary permissions in Jira to view issues, comments, and history
 - The project key is correct and accessible
 
-## Common Use Cases
-
-### Analyzing Issue Resolution Time
-
-Fetch issues and their changelog to calculate how long it takes to resolve issues:
-
-```bash
-smm jira fetch --months 6
-smm jira fetch-changelog
-```
-
-### Tracking Issue Comments and Discussion
-
-Get all comments on issues to analyze collaboration and discussion:
-
-```bash
-smm jira fetch
-smm jira fetch-comments
-```
-
-### Filtering by Issue Type
-
-If you want to focus on specific issue types:
-
-```bash
-smm jira fetch --issue-type "Story"
-smm jira fetch --issue-type "Bug"
-smm jira fetch --issue-type "Task"
-```
-
 ### Continuous Integration with Git Data
 
 Combine Jira data with GitHub/GitLab data for comprehensive metrics:
@@ -267,9 +186,8 @@ Combine Jira data with GitHub/GitLab data for comprehensive metrics:
 # Fetch both GitHub and Jira data
 smm prs fetch
 smm pipelines fetch
-smm jira fetch
-smm jira fetch-changelog
-smm jira fetch-comments
+smm pipelines fetch-jobs
+smm jira fetch-issues
 ```
 
 ## Troubleshooting
@@ -299,13 +217,12 @@ If no issues are returned:
 1. Check that the project key is correct
 2. Verify the date range includes issues in your project
 3. Check issue type and status filters are correct
-4. Try fetching without filters: `smm jira fetch`
+4. Try fetching without filters: `smm jira fetch-issues`
 
 ## Next Steps
 
 Once you have fetched data from Jira, you can:
 
 1. Combine it with git and GitHub data for comprehensive analysis
-2. Visualize trends and patterns using the dashboard
-3. Export data for further analysis in other tools
-4. Build custom reports using the CLI commands
+2. Visualize trends and patterns using dashboard and REST API
+3. Use `GET /jira/issues` for service integrations
