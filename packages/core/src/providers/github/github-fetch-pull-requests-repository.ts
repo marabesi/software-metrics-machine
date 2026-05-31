@@ -5,7 +5,7 @@ import { type IGithubPrsClient } from '.';
 
 export interface IPullRequestsRepository {}
 
-export class GitHubPullRequestsRepository implements IPullRequestsRepository {
+export class GitHubPullRequestsFetchRepository implements IPullRequestsRepository {
   private cache: FileSystemRepository<PRDetails>;
 
   constructor(

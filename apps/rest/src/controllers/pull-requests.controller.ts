@@ -3,6 +3,9 @@ import { ApiTags } from '@nestjs/swagger';
 import { PullRequestsRepository, Configuration } from '@smmachine/core';
 
 interface PRLike {
+  id?: number;
+  title?: string;
+  url?: string;
   createdAt?: string;
   mergedAt?: string;
   closedAt?: string;
@@ -51,6 +54,17 @@ export class PullRequestsController {
       (a, b) => this.toTimestamp(a.createdAt) - this.toTimestamp(b.createdAt)
     );
 
+    const mostCommentedPRs = prs
+      .filter((pr) => (pr.comments || 0) > 0 && pr.id && pr.title && pr.url)
+      .sort((a, b) => (b.comments || 0) - (a.comments || 0))
+      .slice(0, 10)
+      .map((pr) => ({
+        pull_request_id: pr.id!,
+        pull_request_title: pr.title!,
+        pull_request_url: pr.url!,
+        comments_count: pr.comments!,
+      }));
+
     return {
       result: {
         total_prs: prs.length,
@@ -64,6 +78,7 @@ export class PullRequestsController {
         first_pr: sorted.length > 0 ? sorted[0] : null,
         last_pr: sorted.length > 0 ? sorted[sorted.length - 1] : null,
         top_themes: this.extractTopThemes(prs),
+        most_commented_prs: mostCommentedPRs,
       },
     };
   }

@@ -8,6 +8,7 @@ import OpenPRsThroughTimeCard from '@/components/charts/pull-requests/OpenPRsThr
 import TopThemesCard from '@/components/charts/pull-requests/TopThemesCard';
 import AverageDaysPRsRemainOpenCard from '@/components/charts/pull-requests/AverageDaysPRsRemainOpenCard';
 import PRStatisticsCard from '@/components/charts/pull-requests/PRStatisticsCard';
+import MostCommentedPRsCard from '@/components/charts/pull-requests/MostCommentedPRsCard';
 import {
   AvgCommentsData,
   AvgOpenByData,
@@ -114,6 +115,10 @@ export default async function PullRequestsPage({
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <AverageDaysPRsRemainOpenCard data={avgOpenBy} />
         <PRStatisticsCard summary={summary} avgComments={avgComments} />
+      </div>
+
+      <div className="grid grid-cols-1 gap-6">
+        <MostCommentedPRsCard data={summary?.most_commented_prs || []} />
       </div>
     </div>
   );

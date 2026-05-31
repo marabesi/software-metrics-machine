@@ -35,6 +35,17 @@ export class PRsService implements IPRsService {
     const totalComments = prs.reduce((sum, pr) => sum + (pr.comments || 0), 0);
     const averageComments = prs.length > 0 ? totalComments / prs.length : 0;
 
+    const mostCommentedPRs = prs
+      .filter((pr) => pr.comments > 0)
+      .sort((a, b) => b.comments - a.comments)
+      .slice(0, 10)
+      .map((pr) => ({
+        pull_request_id: pr.id,
+        pull_request_title: pr.title,
+        pull_request_url: pr.url,
+        comments_count: pr.comments,
+      }));
+
     this.logger.debug(
       `PR Metrics: ${prs.length} total, ${mergedPRs.length} merged, avg ${averageOpenDays.toFixed(2)} days open`
     );
@@ -46,6 +57,7 @@ export class PRsService implements IPRsService {
       closedPRs: closedPRs.length,
       openPRs: openPRs.length,
       averageComments: Math.round(averageComments * 100) / 100,
+      most_commented_prs: mostCommentedPRs,
     };
   }
 

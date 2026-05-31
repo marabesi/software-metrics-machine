@@ -1,18 +1,27 @@
 import {Command} from 'commander';
 import {Configuration} from '@smmachine/core/infrastructure/configuration';
 import {Logger} from '@smmachine/utils';
-import {GithubPrsClient, PullRequestsRepository} from "@smmachine/core";
+import {GithubPrsClient, GitHubPullRequestsFetchRepository, MostCommentedPRData, PRsService, PullRequestFactory, PullRequestsRepository} from "@smmachine/core";
 
 const logger = new Logger('PRsCommand');
 
-function createPRsOrchestrator(): PullRequestsRepository {
+function createPRsOrchestratorRead(): PullRequestsRepository {
   const config = new Configuration(process.env);
+  return PullRequestFactory.create(config);
+}
 
+function createPRsOrchestratorFetch(): GitHubPullRequestsFetchRepository {
+  const config = new Configuration(process.env);
   const [githubOwner, githubRepo] = config.githubRepository!.split('/');
   const githubToken = config.githubToken!;
 
   const githubPrsClient = new GithubPrsClient(githubToken, githubOwner, githubRepo);
-  return new PullRequestsRepository(githubPrsClient, config.gitRepositoryLocation!);
+  return new GitHubPullRequestsFetchRepository(githubPrsClient, config.gitRepositoryLocation!);
+}
+
+function createPRService(): PRsService {
+  const prRepository = createPRsOrchestratorRead();
+  return new PRsService(prRepository);
 }
 
 /**
@@ -42,7 +51,7 @@ export function createPRsCommands(program: Command): void {
     .action(async (options) => {
       try {
         logger.info('🔄 Fetching pull requests from GitHub...');
-        const orchestrator = createPRsOrchestrator();
+        const orchestrator = createPRsOrchestratorFetch();
         await orchestrator.fetchPRs({
           startDate: options.startDate,
           endDate: options.endDate,
@@ -69,8 +78,8 @@ export function createPRsCommands(program: Command): void {
       try {
         console.log('📊 Generating PR summary...');
 
-        const orchestrator = createPRsOrchestrator();
-        const summary = await orchestrator.getPRMetrics({
+        const service = createPRService();
+        const summary = await service.getMetrics({
           startDate: options.startDate,
           endDate: options.endDate,
         });
@@ -83,8 +92,14 @@ export function createPRsCommands(program: Command): void {
           console.log(`Open PRs: ${summary.openPRs || 0}`);
           console.log(`Closed PRs: ${summary.closedPRs || 0}`);
           console.log(`Merged PRs: ${summary.mergedPRs || 0}`);
-          console.log(`Average Lead Time: ${summary.averageLeadTime || 'N/A'} days`);
           console.log(`Average Comments: ${summary.averageComments || 'N/A'}`);
+
+          if (summary.most_commented_prs && summary.most_commented_prs.length > 0) {
+            console.log('\nMost Commented Pull Requests:\n');
+            summary.most_commented_prs.forEach((pr: MostCommentedPRData) => {
+              console.log(`  - PR #${pr.pull_request_id}: ${pr.pull_request_title} (${pr.comments_count} comments) - ${pr.pull_request_url}`);
+            });
+          }
         }
 
         console.log('\n✅ Summary generated');
@@ -108,8 +123,8 @@ export function createPRsCommands(program: Command): void {
       try {
         console.log('📊 Analyzing PRs by month...');
 
-        const orchestrator = createPRsOrchestrator();
-        const metrics = await orchestrator.getPRsByMonth({
+        const service = createPRService();
+        const metrics = await service.getMetricsByMonth({
           startDate: options.startDate,
           endDate: options.endDate,
         });
@@ -142,8 +157,8 @@ export function createPRsCommands(program: Command): void {
       try {
         console.log('📊 Analyzing PRs by week...');
 
-        const orchestrator = createPRsOrchestrator();
-        const metrics = await orchestrator.getPRsByWeek({
+        const service = createPRService();
+        const metrics = await service.getMetricsByWeek({
           startDate: options.startDate,
           endDate: options.endDate,
         });

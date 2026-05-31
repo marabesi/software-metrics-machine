@@ -42,6 +42,14 @@ export interface PRMetrics {
   closedPRs: number;
   openPRs: number;
   averageComments: number;
+  most_commented_prs: MostCommentedPRData[];
+}
+
+export interface MostCommentedPRData {
+  pull_request_id: number;
+  pull_request_title: string;
+  pull_request_url: string;
+  comments_count: number;
 }
 
 export interface PRsByTimeframe {
