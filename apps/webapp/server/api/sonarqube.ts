@@ -9,4 +9,7 @@ export const sonarqubeAPI = {
 
   quality: (params?: ApiParams) =>
     fetchAPI<any>('/sonarqube/quality', params),
+
+  loadMeasurements: (params?: ApiParams) =>
+    fetchAPI<Array<{ metric: string; value: string }>>('/sonarqube/measurements', params),
 };

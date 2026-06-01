@@ -26,3 +26,8 @@ export interface SonarqubeComponentMeasure {
   qualifier?: string;
   measures: SonarqubeComponent[];
 }
+
+export interface SonarqubeMeasure {
+  metric: string;
+  value: string;
+}

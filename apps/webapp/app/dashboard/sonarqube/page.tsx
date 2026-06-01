@@ -3,6 +3,8 @@ import { sonarqubeAPI } from '@/server/api';
 import { ensureArray } from '@/server/utils/chartData';
 import SonarqubeTopMetricCard from '@/components/charts/sonarqube/SonarqubeTopMetricCard';
 import SonarqubeComponentTreeTableCard from '@/components/charts/sonarqube/SonarqubeComponentTreeTableCard';
+import SonarqubeMeasurementsCard from '@/components/charts/sonarqube/SonarqubeMeasurementsCard';
+import SonarqubeStatCard from '@/components/charts/sonarqube/SonarqubeStatCard';
 import { SonarqubeComponentChartData } from '@/components/charts/sonarqube/types';
 import { buildSonarqubeApiParams } from '@/server/utils/apiParams';
 
@@ -40,11 +42,18 @@ export default async function SonarqubePage({
 }) {
   const filters = parseDashboardFilters((await searchParams) ?? {}, defaultFilters);
   let components: SonarqubeComponentChartData[] = [];
+  let mainComponentMeasures: Array<{ key?: string; metric?: string; name?: string; value?: string | number }> = [];
 
   try {
     const apiParams = buildSonarqubeApiParams(filters);
     const tree = await sonarqubeAPI.componentTree(apiParams);
     const treeData = ensureArray<any>(unwrapResult(tree as any));
+
+    // Assuming the first component in the tree is the main project component
+    // for which we want to display top-level metrics
+    if (treeData.length > 0) {
+      mainComponentMeasures = treeData[0].measures || [];
+    }
 
     components = treeData.map((component) => ({
       key: component.key || '',
@@ -59,6 +68,11 @@ export default async function SonarqubePage({
     console.error('Error fetching sonarqube component tree:', error);
     components = [];
   }
+
+  const reliabilityRating = metricValue(mainComponentMeasures, 'reliability_rating');
+  const securityRating = metricValue(mainComponentMeasures, 'security_rating');
+  const maintainabilityRating = metricValue(mainComponentMeasures, 'sqale_rating');
+  const duplicationDensity = metricValue(mainComponentMeasures, 'duplicated_lines_density');
 
   const topEntries = filters.topEntries || 20;
   const topComplexity = [...components]
@@ -77,6 +91,13 @@ export default async function SonarqubePage({
 
   return (
     <div className="space-y-6">
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-6">
+        <SonarqubeStatCard title="Reliability Rating" value={reliabilityRating} color="#22c55e" />
+        <SonarqubeStatCard title="Security Rating" value={securityRating} color="#f97316" />
+        <SonarqubeStatCard title="Maintainability Rating" value={maintainabilityRating} color="#0ea5e9" />
+        <SonarqubeStatCard title="Duplication Density" value={duplicationDensity} color="#f43f5e" />
+      </div>
+      <SonarqubeMeasurementsCard filters={filters} />
       <div className="grid grid-cols-1 gap-6">
         <SonarqubeTopMetricCard
           title={`Top ${topEntries} by Complexity`}

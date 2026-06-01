@@ -16,16 +16,16 @@ import { useLinkBuilder } from '@/components/providers/LinkBuilderContext';
 
 export default function SonarqubeTopMetricCard({
   title,
-  description,
   data,
   dataKeyLabel,
   color,
+  description,
 }: {
   title: string;
-  description: string;
   data: SonarqubeTopMetricData[];
   dataKeyLabel: string;
   color: string;
+  description?: string;
 }) {
   const { urlBuilder } = useLinkBuilder();
 

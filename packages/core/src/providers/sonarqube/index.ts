@@ -2,6 +2,7 @@ export { SonarqubeMeasuresClient, type ISonarqubeMeasuresClient } from './sonarq
 export {
   type CodeMetric,
   type SonarqubeComponentTreeMeasure as SonarqubeComponentMeasure,
+  type SonarqubeMeasure,
 } from './types';
 export {
   SonarqubeFetchMetricsRepository,

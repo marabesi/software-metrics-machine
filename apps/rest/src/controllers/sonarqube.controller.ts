@@ -192,6 +192,39 @@ export class SonarqubeController {
     }
   }
 
+  /**
+   * GET /sonarqube/measurements
+   * Retrieve all measurements from SonarQube
+   *
+   * Example: GET /sonarqube/measurements
+   */
+  @Get('measurements')
+  @ApiOperation({ summary: 'Get all SonarQube measurements' })
+  @ApiOkResponse({
+    description: 'Measurements retrieved successfully',
+    type: Array,
+  })
+  @ApiResponse({
+    status: 401,
+    description: 'Authentication failed',
+    type: ErrorResponse,
+  })
+  async getMeasurements() {
+    try {
+      this.logger.debug('Loading all SonarQube measurements');
+      return await this.sonarqubeRepository.loadMeasurements();
+    } catch (error) {
+      this.logger.error(
+        `Failed to fetch SonarQube measurements: ${error}`,
+        error instanceof Error ? error.stack : ''
+      );
+      throw new HttpException(
+        `Failed to fetch SonarQube measurements: ${error instanceof Error ? error.message : String(error)}`,
+        HttpStatus.INTERNAL_SERVER_ERROR
+      );
+    }
+  }
+
   private matchesIgnore(entity: string, ignorePatterns: string[]): boolean {
     if (!entity || ignorePatterns.length === 0) {
       return false;
