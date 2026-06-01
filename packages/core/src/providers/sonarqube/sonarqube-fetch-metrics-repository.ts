@@ -55,12 +55,7 @@ export class SonarqubeFetchMetricsRepository implements IQualityMetricsRepositor
 
     logger.info('Fetching quality metrics from SonarQube...');
     const metrics = await this.sonarqubeClient.fetchComponentMeasures({
-      metrics: options?.metrics || [
-        'coverage',
-        'sqale_rating',
-        'complexity',
-        'duplicated_lines_density',
-      ],
+      metrics: options?.metrics,
     });
 
     this.lastFetch = metrics;

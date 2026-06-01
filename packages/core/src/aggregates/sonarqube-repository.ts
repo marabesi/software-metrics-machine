@@ -1,32 +1,24 @@
+import { SonarqubeComponentMeasure } from 'src';
 import { IRepository } from '../infrastructure';
+import { SonarqubeComponentTreeMeasure } from 'src/providers/sonarqube/types';
 
 export class SonarqubeRepository {
   constructor(
-    private measurementRepository: IRepository<any>,
-    private componentTreeRepository: IRepository<any>
+    private measurementRepository: IRepository<SonarqubeComponentMeasure[]>,
+    private componentTreeRepository: IRepository<SonarqubeComponentTreeMeasure[]>
   ) {}
 
-  save(item: any): Promise<void> {
-    throw new Error('Method not implemented.');
-  }
-  saveAll(items: any[]): Promise<void> {
-    throw new Error('Method not implemented.');
-  }
-  load(): Promise<any> {
-    throw new Error('Method not implemented.');
-  }
-  async loadAll(options?: any): Promise<any[]> {
+  async loadAll(options?: any): Promise<SonarqubeComponentMeasure[]> {
     const fromDisk = await this.measurementRepository.load();
     return fromDisk || [];
   }
-  delete(): Promise<void> {
-    throw new Error('Method not implemented.');
-  }
-  exists(): Promise<boolean> {
-    throw new Error('Method not implemented.');
+
+  async loadMeasurements(options?: any): Promise<SonarqubeComponentMeasure[]> {
+    const fromDisk = await this.measurementRepository.load();
+    return fromDisk || [];
   }
 
-  async loadComponentTree(options?: any): Promise<any[]> {
+  async loadComponentTree(options?: any): Promise<SonarqubeComponentTreeMeasure[]> {
     const fromDisk = await this.componentTreeRepository.load();
     return fromDisk || [];
   }

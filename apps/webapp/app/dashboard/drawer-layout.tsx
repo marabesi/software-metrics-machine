@@ -15,6 +15,7 @@ import ChevronLeftIcon from '@mui/icons-material/ChevronLeft';
 import ChevronRightIcon from '@mui/icons-material/ChevronRight';
 import FiltersContainer from '@/components/filters/FiltersContainer';
 import DashboardTabs from '@/components/tabs/TabContext';
+import { ThemeToggle } from '@/components/ThemeToggle';
 
 const drawerWidth = 400;
 
@@ -101,6 +102,7 @@ export default function DrawerLayout({
             <Typography variant="h6" noWrap component="div" sx={{ flexGrow: 1 }}>
               Software Metrics Machine {repository && `- ${repository}`}
             </Typography>
+            <ThemeToggle />
             <IconButton
               color="inherit"
               aria-label="open repository in github"

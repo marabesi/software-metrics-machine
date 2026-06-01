@@ -182,9 +182,9 @@ export class PipelinesJobFetchRepository {
         } catch (error) {
           const statusCode = this.getHttpStatusCode(error);
 
-          if (statusCode === 404) {
+          if (statusCode === 404 || statusCode === 502) {
             logger.error(
-              `Skipping workflow run ${runId} at page ${page}: jobs endpoint returned 404`
+              `Skipping workflow run ${runId} at page ${page}: jobs endpoint returned ${statusCode}. This run will be marked as processed to avoid blocking the pipeline, but its jobs will not be included.`
             );
 
             processedRunIds.add(runId);
@@ -256,9 +256,7 @@ export class PipelinesJobFetchRepository {
   }
 
   private getHttpStatusCode(error: unknown): number | undefined {
-    const err = error as
-      | { status?: number; response?: { status?: number } }
-      | undefined;
+    const err = error as { status?: number; response?: { status?: number } } | undefined;
     return err?.status ?? err?.response?.status;
   }
 

@@ -17,7 +17,7 @@ const resources = [
   {
     title: 'Configuration Guide',
     description: 'Set up providers and configure your workspace',
-    href: 'https://marabesi.github.io/software-metrics-machine/getting-started.html',
+    href: 'https://marabesi.github.io/software-metrics-machine/features/configuration.html',
     icon: '⚙️',
   },
   {
@@ -39,7 +39,6 @@ export default function Home() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 py-12 px-4">
       <div className="max-w-6xl mx-auto">
-        {/* Hero Section */}
         <div className="text-center space-y-8 mb-16">
           <h1 className="text-5xl font-bold text-gray-900">
             Software Metrics Machine

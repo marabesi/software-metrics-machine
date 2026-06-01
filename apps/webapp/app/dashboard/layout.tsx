@@ -7,6 +7,8 @@ import { Configuration } from '@smmachine/core';
 import { configurationAPI } from '@/server/api';
 import { UrlBuilderConfig } from '@/server/utils/urlBuilder';
 
+export const dynamic = 'force-dynamic';
+
 export default async function DashboardLayout({
   children,
 }: {

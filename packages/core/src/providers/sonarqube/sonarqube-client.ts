@@ -55,18 +55,18 @@ export class SonarqubeMeasuresClient implements ISonarqubeMeasuresClient {
     metrics?: string[];
   }): Promise<SonarqubeComponentMeasure> {
     try {
-      // Default metrics if not specified
       const metrics = options?.metrics || [
-        'ncloc', // Non-Commented Lines of Code
-        'complexity', // Cyclomatic complexity
-        'sqale_rating', // Maintainability rating
-        'coverage', // Code coverage
-        'duplicated_lines_density', // Duplication density
-        'vulnerability_rating', // Security rating
+        'coverage',
+        'sqale_rating',
+        'complexity',
+        'duplicated_lines_density',
+        'ncloc',
+        'code_smells',
+        'bugs',
       ];
 
       this.logger.info(
-        `Fetching SonarQube metrics for project ${this.projectKey}: ${metrics.join(', ')}`
+        `Fetching SonarQube metrics for project ${this.projectKey} (${this.url}): ${metrics.join(', ')}`
       );
 
       const response = await this.axiosInstance.get('/api/measures/component', {

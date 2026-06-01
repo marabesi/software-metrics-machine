@@ -1,2 +1,12 @@
 @import "tailwindcss";
 @import '@fontsource/roboto/300.css';
+
+@layer base {
+  :root {
+    color-scheme: light;
+  }
+
+  html.dark {
+    color-scheme: dark;
+  }
+}
