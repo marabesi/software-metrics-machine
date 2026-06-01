@@ -19,6 +19,7 @@ export function createPipelinesCommands(program: Command): void {
     .command('fetch')
     .description('Fetch pipeline runs from GitHub')
     .option('--force', 'Force re-fetching pipelines even if already fetched', false)
+    .option('--update', 'Incrementally update pipelines — fetch only newer items and merge with existing cache')
     .option('--start-date <date>', 'Filter runs created on or after this date (ISO 8601)')
     .option('--end-date <date>', 'Filter runs created on or before this date (ISO 8601)')
     .option('--raw-filters <filters>', 'Raw filters (e.g., status=success,branch=main)')
@@ -33,6 +34,7 @@ export function createPipelinesCommands(program: Command): void {
           endDate: options.endDate,
           rawFilters: options.rawFilters,
           byDay: options.byDay,
+          incrementalUpdate: options.update,
         });
 
         logger.info('✅ Fetch pipeline data has been completed and stored on disk');
@@ -46,6 +48,7 @@ export function createPipelinesCommands(program: Command): void {
     .command('fetch-jobs')
     .description('Fetch pipeline jobs from GitHub')
     .option('--force', 'Force re-fetching jobs even if already fetched')
+    .option('--update', 'Incrementally update jobs — fetch only newer items and merge with existing cache')
     .option('--run-start-date <date>', 'Filter pipelines created on or after this date')
     .option('--run-end-date <date>', 'Filter pipelines created on or before this date')
     .option('--raw-filters <filters>', 'Raw filters (e.g., status=success,branch=main)')
@@ -60,6 +63,7 @@ export function createPipelinesCommands(program: Command): void {
           endDate: options.runEndDate,
           rawFilters: options.rawFilters,
           byDay: options.byDay,
+          incrementalUpdate: options.update,
         });
 
         console.log('✅ Fetch pipeline jobs has been completed and stored on disk');

@@ -7,7 +7,6 @@ const logger = new Logger('JiraCommand');
 
 function createJiraOrchestrator() {
   const config = new Configuration(process.env);
-  const directories = config
   const { issuesRepository } = createJiraDependencies(config, config.getJiraPath());
 
   return issuesRepository
@@ -34,6 +33,7 @@ export function createJiraCommands(program: Command): void {
     .command('fetch-issues')
     .description('Fetch issues from Jira')
     .option('--force', 'Force re-fetching issues even if already fetched')
+    .option('--update', 'Incrementally update issues — fetch only newer items and merge with existing cache')
     .option('--start-date <date>', 'Filter issues created on or after this date')
     .option('--end-date <date>', 'Filter issues created on or before this date')
     .option('--status <status>', 'Filter by issue status')
@@ -48,6 +48,7 @@ export function createJiraCommands(program: Command): void {
           startDate: options.startDate,
           endDate: options.endDate,
           status: options.status,
+          incrementalUpdate: options.update,
         });
 
         if (options.output === 'json') {

@@ -46,6 +46,7 @@ export function createPRsCommands(program: Command): void {
     .command('fetch')
     .description('Fetch pull requests from GitHub')
     .option('--force', 'Force re-fetching PRs even if already fetched')
+    .option('--update', 'Incrementally update PRs — fetch only newer items and merge with existing cache')
     .option('--start-date <date>', 'Filter PRs created on or after this date (ISO 8601)')
     .option('--end-date <date>', 'Filter PRs created on or before this date (ISO 8601)')
     .action(async (options) => {
@@ -56,6 +57,7 @@ export function createPRsCommands(program: Command): void {
           startDate: options.startDate,
           endDate: options.endDate,
           forceRefresh: options.force,
+          incrementalUpdate: options.update,
         });
 
         console.log('✅ Fetch data has been completed');
@@ -68,6 +70,7 @@ export function createPRsCommands(program: Command): void {
     .command('fetch-comments')
     .description('Fetch pull request comments from GitHub')
     .option('--force', 'Force re-fetching PR comments even if already fetched')
+    .option('--update', 'Incremental update: only fetch comments updated since last sync')
     .option('--start-date <date>', 'Filter PRs by creation date on or after this date (ISO 8601)')
     .option('--end-date <date>', 'Filter PRs by creation date on or before this date (ISO 8601)')
     .action(async (options) => {
@@ -82,7 +85,10 @@ export function createPRsCommands(program: Command): void {
         const orchestratorFetch = createPRsOrchestratorFetch();
 
         for (const pr of prs) {
-          await orchestratorFetch.fetchPRComments(pr.number, { forceRefresh: options.force });
+          await orchestratorFetch.fetchPRComments(pr.number, {
+            forceRefresh: options.force,
+            incrementalUpdate: options.update,
+          });
         }
 
         console.log('✅ Fetch PR comments data has been completed');

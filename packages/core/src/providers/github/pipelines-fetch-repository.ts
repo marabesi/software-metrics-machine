@@ -22,8 +22,48 @@ export class PipelinesFetchRepository {
     rawFilters?: string;
     forceRefresh?: boolean;
     byDay?: boolean;
+    incrementalUpdate?: boolean;
   }): Promise<WorkflowJsonResponse[]> {
     const fromCache = await this.pipelineRunFileSystemRepository.loadAll();
+
+    if (options?.incrementalUpdate && fromCache.length > 0) {
+      const latestDate = this.findLatestDate(fromCache.map((r) => r.updated_at));
+      logger.info(`Incremental update: fetching pipelines updated after ${latestDate}...`);
+      const freshRuns = await this.fetchWorkflowsWithResume({
+        created: this.buildCreatedFilter(latestDate, options?.endDate),
+        rawFilters: options?.rawFilters,
+      });
+      const merged = this.mergeById(fromCache, freshRuns);
+      await this.pipelineRunFileSystemRepository.saveAll(merged);
+      return merged;
+    }
+
+    // Manual date range with merge
+    if (
+      (options?.startDate || options?.endDate) &&
+      !options?.forceRefresh &&
+      fromCache.length > 0
+    ) {
+      logger.info(
+        `Fetching pipelines for range [${options?.startDate || 'any'}..${options?.endDate || 'any'}] and merging with cache...`
+      );
+      let workflows: WorkflowJsonResponse[];
+      if (options?.byDay && options?.startDate && options?.endDate) {
+        workflows = await this.fetchWorkflowsByDay(
+          options.startDate,
+          options.endDate,
+          options.rawFilters
+        );
+      } else {
+        workflows = await this.fetchWorkflowsWithResume({
+          created: this.buildCreatedFilter(options?.startDate, options?.endDate),
+          rawFilters: options?.rawFilters,
+        });
+      }
+      const merged = this.mergeById(fromCache, workflows);
+      await this.pipelineRunFileSystemRepository.saveAll(merged);
+      return merged;
+    }
 
     if (fromCache.length > 0 && !options?.forceRefresh) {
       logger.info(`Using cached pipelines: ${fromCache.length} records`);
@@ -144,6 +184,22 @@ export class PipelinesFetchRepository {
     await this.deleteFile(progressPath);
     await this.deleteFile(incompletedPath);
     return runs;
+  }
+
+  private findLatestDate(dates: (string | undefined | null)[]): string {
+    const valid = dates.filter((d): d is string => !!d).map((d) => new Date(d).getTime());
+    if (valid.length === 0) return new Date(0).toISOString();
+    return new Date(Math.max(...valid)).toISOString();
+  }
+
+  private mergeById(
+    existing: WorkflowJsonResponse[],
+    incoming: WorkflowJsonResponse[]
+  ): WorkflowJsonResponse[] {
+    const map = new Map<string, WorkflowJsonResponse>();
+    for (const run of existing) map.set(run.id, run);
+    for (const run of incoming) map.set(run.id, run);
+    return Array.from(map.values());
   }
 
   private buildCreatedFilter(startDate?: string, endDate?: string): string | undefined {

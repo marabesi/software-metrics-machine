@@ -27,8 +27,52 @@ export class PipelinesJobFetchRepository {
     endDate?: string;
     rawFilters?: string;
     byDay?: boolean;
+    incrementalUpdate?: boolean;
   }): Promise<WorkflowJobJsonResponse[]> {
     const cachedJobs = await this.pipelineJobsFileSystemRepository.loadAll();
+
+    if (filters?.incrementalUpdate && cachedJobs.length > 0) {
+      const latestDate = this.findLatestDate(cachedJobs.map((j) => j.completed_at));
+      logger.info(`Incremental update: fetching jobs for runs after ${latestDate}...`);
+      const cachedRuns = await this.pipelineRunFileSystemRepository.loadAll();
+      const startDate = this.toDateBoundary(latestDate, 'start');
+      const newRuns = this.filterRunsByDateRange(cachedRuns, startDate, undefined);
+      const freshJobs = await this.fetchJobsWithResume(newRuns, filters.rawFilters);
+      const merged = this.mergeJobsById(cachedJobs, freshJobs);
+      await this.pipelineJobsFileSystemRepository.saveAll(merged);
+      return merged;
+    }
+
+    // Manual date range with merge
+    if (
+      (filters?.startDate || filters?.endDate) &&
+      !filters?.forceRefresh &&
+      cachedJobs.length > 0
+    ) {
+      logger.info(
+        `Fetching jobs for range [${filters?.startDate || 'any'}..${filters?.endDate || 'any'}] and merging with cache...`
+      );
+      const cachedRuns = await this.pipelineRunFileSystemRepository.loadAll();
+      let freshJobs: WorkflowJobJsonResponse[];
+
+      if (filters?.byDay && filters?.startDate && filters?.endDate) {
+        freshJobs = await this.fetchJobsByDay(
+          cachedRuns,
+          filters.startDate,
+          filters.endDate,
+          filters.rawFilters
+        );
+      } else {
+        const startDate = this.toDateBoundary(filters.startDate, 'start');
+        const endDate = this.toDateBoundary(filters.endDate, 'end');
+        const filteredRuns = this.filterRunsByDateRange(cachedRuns, startDate, endDate);
+        freshJobs = await this.fetchJobsWithResume(filteredRuns, filters.rawFilters);
+      }
+
+      const merged = this.mergeJobsById(cachedJobs, freshJobs);
+      await this.pipelineJobsFileSystemRepository.saveAll(merged);
+      return merged;
+    }
 
     if (cachedJobs.length > 0 && !filters?.forceRefresh) {
       logger.info(`Using cached jobs: ${cachedJobs.length} records`);
@@ -96,6 +140,22 @@ export class PipelinesJobFetchRepository {
     }
 
     return allJobs;
+  }
+
+  private findLatestDate(dates: (string | undefined | null)[]): string {
+    const valid = dates.filter((d): d is string => !!d).map((d) => new Date(d).getTime());
+    if (valid.length === 0) return new Date(0).toISOString();
+    return new Date(Math.max(...valid)).toISOString();
+  }
+
+  private mergeJobsById(
+    existing: WorkflowJobJsonResponse[],
+    incoming: WorkflowJobJsonResponse[]
+  ): WorkflowJobJsonResponse[] {
+    const map = new Map<string, WorkflowJobJsonResponse>();
+    for (const job of existing) map.set(job.id, job);
+    for (const job of incoming) map.set(job.id, job);
+    return Array.from(map.values());
   }
 
   private filterRunsByDateRange(

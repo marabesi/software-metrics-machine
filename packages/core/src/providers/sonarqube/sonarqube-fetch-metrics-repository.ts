@@ -98,13 +98,52 @@ export class SonarqubeFetchMetricsRepository implements IQualityMetricsRepositor
     metrics?: string[];
     startDate?: string;
     endDate?: string;
+    forceRefresh?: boolean;
+    incrementalUpdate?: boolean;
   }): Promise<any[]> {
     try {
       logger.debug(`Fetching historical measures: ${JSON.stringify(options)}`);
 
+      if (options?.incrementalUpdate) {
+        const cachedAll = await this.cacheHistorical.load();
+        const cached: any[] = Array.isArray(cachedAll) ? cachedAll : [];
+
+        if (cached.length > 0) {
+          const latestDate = this.findLatestDateInMeasures(cached);
+          logger.info(`Incremental update: fetching historical measures after ${latestDate}...`);
+          const fresh = await this.sonarqubeClient.fetchHistoricalMeasures({
+            metrics: options?.metrics,
+            startDate: latestDate,
+            endDate: options?.endDate,
+          });
+          const merged = this.mergeHistoricalMeasures(cached, fresh);
+          await this.cacheHistorical.save(merged);
+          return merged;
+        }
+      }
+
+      // Manual date range with merge
+      if ((options?.startDate || options?.endDate) && !options?.forceRefresh) {
+        const cachedAll = await this.cacheHistorical.load();
+        const cached: any[] = Array.isArray(cachedAll) ? cachedAll : [];
+
+        if (cached.length > 0) {
+          logger.info(
+            `Fetching historical measures for range [${options?.startDate || 'any'}..${options?.endDate || 'any'}] and merging with cache...`
+          );
+          const fresh = await this.sonarqubeClient.fetchHistoricalMeasures({
+            metrics: options?.metrics,
+            startDate: options?.startDate,
+            endDate: options?.endDate,
+          });
+          const merged = this.mergeHistoricalMeasures(cached, fresh);
+          await this.cacheHistorical.save(merged);
+          return merged;
+        }
+      }
+
       const historical = await this.sonarqubeClient.fetchHistoricalMeasures(options);
       await this.cacheHistorical.save(historical);
-
       return historical;
     } catch (error) {
       logger.error(
@@ -115,5 +154,22 @@ export class SonarqubeFetchMetricsRepository implements IQualityMetricsRepositor
         `Failed to fetch historical measures: ${error instanceof Error ? error.message : String(error)}`
       );
     }
+  }
+
+  private findLatestDateInMeasures(measures: any[]): string {
+    const timestamps = measures
+      .map((m) => m.timestamp as string | undefined)
+      .filter((t): t is string => !!t)
+      .map((t) => new Date(t).getTime());
+    if (timestamps.length === 0) return new Date(0).toISOString();
+    return new Date(Math.max(...timestamps)).toISOString();
+  }
+
+  private mergeHistoricalMeasures(existing: any[], incoming: any[]): any[] {
+    const key = (m: any): string => `${m.metric ?? ''}_${m.timestamp ?? ''}`;
+    const map = new Map<string, any>();
+    for (const m of existing) map.set(key(m), m);
+    for (const m of incoming) map.set(key(m), m);
+    return Array.from(map.values());
   }
 }

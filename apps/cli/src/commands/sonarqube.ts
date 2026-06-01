@@ -158,6 +158,7 @@ export function createSonarQubeCommands(program: Command): void {
     )
     .option('--start-date <date>', 'Start date in YYYY-MM-DD format')
     .option('--end-date <date>', 'End date in YYYY-MM-DD format')
+    .option('--update', 'Incrementally update measures — fetch only newer items since last sync and merge with existing cache')
     .option('--output <format>', 'Output format (text|json)', 'text')
     .option('--save <file>', 'Save results to a JSON file at the given path')
     .action(async (options) => {
@@ -172,6 +173,7 @@ export function createSonarQubeCommands(program: Command): void {
             : undefined,
           startDate: options.startDate,
           endDate: options.endDate,
+          incrementalUpdate: options.update,
         };
 
         const measures = await orchestrator.fetchHistoricalMeasures(fetchOptions);
