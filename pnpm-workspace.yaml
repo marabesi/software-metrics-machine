@@ -28,9 +28,9 @@ catalog:
   '@types/react': ^19
   '@types/react-dom': ^19
   '@types/supertest': ^2.0.12
-  '@typescript-eslint/eslint-plugin': ^8.60.0
-  '@typescript-eslint/parser': ^8.60.0
-  '@vitest/coverage-v8': ^4.1.7
+  '@typescript-eslint/eslint-plugin': ^8.60.1
+  '@typescript-eslint/parser': ^8.60.1
+  '@vitest/coverage-v8': ^4.1.8
   axios: ^1.16.1
   chalk: ^5.6.2
   class-transformer: ^0.5.1
@@ -65,6 +65,6 @@ catalog:
   vitepress: ^1.6.4
   vitepress-plugin-mermaid: ^2.0.17
   vitepress-plugin-tabs: ^0.7.3
-  vitest: ^4.1.7
+  vitest: ^4.1.8
 
 linkWorkspacePackages: true
