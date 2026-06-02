@@ -93,6 +93,9 @@ CODEMAAT_DATA_PATH=/path/to/codemaat/csv/files
 
 # Output
 OUTPUT_DIR=./outputs
+
+# General
+SMM_STORE_DATA_AT=/path/to/data/folder
 ```
 
 ## API Documentation

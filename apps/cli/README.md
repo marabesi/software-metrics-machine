@@ -46,6 +46,7 @@ REPO_PATH=/path/to/repository
 OUTPUT_DIR=./outputs          # Directory for caching metrics
 DEBUG=true                    # Enable debug logging
 NODE_ENV=production           # development|production
+SMM_STORE_DATA_AT=/path/to/data/folder  # Root directory for SMM data and smm_config.json
 ```
 
 ## Usage
