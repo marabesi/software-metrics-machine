@@ -4,129 +4,124 @@ outline: deep
 
 # Getting started
 
-This section provides the needed configuration to get started with Metrics machine, it requires knowledge of env variables
-and python ecosystem tools.
+This section walks you through the configuration needed to start using Software Metrics Machine.
 
-## The concepts behind Software Metrics Machine
+## How it works
 
-The way this project works goes through three main steps:
+The project follows three steps:
 
-1. Fetch data from the providers (git, github, gitlab, etc)
-2. Store the data in a structured way (json files)
-3. Analyze and visualize the data
+1. Fetch data from providers (GitHub, GitLab, Jira, SonarQube, local Git)
+2. Store the data in a structured way (JSON files)
+3. Analyse and visualise the data
+
+## Environment requirements
+
+- Node.js 25+
+- Java (required only for source code analysis via CodeMaat)
 
 ## Installing
 
-### Environment requirements
-
-* Node.js 25+
-* java (for running source code analysis)
-
-### Via npm
-
 ```bash
-npx @smmachine/launcher
-
-or
-
 npm i -g @smmachine/launcher
 ```
 
-Once installed, you can run the `smm` command in your terminal:
+Once installed, run `smm` in your terminal to see available commands.
 
-```plaintext
-smm
-```
+## Configuration approaches
 
-## Define where to store the data
+Software Metrics Machine supports two configuration approaches depending on how you use it:
 
-This project uses a folder to store the data fetched from the different providers, set the env variable `SMM_STORE_DATA_AT`
-to point to the desired location. Use absolute paths.
+| Approach | Used by | How |
+|---|---|---|
+| `smm_config.json` file | CLI (`smm` commands) | JSON file in your data folder |
+| Environment variables | REST API (`pnpm dev`) | Shell exports or `.env` |
+
+Both approaches can be combined — environment variables serve as fallback for values not set in `smm_config.json`.
+
+### CLI: smm_config.json
+
+The CLI reads configuration from a JSON file located in the folder you designate for data storage.
+
+**Step 1** — Set the data storage location:
 
 ```bash
-export SMM_STORE_DATA_AT=/path/to/data/folder
+export SMM_STORE_DATA_AT=/path/to/your/data/folder
 ```
 
-Ensure the folder exists and use a different folder than the cloned repository to avoid any accidental deletion or data
-changes. For example:
+Use an absolute path outside the cloned repository to avoid accidental data loss.
 
-## Create the configuration file
-
-The configuration file is the central point to configure the project and give it default values, it uses JSON format.
-In the folder pointed to store the data, create a configuration file named `smm_config.json` with the following content:
+**Step 2** — Create `smm_config.json` in that folder:
 
 ```json
 {
   "git_provider": "github",
   "github_token": "your_github_token",
-  "github_repository": "marabesi/json-tool",
-  "git_repository_location": "/your/local/repo"
+  "github_repository": "owner/repo-name",
+  "git_repository_location": "/absolute/path/to/local/repo"
 }
 ```
 
-This configuration is the central point to configure the project and give it default values. Replace `your_github_token` with
-the token you generated, and `/your/local/repo` with the path where you cloned the repository. A table wih the full
-configuration options is available at [Configuration options](./features/configuration.md).
+A full list of supported config file keys is available at [Configuration options](./features/configuration.md).
 
-### Checkpoint store data
-
-Let's now check the env variables for data storage, run the following command:
+**Step 3** — Verify your setup:
 
 ```bash
-env
+env | grep SMM_STORE_DATA_AT
+smm --help
 ```
 
-You should see an output something like the following:
+### REST API: environment variables
 
-```plaintext
-SMM_STORE_DATA_AT=/path/to/data/folder
+When running the REST API directly (e.g. with `pnpm dev`), configuration is provided via shell environment variables:
+
+```bash
+# GitHub
+export GITHUB_TOKEN=ghp_your_token
+export GITHUB_OWNER=your-org-or-username
+export GITHUB_REPO=your-repo-name
+
+# Data storage
+export SMM_STORE_DATA_AT=/path/to/your/data/folder
+
+# Optional: Jira
+export JIRA_URL=https://jira.company.com
+export JIRA_EMAIL=user@company.com
+export JIRA_TOKEN=your_jira_token
+export JIRA_PROJECT=PROJ
+
+# Optional: SonarQube
+export SONAR_URL=https://sonarqube.company.com
+export SONAR_TOKEN=your_sonar_token
+export SONAR_PROJECT=com.company:projectkey
 ```
 
-With this, you are ready to start using Software Metrics Machine and fetch data from your repository with a local
-setup.
+See [CONTRIBUTING.md](../../CONTRIBUTING.md) for the complete variable reference.
 
 ## Ready to go
 
-You are now ready to start using Software Metrics Machine and fetch data from your repository. The next step is to
-pick a provider and start fetching data. Proceed to [your first analysis with GitHub](./your-first-analysis-with-github.md).
+You are now ready to start using Software Metrics Machine. The next step is to pick a provider and start fetching data. Proceed to [your first analysis with GitHub](./your-first-analysis-with-github.md).
 
-## Docker setup
+## Docker setup (optional)
 
 > [!IMPORTANT]
-> Using docker is optional, it requires extra knowledge of docker commands and docker installation.
->
+> Using Docker is optional and requires Docker and Docker Compose to be installed.
 
-This project provides a docker image to run the commands without the need to instal the python environment locally. To build the
-docker image, run the following command in the root of the cloned repository:
+A `docker-compose.yml` is provided at the repository root. It starts the REST API, the Next.js webapp, and SonarQube together.
 
-```bash
-docker build -t smm-docker:latest .
-```
-
-Once the image is built, you can run the commands using docker.
-
-### Checkpoint docker setup
-
-To check the docker setup, run the following command:
+Before starting, create the SonarQube data directories:
 
 ```bash
-docker run --rm -e SMM_STORE_DATA_AT="/data" -v $(pwd)/downloads:/data smm-docker smm
+mkdir -p docker/sonar_data docker/sonar_extensions docker/sonar_logs
 ```
 
-You should see an output something like the following:
+Then start all services:
 
-```plaintext
-Usage: main.py [OPTIONS] COMMAND [ARGS]...
-
-Options:
-  --help  Show this message and exit.
-
-Commands:
-  code
-  pipelines
-  prs
-  tools
+```bash
+SMM_STORE_DATA_AT=/path/to/your/data/folder docker-compose up
 ```
 
-Now you are ready to go and start running the commands using docker, take the commands from the CLI documentation
-and run them using docker as shown in the checkpoint above.
+Services:
+- Dashboard: `http://localhost:3000`
+- REST API: `http://localhost:8000`
+- Swagger UI: `http://localhost:8000/api/docs`
+- SonarQube: `http://localhost:9000`
