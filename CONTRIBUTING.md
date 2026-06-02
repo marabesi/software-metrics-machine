@@ -40,7 +40,45 @@ cd software-metrics-machine
 pnpm install
 ```
 
-3. Create a branch:
+3. Copy the webapp environment file:
+
+```bash
+cp apps/webapp/.env.local.example apps/webapp/.env.local
+```
+
+The default value (`SMM_REST_BASE_URL=http://localhost:8000`) works for local development without changes.
+
+4. Export environment variables for the providers you want to use. At minimum, one provider must be configured. Example using GitHub:
+
+```bash
+export GITHUB_TOKEN=ghp_your_token
+export GITHUB_OWNER=your-org-or-username
+export GITHUB_REPO=your-repo-name
+```
+
+Full list of supported variables:
+
+| Variable | Provider | Description |
+|---|---|---|
+| `GITHUB_TOKEN` | GitHub | Personal access token |
+| `GITHUB_OWNER` | GitHub | Organisation or username |
+| `GITHUB_REPO` | GitHub | Repository name |
+| `JIRA_URL` | Jira | Base URL of your Jira instance |
+| `JIRA_EMAIL` | Jira | Account email |
+| `JIRA_TOKEN` | Jira | API token |
+| `JIRA_PROJECT` | Jira | Project key (e.g. `PROJ`) |
+| `SONARQUBE_URL` | SonarQube | Base URL of your SonarQube instance |
+| `SONARQUBE_TOKEN` | SonarQube | API token |
+| `SONARQUBE_PROJECT` | SonarQube | Project key |
+| `GIT_REPOSITORY_PATH` | Git | Absolute path to the local git repository |
+| `CODEMAAT_DATA_PATH` | CodeMaat | Path to CodeMaat CSV output files |
+| `SMM_STORE_DATA_AT` | General | Directory where SMM stores fetched data |
+| `OUTPUT_DIR` | General | Directory for CLI output files |
+| `PORT` | REST API | Port for the REST API (default: `8000`) |
+
+Only variables for providers you actually use are required — unconfigured providers are gracefully skipped.
+
+5. Create a branch:
 
 ```bash
 git checkout -b feature/your-feature-name
