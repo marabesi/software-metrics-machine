@@ -51,13 +51,39 @@ This project relies on metrics that are extracted from:
 
 ## Getting started
 
-```sh
-npm install -g @smmachine/launcher
-```
+### End-user install (recommended)
 
 ```sh
+npm install -g @smmachine/launcher
 smm
 ```
+
+### Local development
+
+Requirements: Node.js >= 25.2.1, pnpm >= 10.0.0, Git.
+
+```sh
+# 1. Enable pnpm
+corepack enable
+
+# 2. Install all workspace dependencies
+pnpm install
+
+# 3. Copy the webapp environment file
+cp apps/webapp/.env.local.example apps/webapp/.env.local
+
+# 4. Export credentials for at least one provider (GitHub shown as example)
+export GITHUB_TOKEN=ghp_your_token
+export GITHUB_OWNER=your-org-or-username
+export GITHUB_REPO=your-repo-name
+
+# 5. Start the webapp (port 3000) and REST API (port 8000)
+pnpm dev
+```
+
+The dashboard is available at `http://localhost:3000` and the REST API Swagger UI at `http://localhost:8000/api/docs`.
+
+See [CONTRIBUTING.md](./CONTRIBUTING.md) for a full list of environment variables, Docker Compose setup, and CodeMaat configuration.
 
 ```sh
 Usage: smm [options] [command]
