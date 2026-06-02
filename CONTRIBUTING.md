@@ -121,6 +121,34 @@ pnpm --filter @smmachine/core test
 pnpm --filter @smmachine/webapp build
 ```
 
+### Docker Compose (optional)
+
+A `docker-compose.yml` is provided at the repository root. It starts the REST API, the Next.js webapp, and a local SonarQube instance together.
+
+Before running Docker Compose for the first time, create the SonarQube data directories that are mounted as volumes:
+
+```bash
+mkdir -p docker/sonar_data docker/sonar_extensions docker/sonar_logs
+```
+
+Then start all services:
+
+```bash
+export SMM_STORE_DATA_AT=/path/to/your/data/folder
+docker-compose up
+```
+
+Services started:
+
+| Service | URL |
+|---|---|
+| Dashboard (webapp) | http://localhost:3000 |
+| REST API | http://localhost:8000 |
+| Swagger UI | http://localhost:8000/api/docs |
+| SonarQube | http://localhost:9000 |
+
+> The `docker/sonar_*` directories are excluded from version control (`.gitignore`). They must be created manually on each new clone.
+
 ## Contribution Guidelines
 
 - Keep changes focused and scoped to the feature/fix.
