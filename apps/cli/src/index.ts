@@ -6,6 +6,7 @@ import { createJiraCommands } from './commands/jira';
 import { createSonarQubeCommands } from './commands/sonarqube';
 import { createDashboardCommands } from './commands/dashboard';
 import { createToolsCommands } from './commands/tools';
+import { createHealthCheckCommand } from './commands/health-check';
 import { Logger } from '@smmachine/utils';
 
 const logger = new Logger('smm-cli');
@@ -33,6 +34,7 @@ export function commands() {
   createSonarQubeCommands(program);
   createDashboardCommands(program);
   createToolsCommands(program);
+  createHealthCheckCommand(program);
 
   // Global help
   program
