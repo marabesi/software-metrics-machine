@@ -228,5 +228,26 @@ describe('CLI Commands', () => {
         expect(metricsCmd?.description()?.length).toBeGreaterThan(0);
       });
     });
+
+    describe('SonarQube Analysis Command', () => {
+      it('should register sonarqube analysis run command', () => {
+        const sonarqubeCmd = program.commands.find((cmd) => cmd.name() === 'sonarqube');
+        const analysisCmd = sonarqubeCmd?.commands.find((cmd) => cmd.name() === 'analysis');
+        const runCmd = analysisCmd?.commands.find((cmd) => cmd.name() === 'run');
+
+        expect(sonarqubeCmd).toBeDefined();
+        expect(analysisCmd).toBeDefined();
+        expect(runCmd).toBeDefined();
+      });
+
+      it('should expose sonar properties option for analysis run', () => {
+        const sonarqubeCmd = program.commands.find((cmd) => cmd.name() === 'sonarqube');
+        const analysisCmd = sonarqubeCmd?.commands.find((cmd) => cmd.name() === 'analysis');
+        const runCmd = analysisCmd?.commands.find((cmd) => cmd.name() === 'run');
+        const propertyOption = runCmd?.options.find((opt) => opt.long === '--properties');
+
+        expect(propertyOption).toBeDefined();
+      });
+    });
   });
 });
