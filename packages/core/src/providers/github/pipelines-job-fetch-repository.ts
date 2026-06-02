@@ -36,8 +36,20 @@ export class PipelinesJobFetchRepository {
       logger.info(`Incremental update: fetching jobs for runs after ${latestDate}...`);
       const cachedRuns = await this.pipelineRunFileSystemRepository.loadAll();
       const startDate = this.toDateBoundary(latestDate, 'start');
-      const newRuns = this.filterRunsByDateRange(cachedRuns, startDate, undefined);
-      const freshJobs = await this.fetchJobsWithResume(newRuns, filters.rawFilters);
+      let freshJobs: WorkflowJobJsonResponse[];
+      
+      if (filters?.byDay && filters?.endDate) {
+        freshJobs = await this.fetchJobsByDay(
+          cachedRuns,
+          latestDate,
+          filters.endDate,
+          filters.rawFilters
+        );
+      } else {
+        const newRuns = this.filterRunsByDateRange(cachedRuns, startDate, undefined);
+        freshJobs = await this.fetchJobsWithResume(newRuns, filters.rawFilters);
+      }
+      
       const merged = this.mergeJobsById(cachedJobs, freshJobs);
       await this.pipelineJobsFileSystemRepository.saveAll(merged);
       return merged;
