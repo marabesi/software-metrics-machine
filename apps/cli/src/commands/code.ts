@@ -6,6 +6,7 @@ import { Logger } from '@smmachine/utils';
 import { Configuration } from '@smmachine/core/infrastructure/configuration';
 import { CodemaatFactory } from '@smmachine/core/aggregates/codemaat-factory';
 import { PairingFactory } from '@smmachine/core/aggregates/pairing-factory';
+import path from 'path';
 
 const logger = new Logger('CodeCommand');
 
@@ -78,6 +79,7 @@ export function createCodeCommands(program: Command): void {
           startDate: options.startDate,
           subfolder: options.subfolder,
           force: options.force,
+          scriptPath: process.env.SMM_DEV_MODE === 'true' ? path.resolve(__dirname, '../../fetch-codemaat.sh') : undefined,
         });
 
         if (options.output === 'json') {
