@@ -8,3 +8,9 @@ export {
   SonarqubeFetchMetricsRepository,
   type IQualityMetricsRepository,
 } from './sonarqube-fetch-metrics-repository';
+export {
+  SonarqubeLocalAnalysis,
+  type SonarqubeLocalAnalysisOptions,
+  type SonarqubeContainerUrls,
+  type LocalSonarqubeTokenData,
+} from './sonarqube-local-analysis';
