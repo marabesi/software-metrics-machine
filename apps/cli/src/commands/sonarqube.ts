@@ -1,4 +1,4 @@
-import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
+import { existsSync, mkdirSync, readFileSync, writeFileSync, rmdirSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { spawn } from 'node:child_process';
 import { randomBytes } from 'node:crypto';
@@ -412,13 +412,14 @@ export function createSonarQubeCommands(program: Command): void {
   sonarqubeAnalysisGroup
     .command('run')
     .description('Start local SonarQube (if needed) and execute sonar-scanner in Docker')
-    .option('--container-name <name>', 'SonarQube container name', 'sonarqube')
-    .option('--container-image <image>', 'SonarQube Docker image', 'sonarqube:community')
+    .option('--container-server-name <name>', 'SonarQube container name', 'sonarqube')
+    .option('--scanner-container-name <name>', 'SonarQube scanner container name', 'sonarqube-scanner')
+    .option('--container-server-image <image>', 'SonarQube Docker image', 'sonarqube:community')
     .option('--scanner-image <image>', 'Sonar scanner Docker image', 'sonarsource/sonar-scanner-cli')
     .option('--data-dir <path>', 'Host path mounted to /opt/sonarqube/data', './sonarqube_data')
-    .option('--port <number>', 'Host port mapped to SonarQube container port 9000', '9000')
-    .option('--host-url <url>', 'SONAR_HOST_URL passed to scanner (overrides container-derived URL)')
-    .option('--token <token>', 'SONAR_TOKEN passed to scanner')
+    .option('--server-port <number>', 'Host port mapped to SonarQube container port 9000', '9000')
+    .option('--scanner-host-url <url>', 'SONAR_HOST_URL passed to scanner (overrides container-derived URL)')
+    .option('--scanner-token <token>', 'SONAR_TOKEN passed to scanner')
     .option('--properties <value>', 'Raw SONAR_SCANNER_OPTS value passed directly to scanner')
     .option('--admin-user <user>', 'Predefined local SonarQube admin username', 'admin')
     .option('--admin-password <password>', 'Predefined local SonarQube admin password', 'admin')
@@ -427,29 +428,44 @@ export function createSonarQubeCommands(program: Command): void {
         const config = new Configuration(process.env);
         await assertDockerAvailable();
 
-        const containerName = String(options.containerName);
-        const containerImage = String(options.containerImage);
+        const containerName = String(options.containerServerName);
+        const scannerContainerName = String(options.scannerContainerName);
+        const containerImage = String(options.containerServerImage);
         const scannerImage = String(options.scannerImage);
         const dataDirectory = resolve(String(options.dataDir));
         const sourceDirectory = resolve(String(config.gitRepositoryLocation));
-        const hostPort = String(options.port);
+        const hostPort = String(options.serverPort);
         const scannerOptions = String(options.properties || '').trim();
         const localAdminUser = String(options.adminUser);
         const localAdminPassword = String(options.adminPassword);
 
         const containerState = await getContainerState(containerName);
         if (containerState === 'running') {
-          console.log(`ℹ️ SonarQube container "${containerName}" is already running. Skipping startup.`);
+          logger.info(`ℹ️ SonarQube container "${containerName}" is already running. Skipping startup.`);
         } else if (containerState === 'stopped') {
-          console.log(`🔄 Starting existing SonarQube container "${containerName}"...`);
+          logger.info(`🔄 Starting existing SonarQube container "${containerName}"...`);
           const startResult = await runCommand('docker', ['start', containerName]);
           if (startResult.code !== 0) {
             throw new Error(`Failed to start SonarQube container "${containerName}".`);
           }
-          console.log('⏳ Waiting for SonarQube to become operational...');
+          logger.info('⏳ Waiting for SonarQube to become operational...');
           await waitForSonarqubeReady(containerName);
         } else {
-          console.log(`🚀 Starting SonarQube Community container "${containerName}"...`);
+          // start fresh. file that stores local data should be deleted to avoid confusion with previous instance data (e.g. if container was recreated or host/port changed)
+          const localSonarqubeTokenPath = getLocalSonarqubeTokenPath(config);
+          if (existsSync(localSonarqubeTokenPath)) {
+            logger.info(
+              `🧹 Removing existing local SonarQube token data at "${localSonarqubeTokenPath}" to ensure clean state for new container.`
+            );
+            try {
+              rmdirSync(localSonarqubeTokenPath);
+            } catch (error) {
+              logger.warn(
+                `Failed to clear local Sonarqube token data at "${localSonarqubeTokenPath}". You may want to manually delete this file to remove stale data: ${error}`
+              );
+            }
+          }
+          logger.info(`🚀 Starting SonarQube Community container "${containerName}"...`);
           const sonarqubeDockerRunArgs = [
             'run',
             '-d',
@@ -481,8 +497,8 @@ export function createSonarQubeCommands(program: Command): void {
         );
 
         const sonarqubeUrls = await getContainerHostUrlWithFallbackPort(containerName, hostPort);
-        const hostUrl = options.hostUrl
-          ? String(options.hostUrl)
+        const hostUrl = options.scannerHostUrl
+          ? String(options.scannerHostUrl).trim()
           : sonarqubeUrls.hostUrl;
 
         logger.info(`ℹ️ SonarQube internal URL: ${sonarqubeUrls.internalUrl}`);
@@ -496,7 +512,7 @@ export function createSonarQubeCommands(program: Command): void {
           defaultPassword: localAdminPassword,
         });
 
-        const sonarToken = options.token ||
+        const sonarToken = options.scannerToken ||
           (await getLocalSonarqubeToken({
             config,
             hostUrl,
@@ -506,10 +522,9 @@ export function createSonarQubeCommands(program: Command): void {
         const scannerArgs = [
           'run',
           '--rm',
-          '--network',
-          `container:${containerName}`,
+          `--name=${scannerContainerName}`,
           '-e',
-          `SONAR_HOST_URL=${hostUrl}`,
+          `SONAR_HOST_URL=${sonarqubeUrls.internalUrl}`,
         ];
 
         if (sonarToken) {
@@ -522,13 +537,13 @@ export function createSonarQubeCommands(program: Command): void {
 
         scannerArgs.push('-v', `${sourceDirectory}:/usr/src`, scannerImage);
 
-        console.log('🔎 Running SonarQube scanner...');
+        logger.info('🔎 Running SonarQube scanner... ');
         const scannerResult = await runCommand('docker', scannerArgs);
         if (scannerResult.code !== 0) {
           throw new Error('SonarQube scanner execution failed.');
         }
 
-        console.log('✅ SonarQube analysis has been completed');
+        logger.info('✅ SonarQube analysis has been completed');
       } catch (error) {
         logger.error('Failed to run SonarQube analysis', error);
         process.exit(1);
@@ -549,7 +564,7 @@ export function createSonarQubeCommands(program: Command): void {
     .option('--output <format>', 'Output format (text|json)', 'text')
     .action(async (options) => {
       try {
-        console.log('🔄 Fetching quality measures from SonarQube...');
+        logger.info('🔄 Fetching quality measures from SonarQube...');
 
         const orchestrator = createSonarqubeOrchestrator();
 
@@ -576,7 +591,7 @@ export function createSonarQubeCommands(program: Command): void {
           }
         }
 
-        console.log('\n✅ Fetch measures has been completed');
+        logger.info('\n✅ Fetch measures has been completed');
       } catch (error) {
         logger.error('Failed to fetch SonarQube measures', error);
         process.exit(1);
@@ -624,21 +639,21 @@ export function createSonarQubeCommands(program: Command): void {
           console.log('\n=== SonarQube Component Tree ===\n');
           console.log(`Components Fetched: ${components.length}`);
 
-          // if (components.length > 0) {
-          //   const root = components[0];
-          //   console.log(`Root Component: ${root.key || 'N/A'}`);
-          //   console.log(`Root Name: ${root.name || 'N/A'}`);
-          // }
+          if (components.length > 0) {
+            const root = components[0];
+            console.log(`Root Component: ${root.key || 'N/A'}`);
+            console.log(`Root Name: ${root.name || 'N/A'}`);
+          }
 
-          // if (components.length > 0) {
-          //   console.log('\nComponents:');
-          //   for (const component of components) {
-          //     const measureCount = Array.isArray(component.measures)
-          //       ? component.measures.length
-          //       : 0;
-          //     console.log(`  ${component.key || 'unknown'} - measures: ${measureCount}`);
-          //   }
-          // }
+          if (components.length > 0) {
+            console.log('\nComponents:');
+            for (const component of components) {
+              const measureCount = Array.isArray(component.measures)
+                ? component.measures.length
+                : 0;
+              console.log(`  ${component.key || 'unknown'} - measures: ${measureCount}`);
+            }
+          }
         }
 
         console.log('\n✅ Fetch component tree has been completed');
