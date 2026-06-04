@@ -36,6 +36,8 @@ export interface PRComment {
   body: string;
   pull_request_review_id: number;
   id: number;
+  createdAt: string;
+  author: PRUser;
   reactions: {
     url: string;
     total_count: number;

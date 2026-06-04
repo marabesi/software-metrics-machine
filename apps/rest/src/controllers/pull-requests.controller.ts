@@ -167,6 +167,85 @@ export class PullRequestsController {
     return { avg_comments: avgComments };
   }
 
+  @Get('/pull-requests/comments-by-author')
+  async commentsByAuthor(
+    @Query('start_date') startDate?: string,
+    @Query('end_date') endDate?: string,
+    @Query('labels') labels?: string,
+    @Query('top') top?: string,
+    @Query('authors') authors?: string,
+    @Query('status') status?: PRDetails['state']
+  ) {
+    const prs = await this.loadPRsWithFilters({ startDate, endDate, authors, labels, status });
+    const grouped = new Map<string, number>();
+
+    for (const pr of prs) {
+      for (const comment of pr.comments || []) {
+        const author = comment.author?.login || 'unknown';
+        grouped.set(author, (grouped.get(author) || 0) + 1);
+      }
+    }
+
+    const maxRows = top ? Number(top) : 10;
+    const result = Array.from(grouped.entries())
+      .map(([author, count]) => ({ author, count }))
+      .sort((a, b) => b.count - a.count)
+      .slice(0, Number.isFinite(maxRows) ? maxRows : 10);
+
+    return { result };
+  }
+
+  @Get('/pull-requests/first-comment-time')
+  async firstCommentTime(
+    @Query('start_date') startDate?: string,
+    @Query('end_date') endDate?: string,
+    @Query('labels') labels?: string,
+    @Query('top') top?: string,
+    @Query('authors') authors?: string,
+    @Query('status') status?: PRDetails['state']
+  ) {
+    const prs = await this.loadPRsWithFilters({ startDate, endDate, authors, labels, status });
+    const grouped = new Map<string, number[]>();
+
+    for (const pr of prs) {
+      if (!Array.isArray(pr.comments) || pr.comments.length === 0) {
+        continue;
+      }
+
+      const firstComment = [...pr.comments]
+        .filter((comment) => Boolean(comment.createdAt))
+        .sort((a, b) => this.toTimestamp(a.createdAt) - this.toTimestamp(b.createdAt))[0];
+
+      if (!firstComment) {
+        continue;
+      }
+
+      const prOpenedAt = this.toTimestamp(pr.createdAt);
+      const firstCommentAt = this.toTimestamp(firstComment.createdAt);
+      if (prOpenedAt === 0 || firstCommentAt === 0 || firstCommentAt < prOpenedAt) {
+        continue;
+      }
+
+      const author = pr.author?.login || 'unknown';
+      const hours = (firstCommentAt - prOpenedAt) / (1000 * 60 * 60);
+      const existing = grouped.get(author) || [];
+      existing.push(hours);
+      grouped.set(author, existing);
+    }
+
+    const maxRows = top ? Number(top) : 10;
+    const result = Array.from(grouped.entries())
+      .map(([author, values]) => ({
+        author,
+        avg_hours: values.length > 0 ? values.reduce((a, b) => a + b, 0) / values.length : 0,
+        prs_with_comments: values.length,
+      }))
+      .sort((a, b) => b.avg_hours - a.avg_hours)
+      .slice(0, Number.isFinite(maxRows) ? maxRows : 10);
+
+    return { result };
+  }
+
   @Get('/pull-requests/authors')
   async authors() {
     const prs = await this.pullRequestsRepo.loadPrsWithFilters();

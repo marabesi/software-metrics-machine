@@ -80,6 +80,11 @@ export class PullRequestsRepository {
           body: comment.body,
           pull_request_review_id: comment.pull_request_review_id || 0,
           id: comment.id,
+          createdAt: comment.created_at,
+          author: {
+            login: comment.user?.login || 'unknown',
+            id: comment.user?.id || 0,
+          },
           reactions: {
             url: comment.reactions?.url || '',
             total_count: comment.reactions?.total_count || 0,

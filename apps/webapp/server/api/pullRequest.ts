@@ -41,6 +41,15 @@ export const pullRequestAPI = {
   averageComments: (params?: ApiParams) =>
     fetchAPI<{ avg_comments: number }>('/pull-requests/average-comments', params),
 
+  commentsByAuthor: (params?: ApiParams) =>
+    fetchAPI<Array<{ author: string; count: number }>>('/pull-requests/comments-by-author', params),
+
+  firstCommentTime: (params?: ApiParams) =>
+    fetchAPI<Array<{ author: string; avg_hours: number; prs_with_comments: number }>>(
+      '/pull-requests/first-comment-time',
+      params
+    ),
+
   // Filter option endpoints
   getAuthors: () =>
     fetchAPI<string[]>('/pull-requests/authors'),

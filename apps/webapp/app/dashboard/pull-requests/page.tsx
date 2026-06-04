@@ -9,11 +9,15 @@ import TopThemesCard from '@/components/charts/pull-requests/TopThemesCard';
 import AverageDaysPRsRemainOpenCard from '@/components/charts/pull-requests/AverageDaysPRsRemainOpenCard';
 import PRStatisticsCard from '@/components/charts/pull-requests/PRStatisticsCard';
 import MostCommentedPRsCard from '@/components/charts/pull-requests/MostCommentedPRsCard';
+import CommentsByAuthorCard from '@/components/charts/pull-requests/CommentsByAuthorCard';
+import FirstCommentTimeCard from '@/components/charts/pull-requests/FirstCommentTimeCard';
 import {
   AvgCommentsData,
   AvgOpenByData,
   AvgReviewTimeData,
   ByAuthorData,
+  CommentsByAuthorData,
+  FirstCommentTimeData,
   OpenThroughTimeData,
   OpenThroughTimeResponseItem,
   SummaryData,
@@ -44,16 +48,20 @@ export default async function PullRequestsPage({
   let avgComments: AvgCommentsData | null = null;
   let summary: SummaryData | null = null;
   let topThemes: Array<{ text: string; value: number }> = [];
+  let commentsByAuthor: CommentsByAuthorData[] = [];
+  let firstCommentTime: FirstCommentTimeData[] = [];
 
   try {
     const apiParams = buildPullRequestApiParams(filters);
-    const [author, review, open, openBy, comments, summaryData] = await Promise.all([
+    const [author, review, open, openBy, comments, summaryData, commentsByAuthorData, firstCommentTimeData] = await Promise.all([
       pullRequestAPI.byAuthor(apiParams),
       pullRequestAPI.averageReviewTime(apiParams),
       pullRequestAPI.openThroughTime(apiParams),
       pullRequestAPI.averageOpenBy(apiParams),
       pullRequestAPI.averageComments(apiParams),
       pullRequestAPI.summary(apiParams),
+      pullRequestAPI.commentsByAuthor(apiParams),
+      pullRequestAPI.firstCommentTime(apiParams),
     ]);
     // Handle both direct array responses and wrapped responses
     byAuthor = ensureArray<ByAuthorData>(unwrapResult(author as ByAuthorData[] | ResultWrapper<ByAuthorData[]>));
@@ -94,6 +102,12 @@ export default async function PullRequestsPage({
     topThemes = Array.isArray(summaryResult?.top_themes)
       ? summaryResult.top_themes
       : [];
+    commentsByAuthor = ensureArray<CommentsByAuthorData>(
+      unwrapResult(commentsByAuthorData as CommentsByAuthorData[] | ResultWrapper<CommentsByAuthorData[]>)
+    );
+    firstCommentTime = ensureArray<FirstCommentTimeData>(
+      unwrapResult(firstCommentTimeData as FirstCommentTimeData[] | ResultWrapper<FirstCommentTimeData[]>)
+    );
   } catch (error) {
     console.error('Error fetching PR data:', error);
     // Set empty arrays on error
@@ -103,6 +117,10 @@ export default async function PullRequestsPage({
     <div className="space-y-6">
       <div className="grid grid-cols-1 gap-6">
         <AverageReviewTimeCard data={avgReviewTime} />
+      </div>
+      <div className="grid grid-cols-2 gap-6">
+        <CommentsByAuthorCard data={commentsByAuthor} />
+        <FirstCommentTimeCard data={firstCommentTime} />
       </div>
       <div className="grid grid-cols-1 gap-6">
         <PRsByAuthorCard data={byAuthor} />

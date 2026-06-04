@@ -9,6 +9,17 @@ export interface AvgReviewTimeData {
   avg_hours?: number;
 }
 
+export interface CommentsByAuthorData {
+  author: string;
+  count: number;
+}
+
+export interface FirstCommentTimeData {
+  author: string;
+  avg_hours: number;
+  prs_with_comments: number;
+}
+
 export interface OpenThroughTimeData {
   date: string;
   opened: number;
