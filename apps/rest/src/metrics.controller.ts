@@ -177,10 +177,10 @@ export class MetricsController {
   }
 
   /**
-   * GET /configuration
+   * GET /api/metrics/report
    * Retrieve complete metrics report
    */
-  @Get('configuration')
+  @Get('api/metrics/report')
   @ApiOperation({ summary: 'Get complete metrics report' })
   @ApiOkResponse({ description: 'Complete metrics report', type: Object })
   @ApiResponse({ status: 500, description: 'Internal server error', type: ErrorResponse })
