@@ -8,6 +8,8 @@ export interface IPRsService {
   getMetricsByMonth(filters?: PRFilters): Promise<PRsByTimeframe[]>;
   getMetricsByWeek(filters?: PRFilters): Promise<PRsByTimeframe[]>;
   getLabelSummaries(filters?: PRFilters): Promise<LabelSummary[]>;
+  getCommentsByAuthor(filters?: PRFilters, top?: number): Promise<any[]>;
+  getFirstCommentTime(filters?: PRFilters, top?: number): Promise<any[]>;
 }
 
 /**
@@ -340,5 +342,64 @@ export class PRsService implements IPRsService {
     }
     const parsed = new Date(value).getTime();
     return Number.isFinite(parsed) ? parsed : 0;
+  }
+
+  async getCommentsByAuthor(filters?: PRFilters, top?: number): Promise<any[]> {
+    const prs = await this.filterPRs(filters);
+    const grouped = new Map<string, number>();
+
+    for (const pr of prs) {
+      for (const comment of pr.comments || []) {
+        const author = comment.author?.login || 'unknown';
+        grouped.set(author, (grouped.get(author) || 0) + 1);
+      }
+    }
+
+    const maxRows = top || 10;
+    return Array.from(grouped.entries())
+      .map(([author, count]) => ({ author, count }))
+      .sort((a, b) => b.count - a.count)
+      .slice(0, maxRows);
+  }
+
+  async getFirstCommentTime(filters?: PRFilters, top?: number): Promise<any[]> {
+    const prs = await this.filterPRs(filters);
+    const grouped = new Map<string, number[]>();
+
+    for (const pr of prs) {
+      if (!Array.isArray(pr.comments) || pr.comments.length === 0) {
+        continue;
+      }
+
+      const firstComment = [...pr.comments]
+        .filter((comment) => Boolean(comment.createdAt))
+        .sort((a, b) => this.toTimestamp(a.createdAt) - this.toTimestamp(b.createdAt))[0];
+
+      if (!firstComment) {
+        continue;
+      }
+
+      const prOpenedAt = this.toTimestamp(pr.createdAt);
+      const firstCommentAt = this.toTimestamp(firstComment.createdAt);
+      if (prOpenedAt === 0 || firstCommentAt === 0 || firstCommentAt < prOpenedAt) {
+        continue;
+      }
+
+      const author = pr.author?.login || 'unknown';
+      const hours = (firstCommentAt - prOpenedAt) / (1000 * 60 * 60);
+      const existing = grouped.get(author) || [];
+      existing.push(hours);
+      grouped.set(author, existing);
+    }
+
+    const maxRows = top || 10;
+    return Array.from(grouped.entries())
+      .map(([author, values]) => ({
+        author,
+        avg_hours: values.length > 0 ? values.reduce((a, b) => a + b, 0) / values.length : 0,
+        prs_with_comments: values.length,
+      }))
+      .sort((a, b) => b.avg_hours - a.avg_hours)
+      .slice(0, maxRows);
   }
 }

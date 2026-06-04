@@ -1,7 +1,7 @@
 import {Command} from 'commander';
 import {Configuration} from '@smmachine/core/infrastructure/configuration';
 import {Logger} from '@smmachine/utils';
-import {GithubPrsClient, GitHubPullRequestsFetchRepository, MostCommentedPRData, PRsService, PullRequestFactory, PullRequestsRepository} from "@smmachine/core";
+import {CommentAuthor, FirstCommentMetric, GithubPrsClient, GitHubPullRequestsFetchRepository, MostCommentedPRData, PRsService, PullRequestFactory, PullRequestsRepository} from "@smmachine/core";
 
 const logger = new Logger('PRsCommand');
 
@@ -126,6 +126,30 @@ export function createPRsCommands(program: Command): void {
           console.log(`Closed PRs: ${summary.closedPRs || 0}`);
           console.log(`Merged PRs: ${summary.mergedPRs || 0}`);
           console.log(`Average Comments: ${summary.averageComments || 'N/A'}`);
+
+          // Fetch review metrics
+          const commentsByAuthor = await service.getCommentsByAuthor(
+            { startDate: options.startDate, endDate: options.endDate },
+            10
+          );
+          const firstCommentTime = await service.getFirstCommentTime(
+            { startDate: options.startDate, endDate: options.endDate },
+            10
+          );
+
+          if (commentsByAuthor && commentsByAuthor.length > 0) {
+            console.log('\nTop Commenters:\n');
+            commentsByAuthor.forEach((commenter: CommentAuthor, index: number) => {
+              console.log(`  ${index + 1}. ${commenter.author}: ${commenter.count} comments`);
+            });
+          }
+
+          if (firstCommentTime && firstCommentTime.length > 0) {
+            console.log('\nAverage Time to First Comment (by PR author):\n');
+            firstCommentTime.forEach((metric: FirstCommentMetric, index: number) => {
+              console.log(`  ${index + 1}. ${metric.author}: ${metric.avg_hours.toFixed(2)} hours (${metric.prs_with_comments} PRs)`);
+            });
+          }
 
           if (summary.most_commented_prs && summary.most_commented_prs.length > 0) {
             console.log('\nMost Commented Pull Requests:\n');

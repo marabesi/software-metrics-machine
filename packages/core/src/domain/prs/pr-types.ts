@@ -70,6 +70,17 @@ export interface PRMetrics {
   most_commented_prs: MostCommentedPRData[];
 }
 
+export interface CommentAuthor {
+  author: string;
+  count: number;
+}
+
+export interface FirstCommentMetric {
+  author: string;
+  avg_hours: number;
+  prs_with_comments: number;
+}
+
 export interface MostCommentedPRData {
   pull_request_id: number;
   pull_request_title: string;
