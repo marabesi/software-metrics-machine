@@ -1,19 +1,6 @@
-import { vi, describe, it, expect, beforeEach } from 'vitest';
+import { vi, describe, it, expect, beforeEach, afterEach, type MockInstance } from 'vitest';
 import axios from 'axios';
 import { JiraIssuesClient } from '../../../src';
-
-vi.mock('axios', async (importOriginal) => {
-  const actual = await importOriginal<typeof import('axios')>();
-  return {
-    ...actual,
-    default: {
-      ...actual.default,
-      create: vi.fn(() => ({
-        get: vi.fn().mockResolvedValue({ data: { issues: [], total: 0, comments: [] } }),
-      })),
-    },
-  };
-});
 
 describe('JiraIssuesClient', () => {
   let client: JiraIssuesClient;

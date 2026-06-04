@@ -260,6 +260,4 @@ describe('Full Business Logic Integration', () => {
       expect(quality).toBeDefined();
     });
   });
-
-  });
 });
