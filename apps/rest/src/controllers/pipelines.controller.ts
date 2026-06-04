@@ -437,6 +437,76 @@ export class PipelinesController {
     return { result };
   }
 
+  @Get('/pipelines/jobs-average-time-by-day')
+  async jobsAverageTimeByDay(
+    @Query('start_date') startDate?: string,
+    @Query('end_date') endDate?: string,
+    @Query('workflow_path') workflowPath?: string,
+    @Query('status') status?: string,
+    @Query('conclusion') conclusion?: string,
+    @Query('branch') branch?: string,
+    @Query('job_name') jobName?: string,
+    @Query('exclude_jobs') excludeJobs?: string,
+    @Query('event') event?: string
+  ) {
+    const runs = await this.loadRunsWithFilters({
+      startDate,
+      endDate,
+      workflowPath,
+      status,
+      conclusion,
+      branch,
+      jobName,
+      event,
+      includeJobs: true,
+    });
+
+    const excluded = new Set(this.parseCsvList(excludeJobs).map((name) => name.toLowerCase()));
+    const allowedJobs = jobName
+      ? new Set(jobName.split(',').map((n) => n.trim().toLowerCase()).filter(Boolean))
+      : null;
+    const grouped = new Map<string, number[]>();
+
+    for (const run of runs) {
+      const jobs = run.jobs || [];
+      const runDate = run.completedAt || run.createdAt;
+      if (!runDate) {
+        continue;
+      }
+      const day = this.toDayKey(runDate);
+
+      for (const job of jobs) {
+        const name = (job.name || '').trim();
+        if (!name || excluded.has(name.toLowerCase())) {
+          continue;
+        }
+        if (allowedJobs && !allowedJobs.has(name.toLowerCase())) {
+          continue;
+        }
+        const duration = this.getDurationMinutes(job.startedAt, job.completedAt);
+        if (duration === null) {
+          continue;
+        }
+
+        if (!grouped.has(day)) {
+          grouped.set(day, []);
+        }
+        grouped.get(day)!.push(duration);
+      }
+    }
+
+    const result = Array.from(grouped.entries())
+      .map(([day, durations]) => ({
+        day,
+        avg_time:
+          durations.length > 0 ? durations.reduce((a, b) => a + b, 0) / durations.length : 0,
+        count: durations.length,
+      }))
+      .sort((a, b) => a.day.localeCompare(b.day));
+
+    return { result };
+  }
+
   @Get('/pipelines/workflows')
   async workflows() {
     const runs = await this.pipelinesRepo.loadPipelines();
@@ -566,8 +636,16 @@ export class PipelinesController {
     event?: string;
     includeJobs: boolean;
   }): Promise<RunLike[]> {
+    this.logger.debug('Loading runs with filters:', filters);
     const runs = await this.pipelinesRepo.loadPipelines();
-    return runs.filter((run: RunLike) => {
+    const selectedJobNames = filters.jobName
+      ? filters.jobName
+          .split(',')
+          .map((n) => n.trim().toLowerCase())
+          .filter(Boolean)
+      : [];
+
+    const filteredRuns = runs.filter((run: RunLike) => {
       if (
         filters.startDate &&
         this.toTimestamp(run.createdAt) < this.toTimestamp(filters.startDate)
@@ -596,12 +674,25 @@ export class PipelinesController {
         return false;
       }
       if (filters.jobName) {
-        const hasJob = (run.jobs || []).some((job) => job.name === filters.jobName);
+        const hasJob = (run.jobs || []).some((job) =>
+          selectedJobNames.includes((job.name || '').toLowerCase())
+        );
         if (!hasJob) {
           return false;
         }
       }
       return true;
     });
+
+    if (!filters.includeJobs || selectedJobNames.length === 0) {
+      return filteredRuns;
+    }
+
+    return filteredRuns.map((run) => ({
+      ...run,
+      jobs: (run.jobs || []).filter((job) =>
+        selectedJobNames.includes((job.name || '').toLowerCase())
+      ),
+    }));
   }
 }

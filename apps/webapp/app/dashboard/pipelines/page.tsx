@@ -3,6 +3,8 @@ import { buildPipelineApiParams } from '@/server/utils/apiParams';
 import {
   JobsAverageTimeData,
   JobsAverageTimeResponseItem,
+  JobsAverageTimeByDayResponseItem,
+  JobsAverageTimeByDayData,
   JobByStatusData,
   JobByStatusResponseItem,
   JobsDurationByWorkflowItem,
@@ -41,15 +43,17 @@ export default async function PipelinesPage({
   };
   let runsByDay: RunsByDayData[] = [];
   let jobsAvgTime: JobsAverageTimeData[] = [];
+  let jobsAvgTimeByDay: JobsAverageTimeByDayData[] = [];
   let jobsDurationByWorkflow: JobsDurationByWorkflowItem[] = [];
 
   try {
     const apiParams = buildPipelineApiParams(filters);
-    const [jobs, duration, runsBy, avgTime, jobsDurationRaw] = await Promise.all([
+    const [jobs, duration, runsBy, avgTime, avgTimeByDay, jobsDurationRaw] = await Promise.all([
       pipelineAPI.jobsByStatus(apiParams),
       pipelineAPI.runsDuration(apiParams),
       pipelineAPI.runsBy({ ...apiParams, aggregate_by: 'day' }),
       pipelineAPI.jobsAverageTime(apiParams),
+      pipelineAPI.jobsAverageTimeByDay(apiParams),
       pipelineAPI.jobsDurationByWorkflow(apiParams),
     ]);
 
@@ -100,7 +104,21 @@ export default async function PipelinesPage({
       avgTimeData = avgTimeResult.map((a: JobsAverageTimeResponseItem): JobsAverageTimeData => ({
         job_name: a.job_name || 'Unknown',
         workflow_name: a.workflow_name,
-        avg_time: a.avg_time || 0
+        avg_time: a.avg_time || 0,
+        count: a.count || 0,
+      }));
+    }
+
+    // Handle jobsAverageTimeByDay - unwrap if needed and transform
+    let avgTimeByDayData: JobsAverageTimeByDayData[] = [];
+    const avgTimeByDayResult = unwrapResult(
+      avgTimeByDay as JobsAverageTimeByDayResponseItem[] | ResultWrapper<JobsAverageTimeByDayResponseItem[]>
+    );
+    if (Array.isArray(avgTimeByDayResult)) {
+      avgTimeByDayData = avgTimeByDayResult.map((a: JobsAverageTimeByDayResponseItem): JobsAverageTimeByDayData => ({
+        day: a.day || 'Unknown',
+        avg_time: a.avg_time || 0,
+        count: a.count || 0
       }));
     }
 
@@ -114,14 +132,15 @@ export default async function PipelinesPage({
       .map(([day, runs]) => ({ day, runs }))
       .sort((a, b) => a.day.localeCompare(b.day));
     jobsAvgTime = avgTimeData;
+    jobsAvgTimeByDay = avgTimeByDayData;
     jobsDurationByWorkflow = Array.isArray(jobsDurationRaw) ? jobsDurationRaw : [];
   } catch (error) {
     console.error('Error fetching pipeline data:', error);
-    // Set empty arrays on error to prevent map errors
     jobsByStatus = [];
     runsDurationByAggregation = { avg: [], min: [], max: [] };
     runsByDay = [];
     jobsAvgTime = [];
+    jobsAvgTimeByDay = [];
     jobsDurationByWorkflow = [];
   }
 
@@ -133,7 +152,7 @@ export default async function PipelinesPage({
           runsByDay={runsByDay}
           jobsDurationByWorkflow={jobsDurationByWorkflow}
         />
-        <JobsAverageTimeCard data={jobsAvgTime} />
+        <JobsAverageTimeCard data={jobsAvgTime} dataByDay={jobsAvgTimeByDay} apiParams={buildPipelineApiParams(filters)} />
       </div>
 
       <JobsByStatusCard data={jobsByStatus} />

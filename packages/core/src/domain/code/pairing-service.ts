@@ -1,6 +1,11 @@
 import { Logger, logger } from '@smmachine/utils';
 import { IRepository } from '../../infrastructure/repository';
-import { Commit, PairingIndexResult } from '../../domain-types';
+import {
+  Commit,
+  PairingIndexResult,
+  PairedCommitSummary,
+  PairingAuthorsStat,
+} from '../../domain-types';
 
 export interface IPairingIndexService {
   getPairingIndex(options?: {
@@ -95,12 +100,97 @@ export class PairingService implements IPairingIndexService {
 
     const index = (pairedCommits / totalCommits) * 100;
     const pairingIndex = Math.round(index * 100) / 100; // Round to 2 decimal places
+    const topPairings = this.calculateTopPairings(filteredCommits);
+    const latestPairedCommits = this.getLatestPairedCommits(filteredCommits);
 
     return {
       pairingIndexPercentage: pairingIndex,
       totalAnalyzedCommits: totalCommits,
       pairedCommits,
+      topPairings,
+      latestPairedCommits,
     };
+  }
+
+  private calculateTopPairings(commits: Commit[]): PairingAuthorsStat[] {
+    const pairs = new Map<string, PairingAuthorsStat>();
+
+    for (const commit of commits) {
+      if (!Array.isArray(commit.coAuthors) || commit.coAuthors.length === 0) {
+        continue;
+      }
+
+      const primaryAuthor = commit.author.trim();
+      if (!primaryAuthor) {
+        continue;
+      }
+
+      for (const coAuthorRaw of commit.coAuthors) {
+        const coAuthor = coAuthorRaw.trim();
+        if (!coAuthor) {
+          continue;
+        }
+
+        const normalizedPair = [primaryAuthor, coAuthor].sort((a, b) =>
+          a.localeCompare(b, undefined, { sensitivity: 'base' })
+        );
+
+        if (normalizedPair[0].toLowerCase() === normalizedPair[1].toLowerCase()) {
+          continue;
+        }
+
+        const key = `${normalizedPair[0].toLowerCase()}::${normalizedPair[1].toLowerCase()}`;
+        const existing = pairs.get(key);
+
+        if (existing) {
+          existing.pairedCommits += 1;
+        } else {
+          pairs.set(key, {
+            author: normalizedPair[0],
+            coAuthor: normalizedPair[1],
+            pairedCommits: 1,
+          });
+        }
+      }
+    }
+
+    return Array.from(pairs.values()).sort((a, b) => {
+      if (b.pairedCommits !== a.pairedCommits) {
+        return b.pairedCommits - a.pairedCommits;
+      }
+
+      if (a.author !== b.author) {
+        return a.author.localeCompare(b.author);
+      }
+
+      return a.coAuthor.localeCompare(b.coAuthor);
+    });
+  }
+
+  private getLatestPairedCommits(commits: Commit[]): PairedCommitSummary[] {
+    const pairedCommits = commits
+      .filter((commit) => Array.isArray(commit.coAuthors) && commit.coAuthors.length > 0)
+      .sort((a, b) => {
+        const aTimestamp = new Date(a.timestamp).getTime();
+        const bTimestamp = new Date(b.timestamp).getTime();
+        return bTimestamp - aTimestamp;
+      })
+      .slice(0, 20);
+
+    return pairedCommits.map((commit) => {
+      const timestamp =
+        commit.timestamp instanceof Date
+          ? commit.timestamp.toISOString()
+          : String(commit.timestamp);
+
+      return {
+        hash: commit.hash,
+        author: commit.author,
+        coAuthors: commit.coAuthors || [],
+        timestamp,
+        subject: commit.subject || commit.msg || '',
+      };
+    });
   }
 
   private filterByDateRange(commits: Commit[], startDate?: string, endDate?: string): Commit[] {

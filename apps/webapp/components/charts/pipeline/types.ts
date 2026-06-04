@@ -46,6 +46,19 @@ export interface JobsAverageTimeData {
   job_name: string;
   workflow_name?: string;
   avg_time: number;
+  count: number;
+}
+
+export interface JobsAverageTimeByDayResponseItem {
+  day?: string;
+  avg_time?: number;
+  count?: number;
+}
+
+export interface JobsAverageTimeByDayData {
+  day: string;
+  avg_time: number;
+  count: number;
 }
 
 export interface RunsByResponseItem {

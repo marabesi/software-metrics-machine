@@ -57,6 +57,18 @@ export class CodeController {
       pairing_index_percentage: pairing?.pairingIndexPercentage ?? 0,
       total_analyzed_commits: pairing?.totalAnalyzedCommits ?? 0,
       paired_commits: pairing?.pairedCommits ?? 0,
+      top_pairs: (pairing?.topPairings || []).map((pair) => ({
+        author: pair.author,
+        co_author: pair.coAuthor,
+        paired_commits: pair.pairedCommits,
+      })),
+      latest_paired_commits: (pairing?.latestPairedCommits || []).map((commit) => ({
+        hash: commit.hash,
+        author: commit.author,
+        co_authors: commit.coAuthors,
+        timestamp: commit.timestamp,
+        subject: commit.subject,
+      })),
     };
   }
 

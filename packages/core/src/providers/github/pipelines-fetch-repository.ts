@@ -30,20 +30,16 @@ export class PipelinesFetchRepository {
       const latestDate = this.findLatestDate(fromCache.map((r) => r.updated_at));
       logger.info(`Incremental update: fetching pipelines updated after ${latestDate}...`);
       let freshRuns: WorkflowJsonResponse[];
-      
+
       if (options?.byDay && options?.endDate) {
-        freshRuns = await this.fetchWorkflowsByDay(
-          latestDate,
-          options.endDate,
-          options.rawFilters
-        );
+        freshRuns = await this.fetchWorkflowsByDay(latestDate, options.endDate, options.rawFilters);
       } else {
         freshRuns = await this.fetchWorkflowsWithResume({
           created: this.buildCreatedFilter(latestDate, options?.endDate),
           rawFilters: options?.rawFilters,
         });
       }
-      
+
       const merged = this.mergeById(fromCache, freshRuns);
       await this.pipelineRunFileSystemRepository.saveAll(merged);
       return merged;

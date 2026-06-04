@@ -34,6 +34,22 @@ export interface PairingIndexResult {
   pairingIndexPercentage: number;
   totalAnalyzedCommits: number;
   pairedCommits: number;
+  topPairings?: PairingAuthorsStat[];
+  latestPairedCommits?: PairedCommitSummary[];
+}
+
+export interface PairingAuthorsStat {
+  author: string;
+  coAuthor: string;
+  pairedCommits: number;
+}
+
+export interface PairedCommitSummary {
+  hash: string;
+  author: string;
+  coAuthors: string[];
+  timestamp: string;
+  subject: string;
 }
 
 /**

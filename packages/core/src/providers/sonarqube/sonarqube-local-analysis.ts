@@ -101,7 +101,9 @@ export class SonarqubeLocalAnalysis {
     const containerState = await this.getContainerState(options.containerName);
 
     if (containerState === 'running') {
-      this.logger.info(`ℹ️ SonarQube container "${options.containerName}" is already running. Skipping startup.`);
+      this.logger.info(
+        `ℹ️ SonarQube container "${options.containerName}" is already running. Skipping startup.`
+      );
     } else if (containerState === 'stopped') {
       this.logger.info(`🔄 Starting existing SonarQube container "${options.containerName}"...`);
       const startResult = await runCommand('docker', ['start', options.containerName]);
@@ -113,12 +115,18 @@ export class SonarqubeLocalAnalysis {
 
       this.logger.info(`🚀 Starting SonarQube Community container "${options.containerName}"...`);
       const dockerRunArgs = [
-        'run', '-d',
-        '-v', `${options.dataDirectory}:/opt/sonarqube/data`,
-        '--name', options.containerName,
-        '-e', `SONARQUBE_ADMIN_USER=${options.adminUser}`,
-        '-e', `SONARQUBE_ADMIN_PASSWORD=${options.adminPassword}`,
-        '-p', `${options.hostPort}:9000`,
+        'run',
+        '-d',
+        '-v',
+        `${options.dataDirectory}:/opt/sonarqube/data`,
+        '--name',
+        options.containerName,
+        '-e',
+        `SONARQUBE_ADMIN_USER=${options.adminUser}`,
+        '-e',
+        `SONARQUBE_ADMIN_PASSWORD=${options.adminPassword}`,
+        '-p',
+        `${options.hostPort}:9000`,
         options.containerImage,
       ];
       this.logger.debug(`Running: docker ${dockerRunArgs.join(' ')}`);
@@ -147,13 +155,14 @@ export class SonarqubeLocalAnalysis {
     );
 
     const sonarToken =
-      options.scannerToken ||
-      (await this.getToken(hostUrl, options.adminUser, effectivePassword));
+      options.scannerToken || (await this.getToken(hostUrl, options.adminUser, effectivePassword));
 
     const scannerArgs = [
-      'run', '--rm',
+      'run',
+      '--rm',
       `--name=${options.scannerContainerName}`,
-      '-e', `SONAR_HOST_URL=${containerUrls.internalUrl}`,
+      '-e',
+      `SONAR_HOST_URL=${containerUrls.internalUrl}`,
     ];
 
     if (sonarToken) {
@@ -207,9 +216,7 @@ export class SonarqubeLocalAnalysis {
     const result = await runCommand('docker', ['inspect', containerName], { captureOutput: true });
 
     if (result.code !== 0) {
-      throw new Error(
-        `Failed to inspect SonarQube container network for "${containerName}".`
-      );
+      throw new Error(`Failed to inspect SonarQube container network for "${containerName}".`);
     }
 
     let inspectPayload: unknown;
@@ -233,7 +240,9 @@ export class SonarqubeLocalAnalysis {
     >;
     const preferredKey = `${fallbackPort}/tcp`;
     const allEntries = Object.entries(ports);
-    const selectedPortKey = ports[preferredKey] ? preferredKey : (allEntries[0]?.[0] ?? preferredKey);
+    const selectedPortKey = ports[preferredKey]
+      ? preferredKey
+      : (allEntries[0]?.[0] ?? preferredKey);
     const portEntry = ports[selectedPortKey] ?? allEntries[0]?.[1] ?? null;
     const publishedPort =
       Array.isArray(portEntry) && portEntry.length > 0 ? portEntry[0] : undefined;
@@ -268,11 +277,9 @@ export class SonarqubeLocalAnalysis {
     const startedAt = Date.now();
 
     while (Date.now() - startedAt < SONARQUBE_READY_TIMEOUT_MS) {
-      const result = await runCommand(
-        'docker',
-        ['logs', '--tail', '5000', containerName],
-        { captureOutput: true }
-      );
+      const result = await runCommand('docker', ['logs', '--tail', '5000', containerName], {
+        captureOutput: true,
+      });
 
       if (result.code !== 0) {
         throw new Error(
@@ -319,8 +326,7 @@ export class SonarqubeLocalAnalysis {
     try {
       const contents = readFileSync(this.localDataFilePath, 'utf-8');
       const parsed = JSON.parse(contents) as Partial<LocalSonarqubeTokenData>;
-      const storedUrl =
-        typeof parsed.serverUrl === 'string' ? normalizeUrl(parsed.serverUrl) : '';
+      const storedUrl = typeof parsed.serverUrl === 'string' ? normalizeUrl(parsed.serverUrl) : '';
 
       if (storedUrl && storedUrl !== normalizeUrl(hostUrl)) {
         return undefined;

@@ -2,7 +2,19 @@ import { ApiParams, fetchAPI } from './client';
 
 export const sourceCodeAPI = {
   pairingIndex: (params?: ApiParams) =>
-    fetchAPI<{ pairing_index_percentage: number; total_analyzed_commits: number; paired_commits: number }>(
+    fetchAPI<{
+      pairing_index_percentage: number;
+      total_analyzed_commits: number;
+      paired_commits: number;
+      top_pairs?: Array<{ author: string; co_author: string; paired_commits: number }>;
+      latest_paired_commits?: Array<{
+        hash: string;
+        author: string;
+        co_authors: string[];
+        timestamp: string;
+        subject: string;
+      }>;
+    }>(
       '/code/pairing-index',
       params
     ),

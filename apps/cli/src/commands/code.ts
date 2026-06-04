@@ -23,6 +23,77 @@ export function createCodeCommands(program: Command): void {
   const codeGroup = program.command('code').description('Code analysis operations');
 
   codeGroup
+    .command('summary')
+    .description('View code summary with pairing insights')
+    .option('--start-date <date>', 'Start date (YYYY-MM-DD)')
+    .option('--end-date <date>', 'End date (YYYY-MM-DD)')
+    .option('--output <format>', 'Output format (text|json|csv)', 'text')
+    .action(async (options) => {
+      try {
+        logger.info('📊 Generating code summary...');
+
+        const pairingService = PairingFactory.create(loadConfiguration());
+        const summary = await pairingService.getPairingIndex({
+          startDate: options.startDate,
+          endDate: options.endDate,
+        });
+
+        if (options.output === 'json') {
+          logger.info(JSON.stringify(summary, null, 2));
+          return;
+        }
+
+        if (options.output === 'csv') {
+          const lines: string[] = ['section,metric,value'];
+          lines.push(`pairing,pairing_index_percentage,${summary.pairingIndexPercentage ?? 0}`);
+          lines.push(`pairing,total_analyzed_commits,${summary.totalAnalyzedCommits ?? 0}`);
+          lines.push(`pairing,paired_commits,${summary.pairedCommits ?? 0}`);
+
+          for (const pair of summary.topPairings || []) {
+            lines.push(`top_pair,${pair.author} + ${pair.coAuthor},${pair.pairedCommits}`);
+          }
+
+          for (const commit of summary.latestPairedCommits || []) {
+            const normalizedSubject = (commit.subject || '').replace(/,/g, ';');
+            const normalizedCoAuthors = (commit.coAuthors || []).join('|').replace(/,/g, ';');
+            lines.push(`latest_paired_commit,${commit.hash.slice(0, 8)}:${normalizedSubject},${commit.author}|${normalizedCoAuthors}`);
+          }
+
+          logger.info(lines.join('\n'));
+          return;
+        }
+
+        logger.info('\n=== Code Summary ===\n');
+        logger.info(`Pairing Index: ${summary.pairingIndexPercentage ?? 0}%`);
+        logger.info(`Total Commits: ${summary.totalAnalyzedCommits ?? 0}`);
+        logger.info(`Paired Commits: ${summary.pairedCommits ?? 0}`);
+
+        if (summary.topPairings && summary.topPairings.length > 0) {
+          logger.info('\nWho paired the most with whom:');
+          for (const pair of summary.topPairings) {
+            logger.info(`- ${pair.author} + ${pair.coAuthor}: ${pair.pairedCommits}`);
+          }
+        }
+
+        if (summary.latestPairedCommits && summary.latestPairedCommits.length > 0) {
+          logger.info('\nLatest 20 paired commits:');
+          for (const commit of summary.latestPairedCommits) {
+            const date = new Date(commit.timestamp).toISOString();
+            logger.info(`- ${commit.hash.slice(0, 8)} ${date}`);
+            logger.info(`  Author: ${commit.author}`);
+            logger.info(`  Co-authors: ${commit.coAuthors.join(', ')}`);
+            logger.info(`  Subject: ${commit.subject || '(no subject)'}`);
+          }
+        }
+
+        logger.info('\n✅ Summary generated');
+      } catch (error) {
+        logger.error('Failed to generate code summary', error);
+        process.exit(1);
+      }
+    });
+
+  codeGroup
     .command('fetch-commits')
     .description('Analyze change sets from git repository')
     .option('--start-date <date>', 'Start date (YYYY-MM-DD)')

@@ -1,7 +1,6 @@
 import { ApiParams, fetchAPI } from './client';
 
 export const pipelineAPI = {
-  // Data endpoints
   byStatus: (params?: ApiParams) =>
     fetchAPI<Array<{ status: string; count: number }>>(
       '/pipelines/by-status',
@@ -58,6 +57,12 @@ export const pipelineAPI = {
   jobsAverageTime: (params?: ApiParams) =>
     fetchAPI<Array<{ job_name: string; avg_time: number; count: number }>>(
       '/pipelines/jobs-average-time',
+      params
+    ),
+
+  jobsAverageTimeByDay: (params?: ApiParams) =>
+    fetchAPI<Array<{ day: string; avg_time: number; count: number }>>(
+      '/pipelines/jobs-average-time-by-day',
       params
     ),
 

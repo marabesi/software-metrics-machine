@@ -16,6 +16,9 @@ export interface UrlBuilder {
   getPRsUrl(filters?: { status?: string; author?: string; label?: string }): string;
   getPRUrl(prNumber: number): string;
   
+  // Commit links
+  getCommitUrl(hash: string): string;
+  
   // Pipeline/Workflow links
   getPipelinesUrl(filters?: { status?: string; workflow?: string }): string;
   getPipelineRunUrl(runId: string, runNumber?: number): string;
@@ -68,6 +71,10 @@ function createGitHubBuilder(config: UrlBuilderConfig): UrlBuilder {
     
     getPRUrl(prNumber) {
       return `${baseUrl}/pull/${prNumber}`;
+    },
+    
+    getCommitUrl(hash) {
+      return `${baseUrl}/commit/${hash}`;
     },
     
     getPipelinesUrl(filters) {
@@ -155,6 +162,10 @@ function createGitLabBuilder(config: UrlBuilderConfig): UrlBuilder {
     
     getPRUrl(prNumber) {
       return `${baseUrl}/-/merge_requests/${prNumber}`;
+    },
+    
+    getCommitUrl(hash) {
+      return `${baseUrl}/-/commit/${hash}`;
     },
     
     getPipelinesUrl(filters) {

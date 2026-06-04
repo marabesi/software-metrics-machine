@@ -1,36 +1,101 @@
 'use client';
 
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
-import { ensureArray } from '@/server/utils/chartData';
-import { JobsAverageTimeData } from './types';
+import { BarChart, Bar, LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
+import { JobsAverageTimeData, JobsAverageTimeByDayData } from './types';
 import { useLinkBuilder } from '@/components/providers/LinkBuilderContext';
+import react from 'react';
+import { ApiParams } from '@/server/api';
+import { useFilters } from '@/components/filters/FiltersContext';
 
-export default function JobsAverageTimeCard({ data }: { data: JobsAverageTimeData[] }) {
+interface JobsAverageTimeCardProps {
+  data: JobsAverageTimeData[];
+  dataByDay: JobsAverageTimeByDayData[];
+  apiParams: ApiParams;
+}
+
+export default function JobsAverageTimeCard({ data, dataByDay }: JobsAverageTimeCardProps) {
   const { urlBuilder } = useLinkBuilder();
+  const { filters } = useFilters();
+  const [activeTab, setActiveTab] = react.useState<'by-job' | 'by-day'>('by-job');
 
   const handleBarClick = (entry: JobsAverageTimeData) => {
     const url = urlBuilder.getJobRunsUrl(entry.job_name, entry.workflow_name);
     window.open(url, '_blank');
   };
 
+  const selectedJobsDisplay = filters.jobSelector && filters.jobSelector.length > 0 
+    ? `${filters.jobSelector.length} job(s) selected`
+    : 'All jobs';
+
   return (
     <Card>
       <CardHeader>
         <CardTitle>Jobs Average Time</CardTitle>
-        <p className="text-xs text-gray-500 mt-1">Click on bars to view job runs</p>
+        <div className="flex gap-2 mt-3">
+          <button
+            onClick={() => setActiveTab('by-job')}
+            className={`px-3 py-1 text-sm rounded-md transition-colors ${
+              activeTab === 'by-job'
+                ? 'bg-blue-600 text-white'
+                : 'bg-gray-200 text-gray-800 hover:bg-gray-300'
+            }`}
+          >
+            By Job
+          </button>
+          <button
+            onClick={() => setActiveTab('by-day')}
+            className={`px-3 py-1 text-sm rounded-md transition-colors ${
+              activeTab === 'by-day'
+                ? 'bg-blue-600 text-white'
+                : 'bg-gray-200 text-gray-800 hover:bg-gray-300'
+            }`}
+          >
+            By Day
+          </button>
+        </div>
+        {activeTab === 'by-job' && (
+          <p className="text-xs text-gray-500 mt-2">Click on bars to view job runs</p>
+        )}
+        {activeTab === 'by-day' && (
+          <div className="mt-3 flex flex-col gap-2">
+            <p className="text-xs text-gray-600">Filter: {selectedJobsDisplay}</p>
+            <p className="text-xs text-gray-500">
+              Average job execution time per day to spot trends in performance
+            </p>
+          </div>
+        )}
       </CardHeader>
       <CardContent>
-        <ResponsiveContainer width="100%" height={300}>
-          <BarChart data={ensureArray(data)}>
-            <CartesianGrid strokeDasharray="3 3" />
-            <XAxis dataKey="job_name" angle={-45} textAnchor="end" height={100} />
-            <YAxis />
-            <Tooltip />
-            <Legend />
-            <Bar dataKey="avg_time" fill="#82ca9d" name="Avg Time (min)" onClick={(e) => handleBarClick(e.payload)} style={{ cursor: 'pointer' }} />
-          </BarChart>
-        </ResponsiveContainer>
+        {activeTab === 'by-job' && (
+          <ResponsiveContainer width="100%" height={300}>
+            <BarChart data={data}>
+              <CartesianGrid strokeDasharray="3 3" />
+              <XAxis dataKey="job_name" angle={-45} textAnchor="end" height={100} />
+              <YAxis yAxisId="left" />
+              <YAxis yAxisId="right" orientation="right" />
+              <Tooltip />
+              <Legend />
+              <Bar dataKey="avg_time" yAxisId="left" fill="#82ca9d" name="Avg Time (min)" onClick={(e) => handleBarClick(e.payload)} style={{ cursor: 'pointer' }} />
+              <Bar dataKey="count" yAxisId="right" fill="#60a5fa" name="Runs Count" />
+            </BarChart>
+          </ResponsiveContainer>
+        )}
+
+        {activeTab === 'by-day' && (
+          <ResponsiveContainer width="100%" height={300}>
+            <LineChart data={dataByDay}>
+              <CartesianGrid strokeDasharray="3 3" />
+              <XAxis dataKey="day" angle={-45} textAnchor="end" height={100} />
+              <YAxis yAxisId="left" />
+              <YAxis yAxisId="right" orientation="right" />
+              <Tooltip />
+              <Legend />
+              <Line yAxisId="left" type="monotone" dataKey="avg_time" stroke="#82ca9d" name="Avg Time (min)" dot={{ r: 4 }} />
+              <Line yAxisId="right" type="monotone" dataKey="count" stroke="#60a5fa" name="Runs Count" dot={{ r: 3 }} />
+            </LineChart>
+          </ResponsiveContainer>
+        )}
       </CardContent>
     </Card>
   );

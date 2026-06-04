@@ -59,8 +59,14 @@ export class GitHubPullRequestsFetchRepository implements IPullRequestsRepositor
     }
 
     // Manual date range with merge
-    if ((options?.startDate || options?.endDate) && !options?.forceRefresh && fromCache.length > 0) {
-      logger.info(`Fetching PRs for range [${options?.startDate || 'any'}..${options?.endDate || 'any'}] and merging with cache...`);
+    if (
+      (options?.startDate || options?.endDate) &&
+      !options?.forceRefresh &&
+      fromCache.length > 0
+    ) {
+      logger.info(
+        `Fetching PRs for range [${options?.startDate || 'any'}..${options?.endDate || 'any'}] and merging with cache...`
+      );
       const freshPRs = await this.githubPrsClient.fetchPRs({
         startDate: options?.startDate,
         endDate: options?.endDate,
@@ -122,8 +128,8 @@ export class GitHubPullRequestsFetchRepository implements IPullRequestsRepositor
         (c) => !c.updated_at || new Date(c.updated_at) >= new Date(latestDate)
       );
       const merged = this.mergeCommentsByIdForPR(cachedCommentsForPR, filtered);
-      const otherComments = fromCache.filter((comment) =>
-        !comment.pull_request_url.includes(`/pulls/${prNumber}`)
+      const otherComments = fromCache.filter(
+        (comment) => !comment.pull_request_url.includes(`/pulls/${prNumber}`)
       );
       const updatedComments = otherComments.concat(merged);
       await this.pullRequestCommentsStoreFile.saveAll(updatedComments);
@@ -168,4 +174,3 @@ export class GitHubPullRequestsFetchRepository implements IPullRequestsRepositor
     return Array.from(map.values());
   }
 }
-

@@ -1,13 +1,16 @@
 import { defaultFilters, parseDashboardFilters } from "@/components/filters/DashboardFilters";
 import { sourceCodeAPI } from '@/server/api';
+import { configurationAPI } from '@/server/api/configuration';
 import { buildSourceCodeApiParams } from '@/server/utils/apiParams';
 import { ensureArray } from '@/server/utils/chartData';
+import { createUrlBuilder, type UrlBuilderConfig } from '@/server/utils/urlBuilder';
 import EntityChurnCard from '@/components/charts/source-code/EntityChurnCard';
 import EntityEffortCard from '@/components/charts/source-code/EntityEffortCard';
 import CodeChurnOverTimeCard from '@/components/charts/source-code/CodeChurnOverTimeCard';
 import EntityOwnershipCard from '@/components/charts/source-code/EntityOwnershipCard';
 import CodeCouplingCard from '@/components/charts/source-code/CodeCouplingCard';
 import EntityEffortTreemap from '@/components/entity-effort-treemap';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import {
   CodeChurnData,
   CouplingData,
@@ -18,6 +21,20 @@ import {
 
 type ResultWrapper<T> = {
   result: T;
+};
+
+type PairingIndexResponse = {
+  pairing_index_percentage: number;
+  total_analyzed_commits: number;
+  paired_commits: number;
+  top_pairs?: Array<{ author: string; co_author: string; paired_commits: number }>;
+  latest_paired_commits?: Array<{
+    hash: string;
+    author: string;
+    co_authors: string[];
+    timestamp: string;
+    subject: string;
+  }>;
 };
 
 function unwrapResult<T>(data: T | ResultWrapper<T>): T {
@@ -38,15 +55,26 @@ export default async function SourceCodePage({
   let entityEffort: EntityEffortData[] = [];
   let codeChurn: CodeChurnData[] = [];
   let entityOwnership: EntityOwnershipData[] = [];
+  let urlBuilder: ReturnType<typeof createUrlBuilder> | null = null;
+  let topPairings: Array<{ author: string; co_author: string; paired_commits: number }> = [];
+  let latestPairedCommits: Array<{
+    hash: string;
+    author: string;
+    co_authors: string[];
+    timestamp: string;
+    subject: string;
+  }> = [];
 
   try {
     const apiParams = buildSourceCodeApiParams(filters);
-    const [churn, couplingData, effort, churnOverTime, ownership] = await Promise.all([
+    const [churn, couplingData, effort, churnOverTime, ownership, pairing, configResponse] = await Promise.all([
       sourceCodeAPI.entityChurn(apiParams),
       sourceCodeAPI.coupling(apiParams),
       sourceCodeAPI.entityEffort(apiParams),
       sourceCodeAPI.codeChurn(apiParams),
       sourceCodeAPI.entityOwnership(apiParams),
+      sourceCodeAPI.pairingIndex(apiParams),
+      configurationAPI.getConfiguration(),
     ]);
     // Handle both direct array responses and wrapped responses
     entityChurn = ensureArray<EntityChurnData>(unwrapResult(churn as EntityChurnData[] | ResultWrapper<EntityChurnData[]>));
@@ -54,6 +82,21 @@ export default async function SourceCodePage({
     entityEffort = ensureArray<EntityEffortData>(unwrapResult(effort as EntityEffortData[] | ResultWrapper<EntityEffortData[]>));
     codeChurn = ensureArray<CodeChurnData>(unwrapResult(churnOverTime as CodeChurnData[] | ResultWrapper<CodeChurnData[]>));
     entityOwnership = ensureArray<EntityOwnershipData>(unwrapResult(ownership as EntityOwnershipData[] | ResultWrapper<EntityOwnershipData[]>));
+    const pairingData = unwrapResult(pairing as PairingIndexResponse | ResultWrapper<PairingIndexResponse>);
+    const rawConfig = (configResponse as any)?.result || configResponse as any;
+    const repository = String(rawConfig?.github_repository || '').trim();
+    const gitProvider = String(rawConfig?.git_provider || 'github').toLowerCase();
+    if (repository && repository.includes('/')) {
+      const builderConfig: UrlBuilderConfig = {
+        gitProvider,
+        gitRepository: repository,
+      };
+      urlBuilder = createUrlBuilder(builderConfig);
+    }
+    topPairings = Array.isArray(pairingData?.top_pairs) ? pairingData.top_pairs.slice(0, 10) : [];
+    latestPairedCommits = Array.isArray(pairingData?.latest_paired_commits)
+      ? pairingData.latest_paired_commits.slice(0, 20)
+      : [];
   } catch (error) {
     console.error('Error fetching source code data:', error);
     // Set empty arrays on error
@@ -62,6 +105,9 @@ export default async function SourceCodePage({
     entityEffort = [];
     codeChurn = [];
     entityOwnership = [];
+    urlBuilder = null;
+    topPairings = [];
+    latestPairedCommits = [];
   }
 
   return (
@@ -79,6 +125,89 @@ export default async function SourceCodePage({
       </div>
       <div className="grid grid-cols-1 gap-6">
         <EntityOwnershipCard data={entityOwnership} />
+      </div>
+
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <Card>
+          <CardHeader>
+            <CardTitle>Who Paired The Most With Whom</CardTitle>
+            <p className="mt-2 text-sm text-gray-600">
+              Ranked by number of paired commits between each author pair.
+            </p>
+          </CardHeader>
+          <CardContent>
+            {topPairings.length === 0 ? (
+              <p className="text-sm text-gray-500">No paired commits found for the selected filters.</p>
+            ) : (
+              <div className="overflow-x-auto">
+                <table className="w-full text-sm">
+                  <thead>
+                    <tr className="border-b">
+                      <th className="text-left p-2">Pair</th>
+                      <th className="text-right p-2">Paired Commits</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {topPairings.map((pair) => (
+                      <tr key={`${pair.author}-${pair.co_author}`} className="border-b hover:bg-gray-50">
+                        <td className="p-2">{pair.author} + {pair.co_author}</td>
+                        <td className="p-2 text-right">
+                          <span className="px-2 py-1 rounded bg-blue-100 text-blue-800">
+                            {pair.paired_commits}
+                          </span>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            )}
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader>
+            <CardTitle>Latest 20 Paired Commits</CardTitle>
+            <p className="mt-2 text-sm text-gray-600">
+              Most recent commits containing co-authors.
+            </p>
+          </CardHeader>
+          <CardContent>
+            {latestPairedCommits.length === 0 ? (
+              <p className="text-sm text-gray-500">No paired commits found for the selected filters.</p>
+            ) : (
+              <div className="space-y-3 max-h-[440px] overflow-y-auto pr-1">
+                {latestPairedCommits.map((commit) => (
+                  <div key={commit.hash} className="border rounded-md p-3">
+                    <div className="flex items-center justify-between gap-2">
+                      {urlBuilder ? (
+                        <a
+                          href={urlBuilder.getCommitUrl(commit.hash)}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="text-xs font-mono text-blue-700 hover:underline"
+                          title="Open commit in repository"
+                        >
+                          {commit.hash.slice(0, 8)}
+                        </a>
+                      ) : (
+                        <p className="text-xs font-mono text-gray-700">{commit.hash.slice(0, 8)}</p>
+                      )}
+                      <p className="text-xs text-gray-500">{new Date(commit.timestamp).toLocaleString()}</p>
+                    </div>
+                    <p className="mt-1 text-sm font-medium text-gray-900">{commit.subject || '(no subject)'}</p>
+                    <p className="mt-1 text-xs text-gray-700">
+                      <span className="font-semibold">Author:</span> {commit.author}
+                    </p>
+                    <p className="text-xs text-gray-700">
+                      <span className="font-semibold">Co-authors:</span> {commit.co_authors.join(', ')}
+                    </p>
+                  </div>
+                ))}
+              </div>
+            )}
+          </CardContent>
+        </Card>
       </div>
 
       <CodeCouplingCard data={coupling} />

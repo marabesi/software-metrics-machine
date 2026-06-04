@@ -200,6 +200,12 @@ describe('CLI Commands', () => {
 
   describe('Configuration Validation', () => {
 
+    it('code command should register summary subcommand', () => {
+      const codeCmd = program.commands.find((cmd) => cmd.name() === 'code');
+      const summaryCmd = codeCmd?.commands.find((cmd) => cmd.name() === 'summary');
+      expect(summaryCmd).toBeDefined();
+    });
+
     it('deployment command should have frequency option', () => {
       const metricsCmd = program.commands.find((cmd) => cmd.name() === 'metrics');
       const depCmd = metricsCmd?.commands.find((cmd) => cmd.name() === 'deployment');
