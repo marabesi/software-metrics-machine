@@ -264,3 +264,4 @@ apps/*/src/**/*.js.map
 tmp/**
 
 sonarqube_data/
+/.data/
