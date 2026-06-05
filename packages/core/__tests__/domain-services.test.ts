@@ -4,6 +4,8 @@ import { PRsService } from '../src';
 import { PipelinesService } from '../src';
 import { CommitBuilder, PullRequestBuilder, PipelineRunBuilder } from './builders/builders';
 import { IRepository } from '../src';
+import { IReadPullRequestsRepository } from '../src/aggregates/pull-requests-repository';
+import { IPipelinesRepository } from '../src/aggregates/pipelines-repository';
 import { Commit } from '../src/domain-types';
 
 describe('PairingIndexService', () => {
@@ -85,38 +87,33 @@ describe('PairingIndexService', () => {
 
 describe('PRsService', () => {
   let prsService: PRsService;
-  let mockPrRepo: IRepository<any>;
+  let mockPrRepo: IReadPullRequestsRepository;
 
   beforeEach(() => {
     const now = new Date();
     const oneWeekAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
     const twoDaysAgo = new Date(now.getTime() - 2 * 24 * 60 * 60 * 1000);
 
+    const prs = [
+      new PullRequestBuilder()
+        .withAuthor('Alice')
+        .withTitle('Feature A')
+        .withCreatedAt(oneWeekAgo.toISOString())
+        .withMergedAt(twoDaysAgo.toISOString())
+        .withComments(5)
+        .withLabels([{ name: 'enhancement' }])
+        .build(),
+      new PullRequestBuilder()
+        .withAuthor('Bob')
+        .withTitle('Fix bug B')
+        .withCreatedAt(new Date().toISOString())
+        .withComments(2)
+        .withLabels([{ name: 'bugfix' }])
+        .build(),
+    ];
+
     mockPrRepo = {
-      save: vi.fn(),
-      saveAll: vi.fn(),
-      load: vi.fn(),
-      loadAll: vi.fn(async () => {
-        return [
-          new PullRequestBuilder()
-            .withAuthor('Alice')
-            .withTitle('Feature A')
-            .withCreatedAt(oneWeekAgo.toISOString())
-            .withMergedAt(twoDaysAgo.toISOString())
-            .withComments(5)
-            .withLabels([{ name: 'enhancement' }])
-            .build(),
-          new PullRequestBuilder()
-            .withAuthor('Bob')
-            .withTitle('Fix bug B')
-            .withCreatedAt(new Date().toISOString())
-            .withComments(2)
-            .withLabels([{ name: 'bugfix' }])
-            .build(),
-        ];
-      }),
-      delete: vi.fn(),
-      exists: vi.fn(),
+      loadPrsWithFilters: vi.fn(async () => prs),
     };
 
     prsService = new PRsService(mockPrRepo);
@@ -183,40 +180,35 @@ describe('PRsService', () => {
 
 describe('PipelinesService', () => {
   let pipelinesService: PipelinesService;
-  let mockPipelineRepo: IRepository<any>;
+  let mockPipelineRepo: IPipelinesRepository;
 
   beforeEach(() => {
     const now = new Date();
     const oneWeekAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
     const twoDaysAgo = new Date(now.getTime() - 2 * 24 * 60 * 60 * 1000);
 
+    const runs = [
+      new PipelineRunBuilder()
+        .withNumber(1)
+        .withStatus('completed')
+        .withConclusion('success')
+        .withCreatedAt(oneWeekAgo.toISOString())
+        .withStartedAt(oneWeekAgo.toISOString())
+        .withCompletedAt(twoDaysAgo.toISOString())
+        .withBranch('main')
+        .build(),
+      new PipelineRunBuilder()
+        .withNumber(2)
+        .withStatus('completed')
+        .withConclusion('failure')
+        .withCreatedAt(new Date().toISOString())
+        .withStartedAt(new Date().toISOString())
+        .withConclusion('failure')
+        .build(),
+    ];
+
     mockPipelineRepo = {
-      save: vi.fn(),
-      saveAll: vi.fn(),
-      load: vi.fn(),
-      loadAll: vi.fn(async () => {
-        return [
-          new PipelineRunBuilder()
-            .withNumber(1)
-            .withStatus('completed')
-            .withConclusion('success')
-            .withCreatedAt(oneWeekAgo.toISOString())
-            .withStartedAt(oneWeekAgo.toISOString())
-            .withCompletedAt(twoDaysAgo.toISOString())
-            .withBranch('main')
-            .build(),
-          new PipelineRunBuilder()
-            .withNumber(2)
-            .withStatus('completed')
-            .withConclusion('failure')
-            .withCreatedAt(new Date().toISOString())
-            .withStartedAt(new Date().toISOString())
-            .withConclusion('failure')
-            .build(),
-        ];
-      }),
-      delete: vi.fn(),
-      exists: vi.fn(),
+      loadPipelines: vi.fn(async () => runs),
     };
 
     pipelinesService = new PipelinesService(mockPipelineRepo);

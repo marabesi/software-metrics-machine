@@ -4,11 +4,12 @@ import { FiltersProvider, useFilters } from "@/components/filters/FiltersContext
 
 // Mock Next.js router
 jest.mock('next/navigation', () => ({
-  useRouter: () => ({
+  useRouter: jest.fn(() => ({
     push: jest.fn(),
     replace: jest.fn(),
-  }),
-  usePathname: () => '/dashboard/insights',
+  })),
+  usePathname: jest.fn(() => '/dashboard/insights'),
+  useSearchParams: jest.fn(() => new URLSearchParams()),
 }));
 
 describe('Insights context', () => {

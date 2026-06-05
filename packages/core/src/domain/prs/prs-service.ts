@@ -1,6 +1,6 @@
 import { Logger, logger } from '@smmachine/utils';
 import { PRDetails, PRFilters, PRMetrics, PRsByTimeframe, LabelSummary } from './pr-types';
-import { PullRequestsRepository } from 'src';
+import { IReadPullRequestsRepository } from '../../aggregates/pull-requests-repository';
 import { stopWords } from './stop-words';
 
 export interface IPRsService {
@@ -19,7 +19,7 @@ export interface IPRsService {
 export class PRsService implements IPRsService {
   private logger: Logger = logger;
 
-  constructor(private prRepository: PullRequestsRepository) {}
+  constructor(private prRepository: IReadPullRequestsRepository) {}
 
   /**
    * Get overall PR metrics for the given filters.
@@ -49,6 +49,9 @@ export class PRsService implements IPRsService {
         comments_count: pr.totalComments,
       }));
 
+    const commentSummary = await this.getCommentsByAuthor(filters);
+    const labelSummary = await this.getLabelSummaries(filters);
+
     this.logger.debug(
       `PR Metrics: ${prs.length} total, ${mergedPRs.length} merged, avg ${averageOpenDays.toFixed(2)} days open`
     );
@@ -61,6 +64,9 @@ export class PRsService implements IPRsService {
       openPRs: openPRs.length,
       averageComments: Math.round(averageComments * 100) / 100,
       most_commented_prs: mostCommentedPRs,
+      leadTime: Math.round(averageOpenDays * 100) / 100,
+      commentSummary,
+      labelSummary,
     };
   }
 

@@ -10,7 +10,7 @@ import { PipelinesJobFetchRepository } from '../../../src/providers/github/pipel
 
 describe('Fetch jobs pipeline repository - By day', () => {
   const configuration = {
-    getPipelinePath: () => '/tmp',
+    getPathFromGitProvider: () => '/tmp',
   } as any;
 
   const pipelineRunRepository = new InMemoryRepository<WorkflowJsonResponse>();

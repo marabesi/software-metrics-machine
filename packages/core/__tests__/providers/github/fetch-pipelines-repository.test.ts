@@ -7,7 +7,7 @@ import { PipelinesFetchRepository } from '../../../src/providers/github/pipeline
 
 describe('PipelinesRepository', () => {
   const configuration = {
-    getPipelinePath: () => '/tmp',
+    getPathFromGitProvider: () => '/tmp',
   } as any;
 
   const pipelineRunRepository = new InMemoryRepository<WorkflowJsonResponse>();

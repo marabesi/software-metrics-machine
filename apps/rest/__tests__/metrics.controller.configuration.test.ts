@@ -19,7 +19,7 @@ describe('MetricsController - Configuration and Cross-Cutting Behavior', () => {
 
   it('should return complete metrics report', async () => {
     await request(app.getHttpServer())
-      .get('/configuration')
+      .get('/api/metrics/report')
       .expect(200)
       .expect((res) => {
         expect(res.body).toHaveProperty('timestamp');

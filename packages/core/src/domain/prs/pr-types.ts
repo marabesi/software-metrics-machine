@@ -68,6 +68,9 @@ export interface PRMetrics {
   openPRs: number;
   averageComments: number;
   most_commented_prs: MostCommentedPRData[];
+  leadTime: number;
+  commentSummary: CommentAuthor[];
+  labelSummary: LabelSummary[];
 }
 
 export interface CommentAuthor {

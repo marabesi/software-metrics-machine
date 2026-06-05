@@ -4,16 +4,8 @@ import { FiltersProvider } from '@/components/filters/FiltersContext';
 import FiltersContainer from '@/components/filters/FiltersContainer';
 import * as api from '@/server/api';
 
-// Mock next/navigation
-jest.mock('next/navigation', () => ({
-  usePathname: () => '/dashboard',
-  useRouter: () => ({
-    push: jest.fn(),
-  }),
-}));
-
 // Mock the API
-jest.mock('@/lib/api');
+jest.mock('@/server/api');
 
 const mockPipelineAPI = api.pipelineAPI as jest.Mocked<typeof api.pipelineAPI>;
 

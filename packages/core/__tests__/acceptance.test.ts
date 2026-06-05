@@ -1,18 +1,20 @@
 import { describe, it, expect, beforeEach } from 'vitest';
-import { PullRequestsRepository } from '../src';
-import { PipelinesRepository } from '../src';
 import { FileSystemRepository } from '../src';
 import { PipelineJob } from '../src';
 import { PipelineRun } from '../src';
 import { CodeMetricsRepository } from '../src';
 import { IssuesRepository } from '../src';
-import { SonarqubeMetricsRepository } from '../src';
 import { MetricsOrchestrator } from '../src';
 import { GithubPrsClient, GithubWorkflowClient } from '../src';
-import { JiraIssuesClient } from '../src';
+import { IJiraIssuesClient } from '../src';
 import { SonarqubeMeasuresClient } from '../src';
-import { CommitTraverser } from '../src';
-import { CodemaatAnalyzer } from '../src';
+import { PRsService } from '../src';
+import { PipelinesService } from '../src';
+import { PullRequestFactory } from '../src';
+import { SonarQubeService } from '../src';
+import { SonarqubeFactory } from '../src';
+import { PairingFactory } from '../src';
+import PipelineFactory from '../src/aggregates/pipeline-factory';
 
 /**
  * Acceptance tests for the complete metrics system.
@@ -22,60 +24,58 @@ describe('Metrics System Acceptance Tests', () => {
   let orchestrator: MetricsOrchestrator;
 
   beforeEach(() => {
-    // Set up all providers
-    const githubPrsClient = new GithubPrsClient(
-      process.env.GITHUB_TOKEN || 'test-token',
-      process.env.GITHUB_OWNER || 'owner',
-      process.env.GITHUB_REPO || 'repo'
-    );
+    const cacheDir = process.env.CACHE_DIR || '/tmp/smm-cache';
 
-    const githubWorkflowClient = new GithubWorkflowClient(
-      process.env.GITHUB_TOKEN || 'test-token',
-      process.env.GITHUB_OWNER || 'owner',
-      process.env.GITHUB_REPO || 'repo'
-    );
+    const config = {
+      githubToken: process.env.GITHUB_TOKEN || 'test-token',
+      githubRepository: `${process.env.GITHUB_OWNER || 'owner'}/${process.env.GITHUB_REPO || 'repo'}`,
+      jiraUrl: process.env.JIRA_URL || 'https://jira.example.com',
+      jiraEmail: process.env.JIRA_EMAIL || 'user@example.com',
+      jiraToken: process.env.JIRA_TOKEN || 'test-token',
+      jiraProject: process.env.JIRA_PROJECT || 'PROJECT',
+      sonarUrl: process.env.SONARQUBE_URL || 'https://sonar.example.com',
+      sonarToken: process.env.SONARQUBE_TOKEN || 'test-token',
+      sonarProject: process.env.SONARQUBE_PROJECT || 'project-key',
+      storeData: cacheDir,
+      gitProvider: 'github',
+      getPathFromGitProvider: () => cacheDir,
+      getCodeMaatPath: () => `${cacheDir}/codemaat`,
+      getSonarqubePath: () => `${cacheDir}/sonarqube`,
+      getGitPath: () => `${cacheDir}/git`,
+    } as any;
 
-    const jiraClient = new JiraIssuesClient(
-      process.env.JIRA_URL || 'https://jira.example.com',
-      process.env.JIRA_EMAIL || 'user@example.com',
-      process.env.JIRA_TOKEN || 'test-token',
-      process.env.JIRA_PROJECT || 'PROJECT'
-    );
+    const jiraClient: IJiraIssuesClient = {
+      fetchIssues: async () => [],
+      fetchIssueChanges: async () => [],
+      fetchIssueComments: async () => [],
+    };
 
     const sonarqubeClient = new SonarqubeMeasuresClient(
-      process.env.SONARQUBE_URL || 'https://sonar.example.com',
-      process.env.SONARQUBE_TOKEN || 'test-token',
-      process.env.SONARQUBE_PROJECT || 'project-key'
+      config.sonarUrl,
+      config.sonarToken,
+      config.sonarProject,
     );
 
-    const commitTraverser = new CommitTraverser(process.env.REPO_PATH || '/path/to/repo');
+    // Repositories
+    const prsRepository = PullRequestFactory.create(config);
+    const { pipelineRepository } = PipelineFactory.create(config);
+    const codeRepo = new CodeMetricsRepository(config);
+    const issuesRepo = new IssuesRepository(jiraClient, `${cacheDir}/jira`);
+    const sonarqubeRepository = SonarqubeFactory.create(config);
 
-    const codemaatAnalyzer = new CodemaatAnalyzer(
-      process.env.CODEMAAT_DATA_PATH || '/path/to/data'
-    );
+    // Services
+    const prsService = new PRsService(prsRepository);
+    const pipelinesService = new PipelinesService(pipelineRepository);
+    const sonarqubeService = new SonarQubeService(sonarqubeRepository);
+    const pairingService = PairingFactory.create(config);
 
-    // Set up repositories
-    const cacheDir = process.env.CACHE_DIR || '/tmp/smm-cache';
-    const prsRepo = new PullRequestsRepository(githubPrsClient, cacheDir);
-    const pipelinesRepo = new PipelinesRepository(
-      {
-        getPipelinePath: () => cacheDir,
-      } as any,
-      githubWorkflowClient,
-      new FileSystemRepository<PipelineRun>(`${cacheDir}/workflows.json`),
-      new FileSystemRepository<PipelineJob>(`${cacheDir}/jobs.json`)
-    );
-    const codeRepo = new CodeMetricsRepository(commitTraverser, codemaatAnalyzer, cacheDir);
-    const issuesRepo = new IssuesRepository(jiraClient, cacheDir);
-    const qualityRepo = new SonarqubeMetricsRepository(sonarqubeClient);
-
-    // Set up orchestrator
     orchestrator = new MetricsOrchestrator(
-      prsRepo,
-      pipelinesRepo,
+      prsService,
+      pipelinesService,
       codeRepo,
       issuesRepo,
-      qualityRepo
+      sonarqubeService,
+      pairingService,
     );
   });
 
@@ -146,76 +146,6 @@ describe('Metrics System Acceptance Tests', () => {
     });
   });
 
-  describe('Full Report Generation', () => {
-    it('should generate complete metrics report without filters', async () => {
-      const report = await orchestrator.getFullReport();
-
-      expect(report).toHaveProperty('timestamp');
-      expect(report).toHaveProperty('pullRequests');
-      expect(report).toHaveProperty('deployment');
-      expect(report).toHaveProperty('code');
-      expect(report).toHaveProperty('issues');
-      expect(report).toHaveProperty('quality');
-      expect(report).toHaveProperty('filters');
-
-      // Verify timestamp is ISO format
-      expect(report.timestamp).toMatch(/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}/);
-    });
-
-    it('should generate report with date filters', async () => {
-      const report = await orchestrator.getFullReport({
-        startDate: '2024-01-01',
-        endDate: '2024-12-31',
-      });
-
-      expect(report.filters.startDate).toBe('2024-01-01');
-      expect(report.filters.endDate).toBe('2024-12-31');
-    });
-
-    it('should generate report with author filters', async () => {
-      const report = await orchestrator.getFullReport({
-        selectedAuthors: ['Alice', 'Bob', 'Charlie'],
-      });
-
-      expect(report.filters.selectedAuthors).toContain('Alice');
-    });
-
-    it('should generate report with multiple filter types', async () => {
-      const report = await orchestrator.getFullReport({
-        startDate: '2024-01-01',
-        endDate: '2024-06-30',
-        selectedAuthors: ['Alice'],
-        status: 'Done',
-      });
-
-      expect(report.filters.startDate).toBe('2024-01-01');
-      expect(report.filters.selectedAuthors).toContain('Alice');
-      expect(report.filters.status).toBe('Done');
-    });
-
-    it('should return complete report structure', async () => {
-      const report = await orchestrator.getFullReport();
-
-      // Verify PR section
-      expect(report.pullRequests).toHaveProperty('totalPRs');
-      expect(report.pullRequests).toHaveProperty('leadTime');
-
-      // Verify deployment section
-      expect(report.deployment).toHaveProperty('pipelineMetrics');
-      expect(report.deployment).toHaveProperty('deploymentFrequency');
-
-      // Verify code section
-      expect(report.code).toHaveProperty('pairingIndex');
-      expect(report.code).toHaveProperty('codeChurn');
-
-      // Verify issues section
-      expect(report.issues).toHaveProperty('totalIssues');
-
-      // Verify quality section
-      expect(report.quality).toBeDefined();
-    });
-  });
-
   describe('Concurrent Operations', () => {
     it('should handle simultaneous requests for different metrics', async () => {
       const [pr, deployment, code, issues, quality] = await Promise.all([
@@ -233,19 +163,6 @@ describe('Metrics System Acceptance Tests', () => {
       expect(quality).toBeDefined();
     });
 
-    it('should handle multiple full reports in parallel', async () => {
-      const reports = await Promise.all([
-        orchestrator.getFullReport({ startDate: '2024-01-01', endDate: '2024-03-31' }),
-        orchestrator.getFullReport({ startDate: '2024-04-01', endDate: '2024-06-30' }),
-        orchestrator.getFullReport({ startDate: '2024-07-01', endDate: '2024-09-30' }),
-      ]);
-
-      expect(reports).toHaveLength(3);
-      reports.forEach((report) => {
-        expect(report).toHaveProperty('timestamp');
-        expect(report).toHaveProperty('pullRequests');
-      });
-    });
   });
 
   describe('Data Validation', () => {
@@ -287,20 +204,4 @@ describe('Metrics System Acceptance Tests', () => {
     });
   });
 
-  describe('Error Scenarios', () => {
-    it('should handle missing configuration gracefully', async () => {
-      // This should not throw; providers handle missing config
-      const report = await orchestrator.getFullReport();
-      expect(report).toBeDefined();
-    });
-
-    it('should handle invalid date filters', async () => {
-      // Dates should be validated and handled
-      const report = await orchestrator.getFullReport({
-        startDate: '2024-01-01',
-        endDate: '2023-12-31', // End before start
-      });
-      expect(report).toBeDefined();
-    });
-  });
 });

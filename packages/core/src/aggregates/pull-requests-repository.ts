@@ -6,7 +6,11 @@ import {
   PullRequestLabelJsonResponse,
 } from '../providers/github/github-response-types';
 
-export class PullRequestsRepository {
+export interface IReadPullRequestsRepository {
+  loadPrsWithFilters(filters?: PRFilters): Promise<PRDetails[]>;
+}
+
+export class PullRequestsRepository implements IReadPullRequestsRepository {
   constructor(
     private cache: FileSystemRepository<PullRequestJsonResponse>,
     private pullRequestCommentsStoreFile: FileSystemRepository<PullRequestCommentJsonResponse>

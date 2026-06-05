@@ -9,25 +9,28 @@ describe('Infrastructure', () => {
   describe('Configuration', () => {
     it('should create configuration from environment variables', () => {
       const env = {
+        SMM_STORE_DATA_AT: '/tmp',
         GITHUB_TOKEN: 'gh_test',
-        LOG_LEVEL: 'DEBUG',
-        OUTPUT_DIR: '/tmp/output',
+        LOGGING_LEVEL: 'DEBUG',
+        GIT_REPOSITORY_PATH: '/tmp/repo',
       };
       const config = new Configuration(env);
       expect(config.githubToken).toBe('gh_test');
       expect(config.loggingLevel).toBe('DEBUG');
-      expect(config.outputDir).toBe('/tmp/output');
+      expect(config.storeData).toBe('/tmp');
     });
 
     it('should use default values when env vars not set', () => {
-      const config = new Configuration({});
-      expect(config.outputDir).toBe('./outputs');
-      expect(config.inputDir).toBe('./inputs');
-      expect(config.loggingLevel).toBe('INFO');
+      const config = new Configuration({ SMM_STORE_DATA_AT: '/tmp' });
+      expect(config.loggingLevel).toBe('CRITICAL');
+      expect(config.storeData).toBe('/tmp');
     });
 
     it('should validate configuration', () => {
-      const config = new Configuration({});
+      const config = new Configuration({
+        SMM_STORE_DATA_AT: '/tmp',
+        GIT_REPOSITORY_PATH: '/tmp/repo',
+      });
       const validation = config.validate();
       expect(validation.valid).toBe(true);
       expect(validation.errors).toHaveLength(0);

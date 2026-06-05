@@ -115,7 +115,7 @@ describe('CLI Commands', () => {
 
         const output = formatQualityMetrics(data, { format: 'text' });
         expect(output).toContain('Quality Metrics');
-        expect(output).toContain('coverage: 78.5%');
+        expect(output).toContain('Coverage: 78.5%');
       });
 
       it('should format quality metrics in JSON format', () => {
@@ -206,32 +206,32 @@ describe('CLI Commands', () => {
       expect(summaryCmd).toBeDefined();
     });
 
-    it('deployment command should have frequency option', () => {
-      const metricsCmd = program.commands.find((cmd) => cmd.name() === 'metrics');
-      const depCmd = metricsCmd?.commands.find((cmd) => cmd.name() === 'deployment');
-      const freqOption = depCmd?.options.find((opt) => opt.long === '--frequency');
-      expect(freqOption).toBeDefined();
+    it('deployment command should have start-date option', () => {
+      const pipelinesCmd = program.commands.find((cmd) => cmd.name() === 'pipelines');
+      const fetchCmd = pipelinesCmd?.commands.find((cmd) => cmd.name() === 'fetch');
+      const startDateOption = fetchCmd?.options.find((opt) => opt.long === '--start-date');
+      expect(startDateOption).toBeDefined();
     });
 
-    it('code command should have authors option', () => {
-      const metricsCmd = program.commands.find((cmd) => cmd.name() === 'metrics');
-      const codeCmd = metricsCmd?.commands.find((cmd) => cmd.name() === 'code');
-      const authorsOption = codeCmd?.options.find((opt) => opt.long === '--authors');
-      expect(authorsOption).toBeDefined();
+    it('code command should have output option', () => {
+      const codeCmd = program.commands.find((cmd) => cmd.name() === 'code');
+      const summaryCmd = codeCmd?.commands.find((cmd) => cmd.name() === 'summary');
+      const outputOption = summaryCmd?.options.find((opt) => opt.long === '--output');
+      expect(outputOption).toBeDefined();
     });
 
-    it('report command should have format option', () => {
-      const metricsCmd = program.commands.find((cmd) => cmd.name() === 'metrics');
-      const reportCmd = metricsCmd?.commands.find((cmd) => cmd.name() === 'report');
-      const formatOption = reportCmd?.options.find((opt) => opt.long === '--format');
+    it('prs summary command should have format option', () => {
+      const prsCmd = program.commands.find((cmd) => cmd.name() === 'prs');
+      const summaryCmd = prsCmd?.commands.find((cmd) => cmd.name() === 'summary');
+      const formatOption = summaryCmd?.options.find((opt) => opt.long === '--output');
       expect(formatOption).toBeDefined();
     });
 
     describe('Command Descriptions', () => {
       it('should have descriptive help text', () => {
-        const metricsCmd = program.commands.find((cmd) => cmd.name() === 'metrics');
-        expect(metricsCmd?.description()).toBeDefined();
-        expect(metricsCmd?.description()?.length).toBeGreaterThan(0);
+        const prsCmd = program.commands.find((cmd) => cmd.name() === 'prs');
+        expect(prsCmd?.description()).toBeDefined();
+        expect(prsCmd?.description()?.length).toBeGreaterThan(0);
       });
     });
 

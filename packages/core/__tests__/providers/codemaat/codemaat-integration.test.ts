@@ -116,9 +116,10 @@ src/models.ts,src/database.ts,92`;
 
       expect(result.length).toBe(3);
       expect(result[0]).toEqual({
-        file1: 'src/index.ts',
-        file2: 'src/utils.ts',
-        couplingStrength: 45,
+        entity: 'src/index.ts',
+        coupled: 'src/utils.ts',
+        degree: 45,
+        averageRevs: 0,
       });
     });
 
@@ -135,7 +136,7 @@ dist/build.ts,src/api.ts,92`;
       });
 
       expect(result.length).toBe(1);
-      expect(result[0].file1).toBe('src/index.ts');
+      expect(result[0].entity).toBe('src/index.ts');
     });
 
     it('should handle ignore patterns with prefix', async () => {

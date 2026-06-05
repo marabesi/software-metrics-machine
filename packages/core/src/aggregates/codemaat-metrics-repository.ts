@@ -97,8 +97,12 @@ export class CodeMaatMetricsRepository implements ICodeMetricsRepository {
         }
 
         const date = row[dateIdx];
-        const added = parseInt(row[addedIdx], 10) || 0;
-        const deleted = parseInt(row[deletedIdx], 10) || 0;
+        const added = parseInt(row[addedIdx], 10);
+        const deleted = parseInt(row[deletedIdx], 10);
+
+        if (isNaN(added) || isNaN(deleted)) {
+          continue; // Skip rows with non-numeric values
+        }
         const commits = commitsIdx >= 0 ? parseInt(row[commitsIdx], 10) || 0 : 1;
 
         // Filter by date range if provided
@@ -152,10 +156,16 @@ export class CodeMaatMetricsRepository implements ICodeMetricsRepository {
         h.trim().replace(/^"|"$/g, '')
       );
 
-      // Find column indices
-      const file1Idx = header.findIndex((h) => h.toLowerCase() === 'entity');
-      const file2Idx = header.findIndex((h) => h.toLowerCase() === 'coupled');
-      const couplingIdx = header.findIndex((h) => h.toLowerCase() === 'degree');
+      // Find column indices — support multiple header conventions
+      const file1Idx = header.findIndex(
+        (h) => h.toLowerCase() === 'entity' || h.toLowerCase() === 'file1' || h.toLowerCase() === 'entity1'
+      );
+      const file2Idx = header.findIndex(
+        (h) => h.toLowerCase() === 'coupled' || h.toLowerCase() === 'file2' || h.toLowerCase() === 'entity2'
+      );
+      const couplingIdx = header.findIndex(
+        (h) => h.toLowerCase() === 'degree' || h.toLowerCase() === 'coupling_strength' || h.toLowerCase() === 'strength'
+      );
 
       const averageRevsIdx = header.findIndex((h) => h.toLowerCase().includes('average-revs'));
 
@@ -182,13 +192,13 @@ export class CodeMaatMetricsRepository implements ICodeMetricsRepository {
         const averageRevs = averageRevsIdx >= 0 ? parseInt(row[averageRevsIdx], 10) || 0 : 0;
 
         // Apply ignore patterns if provided
-        // if (
-        //   options?.ignorePatterns &&
-        //   (this.isIgnoredPath(entity, options.ignorePatterns) ||
-        //     this.isIgnoredPath(coupled, options.ignorePatterns))
-        // ) {
-        //   continue;
-        // }
+        if (
+          options?.ignorePatterns &&
+          (this.isIgnoredPath(entity, options.ignorePatterns) ||
+            this.isIgnoredPath(coupled, options.ignorePatterns))
+        ) {
+          continue;
+        }
 
         coupleData.push({
           entity,
@@ -206,6 +216,18 @@ export class CodeMaatMetricsRepository implements ICodeMetricsRepository {
       this.logger.error(`Failed to read file coupling: ${errorMsg}`);
       throw error;
     }
+  }
+
+  private isIgnoredPath(filePath: string, patterns: string[]): boolean {
+    return patterns.some((pattern) => {
+      if (pattern.startsWith('*')) {
+        // Glob suffix match e.g. *.js
+        const ext = pattern.slice(1);
+        return filePath.endsWith(ext);
+      }
+      // Prefix match e.g. dist/, test/, node_modules/
+      return filePath.startsWith(pattern);
+    });
   }
 
   private detectCsvDelimiter(headerLine: string): string {

@@ -1,5 +1,4 @@
 import { Logger, logger } from '@smmachine/utils';
-import { IRepository } from '../../infrastructure';
 import {
   DeploymentFrequencyByInterval,
   JobMetrics,
@@ -8,7 +7,7 @@ import {
   PipelineMetrics,
   PipelineRun,
 } from './pipeline-types';
-import { PipelinesRepository } from '../../aggregates';
+import { IPipelinesRepository } from '../../aggregates/pipelines-repository';
 
 export interface IPipelinesService {
   getMetrics(filters?: PipelineFilters): Promise<PipelineMetrics>;
@@ -23,7 +22,7 @@ export interface IPipelinesService {
 export class PipelinesService implements IPipelinesService {
   private logger: Logger = logger;
 
-  constructor(private pipelineRepository: PipelinesRepository) {}
+  constructor(private pipelineRepository: IPipelinesRepository) {}
 
   /**
    * Get overall pipeline metrics for the given filters.

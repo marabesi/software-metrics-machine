@@ -31,7 +31,7 @@ describe('SelectFilter', () => {
 
   it('displays the current value', () => {
     render(<SelectFilter {...defaultProps} value="option2" />);
-    expect(screen.getByRole('combobox')).toHaveTextContent('option2');
+    expect(screen.getByRole('combobox')).toHaveValue('option2');
   });
 
   it('calls onChange when selection changes', () => {

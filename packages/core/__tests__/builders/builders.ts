@@ -114,7 +114,8 @@ export class PullRequestBuilder {
   }
 
   withComments(comments: number): PullRequestBuilder {
-    this.pr.comments = comments;
+    this.pr.totalComments = comments;
+    this.pr.comments = [];
     return this;
   }
 

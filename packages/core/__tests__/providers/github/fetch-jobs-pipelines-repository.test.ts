@@ -1,4 +1,4 @@
-import { describe, expect, it, vi } from 'vitest';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { PipelineGitHubJobBuilder, PipelineGitHubRunBuilder } from '../../../src';
 import { InMemoryRepository } from '../../../src/test/in-memory-repository';
 import { IGithubWorkflowJobClient } from '../../../src/providers/github/github-workflow';
@@ -10,11 +10,16 @@ import { PipelinesJobFetchRepository } from '../../../src/providers/github/pipel
 
 describe('Fetch jobs pipeline repository', () => {
   const configuration = {
-    getPipelinePath: () => '/tmp',
+    getPathFromGitProvider: () => '/tmp',
   } as any;
 
   const pipelineRunRepository = new InMemoryRepository<WorkflowJsonResponse>();
   const pipelineJobsRepository = new InMemoryRepository<WorkflowJobJsonResponse>();
+
+  beforeEach(async () => {
+    await pipelineRunRepository.delete();
+    await pipelineJobsRepository.delete();
+  });
 
   const createRepository = async (githubWorkflowClient: IGithubWorkflowJobClient) => {
     const repository = new PipelinesJobFetchRepository(

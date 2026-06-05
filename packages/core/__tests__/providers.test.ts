@@ -53,12 +53,6 @@ describe('GithubWorkflowClient', () => {
 
     expect(Array.isArray(workflows)).toBe(true);
   });
-
-  it('should fetch jobs for workflows', async () => {
-    const jobs = await client.fetchJobsForWorkflows(['run-1']);
-
-    expect(Array.isArray(jobs)).toBe(true);
-  });
 });
 
 describe('GitlabMrClient', () => {

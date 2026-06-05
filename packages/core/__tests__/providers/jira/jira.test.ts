@@ -1,38 +1,122 @@
+import { vi, describe, it, expect, beforeEach, afterEach, type MockInstance } from 'vitest';
+import axios from 'axios';
 import { JiraIssuesClient } from '../../../src';
 
 describe('JiraIssuesClient', () => {
   let client: JiraIssuesClient;
+  let getMock: MockInstance;
 
   beforeEach(() => {
-    client = new JiraIssuesClient(
-      'https://jira.example.com',
-      'user@example.com',
-      'api-token',
-      'PROJECT'
-    );
+    getMock = vi.fn();
+    vi.spyOn(axios, 'create').mockReturnValue({ get: getMock } as any);
+    client = new JiraIssuesClient('https://jira.example.com', 'user@example.com', 'api-token', 'PROJECT');
   });
 
-  it('should initialize with URL, email, token, and project', () => {
-    expect(client).toBeDefined();
+  afterEach(() => {
+    vi.restoreAllMocks();
   });
 
-  it('should fetch issues', async () => {
-    const issues = await client.fetchIssues({
-      status: 'Done',
+  describe('fetchIssues', () => {
+    it('should build JQL from options and call the search endpoint', async () => {
+      getMock.mockResolvedValueOnce({ data: { issues: [], total: 0 } });
+
+      await client.fetchIssues({ status: 'Done', startDate: '2024-01-01', endDate: '2024-03-31' });
+
+      expect(getMock).toHaveBeenCalledWith(
+        '/rest/api/3/search/jql',
+        expect.objectContaining({
+          params: expect.objectContaining({
+            jql: 'project = "PROJECT" AND created >= "2024-01-01" AND created <= "2024-03-31" AND status = "Done"',
+          }),
+        })
+      );
     });
 
-    expect(Array.isArray(issues)).toBe(true);
+    it('should map Jira response to domain Issue shape', async () => {
+      getMock.mockResolvedValueOnce({
+        data: {
+          issues: [
+            {
+              key: 'PROJ-1',
+              fields: {
+                summary: 'Fix the bug',
+                status: { name: 'Done' },
+                created: '2024-01-15T10:00:00.000Z',
+                assignee: { displayName: 'Alice' },
+                labels: ['backend'],
+              },
+            },
+          ],
+          total: 1,
+        },
+      });
+
+      const issues = await client.fetchIssues();
+
+      expect(issues).toHaveLength(1);
+      expect(issues[0]).toMatchObject({
+        id: 'PROJ-1',
+        key: 'PROJ-1',
+        title: 'Fix the bug',
+        status: 'Done',
+        createdAt: '2024-01-15T10:00:00.000Z',
+        assignee: 'Alice',
+        labels: ['backend'],
+      });
+    });
+
+    it('should paginate until all issues are fetched', async () => {
+      const makeIssue = (key: string) => ({
+        key,
+        fields: { summary: key, status: { name: 'Open' }, created: '', assignee: null, labels: [] },
+      });
+
+      getMock
+        .mockResolvedValueOnce({ data: { issues: Array.from({ length: 100 }, (_, i) => makeIssue(`PROJ-${i}`)), total: 150 } })
+        .mockResolvedValueOnce({ data: { issues: Array.from({ length: 50 }, (_, i) => makeIssue(`PROJ-${100 + i}`)), total: 150 } });
+
+      const issues = await client.fetchIssues();
+
+      expect(getMock).toHaveBeenCalledTimes(2);
+      expect(issues).toHaveLength(150);
+    });
+
+    it('should throw an auth error on 401', async () => {
+      const axiosError = Object.assign(new Error('Unauthorized'), {
+        isAxiosError: true,
+        response: { status: 401 },
+      });
+      getMock.mockRejectedValueOnce(axiosError);
+      vi.spyOn(axios, 'isAxiosError').mockReturnValue(true);
+
+      await expect(client.fetchIssues()).rejects.toThrow('Jira authentication failed. Check email and token.');
+    });
   });
 
-  it('should fetch issue changes', async () => {
-    const changes = await client.fetchIssueChanges('PROJ-1');
+  describe('fetchIssueChanges', () => {
+    it('should call the issue endpoint with expand=changelog and return histories', async () => {
+      const histories = [{ id: '1', items: [] }];
+      getMock.mockResolvedValueOnce({ data: { changelog: { histories } } });
 
-    expect(Array.isArray(changes)).toBe(true);
+      const result = await client.fetchIssueChanges('PROJ-1');
+
+      expect(getMock).toHaveBeenCalledWith(
+        '/rest/api/3/issue/PROJ-1',
+        expect.objectContaining({ params: { expand: 'changelog' } })
+      );
+      expect(result).toEqual(histories);
+    });
   });
 
-  it('should fetch issue comments', async () => {
-    const comments = await client.fetchIssueComments('PROJ-1');
+  describe('fetchIssueComments', () => {
+    it('should call the comment endpoint and return comments', async () => {
+      const comments = [{ id: '42', body: 'LGTM' }];
+      getMock.mockResolvedValueOnce({ data: { comments } });
 
-    expect(Array.isArray(comments)).toBe(true);
+      const result = await client.fetchIssueComments('PROJ-1');
+
+      expect(getMock).toHaveBeenCalledWith('/rest/api/3/issue/PROJ-1/comment');
+      expect(result).toEqual(comments);
+    });
   });
 });

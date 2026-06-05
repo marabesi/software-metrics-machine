@@ -20,9 +20,8 @@ describe('Pull Request Metrics', () => {
   });
 
   it('should have pr subcommand', () => {
-    const metricsCmd = program.commands.find((cmd) => cmd.name() === 'metrics');
-    const prCmd = metricsCmd?.commands.find((cmd) => cmd.name() === 'pr');
-    expect(prCmd).toBeDefined();
+    const prsCmd = program.commands.find((cmd) => cmd.name() === 'prs');
+    expect(prsCmd).toBeDefined();
   });
 
   describe('Output Formatters', () => {

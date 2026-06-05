@@ -9,6 +9,7 @@ export interface IMetricsOrchestrator {
   getCodeMetrics(filters?: any): Promise<any>;
   getIssueMetrics(filters?: any): Promise<any>;
   getQualityMetrics(filters?: any): Promise<any>;
+  getFullReport(filters?: any): Promise<any>;
 }
 
 /**
@@ -88,5 +89,30 @@ export class MetricsOrchestrator implements IMetricsOrchestrator {
     logger.info('Orchestrating quality metrics...');
 
     return this.sonarqubeService.getQualityMetrics(filters);
+  }
+
+  /**
+   * Get a complete metrics report across all sources
+   */
+  async getFullReport(filters?: any): Promise<any> {
+    logger.info('Orchestrating full metrics report...');
+
+    const [pullRequests, deployment, code, issues, quality] = await Promise.all([
+      this.getPRMetrics(filters),
+      this.getDeploymentMetrics(filters),
+      this.getCodeMetrics(filters),
+      this.getIssueMetrics(filters),
+      this.getQualityMetrics(filters),
+    ]);
+
+    return {
+      timestamp: new Date().toISOString(),
+      pullRequests,
+      deployment,
+      code,
+      issues,
+      quality,
+      filters: filters || {},
+    };
   }
 }

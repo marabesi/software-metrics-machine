@@ -1,1 +1,10 @@
-import '@testing-library/jest-dom'
+import '@testing-library/jest-dom';
+
+const mockSearchParams = new URLSearchParams();
+
+jest.mock('next/navigation', () => ({
+  usePathname: jest.fn(() => '/'),
+  useRouter: jest.fn(() => ({ push: jest.fn(), replace: jest.fn(), back: jest.fn() })),
+  useSearchParams: jest.fn(() => mockSearchParams),
+}));
+

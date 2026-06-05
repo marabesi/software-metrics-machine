@@ -69,13 +69,13 @@ describe('SonarqubeMeasuresClient', () => {
   });
 
   it('should map 401 errors to auth error message', async () => {
-    mockGet.mockRejectedValueOnce(
-      Object.assign(new Error('Request failed'), {
-        isAxiosError: true,
-        response: { status: 401 },
-        code: undefined,
-      })
-    );
+    const axiosError = Object.assign(new Error('Request failed'), {
+      isAxiosError: true,
+      response: { status: 401 },
+      code: undefined,
+    });
+    mockGet.mockRejectedValueOnce(axiosError);
+    vi.mocked(axios.isAxiosError).mockReturnValueOnce(true);
 
     await expect(client.fetchComponentMeasures()).rejects.toThrow(
       'SonarQube authentication failed. Check token.'

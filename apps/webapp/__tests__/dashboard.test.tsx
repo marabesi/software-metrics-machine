@@ -4,36 +4,51 @@ import React from "react";
 
 // Mock Next.js router
 jest.mock('next/navigation', () => ({
-  useRouter: () => ({
+  useRouter: jest.fn(() => ({
     push: jest.fn(),
     replace: jest.fn(),
-  }),
-  usePathname: () => '/dashboard/insights',
+  })),
+  usePathname: jest.fn(() => '/dashboard/insights'),
+  useSearchParams: jest.fn(() => new URLSearchParams()),
 }));
 
-// Mock child content
+jest.mock('@smmachine/core', () => ({
+  Configuration: jest.fn().mockImplementation(() => ({
+    githubRepository: 'owner/repo',
+    getCodeMaatPath: jest.fn(),
+    getPathFromGitProvider: jest.fn(),
+    getSonarqubePath: jest.fn(),
+    getGitPath: jest.fn(),
+  })),
+}));
+
+jest.mock('@/server/api', () => ({
+  configurationAPI: {
+    getConfiguration: jest.fn().mockResolvedValue({ git_provider: 'github', github_repository: 'owner/repo' }),
+  },
+}));
+
+jest.mock('@/app/theme-context', () => ({
+  ThemeContextProvider: ({ children }: { children: React.ReactNode }) => <>{children}</>,
+  useTheme: jest.fn(() => ({ mode: 'light', toggleTheme: jest.fn() })),
+}));
 const MockChild = () => <div>Insights</div>;
 
 describe('Dashboard', () => {
   it('should render dashboard tabs', async () => {
-    render(
-      <DashboardLayout>
-        <MockChild />
-      </DashboardLayout>
-    );
+    const layout = await DashboardLayout({ children: <MockChild /> });
+    render(layout);
 
-    // Wait for component to be mounted
     await waitFor(() => {
       const tabs = screen.getAllByRole('tab');
       expect(tabs.length).toBeGreaterThan(0);
     });
 
-    // Check that tab labels exist by finding them in the tab list
     const insightsTab = screen.getByRole('tab', { name: /Insights/i });
     const pipelinesTab = screen.getByRole('tab', { name: /Pipelines/i });
     const prTab = screen.getByRole('tab', { name: /Pull Requests/i });
     const sourceCodeTab = screen.getByRole('tab', { name: /Source Code/i });
-    
+
     expect(insightsTab).toBeInTheDocument();
     expect(pipelinesTab).toBeInTheDocument();
     expect(prTab).toBeInTheDocument();
@@ -41,14 +56,10 @@ describe('Dashboard', () => {
   });
 
   it('should render child content', async () => {
-    render(
-      <DashboardLayout>
-        <MockChild />
-      </DashboardLayout>
-    );
+    const layout = await DashboardLayout({ children: <MockChild /> });
+    render(layout);
 
     await waitFor(() => {
-      // Check the child content is in the document
       const insightsTab = screen.getByRole('tab', { name: /Insights/i });
       expect(insightsTab).toBeInTheDocument();
     });

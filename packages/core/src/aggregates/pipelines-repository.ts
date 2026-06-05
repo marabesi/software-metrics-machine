@@ -1,12 +1,16 @@
 import { IRepository } from '../infrastructure';
+import { logger } from '@smmachine/utils';
 import {
   WorkflowJobJsonResponse,
   WorkflowJsonResponse,
 } from '../providers/github/github-response-types';
 import { PipelineJob, PipelineRun } from '../domain';
-import { logger } from '@smmachine/utils';
 
-export class PipelinesRepository {
+export interface IPipelinesRepository {
+  loadPipelines(): Promise<PipelineRun[]>;
+}
+
+export class PipelinesRepository implements IPipelinesRepository {
   constructor(
     private pipelineRunFileSystemRepository: IRepository<WorkflowJsonResponse>,
     private pipelineJobsFileSystemRepository: IRepository<WorkflowJobJsonResponse>
