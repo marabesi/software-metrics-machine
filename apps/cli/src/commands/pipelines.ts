@@ -233,6 +233,7 @@ export function createPipelinesCommands(program: Command): void {
           metrics.forEach(item => {
             console.log(`Job name: ${item.jobName}`);
             console.log(`Total Jobs: ${item.totalRuns}`);
+            console.log(`Reruns: ${item.rerunCount}`);
             console.log(`Success rate: ${item.successRate}`);
             console.log(`Average Duration Minutes: ${item.averageDurationMinutes}`);
             console.log(`Failure count: ${item.failureCount}`);

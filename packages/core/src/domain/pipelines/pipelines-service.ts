@@ -17,6 +17,7 @@ export interface IPipelinesService {
     filters?: PipelineFilters
   ): Promise<DeploymentFrequencyByInterval[]>;
   getJobMetrics(filters?: PipelineFilters): Promise<JobMetrics[]>;
+  getJobRerunsByDay(filters?: PipelineFilters): Promise<Array<{ day: string; rerun_count: number }>>;
 }
 
 export class PipelinesService implements IPipelinesService {
@@ -126,6 +127,7 @@ export class PipelinesService implements IPipelinesService {
             successCount: 0,
             failureCount: 0,
             successRate: 0,
+            rerunCount: 0,
             actionRequiredCount: 0,
             cancelledCount: 0,
             skippedCount: 0,
@@ -136,6 +138,7 @@ export class PipelinesService implements IPipelinesService {
 
         const metrics = jobMetricsMap.get(jobName)!;
         metrics.totalRuns += 1;
+        metrics.rerunCount += Math.max((run.runAttempt || 1) - 1, 0);
 
         if (job.conclusion === 'success') {
           metrics.successCount += 1;
@@ -188,6 +191,36 @@ export class PipelinesService implements IPipelinesService {
   }
 
   /**
+   * Get rerun counts grouped by day.
+   */
+  async getJobRerunsByDay(filters?: PipelineFilters): Promise<Array<{ day: string; rerun_count: number }>> {
+    const runs = await this.filterRuns(filters);
+
+    const grouped = new Map<string, number>();
+
+    for (const run of runs) {
+      const runDate = run.completedAt || run.createdAt;
+      if (!runDate) {
+        continue;
+      }
+
+      const day = this.toDayKey(runDate);
+      const runAttempt = run.runAttempt || 1;
+      const reruns = Math.max(runAttempt - 1, 0);
+
+      grouped.set(day, (grouped.get(day) || 0) + reruns);
+    }
+
+    return Array.from(grouped.entries())
+      .map(([day, rerun_count]) => ({ day, rerun_count }))
+      .sort((a, b) => a.day.localeCompare(b.day));
+  }
+
+  private toDayKey(dateString: string): string {
+    return dateString ? dateString.split('T')[0] : 'unknown';
+  }
+
+  /**
    * Filter runs by the provided criteria.
    */
   private async filterRuns(filters?: PipelineFilters): Promise<PipelineRun[]> {
@@ -220,6 +253,27 @@ export class PipelinesService implements IPipelinesService {
     // Filter by status
     if (filters.status) {
       result = this.filterByStatus(result, filters.status);
+    }
+
+    // Filter by selected job names and keep only selected jobs on each run
+    if (filters.jobName) {
+      const selectedJobNames = filters.jobName
+        .split(',')
+        .map((name) => name.trim().toLowerCase())
+        .filter((name) => name.length > 0);
+
+      if (selectedJobNames.length > 0) {
+        result = result
+          .filter((run) =>
+            (run.jobs || []).some((job) => selectedJobNames.includes((job.name || '').toLowerCase()))
+          )
+          .map((run) => ({
+            ...run,
+            jobs: (run.jobs || []).filter((job) =>
+              selectedJobNames.includes((job.name || '').toLowerCase())
+            ),
+          }));
+      }
     }
 
     return result;

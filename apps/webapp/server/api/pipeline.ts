@@ -12,6 +12,22 @@ export const pipelineAPI = {
       '/pipelines/jobs-by-status',
       params
     ),
+
+  jobsSummary: (params?: ApiParams) =>
+    fetchAPI<Array<{
+      job_name: string;
+      total_runs: number;
+      avg_duration_minutes: number;
+      success_count: number;
+      failure_count: number;
+      success_rate: number;
+      rerun_count: number;
+    }>>('/pipelines/jobs-summary', params),
+
+  jobsRerunsByDay: (params?: ApiParams) =>
+    fetchAPI<Array<{ day: string; rerun_count: number }>>(      '/pipelines/jobs-reruns-by-day',
+      params
+    ),
   
   summary: (params?: ApiParams) =>
     fetchAPI<{

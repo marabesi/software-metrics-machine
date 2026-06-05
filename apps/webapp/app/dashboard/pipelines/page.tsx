@@ -8,6 +8,10 @@ import {
   JobByStatusData,
   JobByStatusResponseItem,
   JobsDurationByWorkflowItem,
+  JobSummaryData,
+  JobSummaryResponseItem,
+  JobRerunsByDayData,
+  JobRerunsByDayResponseItem,
   RunsByDayData,
   RunsByResponseItem,
   RunsDurationData,
@@ -17,6 +21,7 @@ import { defaultFilters, parseDashboardFilters } from '@/components/filters/Dash
 import PipelineRunsDurationCard from '@/components/charts/pipeline/PipelineRunsDurationCard';
 import JobsAverageTimeCard from '@/components/charts/pipeline/JobsAverageTimeCard';
 import JobsByStatusCard from '@/components/charts/pipeline/JobsByStatusCard';
+import JobsRerunCard from '@/components/charts/pipeline/JobsRerunCard';
 
 type ResultWrapper<T> = {
   result: T;
@@ -45,16 +50,20 @@ export default async function PipelinesPage({
   let jobsAvgTime: JobsAverageTimeData[] = [];
   let jobsAvgTimeByDay: JobsAverageTimeByDayData[] = [];
   let jobsDurationByWorkflow: JobsDurationByWorkflowItem[] = [];
+  let jobsSummary: JobSummaryData[] = [];
+  let jobsRerunsByDay: JobRerunsByDayData[] = [];
 
   try {
     const apiParams = buildPipelineApiParams(filters);
-    const [jobs, duration, runsBy, avgTime, avgTimeByDay, jobsDurationRaw] = await Promise.all([
+    const [jobs, duration, runsBy, avgTime, avgTimeByDay, jobsDurationRaw, jobsSummaryRaw, jobsRerunsByDayRaw] = await Promise.all([
       pipelineAPI.jobsByStatus(apiParams),
       pipelineAPI.runsDuration(apiParams),
       pipelineAPI.runsBy({ ...apiParams, aggregate_by: 'day' }),
       pipelineAPI.jobsAverageTime(apiParams),
       pipelineAPI.jobsAverageTimeByDay(apiParams),
       pipelineAPI.jobsDurationByWorkflow(apiParams),
+      pipelineAPI.jobsSummary(apiParams),
+      pipelineAPI.jobsRerunsByDay(apiParams),
     ]);
 
     // Handle jobsByStatus - Status and Count fields
@@ -122,6 +131,31 @@ export default async function PipelinesPage({
       }));
     }
 
+    const jobsSummaryResult = unwrapResult(
+      jobsSummaryRaw as JobSummaryResponseItem[] | ResultWrapper<JobSummaryResponseItem[]>
+    );
+    const jobsSummaryData = Array.isArray(jobsSummaryResult)
+      ? jobsSummaryResult.map((item: JobSummaryResponseItem): JobSummaryData => ({
+          job_name: item.job_name || 'Unknown',
+          total_runs: item.total_runs || 0,
+          avg_duration_minutes: item.avg_duration_minutes || 0,
+          success_count: item.success_count || 0,
+          failure_count: item.failure_count || 0,
+          success_rate: item.success_rate || 0,
+          rerun_count: item.rerun_count || 0,
+        }))
+      : [];
+
+    const jobsRerunsByDayResult = unwrapResult(
+      jobsRerunsByDayRaw as JobRerunsByDayResponseItem[] | ResultWrapper<JobRerunsByDayResponseItem[]>
+    );
+    const jobsRerunsByDayData = Array.isArray(jobsRerunsByDayResult)
+      ? jobsRerunsByDayResult.map((item: JobRerunsByDayResponseItem): JobRerunsByDayData => ({
+          day: item.day || 'Unknown',
+          rerun_count: item.rerun_count || 0,
+        }))
+      : [];
+
     jobsByStatus = jobsData;
     runsDurationByAggregation = {
       avg: durationData,
@@ -134,6 +168,8 @@ export default async function PipelinesPage({
     jobsAvgTime = avgTimeData;
     jobsAvgTimeByDay = avgTimeByDayData;
     jobsDurationByWorkflow = Array.isArray(jobsDurationRaw) ? jobsDurationRaw : [];
+    jobsSummary = jobsSummaryData;
+    jobsRerunsByDay = jobsRerunsByDayData;
   } catch (error) {
     console.error('Error fetching pipeline data:', error);
     jobsByStatus = [];
@@ -142,6 +178,8 @@ export default async function PipelinesPage({
     jobsAvgTime = [];
     jobsAvgTimeByDay = [];
     jobsDurationByWorkflow = [];
+    jobsSummary = [];
+    jobsRerunsByDay = [];
   }
 
   return (
@@ -155,6 +193,7 @@ export default async function PipelinesPage({
         <JobsAverageTimeCard data={jobsAvgTime} dataByDay={jobsAvgTimeByDay} apiParams={buildPipelineApiParams(filters)} />
       </div>
 
+      <JobsRerunCard data={jobsSummary} dataByDay={jobsRerunsByDay} />
       <JobsByStatusCard data={jobsByStatus} />
     </div>
   );

@@ -57,6 +57,7 @@ export class PipelinesRepository {
       number: Number(run.run_number),
       startedAt: run.run_started_at,
       completedAt: run.updated_at,
+      runAttempt: Number(run.run_attempt || 1),
       branch: run.head_branch,
       path: run.path,
     };

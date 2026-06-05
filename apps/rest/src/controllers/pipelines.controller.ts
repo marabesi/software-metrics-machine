@@ -1,6 +1,6 @@
 import { Controller, Get, Logger, Query } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
-import { PipelinesRepository, Configuration } from '@smmachine/core';
+import { PipelinesRepository, Configuration, PipelinesService } from '@smmachine/core';
 
 type PipelineDurationsMetrics = {
   durations: number[];
@@ -36,7 +36,8 @@ export class PipelinesController {
 
   constructor(
     private readonly pipelinesRepo: PipelinesRepository,
-    private readonly config: Configuration
+    private readonly config: Configuration,
+    private readonly pipelinesService: PipelinesService
   ) {}
 
   @Get('/pipelines/summary')
@@ -144,6 +145,62 @@ export class PipelinesController {
     return Array.from(grouped.entries())
       .map(([state, count]) => ({ Status: state, Count: count }))
       .sort((a, b) => b.Count - a.Count);
+  }
+
+  @Get('/pipelines/jobs-summary')
+  async jobsSummary(
+    @Query('start_date') startDate?: string,
+    @Query('end_date') endDate?: string,
+    @Query('workflow_path') workflowPath?: string,
+    @Query('status') status?: string,
+    @Query('conclusion') conclusion?: string,
+    @Query('branch') branch?: string,
+    @Query('job_name') jobName?: string
+  ) {
+    const metrics = await this.pipelinesService.getJobMetrics({
+      startDate,
+      endDate,
+      workflowPath,
+      status,
+      conclusion,
+      targetBranch: branch,
+      jobName,
+    });
+
+    return {
+      result: metrics.map((item) => ({
+        job_name: item.jobName,
+        total_runs: item.totalRuns,
+        avg_duration_minutes: item.averageDurationMinutes,
+        success_count: item.successCount,
+        failure_count: item.failureCount,
+        success_rate: item.successRate,
+        rerun_count: item.rerunCount,
+      })),
+    };
+  }
+
+  @Get('/pipelines/jobs-reruns-by-day')
+  async jobsRerunsByDay(
+    @Query('start_date') startDate?: string,
+    @Query('end_date') endDate?: string,
+    @Query('workflow_path') workflowPath?: string,
+    @Query('status') status?: string,
+    @Query('conclusion') conclusion?: string,
+    @Query('branch') branch?: string,
+    @Query('job_name') jobName?: string
+  ) {
+    const metrics = await this.pipelinesService.getJobRerunsByDay({
+      startDate,
+      endDate,
+      workflowPath,
+      status,
+      conclusion,
+      targetBranch: branch,
+      jobName,
+    });
+
+    return { result: metrics };
   }
 
   @Get('/pipelines/runs-duration')

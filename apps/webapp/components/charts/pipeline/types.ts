@@ -61,6 +61,36 @@ export interface JobsAverageTimeByDayData {
   count: number;
 }
 
+export interface JobSummaryResponseItem {
+  job_name?: string;
+  total_runs?: number;
+  avg_duration_minutes?: number;
+  success_count?: number;
+  failure_count?: number;
+  success_rate?: number;
+  rerun_count?: number;
+}
+
+export interface JobSummaryData {
+  job_name: string;
+  total_runs: number;
+  avg_duration_minutes: number;
+  success_count: number;
+  failure_count: number;
+  success_rate: number;
+  rerun_count: number;
+}
+
+export interface JobRerunsByDayResponseItem {
+  day?: string;
+  rerun_count?: number;
+}
+
+export interface JobRerunsByDayData {
+  day: string;
+  rerun_count: number;
+}
+
 export interface RunsByResponseItem {
   period?: string;
   workflow?: string;

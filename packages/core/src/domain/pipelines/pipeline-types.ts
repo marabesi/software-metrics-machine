@@ -28,6 +28,7 @@ export interface PipelineRun {
   updatedAt: string;
   startedAt?: string;
   completedAt?: string;
+  runAttempt?: number;
   branch: string;
   commit?: string;
   path: string; // workflow file path
@@ -73,6 +74,7 @@ export interface JobMetrics {
   successCount: number;
   failureCount: number;
   successRate: number;
+  rerunCount: number;
   cancelledCount: number;
   skippedCount: number;
   timedOutCount: number;
