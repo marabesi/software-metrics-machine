@@ -7,6 +7,17 @@ type PipelineDurationsMetrics = {
   workflowName?: string;
 };
 
+interface PipelineFiltersQuery {
+  start_date?: string;
+  end_date?: string;
+  workflow_path?: string;
+  status?: string;
+  conclusion?: string;
+  branch?: string;
+  job_name?: string;
+  event?: string;
+}
+
 interface RunLike {
   path?: string;
   createdAt?: string;
@@ -41,27 +52,8 @@ export class PipelinesController {
   ) {}
 
   @Get('/pipelines/summary')
-  async pipelineSummary(
-    @Query('start_date') startDate?: string,
-    @Query('end_date') endDate?: string,
-    @Query('workflow_path') workflowPath?: string,
-    @Query('status') status?: string,
-    @Query('conclusion') conclusion?: string,
-    @Query('branch') branch?: string,
-    @Query('job_name') jobName?: string,
-    @Query('event') event?: string
-  ) {
-    const runs = await this.loadRunsWithFilters({
-      startDate,
-      endDate,
-      workflowPath,
-      status,
-      conclusion,
-      branch,
-      jobName,
-      event,
-      includeJobs: false,
-    });
+  async pipelineSummary(@Query() query: PipelineFiltersQuery) {
+    const runs = await this.loadRunsWithFilters({ ...query, includeJobs: false });
 
     const sortedByDate = [...runs].sort(
       (a, b) => this.toTimestamp(a.createdAt) - this.toTimestamp(b.createdAt)
@@ -76,27 +68,8 @@ export class PipelinesController {
   }
 
   @Get('/pipelines/by-status')
-  async byStatus(
-    @Query('start_date') startDate?: string,
-    @Query('end_date') endDate?: string,
-    @Query('workflow_path') workflowPath?: string,
-    @Query('status') status?: string,
-    @Query('conclusion') conclusion?: string,
-    @Query('branch') branch?: string,
-    @Query('job_name') jobName?: string,
-    @Query('event') event?: string
-  ) {
-    const runs = await this.loadRunsWithFilters({
-      startDate,
-      endDate,
-      workflowPath,
-      status,
-      conclusion,
-      branch,
-      jobName,
-      event,
-      includeJobs: true,
-    });
+  async byStatus(@Query() query: PipelineFiltersQuery) {
+    const runs = await this.loadRunsWithFilters({ ...query, includeJobs: true });
 
     const grouped = new Map<string, number>();
     for (const run of runs) {
@@ -110,27 +83,8 @@ export class PipelinesController {
   }
 
   @Get('/pipelines/jobs-by-status')
-  async jobsByStatus(
-    @Query('start_date') startDate?: string,
-    @Query('end_date') endDate?: string,
-    @Query('workflow_path') workflowPath?: string,
-    @Query('status') status?: string,
-    @Query('conclusion') conclusion?: string,
-    @Query('branch') branch?: string,
-    @Query('job_name') jobName?: string,
-    @Query('event') event?: string
-  ) {
-    const runs = await this.loadRunsWithFilters({
-      startDate,
-      endDate,
-      workflowPath,
-      status,
-      conclusion,
-      branch,
-      jobName,
-      event,
-      includeJobs: true,
-    });
+  async jobsByStatus(@Query() query: PipelineFiltersQuery) {
+    const runs = await this.loadRunsWithFilters({ ...query, includeJobs: true });
 
     const grouped = new Map<string, number>();
 
@@ -148,24 +102,8 @@ export class PipelinesController {
   }
 
   @Get('/pipelines/jobs-summary')
-  async jobsSummary(
-    @Query('start_date') startDate?: string,
-    @Query('end_date') endDate?: string,
-    @Query('workflow_path') workflowPath?: string,
-    @Query('status') status?: string,
-    @Query('conclusion') conclusion?: string,
-    @Query('branch') branch?: string,
-    @Query('job_name') jobName?: string
-  ) {
-    const metrics = await this.pipelinesService.getJobMetrics({
-      startDate,
-      endDate,
-      workflowPath,
-      status,
-      conclusion,
-      targetBranch: branch,
-      jobName,
-    });
+  async jobsSummary(@Query() query: PipelineFiltersQuery) {
+    const metrics = await this.pipelinesService.getJobMetrics(this.toServiceFilters(query));
 
     return {
       result: metrics.map((item) => ({
@@ -181,51 +119,18 @@ export class PipelinesController {
   }
 
   @Get('/pipelines/jobs-reruns-by-day')
-  async jobsRerunsByDay(
-    @Query('start_date') startDate?: string,
-    @Query('end_date') endDate?: string,
-    @Query('workflow_path') workflowPath?: string,
-    @Query('status') status?: string,
-    @Query('conclusion') conclusion?: string,
-    @Query('branch') branch?: string,
-    @Query('job_name') jobName?: string
-  ) {
-    const metrics = await this.pipelinesService.getJobRerunsByDay({
-      startDate,
-      endDate,
-      workflowPath,
-      status,
-      conclusion,
-      targetBranch: branch,
-      jobName,
-    });
+  async jobsRerunsByDay(@Query() query: PipelineFiltersQuery) {
+    const metrics = await this.pipelinesService.getJobRerunsByDay(this.toServiceFilters(query));
 
     return { result: metrics };
   }
 
   @Get('/pipelines/runs-duration')
   async runsDuration(
-    @Query('start_date') startDate?: string,
-    @Query('end_date') endDate?: string,
     @Query('aggregation') aggregation?: string,
-    @Query('workflow_path') workflowPath?: string,
-    @Query('status') status?: string,
-    @Query('conclusion') conclusion?: string,
-    @Query('branch') branch?: string,
-    @Query('job_name') jobName?: string,
-    @Query('event') event?: string
+    @Query() query?: PipelineFiltersQuery
   ) {
-    const runs = await this.loadRunsWithFilters({
-      startDate,
-      endDate,
-      workflowPath,
-      status,
-      conclusion,
-      branch,
-      jobName,
-      event,
-      includeJobs: false,
-    });
+    const runs = await this.loadRunsWithFilters({ ...(query || {}), includeJobs: false });
 
     const grouped = new Map<string, number[]>();
 
@@ -270,27 +175,8 @@ export class PipelinesController {
   }
 
   @Get('/pipelines/jobs-duration-by-workflow')
-  async jobsDurationByWorkflow(
-    @Query('start_date') startDate?: string,
-    @Query('end_date') endDate?: string,
-    @Query('workflow_path') workflowPath?: string,
-    @Query('status') status?: string,
-    @Query('conclusion') conclusion?: string,
-    @Query('branch') branch?: string,
-    @Query('job_name') jobName?: string,
-    @Query('event') event?: string
-  ) {
-    const runs = await this.loadRunsWithFilters({
-      startDate,
-      endDate,
-      workflowPath,
-      status,
-      conclusion,
-      branch,
-      jobName,
-      event,
-      includeJobs: true,
-    });
+  async jobsDurationByWorkflow(@Query() query: PipelineFiltersQuery) {
+    const runs = await this.loadRunsWithFilters({ ...query, includeJobs: true });
 
     // Map: workflow -> job name -> list of durations
     const grouped = new Map<string, Map<string, number[]>>();
@@ -322,29 +208,26 @@ export class PipelinesController {
   }
 
   @Get('/pipelines/deployment-frequency')
-  async deploymentFrequency(
-    @Query('start_date') startDate?: string,
-    @Query('end_date') endDate?: string,
-    @Query('workflow_path') workflowPath?: string,
-    @Query('job_name') jobName?: string,
-    @Query('status') status?: string,
-    @Query('conclusion') conclusion?: string,
-    @Query('branch') branch?: string,
-    @Query('event') event?: string
-  ) {
-    const runs = await this.loadRunsWithFilters({
-      startDate,
-      endDate,
-      workflowPath,
-      status,
-      conclusion,
-      branch,
-      jobName,
-      event,
+  async deploymentFrequency(@Query() query: PipelineFiltersQuery) {
+    const targetPipeline = (this.config.deploymentFrequencyTargetPipeline || '').trim();
+    const targetJob = (this.config.deploymentFrequencyTargetJob || '').trim();
+
+    if (!targetPipeline || !targetJob) {
+      this.logger.warn(
+        'Deployment frequency requested without deployment_frequency_target_pipeline or deployment_frequency_target_job configured'
+      );
+      return [];
+    }
+
+    const successfulRuns = await this.loadRunsWithFilters({
+      ...query,
+      workflow_path: targetPipeline,
+      job_name: targetJob,
+      job_conclusion: 'success',
       includeJobs: true,
     });
 
-    const successfulRuns = runs.filter((run) => (run.conclusion || '').toLowerCase() === 'success');
+    this.logger.debug(`Calculating deployment frequency for pipeline "${targetPipeline}" and job "${targetJob}". Total runs to analyze: ${successfulRuns.length}`);
 
     const dailyCounts = new Map<string, number>();
     const weeklyCounts = new Map<string, number>();
@@ -384,27 +267,10 @@ export class PipelinesController {
 
   @Get('/pipelines/runs-by')
   async runsBy(
-    @Query('start_date') startDate?: string,
-    @Query('end_date') endDate?: string,
     @Query('aggregate_by') aggregateBy?: string,
-    @Query('workflow_path') workflowPath?: string,
-    @Query('status') status?: string,
-    @Query('conclusion') conclusion?: string,
-    @Query('branch') branch?: string,
-    @Query('job_name') jobName?: string,
-    @Query('event') event?: string
+    @Query() query?: PipelineFiltersQuery
   ) {
-    const runs = await this.loadRunsWithFilters({
-      startDate,
-      endDate,
-      workflowPath,
-      status,
-      conclusion,
-      branch,
-      jobName,
-      event,
-      includeJobs: false,
-    });
+    const runs = await this.loadRunsWithFilters({ ...(query || {}), includeJobs: false });
 
     const mode = (aggregateBy || 'week').toLowerCase();
     const grouped = new Map<string, number>();
@@ -435,28 +301,11 @@ export class PipelinesController {
 
   @Get('/pipelines/jobs-average-time')
   async jobsAverageTime(
-    @Query('start_date') startDate?: string,
-    @Query('end_date') endDate?: string,
-    @Query('workflow_path') workflowPath?: string,
-    @Query('status') status?: string,
-    @Query('conclusion') conclusion?: string,
-    @Query('branch') branch?: string,
-    @Query('job_name') jobName?: string,
     @Query('exclude_jobs') excludeJobs?: string,
-    @Query('event') event?: string,
-    @Query('top') top?: string
+    @Query('top') top?: string,
+    @Query() query?: PipelineFiltersQuery
   ) {
-    const runs = await this.loadRunsWithFilters({
-      startDate,
-      endDate,
-      workflowPath,
-      status,
-      conclusion,
-      branch,
-      jobName,
-      event,
-      includeJobs: true,
-    });
+    const runs = await this.loadRunsWithFilters({ ...(query || {}), includeJobs: true });
 
     const excluded = new Set(this.parseCsvList(excludeJobs).map((name) => name.toLowerCase()));
     const grouped = new Map<string, PipelineDurationsMetrics>();
@@ -496,32 +345,12 @@ export class PipelinesController {
 
   @Get('/pipelines/jobs-average-time-by-day')
   async jobsAverageTimeByDay(
-    @Query('start_date') startDate?: string,
-    @Query('end_date') endDate?: string,
-    @Query('workflow_path') workflowPath?: string,
-    @Query('status') status?: string,
-    @Query('conclusion') conclusion?: string,
-    @Query('branch') branch?: string,
-    @Query('job_name') jobName?: string,
     @Query('exclude_jobs') excludeJobs?: string,
-    @Query('event') event?: string
+    @Query() query?: PipelineFiltersQuery
   ) {
-    const runs = await this.loadRunsWithFilters({
-      startDate,
-      endDate,
-      workflowPath,
-      status,
-      conclusion,
-      branch,
-      jobName,
-      event,
-      includeJobs: true,
-    });
+    const runs = await this.loadRunsWithFilters({ ...(query || {}), includeJobs: true });
 
     const excluded = new Set(this.parseCsvList(excludeJobs).map((name) => name.toLowerCase()));
-    const allowedJobs = jobName
-      ? new Set(jobName.split(',').map((n) => n.trim().toLowerCase()).filter(Boolean))
-      : null;
     const grouped = new Map<string, number[]>();
 
     for (const run of runs) {
@@ -535,9 +364,6 @@ export class PipelinesController {
       for (const job of jobs) {
         const name = (job.name || '').trim();
         if (!name || excluded.has(name.toLowerCase())) {
-          continue;
-        }
-        if (allowedJobs && !allowedJobs.has(name.toLowerCase())) {
           continue;
         }
         const duration = this.getDurationMinutes(job.startedAt, job.completedAt);
@@ -576,24 +402,24 @@ export class PipelinesController {
   }
 
   @Get('/pipelines/statuses')
-  async statuses(@Query('start_date') startDate?: string, @Query('end_date') endDate?: string) {
-    const runs = await this.loadRunsWithFilters({ startDate, endDate, includeJobs: false });
+  async statuses(@Query() query: PipelineFiltersQuery) {
+    const runs = await this.loadRunsWithFilters({ ...query, includeJobs: false });
     return Array.from(
       new Set(runs.map((run) => run.status || '').filter((value) => value.length > 0))
     ).sort();
   }
 
   @Get('/pipelines/conclusions')
-  async conclusions(@Query('start_date') startDate?: string, @Query('end_date') endDate?: string) {
-    const runs = await this.loadRunsWithFilters({ startDate, endDate, includeJobs: false });
+  async conclusions(@Query() query: PipelineFiltersQuery) {
+    const runs = await this.loadRunsWithFilters({ ...query, includeJobs: false });
     return Array.from(
       new Set(runs.map((run) => run.conclusion || '').filter((value) => value.length > 0))
     ).sort();
   }
 
   @Get('/pipelines/branches')
-  async branches(@Query('start_date') startDate?: string, @Query('end_date') endDate?: string) {
-    const runs = await this.loadRunsWithFilters({ startDate, endDate, includeJobs: false });
+  async branches(@Query() query: PipelineFiltersQuery) {
+    const runs = await this.loadRunsWithFilters({ ...query, includeJobs: false });
     return Array.from(
       new Set(runs.map((run) => run.branch || '').filter((value) => value.length > 0))
     ).sort();
@@ -610,8 +436,8 @@ export class PipelinesController {
   }
 
   @Get('/pipelines/jobs')
-  async jobs(@Query('workflow_path') workflowPath?: string) {
-    const runs = await this.loadRunsWithFilters({ workflowPath, includeJobs: true });
+  async jobs(@Query() query: PipelineFiltersQuery) {
+    const runs = await this.loadRunsWithFilters({ ...query, includeJobs: true });
     const names = new Set<string>();
 
     for (const run of runs) {
@@ -682,21 +508,35 @@ export class PipelinesController {
     return dateString.substring(0, 7);
   }
 
+  private toServiceFilters(query: PipelineFiltersQuery) {
+    return {
+      startDate: query.start_date,
+      endDate: query.end_date,
+      workflowPath: query.workflow_path,
+      status: query.status,
+      conclusion: query.conclusion,
+      targetBranch: query.branch,
+      jobName: query.job_name,
+      event: query.event,
+    };
+  }
+
   private async loadRunsWithFilters(filters: {
-    startDate?: string;
-    endDate?: string;
-    workflowPath?: string;
+    start_date?: string;
+    end_date?: string;
+    workflow_path?: string;
     status?: string;
     conclusion?: string;
     branch?: string;
-    jobName?: string;
+    job_name?: string;
+    job_conclusion?: string;
     event?: string;
     includeJobs: boolean;
   }): Promise<RunLike[]> {
     this.logger.debug('Loading runs with filters:', filters);
     const runs = await this.pipelinesRepo.loadPipelines();
-    const selectedJobNames = filters.jobName
-      ? filters.jobName
+    const selectedJobNames = filters.job_name
+      ? filters.job_name
           .split(',')
           .map((n) => n.trim().toLowerCase())
           .filter(Boolean)
@@ -704,15 +544,15 @@ export class PipelinesController {
 
     const filteredRuns = runs.filter((run: RunLike) => {
       if (
-        filters.startDate &&
-        this.toTimestamp(run.createdAt) < this.toTimestamp(filters.startDate)
+        filters.start_date &&
+        this.toTimestamp(run.createdAt) < this.toTimestamp(filters.start_date)
       ) {
         return false;
       }
-      if (filters.endDate && this.toTimestamp(run.createdAt) > this.toTimestamp(filters.endDate)) {
+      if (filters.end_date && this.toTimestamp(run.createdAt) > this.toTimestamp(filters.end_date)) {
         return false;
       }
-      if (filters.workflowPath && run.path !== filters.workflowPath) {
+      if (filters.workflow_path && run.path !== filters.workflow_path) {
         return false;
       }
       if (filters.status && (run.status || '').toLowerCase() !== filters.status.toLowerCase()) {
@@ -730,7 +570,7 @@ export class PipelinesController {
       if (filters.event && run.event !== filters.event) {
         return false;
       }
-      if (filters.jobName) {
+      if (filters.job_name) {
         const hasJob = (run.jobs || []).some((job) =>
           selectedJobNames.includes((job.name || '').toLowerCase())
         );
@@ -747,8 +587,14 @@ export class PipelinesController {
 
     return filteredRuns.map((run) => ({
       ...run,
-      jobs: (run.jobs || []).filter((job) =>
-        selectedJobNames.includes((job.name || '').toLowerCase())
+      jobs: (run.jobs || [])
+        .filter(job => selectedJobNames.includes((job.name || '').toLowerCase()))
+        .filter(job => {
+          if (filters.job_conclusion) {
+            return (job.conclusion || '').toLowerCase() === filters.job_conclusion.toLowerCase();
+          }
+          return true;
+        }
       ),
     }));
   }
