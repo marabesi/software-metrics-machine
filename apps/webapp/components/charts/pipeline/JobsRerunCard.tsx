@@ -16,10 +16,15 @@ export default function JobsRerunCard({ data, dataByDay }: JobsRerunCardProps) {
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Job Reruns</CardTitle>
-        <p className="text-xs text-gray-500 mt-1">
-          Reruns calculated from workflow run attempt (run_attempt - 1)
-        </p>
+        <div className="flex items-center gap-2">
+          <CardTitle>Job Reruns</CardTitle>
+          <div
+            className="inline-flex items-center justify-center w-5 h-5 rounded-full bg-blue-100 text-blue-600 cursor-help hover:bg-blue-200 transition-colors"
+            title="Reruns calculated from GitHub workflow run_attempt field. Formula: max(run_attempt - 1, 0). For example: attempt 1 = 0 reruns, attempt 2 = 1 rerun, attempt 3 = 2 reruns"
+          >
+            <span className="text-xs font-semibold">i</span>
+          </div>
+        </div>
       </CardHeader>
       <CardContent className="space-y-6">
         {/* Summary Stats */}
