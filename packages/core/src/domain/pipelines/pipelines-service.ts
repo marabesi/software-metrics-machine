@@ -1,6 +1,5 @@
 import { Logger, logger } from '@smmachine/utils';
 import {
-  DeploymentFrequencyByInterval,
   JobMetrics,
   PipelineFilters,
   PipelineJob,
@@ -12,10 +11,6 @@ import { Configuration } from '../..';
 
 export interface IPipelinesService {
   getMetrics(filters?: PipelineFilters): Promise<PipelineMetrics>;
-  getDeploymentFrequency(
-    interval: 'day' | 'week' | 'month',
-    filters?: PipelineFilters
-  ): Promise<DeploymentFrequencyByInterval[]>;
   getDeploymentFrequencyWithAllIntervals(filters?: PipelineFilters): Promise<Array<{
     days: string;
     weeks: string;
@@ -64,56 +59,6 @@ export class PipelinesService implements IPipelinesService {
       successRate: Math.round(successRate * 100) / 100,
       averageDurationMinutes: Math.round(averageDuration * 100) / 100,
     };
-  }
-
-  /**
-   * Get deployment frequency grouped by time interval.
-   */
-  async getDeploymentFrequency(
-    interval: 'day' | 'week' | 'month',
-    filters?: PipelineFilters
-  ): Promise<DeploymentFrequencyByInterval[]> {
-    const runs = await this.filterRuns(filters);
-
-    // Only count successful runs for deployment frequency
-    const deployments = runs.filter((r) => r.conclusion === 'success');
-
-    // Group by time interval
-    const byInterval = new Map<string, PipelineRun[]>();
-
-    for (const run of deployments) {
-      const date = new Date(run.completedAt || run.createdAt);
-      const key = this.getIntervalKey(date, interval);
-
-      if (!byInterval.has(key)) {
-        byInterval.set(key, []);
-      }
-      byInterval.get(key)!.push(run);
-    }
-
-    // Calculate metrics for each interval
-    const result: DeploymentFrequencyByInterval[] = [];
-    const intervals = Array.from(byInterval.keys()).sort();
-
-    for (const intervalKey of intervals) {
-      const intervalRuns = byInterval.get(intervalKey) || [];
-      const durations = this.extractDurations(intervalRuns);
-      const averageDuration =
-        durations.length > 0 ? durations.reduce((a, b) => a + b, 0) / durations.length : 0;
-
-      const successCount = intervalRuns.filter((r) => r.conclusion === 'success').length;
-      // const failureCount = intervalRuns.filter((r) => r.conclusion === 'failure').length;
-      const successRate = intervalRuns.length > 0 ? (successCount / intervalRuns.length) * 100 : 0;
-
-      result.push({
-        period: intervalKey,
-        count: intervalRuns.length,
-        averageDurationMinutes: Math.round(averageDuration * 100) / 100,
-        successRate: Math.round(successRate * 100) / 100,
-      });
-    }
-
-    return result;
   }
 
   /**
@@ -298,6 +243,16 @@ export class PipelinesService implements IPipelinesService {
     return Array.from(grouped.entries())
       .map(([day, rerun_count]) => ({ day, rerun_count }))
       .sort((a, b) => a.day.localeCompare(b.day));
+  }
+
+  async loadUniqueWorkflows(): Promise<{ name: string; path: string }[]> {
+    const runs = await this.filterRuns();
+    const values = Array.from(
+      new Set(
+        runs.map((run: PipelineRun) => run.path || '').filter((value: string) => value.length > 0)
+      )
+    ).sort();
+    return values.map((workflow) => ({ name: workflow, path: workflow }));
   }
 
   private toDayKey(dateString: string): string {

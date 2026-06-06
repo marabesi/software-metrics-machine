@@ -41,7 +41,7 @@ export class MetricsOrchestrator implements IMetricsOrchestrator {
     logger.info('Orchestrating deployment metrics...');
 
     const metrics = await this.pipelinesRepo.getMetrics(filters);
-    const frequency = await this.pipelinesRepo.getDeploymentFrequency('month', filters);
+    const frequency = await this.pipelinesRepo.getDeploymentFrequencyWithAllIntervals(filters);
     const jobMetrics = await this.pipelinesRepo.getJobMetrics(filters);
 
     return {

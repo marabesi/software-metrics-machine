@@ -9,6 +9,7 @@ import { useConfiguration } from '../providers/ConfigurationContext';
 export function DeploymentFrequency({ deploymentFrequency, monthTransitionIndices }: { deploymentFrequency: DeploymentFrequencyPoint[]; monthTransitionIndices: string[] }) {
   const githubRepository = useConfiguration().github_repository;
   const workflowPath = useConfiguration().deployment_frequency_target_pipeline || '';
+  const jobName = useConfiguration().deployment_frequency_target_job || '';
 
   const computeRange = (dateStr: string, granularity: 'day' | 'week' | 'month') => {
     if (!dateStr || dateStr === 'Unknown') return null;
@@ -44,10 +45,11 @@ export function DeploymentFrequency({ deploymentFrequency, monthTransitionIndice
     const range = computeRange(date, granularity);
     if (!range) return;
     
-    const filterParam = encodeURIComponent(`workflow_file_name:${workflowFileName}`);
-    const url = `https://github.com/${githubRepository.replace(/\/$/, '')}/actions/metrics/usage?dateRangeType=DATE_RANGE_TYPE_CUSTOM&filters=${filterParam}&range=${range.start}-${range.end}`;
+    const filterParam = encodeURIComponent(`workflow_file_name:${workflowFileName}`) + `+${encodeURIComponent('job_name:' + jobName)}`;
+    console.log(filterParam);
+    const url = `https://github.com/${githubRepository.replace(/\/$/, '')}/actions/metrics/usage?dateRangeType=DATE_RANGE_TYPE_CUSTOM&tab=jobs&filters=${filterParam}&range=${range.start}-${range.end}`;
     window.open(url, '_blank');
-  }, [githubRepository, workflowPath]);
+  }, [githubRepository, workflowPath, jobName]);
 
   const DayDot = useCallback((props: any) => {
     const { cx, cy, payload } = props;

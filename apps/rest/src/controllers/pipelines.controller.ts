@@ -339,13 +339,7 @@ export class PipelinesController {
 
   @Get('/pipelines/workflows')
   async workflows() {
-    const runs = await this.pipelinesRepo.loadPipelines();
-    const values = Array.from(
-      new Set(
-        runs.map((run: RunLike) => run.path || '').filter((value: string) => value.length > 0)
-      )
-    ).sort();
-    return values.map((workflow) => ({ name: workflow, path: workflow }));
+    return this.pipelinesService.loadUniqueWorkflows();
   }
 
   @Get('/pipelines/statuses')

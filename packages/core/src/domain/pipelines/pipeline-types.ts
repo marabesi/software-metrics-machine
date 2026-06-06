@@ -60,13 +60,6 @@ export interface PipelineMetrics {
   averageDurationMinutes: number;
 }
 
-export interface DeploymentFrequencyByInterval {
-  period: string; // day, week, or month key
-  count: number;
-  averageDurationMinutes: number;
-  successRate: number;
-}
-
 export interface JobMetrics {
   jobName: string;
   totalRuns: number;
