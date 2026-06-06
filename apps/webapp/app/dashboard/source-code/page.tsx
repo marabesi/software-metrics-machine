@@ -3,7 +3,6 @@ import { sourceCodeAPI } from '@/server/api';
 import { configurationAPI } from '@/server/api/configuration';
 import { buildSourceCodeApiParams } from '@/server/utils/apiParams';
 import { ensureArray } from '@/server/utils/chartData';
-import { createUrlBuilder, type UrlBuilderConfig } from '@/server/utils/urlBuilder';
 import EntityChurnCard from '@/components/charts/source-code/EntityChurnCard';
 import EntityEffortCard from '@/components/charts/source-code/EntityEffortCard';
 import CodeChurnOverTimeCard from '@/components/charts/source-code/CodeChurnOverTimeCard';
@@ -18,6 +17,7 @@ import {
   EntityEffortData,
   EntityOwnershipData,
 } from '@/components/charts/source-code/types';
+import { LatestPairedCommitsCard } from "@/components/charts/source-code/LatestPairedCommitsCard";
 
 type ResultWrapper<T> = {
   result: T;
@@ -55,7 +55,6 @@ export default async function SourceCodePage({
   let entityEffort: EntityEffortData[] = [];
   let codeChurn: CodeChurnData[] = [];
   let entityOwnership: EntityOwnershipData[] = [];
-  let urlBuilder: ReturnType<typeof createUrlBuilder> | null = null;
   let topPairings: Array<{ author: string; co_author: string; paired_commits: number }> = [];
   let latestPairedCommits: Array<{
     hash: string;
@@ -83,16 +82,6 @@ export default async function SourceCodePage({
     codeChurn = ensureArray<CodeChurnData>(unwrapResult(churnOverTime as CodeChurnData[] | ResultWrapper<CodeChurnData[]>));
     entityOwnership = ensureArray<EntityOwnershipData>(unwrapResult(ownership as EntityOwnershipData[] | ResultWrapper<EntityOwnershipData[]>));
     const pairingData = unwrapResult(pairing as PairingIndexResponse | ResultWrapper<PairingIndexResponse>);
-    const rawConfig = (configResponse as any)?.result || configResponse as any;
-    const repository = String(rawConfig?.github_repository || '').trim();
-    const gitProvider = String(rawConfig?.git_provider || 'github').toLowerCase();
-    if (repository && repository.includes('/')) {
-      const builderConfig: UrlBuilderConfig = {
-        gitProvider,
-        gitRepository: repository,
-      };
-      urlBuilder = createUrlBuilder(builderConfig);
-    }
     topPairings = Array.isArray(pairingData?.top_pairs) ? pairingData.top_pairs.slice(0, 10) : [];
     latestPairedCommits = Array.isArray(pairingData?.latest_paired_commits)
       ? pairingData.latest_paired_commits.slice(0, 20)
@@ -105,7 +94,6 @@ export default async function SourceCodePage({
     entityEffort = [];
     codeChurn = [];
     entityOwnership = [];
-    urlBuilder = null;
     topPairings = [];
     latestPairedCommits = [];
   }
@@ -165,49 +153,7 @@ export default async function SourceCodePage({
           </CardContent>
         </Card>
 
-        <Card>
-          <CardHeader>
-            <CardTitle>Latest 20 Paired Commits</CardTitle>
-            <p className="mt-2 text-sm text-gray-600">
-              Most recent commits containing co-authors.
-            </p>
-          </CardHeader>
-          <CardContent>
-            {latestPairedCommits.length === 0 ? (
-              <p className="text-sm text-gray-500">No paired commits found for the selected filters.</p>
-            ) : (
-              <div className="space-y-3 max-h-[440px] overflow-y-auto pr-1">
-                {latestPairedCommits.map((commit) => (
-                  <div key={commit.hash} className="border rounded-md p-3">
-                    <div className="flex items-center justify-between gap-2">
-                      {urlBuilder ? (
-                        <a
-                          href={urlBuilder.getCommitUrl(commit.hash)}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="text-xs font-mono text-blue-700 hover:underline"
-                          title="Open commit in repository"
-                        >
-                          {commit.hash.slice(0, 8)}
-                        </a>
-                      ) : (
-                        <p className="text-xs font-mono text-gray-700">{commit.hash.slice(0, 8)}</p>
-                      )}
-                      <p className="text-xs text-gray-500">{new Date(commit.timestamp).toLocaleString()}</p>
-                    </div>
-                    <p className="mt-1 text-sm font-medium text-gray-900">{commit.subject || '(no subject)'}</p>
-                    <p className="mt-1 text-xs text-gray-700">
-                      <span className="font-semibold">Author:</span> {commit.author}
-                    </p>
-                    <p className="text-xs text-gray-700">
-                      <span className="font-semibold">Co-authors:</span> {commit.co_authors.join(', ')}
-                    </p>
-                  </div>
-                ))}
-              </div>
-            )}
-          </CardContent>
-        </Card>
+        <LatestPairedCommitsCard data={latestPairedCommits} />
       </div>
 
       <CodeCouplingCard data={coupling} />

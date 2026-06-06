@@ -339,12 +339,10 @@ export function createPipelinesCommands(program: Command): void {
       try {
         console.log('🚀 Calculating deployment frequency...');
 
-        const metrics = await pipelineService.getDeploymentFrequencyWithAllIntervals(
-          {
-            startDate: options.startDate,
-            endDate: options.endDate,
-          }
-        );
+        const metrics = await pipelineService.getDeploymentFrequencyWithAllIntervals({
+          startDate: options.startDate,
+          endDate: options.endDate,
+        });
 
         if (options.output === 'json') {
           console.log(JSON.stringify(metrics, null, 2));
@@ -352,8 +350,12 @@ export function createPipelinesCommands(program: Command): void {
           console.log('\n=== Deployment Frequency (DORA) ===\n');
 
           metrics.forEach((item) => {
-            console.log(`Period: ${item.days} (daily), ${item.weeks} (weekly), ${item.months} (monthly)`);
-            console.log(`Total Deployments: ${item.daily_counts} (daily), ${item.weekly_counts} (weekly), ${item.monthly_counts} (monthly)`);
+            console.log(
+              `Period: ${item.days} (daily), ${item.weeks} (weekly), ${item.months} (monthly)`
+            );
+            console.log(
+              `Total Deployments: ${item.daily_counts} (daily), ${item.weekly_counts} (weekly), ${item.monthly_counts} (monthly)`
+            );
 
             // DORA rating
             let rating = 'Low';

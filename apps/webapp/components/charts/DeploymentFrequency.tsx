@@ -5,51 +5,19 @@ import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, Responsi
 import { ensureArray } from '@/server/utils/chartData';
 import { DeploymentFrequencyPoint } from '@/app/dashboard/insights/insights-types';
 import { useConfiguration } from '../providers/ConfigurationContext';
+import { useLinkBuilder } from '../providers/LinkBuilderContext';
 
 export function DeploymentFrequency({ deploymentFrequency, monthTransitionIndices }: { deploymentFrequency: DeploymentFrequencyPoint[]; monthTransitionIndices: Array<{date: string, week_label: string, month_label: string}> }) {
-  const githubRepository = useConfiguration().github_repository;
   const workflowPath = useConfiguration().deployment_frequency_target_pipeline || '';
   const jobName = useConfiguration().deployment_frequency_target_job || '';
-
-  const computeRange = (dateStr: string, granularity: 'day' | 'week' | 'month') => {
-    if (!dateStr || dateStr === 'Unknown') return null;
-    const parts = dateStr.split('-').map((p) => Number(p));
-    if (parts.length < 3) return null;
-    const [year, month, day] = parts;
-    const startUtc = Date.UTC(year, month - 1, day, 0, 0, 0, 0);
-    
-    if (granularity === 'day') {
-      const endUtc = startUtc + 24 * 60 * 60 * 1000 - 1;
-      return { start: startUtc, end: endUtc };
-    }
-    if (granularity === 'week') {
-      const d = new Date(Date.UTC(year, month - 1, day));
-      const utcDay = d.getUTCDay();
-      const diffToMonday = (utcDay + 6) % 7;
-      const monday = new Date(d);
-      monday.setUTCDate(d.getUTCDate() - diffToMonday);
-      const mondayStart = Date.UTC(monday.getUTCFullYear(), monday.getUTCMonth(), monday.getUTCDate());
-      const sundayEnd = mondayStart + 7 * 24 * 60 * 60 * 1000 - 1;
-      return { start: mondayStart, end: sundayEnd };
-    }
-    const monthStart = Date.UTC(year, month - 1, 1);
-    const nextMonthStart = Date.UTC(year, month, 1);
-    const monthEnd = nextMonthStart - 1;
-    return { start: monthStart, end: monthEnd };
-  };
+  const { urlBuilder } = useLinkBuilder();
 
   const handleClick = useCallback((date: string, granularity: 'day' | 'week' | 'month') => {
     const workflowSegments = workflowPath.split('/').filter(Boolean);
     const workflowFileName = workflowSegments.length > 0 ? workflowSegments[workflowSegments.length - 1] : workflowPath;
-    
-    const range = computeRange(date, granularity);
-    if (!range) return;
-    
-    const filterParam = encodeURIComponent(`workflow_file_name:${workflowFileName}`) + `+${encodeURIComponent('job_name:' + jobName)}`;
-    console.log(filterParam);
-    const url = `https://github.com/${githubRepository.replace(/\/$/, '')}/actions/metrics/usage?dateRangeType=DATE_RANGE_TYPE_CUSTOM&tab=jobs&filters=${filterParam}&range=${range.start}-${range.end}`;
+    const url = urlBuilder.getActionPerformanceForJobUrl(jobName, workflowFileName, granularity, date);
     window.open(url, '_blank');
-  }, [githubRepository, workflowPath, jobName]);
+  }, [workflowPath, jobName]);
 
   const DayDot = useCallback((props: any) => {
     const { cx, cy, payload } = props;
@@ -121,11 +89,23 @@ export function DeploymentFrequency({ deploymentFrequency, monthTransitionIndice
         <LineChart data={ensureArray(deploymentFrequency)}>
           <CartesianGrid strokeDasharray="3 3" />
           {monthTransitionIndices.map((transition) => (
-            <ReferenceLine key={transition.week_label} x={transition.week_label} stroke="#000" strokeWidth={2} />
+            <ReferenceLine key={transition.date} x={transition.date} stroke="#000" strokeWidth={2} />
           ))}
-          <XAxis dataKey="week_label" angle={-45} textAnchor="end" height={100} />
+          <XAxis 
+            dataKey="date" 
+            angle={-45} 
+            textAnchor="end" 
+            height={100} 
+            tickFormatter={(value) => {
+              const point = deploymentFrequency.find(d => d.date === value);
+              return point ? point.week_label : value;
+            }}
+          />
           <YAxis />
-          <Tooltip />
+          <Tooltip labelFormatter={(value) => {
+            const point = deploymentFrequency.find(d => d.date === value);
+            return point ? point.week_label : value;
+          }} />
           <Legend />
           <Line type="monotone" dataKey="week_count" stroke="#82ca9d" name="Weekly" dot={WeekDot} isAnimationActive={false} />
         </LineChart>
@@ -134,11 +114,23 @@ export function DeploymentFrequency({ deploymentFrequency, monthTransitionIndice
         <LineChart data={ensureArray(deploymentFrequency)}>
           <CartesianGrid strokeDasharray="3 3" />
           {monthTransitionIndices.map((transition) => (
-            <ReferenceLine key={transition.month_label} x={transition.month_label} stroke="#000" strokeWidth={2} />
+            <ReferenceLine key={transition.date} x={transition.date} stroke="#000" strokeWidth={2} />
           ))}
-          <XAxis dataKey="month_label" angle={-45} textAnchor="end" height={100} />
+          <XAxis 
+            dataKey="date" 
+            angle={-45} 
+            textAnchor="end" 
+            height={100} 
+            tickFormatter={(value) => {
+              const point = deploymentFrequency.find(d => d.date === value);
+              return point ? point.month_label : value;
+            }}
+          />
           <YAxis />
-          <Tooltip />
+          <Tooltip labelFormatter={(value) => {
+            const point = deploymentFrequency.find(d => d.date === value);
+            return point ? point.month_label : value;
+          }} />
           <Legend />
           <Line type="monotone" dataKey="month_count" stroke="#ffc658" name="Monthly" dot={MonthDot} isAnimationActive={false} />
         </LineChart>
