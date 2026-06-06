@@ -4,6 +4,7 @@ import { DashboardFilters, defaultFilters, parseDashboardFilters } from "@/compo
 import { CardContent, CardHeader } from '@mui/material';
 import { sourceCodeAPI, pipelineAPI, pullRequestAPI, ApiParams } from '@/server/api';
 import { DeploymentFrequency } from '@/components/charts/DeploymentFrequency';
+import { ContextLink } from '@/components/filters/ContextLink';
 import { DeploymentFrequencyPoint, DeploymentFrequencyResponseItem, PairingIndex, PipelineSummary, PullRequestSummary, ResultWrapper } from './insights-types';
 
 function unwrapResult<T>(data: T | ResultWrapper<T>): T {
@@ -156,12 +157,17 @@ export default async function InsightsSection({
             <CardContent>Team collaboration metric</CardContent>
           </CardHeader>
           <CardContent>
-            <div className="text-4xl font-bold">
-              {pairingIndex?.pairing_index_percentage?.toFixed(2) || 0}%
-            </div>
-            <p className="text-sm text-muted-foreground mt-2">
-              {pairingIndex?.paired_commits || 0} of {pairingIndex?.total_analyzed_commits || 0} commits
-            </p>
+            <ContextLink
+              href="/dashboard/source-code"
+              className="group block cursor-pointer"
+            >
+              <div className="text-4xl font-bold group-hover:text-blue-600 transition-colors">
+                {pairingIndex?.pairing_index_percentage?.toFixed(2) || 0}%
+              </div>
+              <p className="text-sm text-muted-foreground mt-2 group-hover:text-gray-900 transition-colors">
+                {pairingIndex?.paired_commits || 0} of {pairingIndex?.total_analyzed_commits || 0} commits
+              </p>
+            </ContextLink>
           </CardContent>
         </Card>
 
@@ -171,15 +177,27 @@ export default async function InsightsSection({
           <CardContent>
             <div className="text-4xl font-bold">{pipelineSummary?.total_runs || 0}</div>
             <div className="grid grid-cols-3 gap-2 mt-4 text-sm">
-              <div>
-                <div className="text-green-600 font-semibold">✓ Success</div>
-              </div>
-              <div>
-                <div className="text-yellow-600 font-semibold">{pipelineSummary?.in_progress || 0} In Progress</div>
-              </div>
-              <div>
-                <div className="text-blue-600 font-semibold">{pipelineSummary?.queued || 0} Queued</div>
-              </div>
+              <ContextLink
+                href="/dashboard/pipelines"
+                filterOverrides={{ workflowConclusions: ['success'], workflowStatus: ['completed'] }}
+                className="text-green-600 font-semibold cursor-pointer hover:text-green-800 hover:underline transition-colors"
+              >
+                ✓ Success
+              </ContextLink>
+              <ContextLink
+                href="/dashboard/pipelines"
+                filterOverrides={{ workflowStatus: ['in_progress'] }}
+                className="text-yellow-600 font-semibold cursor-pointer hover:text-yellow-800 hover:underline transition-colors"
+              >
+                {pipelineSummary?.in_progress || 0} In Progress
+              </ContextLink>
+              <ContextLink
+                href="/dashboard/pipelines"
+                filterOverrides={{ workflowStatus: ['queued'] }}
+                className="text-blue-600 font-semibold cursor-pointer hover:text-blue-800 hover:underline transition-colors"
+              >
+                {pipelineSummary?.queued || 0} Queued
+              </ContextLink>
             </div>
             <p className="text-xs text-muted-foreground mt-3">
               Data frame: {pipelineFirstDataPoint || '-'} to {pipelineLastDataPoint || '-'}
@@ -193,21 +211,27 @@ export default async function InsightsSection({
           <CardContent>
             <div className="text-4xl font-bold">{prSummary?.total_prs || prSummary?.total || 0}</div>
             <div className="grid grid-cols-3 gap-2 mt-4 text-sm">
-              <Link href="/dashboard/pull-requests?pullRequestStatus=merged">
-                <div className="text-green-600 font-semibold cursor-pointer hover:text-green-800 hover:underline transition-colors">
-                  {prSummary?.merged_prs || prSummary?.merged || 0} Merged
-                </div>
-              </Link>
-              <Link href="/dashboard/pull-requests?pullRequestStatus=closed">
-                <div className="text-gray-600 font-semibold cursor-pointer hover:text-gray-800 hover:underline transition-colors">
-                  {prSummary?.closed_prs || prSummary?.closed || 0} Closed
-                </div>
-              </Link>
-              <Link href="/dashboard/pull-requests?pullRequestStatus=open">
-                <div className="text-blue-600 font-semibold cursor-pointer hover:text-blue-800 hover:underline transition-colors">
-                  {prSummary?.open_prs || prSummary?.open || 0} Open
-                </div>
-              </Link>
+              <ContextLink 
+                href="/dashboard/pull-requests" 
+                filterOverrides={{ pullRequestStatus: 'merged' }}
+                className="text-green-600 font-semibold cursor-pointer hover:text-green-800 hover:underline transition-colors"
+              >
+                {prSummary?.merged_prs || prSummary?.merged || 0} Merged
+              </ContextLink>
+              <ContextLink 
+                href="/dashboard/pull-requests" 
+                filterOverrides={{ pullRequestStatus: 'closed' }}
+                className="text-gray-600 font-semibold cursor-pointer hover:text-gray-800 hover:underline transition-colors"
+              >
+                {prSummary?.closed_prs || prSummary?.closed || 0} Closed
+              </ContextLink>
+              <ContextLink 
+                href="/dashboard/pull-requests" 
+                filterOverrides={{ pullRequestStatus: 'open' }}
+                className="text-blue-600 font-semibold cursor-pointer hover:text-blue-800 hover:underline transition-colors"
+              >
+                {prSummary?.open_prs || prSummary?.open || 0} Open
+              </ContextLink>
             </div>
             <p className="text-xs text-muted-foreground mt-3">
               Data frame: {prFirstDataPoint || '-'} to {prLastDataPoint || '-'}
