@@ -24,7 +24,7 @@ export function commands() {
       if (options.debug || process.env.DEBUG) {
         logger.setLevel('DEBUG');
       }
-    })
+    });
 
   // Register command groups
   createPRsCommands(program);

@@ -1,7 +1,7 @@
-import {beforeEach, describe, expect, it} from "vitest";
-import {formatPullRequestMetrics} from "../../src/formatters";
-import {Command} from "commander";
-import {commands} from "../../src";
+import { beforeEach, describe, expect, it } from 'vitest';
+import { formatPullRequestMetrics } from '../../src/formatters';
+import { Command } from 'commander';
+import { commands } from '../../src';
 
 describe('Pull Request Metrics', () => {
   let program: Command;
@@ -11,7 +11,7 @@ describe('Pull Request Metrics', () => {
   });
 
   it('should have metrics command group', async () => {
-    const result = program.parse(['prs', 'fetch'], {from: 'user'});
+    const result = program.parse(['prs', 'fetch'], { from: 'user' });
 
     // const metricsCmd = program.commands.find((cmd) => {
     //   return cmd.name() === 'prs';

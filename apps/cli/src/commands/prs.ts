@@ -1,7 +1,16 @@
-import {Command} from 'commander';
-import {Configuration} from '@smmachine/core/infrastructure/configuration';
-import {Logger} from '@smmachine/utils';
-import {CommentAuthor, FirstCommentMetric, GithubPrsClient, GitHubPullRequestsFetchRepository, MostCommentedPRData, PRsService, PullRequestFactory, PullRequestsRepository} from "@smmachine/core";
+import { Command } from 'commander';
+import { Configuration } from '@smmachine/core/infrastructure/configuration';
+import { Logger } from '@smmachine/utils';
+import {
+  CommentAuthor,
+  FirstCommentMetric,
+  GithubPrsClient,
+  GitHubPullRequestsFetchRepository,
+  MostCommentedPRData,
+  PRsService,
+  PullRequestFactory,
+  PullRequestsRepository,
+} from '@smmachine/core';
 
 const logger = new Logger('PRsCommand');
 
@@ -46,7 +55,10 @@ export function createPRsCommands(program: Command): void {
     .command('fetch')
     .description('Fetch pull requests from GitHub')
     .option('--force', 'Force re-fetching PRs even if already fetched')
-    .option('--update', 'Incrementally update PRs — fetch only newer items and merge with existing cache')
+    .option(
+      '--update',
+      'Incrementally update PRs — fetch only newer items and merge with existing cache'
+    )
     .option('--start-date <date>', 'Filter PRs created on or after this date (ISO 8601)')
     .option('--end-date <date>', 'Filter PRs created on or before this date (ISO 8601)')
     .action(async (options) => {
@@ -147,14 +159,18 @@ export function createPRsCommands(program: Command): void {
           if (firstCommentTime && firstCommentTime.length > 0) {
             console.log('\nAverage Time to First Comment (by PR author):\n');
             firstCommentTime.forEach((metric: FirstCommentMetric, index: number) => {
-              console.log(`  ${index + 1}. ${metric.author}: ${metric.avg_hours.toFixed(2)} hours (${metric.prs_with_comments} PRs)`);
+              console.log(
+                `  ${index + 1}. ${metric.author}: ${metric.avg_hours.toFixed(2)} hours (${metric.prs_with_comments} PRs)`
+              );
             });
           }
 
           if (summary.most_commented_prs && summary.most_commented_prs.length > 0) {
             console.log('\nMost Commented Pull Requests:\n');
             summary.most_commented_prs.forEach((pr: MostCommentedPRData) => {
-              console.log(`  - PR #${pr.pull_request_id}: ${pr.pull_request_title} (${pr.comments_count} comments) - ${pr.pull_request_url}`);
+              console.log(
+                `  - PR #${pr.pull_request_id}: ${pr.pull_request_title} (${pr.comments_count} comments) - ${pr.pull_request_url}`
+              );
             });
           }
         }

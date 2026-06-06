@@ -7,8 +7,8 @@ export interface UrlBuilderConfig {
   gitProvider: string;
   gitRepository: string;
   gitRepositoryLocation?: string;
-  sonarqubeUrl?: string;
-  sonarqubeProject?: string;
+  sonarqubeUrl?: string | null;
+  sonarqubeProject?: string | null;
 }
 
 export interface UrlBuilder {

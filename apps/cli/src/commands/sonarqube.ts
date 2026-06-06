@@ -42,12 +42,23 @@ export function createSonarQubeCommands(program: Command): void {
     .command('run')
     .description('Start local SonarQube (if needed) and execute sonar-scanner in Docker')
     .option('--container-server-name <name>', 'SonarQube container name', 'sonarqube')
-    .option('--scanner-container-name <name>', 'SonarQube scanner container name', 'sonarqube-scanner')
+    .option(
+      '--scanner-container-name <name>',
+      'SonarQube scanner container name',
+      'sonarqube-scanner'
+    )
     .option('--container-server-image <image>', 'SonarQube Docker image', 'sonarqube:community')
-    .option('--scanner-image <image>', 'Sonar scanner Docker image', 'sonarsource/sonar-scanner-cli')
+    .option(
+      '--scanner-image <image>',
+      'Sonar scanner Docker image',
+      'sonarsource/sonar-scanner-cli'
+    )
     .option('--data-dir <path>', 'Host path mounted to /opt/sonarqube/data', './sonarqube_data')
     .option('--server-port <number>', 'Host port mapped to SonarQube container port 9000', '9000')
-    .option('--scanner-host-url <url>', 'SONAR_HOST_URL passed to scanner (overrides container-derived URL)')
+    .option(
+      '--scanner-host-url <url>',
+      'SONAR_HOST_URL passed to scanner (overrides container-derived URL)'
+    )
     .option('--scanner-token <token>', 'SONAR_TOKEN passed to scanner')
     .option('--properties <value>', 'Raw SONAR_SCANNER_OPTS value passed directly to scanner')
     .option('--admin-user <user>', 'Predefined local SonarQube admin username', 'admin')
@@ -67,7 +78,9 @@ export function createSonarQubeCommands(program: Command): void {
           scannerOptions: String(options.properties || '').trim(),
           adminUser: String(options.adminUser),
           adminPassword: String(options.adminPassword),
-          scannerHostUrl: options.scannerHostUrl ? String(options.scannerHostUrl).trim() : undefined,
+          scannerHostUrl: options.scannerHostUrl
+            ? String(options.scannerHostUrl).trim()
+            : undefined,
           scannerToken: options.scannerToken,
         });
       } catch (error) {
@@ -202,7 +215,10 @@ export function createSonarQubeCommands(program: Command): void {
     )
     .option('--start-date <date>', 'Start date in YYYY-MM-DD format')
     .option('--end-date <date>', 'End date in YYYY-MM-DD format')
-    .option('--update', 'Incrementally update measures — fetch only newer items since last sync and merge with existing cache')
+    .option(
+      '--update',
+      'Incrementally update measures — fetch only newer items since last sync and merge with existing cache'
+    )
     .option('--output <format>', 'Output format (text|json)', 'text')
     .option('--save <file>', 'Save results to a JSON file at the given path')
     .action(async (options) => {

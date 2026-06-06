@@ -233,8 +233,9 @@ export class PipelinesController {
     const weeklyCounts = new Map<string, number>();
     const monthlyCounts = new Map<string, number>();
 
-    for (const run of successfulRuns) {
-      const timestamp = run.completedAt || run.createdAt;
+    const jobsOnly = successfulRuns.map(run => run.jobs || []).flat();
+    for (const run of jobsOnly) {
+      const timestamp = run.completedAt || run.startedAt;
       if (!timestamp) {
         continue;
       }
@@ -591,6 +592,7 @@ export class PipelinesController {
         .filter(job => selectedJobNames.includes((job.name || '').toLowerCase()))
         .filter(job => {
           if (filters.job_conclusion) {
+            console.log(`Filtering job "${job.name}" by conclusion "${filters.job_conclusion}". Job conclusion: "${job.conclusion}"`);
             return (job.conclusion || '').toLowerCase() === filters.job_conclusion.toLowerCase();
           }
           return true;

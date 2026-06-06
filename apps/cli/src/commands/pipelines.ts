@@ -1,16 +1,17 @@
-import {Command} from 'commander';
-import {Configuration} from '@smmachine/core/infrastructure/configuration';
-import {Logger} from '@smmachine/utils';
-import { PipelinesService } from "@smmachine/core";
-import PipelineFactory from "@smmachine/core/aggregates/pipeline-factory";
+import { Command } from 'commander';
+import { Configuration } from '@smmachine/core/infrastructure/configuration';
+import { Logger } from '@smmachine/utils';
+import { PipelinesService } from '@smmachine/core';
+import PipelineFactory from '@smmachine/core/aggregates/pipeline-factory';
 
 const logger = new Logger('PipelinesCommand');
 
 const config = new Configuration(process.env);
 
-const { pipelineRepository, workflowRepository, workflowJobRepository}  = PipelineFactory.create(config)
+const { pipelineRepository, workflowRepository, workflowJobRepository } =
+  PipelineFactory.create(config);
 
-const pipelineService = new PipelinesService(pipelineRepository)
+const pipelineService = new PipelinesService(pipelineRepository);
 
 export function createPipelinesCommands(program: Command): void {
   const pipelinesGroup = program.command('pipelines').description('Pipeline/workflow operations');
@@ -19,7 +20,10 @@ export function createPipelinesCommands(program: Command): void {
     .command('fetch')
     .description('Fetch pipeline runs from GitHub')
     .option('--force', 'Force re-fetching pipelines even if already fetched', false)
-    .option('--update', 'Incrementally update pipelines — fetch only newer items and merge with existing cache')
+    .option(
+      '--update',
+      'Incrementally update pipelines — fetch only newer items and merge with existing cache'
+    )
     .option('--start-date <date>', 'Filter runs created on or after this date (ISO 8601)')
     .option('--end-date <date>', 'Filter runs created on or before this date (ISO 8601)')
     .option('--raw-filters <filters>', 'Raw filters (e.g., status=success,branch=main)')
@@ -48,7 +52,10 @@ export function createPipelinesCommands(program: Command): void {
     .command('fetch-jobs')
     .description('Fetch pipeline jobs from GitHub')
     .option('--force', 'Force re-fetching jobs even if already fetched')
-    .option('--update', 'Incrementally update jobs — fetch only newer items and merge with existing cache')
+    .option(
+      '--update',
+      'Incrementally update jobs — fetch only newer items and merge with existing cache'
+    )
     .option('--run-start-date <date>', 'Filter pipelines created on or after this date')
     .option('--run-end-date <date>', 'Filter pipelines created on or before this date')
     .option('--raw-filters <filters>', 'Raw filters (e.g., status=success,branch=main)')
@@ -188,18 +195,21 @@ export function createPipelinesCommands(program: Command): void {
       try {
         console.log('📈 Analyzing pipeline runs by time period...');
 
-        const metrics = await pipelineService.getDeploymentFrequency(
-          options.period, { startDate: options.startDate, endDate: options.endDate, }
-        );
+        const metrics = await pipelineService.getDeploymentFrequency(options.period, {
+          startDate: options.startDate,
+          endDate: options.endDate,
+        });
 
         if (options.output === 'json') {
           console.log(JSON.stringify(metrics, null, 2));
         } else {
           console.log('\n=== Pipeline Runs by Period ===\n');
           console.log(`Period: ${options.period}`);
-          metrics.forEach(item => {
+          metrics.forEach((item) => {
             console.log(`Total Runs: ${item.count}`);
-            console.log(`Duration in minutes: ${item.averageDurationMinutes} per ${options.period}`);
+            console.log(
+              `Duration in minutes: ${item.averageDurationMinutes} per ${options.period}`
+            );
             console.log(`Sucess rate: ${item.successRate} per ${options.period}`);
           });
         }
@@ -230,7 +240,7 @@ export function createPipelinesCommands(program: Command): void {
         } else {
           console.log('\n=== Pipeline Jobs Summary ===\n\n');
 
-          metrics.forEach(item => {
+          metrics.forEach((item) => {
             console.log(`Job name: ${item.jobName}`);
             console.log(`Total Jobs: ${item.totalRuns}`);
             console.log(`Reruns: ${item.rerunCount}`);
@@ -266,12 +276,14 @@ export function createPipelinesCommands(program: Command): void {
           console.log(JSON.stringify(metrics, null, 2));
         } else {
           console.log('\n=== Job Execution Times ===\n');
-          metrics.forEach(item => {
+          metrics.forEach((item) => {
             console.log(`Job: ${item.jobName}\n`);
             console.log(`Total runs: ${item.totalRuns}`);
             console.log(`Failure count: ${item.failureCount}`);
             console.log(`Success rate: ${item.successRate}`);
-            console.log(`Average Execution Time: ${item.averageDurationMinutes.toFixed(2)} minutes`);
+            console.log(
+              `Average Execution Time: ${item.averageDurationMinutes.toFixed(2)} minutes`
+            );
           });
         }
       } catch (error) {
@@ -300,21 +312,15 @@ export function createPipelinesCommands(program: Command): void {
         });
 
         if (options.output === 'json') {
-          console.log(
-            JSON.stringify(
-              metrics,
-              null,
-              2
-            )
-          );
+          console.log(JSON.stringify(metrics, null, 2));
         } else {
-          metrics.forEach(item => {
+          metrics.forEach((item) => {
             console.log('\n=== Jobs by Status ===\n');
             console.log(`Name: ${item.jobName}`);
             console.log(`✅ Successful: ${item.successCount}, success rate: ${item.successCount}`);
             console.log(`❌ Failed: ${item.failureCount}`);
             console.log(`Average duration in minutes: ${item.averageDurationMinutes}`);
-          })
+          });
         }
       } catch (error) {
         logger.error('Failed to analyze jobs by status', error);
@@ -334,19 +340,19 @@ export function createPipelinesCommands(program: Command): void {
         console.log('🚀 Calculating deployment frequency...');
 
         const metrics = await pipelineService.getDeploymentFrequency(
-          options.period as 'day' | 'week' | 'month', {
-          startDate: options.startDate,
-          endDate: options.endDate,
-        });
+          options.period as 'day' | 'week' | 'month',
+          {
+            startDate: options.startDate,
+            endDate: options.endDate,
+          }
+        );
 
         if (options.output === 'json') {
-          console.log(
-            JSON.stringify(metrics, null, 2)
-          );
+          console.log(JSON.stringify(metrics, null, 2));
         } else {
           console.log('\n=== Deployment Frequency (DORA) ===\n');
 
-          metrics.forEach(item => {
+          metrics.forEach((item) => {
             console.log(`Period: ${item.period}`);
             console.log(`Total Deployments: ${item.count}`);
 
@@ -360,7 +366,7 @@ export function createPipelinesCommands(program: Command): void {
               rating = 'Medium';
             }
             console.log(`\n📈 DORA Rating: ${rating}`);
-          })
+          });
         }
       } catch (error) {
         logger.error('Failed to calculate deployment frequency', error);

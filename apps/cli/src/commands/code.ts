@@ -56,7 +56,9 @@ export function createCodeCommands(program: Command): void {
           for (const commit of summary.latestPairedCommits || []) {
             const normalizedSubject = (commit.subject || '').replace(/,/g, ';');
             const normalizedCoAuthors = (commit.coAuthors || []).join('|').replace(/,/g, ';');
-            lines.push(`latest_paired_commit,${commit.hash.slice(0, 8)}:${normalizedSubject},${commit.author}|${normalizedCoAuthors}`);
+            lines.push(
+              `latest_paired_commit,${commit.hash.slice(0, 8)}:${normalizedSubject},${commit.author}|${normalizedCoAuthors}`
+            );
           }
 
           logger.info(lines.join('\n'));
@@ -106,9 +108,9 @@ export function createCodeCommands(program: Command): void {
         logger.info('🔍 Analyzing change sets...');
 
         const config = loadConfiguration();
-        const repoPath = config.gitRepositoryLocation
-        
-        const factory = GitFactory.create(config)
+        const repoPath = config.gitRepositoryLocation;
+
+        const factory = GitFactory.create(config);
 
         const result = await factory.fetchCommits({
           startDate: options.startDate,
@@ -150,7 +152,10 @@ export function createCodeCommands(program: Command): void {
           startDate: options.startDate,
           subfolder: options.subfolder,
           force: options.force,
-          scriptPath: process.env.SMM_DEV_MODE === 'true' ? path.resolve(__dirname, '../../fetch-codemaat.sh') : undefined,
+          scriptPath:
+            process.env.SMM_DEV_MODE === 'true'
+              ? path.resolve(__dirname, '../../fetch-codemaat.sh')
+              : undefined,
         });
 
         if (options.output === 'json') {

@@ -20,7 +20,6 @@ describe('CLI Commands', () => {
   });
 
   describe('Output Formatters', () => {
-
     describe('Deployment Metrics Formatter', () => {
       it('should format deployment metrics in text format', () => {
         const data = {
@@ -199,7 +198,6 @@ describe('CLI Commands', () => {
   });
 
   describe('Configuration Validation', () => {
-
     it('code command should register summary subcommand', () => {
       const codeCmd = program.commands.find((cmd) => cmd.name() === 'code');
       const summaryCmd = codeCmd?.commands.find((cmd) => cmd.name() === 'summary');

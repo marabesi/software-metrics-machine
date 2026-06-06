@@ -146,7 +146,7 @@ export default async function InsightsSection({
   const pipelineLastDataPoint = extractDate(pipelineSummary?.last_run);
   const prFirstDataPoint = extractDate(prSummary?.first_pr);
   const prLastDataPoint = extractDate(prSummary?.last_pr);
-
+  
   return (
     <div className="space-y-6">
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">

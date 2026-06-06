@@ -45,11 +45,7 @@ export function createHealthCheckCommand(program: Command): void {
     .command('health-check')
     .description('Analyze local cache data quality (missing, stale, invalid, and coverage gaps)')
     .option('--output <format>', 'Output format (text|json)', 'text')
-    .option(
-      '--provider <name>',
-      'Filter provider (all|github|jira|sonarqube)',
-      'all'
-    )
+    .option('--provider <name>', 'Filter provider (all|github|jira|sonarqube)', 'all')
     .option(
       '--max-gap-days <days>',
       'Only report potential gaps larger than this number of days',
@@ -87,9 +83,7 @@ async function buildHealthReport(
   const nowIso = new Date().toISOString();
   const definitions = getDatasetDefinitions(config, providerFilter);
 
-  const datasets = await Promise.all(
-    definitions.map((def) => analyzeDataset(def, maxGapDays))
-  );
+  const datasets = await Promise.all(definitions.map((def) => analyzeDataset(def, maxGapDays)));
 
   const summary = datasets.reduce(
     (acc, dataset) => {
@@ -173,7 +167,9 @@ function getDatasetDefinitions(config: Configuration, providerFilter: string): D
   const normalized = providerFilter.toLowerCase();
   const accepted = ['all', gitProviderId, 'jira', 'sonarqube'];
   if (!accepted.includes(normalized)) {
-    throw new Error(`Invalid --provider value: ${providerFilter}. Expected one of: ${accepted.join(', ')}`);
+    throw new Error(
+      `Invalid --provider value: ${providerFilter}. Expected one of: ${accepted.join(', ')}`
+    );
   }
 
   return allDefinitions.filter((def) => def.id.startsWith(`${normalized}.`));
@@ -266,7 +262,10 @@ function countMissing(records: Array<Record<string, unknown>>, field: string): n
   }, 0);
 }
 
-function collectDateValues(records: Array<Record<string, unknown>>, fields: string[]): {
+function collectDateValues(
+  records: Array<Record<string, unknown>>,
+  fields: string[]
+): {
   validIsoDates: string[];
   invalidCount: number;
 } {
@@ -318,12 +317,8 @@ function computePotentialGaps(
     const diffDays = Math.floor((curr.getTime() - prev.getTime()) / (1000 * 60 * 60 * 24)) - 1;
 
     if (diffDays >= minGapDays) {
-      const gapStart = new Date(prev.getTime() + 1000 * 60 * 60 * 24)
-        .toISOString()
-        .slice(0, 10);
-      const gapEnd = new Date(curr.getTime() - 1000 * 60 * 60 * 24)
-        .toISOString()
-        .slice(0, 10);
+      const gapStart = new Date(prev.getTime() + 1000 * 60 * 60 * 24).toISOString().slice(0, 10);
+      const gapEnd = new Date(curr.getTime() - 1000 * 60 * 60 * 24).toISOString().slice(0, 10);
       gaps.push({
         start: gapStart,
         end: gapEnd,
@@ -402,7 +397,9 @@ function printTextReport(report: HealthReport, maxGapDays: number): void {
       console.log(`  Invalid date records: ${dataset.invalidDateCount}`);
     }
 
-    const missingEntries = Object.entries(dataset.missingRequiredFields).filter(([, count]) => count > 0);
+    const missingEntries = Object.entries(dataset.missingRequiredFields).filter(
+      ([, count]) => count > 0
+    );
     if (missingEntries.length > 0) {
       console.log('  Missing required fields:');
       for (const [field, count] of missingEntries) {
