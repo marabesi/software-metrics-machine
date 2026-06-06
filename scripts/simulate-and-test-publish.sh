@@ -53,7 +53,7 @@ if [ "$BUILD_FORCE" = "true" ]; then
 	# clone react, if not already present, to have a real-world codebase to test against
 	if [ ! -d "$REPO_ROOT/tmp/react" ]; then
 		mkdir -p "$REPO_ROOT/tmp"
-		git clone --depth=500 https://github.com/facebook/react "$REPO_ROOT/tmp/react"
+		git clone --shallow-since="2025-03-01" https://github.com/facebook/react "$REPO_ROOT/tmp/react"
 	fi
 
 	# create smm config file for testing template string
@@ -75,8 +75,8 @@ if [ "$BUILD_FORCE" = "true" ]; then
 	"sonar_token": "xxxxxxxxx",
 	"sonar_project": "xxxxx",
 	"log_level": "DEBUG",
-	"dashboard_start_date": "2026-03-01",
-	"dashboard_end_date": "2026-03-30"
+	"dashboard_start_date": "2025-03-01",
+	"dashboard_end_date": "2025-03-30"
 }
 EOF
 )
@@ -85,5 +85,55 @@ fi
 
 docker run -v "$REPO_ROOT/tmp:/app" -e DEBUG=true \
 	-e SMM_STORE_DATA_AT=/app --rm $DOCKER_IMAGE \
-	smm code codemaat-fetch --start-date 2026-03-01 --end-date 2026-03-30 \
+	smm code codemaat-fetch --start-date 2025-03-01 --end-date 2025-03-30 \
 	--debug
+
+DASHBOARD_CONTAINER_ID=$(docker run -d -v "$REPO_ROOT/tmp:/app" -e DEBUG=true \
+	-p 3000:3000 \
+	-p 3001:3001 \
+	-e SMM_STORE_DATA_AT=/app $DOCKER_IMAGE \
+	smm dashboard serve)
+
+echo "Dashboard container started with ID: $DASHBOARD_CONTAINER_ID"
+
+# Wait for the dashboard to be ready
+echo "Waiting for dashboard to become available on http://localhost:3000..."
+MAX_RETRIES=30
+RETRY_COUNT=0
+until curl -s http://localhost:3000 > /dev/null || [ $RETRY_COUNT -eq $MAX_RETRIES ]; do
+  echo "Waiting... ($RETRY_COUNT/$MAX_RETRIES)"
+  sleep 2
+  RETRY_COUNT=$((RETRY_COUNT+1))
+done
+
+if [ $RETRY_COUNT -eq $MAX_RETRIES ]; then
+  echo "Error: Dashboard did not become available in time."
+  docker stop "$DASHBOARD_CONTAINER_ID" || true
+  exit 1
+fi
+
+echo "Dashboard is up. Testing pages..."
+
+# Test main page
+HTTP_CODE=$(curl -s -o /dev/null -w "%{http_code}" http://localhost:3000/)
+if [ "$HTTP_CODE" -eq 200 ]; then
+  echo "http://localhost:3000/ returned 200 OK."
+else
+  echo "Error: http://localhost:3000/ returned HTTP $HTTP_CODE."
+  docker stop "$DASHBOARD_CONTAINER_ID" || true
+  exit 1
+fi
+
+# Test insights page
+HTTP_CODE=$(curl -s -o /dev/null -w "%{http_code}" http://localhost:3000/dashboard/insights/)
+if [ "$HTTP_CODE" -eq 200 ]; then
+  echo "http://localhost:3000/dashboard/insights/ returned 200 OK."
+else
+  echo "Error: http://localhost:3000/dashboard/insights/ returned HTTP $HTTP_CODE."
+  docker stop "$DASHBOARD_CONTAINER_ID" || true
+  exit 1
+fi
+
+echo "All checks passed. Stopping dashboard container..."
+docker stop "$DASHBOARD_CONTAINER_ID"
+
