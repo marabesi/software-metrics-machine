@@ -21,6 +21,15 @@ export type WorkflowJsonResponse = {
   run_started_at: string;
 };
 
+export type WorkflowJobStepJsonResponse = {
+  name: string;
+  status: string;
+  conclusion: string;
+  number: number;
+  started_at: string;
+  completed_at: string;
+};
+
 export type WorkflowJobJsonResponse = {
   id: string;
   run_id: string;
@@ -38,6 +47,7 @@ export type WorkflowJobJsonResponse = {
   started_at: string;
   completed_at: string;
   name: string;
+  steps?: WorkflowJobStepJsonResponse[];
 };
 
 export type PullRequestLabelJsonResponse = {

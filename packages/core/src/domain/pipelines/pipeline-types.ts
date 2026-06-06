@@ -7,6 +7,15 @@ export interface PipelineJobConclusion {
   count: number;
 }
 
+export interface PipelineStep {
+  name: string;
+  status: string;
+  conclusion: string;
+  number: number;
+  startedAt?: string;
+  completedAt?: string;
+}
+
 export interface PipelineJob {
   id: string;
   runId: string;
@@ -16,6 +25,7 @@ export interface PipelineJob {
   conclusion: string;
   status: string;
   durationSeconds?: number;
+  steps?: PipelineStep[];
 }
 
 export interface PipelineRun {

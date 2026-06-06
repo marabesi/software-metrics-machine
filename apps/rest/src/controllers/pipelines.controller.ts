@@ -246,6 +246,22 @@ export class PipelinesController {
       .sort((a, b) => a.period.localeCompare(b.period));
   }
 
+  @Get('/pipelines/jobs-steps-average-time')
+  async jobsStepsAverageTime(@Query() query?: PipelineFiltersQuery) {
+    const result = await this.pipelinesService.getJobStepsAverageTime(
+      this.toServiceFilters(query || {})
+    );
+    return { result };
+  }
+
+  @Get('/pipelines/jobs-steps-average-time-by-day')
+  async jobsStepsAverageTimeByDay(@Query() query?: PipelineFiltersQuery) {
+    const result = await this.pipelinesService.getJobStepsAverageTimeByDay(
+      this.toServiceFilters(query || {})
+    );
+    return { result };
+  }
+
   @Get('/pipelines/jobs-average-time')
   async jobsAverageTime(
     @Query('exclude_jobs') excludeJobs?: string,

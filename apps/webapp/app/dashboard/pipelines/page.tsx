@@ -16,12 +16,17 @@ import {
   RunsByResponseItem,
   RunsDurationData,
   RunsDurationResponseItem,
+  JobStepsAverageTimeData,
+  JobStepsAverageTimeResponseItem,
+  JobStepsAverageTimeByDayData,
+  JobStepsAverageTimeByDayResponseItem,
 } from '@/components/charts/pipeline/types';
 import { defaultFilters, parseDashboardFilters } from '@/components/filters/DashboardFilters';
 import PipelineRunsDurationCard from '@/components/charts/pipeline/PipelineRunsDurationCard';
 import JobsAverageTimeCard from '@/components/charts/pipeline/JobsAverageTimeCard';
 import JobsByStatusCard from '@/components/charts/pipeline/JobsByStatusCard';
 import JobsRerunCard from '@/components/charts/pipeline/JobsRerunCard';
+import JobStepsAnalysis from '@/components/charts/pipeline/JobStepsAnalysis';
 
 type ResultWrapper<T> = {
   result: T;
@@ -52,10 +57,25 @@ export default async function PipelinesPage({
   let jobsDurationByWorkflow: JobsDurationByWorkflowItem[] = [];
   let jobsSummary: JobSummaryData[] = [];
   let jobsRerunsByDay: JobRerunsByDayData[] = [];
+  let jobStepsTime: JobStepsAverageTimeData[] = [];
+  let jobStepsTimeByDay: JobStepsAverageTimeByDayData[] = [];
+
+  const isSingleJobSelected = filters.jobSelector && filters.jobSelector.length === 1;
 
   try {
     const apiParams = buildPipelineApiParams(filters);
-    const [jobs, duration, runsBy, avgTime, avgTimeByDay, jobsDurationRaw, jobsSummaryRaw, jobsRerunsByDayRaw] = await Promise.all([
+    const [
+      jobs,
+      duration,
+      runsBy,
+      avgTime,
+      avgTimeByDay,
+      jobsDurationRaw,
+      jobsSummaryRaw,
+      jobsRerunsByDayRaw,
+      jobStepsTimeRaw,
+      jobStepsTimeByDayRaw,
+    ] = await Promise.all([
       pipelineAPI.jobsByStatus(apiParams),
       pipelineAPI.runsDuration(apiParams),
       pipelineAPI.runsBy({ ...apiParams, aggregate_by: 'day' }),
@@ -64,6 +84,8 @@ export default async function PipelinesPage({
       pipelineAPI.jobsDurationByWorkflow(apiParams),
       pipelineAPI.jobsSummary(apiParams),
       pipelineAPI.jobsRerunsByDay(apiParams),
+      pipelineAPI.jobStepsAverageTime(apiParams),
+      pipelineAPI.jobStepsAverageTimeByDay(apiParams),
     ]);
 
     // Handle jobsByStatus - Status and Count fields
@@ -170,6 +192,30 @@ export default async function PipelinesPage({
     jobsDurationByWorkflow = Array.isArray(jobsDurationRaw) ? jobsDurationRaw : [];
     jobsSummary = jobsSummaryData;
     jobsRerunsByDay = jobsRerunsByDayData;
+
+    const jobStepsResult = unwrapResult(
+      jobStepsTimeRaw as JobStepsAverageTimeResponseItem[] | ResultWrapper<JobStepsAverageTimeResponseItem[]>
+    );
+    if (Array.isArray(jobStepsResult)) {
+      jobStepsTime = jobStepsResult.map((item: JobStepsAverageTimeResponseItem): JobStepsAverageTimeData => ({
+        name: item.name || 'Unknown',
+        averageDurationMinutes: item.averageDurationMinutes || 0,
+        count: item.count || 0,
+      }));
+    }
+
+    const jobStepsByDayResult = unwrapResult(
+      jobStepsTimeByDayRaw as JobStepsAverageTimeByDayResponseItem[] | ResultWrapper<JobStepsAverageTimeByDayResponseItem[]>
+    );
+    if (Array.isArray(jobStepsByDayResult)) {
+      jobStepsTimeByDay = jobStepsByDayResult.map((item: JobStepsAverageTimeByDayResponseItem): JobStepsAverageTimeByDayData => {
+        const obj: JobStepsAverageTimeByDayData = { day: item.day };
+        item.steps.forEach(step => {
+          obj[step.name] = step.averageDurationMinutes;
+        });
+        return obj;
+      });
+    }
   } catch (error) {
     console.error('Error fetching pipeline data:', error);
     jobsByStatus = [];
@@ -180,6 +226,8 @@ export default async function PipelinesPage({
     jobsDurationByWorkflow = [];
     jobsSummary = [];
     jobsRerunsByDay = [];
+    jobStepsTime = [];
+    jobStepsTimeByDay = [];
   }
 
   return (
@@ -195,6 +243,9 @@ export default async function PipelinesPage({
 
       <JobsRerunCard data={jobsSummary} dataByDay={jobsRerunsByDay} />
       <JobsByStatusCard data={jobsByStatus} />
+      {isSingleJobSelected && jobStepsTime.length > 0 && (
+        <JobStepsAnalysis data={jobStepsTime} dataByDay={jobStepsTimeByDay} jobName={filters.jobSelector[0]} />
+      )}
     </div>
   );
 }

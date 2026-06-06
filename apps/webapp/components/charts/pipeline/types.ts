@@ -91,6 +91,28 @@ export interface JobRerunsByDayData {
   rerun_count: number;
 }
 
+export interface JobStepsAverageTimeResponseItem {
+  name?: string;
+  averageDurationMinutes?: number;
+  count?: number;
+}
+
+export interface JobStepsAverageTimeData {
+  name: string;
+  averageDurationMinutes: number;
+  count: number;
+}
+
+export interface JobStepsAverageTimeByDayResponseItem {
+  day: string;
+  steps: Array<{ name: string; averageDurationMinutes: number }>;
+}
+
+export interface JobStepsAverageTimeByDayData {
+  day: string;
+  [stepName: string]: number | string;
+}
+
 export interface RunsByResponseItem {
   period?: string;
   workflow?: string;

@@ -23,6 +23,8 @@ export interface IPipelinesService {
   }>>;
   getJobMetrics(filters?: PipelineFilters): Promise<JobMetrics[]>;
   getJobRerunsByDay(filters?: PipelineFilters): Promise<Array<{ day: string; rerun_count: number }>>;
+  getJobStepsAverageTime(filters?: PipelineFilters): Promise<Array<{ name: string; averageDurationMinutes: number; count: number }>>;
+  getJobStepsAverageTimeByDay(filters?: PipelineFilters): Promise<Array<{ day: string; steps: Array<{ name: string; averageDurationMinutes: number }> }>>;
 }
 
 export class PipelinesService implements IPipelinesService {
@@ -266,6 +268,97 @@ export class PipelinesService implements IPipelinesService {
     return Array.from(grouped.entries())
       .map(([day, rerun_count]) => ({ day, rerun_count }))
       .sort((a, b) => a.day.localeCompare(b.day));
+  }
+
+  /**
+   * Get average duration of steps for a job.
+   */
+  async getJobStepsAverageTime(filters?: PipelineFilters): Promise<Array<{ name: string; averageDurationMinutes: number; count: number }>> {
+    const runs = await this.filterRuns(filters);
+    
+    // Group durations by step name
+    const stepDurations = new Map<string, number[]>();
+    
+    for (const run of runs) {
+      for (const job of run.jobs || []) {
+        for (const step of job.steps || []) {
+          if (!step.name || !step.startedAt || !step.completedAt) continue;
+          
+          const started = new Date(step.startedAt).getTime();
+          const completed = new Date(step.completedAt).getTime();
+          const durationMinutes = (completed - started) / (1000 * 60);
+          
+          if (!stepDurations.has(step.name)) {
+            stepDurations.set(step.name, []);
+          }
+          stepDurations.get(step.name)!.push(durationMinutes);
+        }
+      }
+    }
+    
+    const result: Array<{ name: string; averageDurationMinutes: number; count: number }> = [];
+    
+    for (const [name, durations] of stepDurations.entries()) {
+      const avg = durations.length > 0 ? durations.reduce((a, b) => a + b, 0) / durations.length : 0;
+      result.push({
+        name,
+        averageDurationMinutes: Math.round(avg * 100) / 100,
+        count: durations.length,
+      });
+    }
+    
+    return result;
+  }
+
+  /**
+   * Get average duration of steps for a job, grouped by day.
+   */
+  async getJobStepsAverageTimeByDay(filters?: PipelineFilters): Promise<Array<{ day: string; steps: Array<{ name: string; averageDurationMinutes: number }> }>> {
+    const runs = await this.filterRuns(filters);
+    
+    // day -> stepName -> durations
+    const dayStepDurations = new Map<string, Map<string, number[]>>();
+    
+    for (const run of runs) {
+      const runDate = run.completedAt || run.createdAt;
+      if (!runDate) continue;
+      const day = this.toDayKey(runDate);
+      
+      for (const job of run.jobs || []) {
+        for (const step of job.steps || []) {
+          if (!step.name || !step.startedAt || !step.completedAt) continue;
+          
+          const started = new Date(step.startedAt).getTime();
+          const completed = new Date(step.completedAt).getTime();
+          const durationMinutes = (completed - started) / (1000 * 60);
+          
+          if (!dayStepDurations.has(day)) {
+            dayStepDurations.set(day, new Map());
+          }
+          const stepMap = dayStepDurations.get(day)!;
+          if (!stepMap.has(step.name)) {
+            stepMap.set(step.name, []);
+          }
+          stepMap.get(step.name)!.push(durationMinutes);
+        }
+      }
+    }
+    
+    const result: Array<{ day: string; steps: Array<{ name: string; averageDurationMinutes: number }> }> = [];
+    
+    for (const [day, stepMap] of dayStepDurations.entries()) {
+      const steps = [];
+      for (const [name, durations] of stepMap.entries()) {
+        const avg = durations.length > 0 ? durations.reduce((a, b) => a + b, 0) / durations.length : 0;
+        steps.push({
+          name,
+          averageDurationMinutes: Math.round(avg * 100) / 100,
+        });
+      }
+      result.push({ day, steps });
+    }
+    
+    return result.sort((a, b) => a.day.localeCompare(b.day));
   }
 
   async loadUniqueWorkflows(): Promise<{ name: string; path: string }[]> {

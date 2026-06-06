@@ -82,6 +82,18 @@ export const pipelineAPI = {
       params
     ),
 
+  jobStepsAverageTime: (params?: ApiParams) =>
+    fetchAPI<Array<{ name: string; averageDurationMinutes: number; count: number }>>(
+      '/pipelines/jobs-steps-average-time',
+      params
+    ),
+
+  jobStepsAverageTimeByDay: (params?: ApiParams) =>
+    fetchAPI<Array<{ day: string; steps: Array<{ name: string; averageDurationMinutes: number }> }>>(
+      '/pipelines/jobs-steps-average-time-by-day',
+      params
+    ),
+
   // Filter option endpoints
   getWorkflows: () =>
     fetchAPI<Array<{ name: string; path: string }>>('/pipelines/workflows'),

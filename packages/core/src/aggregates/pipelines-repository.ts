@@ -2,9 +2,10 @@ import { IRepository } from '../infrastructure';
 import { logger } from '@smmachine/utils';
 import {
   WorkflowJobJsonResponse,
+  WorkflowJobStepJsonResponse,
   WorkflowJsonResponse,
 } from '../providers/github/github-response-types';
-import { PipelineJob, PipelineRun } from '../domain';
+import { PipelineJob, PipelineRun, PipelineStep } from '../domain';
 
 export interface IPipelinesRepository {
   loadPipelines(): Promise<PipelineRun[]>;
@@ -67,7 +68,7 @@ export class PipelinesRepository implements IPipelinesRepository {
     };
   }
 
-  private mapPipelineJobsToDomain(job: WorkflowJobJsonResponse): PipelineJob {
+  private mapPipelineJobsToDomain = (job: WorkflowJobJsonResponse): PipelineJob => {
     return {
       completedAt: job.completed_at,
       conclusion: job.conclusion,
@@ -77,6 +78,18 @@ export class PipelinesRepository implements IPipelinesRepository {
       runId: job.run_id,
       startedAt: job.started_at,
       status: job.status,
+      steps: job.steps ? job.steps.map(this.mapPipelineJobsStepToDomain) : [],
+    };
+  }
+
+  private mapPipelineJobsStepToDomain = (step: WorkflowJobStepJsonResponse): PipelineStep => {
+    return {
+      name: step.name,
+      status: step.status,
+      conclusion: step.conclusion,
+      number: step.number,
+      startedAt: step.started_at,
+      completedAt: step.completed_at,
     };
   }
 

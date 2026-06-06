@@ -195,7 +195,7 @@ export function createPipelinesCommands(program: Command): void {
       try {
         console.log('📈 Analyzing pipeline runs by time period...');
 
-        const metrics = await pipelineService.getDeploymentFrequency(options.period, {
+        const metrics = await pipelineService.getDeploymentFrequencyWithAllIntervals({
           startDate: options.startDate,
           endDate: options.endDate,
         });
@@ -205,12 +205,14 @@ export function createPipelinesCommands(program: Command): void {
         } else {
           console.log('\n=== Pipeline Runs by Period ===\n');
           console.log(`Period: ${options.period}`);
-          metrics.forEach((item) => {
-            console.log(`Total Runs: ${item.count}`);
-            console.log(
-              `Duration in minutes: ${item.averageDurationMinutes} per ${options.period}`
-            );
-            console.log(`Sucess rate: ${item.successRate} per ${options.period}`);
+          metrics.forEach((item: any) => {
+            if (options.period === 'day') {
+              console.log(`Period: ${item.days} | Total Runs: ${item.daily_counts}`);
+            } else if (options.period === 'week') {
+              console.log(`Period: ${item.weeks} | Total Runs: ${item.weekly_counts}`);
+            } else {
+              console.log(`Period: ${item.months} | Total Runs: ${item.monthly_counts}`);
+            }
           });
         }
       } catch (error) {
@@ -288,6 +290,39 @@ export function createPipelinesCommands(program: Command): void {
         }
       } catch (error) {
         logger.error('Failed to analyze job execution times', error);
+        process.exit(1);
+      }
+    });
+
+  pipelinesGroup
+    .command('jobs-steps-average-time')
+    .description('View pipeline job steps average execution times')
+    .option('--start-date <date>', 'Start date (YYYY-MM-DD)')
+    .option('--end-date <date>', 'End date (YYYY-MM-DD)')
+    .option('--job <name>', 'Filter by job name')
+    .option('--output <format>', 'Output format (text|json)', 'text')
+    .action(async (options) => {
+      try {
+        console.log('⏱️  Analyzing job steps execution times...');
+
+        const metrics = await pipelineService.getJobStepsAverageTime({
+          startDate: options.startDate,
+          endDate: options.endDate,
+          jobName: options.job,
+        });
+
+        if (options.output === 'json') {
+          console.log(JSON.stringify(metrics, null, 2));
+        } else {
+          console.log('\n=== Job Steps Execution Times ===\n');
+          metrics.forEach((item: any) => {
+            console.log(`Step: ${item.name}`);
+            console.log(`Average Execution Time: ${item.averageDurationMinutes.toFixed(2)} minutes`);
+            console.log(`Analyzed across ${item.count} step executions\n`);
+          });
+        }
+      } catch (error) {
+        logger.error('Failed to analyze job steps execution times', error);
         process.exit(1);
       }
     });
