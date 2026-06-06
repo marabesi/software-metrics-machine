@@ -6,7 +6,7 @@ import { ensureArray } from '@/server/utils/chartData';
 import { DeploymentFrequencyPoint } from '@/app/dashboard/insights/insights-types';
 import { useConfiguration } from '../providers/ConfigurationContext';
 
-export function DeploymentFrequency({ deploymentFrequency, monthTransitionIndices }: { deploymentFrequency: DeploymentFrequencyPoint[]; monthTransitionIndices: string[] }) {
+export function DeploymentFrequency({ deploymentFrequency, monthTransitionIndices }: { deploymentFrequency: DeploymentFrequencyPoint[]; monthTransitionIndices: Array<{date: string, week_label: string, month_label: string}> }) {
   const githubRepository = useConfiguration().github_repository;
   const workflowPath = useConfiguration().deployment_frequency_target_pipeline || '';
   const jobName = useConfiguration().deployment_frequency_target_job || '';
@@ -107,8 +107,8 @@ export function DeploymentFrequency({ deploymentFrequency, monthTransitionIndice
       <ResponsiveContainer width="100%" height={300}>
         <LineChart data={ensureArray(deploymentFrequency)}>
           <CartesianGrid strokeDasharray="3 3" />
-          {monthTransitionIndices.map((date) => (
-            <ReferenceLine key={date} x={date} stroke="#000" strokeWidth={2} />
+          {monthTransitionIndices.map((transition) => (
+            <ReferenceLine key={transition.date} x={transition.date} stroke="#000" strokeWidth={2} />
           ))}
           <XAxis dataKey="date" angle={-45} textAnchor="end" height={100} />
           <YAxis />
@@ -120,10 +120,10 @@ export function DeploymentFrequency({ deploymentFrequency, monthTransitionIndice
       <ResponsiveContainer width="100%" height={300}>
         <LineChart data={ensureArray(deploymentFrequency)}>
           <CartesianGrid strokeDasharray="3 3" />
-          {monthTransitionIndices.map((date) => (
-            <ReferenceLine key={date} x={date} stroke="#000" strokeWidth={2} />
+          {monthTransitionIndices.map((transition) => (
+            <ReferenceLine key={transition.week_label} x={transition.week_label} stroke="#000" strokeWidth={2} />
           ))}
-          <XAxis dataKey="date" angle={-45} textAnchor="end" height={100} />
+          <XAxis dataKey="week_label" angle={-45} textAnchor="end" height={100} />
           <YAxis />
           <Tooltip />
           <Legend />
@@ -133,10 +133,10 @@ export function DeploymentFrequency({ deploymentFrequency, monthTransitionIndice
       <ResponsiveContainer width="100%" height={300}>
         <LineChart data={ensureArray(deploymentFrequency)}>
           <CartesianGrid strokeDasharray="3 3" />
-          {monthTransitionIndices.map((date) => (
-            <ReferenceLine key={date} x={date} stroke="#000" strokeWidth={2} />
+          {monthTransitionIndices.map((transition) => (
+            <ReferenceLine key={transition.month_label} x={transition.month_label} stroke="#000" strokeWidth={2} />
           ))}
-          <XAxis dataKey="date" angle={-45} textAnchor="end" height={100} />
+          <XAxis dataKey="month_label" angle={-45} textAnchor="end" height={100} />
           <YAxis />
           <Tooltip />
           <Legend />

@@ -27,12 +27,16 @@ export interface PullRequestSummary {
 }
 export interface DeploymentFrequencyResponseItem {
   days?: string;
+  weeks?: string;
+  months?: string;
   daily_counts?: number;
   weekly_counts?: number;
   monthly_counts?: number;
 }
 export interface DeploymentFrequencyPoint {
   date: string;
+  week_label: string;
+  month_label: string;
   month: string;
   day_count: number;
   week_count: number;

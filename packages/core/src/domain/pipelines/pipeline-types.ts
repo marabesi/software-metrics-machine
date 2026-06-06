@@ -44,6 +44,7 @@ export interface PipelineFilters {
   status?: string; // completed, in_progress, queued
   conclusion?: string; // success, failure, cancelled, skipped
   jobName?: string;
+  jobConclusion?: string;
   includeDefined?: boolean; // Only .yml/.yaml files
 }
 

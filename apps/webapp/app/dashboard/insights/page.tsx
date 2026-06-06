@@ -99,6 +99,8 @@ export default async function InsightsSection({
         const month = dateStr !== 'Unknown' ? dateStr.substring(0, 7) : 'Unknown';
         return {
           date: dateStr,
+          week_label: d.weeks || 'Unknown',
+          month_label: d.months || month,
           month: month,
           day_count: d.daily_counts || 0,
           week_count: d.weekly_counts || 0,
@@ -134,13 +136,12 @@ export default async function InsightsSection({
 
   // Get month transition indices for reference lines
   const monthTransitionIndices = deploymentFrequency
-    .map((d, idx) => ({
-      date: d.date,
-      month: d.month,
-      idx,
-    }))
     .filter((d, idx) => idx === 0 || d.month !== deploymentFrequency[idx - 1]?.month)
-    .map(d => d.date);
+    .map(d => ({
+      date: d.date,
+      week_label: d.week_label,
+      month_label: d.month_label
+    }));
 
   const pipelineFirstDataPoint = extractDate(pipelineSummary?.first_run);
   const pipelineLastDataPoint = extractDate(pipelineSummary?.last_run);

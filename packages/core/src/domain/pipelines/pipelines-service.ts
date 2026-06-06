@@ -89,6 +89,7 @@ export class PipelinesService implements IPipelinesService {
       ...filters,
       workflowPath: targetPipeline,
       jobName: targetJob,
+      jobConclusion: 'success',
       conclusion: 'success',
       status: 'completed',
     });
@@ -117,22 +118,44 @@ export class PipelinesService implements IPipelinesService {
       monthlyCounts.set(month, (monthlyCounts.get(month) || 0) + 1);
     }
 
-    // Create result grouped by day
-    const orderedDays = Array.from(dailyCounts.keys()).sort();
-    return orderedDays.map((day) => {
-      const week = this.getIntervalKey(new Date(day), 'week');
-      const month = this.getIntervalKey(new Date(day), 'month');
-      return {
-        days: day,
-        weeks: week,
-        months: month,
-        daily_counts: dailyCounts.get(day) || 0,
-        weekly_counts: weeklyCounts.get(week) || 0,
-        monthly_counts: monthlyCounts.get(month) || 0,
+    if (dailyCounts.size === 0) {
+      return [];
+    }
+
+    // Determine the start and end dates from the deployments
+    const sortedDays = Array.from(dailyCounts.keys()).sort();
+    const firstDayStr = sortedDays[0];
+    const lastDayStr = sortedDays[sortedDays.length - 1];
+
+    const result = [];
+    const [startYear, startMonth, startDay] = firstDayStr.split('-').map(Number);
+    const [endYear, endMonth, endDay] = lastDayStr.split('-').map(Number);
+    
+    // Use midday to avoid daylight saving time boundary issues when incrementing
+    const currentDate = new Date(Date.UTC(startYear, startMonth - 1, startDay, 12, 0, 0));
+    const endDate = new Date(Date.UTC(endYear, endMonth - 1, endDay, 12, 0, 0));
+
+    while (currentDate <= endDate) {
+      const currentDayStr = this.getIntervalKey(currentDate, 'day');
+      const currentWeekStr = this.getIntervalKey(currentDate, 'week');
+      const currentMonthStr = this.getIntervalKey(currentDate, 'month');
+
+      result.push({
+        days: currentDayStr,
+        weeks: currentWeekStr,
+        months: currentMonthStr,
+        daily_counts: dailyCounts.get(currentDayStr) || 0,
+        weekly_counts: weeklyCounts.get(currentWeekStr) || 0,
+        monthly_counts: monthlyCounts.get(currentMonthStr) || 0,
         commits: '',
         links: '',
-      };
-    });
+      });
+
+      // Move to the next day
+      currentDate.setUTCDate(currentDate.getUTCDate() + 1);
+    }
+
+    return result;
   }
 
   /**
@@ -313,6 +336,18 @@ export class PipelinesService implements IPipelinesService {
             ),
           }));
       }
+    }
+
+    if (filters.jobConclusion) {
+      const targetJobConclusion = filters.jobConclusion.trim().toLowerCase();
+      result = result
+        .filter((run) =>
+          (run.jobs || []).some((job) => job.conclusion === targetJobConclusion)
+        )
+        .map((run) => ({
+          ...run,
+          jobs: (run.jobs || []).filter((job) => job.conclusion === targetJobConclusion),
+        }));
     }
 
     return result;
