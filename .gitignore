@@ -266,3 +266,5 @@ tmp/**
 
 sonarqube_data/
 /.data/
+
+./docs/plans/
