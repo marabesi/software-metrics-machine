@@ -146,10 +146,10 @@ function buildDataDirectories(config: Configuration) {
     },
     {
       provide: PipelinesService,
-      useFactory: (pipelineRepository: PipelinesRepository) => {
-        return new PipelinesService(pipelineRepository);
+      useFactory: (pipelineRepository: PipelinesRepository, configuration: Configuration) => {
+        return new PipelinesService(pipelineRepository, configuration);
       },
-      inject: [PipelinesRepository],
+      inject: [PipelinesRepository, Configuration],
     },
     {
       provide: CodeMetricsRepository,

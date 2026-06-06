@@ -209,61 +209,7 @@ export class PipelinesController {
 
   @Get('/pipelines/deployment-frequency')
   async deploymentFrequency(@Query() query: PipelineFiltersQuery) {
-    const targetPipeline = (this.config.deploymentFrequencyTargetPipeline || '').trim();
-    const targetJob = (this.config.deploymentFrequencyTargetJob || '').trim();
-
-    if (!targetPipeline || !targetJob) {
-      this.logger.warn(
-        'Deployment frequency requested without deployment_frequency_target_pipeline or deployment_frequency_target_job configured'
-      );
-      return [];
-    }
-
-    const successfulRuns = await this.loadRunsWithFilters({
-      ...query,
-      workflow_path: targetPipeline,
-      job_name: targetJob,
-      job_conclusion: 'success',
-      includeJobs: true,
-    });
-
-    this.logger.debug(`Calculating deployment frequency for pipeline "${targetPipeline}" and job "${targetJob}". Total runs to analyze: ${successfulRuns.length}`);
-
-    const dailyCounts = new Map<string, number>();
-    const weeklyCounts = new Map<string, number>();
-    const monthlyCounts = new Map<string, number>();
-
-    const jobsOnly = successfulRuns.map(run => run.jobs || []).flat();
-    for (const run of jobsOnly) {
-      const timestamp = run.completedAt || run.startedAt;
-      if (!timestamp) {
-        continue;
-      }
-
-      const day = this.toDayKey(timestamp);
-      const week = this.toWeekKey(timestamp);
-      const month = this.toMonthKey(timestamp);
-
-      dailyCounts.set(day, (dailyCounts.get(day) || 0) + 1);
-      weeklyCounts.set(week, (weeklyCounts.get(week) || 0) + 1);
-      monthlyCounts.set(month, (monthlyCounts.get(month) || 0) + 1);
-    }
-
-    const orderedDays = Array.from(dailyCounts.keys()).sort();
-    return orderedDays.map((day) => {
-      const week = this.toWeekKey(day);
-      const month = this.toMonthKey(day);
-      return {
-        days: day,
-        weeks: week,
-        months: month,
-        daily_counts: dailyCounts.get(day) || 0,
-        weekly_counts: weeklyCounts.get(week) || 0,
-        monthly_counts: monthlyCounts.get(month) || 0,
-        commits: '',
-        links: '',
-      };
-    });
+    return this.pipelinesService.getDeploymentFrequencyWithAllIntervals(this.toServiceFilters(query));
   }
 
   @Get('/pipelines/runs-by')
@@ -592,7 +538,6 @@ export class PipelinesController {
         .filter(job => selectedJobNames.includes((job.name || '').toLowerCase()))
         .filter(job => {
           if (filters.job_conclusion) {
-            console.log(`Filtering job "${job.name}" by conclusion "${filters.job_conclusion}". Job conclusion: "${job.conclusion}"`);
             return (job.conclusion || '').toLowerCase() === filters.job_conclusion.toLowerCase();
           }
           return true;

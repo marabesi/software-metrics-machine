@@ -11,7 +11,7 @@ const config = new Configuration(process.env);
 const { pipelineRepository, workflowRepository, workflowJobRepository } =
   PipelineFactory.create(config);
 
-const pipelineService = new PipelinesService(pipelineRepository);
+const pipelineService = new PipelinesService(pipelineRepository, config);
 
 export function createPipelinesCommands(program: Command): void {
   const pipelinesGroup = program.command('pipelines').description('Pipeline/workflow operations');
@@ -339,8 +339,7 @@ export function createPipelinesCommands(program: Command): void {
       try {
         console.log('🚀 Calculating deployment frequency...');
 
-        const metrics = await pipelineService.getDeploymentFrequency(
-          options.period as 'day' | 'week' | 'month',
+        const metrics = await pipelineService.getDeploymentFrequencyWithAllIntervals(
           {
             startDate: options.startDate,
             endDate: options.endDate,
@@ -353,16 +352,16 @@ export function createPipelinesCommands(program: Command): void {
           console.log('\n=== Deployment Frequency (DORA) ===\n');
 
           metrics.forEach((item) => {
-            console.log(`Period: ${item.period}`);
-            console.log(`Total Deployments: ${item.count}`);
+            console.log(`Period: ${item.days} (daily), ${item.weeks} (weekly), ${item.months} (monthly)`);
+            console.log(`Total Deployments: ${item.daily_counts} (daily), ${item.weekly_counts} (weekly), ${item.monthly_counts} (monthly)`);
 
             // DORA rating
             let rating = 'Low';
-            if (options.period === 'day' && item.count >= 1) {
+            if (options.period === 'day' && item.daily_counts >= 1) {
               rating = 'Elite';
-            } else if (options.period === 'week' && item.count >= 1) {
+            } else if (options.period === 'week' && item.weekly_counts >= 1) {
               rating = 'High';
-            } else if (options.period === 'month' && item.count >= 1) {
+            } else if (options.period === 'month' && item.monthly_counts >= 1) {
               rating = 'Medium';
             }
             console.log(`\n📈 DORA Rating: ${rating}`);

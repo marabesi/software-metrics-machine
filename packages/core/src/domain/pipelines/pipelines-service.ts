@@ -8,6 +8,7 @@ import {
   PipelineRun,
 } from './pipeline-types';
 import { IPipelinesRepository } from '../../aggregates/pipelines-repository';
+import { Configuration } from '../..';
 
 export interface IPipelinesService {
   getMetrics(filters?: PipelineFilters): Promise<PipelineMetrics>;
@@ -15,6 +16,16 @@ export interface IPipelinesService {
     interval: 'day' | 'week' | 'month',
     filters?: PipelineFilters
   ): Promise<DeploymentFrequencyByInterval[]>;
+  getDeploymentFrequencyWithAllIntervals(filters?: PipelineFilters): Promise<Array<{
+    days: string;
+    weeks: string;
+    months: string;
+    daily_counts: number;
+    weekly_counts: number;
+    monthly_counts: number;
+    commits: string;
+    links: string;
+  }>>;
   getJobMetrics(filters?: PipelineFilters): Promise<JobMetrics[]>;
   getJobRerunsByDay(filters?: PipelineFilters): Promise<Array<{ day: string; rerun_count: number }>>;
 }
@@ -22,7 +33,7 @@ export interface IPipelinesService {
 export class PipelinesService implements IPipelinesService {
   private logger: Logger = logger;
 
-  constructor(private pipelineRepository: IPipelinesRepository) {}
+  constructor(private pipelineRepository: IPipelinesRepository, private configuration: Configuration) {}
 
   /**
    * Get overall pipeline metrics for the given filters.
@@ -91,7 +102,7 @@ export class PipelinesService implements IPipelinesService {
         durations.length > 0 ? durations.reduce((a, b) => a + b, 0) / durations.length : 0;
 
       const successCount = intervalRuns.filter((r) => r.conclusion === 'success').length;
-      const failureCount = intervalRuns.filter((r) => r.conclusion === 'failure').length;
+      // const failureCount = intervalRuns.filter((r) => r.conclusion === 'failure').length;
       const successRate = intervalRuns.length > 0 ? (successCount / intervalRuns.length) * 100 : 0;
 
       result.push({
@@ -103,6 +114,80 @@ export class PipelinesService implements IPipelinesService {
     }
 
     return result;
+  }
+
+  /**
+   * Get deployment frequency with all intervals (daily, weekly, monthly) grouped by day.
+   * Returns data in the format expected by the frontend.
+   */
+  async getDeploymentFrequencyWithAllIntervals(filters?: PipelineFilters): Promise<Array<{
+    days: string;
+    weeks: string;
+    months: string;
+    daily_counts: number;
+    weekly_counts: number;
+    monthly_counts: number;
+    commits: string;
+    links: string;
+  }>> {
+    const targetPipeline = (this.configuration.deploymentFrequencyTargetPipeline || '').trim();
+    const targetJob = (this.configuration.deploymentFrequencyTargetJob || '').trim();
+
+    if (!targetPipeline || !targetJob) {
+      this.logger.warn(
+        'Deployment frequency requested without deployment_frequency_target_pipeline or deployment_frequency_target_job configured'
+      );
+      return [];
+    }
+
+    const deployments = await this.filterRuns({
+      ...filters,
+      workflowPath: targetPipeline,
+      jobName: targetJob,
+      conclusion: 'success',
+      status: 'completed',
+    });
+
+    const dailyCounts = new Map<string, number>();
+    const weeklyCounts = new Map<string, number>();
+    const monthlyCounts = new Map<string, number>();
+
+    const jobsOnly = deployments.map(run => run.jobs || []).flat();
+
+    this.logger.info(`Jobs only for deployment frequency calculation: ${jobsOnly.length}`);
+
+    for (const job of jobsOnly) {
+      const timestamp = job.completedAt || job.startedAt;
+      if (!timestamp) {
+        continue;
+      }
+
+      const date = new Date(timestamp);
+      const day = this.getIntervalKey(date, 'day');
+      const week = this.getIntervalKey(date, 'week');
+      const month = this.getIntervalKey(date, 'month');
+
+      dailyCounts.set(day, (dailyCounts.get(day) || 0) + 1);
+      weeklyCounts.set(week, (weeklyCounts.get(week) || 0) + 1);
+      monthlyCounts.set(month, (monthlyCounts.get(month) || 0) + 1);
+    }
+
+    // Create result grouped by day
+    const orderedDays = Array.from(dailyCounts.keys()).sort();
+    return orderedDays.map((day) => {
+      const week = this.getIntervalKey(new Date(day), 'week');
+      const month = this.getIntervalKey(new Date(day), 'month');
+      return {
+        days: day,
+        weeks: week,
+        months: month,
+        daily_counts: dailyCounts.get(day) || 0,
+        weekly_counts: weeklyCounts.get(week) || 0,
+        monthly_counts: monthlyCounts.get(month) || 0,
+        commits: '',
+        links: '',
+      };
+    });
   }
 
   /**
