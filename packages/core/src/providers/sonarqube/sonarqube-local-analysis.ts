@@ -1,5 +1,6 @@
 import { existsSync, mkdirSync, readFileSync, unlinkSync, writeFileSync } from 'node:fs';
-import { resolve } from 'node:path';
+import { rimrafSync } from 'rimraf'
+import path, { resolve } from 'node:path';
 import { spawn } from 'node:child_process';
 import { randomBytes } from 'node:crypto';
 import { Logger } from '@smmachine/utils';
@@ -96,6 +97,16 @@ export class SonarqubeLocalAnalysis {
   }
 
   async run(options: SonarqubeLocalAnalysisOptions): Promise<void> {
+    this.logger.info('🧹 Cleaning up existing SonarQube container and data to ensure clean state.');
+    await runCommand('docker', ['stop', options.containerName]);
+    await runCommand('docker', ['rm', options.containerName]);
+
+    const dataDir = path.resolve(options.dataDirectory);
+    if (existsSync(dataDir)) {
+      this.logger.info(`🧹 Removing existing SonarQube data directory at "${dataDir}" to ensure clean state.`);
+      rimrafSync(dataDir);
+    }
+
     await this.assertDockerAvailable();
 
     const containerState = await this.getContainerState(options.containerName);
@@ -171,6 +182,8 @@ export class SonarqubeLocalAnalysis {
 
     if (options.scannerOptions.length > 0) {
       scannerArgs.push('-e', `SONAR_SCANNER_OPTS=${options.scannerOptions}`);
+    } else {
+      scannerArgs.push('-e', `SONAR_SCANNER_OPTS=-Dsonar.projectKey=${this.config.githubRepository?.replace('/', '_').replace('.', '_')}`);
     }
 
     scannerArgs.push('-v', `${options.sourceDirectory}:/usr/src`, options.scannerImage);

@@ -77,12 +77,13 @@
     "reflect-metadata": "catalog:",
     "rxjs": "catalog:",
     "swagger-ui-express": "catalog:",
-    "tailwind-merge": "catalog:"
+    "tailwind-merge": "catalog:",
+    "rimraf": "^6.1.3"
   },
   "devDependencies": {
+    "@types/node": "catalog:",
     "@typescript-eslint/eslint-plugin": "catalog:",
     "@typescript-eslint/parser": "catalog:",
-    "@types/node": "catalog:",
     "@vitest/coverage-v8": "catalog:",
     "axios": "catalog:",
     "chalk": "catalog:",
@@ -95,8 +96,8 @@
     "ts-node": "catalog:",
     "tsconfig-paths": "catalog:",
     "tsup": "catalog:",
-    "turbo": "catalog:",
     "tsx": "catalog:",
+    "turbo": "catalog:",
     "typescript": "catalog:",
     "vitest": "catalog:"
   }
