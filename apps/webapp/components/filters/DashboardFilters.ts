@@ -53,7 +53,7 @@ export const defaultFilters: DashboardFilters = {
   aggregateMetric: 'avg',
   sonarqubeIgnorePatternFiles: '',
   sonarqubeIncludePatternFiles: '',
-  sonarqubeRemoveFolders: false,
+  sonarqubeRemoveFolders: true,
 };
 
 type SearchParamValue = string | string[] | undefined;
