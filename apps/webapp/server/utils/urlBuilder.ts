@@ -152,7 +152,7 @@ function createGitHubBuilder(config: DashboardGlobalConfiguration): UrlBuilder {
     getActionPerformanceForJobUrl(jobName: string, workflowName: string, granularity: 'day' | 'week' | 'month', date: string): string {
       const range = computeRange(date, granularity);
 
-      const filterParam = encodeURIComponent(`workflow_file_name:${workflowName}`) + `+${encodeURIComponent('job_name:' + jobName)}`;
+      const filterParam = encodeURIComponent(`workflow_file_name:${workflowName}`) + `+${encodeURIComponent('job_name:"' + jobName + '"')}`;
       const url = `https://github.com/${config.github_repository.replace(/\/$/, '')}/actions/metrics/usage?dateRangeType=DATE_RANGE_TYPE_CUSTOM&tab=jobs&filters=${filterParam}&range=${range.start}-${range.end}`;
       return url;
     }

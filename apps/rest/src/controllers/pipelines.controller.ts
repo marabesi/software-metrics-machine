@@ -69,7 +69,7 @@ export class PipelinesController {
 
   @Get('/pipelines/by-status')
   async byStatus(@Query() query: PipelineFiltersQuery) {
-    const runs = await this.loadRunsWithFilters({ ...query, includeJobs: true });
+    const runs = await this.loadRunsWithFilters({ ...query, includeJobs: false });
 
     const grouped = new Map<string, number>();
     for (const run of runs) {
