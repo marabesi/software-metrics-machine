@@ -106,7 +106,8 @@ export class CommitTraverser implements ICommitTraverser {
       this.logger.info(`Executing: ${gitCommand}`);
       const output = execSync(gitCommand, {
         cwd: this.gitRepositoryPath,
-        timeout: 60000, // 60 seconds timeout
+        timeout: 60000, // 60 seconds timeout,
+        maxBuffer: 10 * 1024 * 1024
       });
 
       // Parse output into commits
