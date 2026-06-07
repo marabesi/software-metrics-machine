@@ -124,19 +124,19 @@ export default function FiltersContainer({ repository }: { repository: string })
           </Typography>
           <Stack direction="column" spacing={2} flexWrap="wrap">
             <SelectFilter
-              label="Workflow"
+              label="Pipeline"
               value={filters.workflowSelector}
               options={workflowOptions}
               onChange={(value) => updateFilter('workflowSelector', value)}
             />
             <MultiSelectFilter
-              label="Status"
+              label="Pipeline Status"
               values={filters.workflowStatus}
               options={statusOptions}
               onChange={(values) => updateFilter('workflowStatus', values)}
             />
             <MultiSelectFilter
-              label="Conclusion"
+              label="Pipeline Conclusion"
               values={filters.workflowConclusions}
               options={conclusionOptions}
               onChange={(values) => updateFilter('workflowConclusions', values)}
