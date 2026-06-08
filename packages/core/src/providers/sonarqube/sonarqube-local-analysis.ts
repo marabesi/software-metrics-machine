@@ -316,6 +316,9 @@ export class SonarqubeLocalAnalysis {
   }
 
   private clearLocalData(): void {
+    this.config.sonarLocalRunnerToken = undefined;
+    this.config.save();
+
     if (existsSync(this.localDataFilePath)) {
       this.logger.info(
         `🧹 Removing existing local SonarQube data at "${this.localDataFilePath}" to ensure clean state.`
@@ -420,9 +423,8 @@ export class SonarqubeLocalAnalysis {
   // ── Token management ──────────────────────────────────────────────────────
 
   async getToken(hostUrl: string, username: string, password: string): Promise<string> {
-    const cached = this.readLocalData(hostUrl);
-    if (typeof cached?.token === 'string' && cached.token.length > 0) {
-      return cached.token;
+    if (typeof this.config.sonarLocalRunnerToken === 'string' && this.config.sonarLocalRunnerToken.length > 0) {
+      return this.config.sonarLocalRunnerToken;
     }
 
     return this.generateToken(hostUrl, username, password);
@@ -458,9 +460,11 @@ export class SonarqubeLocalAnalysis {
       throw new Error('SonarQube token generation response did not include a token.');
     }
 
+    this.config.sonarLocalRunnerToken = payload.token;
+    this.config.save();
+
     this.writeLocalData(sanitizedUrl, {
       generatedAt: new Date().toISOString(),
-      token: payload.token,
       tokenName: LOCAL_SONARQUBE_TOKEN_NAME,
       login: payload.login,
     });

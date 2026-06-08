@@ -102,6 +102,11 @@ export interface IConfiguration {
    * SonarQube project key
    */
   sonarProject?: string;
+
+  /**
+   * SonarQube local analysis runner token (generated and persisted by local analysis)
+   */
+  sonarLocalRunnerToken?: string;
 }
 
 /**
@@ -128,6 +133,7 @@ export class Configuration implements IConfiguration {
   sonarUrl?: string;
   sonarToken?: string;
   sonarProject?: string;
+  sonarLocalRunnerToken?: string;
 
   constructor(env: Record<string, string | undefined> = process.env) {
     // Convert env to plain object if it's process.env (has null prototype in some Node versions)
@@ -177,6 +183,7 @@ export class Configuration implements IConfiguration {
     this.sonarUrl = configData.sonar_url || envObj.SONAR_URL;
     this.sonarToken = configData.sonar_token || envObj.SONAR_TOKEN;
     this.sonarProject = configData.sonar_project || envObj.SONAR_PROJECT;
+    this.sonarLocalRunnerToken = configData.sonar_local_runner_token;
     this.validate();
   }
 
@@ -224,5 +231,20 @@ export class Configuration implements IConfiguration {
 
   getGitPath(): string {
     return path.join(this.getBaseDirectory(), 'git');
+  }
+
+  save(): void {
+    const configPath = path.resolve(`${this.storeData}/smm_config.json`);
+    let configData: Record<string, any> = {};
+
+    if (fs.existsSync(configPath)) {
+      const fileContent = fs.readFileSync(configPath, 'utf-8');
+      configData = JSON.parse(fileContent);
+    }
+
+    configData.sonar_local_runner_token = this.sonarLocalRunnerToken;
+
+    fs.writeFileSync(configPath, JSON.stringify(configData, null, 2), 'utf-8');
+    logger.debug(`Configuration saved to file: ${configPath}`);
   }
 }
