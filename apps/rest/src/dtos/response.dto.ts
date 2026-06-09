@@ -35,7 +35,6 @@ export interface DeploymentMetricsResponse {
   filters?: Record<string, any>;
 }
 
-
 export interface IssueMetricsResponse {
   totalIssues: number;
   issues: Array<{

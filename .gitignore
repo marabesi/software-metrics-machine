@@ -268,3 +268,4 @@ sonarqube_data/
 /.data/
 
 ./docs/plans/
+.pnpm-store/

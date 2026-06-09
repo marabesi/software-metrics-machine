@@ -154,11 +154,20 @@ export class PipelinesController {
         const minDuration = n > 0 ? Math.min(...durations) : 0;
         const maxDuration = n > 0 ? Math.max(...durations) : 0;
 
-        if (normalizedAggregation === 'avg' || normalizedAggregation === 'min' || normalizedAggregation === 'max') {
+        if (
+          normalizedAggregation === 'avg' ||
+          normalizedAggregation === 'min' ||
+          normalizedAggregation === 'max'
+        ) {
           return {
             workflow,
             aggregation: normalizedAggregation,
-            duration: normalizedAggregation === 'avg' ? avgDuration : normalizedAggregation === 'min' ? minDuration : maxDuration,
+            duration:
+              normalizedAggregation === 'avg'
+                ? avgDuration
+                : normalizedAggregation === 'min'
+                  ? minDuration
+                  : maxDuration,
             total_runs: n,
           };
         }
@@ -198,25 +207,26 @@ export class PipelinesController {
     }
 
     // Return one row per workflow with each job's avg duration as a key
-    return Array.from(grouped.entries()).map(([workflow, jobMap]) => {
-      const jobs: Record<string, number> = {};
-      for (const [name, durations] of jobMap.entries()) {
-        jobs[name] = durations.reduce((a, b) => a + b, 0) / durations.length;
-      }
-      return { workflow, jobs };
-    }).sort((a, b) => a.workflow.localeCompare(b.workflow));
+    return Array.from(grouped.entries())
+      .map(([workflow, jobMap]) => {
+        const jobs: Record<string, number> = {};
+        for (const [name, durations] of jobMap.entries()) {
+          jobs[name] = durations.reduce((a, b) => a + b, 0) / durations.length;
+        }
+        return { workflow, jobs };
+      })
+      .sort((a, b) => a.workflow.localeCompare(b.workflow));
   }
 
   @Get('/pipelines/deployment-frequency')
   async deploymentFrequency(@Query() query: PipelineFiltersQuery) {
-    return this.pipelinesService.getDeploymentFrequencyWithAllIntervals(this.toServiceFilters(query));
+    return this.pipelinesService.getDeploymentFrequencyWithAllIntervals(
+      this.toServiceFilters(query)
+    );
   }
 
   @Get('/pipelines/runs-by')
-  async runsBy(
-    @Query('aggregate_by') aggregateBy?: string,
-    @Query() query?: PipelineFiltersQuery
-  ) {
+  async runsBy(@Query('aggregate_by') aggregateBy?: string, @Query() query?: PipelineFiltersQuery) {
     const runs = await this.loadRunsWithFilters({ ...(query || {}), includeJobs: false });
 
     const mode = (aggregateBy || 'week').toLowerCase();
@@ -285,7 +295,10 @@ export class PipelinesController {
           continue;
         }
 
-        const existing: PipelineDurationsMetrics = grouped.get(name) || { durations: [], workflowName: (job as any).workflow_name };
+        const existing: PipelineDurationsMetrics = grouped.get(name) || {
+          durations: [],
+          workflowName: (job as any).workflow_name,
+        };
         existing.durations.push(duration);
         grouped.set(name, existing);
       }
@@ -297,7 +310,9 @@ export class PipelinesController {
         job_name: jobNameValue,
         workflow_name: data.workflowName,
         avg_time:
-          data.durations.length > 0 ? data.durations.reduce((a, b) => a + b, 0) / data.durations.length : 0,
+          data.durations.length > 0
+            ? data.durations.reduce((a, b) => a + b, 0) / data.durations.length
+            : 0,
         count: data.durations.length,
       }))
       .sort((a, b) => b.count - a.count)
@@ -506,7 +521,10 @@ export class PipelinesController {
       ) {
         return false;
       }
-      if (filters.end_date && this.toTimestamp(run.createdAt) > this.toTimestamp(filters.end_date)) {
+      if (
+        filters.end_date &&
+        this.toTimestamp(run.createdAt) > this.toTimestamp(filters.end_date)
+      ) {
         return false;
       }
       if (filters.workflow_path && run.path !== filters.workflow_path) {
@@ -545,14 +563,13 @@ export class PipelinesController {
     return filteredRuns.map((run) => ({
       ...run,
       jobs: (run.jobs || [])
-        .filter(job => selectedJobNames.includes((job.name || '').toLowerCase()))
-        .filter(job => {
+        .filter((job) => selectedJobNames.includes((job.name || '').toLowerCase()))
+        .filter((job) => {
           if (filters.job_conclusion) {
             return (job.conclusion || '').toLowerCase() === filters.job_conclusion.toLowerCase();
           }
           return true;
-        }
-      ),
+        }),
     }));
   }
 }

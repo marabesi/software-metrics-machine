@@ -18,7 +18,8 @@ import {
   JiraIssuesClient,
   SonarqubeMeasuresClient,
   CommitTraverser,
-  Configuration, PipelinesService,
+  Configuration,
+  PipelinesService,
   PRsService,
   PullRequestFactory,
   SonarQubeService,
@@ -26,7 +27,7 @@ import {
   SonarqubeFactory,
   PairingFactory,
 } from '@smmachine/core';
-import PipelineFactory from "@smmachine/core/aggregates/pipeline-factory";
+import PipelineFactory from '@smmachine/core/aggregates/pipeline-factory';
 import { PairingService } from '@smmachine/core/domain/code/pairing-service';
 
 function buildDataDirectories(config: Configuration) {
@@ -140,7 +141,7 @@ function buildDataDirectories(config: Configuration) {
     {
       provide: PipelinesRepository,
       useFactory: (config: Configuration) => {
-          return PipelineFactory.create(config).pipelineRepository
+        return PipelineFactory.create(config).pipelineRepository;
       },
       inject: [Configuration],
     },
@@ -153,9 +154,7 @@ function buildDataDirectories(config: Configuration) {
     },
     {
       provide: CodeMetricsRepository,
-      useFactory: (
-        config: Configuration
-      ) => {
+      useFactory: (config: Configuration) => {
         return new CodeMetricsRepository(config);
       },
       inject: [Configuration],
@@ -208,7 +207,15 @@ function buildDataDirectories(config: Configuration) {
         codeMetricsRepository: CodeMetricsRepository,
         issuesRepository: IssuesRepository,
         sonarqubeService: SonarQubeService
-      ) => new MetricsOrchestrator(prsService, pipelinesService, codeMetricsRepository, issuesRepository, sonarqubeService, pairingService),
+      ) =>
+        new MetricsOrchestrator(
+          prsService,
+          pipelinesService,
+          codeMetricsRepository,
+          issuesRepository,
+          sonarqubeService,
+          pairingService
+        ),
       inject: [
         PRsService,
         PipelinesService,

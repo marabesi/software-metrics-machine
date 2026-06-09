@@ -118,16 +118,11 @@ export class CodeController {
         (row: { entity: string; coupled: string; degree: number; averageRevs: number }) =>
           !this.matchesIgnore(row.entity, ignorePatterns) &&
           !this.matchesIgnore(row.coupled, ignorePatterns) &&
-          (
-            this.matchesIncludeOnly(row.entity, includePatterns) ||
+          (this.matchesIncludeOnly(row.entity, includePatterns) ||
             this.matchesIncludeOnly(row.coupled, includePatterns) ||
-            includePatterns.length === 0
-          )
+            includePatterns.length === 0)
       )
-      .sort(
-        (a: { degree: number }, b: { degree: number }) =>
-          b.degree - a.degree
-      );
+      .sort((a: { degree: number }, b: { degree: number }) => b.degree - a.degree);
 
     const maxRows = top ? Number(top) : 20;
     return filtered

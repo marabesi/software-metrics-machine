@@ -8,6 +8,14 @@ export interface JobByStatusData {
   count: number;
 }
 
+export interface PipelineSummaryResponse {
+  total_runs?: number;
+  in_progress?: number;
+  queued?: number;
+  first_run?: { createdAt?: string; created_at?: string } | string | null;
+  last_run?: { createdAt?: string; created_at?: string } | string | null;
+}
+
 export interface RunsDurationResponseItem {
   workflow?: string;
   aggregation?: 'avg' | 'min' | 'max';

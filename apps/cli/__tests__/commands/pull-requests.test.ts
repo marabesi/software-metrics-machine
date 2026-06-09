@@ -11,7 +11,7 @@ describe('Pull Request Metrics', () => {
   });
 
   it('should have metrics command group', async () => {
-    const result = program.parse(['prs', 'fetch'], { from: 'user' });
+    program.parse(['prs', 'fetch'], { from: 'user' });
 
     // const metricsCmd = program.commands.find((cmd) => {
     //   return cmd.name() === 'prs';

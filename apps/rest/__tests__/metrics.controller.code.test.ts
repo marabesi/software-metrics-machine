@@ -35,10 +35,10 @@ describe('MetricsController - Code Metrics', () => {
   });
 
   it('should handle missing repository', async () => {
-    vi.spyOn(orchestrator, 'getCodeMetrics').mockRejectedValueOnce(new Error('Repository not found'));
+    vi.spyOn(orchestrator, 'getCodeMetrics').mockRejectedValueOnce(
+      new Error('Repository not found')
+    );
 
-    await request(app.getHttpServer())
-      .get('/api/metrics/code')
-      .expect(500);
+    await request(app.getHttpServer()).get('/api/metrics/code').expect(500);
   });
 });

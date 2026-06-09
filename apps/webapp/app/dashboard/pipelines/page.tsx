@@ -20,6 +20,7 @@ import {
   JobStepsAverageTimeResponseItem,
   JobStepsAverageTimeByDayData,
   JobStepsAverageTimeByDayResponseItem,
+  PipelineSummaryResponse,
 } from '@/components/charts/pipeline/types';
 import { defaultFilters, parseDashboardFilters } from '@/components/filters/DashboardFilters';
 import PipelineRunsDurationCard from '@/components/charts/pipeline/PipelineRunsDurationCard';
@@ -27,6 +28,7 @@ import JobsAverageTimeCard from '@/components/charts/pipeline/JobsAverageTimeCar
 import JobsByStatusCard from '@/components/charts/pipeline/JobsByStatusCard';
 import JobsRerunCard from '@/components/charts/pipeline/JobsRerunCard';
 import JobStepsAnalysis from '@/components/charts/pipeline/JobStepsAnalysis';
+import { Card, CardContent } from '@/components/ui/card';
 
 type ResultWrapper<T> = {
   result: T;
@@ -59,12 +61,14 @@ export default async function PipelinesPage({
   let jobsRerunsByDay: JobRerunsByDayData[] = [];
   let jobStepsTime: JobStepsAverageTimeData[] = [];
   let jobStepsTimeByDay: JobStepsAverageTimeByDayData[] = [];
+  let totalRuns = 0;
 
   const isSingleJobSelected = filters.jobSelector && filters.jobSelector.length === 1;
 
   try {
     const apiParams = buildPipelineApiParams(filters);
     const [
+      summary,
       jobs,
       duration,
       runsBy,
@@ -76,6 +80,7 @@ export default async function PipelinesPage({
       jobStepsTimeRaw,
       jobStepsTimeByDayRaw,
     ] = await Promise.all([
+      pipelineAPI.summary(apiParams),
       pipelineAPI.jobsByStatus(apiParams),
       pipelineAPI.runsDuration(apiParams),
       pipelineAPI.runsBy({ ...apiParams, aggregate_by: 'day' }),
@@ -87,6 +92,9 @@ export default async function PipelinesPage({
       pipelineAPI.jobStepsAverageTime(apiParams),
       pipelineAPI.jobStepsAverageTimeByDay(apiParams),
     ]);
+
+    const summaryResult = unwrapResult(summary as PipelineSummaryResponse | ResultWrapper<PipelineSummaryResponse>);
+    totalRuns = summaryResult?.total_runs || 0;
 
     // Handle jobsByStatus - Status and Count fields
     const jobsResult = unwrapResult(jobs as JobByStatusResponseItem[] | ResultWrapper<JobByStatusResponseItem[]>);
@@ -228,10 +236,20 @@ export default async function PipelinesPage({
     jobsRerunsByDay = [];
     jobStepsTime = [];
     jobStepsTimeByDay = [];
+    totalRuns = 0;
   }
 
   return (
     <div className="space-y-6">
+      <Card>
+        <CardContent>
+          <div className="p-4 bg-blue-50 rounded-lg">
+            <p className="text-sm text-gray-600">Total runs</p>
+            <p className="text-3xl font-bold text-blue-600">{totalRuns.toLocaleString('en-US')}</p>
+          </div>
+        </CardContent>
+      </Card>
+
       <div className="grid grid-cols-1 gap-6">
         <PipelineRunsDurationCard
           dataByAggregation={runsDurationByAggregation}

@@ -42,9 +42,7 @@ describe('MetricsController - Pipeline Metrics', () => {
   });
 
   it('should validate frequency parameter gracefully', async () => {
-    await request(app.getHttpServer())
-      .get('/api/metrics/deployment?frequency=invalid')
-      .expect(500);
+    await request(app.getHttpServer()).get('/api/metrics/deployment?frequency=invalid').expect(500);
   });
 
   it('should handle missing pipeline data', async () => {
@@ -52,8 +50,6 @@ describe('MetricsController - Pipeline Metrics', () => {
       new Error('No workflow data available')
     );
 
-    await request(app.getHttpServer())
-      .get('/api/metrics/deployment')
-      .expect(500);
+    await request(app.getHttpServer()).get('/api/metrics/deployment').expect(500);
   });
 });

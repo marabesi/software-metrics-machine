@@ -7,7 +7,7 @@ import { PullRequestsRepository, PRsService, PRDetails } from '@smmachine/core';
 export class PullRequestsController {
   constructor(
     private readonly pullRequestsRepo: PullRequestsRepository,
-    private readonly prsService: PRsService,
+    private readonly prsService: PRsService
   ) {}
 
   @Get('/pull-requests/summary')
@@ -18,7 +18,13 @@ export class PullRequestsController {
     @Query('labels') labels?: string,
     @Query('status') status?: PRDetails['state']
   ) {
-    const realFilters = { startDate, endDate, authors: authors?.split(',') || [], labels: labels?.split(',') || [], state: status };
+    const realFilters = {
+      startDate,
+      endDate,
+      authors: authors?.split(',') || [],
+      labels: labels?.split(',') || [],
+      state: status,
+    };
     return this.prsService.getSummary(realFilters);
   }
 
@@ -312,7 +318,6 @@ export class PullRequestsController {
     return dateString.substring(0, 7);
   }
 
-
   private async loadPRsWithFilters(filters: {
     startDate?: string;
     endDate?: string;
@@ -320,7 +325,13 @@ export class PullRequestsController {
     labels?: string;
     status?: PRDetails['state'];
   }): Promise<PRDetails[]> {
-    const realFilters = { startDate: filters.startDate, endDate: filters.endDate, authors: filters.authors?.split(',') || [], labels: filters.labels?.split(',') || [], state: filters.status };
+    const realFilters = {
+      startDate: filters.startDate,
+      endDate: filters.endDate,
+      authors: filters.authors?.split(',') || [],
+      labels: filters.labels?.split(',') || [],
+      state: filters.status,
+    };
     return await this.pullRequestsRepo.loadPrsWithFilters(realFilters);
   }
 }

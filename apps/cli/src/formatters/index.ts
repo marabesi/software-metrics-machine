@@ -7,10 +7,56 @@ export interface FormatterOptions {
   verbose?: boolean;
 }
 
+type MetricValue = string | number | boolean | null | undefined;
+type MetricRecord = Record<string, MetricValue>;
+
+interface PullRequestMetrics {
+  totalPRs?: number;
+  leadTime?: { average?: number; unit?: string };
+  commentSummary?: { total?: number };
+  labelSummary?: Record<string, number>;
+}
+
+interface DeploymentMetrics {
+  deploymentFrequency?: Array<{ date: string; value: number }>;
+  pipelineMetrics?: { totalRuns?: number; successRate?: number };
+  jobMetrics?: Array<{ jobName: string; avgDuration: number; successRate?: number }>;
+}
+
+interface CodeMetrics {
+  pairingIndex?: { pairingIndexPercentage?: number };
+  codeChurn?: { data?: { additions?: number; deletions?: number } };
+  fileCoupling?: Array<{
+    file1: string;
+    file2: string;
+    couplingStrength: number;
+  }>;
+}
+
+interface IssueMetrics {
+  totalIssues?: number;
+  issues?: Array<{ key: string; status: string; priority?: string; createdAt: string }>;
+}
+
+type QualityMetrics = MetricRecord & { filters?: unknown };
+
+interface CompleteReport {
+  timestamp?: string;
+  filters?: Record<string, MetricValue>;
+  pullRequests?: PullRequestMetrics;
+  deployment?: DeploymentMetrics;
+  code?: CodeMetrics;
+  issues?: IssueMetrics;
+  quality?: QualityMetrics;
+}
+
 /**
  * Format pull request metrics for output
  */
-export function formatPullRequestMetrics(data: any, options: FormatterOptions): string {
+export function formatPullRequestMetrics(
+  data: PullRequestMetrics,
+  options: FormatterOptions
+): string {
   if (options.format === 'json') {
     return JSON.stringify(data, null, 2);
   }
@@ -50,7 +96,10 @@ export function formatPullRequestMetrics(data: any, options: FormatterOptions): 
 /**
  * Format deployment metrics for output
  */
-export function formatDeploymentMetrics(data: any, options: FormatterOptions): string {
+export function formatDeploymentMetrics(
+  data: DeploymentMetrics,
+  options: FormatterOptions
+): string {
   if (options.format === 'json') {
     return JSON.stringify(data, null, 2);
   }
@@ -71,7 +120,9 @@ export function formatDeploymentMetrics(data: any, options: FormatterOptions): s
 
   if (data.pipelineMetrics) {
     output += `Total Runs: ${data.pipelineMetrics.totalRuns || 'N/A'}\n`;
-    output += `Success Rate: ${(data.pipelineMetrics.successRate * 100).toFixed(1)}%\n`;
+    if (data.pipelineMetrics.successRate !== undefined) {
+      output += `Success Rate: ${(data.pipelineMetrics.successRate * 100).toFixed(1)}%\n`;
+    }
   }
 
   if (data.deploymentFrequency && data.deploymentFrequency.length > 0) {
@@ -98,7 +149,7 @@ export function formatDeploymentMetrics(data: any, options: FormatterOptions): s
 /**
  * Format code metrics for output
  */
-export function formatCodeMetrics(data: any, options: FormatterOptions): string {
+export function formatCodeMetrics(data: CodeMetrics, options: FormatterOptions): string {
   if (options.format === 'json') {
     return JSON.stringify(data, null, 2);
   }
@@ -144,7 +195,7 @@ export function formatCodeMetrics(data: any, options: FormatterOptions): string 
 /**
  * Format issue metrics for output
  */
-export function formatIssueMetrics(data: any, options: FormatterOptions): string {
+export function formatIssueMetrics(data: IssueMetrics, options: FormatterOptions): string {
   if (options.format === 'json') {
     return JSON.stringify(data, null, 2);
   }
@@ -182,7 +233,7 @@ export function formatIssueMetrics(data: any, options: FormatterOptions): string
 /**
  * Format quality metrics for output
  */
-export function formatQualityMetrics(data: any, options: FormatterOptions): string {
+export function formatQualityMetrics(data: QualityMetrics, options: FormatterOptions): string {
   if (options.format === 'json') {
     return JSON.stringify(data, null, 2);
   }
@@ -215,7 +266,7 @@ export function formatQualityMetrics(data: any, options: FormatterOptions): stri
 /**
  * Format complete report for output
  */
-export function formatCompleteReport(data: any, options: FormatterOptions): string {
+export function formatCompleteReport(data: CompleteReport, options: FormatterOptions): string {
   if (options.format === 'json') {
     return JSON.stringify(data, null, 2);
   }
@@ -233,10 +284,14 @@ export function formatCompleteReport(data: any, options: FormatterOptions): stri
 
     // Add deployment metrics
     if (data.deployment) {
-      lines.push(`Deployment,total_runs,${data.deployment.pipelineMetrics.totalRuns}`);
-      lines.push(
-        `Deployment,success_rate,${(data.deployment.pipelineMetrics.successRate * 100).toFixed(1)}`
-      );
+      if (data.deployment.pipelineMetrics?.totalRuns !== undefined) {
+        lines.push(`Deployment,total_runs,${data.deployment.pipelineMetrics.totalRuns}`);
+      }
+      if (data.deployment.pipelineMetrics?.successRate !== undefined) {
+        lines.push(
+          `Deployment,success_rate,${(data.deployment.pipelineMetrics.successRate * 100).toFixed(1)}`
+        );
+      }
     }
 
     // Add code metrics

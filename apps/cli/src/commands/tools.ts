@@ -1,9 +1,9 @@
 import { Command } from 'commander';
 import { Logger } from '@smmachine/utils';
 import * as fs from 'fs';
-import * as path from 'path';
 
 const logger = new Logger('ToolsCommand');
+type JsonObject = Record<string, unknown>;
 
 /**
  * Tools Command Group
@@ -46,9 +46,9 @@ export function createToolsCommands(program: Command): void {
 
         console.log(`📁 Found ${files.length} JSON files to merge`);
 
-        const merged: any = {};
+        const merged: JsonObject = {};
         let isArray = false;
-        const arrays: any[] = [];
+        const arrays: unknown[] = [];
 
         for (const file of files) {
           try {
@@ -59,7 +59,7 @@ export function createToolsCommands(program: Command): void {
               isArray = true;
               arrays.push(...data);
             } else {
-              Object.assign(merged, data);
+              Object.assign(merged, data as JsonObject);
             }
 
             console.log(`  ✅ Merged: ${file}`);

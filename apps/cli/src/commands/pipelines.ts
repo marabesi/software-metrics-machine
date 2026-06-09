@@ -13,6 +13,11 @@ const { pipelineRepository, workflowRepository, workflowJobRepository } =
 
 const pipelineService = new PipelinesService(pipelineRepository, config);
 
+type DeploymentFrequencyInterval = Awaited<
+  ReturnType<PipelinesService['getDeploymentFrequencyWithAllIntervals']>
+>[number];
+type JobStepAverageTime = Awaited<ReturnType<PipelinesService['getJobStepsAverageTime']>>[number];
+
 export function createPipelinesCommands(program: Command): void {
   const pipelinesGroup = program.command('pipelines').description('Pipeline/workflow operations');
 
@@ -205,7 +210,7 @@ export function createPipelinesCommands(program: Command): void {
         } else {
           console.log('\n=== Pipeline Runs by Period ===\n');
           console.log(`Period: ${options.period}`);
-          metrics.forEach((item: any) => {
+          metrics.forEach((item: DeploymentFrequencyInterval) => {
             if (options.period === 'day') {
               console.log(`Period: ${item.days} | Total Runs: ${item.daily_counts}`);
             } else if (options.period === 'week') {
@@ -315,7 +320,7 @@ export function createPipelinesCommands(program: Command): void {
           console.log(JSON.stringify(metrics, null, 2));
         } else {
           console.log('\n=== Job Steps Execution Times ===\n');
-          metrics.forEach((item: any) => {
+          metrics.forEach((item: JobStepAverageTime) => {
             console.log(`Step: ${item.name}`);
             console.log(
               `Average Execution Time: ${item.averageDurationMinutes.toFixed(2)} minutes`

@@ -139,7 +139,8 @@ export class ComponentTreeQueryDto {
 
   @ApiPropertyOptional({
     type: [String],
-    description: 'File/component patterns to include (supports CSV and glob patterns). When set, only matching components are returned.',
+    description:
+      'File/component patterns to include (supports CSV and glob patterns). When set, only matching components are returned.',
     isArray: true,
   })
   @IsOptional()

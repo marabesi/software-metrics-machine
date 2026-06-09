@@ -44,13 +44,13 @@ describe('MetricsController - Pull Request Metrics', () => {
   });
 
   it('should handle invalid date format', async () => {
-    await request(app.getHttpServer())
-      .get('/api/metrics/pr?startDate=invalid-date')
-      .expect(500);
+    await request(app.getHttpServer()).get('/api/metrics/pr?startDate=invalid-date').expect(500);
   });
 
   it('should handle missing required data gracefully', async () => {
-    vi.spyOn(orchestrator, 'getPRMetrics').mockRejectedValueOnce(new Error('GitHub API unavailable'));
+    vi.spyOn(orchestrator, 'getPRMetrics').mockRejectedValueOnce(
+      new Error('GitHub API unavailable')
+    );
 
     await request(app.getHttpServer())
       .get('/api/metrics/pr')

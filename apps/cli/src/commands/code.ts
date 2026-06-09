@@ -6,6 +6,7 @@ import { Logger } from '@smmachine/utils';
 import { Configuration } from '@smmachine/core/infrastructure/configuration';
 import { CodemaatFactory } from '@smmachine/core/aggregates/codemaat-factory';
 import { PairingFactory } from '@smmachine/core/aggregates/pairing-factory';
+import type { CodeChurn } from '@smmachine/core/providers/codemaat/types';
 import path from 'path';
 
 const logger = new Logger('CodeCommand');
@@ -199,12 +200,15 @@ export function createCodeCommands(program: Command): void {
         });
         const churnRows = metrics.data;
         const totalCommits = churnRows.reduce(
-          (sum: number, row: any) => sum + (row.commits || 0),
+          (sum: number, row: CodeChurn) => sum + (row.commits || 0),
           0
         );
-        const linesAdded = churnRows.reduce((sum: number, row: any) => sum + (row.added || 0), 0);
+        const linesAdded = churnRows.reduce(
+          (sum: number, row: CodeChurn) => sum + (row.added || 0),
+          0
+        );
         const linesRemoved = churnRows.reduce(
-          (sum: number, row: any) => sum + (row.deleted || 0),
+          (sum: number, row: CodeChurn) => sum + (row.deleted || 0),
           0
         );
 
@@ -271,7 +275,7 @@ export function createCodeCommands(program: Command): void {
         });
         const churnRows = metrics.data;
         const totalChurn = churnRows.reduce(
-          (sum: number, row: any) => sum + (row.added || 0) + (row.deleted || 0),
+          (sum: number, row: CodeChurn) => sum + (row.added || 0) + (row.deleted || 0),
           0
         );
 
