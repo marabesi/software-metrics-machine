@@ -1,4 +1,4 @@
-import { logger } from '@smmachine/utils';
+import { Logger, logger } from '@smmachine/utils';
 import * as fs from 'fs';
 import * as path from 'path';
 
@@ -107,6 +107,8 @@ export interface IConfiguration {
    * SonarQube local analysis runner token (generated and persisted by local analysis)
    */
   sonarLocalRunnerToken?: string;
+
+  storeLogs?: boolean;
 }
 
 /**
@@ -134,6 +136,7 @@ export class Configuration implements IConfiguration {
   sonarToken?: string;
   sonarProject?: string;
   sonarLocalRunnerToken?: string;
+  storeLogs?: boolean;
 
   constructor(env: Record<string, string | undefined> = process.env) {
     // Convert env to plain object if it's process.env (has null prototype in some Node versions)
@@ -184,6 +187,12 @@ export class Configuration implements IConfiguration {
     this.sonarToken = configData.sonar_token || envObj.SONAR_TOKEN;
     this.sonarProject = configData.sonar_project || envObj.SONAR_PROJECT;
     this.sonarLocalRunnerToken = configData.sonar_local_runner_token;
+    this.storeLogs = configData.store_logs === true || configData.STORE_LOGS === true;
+    Logger.configureDefaults({
+      level: this.loggingLevel,
+      filePath: this.getLogPath(),
+      storeLogs: this.storeLogs,
+    });
     this.validate();
   }
 
@@ -211,6 +220,10 @@ export class Configuration implements IConfiguration {
     const gitProvider = this.gitProvider || 'github';
     const repoSlug = (this.githubRepository || '').replace('/', '_');
     return path.join(baseDir, `${gitProvider}_${repoSlug}`);
+  }
+
+  getLogPath(): string {
+    return path.join(this.getBaseDirectory(), 'smm.log');
   }
 
   getCodeMaatPath(): string {

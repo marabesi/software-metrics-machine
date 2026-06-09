@@ -1,23 +1,64 @@
-export type LogLevel = 'DEBUG' | 'INFO' | 'WARN' | 'ERROR';
+import { appendFileSync, mkdirSync } from 'node:fs';
+import { dirname } from 'node:path';
+
+export type LogLevel = 'DEBUG' | 'INFO' | 'WARN' | 'ERROR' | 'CRITICAL';
 
 const LOG_LEVELS = {
   DEBUG: 0,
   INFO: 1,
   WARN: 2,
   ERROR: 3,
+  CRITICAL: 4,
 };
 
-export class Logger {
-  private level: LogLevel;
-  private name: string;
+export interface LoggerOptions {
+  level?: LogLevel;
+  filePath?: string;
+  storeLogs?: boolean;
+}
 
-  constructor(name: string, level: LogLevel = 'INFO') {
+export class Logger {
+  private static defaultLevel: LogLevel = 'INFO';
+  private static defaultFilePath: string | undefined;
+  private static defaultStoreLogs = false;
+
+  private level: LogLevel | undefined;
+  private name: string;
+  private filePath?: string;
+  private storeLogs?: boolean;
+
+  constructor(
+    name: string,
+    levelOrOptions?: LogLevel | LoggerOptions,
+    options: LoggerOptions = {}
+  ) {
     this.name = name;
-    this.level = level;
+    if (!levelOrOptions) {
+      return;
+    }
+
+    if (typeof levelOrOptions === 'string') {
+      this.level = levelOrOptions;
+      this.filePath = options.filePath;
+      this.storeLogs = options.storeLogs;
+      return;
+    }
+
+    this.level = levelOrOptions.level;
+    this.filePath = levelOrOptions.filePath;
+    this.storeLogs = levelOrOptions.storeLogs;
+  }
+
+  static configureDefaults(options: LoggerOptions): void {
+    if (options.level) {
+      Logger.defaultLevel = options.level;
+    }
+    Logger.defaultFilePath = options.filePath;
+    Logger.defaultStoreLogs = options.storeLogs === true;
   }
 
   private shouldLog(level: LogLevel): boolean {
-    return LOG_LEVELS[level] >= LOG_LEVELS[this.level];
+    return LOG_LEVELS[level] >= LOG_LEVELS[this.getLevel()];
   }
 
   private formatMessage(level: LogLevel, message: string): string {
@@ -25,38 +66,84 @@ export class Logger {
     return `[${timestamp}] [${level}] [${this.name}] ${message}`;
   }
 
-  debug(message: string, data?: unknown): void {
-    if (this.shouldLog('DEBUG')) {
-      // eslint-disable-next-line no-console
-      console.info(this.formatMessage('DEBUG', message), data);
+  private formatData(data?: unknown): string {
+    if (data === undefined) {
+      return '';
     }
+
+    if (data instanceof Error) {
+      return data.stack || data.message;
+    }
+
+    if (typeof data === 'string') {
+      return data;
+    }
+
+    try {
+      return JSON.stringify(data);
+    } catch {
+      return String(data);
+    }
+  }
+
+  private appendToFile(formattedMessage: string, data?: unknown): void {
+    const shouldStoreLogs = this.storeLogs ?? Logger.defaultStoreLogs;
+    const filePath = this.filePath || Logger.defaultFilePath;
+
+    if (!shouldStoreLogs || !filePath) {
+      return;
+    }
+
+    const formattedData = this.formatData(data);
+    const line = formattedData ? `${formattedMessage} ${formattedData}` : formattedMessage;
+
+    try {
+      mkdirSync(dirname(filePath), { recursive: true });
+      appendFileSync(filePath, `${line}\n`, 'utf8');
+    } catch {
+      // Logging should never make the main application fail.
+    }
+  }
+
+  private write(
+    level: LogLevel,
+    message: string,
+    data: unknown,
+    consoleWriter: (message?: unknown, ...optionalParams: unknown[]) => void
+  ): void {
+    if (!this.shouldLog(level)) {
+      return;
+    }
+
+    const formattedMessage = this.formatMessage(level, message);
+    if (data !== undefined) {
+      consoleWriter(formattedMessage, data);
+    } else {
+      consoleWriter(formattedMessage);
+    }
+    this.appendToFile(formattedMessage, data);
+  }
+
+  debug(message: string, data?: unknown): void {
+    // eslint-disable-next-line no-console
+    this.write('DEBUG', message, data, console.info);
   }
 
   info(message: string, data?: unknown): void {
-    if (!this.shouldLog('INFO')) {
-      return;
-    }
-
-    if (data) {
-      // eslint-disable-next-line no-console
-      console.log(this.formatMessage('INFO', message), data);
-      return;
-    }
-
     // eslint-disable-next-line no-console
-    console.log(this.formatMessage('INFO', message));
+    this.write('INFO', message, data, console.log);
   }
 
   warn(message: string, data?: unknown): void {
-    if (this.shouldLog('WARN')) {
-      console.warn(this.formatMessage('WARN', message), data);
-    }
+    this.write('WARN', message, data, console.warn);
   }
 
   error(message: string, error?: Error | unknown): void {
-    if (this.shouldLog('ERROR')) {
-      console.error(this.formatMessage('ERROR', message), error);
-    }
+    this.write('ERROR', message, error, console.error);
+  }
+
+  critical(message: string, error?: Error | unknown): void {
+    this.write('CRITICAL', message, error, console.error);
   }
 
   setLevel(level: LogLevel): void {
@@ -64,11 +151,21 @@ export class Logger {
   }
 
   getLevel(): LogLevel {
-    return this.level;
+    return this.level || Logger.defaultLevel;
+  }
+
+  setFilePath(filePath?: string): void {
+    this.filePath = filePath;
+  }
+
+  getFilePath(): string | undefined {
+    return this.filePath || Logger.defaultFilePath;
   }
 }
 
 /**
  * Global logger instance
  */
-export const logger = new Logger('SMM', (process.env.LOG_LEVEL as LogLevel) || 'INFO');
+export const logger = new Logger('SMM', {
+  level: (process.env.LOG_LEVEL as LogLevel) || undefined,
+});
