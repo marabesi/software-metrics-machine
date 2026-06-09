@@ -62,7 +62,7 @@ if [ "$BUILD_FORCE" = "true" ]; then
 {
 	"git_provider": "github",
 	"github_token": "xxxxxxxxxxxxxxxxxxxxxx",
-	"github_repository": "marabesi/json-tool",
+	"github_repository": "facebook/react",
 	"git_repository_location": "/app/react",
 	"deployment_frequency_target_pipeline": "",
 	"deployment_frequency_target_job": "",
