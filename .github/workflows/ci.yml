@@ -10,9 +10,6 @@ on:
     paths-ignore:
       - "docs/**"
 
-permissions:
-  contents: write
-
 jobs:
   build-typescript:
     name: Build TypeScript

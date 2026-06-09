@@ -37,8 +37,13 @@ jobs:
         run: cp apps/webapp/.env.local.example apps/webapp/.env
 
       - name: Set project example
-        run: |
-          git clone --depth 500 https://github.com/facebook/react.git docs/project-example/react
+        uses: actions/checkout@v6
+        with:
+          repository: marabesi/json-tool
+          path: docs/project-example/react
+          token: ${{ secrets.GITHUB_TOKEN }}
+          fetch-depth: 500
+          persist-credentials: false
 
       - name: Publish to npm
         env:
