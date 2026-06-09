@@ -11,7 +11,7 @@ on:
       - "docs/**"
 
 permissions:
-  contents: read
+  contents: write
 
 jobs:
   build-typescript:
