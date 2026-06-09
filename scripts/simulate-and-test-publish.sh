@@ -53,11 +53,7 @@ if [ "$BUILD_FORCE" = "true" ]; then
 	# clone react, if not already present, to have a real-world codebase to test against
 	if [ ! -d "$REPO_ROOT/tmp/react" ]; then
 		mkdir -p "$REPO_ROOT/tmp"
-		if [ -n "${GITHUB_TOKEN:-}" ]; then
-			git -c "http.https://github.com/.extraheader=AUTHORIZATION: bearer ${GITHUB_TOKEN}" clone --shallow-since="2025-03-01" https://github.com/facebook/react "$REPO_ROOT/tmp/react"
-		else
-			git clone --shallow-since="2025-03-01" https://github.com/facebook/react "$REPO_ROOT/tmp/react"
-		fi
+		git -c credential.helper= -c "http.https://github.com/.extraheader=" clone --shallow-since="2025-03-01" https://github.com/facebook/react "$REPO_ROOT/tmp/react"
 	fi
 
 	# create smm config file for testing template string

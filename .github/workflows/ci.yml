@@ -20,6 +20,8 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v6
+        with:
+          persist-credentials: false
 
       - name: Set Environment Variables
         uses: tw3lveparsecs/github-actions-setvars@v0.1
@@ -41,12 +43,7 @@ jobs:
         run: cp apps/webapp/.env.local.example apps/webapp/.env
 
       - name: Set project example
-        uses: actions/checkout@v6
-        with:
-          repository: facebook/react
-          path: docs/project-example/react
-          fetch-depth: 500
-          persist-credentials: false
+        run: git -c credential.helper= -c "http.https://github.com/.extraheader=" clone --depth 500 https://github.com/facebook/react.git docs/project-example/react
 
       - name: Install dependencies
         run: pnpm install
@@ -63,6 +60,8 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v6
+        with:
+          persist-credentials: false
 
       - name: Set Environment Variables
         uses: tw3lveparsecs/github-actions-setvars@v0.1
@@ -88,6 +87,5 @@ jobs:
 
       - name: Check package distribution
         env:
-          GITHUB_TOKEN: ${{ github.token }}
           SMM_STORE_DATA_AT: /home/runner/work/software-metrics-machine/software-metrics-machine/docs/project-example
         run: ./scripts/simulate-and-test-publish.sh true
