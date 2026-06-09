@@ -43,7 +43,7 @@ jobs:
       - name: Set project example
         uses: actions/checkout@v6
         with:
-          repository: facebook/react
+          repository: marabesi/json-tool
           path: docs/project-example/react
           token: ${{ secrets.GITHUB_TOKEN }}
           fetch-depth: 500
