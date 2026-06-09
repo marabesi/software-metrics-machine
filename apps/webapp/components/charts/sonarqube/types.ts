@@ -1,6 +1,8 @@
 export interface SonarqubeComponentChartData {
   key: string;
   name: string;
+  type?: string;
+  qualifier?: string;
   complexity: number;
   cognitiveComplexity: number;
   ncloc: number;
@@ -13,4 +15,3 @@ export interface SonarqubeTopMetricData {
   value: number;
   componentKey?: string; // Optional key for linking to SonarQube
 }
-

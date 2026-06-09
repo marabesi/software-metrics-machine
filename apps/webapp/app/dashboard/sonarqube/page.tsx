@@ -3,10 +3,17 @@ import { sonarqubeAPI } from '@/server/api';
 import { ensureArray } from '@/server/utils/chartData';
 import SonarqubeTopMetricCard from '@/components/charts/sonarqube/SonarqubeTopMetricCard';
 import SonarqubeComponentTreeTableCard from '@/components/charts/sonarqube/SonarqubeComponentTreeTableCard';
-import SonarqubeMeasurementsCard from '@/components/charts/sonarqube/SonarqubeMeasurementsCard';
+import SonarqubeComponentTreeHistoryCard from '@/components/charts/sonarqube/SonarqubeComponentTreeHistoryCard';
+import SonarqubeMeasurementsTabbedCard from '@/components/charts/sonarqube/SonarqubeMeasurementsTabbedCard';
 import SonarqubeStatCard from '@/components/charts/sonarqube/SonarqubeStatCard';
 import { SonarqubeComponentChartData } from '@/components/charts/sonarqube/types';
 import { buildSonarqubeApiParams } from '@/server/utils/apiParams';
+import {
+  SonarqubeComponentMeasure,
+  SonarqubeComponentTreeHistoryEntry,
+  SonarqubeMeasurement,
+  SonarqubeMeasurementHistoryEntry,
+} from '@/server/api/sonarqube';
 
 type ResultWrapper<T> = {
   result: T;
@@ -20,7 +27,7 @@ function unwrapResult<T>(data: T | ResultWrapper<T>): T {
 }
 
 function metricValue(
-  measures: Array<{ key?: string; metric?: string; name?: string; value?: string | number }> = [],
+  measures: SonarqubeComponentMeasure['measures'] = [],
   metric: string,
 ): number {
   const measure = measures.find(
@@ -42,12 +49,33 @@ export default async function SonarqubePage({
 }) {
   const filters = parseDashboardFilters((await searchParams) ?? {}, defaultFilters);
   let components: SonarqubeComponentChartData[] = [];
-  let mainComponentMeasures: Array<{ key?: string; metric?: string; name?: string; value?: string | number }> = [];
+  let mainComponentMeasures: SonarqubeComponentMeasure['measures'] = [];
+  let measurements: SonarqubeMeasurement[] = [];
+  let measurementHistory: SonarqubeMeasurementHistoryEntry[] = [];
+  let componentTreeHistory: SonarqubeComponentTreeHistoryEntry[] = [];
 
   try {
     const apiParams = buildSonarqubeApiParams(filters);
-    const tree = await sonarqubeAPI.componentTree(apiParams);
-    const treeData = ensureArray<any>(unwrapResult(tree as any));
+    const [tree, measResult, historyResult, componentTreeHistoryResult] = await Promise.all([
+      sonarqubeAPI.componentTree(apiParams),
+      sonarqubeAPI.loadMeasurements(apiParams),
+      sonarqubeAPI.loadMeasurementHistory(apiParams),
+      sonarqubeAPI.loadComponentTreeHistory(apiParams),
+    ]);
+    measurements = ensureArray<SonarqubeMeasurement>(
+      unwrapResult(measResult as SonarqubeMeasurement[] | ResultWrapper<SonarqubeMeasurement[]>)
+    );
+    measurementHistory = ensureArray<SonarqubeMeasurementHistoryEntry>(
+      unwrapResult(historyResult as SonarqubeMeasurementHistoryEntry[] | ResultWrapper<SonarqubeMeasurementHistoryEntry[]>)
+    );
+    componentTreeHistory = ensureArray<SonarqubeComponentTreeHistoryEntry>(
+      unwrapResult(
+        componentTreeHistoryResult as SonarqubeComponentTreeHistoryEntry[] | ResultWrapper<SonarqubeComponentTreeHistoryEntry[]>
+      )
+    );
+    const treeData = ensureArray<SonarqubeComponentMeasure>(
+      unwrapResult(tree as SonarqubeComponentMeasure[] | ResultWrapper<SonarqubeComponentMeasure[]>)
+    );
 
     // Assuming the first component in the tree is the main project component
     // for which we want to display top-level metrics
@@ -58,6 +86,8 @@ export default async function SonarqubePage({
     components = treeData.map((component) => ({
       key: component.key || '',
       name: component.name || component.key || 'Unknown',
+      type: component.type,
+      qualifier: component.qualifier,
       complexity: metricValue(component.measures, 'complexity'),
       cognitiveComplexity: metricValue(component.measures, 'cognitive_complexity'),
       ncloc: metricValue(component.measures, 'ncloc'),
@@ -88,6 +118,10 @@ export default async function SonarqubePage({
   const tableData = [...components]
     .sort((a, b) => b.complexity - a.complexity)
     .slice(0, topEntries);
+  const fileTrendData = tableData.filter((item) => {
+    const componentType = item.type || item.qualifier;
+    return !componentType || componentType === 'FIL';
+  });
 
   return (
     <div className="space-y-6">
@@ -97,7 +131,7 @@ export default async function SonarqubePage({
         <SonarqubeStatCard title="Maintainability Rating" value={maintainabilityRating} color="#0ea5e9" />
         <SonarqubeStatCard title="Duplication Density" value={duplicationDensity} color="#f43f5e" />
       </div>
-      <SonarqubeMeasurementsCard filters={filters} />
+      <SonarqubeMeasurementsTabbedCard measurements={measurements} history={measurementHistory} />
       <div className="grid grid-cols-1 gap-6">
         <SonarqubeTopMetricCard
           title={`Top ${topEntries} by Complexity`}
@@ -119,6 +153,7 @@ export default async function SonarqubePage({
       </div>
 
       <SonarqubeComponentTreeTableCard data={tableData} />
+      <SonarqubeComponentTreeHistoryCard files={fileTrendData} history={componentTreeHistory} />
     </div>
   );
 }

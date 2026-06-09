@@ -3,6 +3,9 @@ export {
   type CodeMetric,
   type SonarqubeComponentTreeMeasure as SonarqubeComponentMeasure,
   type SonarqubeMeasure,
+  type TimestampedEntry,
+  type TimestampedStore,
+  extractLatestData,
 } from './types';
 export {
   SonarqubeFetchMetricsRepository,

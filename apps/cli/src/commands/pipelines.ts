@@ -317,7 +317,9 @@ export function createPipelinesCommands(program: Command): void {
           console.log('\n=== Job Steps Execution Times ===\n');
           metrics.forEach((item: any) => {
             console.log(`Step: ${item.name}`);
-            console.log(`Average Execution Time: ${item.averageDurationMinutes.toFixed(2)} minutes`);
+            console.log(
+              `Average Execution Time: ${item.averageDurationMinutes.toFixed(2)} minutes`
+            );
             console.log(`Analyzed across ${item.count} step executions\n`);
           });
         }

@@ -1,15 +1,41 @@
 import { ApiParams, fetchAPI } from './client';
 
+export type SonarqubeComponentMeasure = {
+  key: string;
+  name: string;
+  type?: string;
+  qualifier?: string;
+  measures?: Array<{ key?: string; metric?: string; name?: string; value?: string | number }>;
+};
+
+export type SonarqubeMeasurement = { metric: string; value: string };
+
+export type SonarqubeMeasurementHistoryEntry = {
+  fetchedAt: string;
+  data: SonarqubeMeasurement[];
+};
+
+export type SonarqubeComponentTreeHistoryEntry = {
+  fetchedAt: string;
+  data: SonarqubeComponentMeasure[];
+};
+
 export const sonarqubeAPI = {
   componentTree: (params?: ApiParams) =>
-    fetchAPI<Array<{ key: string; name: string; type?: string; qualifier?: string; measures?: Array<{ key?: string; metric?: string; name?: string; value?: string | number }> }>>(
+    fetchAPI<SonarqubeComponentMeasure[]>(
       '/sonarqube/component-tree',
       params
     ),
 
   quality: (params?: ApiParams) =>
-    fetchAPI<any>('/sonarqube/quality', params),
+    fetchAPI<unknown>('/sonarqube/quality', params),
 
   loadMeasurements: (params?: ApiParams) =>
-    fetchAPI<Array<{ metric: string; value: string }>>('/sonarqube/measurements', params),
+    fetchAPI<SonarqubeMeasurement[]>('/sonarqube/measurements', params),
+
+  loadMeasurementHistory: (params?: ApiParams) =>
+    fetchAPI<SonarqubeMeasurementHistoryEntry[]>('/sonarqube/measurements/history', params),
+
+  loadComponentTreeHistory: (params?: ApiParams) =>
+    fetchAPI<SonarqubeComponentTreeHistoryEntry[]>('/sonarqube/component-tree/history', params),
 };

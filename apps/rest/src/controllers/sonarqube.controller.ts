@@ -1,6 +1,6 @@
 import { Controller, Get, Query, HttpException, HttpStatus, Logger } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiQuery, ApiResponse, ApiOkResponse } from '@nestjs/swagger';
-import { SonarqubeMeasuresClient, SonarqubeComponentMeasure, SonarqubeRepository } from '@smmachine/core';
+import { SonarqubeComponentMeasure, SonarqubeMeasure, SonarqubeRepository } from '@smmachine/core';
 import { ComponentTreeQueryDto, QualityMetricsQueryDto } from '../dtos/index';
 import { ErrorResponse } from '../dtos/response.dto';
 import path from 'path';
@@ -64,7 +64,8 @@ export class SonarqubeController {
     required: false,
     type: [String],
     example: '*.ts,src/**',
-    description: 'Comma-separated file/component include patterns (supports glob). When set, only matching components are returned.',
+    description:
+      'Comma-separated file/component include patterns (supports glob). When set, only matching components are returned.',
   })
   @ApiQuery({
     name: 'remove_folders',
@@ -104,38 +105,7 @@ export class SonarqubeController {
         metrics: query.metrics,
       });
 
-      const ignorePatterns = query.ignore_files || [];
-      const includePatterns = query.include_files || [];
-      const removeFolders = query.remove_folders || false;
-
-      if (ignorePatterns.length === 0 && includePatterns.length === 0 && !removeFolders) {
-        return components;
-      }
-
-      return components.filter((component) => {
-        // Remove directories if flag is set
-        // SonarQube uses 'qualifier' field for component type (FIL=file, DIR=directory, TRK=project, etc.)
-        const componentType = component.type || component.qualifier;
-        if (removeFolders && (componentType === 'DIR' || componentType === 'TRK')) {
-          return false;
-        }
-
-        const key = component.key || '';
-        const name = component.name || '';
-
-        // If include patterns are specified, component must match at least one
-        if (includePatterns.length > 0) {
-          const matchesInclude = includePatterns.some(
-            (pattern) => this.matchesIgnore(key, [pattern]) || this.matchesIgnore(name, [pattern])
-          );
-          if (!matchesInclude) {
-            return false;
-          }
-        }
-
-        // Component must not match any ignore patterns
-        return !this.matchesIgnore(key, ignorePatterns) && !this.matchesIgnore(name, ignorePatterns);
-      });
+      return this.filterComponentTreeComponents(components, query);
     } catch (error) {
       this.logger.error(
         `Failed to fetch component tree: ${error}`,
@@ -149,15 +119,15 @@ export class SonarqubeController {
   }
 
   /**
- * GET /api/metrics/quality
- * Retrieve quality metrics from SonarQube
- *
- * Query Parameters:
- * - measures: Specific metrics to retrieve (can be repeated)
- *   Available: coverage, complexity, sqale_rating, duplicated_lines_density, ncloc, vulnerability_rating
- *
- * Example: GET /api/metrics/quality?measures=coverage&measures=complexity
- */
+   * GET /api/metrics/quality
+   * Retrieve quality metrics from SonarQube
+   *
+   * Query Parameters:
+   * - measures: Specific metrics to retrieve (can be repeated)
+   *   Available: coverage, complexity, sqale_rating, duplicated_lines_density, ncloc, vulnerability_rating
+   *
+   * Example: GET /api/metrics/quality?measures=coverage&measures=complexity
+   */
   @Get('quality')
   @ApiOperation({ summary: 'Get code quality metrics' })
   @ApiQuery({ name: 'measures', required: false, type: [String], example: 'coverage' })
@@ -170,7 +140,9 @@ export class SonarqubeController {
     description: 'Invalid query parameters',
     type: ErrorResponse,
   })
-  async getQualityMetrics(@Query() query: QualityMetricsQueryDto) {
+  async getQualityMetrics(
+    @Query() query: QualityMetricsQueryDto
+  ): Promise<SonarqubeComponentMeasure | null> {
     try {
       this.logger.debug(`Loading quality metrics: ${JSON.stringify(query)}`);
       const measures = query.measures
@@ -209,7 +181,7 @@ export class SonarqubeController {
     description: 'Authentication failed',
     type: ErrorResponse,
   })
-  async getMeasurements() {
+  async getMeasurements(): Promise<SonarqubeMeasure[]> {
     try {
       this.logger.debug('Loading all SonarQube measurements');
       return await this.sonarqubeRepository.loadMeasurements();
@@ -223,6 +195,100 @@ export class SonarqubeController {
         HttpStatus.INTERNAL_SERVER_ERROR
       );
     }
+  }
+
+  /**
+   * GET /sonarqube/measurements/history
+   * Retrieve all timestamped measurement entries
+   */
+  @Get('measurements/history')
+  @ApiOperation({ summary: 'Get all timestamped SonarQube measurement entries' })
+  @ApiOkResponse({
+    description: 'Measurement history retrieved successfully',
+    type: Array,
+  })
+  async getMeasurementHistory(): Promise<Array<{ fetchedAt: string; data: SonarqubeMeasure[] }>> {
+    try {
+      this.logger.debug('Loading SonarQube measurement history');
+      return await this.sonarqubeRepository.loadAllMeasurementEntries();
+    } catch (error) {
+      this.logger.error(
+        `Failed to fetch SonarQube measurement history: ${error}`,
+        error instanceof Error ? error.stack : ''
+      );
+      throw new HttpException(
+        `Failed to fetch SonarQube measurement history: ${error instanceof Error ? error.message : String(error)}`,
+        HttpStatus.INTERNAL_SERVER_ERROR
+      );
+    }
+  }
+
+  /**
+   * GET /sonarqube/component-tree/history
+   * Retrieve all timestamped component tree entries
+   */
+  @Get('component-tree/history')
+  @ApiOperation({ summary: 'Get timestamped SonarQube component tree entries' })
+  @ApiOkResponse({
+    description: 'Component tree history retrieved successfully',
+    type: Array,
+  })
+  async getComponentTreeHistory(
+    @Query() query: ComponentTreeQueryDto
+  ): Promise<Array<{ fetchedAt: string; data: SonarqubeComponentMeasure[] }>> {
+    try {
+      this.logger.debug(`Loading SonarQube component tree history: ${JSON.stringify(query)}`);
+      const entries = await this.sonarqubeRepository.loadAllComponentTreeEntries();
+
+      return entries.map((entry) => ({
+        fetchedAt: entry.fetchedAt,
+        data: this.filterComponentTreeComponents(entry.data, query),
+      }));
+    } catch (error) {
+      this.logger.error(
+        `Failed to fetch SonarQube component tree history: ${error}`,
+        error instanceof Error ? error.stack : ''
+      );
+      throw new HttpException(
+        `Failed to fetch SonarQube component tree history: ${error instanceof Error ? error.message : String(error)}`,
+        HttpStatus.INTERNAL_SERVER_ERROR
+      );
+    }
+  }
+
+  private filterComponentTreeComponents(
+    components: SonarqubeComponentMeasure[],
+    query: ComponentTreeQueryDto
+  ): SonarqubeComponentMeasure[] {
+    const ignorePatterns = query.ignore_files || [];
+    const includePatterns = query.include_files || [];
+    const removeFolders = query.remove_folders || false;
+
+    if (ignorePatterns.length === 0 && includePatterns.length === 0 && !removeFolders) {
+      return components;
+    }
+
+    return components.filter((component) => {
+      // SonarQube uses 'qualifier' field for component type (FIL=file, DIR=directory, TRK=project, etc.)
+      const componentType = component.type || component.qualifier;
+      if (removeFolders && (componentType === 'DIR' || componentType === 'TRK')) {
+        return false;
+      }
+
+      const key = component.key || '';
+      const name = component.name || '';
+
+      if (includePatterns.length > 0) {
+        const matchesInclude = includePatterns.some(
+          (pattern) => this.matchesIgnore(key, [pattern]) || this.matchesIgnore(name, [pattern])
+        );
+        if (!matchesInclude) {
+          return false;
+        }
+      }
+
+      return !this.matchesIgnore(key, ignorePatterns) && !this.matchesIgnore(name, ignorePatterns);
+    });
   }
 
   private matchesIgnore(entity: string, ignorePatterns: string[]): boolean {

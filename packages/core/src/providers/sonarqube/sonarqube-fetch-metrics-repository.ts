@@ -1,6 +1,7 @@
 import { logger } from '@smmachine/utils';
 import { SonarqubeComponentMeasure, type ISonarqubeMeasuresClient } from '..';
 import { Configuration, FileSystemRepository } from '../../infrastructure';
+import { TimestampedStore, extractLatestData } from './types';
 
 export interface IQualityMetricsRepository {
   fetchQualityMetrics(options?: any): Promise<any>;
@@ -13,54 +14,32 @@ export interface IQualityMetricsRepository {
 }
 
 export class SonarqubeFetchMetricsRepository implements IQualityMetricsRepository {
-  private lastFetch?: any;
-  private lastFetchTime: number = 0;
-  private cacheDuration: number = 1000 * 60 * 60; // 1 hour
-  private cache: FileSystemRepository<any>;
-  private cacheComponentTree: FileSystemRepository<SonarqubeComponentMeasure[]>;
-  private cacheHistorical: FileSystemRepository<any[]>;
+  private cache: FileSystemRepository<TimestampedStore<SonarqubeComponentMeasure>>;
+  private cacheComponentTree: FileSystemRepository<TimestampedStore<SonarqubeComponentMeasure[]>>;
+  private cacheHistorical: FileSystemRepository<TimestampedStore<any[]>>;
 
   constructor(
     private sonarqubeClient: ISonarqubeMeasuresClient,
     private configuration: Configuration
   ) {
     const cacheDir = this.configuration.getSonarqubePath();
-    this.cache = new FileSystemRepository<any>(`${cacheDir}/measures.json`);
-    this.cacheComponentTree = new FileSystemRepository<SonarqubeComponentMeasure[]>(
+    this.cache = new FileSystemRepository<TimestampedStore<SonarqubeComponentMeasure>>(`${cacheDir}/measures.json`);
+    this.cacheComponentTree = new FileSystemRepository<TimestampedStore<SonarqubeComponentMeasure[]>>(
       `${cacheDir}/component-tree.json`
     );
-    this.cacheHistorical = new FileSystemRepository<any[]>(`${cacheDir}/historical-measures.json`);
+    this.cacheHistorical = new FileSystemRepository<TimestampedStore<any[]>>(`${cacheDir}/historical-measures.json`);
   }
 
   /**
    * Get quality metrics
    */
   async fetchQualityMetrics(options?: any): Promise<any> {
-    const now = Date.now();
-
-    // If memory cache is cold, try to load last saved metrics from disk.
-    if (!this.lastFetch) {
-      const fromDisk = await this.cache.load();
-      if (fromDisk) {
-        this.lastFetch = fromDisk;
-        this.lastFetchTime = now;
-      }
-    }
-
-    // Use cache if recent
-    if (this.lastFetch && now - this.lastFetchTime < this.cacheDuration) {
-      logger.info('Using cached quality metrics');
-      return this.lastFetch;
-    }
-
     logger.info('Fetching quality metrics from SonarQube...');
     const metrics = await this.sonarqubeClient.fetchComponentMeasures({
       metrics: options?.metrics,
     });
 
-    this.lastFetch = metrics;
-    this.lastFetchTime = now;
-    await this.cache.save(metrics);
+    await this.appendTimestampedEntry(this.cache, metrics);
 
     return metrics;
   }
@@ -69,18 +48,12 @@ export class SonarqubeFetchMetricsRepository implements IQualityMetricsRepositor
     try {
       logger.debug(`Fetching component tree: ${JSON.stringify(options)}`);
 
-      const cached = await this.cacheComponentTree.load();
-      if (cached) {
-        logger.info('Using cached component tree');
-        return cached;
-      }
-
       const componentTree = await this.sonarqubeClient.fetchComponentTree({
         component: options?.component,
         depth: options?.depth,
         metrics: options?.metrics,
       });
-      await this.cacheComponentTree.save(componentTree);
+      await this.appendTimestampedEntry(this.cacheComponentTree, componentTree);
 
       return componentTree;
     } catch (error) {
@@ -104,10 +77,11 @@ export class SonarqubeFetchMetricsRepository implements IQualityMetricsRepositor
     try {
       logger.debug(`Fetching historical measures: ${JSON.stringify(options)}`);
 
-      if (options?.incrementalUpdate) {
-        const cachedAll = await this.cacheHistorical.load();
-        const cached: any[] = Array.isArray(cachedAll) ? cachedAll : [];
+      const fromDisk = await this.cacheHistorical.load();
+      const cachedData = extractLatestData(fromDisk);
+      const cached: any[] = Array.isArray(cachedData) ? cachedData : [];
 
+      if (options?.incrementalUpdate) {
         if (cached.length > 0) {
           const latestDate = this.findLatestDateInMeasures(cached);
           logger.info(`Incremental update: fetching historical measures after ${latestDate}...`);
@@ -117,16 +91,13 @@ export class SonarqubeFetchMetricsRepository implements IQualityMetricsRepositor
             endDate: options?.endDate,
           });
           const merged = this.mergeHistoricalMeasures(cached, fresh);
-          await this.cacheHistorical.save(merged);
+          await this.appendTimestampedEntry(this.cacheHistorical, merged);
           return merged;
         }
       }
 
       // Manual date range with merge
       if ((options?.startDate || options?.endDate) && !options?.forceRefresh) {
-        const cachedAll = await this.cacheHistorical.load();
-        const cached: any[] = Array.isArray(cachedAll) ? cachedAll : [];
-
         if (cached.length > 0) {
           logger.info(
             `Fetching historical measures for range [${options?.startDate || 'any'}..${options?.endDate || 'any'}] and merging with cache...`
@@ -137,13 +108,13 @@ export class SonarqubeFetchMetricsRepository implements IQualityMetricsRepositor
             endDate: options?.endDate,
           });
           const merged = this.mergeHistoricalMeasures(cached, fresh);
-          await this.cacheHistorical.save(merged);
+          await this.appendTimestampedEntry(this.cacheHistorical, merged);
           return merged;
         }
       }
 
       const historical = await this.sonarqubeClient.fetchHistoricalMeasures(options);
-      await this.cacheHistorical.save(historical);
+      await this.appendTimestampedEntry(this.cacheHistorical, historical);
       return historical;
     } catch (error) {
       logger.error(
@@ -171,5 +142,25 @@ export class SonarqubeFetchMetricsRepository implements IQualityMetricsRepositor
     for (const m of existing) map.set(key(m), m);
     for (const m of incoming) map.set(key(m), m);
     return Array.from(map.values());
+  }
+
+  private async appendTimestampedEntry<T>(
+    repo: FileSystemRepository<TimestampedStore<T>>,
+    data: T,
+  ): Promise<void> {
+    const raw = await repo.load();
+    let store: TimestampedStore<T>;
+
+    if (raw && Array.isArray((raw as any).entries)) {
+      store = raw as TimestampedStore<T>;
+    } else if (raw) {
+      // Legacy format: migrate old data as first entry
+      store = { entries: [{ fetchedAt: new Date(0).toISOString(), data: raw as unknown as T }] };
+    } else {
+      store = { entries: [] };
+    }
+
+    store.entries.push({ fetchedAt: new Date().toISOString(), data });
+    await repo.save(store);
   }
 }
