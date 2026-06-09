@@ -84,6 +84,15 @@ jobs:
       - name: Set env variables
         run: cp apps/webapp/.env.local.example apps/webapp/.env
 
+      - name: Set project example
+        uses: actions/checkout@v6
+        with:
+          repository: marabesi/json-tool
+          path: tmp/react
+          token: ${{ secrets.GITHUB_TOKEN }}
+          fetch-depth: 500
+          persist-credentials: false
+
       - name: Check package distribution
         env:
           GITHUB_TOKEN: ${{ github.token }}
