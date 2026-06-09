@@ -53,7 +53,11 @@ if [ "$BUILD_FORCE" = "true" ]; then
 	# clone react, if not already present, to have a real-world codebase to test against
 	if [ ! -d "$REPO_ROOT/tmp/react" ]; then
 		mkdir -p "$REPO_ROOT/tmp"
-		git clone --shallow-since="2025-03-01" https://github.com/facebook/react "$REPO_ROOT/tmp/react"
+		if [ -n "${GITHUB_TOKEN:-}" ]; then
+			git -c "http.https://github.com/.extraheader=AUTHORIZATION: bearer ${GITHUB_TOKEN}" clone --shallow-since="2025-03-01" https://github.com/facebook/react "$REPO_ROOT/tmp/react"
+		else
+			git clone --shallow-since="2025-03-01" https://github.com/facebook/react "$REPO_ROOT/tmp/react"
+		fi
 	fi
 
 	# create smm config file for testing template string
@@ -136,4 +140,3 @@ fi
 
 echo "All checks passed. Stopping dashboard container..."
 docker stop "$DASHBOARD_CONTAINER_ID"
-
