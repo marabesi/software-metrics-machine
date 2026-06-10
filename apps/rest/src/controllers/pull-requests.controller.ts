@@ -1,13 +1,19 @@
 import { Controller, Get, Query } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
-import { PullRequestsRepository, PRsService, PRDetails } from '@smmachine/core';
+import {
+  PullRequestsRepository,
+  PRsService,
+  PRDetails,
+  PullRequestFiltersRepository,
+} from '@smmachine/core';
 
 @ApiTags('Pull Request Metrics')
 @Controller()
 export class PullRequestsController {
   constructor(
     private readonly pullRequestsRepo: PullRequestsRepository,
-    private readonly prsService: PRsService
+    private readonly prsService: PRsService,
+    private readonly pullRequestFiltersRepository: PullRequestFiltersRepository
   ) {}
 
   @Get('/pull-requests/summary')
@@ -252,36 +258,9 @@ export class PullRequestsController {
     return { result };
   }
 
-  @Get('/pull-requests/authors')
-  async authors() {
-    const prs = await this.pullRequestsRepo.loadPrsWithFilters();
-    return Array.from(
-      new Set(
-        prs.map((pr: PRDetails) => pr.author?.login || '').filter((name: string) => name.length > 0)
-      )
-    ).sort();
-  }
-
-  @Get('/pull-requests/labels')
-  async labels() {
-    const prs = await this.pullRequestsRepo.loadPrsWithFilters();
-    return Array.from(
-      new Set(
-        prs.flatMap((pr: PRDetails) =>
-          (pr.labels || []).map((label) => label.name || '').filter((name) => name.length > 0)
-        )
-      )
-    ).sort();
-  }
-
-  private parseCsvList(value?: string): string[] {
-    if (!value) {
-      return [];
-    }
-    return value
-      .split(',')
-      .map((item) => item.trim())
-      .filter((item) => item.length > 0);
+  @Get('/pull-requests/filter-options')
+  async filterOptions() {
+    return this.pullRequestFiltersRepository.loadOptions();
   }
 
   private toTimestamp(value?: string): number {

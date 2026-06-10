@@ -10,6 +10,7 @@ import { LoggingMiddleware } from './middleware/logging.middleware';
 import {
   MetricsOrchestrator,
   PullRequestsRepository,
+  PullRequestFiltersRepository,
   PipelinesRepository,
   PipelineFiltersRepository,
   CodeMetricsRepository,
@@ -136,6 +137,13 @@ function buildDataDirectories(config: Configuration) {
       provide: PullRequestsRepository,
       useFactory: (config: Configuration) => {
         return PullRequestFactory.create(config);
+      },
+      inject: [Configuration],
+    },
+    {
+      provide: PullRequestFiltersRepository,
+      useFactory: (config: Configuration) => {
+        return PullRequestFactory.createFilters(config);
       },
       inject: [Configuration],
     },

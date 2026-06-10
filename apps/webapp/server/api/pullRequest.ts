@@ -51,9 +51,9 @@ export const pullRequestAPI = {
     ),
 
   // Filter option endpoints
-  getAuthors: () =>
-    fetchAPI<string[]>('/pull-requests/authors'),
-
-  getLabels: () =>
-    fetchAPI<string[]>('/pull-requests/labels'),
+  getFilterOptions: () =>
+    fetchAPI<{
+      authors: string[];
+      labels: string[];
+    }>('/pull-requests/filter-options'),
 };

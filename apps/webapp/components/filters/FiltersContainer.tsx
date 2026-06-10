@@ -72,14 +72,16 @@ export default function FiltersContainer({ repository }: { repository: string })
         );
         setJobOptions(pipelineOptions.jobs.map((j) => j.name).filter(Boolean) as string[]);
 
-        const authors = await pullRequestAPI.getAuthors().catch(() => []);
-        setAuthorOptions(authors);
+        const pullRequestOptions = await pullRequestAPI.getFilterOptions().catch(() => ({
+          authors: [],
+          labels: [],
+        }));
+        setAuthorOptions(pullRequestOptions.authors);
 
         const sourceCodeAuthors = await sourceCodeAPI.getAuthors().catch(() => []);
         setAuthorSourceCodeOptions(sourceCodeAuthors);
 
-        const labels = await pullRequestAPI.getLabels().catch(() => []);
-        setLabelOptions(labels);
+        setLabelOptions(pullRequestOptions.labels);
       } catch (error) {
         console.warn('Some filter options could not be loaded:', error);
       }

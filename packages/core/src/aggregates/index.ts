@@ -1,4 +1,8 @@
 export { PullRequestsRepository, type IReadPullRequestsRepository } from './pull-requests-repository';
+export {
+  PullRequestFiltersRepository,
+  type PullRequestFilterOptions,
+} from './pull-request-filters-repository';
 export { PullRequestFactory } from './pull-request-factory';
 export { PipelinesRepository, type IPipelinesRepository } from './pipelines-repository';
 export {

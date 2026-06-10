@@ -33,8 +33,10 @@ describe('FiltersContainer', () => {
       events: ['push', 'pull_request', 'schedule'],
       jobs: [{ name: 'build', id: 'build' }],
     });
-    mockPullRequestAPI.getAuthors = jest.fn().mockResolvedValue(['alice']);
-    mockPullRequestAPI.getLabels = jest.fn().mockResolvedValue(['bug']);
+    mockPullRequestAPI.getFilterOptions = jest.fn().mockResolvedValue({
+      authors: ['alice'],
+      labels: ['bug'],
+    });
     mockSourceCodeAPI.getAuthors = jest.fn().mockResolvedValue(['alice']);
   });
 

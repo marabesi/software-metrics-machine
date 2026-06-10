@@ -3,6 +3,10 @@ import { FileSystemRepository } from '../../infrastructure/repository';
 import { type IGithubPrsClient } from '.';
 import { PullRequestCommentJsonResponse, PullRequestJsonResponse } from './github-response-types';
 import { Configuration } from 'src';
+import {
+  PullRequestFilterOptions,
+  PullRequestFiltersRepository,
+} from '../../aggregates/pull-request-filters-repository';
 
 export interface IPullRequestsRepository {
   fetchPRs(options?: {
@@ -21,6 +25,7 @@ export interface IPullRequestsRepository {
 export class GitHubPullRequestsFetchRepository implements IPullRequestsRepository {
   private pullRequestStoreFile: FileSystemRepository<PullRequestJsonResponse>;
   private pullRequestCommentsStoreFile: FileSystemRepository<PullRequestCommentJsonResponse>;
+  private pullRequestFiltersRepository: PullRequestFiltersRepository;
 
   constructor(
     private githubPrsClient: IGithubPrsClient,
@@ -32,6 +37,13 @@ export class GitHubPullRequestsFetchRepository implements IPullRequestsRepositor
     );
     this.pullRequestCommentsStoreFile = new FileSystemRepository<PullRequestCommentJsonResponse>(
       `${providerDir}/pr-comments.json`
+    );
+    const pullRequestFiltersStoreFile = new FileSystemRepository<PullRequestFilterOptions>(
+      `${providerDir}/pull-request-filter-options.json`
+    );
+    this.pullRequestFiltersRepository = new PullRequestFiltersRepository(
+      this.pullRequestStoreFile,
+      pullRequestFiltersStoreFile
     );
   }
 
@@ -55,6 +67,7 @@ export class GitHubPullRequestsFetchRepository implements IPullRequestsRepositor
       });
       const merged = this.mergePRs(fromCache, freshPRs);
       await this.pullRequestStoreFile.saveAll(merged);
+      await this.refreshFilterOptions();
       return merged;
     }
 
@@ -73,6 +86,7 @@ export class GitHubPullRequestsFetchRepository implements IPullRequestsRepositor
       });
       const merged = this.mergePRs(fromCache, freshPRs);
       await this.pullRequestStoreFile.saveAll(merged);
+      await this.refreshFilterOptions();
       return merged;
     }
 
@@ -89,8 +103,13 @@ export class GitHubPullRequestsFetchRepository implements IPullRequestsRepositor
 
     // Persist fetched data to disk so subsequent commands can reuse cached data.
     await this.pullRequestStoreFile.saveAll(freshPRs);
+    await this.refreshFilterOptions();
 
     return freshPRs;
+  }
+
+  private async refreshFilterOptions(): Promise<void> {
+    await this.pullRequestFiltersRepository.refreshOptions();
   }
 
   private findLatestDate(dates: (string | undefined | null)[]): string {
