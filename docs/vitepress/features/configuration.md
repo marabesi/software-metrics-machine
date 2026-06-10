@@ -20,8 +20,9 @@ export SMM_STORE_DATA_AT=/absolute/path/to/data-folder
   "github_token": "your_github_token",
   "github_repository": "owner/repo",
   "git_repository_location": "/absolute/path/to/local/repository",
-  "deployment_frequency_target_pipeline": ".github/workflows/ci.yml",
-  "deployment_frequency_target_job": "deploy",
+  "deployment_frequency_targets": [
+    { "pipeline": ".github/workflows/ci.yml", "job": "deploy" }
+  ],
   "main_branch": "main",
   "dashboard_start_date": "2025-01-01",
   "dashboard_end_date": "2025-12-31",
@@ -45,8 +46,7 @@ export SMM_STORE_DATA_AT=/absolute/path/to/data-folder
 | `github_token` | GitHub personal access token | Yes for GitHub PR/pipeline |
 | `github_repository` | Repository in `owner/repo` format | Yes |
 | `git_repository_location` | Local clone path for git/code metrics | Yes for source-code metrics |
-| `deployment_frequency_target_pipeline` | Workflow path used for deployment frequency semantics | No |
-| `deployment_frequency_target_job` | Job used for deployment frequency semantics | No |
+| `deployment_frequency_targets` | Deployment frequency workflow/job targets as `{ "pipeline": "...", "job": "..." }` objects | No |
 | `main_branch` | Main branch name | No |
 | `dashboard_start_date` | Default start date in dashboard | No |
 | `dashboard_end_date` | Default end date in dashboard | No |

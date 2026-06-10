@@ -381,6 +381,7 @@ export function createPipelinesCommands(program: Command): void {
       try {
         console.log('🚀 Calculating deployment frequency...');
 
+        const deploymentTargets = config.getDeploymentFrequencyTargets();
         const metrics = await pipelineService.getDeploymentFrequencyWithAllIntervals({
           startDate: options.startDate,
           endDate: options.endDate,
@@ -390,6 +391,13 @@ export function createPipelinesCommands(program: Command): void {
           console.log(JSON.stringify(metrics, null, 2));
         } else {
           console.log('\n=== Deployment Frequency (DORA) ===\n');
+          if (deploymentTargets.length > 0) {
+            console.log('Configured deployment targets:');
+            deploymentTargets.forEach((target, index) => {
+              console.log(`${index + 1}. ${target.pipeline} / ${target.job}`);
+            });
+            console.log('');
+          }
 
           metrics.forEach((item) => {
             console.log(

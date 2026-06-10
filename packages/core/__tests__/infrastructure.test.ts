@@ -77,5 +77,27 @@ describe('Infrastructure', () => {
       expect(validation.valid).toBe(true);
       expect(validation.errors).toHaveLength(0);
     });
+
+    it('should load deployment frequency targets from object array configuration', () => {
+      tempDir = mkdtempSync(join(tmpdir(), 'smm-config-'));
+      writeFileSync(
+        join(tempDir, 'smm_config.json'),
+        JSON.stringify({
+          git_repository_location: '/tmp/repo',
+          deployment_frequency_targets: [
+            { pipeline: '.github/workflows/release.yml', job: 'deploy-production' },
+            { pipeline: '.github/workflows/mobile.yml', job: 'deploy-mobile' },
+          ],
+        }),
+        'utf-8'
+      );
+
+      const config = new Configuration({ SMM_STORE_DATA_AT: tempDir });
+
+      expect(config.getDeploymentFrequencyTargets()).toEqual([
+        { pipeline: '.github/workflows/release.yml', job: 'deploy-production' },
+        { pipeline: '.github/workflows/mobile.yml', job: 'deploy-mobile' },
+      ]);
+    });
   });
 });

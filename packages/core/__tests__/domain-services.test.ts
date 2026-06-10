@@ -274,4 +274,67 @@ describe('PipelinesService', () => {
     expect(metrics).toBeDefined();
     expect(metrics.totalRuns).toBeGreaterThanOrEqual(0);
   });
+
+  it('should aggregate deployment frequency for configured workflow and job targets', async () => {
+    mockPipelineRepo.loadPipelines = vi.fn(async () => [
+      {
+        id: 'release-run',
+        number: 1,
+        name: 'Release',
+        status: 'completed',
+        conclusion: 'success',
+        createdAt: '2025-01-01T08:00:00Z',
+        updatedAt: '2025-01-01T08:15:00Z',
+        branch: 'main',
+        path: '.github/workflows/release.yml',
+        jobs: [
+          {
+            id: 'release-job',
+            runId: 'release-run',
+            name: 'deploy-production',
+            status: 'completed',
+            conclusion: 'success',
+            startedAt: '2025-01-01T08:05:00Z',
+            completedAt: '2025-01-01T08:15:00Z',
+          },
+        ],
+      },
+      {
+        id: 'mobile-run',
+        number: 2,
+        name: 'Mobile',
+        status: 'completed',
+        conclusion: 'success',
+        createdAt: '2025-01-01T09:00:00Z',
+        updatedAt: '2025-01-01T09:15:00Z',
+        branch: 'main',
+        path: '.github/workflows/mobile.yml',
+        jobs: [
+          {
+            id: 'mobile-job',
+            runId: 'mobile-run',
+            name: 'deploy-mobile',
+            status: 'completed',
+            conclusion: 'success',
+            startedAt: '2025-01-01T09:05:00Z',
+            completedAt: '2025-01-01T09:15:00Z',
+          },
+        ],
+      },
+    ]);
+
+    pipelinesService = new PipelinesService(mockPipelineRepo, {
+      getDeploymentFrequencyTargets: () => [
+        { pipeline: '.github/workflows/release.yml', job: 'deploy-production' },
+        { pipeline: '.github/workflows/mobile.yml', job: 'deploy-mobile' },
+      ],
+    } as any);
+
+    const frequency = await pipelinesService.getDeploymentFrequencyWithAllIntervals();
+
+    expect(frequency).toHaveLength(1);
+    expect(frequency[0].daily_counts).toBe(2);
+    expect(frequency[0].weekly_counts).toBe(2);
+    expect(frequency[0].monthly_counts).toBe(2);
+  });
 });

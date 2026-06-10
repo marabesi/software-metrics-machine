@@ -23,11 +23,9 @@ function createSonarqubeOrchestrator(options: SonarqubeOrchestratorOptions = {})
   const config = new Configuration(process.env);
   const token = options.useLocalAnalysisToken
     ? config.sonarLocalRunnerToken
-    : options.sonarToken ?? config.sonarToken;
+    : (options.sonarToken ?? config.sonarToken);
   if (options.useLocalAnalysisToken && !token) {
-    throw new Error(
-      'sonarLocalRunnerToken is required to fetch local SonarQube analysis metrics.'
-    );
+    throw new Error('sonarLocalRunnerToken is required to fetch local SonarQube analysis metrics.');
   }
 
   const sonarqubeClient = new SonarqubeMeasuresClient(

@@ -72,8 +72,9 @@ export function commands() {
  *     "github_token": "your_token",
  *     "github_repository": "owner/repo",
  *     "git_repository_location": "/path/to/repo",
- *     "deployment_frequency_target_pipeline": ".github/workflows/ci.yml",
- *     "deployment_frequency_target_job": "delivery",
+ *     "deployment_frequency_targets": [
+ *       { "pipeline": ".github/workflows/ci.yml", "job": "delivery" }
+ *     ],
  *     "main_branch": "main",
  *     "jira_url": "https://your-org.atlassian.net",
  *     "jira_token": "your_token",

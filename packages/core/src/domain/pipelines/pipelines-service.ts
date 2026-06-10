@@ -11,6 +11,10 @@ import { Configuration } from '../..';
 
 export interface IPipelinesService {
   getMetrics(filters?: PipelineFilters): Promise<PipelineMetrics>;
+  getDeploymentFrequency(interval: 'day' | 'week' | 'month', filters?: PipelineFilters): Promise<Array<{
+    period: string;
+    count: number;
+  }>>;
   getDeploymentFrequencyWithAllIntervals(filters?: PipelineFilters): Promise<Array<{
     days: string;
     weeks: string;
@@ -27,10 +31,15 @@ export interface IPipelinesService {
   getJobStepsAverageTimeByDay(filters?: PipelineFilters): Promise<Array<{ day: string; steps: Array<{ name: string; averageDurationMinutes: number }> }>>;
 }
 
+interface DeploymentFrequencyTarget {
+  pipeline: string;
+  job: string;
+}
+
 export class PipelinesService implements IPipelinesService {
   private logger: Logger = logger;
 
-  constructor(private pipelineRepository: IPipelinesRepository, private configuration: Configuration) {}
+  constructor(private pipelineRepository: IPipelinesRepository, private configuration?: Configuration) {}
 
   /**
    * Get overall pipeline metrics for the given filters.
@@ -67,6 +76,31 @@ export class PipelinesService implements IPipelinesService {
    * Get deployment frequency with all intervals (daily, weekly, monthly) grouped by day.
    * Returns data in the format expected by the frontend.
    */
+  async getDeploymentFrequency(
+    interval: 'day' | 'week' | 'month',
+    filters?: PipelineFilters
+  ): Promise<Array<{ period: string; count: number }>> {
+    const frequency = await this.getDeploymentFrequencyWithAllIntervals(filters);
+    const grouped = new Map<string, number>();
+
+    for (const item of frequency) {
+      let period = item.months;
+      let count = item.monthly_counts;
+
+      if (interval === 'day') {
+        period = item.days;
+        count = item.daily_counts;
+      } else if (interval === 'week') {
+        period = item.weeks;
+        count = item.weekly_counts;
+      }
+
+      grouped.set(period, Math.max(grouped.get(period) || 0, count));
+    }
+
+    return Array.from(grouped.entries()).map(([period, count]) => ({ period, count }));
+  }
+
   async getDeploymentFrequencyWithAllIntervals(filters?: PipelineFilters): Promise<Array<{
     days: string;
     weeks: string;
@@ -77,48 +111,51 @@ export class PipelinesService implements IPipelinesService {
     commits: string;
     links: string;
   }>> {
-    const targetPipeline = (this.configuration.deploymentFrequencyTargetPipeline || '').trim();
-    const targetJob = (this.configuration.deploymentFrequencyTargetJob || '').trim();
+    const targets = this.getDeploymentFrequencyTargets();
 
-    if (!targetPipeline || !targetJob) {
+    if (targets.length === 0) {
       this.logger.warn(
-        'Deployment frequency requested without deployment_frequency_target_pipeline or deployment_frequency_target_job configured'
+        'Deployment frequency requested without deployment_frequency_targets configured'
       );
       return [];
     }
 
-    const deployments = await this.filterRuns({
-      ...filters,
-      workflowPath: targetPipeline,
-      jobName: targetJob,
-      jobConclusion: 'success',
-      conclusion: 'success',
-      status: 'completed',
-    });
-
     const dailyCounts = new Map<string, number>();
     const weeklyCounts = new Map<string, number>();
     const monthlyCounts = new Map<string, number>();
+    let deploymentJobCount = 0;
 
-    const jobsOnly = deployments.map(run => run.jobs || []).flat();
+    for (const target of targets) {
+      const deployments = await this.filterRuns({
+        ...filters,
+        workflowPath: target.pipeline,
+        jobName: target.job,
+        jobConclusion: 'success',
+        conclusion: 'success',
+        status: 'completed',
+      });
 
-    this.logger.info(`Jobs only for deployment frequency calculation: ${jobsOnly.length}`);
+      const jobsOnly = deployments.map((run) => run.jobs || []).flat();
+      deploymentJobCount += jobsOnly.length;
 
-    for (const job of jobsOnly) {
-      const timestamp = job.completedAt || job.startedAt;
-      if (!timestamp) {
-        continue;
+      for (const job of jobsOnly) {
+        const timestamp = job.completedAt || job.startedAt;
+        if (!timestamp) {
+          continue;
+        }
+
+        const date = new Date(timestamp);
+        const day = this.getIntervalKey(date, 'day');
+        const week = this.getIntervalKey(date, 'week');
+        const month = this.getIntervalKey(date, 'month');
+
+        dailyCounts.set(day, (dailyCounts.get(day) || 0) + 1);
+        weeklyCounts.set(week, (weeklyCounts.get(week) || 0) + 1);
+        monthlyCounts.set(month, (monthlyCounts.get(month) || 0) + 1);
       }
-
-      const date = new Date(timestamp);
-      const day = this.getIntervalKey(date, 'day');
-      const week = this.getIntervalKey(date, 'week');
-      const month = this.getIntervalKey(date, 'month');
-
-      dailyCounts.set(day, (dailyCounts.get(day) || 0) + 1);
-      weeklyCounts.set(week, (weeklyCounts.get(week) || 0) + 1);
-      monthlyCounts.set(month, (monthlyCounts.get(month) || 0) + 1);
     }
+
+    this.logger.info(`Jobs only for deployment frequency calculation: ${deploymentJobCount}`);
 
     if (dailyCounts.size === 0) {
       return [];
@@ -373,6 +410,14 @@ export class PipelinesService implements IPipelinesService {
 
   private toDayKey(dateString: string): string {
     return dateString ? dateString.split('T')[0] : 'unknown';
+  }
+
+  private getDeploymentFrequencyTargets(): DeploymentFrequencyTarget[] {
+    if (!this.configuration) {
+      return [];
+    }
+
+    return this.configuration.getDeploymentFrequencyTargets();
   }
 
   /**

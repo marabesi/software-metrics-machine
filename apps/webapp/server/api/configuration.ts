@@ -5,8 +5,7 @@ export interface DashboardGlobalConfiguration {
   github_repository: string;
   git_repository_location: string;
   store_data: boolean;
-  deployment_frequency_target_pipeline: string | null;
-  deployment_frequency_target_job: string | null;
+  deployment_frequency_targets: Array<{ pipeline: string; job: string }>;
   main_branch: string;
   dashboard_start_date: string | null;
   dashboard_end_date: string | null;

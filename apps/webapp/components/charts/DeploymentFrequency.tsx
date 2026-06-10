@@ -8,20 +8,26 @@ import { useConfiguration } from '../providers/ConfigurationContext';
 import { useLinkBuilder } from '../providers/LinkBuilderContext';
 
 export function DeploymentFrequency({ deploymentFrequency, monthTransitionIndices }: { deploymentFrequency: DeploymentFrequencyPoint[]; monthTransitionIndices: Array<{date: string, week_label: string, month_label: string}> }) {
-  const workflowPath = useConfiguration().deployment_frequency_target_pipeline || '';
-  const jobName = useConfiguration().deployment_frequency_target_job || '';
+  const configuration = useConfiguration();
+  const configuredTargets = (configuration.deployment_frequency_targets || [])
+    .filter((target) => target.pipeline && target.job);
+  const singleTarget = configuredTargets.length === 1 ? configuredTargets[0] : null;
   const { urlBuilder } = useLinkBuilder();
 
   const handleClick = useCallback((date: string, granularity: 'day' | 'week' | 'month') => {
-    const workflowSegments = workflowPath.split('/').filter(Boolean);
-    const workflowFileName = workflowSegments.length > 0 ? workflowSegments[workflowSegments.length - 1] : workflowPath;
-    const url = urlBuilder.getActionPerformanceForJobUrl(jobName, workflowFileName, granularity, date);
+    if (!singleTarget) {
+      return;
+    }
+
+    const workflowSegments = singleTarget.pipeline.split('/').filter(Boolean);
+    const workflowFileName = workflowSegments.length > 0 ? workflowSegments[workflowSegments.length - 1] : singleTarget.pipeline;
+    const url = urlBuilder.getActionPerformanceForJobUrl(singleTarget.job, workflowFileName, granularity, date);
     window.open(url, '_blank');
-  }, [workflowPath, jobName]);
+  }, [singleTarget, urlBuilder]);
 
   const DayDot = useCallback((props: any) => {
     const { cx, cy, payload } = props;
-    if (!cx || !cy) return null;
+    if (!cx || !cy || !singleTarget) return null;
     return (
       <g onClick={() => handleClick(payload?.date, 'day')} style={{ pointerEvents: 'auto' }}>
         <rect
@@ -34,11 +40,11 @@ export function DeploymentFrequency({ deploymentFrequency, monthTransitionIndice
         />
       </g>
     );
-  }, [handleClick]);
+  }, [handleClick, singleTarget]);
 
   const WeekDot = useCallback((props: any) => {
     const { cx, cy, payload } = props;
-    if (!cx || !cy) return null;
+    if (!cx || !cy || !singleTarget) return null;
     return (
       <g onClick={() => handleClick(payload?.date, 'week')} style={{ pointerEvents: 'auto' }}>
         <rect
@@ -51,11 +57,11 @@ export function DeploymentFrequency({ deploymentFrequency, monthTransitionIndice
         />
       </g>
     );
-  }, [handleClick]);
+  }, [handleClick, singleTarget]);
 
   const MonthDot = useCallback((props: any) => {
     const { cx, cy, payload } = props;
-    if (!cx || !cy) return null;
+    if (!cx || !cy || !singleTarget) return null;
     return (
       <g onClick={() => handleClick(payload?.date, 'month')} style={{ pointerEvents: 'auto' }}>
         <rect
@@ -68,10 +74,19 @@ export function DeploymentFrequency({ deploymentFrequency, monthTransitionIndice
         />
       </g>
     );
-  }, [handleClick]);
+  }, [handleClick, singleTarget]);
 
   return (
     <div style={{ userSelect: 'none', WebkitUserSelect: 'none' }}>
+      {configuredTargets.length > 0 && (
+        <div className="mb-4 flex flex-wrap gap-2 text-sm text-muted-foreground">
+          {configuredTargets.map((target) => (
+            <span key={`${target.pipeline}:${target.job}`} className="rounded border px-2 py-1">
+              {target.pipeline} / {target.job}
+            </span>
+          ))}
+        </div>
+      )}
       <ResponsiveContainer width="100%" height={300}>
         <LineChart data={ensureArray(deploymentFrequency)}>
           <CartesianGrid strokeDasharray="3 3" />

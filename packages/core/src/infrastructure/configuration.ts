@@ -34,14 +34,9 @@ export interface IConfiguration {
   gitRepositoryLocation?: string;
 
   /**
-   * Target pipeline for deployment frequency
+   * Target workflows and jobs for deployment frequency
    */
-  deploymentFrequencyTargetPipeline?: string;
-
-  /**
-   * Target job for deployment frequency
-   */
-  deploymentFrequencyTargetJob?: string;
+  deploymentFrequencyTargets?: DeploymentFrequencyTarget[];
 
   /**
    * Main branch name
@@ -111,6 +106,11 @@ export interface IConfiguration {
   storeLogs?: boolean;
 }
 
+export interface DeploymentFrequencyTarget {
+  pipeline: string;
+  job: string;
+}
+
 /**
  * Configuration loader from environment variables
  */
@@ -121,8 +121,7 @@ export class Configuration implements IConfiguration {
   githubRepository?: string;
   storeData: string;
   gitRepositoryLocation: string;
-  deploymentFrequencyTargetPipeline?: string;
-  deploymentFrequencyTargetJob?: string;
+  deploymentFrequencyTargets?: DeploymentFrequencyTarget[];
   mainBranch?: string;
   dashboardStartDate?: string;
   dashboardEndDate?: string;
@@ -163,8 +162,7 @@ export class Configuration implements IConfiguration {
     this.githubRepository = configData.github_repository || envObj.GITHUB_REPO;
     this.storeData = envObj.SMM_STORE_DATA_AT; // Keep as the path to the config file
     this.gitRepositoryLocation = configData.git_repository_location || envObj.GIT_REPOSITORY_PATH;
-    this.deploymentFrequencyTargetPipeline = configData.deployment_frequency_target_pipeline;
-    this.deploymentFrequencyTargetJob = configData.deployment_frequency_target_job;
+    this.deploymentFrequencyTargets = this.normalizeDeploymentFrequencyTargets(configData);
     this.mainBranch = configData.main_branch;
     this.dashboardStartDate = configData.dashboard_start_date;
     this.dashboardEndDate = configData.dashboard_end_date;
@@ -226,6 +224,10 @@ export class Configuration implements IConfiguration {
     return path.join(this.getBaseDirectory(), 'smm.log');
   }
 
+  getDeploymentFrequencyTargets(): DeploymentFrequencyTarget[] {
+    return this.deploymentFrequencyTargets || [];
+  }
+
   getCodeMaatPath(): string {
     return path.join(this.getBaseDirectory(), 'codemaat');
   }
@@ -259,5 +261,43 @@ export class Configuration implements IConfiguration {
 
     fs.writeFileSync(configPath, JSON.stringify(configData, null, 2), 'utf-8');
     logger.debug(`Configuration saved to file: ${configPath}`);
+  }
+
+  private normalizeDeploymentFrequencyTargets(
+    configData: Record<string, any>
+  ): DeploymentFrequencyTarget[] | undefined {
+    const configuredTargets = configData.deployment_frequency_targets;
+
+    if (Array.isArray(configuredTargets)) {
+      const targets = configuredTargets
+        .map((target): DeploymentFrequencyTarget | null => {
+          if (!target || typeof target !== 'object') {
+            return null;
+          }
+
+          const pipeline = typeof target.pipeline === 'string' ? target.pipeline.trim() : '';
+          const job = typeof target.job === 'string' ? target.job.trim() : '';
+
+          return pipeline && job ? { pipeline, job } : null;
+        })
+        .filter((target): target is DeploymentFrequencyTarget => target !== null);
+
+      return targets.length > 0 ? targets : undefined;
+    }
+
+    const legacyPipeline =
+      typeof configData.deployment_frequency_target_pipeline === 'string'
+        ? configData.deployment_frequency_target_pipeline.trim()
+        : '';
+    const legacyJob =
+      typeof configData.deployment_frequency_target_job === 'string'
+        ? configData.deployment_frequency_target_job.trim()
+        : '';
+
+    if (legacyPipeline && legacyJob) {
+      return [{ pipeline: legacyPipeline, job: legacyJob }];
+    }
+
+    return undefined;
   }
 }
