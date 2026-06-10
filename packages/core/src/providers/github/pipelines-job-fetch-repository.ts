@@ -4,6 +4,7 @@ import * as path from 'path';
 import { Configuration, IRepository } from '../../infrastructure';
 import { WorkflowJobJsonResponse, WorkflowJsonResponse } from './github-response-types';
 import { IGithubWorkflowJobClient } from './github-workflow';
+import { PipelineFiltersRepository } from '../../aggregates/pipeline-filters-repository';
 
 interface JobsProgress {
   processedRunIds: string[];
@@ -18,7 +19,8 @@ export class PipelinesJobFetchRepository {
     private configuration: Configuration,
     private githubWorkflowClient: IGithubWorkflowJobClient,
     private pipelineRunFileSystemRepository: IRepository<WorkflowJsonResponse>,
-    private pipelineJobsFileSystemRepository: IRepository<WorkflowJobJsonResponse>
+    private pipelineJobsFileSystemRepository: IRepository<WorkflowJobJsonResponse>,
+    private pipelineFiltersRepository?: PipelineFiltersRepository
   ) {}
 
   async fetchJobs(filters: {
@@ -52,6 +54,7 @@ export class PipelinesJobFetchRepository {
 
       const merged = this.mergeJobsById(cachedJobs, freshJobs);
       await this.pipelineJobsFileSystemRepository.saveAll(merged);
+      await this.refreshDashboardFilterOptions();
       return merged;
     }
 
@@ -83,6 +86,7 @@ export class PipelinesJobFetchRepository {
 
       const merged = this.mergeJobsById(cachedJobs, freshJobs);
       await this.pipelineJobsFileSystemRepository.saveAll(merged);
+      await this.refreshDashboardFilterOptions();
       return merged;
     }
 
@@ -290,10 +294,15 @@ export class PipelinesJobFetchRepository {
     }
 
     await this.pipelineJobsFileSystemRepository.saveAll(Array.from(mergedJobsByKey.values()));
+    await this.refreshDashboardFilterOptions();
 
     await this.deleteFile(progressPath);
     await this.deleteFile(incompletedPath);
     return allJobs;
+  }
+
+  private async refreshDashboardFilterOptions(): Promise<void> {
+    await this.pipelineFiltersRepository?.refreshOptions();
   }
 
   private fileInCache(fileName: string): string {

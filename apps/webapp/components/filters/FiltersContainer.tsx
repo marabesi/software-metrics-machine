@@ -18,10 +18,6 @@ interface WorkflowOption {
   path?: string;
 }
 
-interface JobOption {
-  name?: string;
-}
-
 const TOP_ENTRIES_MAX = 400;
 const MIN_TOP_ENTRIES = 1;
 const STEP = 5;
@@ -44,20 +40,37 @@ export default function FiltersContainer({ repository }: { repository: string })
   useEffect(() => {
     const fetchFilterOptions = async () => {
       try {
-        const workflows = await pipelineAPI.getWorkflows().catch(() => []);
-        setWorkflowOptions([...workflows.map((w: WorkflowOption) => w.name || w.path).filter(Boolean) as string[]]);
+        const pipelineOptions = await pipelineAPI.getFilterOptions().catch(() => ({
+          workflows: [],
+          statuses: [],
+          conclusions: [],
+          branches: [],
+          events: [],
+          jobs: [],
+        }));
 
-        const statuses = await pipelineAPI.getStatuses().catch(() => []);
-        setStatusOptions(statuses.length > 0 ? statuses : ['completed', 'in_progress', 'queued']);
-
-        const conclusions = await pipelineAPI.getConclusions().catch(() => []);
-        setConclusionOptions(conclusions.length > 0 ? conclusions : ['success', 'failure', 'cancelled', 'timed_out']);
-
-        const branches = await pipelineAPI.getBranches().catch(() => []);
-        setBranchOptions(branches);
-
-        const events = await pipelineAPI.getEvents().catch(() => []);
-        setEventOptions(events.length > 0 ? events : ['push', 'pull_request', 'schedule', 'manual']);
+        setWorkflowOptions([
+          ...pipelineOptions.workflows
+            .map((w: WorkflowOption) => w.path || w.name)
+            .filter(Boolean) as string[],
+        ]);
+        setStatusOptions(
+          pipelineOptions.statuses.length > 0
+            ? pipelineOptions.statuses
+            : ['completed', 'in_progress', 'queued']
+        );
+        setConclusionOptions(
+          pipelineOptions.conclusions.length > 0
+            ? pipelineOptions.conclusions
+            : ['success', 'failure', 'cancelled', 'timed_out']
+        );
+        setBranchOptions(pipelineOptions.branches);
+        setEventOptions(
+          pipelineOptions.events.length > 0
+            ? pipelineOptions.events
+            : ['push', 'pull_request', 'schedule', 'manual']
+        );
+        setJobOptions(pipelineOptions.jobs.map((j) => j.name).filter(Boolean) as string[]);
 
         const authors = await pullRequestAPI.getAuthors().catch(() => []);
         setAuthorOptions(authors);
@@ -80,8 +93,8 @@ export default function FiltersContainer({ repository }: { repository: string })
     const fetchJobs = async () => {
       try {
         const params = filters.workflowSelector ? { workflow_path: filters.workflowSelector } : undefined;
-        const jobs = await pipelineAPI.getJobs(params).catch(() => []);
-        setJobOptions(jobs.map((j: JobOption) => j.name).filter(Boolean) as string[]);
+        const options = await pipelineAPI.getFilterOptions(params).catch(() => ({ jobs: [] }));
+        setJobOptions(options.jobs.map((j) => j.name).filter(Boolean) as string[]);
       } catch (error) {
         console.warn('Failed to load jobs:', error);
         setJobOptions([]);

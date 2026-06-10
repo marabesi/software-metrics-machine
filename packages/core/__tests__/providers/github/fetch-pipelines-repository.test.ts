@@ -12,11 +12,15 @@ describe('PipelinesRepository', () => {
 
   const pipelineRunRepository = new InMemoryRepository<WorkflowJsonResponse>();
 
-  const createRepository = async (githubWorkflowClient: IGithubWorkflowClient) => {
+  const createRepository = async (
+    githubWorkflowClient: IGithubWorkflowClient,
+    pipelineFiltersRepository?: { refreshOptions: ReturnType<typeof vi.fn> }
+  ) => {
     const repository = new PipelinesFetchRepository(
       configuration,
       githubWorkflowClient,
-      pipelineRunRepository
+      pipelineRunRepository,
+      pipelineFiltersRepository as never
     );
 
     return { repository };
@@ -61,6 +65,32 @@ describe('PipelinesRepository', () => {
       created: undefined,
       rawFilters: undefined,
     });
+  });
+
+  it('should refresh pipeline filter options after fetching workflow runs', async () => {
+    const fetchWorkflowRunsPage = vi.fn().mockResolvedValueOnce({
+      runs: [
+        new PipelineGitHubRunBuilder()
+          .id('run-1')
+          .name('CI')
+          .status('completed')
+          .path('.github/workflows/ci.yml')
+          .build(),
+      ],
+      hasNext: false,
+    });
+    const refreshOptions = vi.fn().mockResolvedValue({});
+    const githubWorkflowClient: IGithubWorkflowClient = {
+      fetchWorkflows: vi.fn(),
+      fetchWorkflowRunsPage,
+    };
+
+    const { repository } = await createRepository(githubWorkflowClient, { refreshOptions });
+    await storeFetchedWorkflows([]);
+
+    await repository.fetchPipelines({ forceRefresh: true });
+
+    expect(refreshOptions).toHaveBeenCalledTimes(1);
   });
 
   it('should return cached workflows when force refresh is disabled', async () => {

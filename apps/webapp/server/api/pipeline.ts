@@ -95,20 +95,15 @@ export const pipelineAPI = {
     ),
 
   // Filter option endpoints
-  getWorkflows: () =>
-    fetchAPI<Array<{ name: string; path: string }>>('/pipelines/workflows'),
-
-  getStatuses: () =>
-    fetchAPI<string[]>('/pipelines/statuses'),
-
-  getConclusions: () =>
-    fetchAPI<string[]>('/pipelines/conclusions'),
-
-  getBranches: () =>
-    fetchAPI<string[]>('/pipelines/branches'),
-
-  getEvents: () =>
-    fetchAPI<string[]>('/pipelines/events'),
+  getFilterOptions: (params?: ApiParams) =>
+    fetchAPI<{
+      workflows: Array<{ name: string; path: string }>;
+      statuses: string[];
+      conclusions: string[];
+      branches: string[];
+      events: string[];
+      jobs: Array<{ name: string; id?: string }>;
+    }>('/pipelines/filter-options', params),
 
   getJobs: (params?: ApiParams) =>
     fetchAPI<Array<{ name: string; id?: string }>>('/pipelines/jobs', params),

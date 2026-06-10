@@ -1,6 +1,10 @@
 export { PullRequestsRepository, type IReadPullRequestsRepository } from './pull-requests-repository';
 export { PullRequestFactory } from './pull-request-factory';
 export { PipelinesRepository, type IPipelinesRepository } from './pipelines-repository';
+export {
+  PipelineFiltersRepository,
+  type PipelineFilterOptions,
+} from './pipeline-filters-repository';
 export { GitHubPullRequestsFetchRepository } from '../providers/github/github-fetch-pull-requests-repository';
 export {
   CodeMaatMetricsRepository as CodeMetricsRepository,

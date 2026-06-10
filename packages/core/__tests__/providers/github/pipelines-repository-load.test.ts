@@ -1,4 +1,4 @@
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 import { PipelineGitHubJobBuilder, PipelineGitHubRunBuilder } from '../../../src';
 import { PipelinesRepository } from '../../../src';
 import { InMemoryRepository } from '../../../src/test/in-memory-repository';
@@ -82,5 +82,112 @@ describe('PipelinesRepository loadPipelines', () => {
     expect(loadedRuns[0].jobs).toHaveLength(2);
     expect(loadedRuns[0].jobs?.[0].runId).toBe('run-1');
     expect(loadedRuns[1].jobs).toBeUndefined();
+  });
+
+  it('should load pipeline runs without reading jobs when jobs are excluded', async () => {
+    const runs = [
+      new PipelineGitHubRunBuilder()
+        .id('run-1')
+        .number('1')
+        .name('CI')
+        .status('completed')
+        .createdAt('2026-05-10T00:00:00Z')
+        .updatedAt('2026-05-10T00:05:00Z')
+        .startedAt('2026-05-10T00:00:00Z')
+        .branch('main')
+        .path('.github/workflows/ci.yml')
+        .build(),
+    ];
+
+    await pipelineRunRepository.saveAll(runs);
+    const loadJobsSpy = vi.spyOn(pipelineJobsRepository, 'loadAll');
+
+    const repository = createRepository();
+
+    const loadedRuns = await repository.loadPipelines({ includeJobs: false });
+
+    expect(loadedRuns).toHaveLength(1);
+    expect(loadedRuns[0].jobs).toBeUndefined();
+    expect(loadJobsSpy).not.toHaveBeenCalled();
+    loadJobsSpy.mockRestore();
+  });
+
+  it('should use jobs for filtering without returning jobs when jobs are excluded', async () => {
+    const runs = [
+      new PipelineGitHubRunBuilder()
+        .id('run-1')
+        .number('1')
+        .name('CI')
+        .status('completed')
+        .createdAt('2026-05-10T00:00:00Z')
+        .updatedAt('2026-05-10T00:05:00Z')
+        .startedAt('2026-05-10T00:00:00Z')
+        .branch('main')
+        .path('.github/workflows/ci.yml')
+        .build(),
+      new PipelineGitHubRunBuilder()
+        .id('run-2')
+        .number('2')
+        .name('CD')
+        .status('completed')
+        .createdAt('2026-05-11T00:00:00Z')
+        .updatedAt('2026-05-11T00:05:00Z')
+        .startedAt('2026-05-11T00:00:00Z')
+        .branch('main')
+        .path('.github/workflows/cd.yml')
+        .build(),
+    ];
+    const jobs = [
+      new PipelineGitHubJobBuilder().id('job-1').runId('run-1').name('build').build(),
+      new PipelineGitHubJobBuilder().id('job-2').runId('run-2').name('deploy').build(),
+    ];
+
+    await pipelineRunRepository.saveAll(runs);
+    await pipelineJobsRepository.saveAll(jobs);
+
+    const repository = createRepository();
+
+    const loadedRuns = await repository.loadPipelines({
+      includeJobs: false,
+      jobNames: ['deploy'],
+    });
+
+    expect(loadedRuns).toHaveLength(1);
+    expect(loadedRuns[0].id).toBe('run-2');
+    expect(loadedRuns[0].jobs).toBeUndefined();
+  });
+
+  it('should filter returned jobs when jobs are included and job filters are provided', async () => {
+    const runs = [
+      new PipelineGitHubRunBuilder()
+        .id('run-1')
+        .number('1')
+        .name('CI')
+        .status('completed')
+        .createdAt('2026-05-10T00:00:00Z')
+        .updatedAt('2026-05-10T00:05:00Z')
+        .startedAt('2026-05-10T00:00:00Z')
+        .branch('main')
+        .path('.github/workflows/ci.yml')
+        .build(),
+    ];
+    const jobs = [
+      new PipelineGitHubJobBuilder().id('job-1').runId('run-1').name('build').build(),
+      new PipelineGitHubJobBuilder().id('job-2').runId('run-1').name('test').build(),
+    ];
+
+    await pipelineRunRepository.saveAll(runs);
+    await pipelineJobsRepository.saveAll(jobs);
+
+    const repository = createRepository();
+
+    const loadedRuns = await repository.loadPipelines({
+      includeJobs: true,
+      jobNames: ['test'],
+    });
+
+    expect(loadedRuns).toHaveLength(1);
+    expect(loadedRuns[0].jobs).toHaveLength(1);
+    expect(loadedRuns[0].jobs?.[0].name).toBe('test');
   });
 });

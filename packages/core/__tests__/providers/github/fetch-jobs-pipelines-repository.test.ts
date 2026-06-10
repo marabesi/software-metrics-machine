@@ -21,12 +21,16 @@ describe('Fetch jobs pipeline repository', () => {
     await pipelineJobsRepository.delete();
   });
 
-  const createRepository = async (githubWorkflowClient: IGithubWorkflowJobClient) => {
+  const createRepository = async (
+    githubWorkflowClient: IGithubWorkflowJobClient,
+    pipelineFiltersRepository?: { refreshOptions: ReturnType<typeof vi.fn> }
+  ) => {
     const repository = new PipelinesJobFetchRepository(
       configuration,
       githubWorkflowClient,
       pipelineRunRepository,
-      pipelineJobsRepository
+      pipelineJobsRepository,
+      pipelineFiltersRepository as never
     );
 
     return { repository };
@@ -124,6 +128,31 @@ describe('Fetch jobs pipeline repository', () => {
 
     expect(persistedJobs).toHaveLength(2);
     expect(persistedJobs[0]).toMatchObject(expectedJob);
+  });
+
+  it('should refresh pipeline filter options after fetching jobs', async () => {
+    await storeFetchedWorkflows([
+      new PipelineGitHubRunBuilder()
+        .id('run-1')
+        .name('CI')
+        .status('completed')
+        .path('.github/workflows/ci.yml')
+        .build(),
+    ]);
+    const fetchJobsPage = vi.fn().mockResolvedValueOnce({
+      jobs: [new PipelineGitHubJobBuilder().id('job-1').runId('run-1').name('build').build()],
+      hasNext: false,
+    });
+    const refreshOptions = vi.fn().mockResolvedValue({});
+    const githubWorkflowClient: IGithubWorkflowJobClient = {
+      fetchJobsPage,
+    };
+
+    const { repository } = await createRepository(githubWorkflowClient, { refreshOptions });
+
+    await repository.fetchJobs({ forceRefresh: true });
+
+    expect(refreshOptions).toHaveBeenCalledTimes(1);
   });
 
   it('should filter workflows by start date', async () => {

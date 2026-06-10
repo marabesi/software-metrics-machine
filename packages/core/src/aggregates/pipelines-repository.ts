@@ -7,8 +7,14 @@ import {
 } from '../providers/github/github-response-types';
 import { PipelineJob, PipelineRun, PipelineStep } from '../domain';
 
+export type LoadPipelinesOptions = {
+  includeJobs?: boolean;
+  jobNames?: string[];
+  jobConclusion?: string;
+};
+
 export interface IPipelinesRepository {
-  loadPipelines(): Promise<PipelineRun[]>;
+  loadPipelines(options?: LoadPipelinesOptions): Promise<PipelineRun[]>;
 }
 
 export class PipelinesRepository implements IPipelinesRepository {
@@ -17,11 +23,27 @@ export class PipelinesRepository implements IPipelinesRepository {
     private pipelineJobsFileSystemRepository: IRepository<WorkflowJobJsonResponse>
   ) {}
 
-  async loadPipelines(): Promise<PipelineRun[]> {
+  private async loadPipelineRuns(): Promise<PipelineRun[]> {
     const runs = await this.pipelineRunFileSystemRepository.loadAll();
     const pipelineRuns = runs.map(this.mapPipelinesToDomain);
 
     logger.info(`Loaded ${pipelineRuns.length} pipeline runs from file system repository`);
+
+    return pipelineRuns;
+  }
+
+  async loadPipelines(
+    options: LoadPipelinesOptions = { includeJobs: true }
+  ): Promise<PipelineRun[]> {
+    const pipelineRuns = await this.loadPipelineRuns();
+    const selectedJobNames = this.normalizeJobNames(options.jobNames);
+    const targetJobConclusion = options.jobConclusion?.trim().toLowerCase();
+    const needsJobs =
+      options.includeJobs !== false || selectedJobNames.length > 0 || Boolean(targetJobConclusion);
+
+    if (!needsJobs) {
+      return pipelineRuns;
+    }
 
     const jobs = await this.pipelineJobsFileSystemRepository.loadAll();
     if (jobs.length === 0 || pipelineRuns.length === 0) {
@@ -46,7 +68,24 @@ export class PipelinesRepository implements IPipelinesRepository {
       run.jobs.push(this.mapPipelineJobsToDomain(job));
     }
 
-    return pipelineRuns;
+    const jobFilteredRuns = this.filterRunsByJobs(
+      pipelineRuns,
+      selectedJobNames,
+      targetJobConclusion
+    );
+
+    if (options.includeJobs === false) {
+      return jobFilteredRuns.map(this.withoutJobs);
+    }
+
+    if (selectedJobNames.length === 0 && !targetJobConclusion) {
+      return jobFilteredRuns;
+    }
+
+    return jobFilteredRuns.map((run) => ({
+      ...run,
+      jobs: this.filterJobs(run.jobs || [], selectedJobNames, targetJobConclusion),
+    }));
   }
 
   async loadPipelineJobs(): Promise<PipelineJob[]> {
@@ -80,7 +119,7 @@ export class PipelinesRepository implements IPipelinesRepository {
       status: job.status,
       steps: job.steps ? job.steps.map(this.mapPipelineJobsStepToDomain) : [],
     };
-  }
+  };
 
   private mapPipelineJobsStepToDomain = (step: WorkflowJobStepJsonResponse): PipelineStep => {
     return {
@@ -91,6 +130,49 @@ export class PipelinesRepository implements IPipelinesRepository {
       startedAt: step.started_at,
       completedAt: step.completed_at,
     };
+  };
+
+  private normalizeJobNames(jobNames?: string[]): string[] {
+    return jobNames?.map((name) => name.trim().toLowerCase()).filter(Boolean) || [];
+  }
+
+  private filterRunsByJobs(
+    runs: PipelineRun[],
+    selectedJobNames: string[],
+    targetJobConclusion?: string
+  ): PipelineRun[] {
+    if (selectedJobNames.length === 0 && !targetJobConclusion) {
+      return runs;
+    }
+
+    return runs.filter(
+      (run) => this.filterJobs(run.jobs || [], selectedJobNames, targetJobConclusion).length > 0
+    );
+  }
+
+  private filterJobs(
+    jobs: PipelineJob[],
+    selectedJobNames: string[],
+    targetJobConclusion?: string
+  ): PipelineJob[] {
+    return jobs
+      .filter(
+        (job) =>
+          selectedJobNames.length === 0 || selectedJobNames.includes((job.name || '').toLowerCase())
+      )
+      .filter((job) => {
+        if (!targetJobConclusion) {
+          return true;
+        }
+
+        return (job.conclusion || '').toLowerCase() === targetJobConclusion;
+      });
+  }
+
+  private withoutJobs(run: PipelineRun): PipelineRun {
+    const runWithoutJobs = { ...run };
+    delete runWithoutJobs.jobs;
+    return runWithoutJobs;
   }
 
   private calculateDurationInSeconds(startedAt: string, completedAt: string): number {

@@ -4,6 +4,7 @@ import * as path from 'path';
 import { Configuration, IRepository } from '../../infrastructure';
 import { type IGithubWorkflowClient } from '../index';
 import { WorkflowJsonResponse } from './github-response-types';
+import { PipelineFiltersRepository } from '../../aggregates/pipeline-filters-repository';
 
 interface WorkflowsProgress {
   page: number;
@@ -13,7 +14,8 @@ export class PipelinesFetchRepository {
   constructor(
     private configuration: Configuration,
     private githubWorkflowClient: IGithubWorkflowClient,
-    private pipelineRunFileSystemRepository: IRepository<WorkflowJsonResponse>
+    private pipelineRunFileSystemRepository: IRepository<WorkflowJsonResponse>,
+    private pipelineFiltersRepository: PipelineFiltersRepository
   ) {}
 
   async fetchPipelines(options?: {
@@ -42,6 +44,7 @@ export class PipelinesFetchRepository {
 
       const merged = this.mergeById(fromCache, freshRuns);
       await this.pipelineRunFileSystemRepository.saveAll(merged);
+      await this.refreshDashboardFilterOptions();
       return merged;
     }
 
@@ -69,6 +72,7 @@ export class PipelinesFetchRepository {
       }
       const merged = this.mergeById(fromCache, workflows);
       await this.pipelineRunFileSystemRepository.saveAll(merged);
+      await this.refreshDashboardFilterOptions();
       return merged;
     }
 
@@ -77,7 +81,7 @@ export class PipelinesFetchRepository {
       return fromCache;
     }
 
-    console.log(`Fetching workflows from GitHub ${options?.startDate} - ${options?.endDate}...`);
+    logger.info(`Fetching workflows from GitHub ${options?.startDate} - ${options?.endDate}...`);
     let workflows: WorkflowJsonResponse[];
 
     if (options?.byDay && options?.startDate && options?.endDate) {
@@ -94,8 +98,13 @@ export class PipelinesFetchRepository {
     }
     // Persist fetched workflows/jobs so metrics commands can run from local data.
     await this.pipelineRunFileSystemRepository.saveAll(workflows);
+    await this.refreshDashboardFilterOptions();
 
     return workflows;
+  }
+
+  private async refreshDashboardFilterOptions(): Promise<void> {
+    await this.pipelineFiltersRepository.refreshOptions();
   }
 
   private async fetchWorkflowsByDay(

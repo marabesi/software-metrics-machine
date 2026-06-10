@@ -11,6 +11,7 @@ import {
   MetricsOrchestrator,
   PullRequestsRepository,
   PipelinesRepository,
+  PipelineFiltersRepository,
   CodeMetricsRepository,
   IssuesRepository,
   GithubPrsClient,
@@ -142,6 +143,13 @@ function buildDataDirectories(config: Configuration) {
       provide: PipelinesRepository,
       useFactory: (config: Configuration) => {
         return PipelineFactory.create(config).pipelineRepository;
+      },
+      inject: [Configuration],
+    },
+    {
+      provide: PipelineFiltersRepository,
+      useFactory: (config: Configuration) => {
+        return PipelineFactory.create(config).pipelineFiltersRepository;
       },
       inject: [Configuration],
     },

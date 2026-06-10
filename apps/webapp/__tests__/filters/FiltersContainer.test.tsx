@@ -8,10 +8,12 @@ import * as api from '@/server/api';
 jest.mock('@/server/api');
 
 const mockPipelineAPI = api.pipelineAPI as jest.Mocked<typeof api.pipelineAPI>;
+const mockPullRequestAPI = api.pullRequestAPI as jest.Mocked<typeof api.pullRequestAPI>;
+const mockSourceCodeAPI = api.sourceCodeAPI as jest.Mocked<typeof api.sourceCodeAPI>;
 
 const FiltersContainerWithProvider = () => (
   <FiltersProvider>
-    <FiltersContainer />
+    <FiltersContainer repository="test/repository" />
   </FiltersProvider>
 );
 
@@ -20,14 +22,20 @@ describe('FiltersContainer', () => {
     jest.clearAllMocks();
     
     // Mock API responses
-    mockPipelineAPI.getWorkflows = jest.fn().mockResolvedValue([
-      { name: 'workflow-1', path: 'path/1' },
-      { name: 'workflow-2', path: 'path/2' },
-    ]);
-    mockPipelineAPI.getStatuses = jest.fn().mockResolvedValue(['completed', 'in_progress', 'queued']);
-    mockPipelineAPI.getConclusions = jest.fn().mockResolvedValue(['success', 'failure', 'cancelled', 'timed_out']);
-    mockPipelineAPI.getBranches = jest.fn().mockResolvedValue(['main', 'develop', 'staging']);
-    mockPipelineAPI.getEvents = jest.fn().mockResolvedValue(['push', 'pull_request', 'schedule']);
+    mockPipelineAPI.getFilterOptions = jest.fn().mockResolvedValue({
+      workflows: [
+        { name: 'workflow-1', path: 'path/1' },
+        { name: 'workflow-2', path: 'path/2' },
+      ],
+      statuses: ['completed', 'in_progress', 'queued'],
+      conclusions: ['success', 'failure', 'cancelled', 'timed_out'],
+      branches: ['main', 'develop', 'staging'],
+      events: ['push', 'pull_request', 'schedule'],
+      jobs: [{ name: 'build', id: 'build' }],
+    });
+    mockPullRequestAPI.getAuthors = jest.fn().mockResolvedValue(['alice']);
+    mockPullRequestAPI.getLabels = jest.fn().mockResolvedValue(['bug']);
+    mockSourceCodeAPI.getAuthors = jest.fn().mockResolvedValue(['alice']);
   });
 
   it('renders filters section', () => {

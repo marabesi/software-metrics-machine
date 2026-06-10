@@ -1,6 +1,11 @@
 import { Controller, Get, Logger, Query } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
-import { PipelinesRepository, Configuration, PipelinesService } from '@smmachine/core';
+import {
+  PipelinesRepository,
+  Configuration,
+  PipelinesService,
+  PipelineFiltersRepository,
+} from '@smmachine/core';
 
 type PipelineDurationsMetrics = {
   durations: number[];
@@ -29,6 +34,7 @@ interface RunLike {
   event?: string;
   jobs?: Array<{
     name?: string;
+    workflow_name?: string;
     status?: string;
     conclusion?: string;
     startedAt?: string;
@@ -48,7 +54,8 @@ export class PipelinesController {
   constructor(
     private readonly pipelinesRepo: PipelinesRepository,
     private readonly config: Configuration,
-    private readonly pipelinesService: PipelinesService
+    private readonly pipelinesService: PipelinesService,
+    private readonly pipelineFiltersRepository: PipelineFiltersRepository
   ) {}
 
   @Get('/pipelines/summary')
@@ -297,7 +304,7 @@ export class PipelinesController {
 
         const existing: PipelineDurationsMetrics = grouped.get(name) || {
           durations: [],
-          workflowName: (job as any).workflow_name,
+          workflowName: job.workflow_name,
         };
         existing.durations.push(duration);
         grouped.set(name, existing);
@@ -370,59 +377,43 @@ export class PipelinesController {
 
   @Get('/pipelines/workflows')
   async workflows() {
-    return this.pipelinesService.loadUniqueWorkflows();
+    return (await this.pipelineFiltersRepository.loadOptions()).workflows;
   }
 
   @Get('/pipelines/statuses')
-  async statuses(@Query() query: PipelineFiltersQuery) {
-    const runs = await this.loadRunsWithFilters({ ...query, includeJobs: false });
-    return Array.from(
-      new Set(runs.map((run) => run.status || '').filter((value) => value.length > 0))
-    ).sort();
+  async statuses() {
+    return (await this.pipelineFiltersRepository.loadOptions()).statuses;
   }
 
   @Get('/pipelines/conclusions')
-  async conclusions(@Query() query: PipelineFiltersQuery) {
-    const runs = await this.loadRunsWithFilters({ ...query, includeJobs: false });
-    return Array.from(
-      new Set(runs.map((run) => run.conclusion || '').filter((value) => value.length > 0))
-    ).sort();
+  async conclusions() {
+    return (await this.pipelineFiltersRepository.loadOptions()).conclusions;
   }
 
   @Get('/pipelines/branches')
-  async branches(@Query() query: PipelineFiltersQuery) {
-    const runs = await this.loadRunsWithFilters({ ...query, includeJobs: false });
-    return Array.from(
-      new Set(runs.map((run) => run.branch || '').filter((value) => value.length > 0))
-    ).sort();
+  async branches() {
+    return (await this.pipelineFiltersRepository.loadOptions()).branches;
   }
 
   @Get('/pipelines/events')
   async events() {
-    const runs = await this.pipelinesRepo.loadPipelines();
-    return Array.from(
-      new Set(
-        runs.map((run: RunLike) => run.event || '').filter((value: string) => value.length > 0)
-      )
-    ).sort();
+    return (await this.pipelineFiltersRepository.loadOptions()).events;
   }
 
   @Get('/pipelines/jobs')
   async jobs(@Query() query: PipelineFiltersQuery) {
-    const runs = await this.loadRunsWithFilters({ ...query, includeJobs: true });
-    const names = new Set<string>();
+    return (
+      await this.pipelineFiltersRepository.loadOptions({
+        workflowPath: query.workflow_path,
+      })
+    ).jobs;
+  }
 
-    for (const run of runs) {
-      for (const job of run.jobs || []) {
-        if (job.name && job.name.length > 0) {
-          names.add(job.name);
-        }
-      }
-    }
-
-    return Array.from(names)
-      .sort()
-      .map((name) => ({ name, id: name }));
+  @Get('/pipelines/filter-options')
+  async filterOptions(@Query() query: PipelineFiltersQuery) {
+    return this.pipelineFiltersRepository.loadOptions({
+      workflowPath: query.workflow_path,
+    });
   }
 
   // ========== PRIVATE HELPERS ==========
@@ -506,13 +497,17 @@ export class PipelinesController {
     includeJobs: boolean;
   }): Promise<RunLike[]> {
     this.logger.debug('Loading runs with filters:', filters);
-    const runs = await this.pipelinesRepo.loadPipelines();
     const selectedJobNames = filters.job_name
       ? filters.job_name
           .split(',')
           .map((n) => n.trim().toLowerCase())
           .filter(Boolean)
       : [];
+    const runs: RunLike[] = await this.pipelinesRepo.loadPipelines({
+      includeJobs: filters.includeJobs,
+      jobNames: selectedJobNames,
+      jobConclusion: filters.job_conclusion,
+    });
 
     const filteredRuns = runs.filter((run: RunLike) => {
       if (
@@ -545,31 +540,9 @@ export class PipelinesController {
       if (filters.event && run.event !== filters.event) {
         return false;
       }
-      if (filters.job_name) {
-        const hasJob = (run.jobs || []).some((job) =>
-          selectedJobNames.includes((job.name || '').toLowerCase())
-        );
-        if (!hasJob) {
-          return false;
-        }
-      }
       return true;
     });
 
-    if (!filters.includeJobs || selectedJobNames.length === 0) {
-      return filteredRuns;
-    }
-
-    return filteredRuns.map((run) => ({
-      ...run,
-      jobs: (run.jobs || [])
-        .filter((job) => selectedJobNames.includes((job.name || '').toLowerCase()))
-        .filter((job) => {
-          if (filters.job_conclusion) {
-            return (job.conclusion || '').toLowerCase() === filters.job_conclusion.toLowerCase();
-          }
-          return true;
-        }),
-    }));
+    return filteredRuns;
   }
 }
