@@ -17,6 +17,11 @@ export type SonarqubeContainerUrls = {
   hostUrl: string;
 };
 
+export type SonarqubeLocalAnalysisResult = {
+  containerUrls: SonarqubeContainerUrls;
+  projectKey: string;
+};
+
 export type LocalSonarqubeTokenData = {
   generatedAt?: string;
   token?: string;
@@ -96,7 +101,7 @@ export class SonarqubeLocalAnalysis {
     this.localDataFilePath = resolve(config.getSonarqubePath(), LOCAL_SONARQUBE_TOKEN_FILE);
   }
 
-  async run(options: SonarqubeLocalAnalysisOptions): Promise<void> {
+  async run(options: SonarqubeLocalAnalysisOptions): Promise<SonarqubeLocalAnalysisResult> {
     this.logger.info('🧹 Cleaning up existing SonarQube container and data to ensure clean state.');
     await runCommand('docker', ['stop', options.containerName]);
     await runCommand('docker', ['rm', options.containerName]);
@@ -167,6 +172,11 @@ export class SonarqubeLocalAnalysis {
 
     const sonarToken =
       options.scannerToken || (await this.getToken(hostUrl, options.adminUser, effectivePassword));
+    if (options.scannerToken && options.scannerToken !== this.config.sonarLocalRunnerToken) {
+      this.config.sonarLocalRunnerToken = options.scannerToken;
+      this.config.save();
+    }
+    const projectKey = this.getProjectKey(options.scannerOptions);
 
     const scannerArgs = [
       'run',
@@ -183,7 +193,7 @@ export class SonarqubeLocalAnalysis {
     if (options.scannerOptions.length > 0) {
       scannerArgs.push('-e', `SONAR_SCANNER_OPTS=${options.scannerOptions}`);
     } else {
-      scannerArgs.push('-e', `SONAR_SCANNER_OPTS=-Dsonar.projectKey=${this.config.githubRepository?.replace('/', '_').replace('.', '_')}`);
+      scannerArgs.push('-e', `SONAR_SCANNER_OPTS=-Dsonar.projectKey=${projectKey}`);
     }
 
     scannerArgs.push('-v', `${options.sourceDirectory}:/usr/src`, options.scannerImage);
@@ -195,6 +205,25 @@ export class SonarqubeLocalAnalysis {
     }
 
     this.logger.info('✅ SonarQube analysis has been completed');
+    return { containerUrls, projectKey };
+  }
+
+  private getProjectKey(scannerOptions: string): string {
+    const projectKeyMatch = scannerOptions.match(
+      /(?:^|\s)-Dsonar\.projectKey=(?:"([^"]+)"|'([^']+)'|(\S+))/
+    );
+    const configuredProjectKey =
+      projectKeyMatch?.[1] ?? projectKeyMatch?.[2] ?? projectKeyMatch?.[3];
+
+    if (configuredProjectKey) {
+      return configuredProjectKey;
+    }
+
+    return (
+      this.config.sonarProject ||
+      this.config.githubRepository?.replace('/', '_').replace('.', '_') ||
+      ''
+    );
   }
 
   private async assertDockerAvailable(): Promise<void> {

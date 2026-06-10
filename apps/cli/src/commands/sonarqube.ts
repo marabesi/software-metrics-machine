@@ -5,19 +5,55 @@ import { Configuration } from '@smmachine/core/infrastructure/configuration';
 import { Logger } from '@smmachine/utils';
 import { SonarqubeMeasuresClient } from '@smmachine/core/providers/sonarqube/sonarqube-client';
 import { SonarqubeFetchMetricsRepository } from '@smmachine/core/providers/sonarqube/sonarqube-fetch-metrics-repository';
-import { SonarqubeLocalAnalysis } from '@smmachine/core/providers/sonarqube/sonarqube-local-analysis';
+import {
+  SonarqubeLocalAnalysis,
+  type SonarqubeLocalAnalysisResult,
+} from '@smmachine/core/providers/sonarqube/sonarqube-local-analysis';
 
 const logger = new Logger('SonarQubeCommand');
 
-function createSonarqubeOrchestrator() {
+type SonarqubeOrchestratorOptions = {
+  sonarUrl?: string;
+  sonarToken?: string;
+  sonarProject?: string;
+  useLocalAnalysisToken?: boolean;
+};
+
+function createSonarqubeOrchestrator(options: SonarqubeOrchestratorOptions = {}) {
   const config = new Configuration(process.env);
+  const token = options.useLocalAnalysisToken
+    ? config.sonarLocalRunnerToken
+    : options.sonarToken ?? config.sonarToken;
+  if (options.useLocalAnalysisToken && !token) {
+    throw new Error(
+      'sonarLocalRunnerToken is required to fetch local SonarQube analysis metrics.'
+    );
+  }
+
   const sonarqubeClient = new SonarqubeMeasuresClient(
-    config.sonarUrl || '',
-    config.sonarToken || '',
-    config.sonarProject || ''
+    options.sonarUrl ?? config.sonarUrl ?? '',
+    token || '',
+    options.sonarProject ?? config.sonarProject ?? ''
   );
 
   return new SonarqubeFetchMetricsRepository(sonarqubeClient, config);
+}
+
+async function fetchLocalAnalysisMetrics(result: SonarqubeLocalAnalysisResult): Promise<void> {
+  const orchestrator = createSonarqubeOrchestrator({
+    sonarUrl: result.containerUrls.hostUrl,
+    sonarProject: result.projectKey,
+    useLocalAnalysisToken: true,
+  });
+
+  logger.info('🔄 Fetching SonarQube metrics from local analysis...');
+  await orchestrator.fetchQualityMetrics();
+  await orchestrator.fetchComponentTree({
+    component: result.projectKey,
+    depth: -1,
+  });
+  await orchestrator.fetchHistoricalMeasures();
+  logger.info('✅ Local SonarQube metrics have been fetched');
 }
 
 /**
@@ -67,7 +103,7 @@ export function createSonarQubeCommands(program: Command): void {
       try {
         const config = new Configuration(process.env);
         const analysis = new SonarqubeLocalAnalysis(config);
-        await analysis.run({
+        const result = await analysis.run({
           containerName: String(options.containerServerName),
           scannerContainerName: String(options.scannerContainerName),
           containerImage: String(options.containerServerImage),
@@ -83,6 +119,7 @@ export function createSonarQubeCommands(program: Command): void {
             : undefined,
           scannerToken: options.scannerToken,
         });
+        await fetchLocalAnalysisMetrics(result);
       } catch (error) {
         logger.error('Failed to run SonarQube analysis', error);
         process.exit(1);

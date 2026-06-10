@@ -14,6 +14,7 @@ export {
 export {
   SonarqubeLocalAnalysis,
   type SonarqubeLocalAnalysisOptions,
+  type SonarqubeLocalAnalysisResult,
   type SonarqubeContainerUrls,
   type LocalSonarqubeTokenData,
 } from './sonarqube-local-analysis';
