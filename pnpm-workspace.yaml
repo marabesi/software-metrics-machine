@@ -24,7 +24,7 @@ catalog:
   '@testing-library/react': ^16.3.1
   '@types/express': ^4.17.17
   '@types/jest': ^30.0.0
-  '@types/node': ^25.9.2
+  '@types/node': ^25.9.3
   '@types/react': ^19
   '@types/react-dom': ^19
   '@types/supertest': ^2.0.12
@@ -61,7 +61,7 @@ catalog:
   tsconfig-paths: ^4.2.0
   tsup: ^8.5.1
   tsx: ^4.22.4
-  turbo: ^2.9.17
+  turbo: ^2.9.18
   typescript: ^6.0.3
   vitepress: ^1.6.4
   vitepress-plugin-mermaid: ^2.0.17
