@@ -26,6 +26,8 @@ export interface PullRequestSummary {
   last_pr?: { createdAt?: string; created_at?: string } | string | null;
 }
 export interface DeploymentFrequencyResponseItem {
+  pipeline?: string;
+  job?: string;
   days?: string;
   weeks?: string;
   months?: string;
@@ -34,6 +36,9 @@ export interface DeploymentFrequencyResponseItem {
   monthly_counts?: number;
 }
 export interface DeploymentFrequencyPoint {
+  pipeline: string;
+  job: string;
+  target_label: string;
   date: string;
   week_label: string;
   month_label: string;

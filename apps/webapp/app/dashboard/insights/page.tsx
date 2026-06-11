@@ -98,7 +98,12 @@ export default async function InsightsSection({
         const dateStr = d.days || 'Unknown';
         // Extract month from date (YYYY-MM-DD -> YYYY-MM)
         const month = dateStr !== 'Unknown' ? dateStr.substring(0, 7) : 'Unknown';
+        const pipeline = d.pipeline || 'Deployment pipeline';
+        const job = d.job || 'Deployment job';
         return {
+          pipeline,
+          job,
+          target_label: `${pipeline} / ${job}`,
           date: dateStr,
           week_label: d.weeks || 'Unknown',
           month_label: d.months || month,
@@ -108,18 +113,6 @@ export default async function InsightsSection({
           month_count: d.monthly_counts || 0,
         };
       })
-      // Deduplicate by date (in case multiple records for same day) and sum counts
-      .reduce((acc: DeploymentFrequencyPoint[], item: DeploymentFrequencyPoint) => {
-        const existing = acc.find(a => a.date === item.date);
-        if (existing) {
-          existing.day_count = Math.max(existing.day_count, item.day_count);
-          existing.week_count = Math.max(existing.week_count, item.week_count);
-          existing.month_count = Math.max(existing.month_count, item.month_count);
-        } else {
-          acc.push(item);
-        }
-        return acc;
-      }, [])
       .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime())
       : [];
 
@@ -134,15 +127,6 @@ export default async function InsightsSection({
     prSummary = null;
     deploymentFrequency = [];
   }
-
-  // Get month transition indices for reference lines
-  const monthTransitionIndices = deploymentFrequency
-    .filter((d, idx) => idx === 0 || d.month !== deploymentFrequency[idx - 1]?.month)
-    .map(d => ({
-      date: d.date,
-      week_label: d.week_label,
-      month_label: d.month_label
-    }));
 
   const pipelineFirstDataPoint = extractDate(pipelineSummary?.first_run);
   const pipelineLastDataPoint = extractDate(pipelineSummary?.last_run);
@@ -243,7 +227,7 @@ export default async function InsightsSection({
       <Card>
         <CardHeader title="Deployment Frequency" />
         <CardContent>
-          <DeploymentFrequency deploymentFrequency={deploymentFrequency} monthTransitionIndices={monthTransitionIndices} />
+          <DeploymentFrequency deploymentFrequency={deploymentFrequency} />
         </CardContent>
       </Card>
     </div>

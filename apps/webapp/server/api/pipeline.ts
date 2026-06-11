@@ -59,7 +59,7 @@ export const pipelineAPI = {
     ),
   
   deploymentFrequency: (params?: ApiParams) =>
-    fetchAPI<Array<{ days: string; weeks: string; months: string; daily_counts: number; weekly_counts: number; monthly_counts: number; commits: string; links: string }>>(
+    fetchAPI<Array<{ pipeline: string; job: string; days: string; weeks: string; months: string; daily_counts: number; weekly_counts: number; monthly_counts: number; commits: string; links: string }>>(
       '/pipelines/deployment-frequency',
       params
     ),

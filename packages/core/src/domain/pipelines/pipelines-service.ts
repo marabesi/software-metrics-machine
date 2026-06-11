@@ -15,16 +15,7 @@ export interface IPipelinesService {
     period: string;
     count: number;
   }>>;
-  getDeploymentFrequencyWithAllIntervals(filters?: PipelineFilters): Promise<Array<{
-    days: string;
-    weeks: string;
-    months: string;
-    daily_counts: number;
-    weekly_counts: number;
-    monthly_counts: number;
-    commits: string;
-    links: string;
-  }>>;
+  getDeploymentFrequencyWithAllIntervals(filters?: PipelineFilters): Promise<DeploymentFrequencyRow[]>;
   getJobMetrics(filters?: PipelineFilters): Promise<JobMetrics[]>;
   getJobRerunsByDay(filters?: PipelineFilters): Promise<Array<{ day: string; rerun_count: number }>>;
   getJobStepsAverageTime(filters?: PipelineFilters): Promise<Array<{ name: string; averageDurationMinutes: number; count: number }>>;
@@ -34,6 +25,19 @@ export interface IPipelinesService {
 interface DeploymentFrequencyTarget {
   pipeline: string;
   job: string;
+}
+
+export interface DeploymentFrequencyRow {
+  pipeline: string;
+  job: string;
+  days: string;
+  weeks: string;
+  months: string;
+  daily_counts: number;
+  weekly_counts: number;
+  monthly_counts: number;
+  commits: string;
+  links: string;
 }
 
 export class PipelinesService implements IPipelinesService {
@@ -81,7 +85,7 @@ export class PipelinesService implements IPipelinesService {
     filters?: PipelineFilters
   ): Promise<Array<{ period: string; count: number }>> {
     const frequency = await this.getDeploymentFrequencyWithAllIntervals(filters);
-    const grouped = new Map<string, number>();
+    const groupedByTarget = new Map<string, number>();
 
     for (const item of frequency) {
       let period = item.months;
@@ -95,22 +99,20 @@ export class PipelinesService implements IPipelinesService {
         count = item.weekly_counts;
       }
 
-      grouped.set(period, Math.max(grouped.get(period) || 0, count));
+      const targetKey = `${item.pipeline}||${item.job}||${period}`;
+      groupedByTarget.set(targetKey, Math.max(groupedByTarget.get(targetKey) || 0, count));
+    }
+
+    const grouped = new Map<string, number>();
+    for (const [key, count] of groupedByTarget.entries()) {
+      const period = key.split('||')[2];
+      grouped.set(period, (grouped.get(period) || 0) + count);
     }
 
     return Array.from(grouped.entries()).map(([period, count]) => ({ period, count }));
   }
 
-  async getDeploymentFrequencyWithAllIntervals(filters?: PipelineFilters): Promise<Array<{
-    days: string;
-    weeks: string;
-    months: string;
-    daily_counts: number;
-    weekly_counts: number;
-    monthly_counts: number;
-    commits: string;
-    links: string;
-  }>> {
+  async getDeploymentFrequencyWithAllIntervals(filters?: PipelineFilters): Promise<DeploymentFrequencyRow[]> {
     const targets = this.getDeploymentFrequencyTargets();
 
     if (targets.length === 0) {
@@ -120,12 +122,27 @@ export class PipelinesService implements IPipelinesService {
       return [];
     }
 
-    const dailyCounts = new Map<string, number>();
-    const weeklyCounts = new Map<string, number>();
-    const monthlyCounts = new Map<string, number>();
+    const targetCounts = new Map<
+      string,
+      {
+        target: DeploymentFrequencyTarget;
+        dailyCounts: Map<string, number>;
+        weeklyCounts: Map<string, number>;
+        monthlyCounts: Map<string, number>;
+      }
+    >();
+    const allDays = new Set<string>();
     let deploymentJobCount = 0;
 
     for (const target of targets) {
+      const targetKey = `${target.pipeline}||${target.job}`;
+      const counts = {
+        target,
+        dailyCounts: new Map<string, number>(),
+        weeklyCounts: new Map<string, number>(),
+        monthlyCounts: new Map<string, number>(),
+      };
+
       const deployments = await this.filterRuns({
         ...filters,
         workflowPath: target.pipeline,
@@ -149,49 +166,58 @@ export class PipelinesService implements IPipelinesService {
         const week = this.getIntervalKey(date, 'week');
         const month = this.getIntervalKey(date, 'month');
 
-        dailyCounts.set(day, (dailyCounts.get(day) || 0) + 1);
-        weeklyCounts.set(week, (weeklyCounts.get(week) || 0) + 1);
-        monthlyCounts.set(month, (monthlyCounts.get(month) || 0) + 1);
+        counts.dailyCounts.set(day, (counts.dailyCounts.get(day) || 0) + 1);
+        counts.weeklyCounts.set(week, (counts.weeklyCounts.get(week) || 0) + 1);
+        counts.monthlyCounts.set(month, (counts.monthlyCounts.get(month) || 0) + 1);
+        allDays.add(day);
       }
+
+      targetCounts.set(targetKey, counts);
     }
 
     this.logger.info(`Jobs only for deployment frequency calculation: ${deploymentJobCount}`);
 
-    if (dailyCounts.size === 0) {
+    if (allDays.size === 0) {
       return [];
     }
 
     // Determine the start and end dates from the deployments
-    const sortedDays = Array.from(dailyCounts.keys()).sort();
+    const sortedDays = Array.from(allDays.keys()).sort();
     const firstDayStr = sortedDays[0];
     const lastDayStr = sortedDays[sortedDays.length - 1];
 
-    const result = [];
+    const result: DeploymentFrequencyRow[] = [];
     const [startYear, startMonth, startDay] = firstDayStr.split('-').map(Number);
     const [endYear, endMonth, endDay] = lastDayStr.split('-').map(Number);
-    
-    // Use midday to avoid daylight saving time boundary issues when incrementing
-    const currentDate = new Date(Date.UTC(startYear, startMonth - 1, startDay, 12, 0, 0));
+
+    // Use midday to avoid daylight saving time boundary issues when incrementing.
+    const firstDate = new Date(Date.UTC(startYear, startMonth - 1, startDay, 12, 0, 0));
     const endDate = new Date(Date.UTC(endYear, endMonth - 1, endDay, 12, 0, 0));
 
-    while (currentDate <= endDate) {
-      const currentDayStr = this.getIntervalKey(currentDate, 'day');
-      const currentWeekStr = this.getIntervalKey(currentDate, 'week');
-      const currentMonthStr = this.getIntervalKey(currentDate, 'month');
+    for (const counts of targetCounts.values()) {
+      const currentDate = new Date(firstDate);
 
-      result.push({
-        days: currentDayStr,
-        weeks: currentWeekStr,
-        months: currentMonthStr,
-        daily_counts: dailyCounts.get(currentDayStr) || 0,
-        weekly_counts: weeklyCounts.get(currentWeekStr) || 0,
-        monthly_counts: monthlyCounts.get(currentMonthStr) || 0,
-        commits: '',
-        links: '',
-      });
+      while (currentDate <= endDate) {
+        const currentDayStr = this.getIntervalKey(currentDate, 'day');
+        const currentWeekStr = this.getIntervalKey(currentDate, 'week');
+        const currentMonthStr = this.getIntervalKey(currentDate, 'month');
 
-      // Move to the next day
-      currentDate.setUTCDate(currentDate.getUTCDate() + 1);
+        result.push({
+          pipeline: counts.target.pipeline,
+          job: counts.target.job,
+          days: currentDayStr,
+          weeks: currentWeekStr,
+          months: currentMonthStr,
+          daily_counts: counts.dailyCounts.get(currentDayStr) || 0,
+          weekly_counts: counts.weeklyCounts.get(currentWeekStr) || 0,
+          monthly_counts: counts.monthlyCounts.get(currentMonthStr) || 0,
+          commits: '',
+          links: '',
+        });
+
+        // Move to the next day
+        currentDate.setUTCDate(currentDate.getUTCDate() + 1);
+      }
     }
 
     return result;

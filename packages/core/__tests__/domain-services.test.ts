@@ -332,9 +332,24 @@ describe('PipelinesService', () => {
 
     const frequency = await pipelinesService.getDeploymentFrequencyWithAllIntervals();
 
-    expect(frequency).toHaveLength(1);
-    expect(frequency[0].daily_counts).toBe(2);
-    expect(frequency[0].weekly_counts).toBe(2);
-    expect(frequency[0].monthly_counts).toBe(2);
+    expect(frequency).toHaveLength(2);
+    expect(frequency).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          pipeline: '.github/workflows/release.yml',
+          job: 'deploy-production',
+          daily_counts: 1,
+          weekly_counts: 1,
+          monthly_counts: 1,
+        }),
+        expect.objectContaining({
+          pipeline: '.github/workflows/mobile.yml',
+          job: 'deploy-mobile',
+          daily_counts: 1,
+          weekly_counts: 1,
+          monthly_counts: 1,
+        }),
+      ])
+    );
   });
 });
