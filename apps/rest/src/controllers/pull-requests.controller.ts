@@ -38,22 +38,24 @@ export class PullRequestsController {
   async throughTime(
     @Query('start_date') startDate?: string,
     @Query('end_date') endDate?: string,
+    @Query('aggregate_by') aggregateBy?: string,
     @Query('authors') authors?: string,
     @Query('labels') labels?: string,
     @Query('status') status?: PRDetails['state']
   ) {
+    const mode = this.normalizeAggregation(aggregateBy);
     const prs = await this.loadPRsWithFilters({ startDate, endDate, authors, labels, status });
     const counts = new Map<string, { Opened: number; Closed: number }>();
 
     for (const pr of prs) {
-      const opened = this.toDayKey(pr.createdAt);
+      const opened = this.toPeriodKey(pr.createdAt, mode);
       const current = counts.get(opened) || { Opened: 0, Closed: 0 };
       current.Opened += 1;
       counts.set(opened, current);
 
       const closedAt = pr.mergedAt || pr.closedAt;
       if (closedAt) {
-        const closedDay = this.toDayKey(closedAt);
+        const closedDay = this.toPeriodKey(closedAt, mode);
         const closedCurrent = counts.get(closedDay) || { Opened: 0, Closed: 0 };
         closedCurrent.Closed += 1;
         counts.set(closedDay, closedCurrent);
@@ -142,13 +144,12 @@ export class PullRequestsController {
     @Query('authors') authors?: string,
     @Query('status') status?: PRDetails['state']
   ) {
-    const mode = (aggregateBy || 'week').toLowerCase();
+    const mode = this.normalizeAggregation(aggregateBy);
     const prs = await this.loadPRsWithFilters({ startDate, endDate, authors, labels, status });
     const grouped = new Map<string, number[]>();
 
     for (const pr of prs) {
-      const period =
-        mode === 'month' ? this.toMonthKey(pr.createdAt) : this.toWeekKey(pr.createdAt);
+      const period = this.toPeriodKey(pr.createdAt, mode);
       const start = this.toTimestamp(pr.createdAt);
       const end = this.toTimestamp(pr.mergedAt || pr.closedAt || pr.createdAt);
       const days = (end - start) / (1000 * 60 * 60 * 24);
@@ -275,6 +276,21 @@ export class PullRequestsController {
     return dateString ? dateString.split('T')[0] : 'unknown';
   }
 
+  private normalizeAggregation(aggregateBy?: string): 'day' | 'week' | 'month' {
+    const mode = (aggregateBy || 'week').toLowerCase();
+    return mode === 'day' || mode === 'month' ? mode : 'week';
+  }
+
+  private toPeriodKey(dateString: string | undefined, mode: 'day' | 'week' | 'month'): string {
+    if (mode === 'day') {
+      return this.toDayKey(dateString);
+    }
+    if (mode === 'month') {
+      return this.toMonthKey(dateString);
+    }
+    return this.toWeekKey(dateString);
+  }
+
   private toWeekKey(dateString?: string): string {
     if (!dateString) {
       return 'unknown';
@@ -285,7 +301,7 @@ export class PullRequestsController {
     const monday = new Date(date.setDate(diff));
     const year = monday.getFullYear();
     const week = Math.ceil(
-      (monday.getTime() - new Date(year, 0, 1).getTime()) / ((24 * 60 * 60 * 1000) / 7)
+      (monday.getTime() - new Date(year, 0, 1).getTime()) / (7 * 24 * 60 * 60 * 1000)
     );
     return `${year}-W${week.toString().padStart(2, '0')}`;
   }

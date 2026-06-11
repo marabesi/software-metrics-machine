@@ -206,7 +206,7 @@ export default function FiltersContainer({ repository }: { repository: string })
             <SelectFilter
               label="Aggregate By"
               value={filters.aggregateBy}
-              options={['week', 'month']}
+              options={['day', 'week', 'month']}
               onChange={(value) => updateFilter('aggregateBy', value)}
             />
           </Stack>

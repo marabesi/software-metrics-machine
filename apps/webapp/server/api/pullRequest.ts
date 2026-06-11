@@ -27,7 +27,7 @@ export const pullRequestAPI = {
     ),
   
   openThroughTime: (params?: ApiParams) =>
-    fetchAPI<Array<{ date: string; open_prs: number }>>(
+    fetchAPI<Array<{ date: string; kind?: 'Opened' | 'Closed'; count?: number; open_prs?: number }>>(
       '/pull-requests/through-time',
       params
     ),
