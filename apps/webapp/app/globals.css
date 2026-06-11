@@ -10,3 +10,13 @@
     color-scheme: dark;
   }
 }
+
+@layer components {
+  .recharts-wrapper {
+    isolation: isolate;
+  }
+
+  .recharts-tooltip-wrapper {
+    z-index: 1000 !important;
+  }
+}
