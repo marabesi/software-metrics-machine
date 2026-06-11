@@ -105,6 +105,7 @@ export class SonarqubeLocalAnalysis {
     this.logger.info('🧹 Cleaning up existing SonarQube container and data to ensure clean state.');
     await runCommand('docker', ['stop', options.containerName]);
     await runCommand('docker', ['rm', options.containerName]);
+    rimrafSync(options.dataDirectory);
 
     const dataDir = path.resolve(options.dataDirectory);
     if (existsSync(dataDir)) {

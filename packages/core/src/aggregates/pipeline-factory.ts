@@ -5,7 +5,7 @@ import {
   WorkflowJsonResponse,
 } from '../providers/github/github-response-types';
 import { PipelinesFetchRepository } from '../providers/github/pipelines-fetch-repository';
-import { GithubWorkflowClient, GithubWorkflowJobClient } from '../providers';
+import { GithubWorkflowClient, GithubWorkflowJobClient, GitlabPipelineClient } from '../providers';
 import { PipelinesJobFetchRepository } from '../providers/github/pipelines-job-fetch-repository';
 import {
   PipelineFiltersRepository,
@@ -15,15 +15,13 @@ import {
 export default class PipelineFactory {
   static create(config: Configuration) {
     const [githubOwner, githubRepo] = config.githubRepository!.split('/');
-    const githubToken = config.githubToken!;
-
-    const githubWorkflowClient = new GithubWorkflowClient(githubToken, githubOwner, githubRepo);
-
-    const githubWorkflowJobClient = new GithubWorkflowJobClient(
-      githubToken,
-      githubOwner,
-      githubRepo
-    );
+    const isGitlab = config.gitProvider?.toLowerCase() === 'gitlab';
+    const workflowClient = isGitlab
+      ? new GitlabPipelineClient(config.gitlabToken, config.githubRepository!)
+      : new GithubWorkflowClient(config.githubToken!, githubOwner, githubRepo);
+    const workflowJobClient = isGitlab
+      ? new GitlabPipelineClient(config.gitlabToken, config.githubRepository!)
+      : new GithubWorkflowJobClient(config.githubToken!, githubOwner, githubRepo);
 
     const pipelineRunFileSystemRepository = new FileSystemRepository<WorkflowJsonResponse>(
       `${config.getPathFromGitProvider()}/workflows.json`
@@ -48,13 +46,13 @@ export default class PipelineFactory {
 
     const workflowRepository = new PipelinesFetchRepository(
       config,
-      githubWorkflowClient,
+      workflowClient,
       pipelineRunFileSystemRepository,
       pipelineFiltersRepository
     );
     const workflowJobRepository = new PipelinesJobFetchRepository(
       config,
-      githubWorkflowJobClient,
+      workflowJobClient,
       pipelineRunFileSystemRepository,
       pipelineJobsFileSystemRepository,
       pipelineFiltersRepository

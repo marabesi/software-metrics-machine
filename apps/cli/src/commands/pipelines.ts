@@ -23,7 +23,7 @@ export function createPipelinesCommands(program: Command): void {
 
   pipelinesGroup
     .command('fetch')
-    .description('Fetch pipeline runs from GitHub')
+    .description('Fetch pipeline runs from the configured Git provider')
     .option('--force', 'Force re-fetching pipelines even if already fetched', false)
     .option(
       '--update',
@@ -35,7 +35,7 @@ export function createPipelinesCommands(program: Command): void {
     .option('--by-day', 'Fetch workflows day by day instead of all at once', false)
     .action(async (options) => {
       try {
-        logger.info('🔄 Fetching pipeline runs from GitHub...');
+        logger.info('🔄 Fetching pipeline runs from the configured Git provider...');
 
         await workflowRepository.fetchPipelines({
           forceRefresh: options.force,
@@ -55,7 +55,7 @@ export function createPipelinesCommands(program: Command): void {
 
   pipelinesGroup
     .command('fetch-jobs')
-    .description('Fetch pipeline jobs from GitHub')
+    .description('Fetch pipeline jobs from the configured Git provider')
     .option('--force', 'Force re-fetching jobs even if already fetched')
     .option(
       '--update',
@@ -67,7 +67,7 @@ export function createPipelinesCommands(program: Command): void {
     .option('--by-day', 'Fetch jobs day by day instead of all at once', false)
     .action(async (options) => {
       try {
-        logger.info('🔄 Fetching pipeline jobs from GitHub...');
+        logger.info('🔄 Fetching pipeline jobs from the configured Git provider...');
 
         await workflowJobRepository.fetchJobs({
           forceRefresh: options.force,

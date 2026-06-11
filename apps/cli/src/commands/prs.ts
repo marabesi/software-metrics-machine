@@ -5,6 +5,7 @@ import {
   CommentAuthor,
   FirstCommentMetric,
   GithubPrsClient,
+  GitlabMrClient,
   GitHubPullRequestsFetchRepository,
   MostCommentedPRData,
   PRsService,
@@ -22,10 +23,12 @@ function createPRsOrchestratorRead(): PullRequestsRepository {
 function createPRsOrchestratorFetch(): GitHubPullRequestsFetchRepository {
   const config = new Configuration(process.env);
   const [githubOwner, githubRepo] = config.githubRepository!.split('/');
-  const githubToken = config.githubToken!;
+  const isGitlab = config.gitProvider?.toLowerCase() === 'gitlab';
+  const prsClient = isGitlab
+    ? new GitlabMrClient(config.gitlabToken, config.githubRepository!)
+    : new GithubPrsClient(config.githubToken!, githubOwner, githubRepo);
 
-  const githubPrsClient = new GithubPrsClient(githubToken, githubOwner, githubRepo);
-  return new GitHubPullRequestsFetchRepository(githubPrsClient, config);
+  return new GitHubPullRequestsFetchRepository(prsClient, config);
 }
 
 function createPRService(): PRsService {
@@ -53,7 +56,7 @@ export function createPRsCommands(program: Command): void {
    */
   prsGroup
     .command('fetch')
-    .description('Fetch pull requests from GitHub')
+    .description('Fetch pull requests from the configured Git provider')
     .option('--force', 'Force re-fetching PRs even if already fetched')
     .option(
       '--update',
@@ -63,7 +66,7 @@ export function createPRsCommands(program: Command): void {
     .option('--end-date <date>', 'Filter PRs created on or before this date (ISO 8601)')
     .action(async (options) => {
       try {
-        logger.info('🔄 Fetching pull requests from GitHub...');
+        logger.info('🔄 Fetching pull requests from the configured Git provider...');
         const orchestrator = createPRsOrchestratorFetch();
         await orchestrator.fetchPRs({
           startDate: options.startDate,
@@ -80,14 +83,14 @@ export function createPRsCommands(program: Command): void {
 
   prsGroup
     .command('fetch-comments')
-    .description('Fetch pull request comments from GitHub')
+    .description('Fetch pull request comments from the configured Git provider')
     .option('--force', 'Force re-fetching PR comments even if already fetched')
     .option('--update', 'Incremental update: only fetch comments updated since last sync')
     .option('--start-date <date>', 'Filter PRs by creation date on or after this date (ISO 8601)')
     .option('--end-date <date>', 'Filter PRs by creation date on or before this date (ISO 8601)')
     .action(async (options) => {
       try {
-        logger.info('🔄 Fetching pull request comments from GitHub...');
+        logger.info('🔄 Fetching pull request comments from the configured Git provider...');
         const orchestrator = createPRsOrchestratorRead();
         const prs = await orchestrator.loadPrsWithFilters({
           startDate: options.startDate,

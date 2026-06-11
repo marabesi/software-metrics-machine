@@ -158,7 +158,7 @@ export class Configuration implements IConfiguration {
     // Load configuration from JSON file (if available) or environment variables
     this.gitProvider = configData.git_provider || envObj.GIT_PROVIDER;
     this.githubToken = configData.github_token || envObj.GITHUB_TOKEN;
-    this.gitlabToken = configData.gitlab_token;
+    this.gitlabToken = configData.gitlab_token || envObj.GITLAB_TOKEN;
     this.githubRepository = configData.github_repository || envObj.GITHUB_REPO;
     this.storeData = envObj.SMM_STORE_DATA_AT; // Keep as the path to the config file
     this.gitRepositoryLocation = configData.git_repository_location || envObj.GIT_REPOSITORY_PATH;

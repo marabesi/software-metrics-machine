@@ -15,7 +15,7 @@ export class PipelinesFetchRepository {
     private configuration: Configuration,
     private githubWorkflowClient: IGithubWorkflowClient,
     private pipelineRunFileSystemRepository: IRepository<WorkflowJsonResponse>,
-    private pipelineFiltersRepository: PipelineFiltersRepository
+    private pipelineFiltersRepository?: PipelineFiltersRepository
   ) {}
 
   async fetchPipelines(options?: {
@@ -104,7 +104,7 @@ export class PipelinesFetchRepository {
   }
 
   private async refreshDashboardFilterOptions(): Promise<void> {
-    await this.pipelineFiltersRepository.refreshOptions();
+    await this.pipelineFiltersRepository?.refreshOptions();
   }
 
   private async fetchWorkflowsByDay(
