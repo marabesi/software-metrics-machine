@@ -1,11 +1,6 @@
 import { Controller, Get, Logger, Query } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
-import {
-  PipelinesRepository,
-  Configuration,
-  PipelinesService,
-  PipelineFiltersRepository,
-} from '@smmachine/core';
+import { PipelinesRepository, PipelinesService, PipelineFiltersRepository } from '@smmachine/core';
 
 type PipelineDurationsMetrics = {
   durations: number[];
@@ -42,6 +37,12 @@ interface RunLike {
   }>;
 }
 
+type LoadRunsOptions = {
+  sort_by?: {
+    created_at?: 'asc' | 'desc';
+  };
+};
+
 /**
  * Pipeline Metrics REST Controller
  * Provides endpoints for CI/CD pipeline metrics and analysis
@@ -59,13 +60,15 @@ export class PipelinesController {
 
   @Get('/pipelines/summary')
   async pipelineSummary(@Query() query: PipelineFiltersQuery) {
-    const runs = await this.loadRunsWithFilters({ ...query, includeJobs: false });
+    const runs = await this.loadRunsWithFilters(
+      { ...query, includeJobs: false },
+      { sort_by: { created_at: 'asc' } }
+    );
 
-    const sortedByDate = this.pipelinesService.sortRunsByMetricDate(runs);
     return {
       total_runs: runs.length,
-      first_run: sortedByDate.length > 0 ? sortedByDate[0] : null,
-      last_run: sortedByDate.length > 0 ? sortedByDate[sortedByDate.length - 1] : null,
+      first_run: runs.length > 0 ? runs[0] : null,
+      last_run: runs.length > 0 ? runs[runs.length - 1] : null,
       in_progress: runs.filter((run) => (run.status || '').toLowerCase() === 'in_progress').length,
       queued: runs.filter((run) => (run.status || '').toLowerCase() === 'queued').length,
     };
@@ -436,18 +439,21 @@ export class PipelinesController {
     };
   }
 
-  private async loadRunsWithFilters(filters: {
-    start_date?: string;
-    end_date?: string;
-    workflow_path?: string;
-    status?: string;
-    conclusion?: string;
-    branch?: string;
-    job_name?: string;
-    job_conclusion?: string;
-    event?: string;
-    includeJobs: boolean;
-  }): Promise<RunLike[]> {
+  private async loadRunsWithFilters(
+    filters: {
+      start_date?: string;
+      end_date?: string;
+      workflow_path?: string;
+      status?: string;
+      conclusion?: string;
+      branch?: string;
+      job_name?: string;
+      job_conclusion?: string;
+      event?: string;
+      includeJobs: boolean;
+    },
+    options?: LoadRunsOptions
+  ): Promise<RunLike[]> {
     this.logger.debug('Loading runs with filters:', filters);
     const selectedJobNames = filters.job_name
       ? filters.job_name
@@ -464,7 +470,8 @@ export class PipelinesController {
     const dateFilteredRuns = this.pipelinesService.filterRunsByDateRange(
       runs,
       filters.start_date,
-      filters.end_date
+      filters.end_date,
+      options
     );
     const filteredRuns = dateFilteredRuns.filter((run: RunLike) => {
       if (filters.workflow_path && run.path !== filters.workflow_path) {

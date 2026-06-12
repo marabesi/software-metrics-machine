@@ -26,7 +26,6 @@ describe('PipelinesController', () => {
     const pipelinesService = new PipelinesService(pipelinesRepo as never);
     const controller = new PipelinesController(
       pipelinesRepo as never,
-      {} as never,
       pipelinesService,
       {} as never
     );

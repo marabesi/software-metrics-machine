@@ -14,14 +14,20 @@ type PipelineDateFields = {
   completedAt?: string;
 };
 
+type PipelineRunFilterOptions = {
+  sort_by?: {
+    created_at?: 'asc' | 'desc';
+  };
+};
+
 export interface IPipelinesService {
   filterRunsByDateRange<T extends PipelineDateFields>(
     runs: T[],
     startDate?: string,
-    endDate?: string
+    endDate?: string,
+    options?: PipelineRunFilterOptions
   ): T[];
   getRunMetricDate(run: PipelineDateFields): string | undefined;
-  sortRunsByMetricDate<T extends PipelineDateFields>(runs: T[]): T[];
   getDurationMinutes(startedAt?: string, completedAt?: string): number | null;
   getPeriodKey(dateString: string | undefined, interval: 'day' | 'week' | 'month'): string;
   getMetrics(filters?: PipelineFilters): Promise<PipelineMetrics>;
@@ -62,32 +68,27 @@ export class PipelinesService implements IPipelinesService {
   filterRunsByDateRange<T extends PipelineDateFields>(
     runs: T[],
     startDate?: string,
-    endDate?: string
+    endDate?: string,
+    options?: PipelineRunFilterOptions
   ): T[] {
-    if (!startDate && !endDate) {
-      return runs;
-    }
-
     const start = startDate ? this.toTimestamp(startDate) : 0;
     const end = endDate ? this.toDateBoundaryTimestamp(endDate, 'end') : 0;
-
-    return runs.filter((run) => {
+    const filteredRuns = start || end ? runs.filter((run) => {
       const runTimestamp = this.toTimestamp(this.getRunMetricDate(run));
       if (start && runTimestamp < start) return false;
       if (end && runTimestamp > end) return false;
       return true;
-    });
+    }) : runs;
+
+    if (options?.sort_by?.created_at) {
+      return this.sortRunsByMetricDate(filteredRuns, options.sort_by.created_at);
+    }
+
+    return filteredRuns;
   }
 
   getRunMetricDate(run: PipelineDateFields): string | undefined {
     return run.completedAt || run.createdAt;
-  }
-
-  sortRunsByMetricDate<T extends PipelineDateFields>(runs: T[]): T[] {
-    return [...runs].sort(
-      (a, b) =>
-        this.toTimestamp(this.getRunMetricDate(a)) - this.toTimestamp(this.getRunMetricDate(b))
-    );
   }
 
   getDurationMinutes(startedAt?: string, completedAt?: string): number | null {
@@ -596,6 +597,18 @@ export class PipelinesService implements IPipelinesService {
       boundary === 'end' && /^\d{4}-\d{2}-\d{2}$/.test(value) ? `${value}T23:59:59.999Z` : value;
 
     return this.toTimestamp(normalizedValue);
+  }
+
+  private sortRunsByMetricDate<T extends PipelineDateFields>(
+    runs: T[],
+    direction: 'asc' | 'desc'
+  ): T[] {
+    const sortDirection = direction === 'asc' ? 1 : -1;
+    return [...runs].sort(
+      (a, b) =>
+        (this.toTimestamp(this.getRunMetricDate(a)) - this.toTimestamp(this.getRunMetricDate(b))) *
+        sortDirection
+    );
   }
 
   private filterByBranch(runs: PipelineRun[], branch: string): PipelineRun[] {
