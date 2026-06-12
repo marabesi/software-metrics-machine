@@ -53,7 +53,6 @@ export class PipelinesController {
 
   constructor(
     private readonly pipelinesRepo: PipelinesRepository,
-    private readonly config: Configuration,
     private readonly pipelinesService: PipelinesService,
     private readonly pipelineFiltersRepository: PipelineFiltersRepository
   ) {}
@@ -62,9 +61,7 @@ export class PipelinesController {
   async pipelineSummary(@Query() query: PipelineFiltersQuery) {
     const runs = await this.loadRunsWithFilters({ ...query, includeJobs: false });
 
-    const sortedByDate = [...runs].sort(
-      (a, b) => this.toTimestamp(a.createdAt) - this.toTimestamp(b.createdAt)
-    );
+    const sortedByDate = this.pipelinesService.sortRunsByMetricDate(runs);
     return {
       total_runs: runs.length,
       first_run: sortedByDate.length > 0 ? sortedByDate[0] : null,
@@ -142,7 +139,7 @@ export class PipelinesController {
     const grouped = new Map<string, number[]>();
 
     for (const run of runs) {
-      const duration = this.getDurationMinutes(run.startedAt, run.completedAt);
+      const duration = this.pipelinesService.getDurationMinutes(run.startedAt, run.completedAt);
       if (duration === null) {
         continue;
       }
@@ -203,7 +200,7 @@ export class PipelinesController {
       for (const job of jobs) {
         const name = (job.name || '').trim();
         if (!name) continue;
-        const duration = this.getDurationMinutes(job.startedAt, job.completedAt);
+        const duration = this.pipelinesService.getDurationMinutes(job.startedAt, job.completedAt);
         if (duration === null) continue;
         if (!grouped.has(workflow)) grouped.set(workflow, new Map());
         const jobMap = grouped.get(workflow)!;
@@ -240,16 +237,14 @@ export class PipelinesController {
     const grouped = new Map<string, number>();
 
     for (const run of runs) {
-      const keyDate = run.completedAt || run.createdAt;
+      const keyDate = this.pipelinesService.getRunMetricDate(run);
       if (!keyDate) {
         continue;
       }
-      const period =
-        mode === 'day'
-          ? this.toDayKey(keyDate)
-          : mode === 'month'
-            ? this.toMonthKey(keyDate)
-            : this.toWeekKey(keyDate);
+      const period = this.pipelinesService.getPeriodKey(
+        keyDate,
+        mode === 'day' || mode === 'month' ? mode : 'week'
+      );
       const workflow = run.path || 'unknown';
       const key = `${period}||${workflow}`;
       grouped.set(key, (grouped.get(key) || 0) + 1);
@@ -297,7 +292,7 @@ export class PipelinesController {
         if (!name || excluded.has(name.toLowerCase())) {
           continue;
         }
-        const duration = this.getDurationMinutes(job.startedAt, job.completedAt);
+        const duration = this.pipelinesService.getDurationMinutes(job.startedAt, job.completedAt);
         if (duration === null) {
           continue;
         }
@@ -340,18 +335,18 @@ export class PipelinesController {
 
     for (const run of runs) {
       const jobs = run.jobs || [];
-      const runDate = run.completedAt || run.createdAt;
+      const runDate = this.pipelinesService.getRunMetricDate(run);
       if (!runDate) {
         continue;
       }
-      const day = this.toDayKey(runDate);
+      const day = this.pipelinesService.getPeriodKey(runDate, 'day');
 
       for (const job of jobs) {
         const name = (job.name || '').trim();
         if (!name || excluded.has(name.toLowerCase())) {
           continue;
         }
-        const duration = this.getDurationMinutes(job.startedAt, job.completedAt);
+        const duration = this.pipelinesService.getDurationMinutes(job.startedAt, job.completedAt);
         if (duration === null) {
           continue;
         }
@@ -428,49 +423,6 @@ export class PipelinesController {
       .filter((item) => item.length > 0);
   }
 
-  private toTimestamp(value?: string): number {
-    if (!value) {
-      return 0;
-    }
-    const parsed = new Date(value).getTime();
-    return Number.isFinite(parsed) ? parsed : 0;
-  }
-
-  private getDurationMinutes(startedAt?: string, completedAt?: string): number | null {
-    const start = this.toTimestamp(startedAt);
-    const end = this.toTimestamp(completedAt);
-    if (start === 0 || end === 0 || end < start) {
-      return null;
-    }
-    return (end - start) / (1000 * 60);
-  }
-
-  private toDayKey(dateString?: string): string {
-    return dateString ? dateString.split('T')[0] : 'unknown';
-  }
-
-  private toWeekKey(dateString?: string): string {
-    if (!dateString) {
-      return 'unknown';
-    }
-    const date = new Date(dateString);
-    const dayOfWeek = date.getDay();
-    const diff = date.getDate() - dayOfWeek + (dayOfWeek === 0 ? -6 : 1);
-    const monday = new Date(date.setDate(diff));
-    const year = monday.getFullYear();
-    const week = Math.ceil(
-      (monday.getTime() - new Date(year, 0, 1).getTime()) / ((24 * 60 * 60 * 1000) / 7)
-    );
-    return `${year}-W${week.toString().padStart(2, '0')}`;
-  }
-
-  private toMonthKey(dateString?: string): string {
-    if (!dateString) {
-      return 'unknown';
-    }
-    return dateString.substring(0, 7);
-  }
-
   private toServiceFilters(query: PipelineFiltersQuery) {
     return {
       startDate: query.start_date,
@@ -509,19 +461,12 @@ export class PipelinesController {
       jobConclusion: filters.job_conclusion,
     });
 
-    const filteredRuns = runs.filter((run: RunLike) => {
-      if (
-        filters.start_date &&
-        this.toTimestamp(run.createdAt) < this.toTimestamp(filters.start_date)
-      ) {
-        return false;
-      }
-      if (
-        filters.end_date &&
-        this.toTimestamp(run.createdAt) > this.toTimestamp(filters.end_date)
-      ) {
-        return false;
-      }
+    const dateFilteredRuns = this.pipelinesService.filterRunsByDateRange(
+      runs,
+      filters.start_date,
+      filters.end_date
+    );
+    const filteredRuns = dateFilteredRuns.filter((run: RunLike) => {
       if (filters.workflow_path && run.path !== filters.workflow_path) {
         return false;
       }

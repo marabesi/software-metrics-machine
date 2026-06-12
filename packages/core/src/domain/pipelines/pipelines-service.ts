@@ -9,7 +9,21 @@ import {
 import { IPipelinesRepository } from '../../aggregates/pipelines-repository';
 import { Configuration } from '../..';
 
+type PipelineDateFields = {
+  createdAt?: string;
+  completedAt?: string;
+};
+
 export interface IPipelinesService {
+  filterRunsByDateRange<T extends PipelineDateFields>(
+    runs: T[],
+    startDate?: string,
+    endDate?: string
+  ): T[];
+  getRunMetricDate(run: PipelineDateFields): string | undefined;
+  sortRunsByMetricDate<T extends PipelineDateFields>(runs: T[]): T[];
+  getDurationMinutes(startedAt?: string, completedAt?: string): number | null;
+  getPeriodKey(dateString: string | undefined, interval: 'day' | 'week' | 'month'): string;
   getMetrics(filters?: PipelineFilters): Promise<PipelineMetrics>;
   getDeploymentFrequency(interval: 'day' | 'week' | 'month', filters?: PipelineFilters): Promise<Array<{
     period: string;
@@ -44,6 +58,58 @@ export class PipelinesService implements IPipelinesService {
   private logger: Logger = logger;
 
   constructor(private pipelineRepository: IPipelinesRepository, private configuration?: Configuration) {}
+
+  filterRunsByDateRange<T extends PipelineDateFields>(
+    runs: T[],
+    startDate?: string,
+    endDate?: string
+  ): T[] {
+    if (!startDate && !endDate) {
+      return runs;
+    }
+
+    const start = startDate ? this.toTimestamp(startDate) : 0;
+    const end = endDate ? this.toDateBoundaryTimestamp(endDate, 'end') : 0;
+
+    return runs.filter((run) => {
+      const runTimestamp = this.toTimestamp(this.getRunMetricDate(run));
+      if (start && runTimestamp < start) return false;
+      if (end && runTimestamp > end) return false;
+      return true;
+    });
+  }
+
+  getRunMetricDate(run: PipelineDateFields): string | undefined {
+    return run.completedAt || run.createdAt;
+  }
+
+  sortRunsByMetricDate<T extends PipelineDateFields>(runs: T[]): T[] {
+    return [...runs].sort(
+      (a, b) =>
+        this.toTimestamp(this.getRunMetricDate(a)) - this.toTimestamp(this.getRunMetricDate(b))
+    );
+  }
+
+  getDurationMinutes(startedAt?: string, completedAt?: string): number | null {
+    const start = this.toTimestamp(startedAt);
+    const end = this.toTimestamp(completedAt);
+    if (start === 0 || end === 0 || end < start) {
+      return null;
+    }
+    return (end - start) / (1000 * 60);
+  }
+
+  getPeriodKey(dateString: string | undefined, interval: 'day' | 'week' | 'month'): string {
+    if (!dateString) {
+      return 'unknown';
+    }
+
+    if (interval === 'day') {
+      return dateString.split('T')[0];
+    }
+
+    return this.getIntervalKey(new Date(dateString), interval);
+  }
 
   /**
    * Get overall pipeline metrics for the given filters.
@@ -458,7 +524,7 @@ export class PipelinesService implements IPipelinesService {
 
     // Filter by date range
     if (filters.startDate || filters.endDate) {
-      result = this.filterByDateRange(result, filters.startDate, filters.endDate);
+      result = this.filterRunsByDateRange(result, filters.startDate, filters.endDate);
     }
 
     // Filter by branch
@@ -517,24 +583,19 @@ export class PipelinesService implements IPipelinesService {
     return result;
   }
 
-  private filterByDateRange(
-    runs: PipelineRun[],
-    startDate?: string,
-    endDate?: string
-  ): PipelineRun[] {
-    if (!startDate && !endDate) {
-      return runs;
+  private toTimestamp(value?: string): number {
+    if (!value) {
+      return 0;
     }
+    const parsed = new Date(value).getTime();
+    return Number.isFinite(parsed) ? parsed : 0;
+  }
 
-    const start = startDate ? new Date(startDate) : null;
-    const end = endDate ? new Date(endDate) : null;
+  private toDateBoundaryTimestamp(value: string, boundary: 'start' | 'end'): number {
+    const normalizedValue =
+      boundary === 'end' && /^\d{4}-\d{2}-\d{2}$/.test(value) ? `${value}T23:59:59.999Z` : value;
 
-    return runs.filter((run) => {
-      const runDate = new Date(run.createdAt);
-      if (start && runDate < start) return false;
-      if (end && runDate > end) return false;
-      return true;
-    });
+    return this.toTimestamp(normalizedValue);
   }
 
   private filterByBranch(runs: PipelineRun[], branch: string): PipelineRun[] {
