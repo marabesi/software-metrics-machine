@@ -27,7 +27,7 @@ the entire repository on a given date.
 == CLI
 
 ```bash
-smm code code-churn
+smm code churn
 ```
 
 :::

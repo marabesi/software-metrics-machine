@@ -98,6 +98,32 @@ smm sonarqube fetch-historical-measures \
   --output json
 ```
 
+### Run local analysis
+
+Run a local SonarQube server and scanner using Docker:
+
+```bash
+smm sonarqube analysis run
+```
+
+Options:
+
+- `--container-server-name`: SonarQube container name (default: `sonarqube`)
+- `--scanner-container-name`: Scanner container name (default: `sonarqube-scanner`)
+- `--container-server-image`: SonarQube Docker image (default: `sonarqube:community`)
+- `--scanner-image`: Scanner Docker image (default: `sonarsource/sonar-scanner-cli`)
+- `--data-dir`: Host path for SonarQube data (default: `./sonarqube_data`)
+- `--server-port`: Host port for SonarQube (default: `9000`)
+- `--scanner-host-url`: Override scanner host URL
+- `--scanner-token`: Scanner authentication token
+- `--properties`: Raw scanner options
+- `--admin-user`: SonarQube admin username (default: `admin`)
+- `--admin-password`: SonarQube admin password (default: `admin`)
+
+This command starts the SonarQube server (if not already running), executes sonar-scanner
+against your local repository, and automatically fetches quality measures, component tree,
+and historical measures once the analysis completes.
+
 ## REST API
 
 Main endpoints:

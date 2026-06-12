@@ -116,16 +116,25 @@ docker run --rm -e SMM_STORE_DATA_AT="/data" -v $(pwd)/downloads:/data smm-docke
 You should see an output something like the following:
 
 ```plaintext
-Usage: main.py [OPTIONS] COMMAND [ARGS]...
+Usage: smm [options] [command]
+
+Software Metrics Machine - High-performing team metrics
 
 Options:
-  --help  Show this message and exit.
+  --version      output the version number
+  -h, --help     display help for command
+  --debug        Enable debug logging
 
 Commands:
-  code
-  pipelines
-  prs
-  tools
+  prs            Pull request operations
+  pipelines      Pipeline/workflow operations
+  code           Code analysis operations
+  jira           Jira integration operations
+  sonarqube      SonarQube integration operations
+  dashboard      Dashboard operations
+  tools          Utility tools
+  health-check   Analyze local cache data quality
+  help           Show help information
 ```
 
 Now you are ready to go and start running the commands using docker, take the commands from the CLI documentation

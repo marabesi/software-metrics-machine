@@ -45,6 +45,7 @@ Main command groups:
 - `smm sonarqube`
 - `smm dashboard`
 - `smm tools`
+- `smm health-check`
 
 ## REST API
 

@@ -23,15 +23,14 @@ statuses run for the pipelines, and second, on the time it takes to run them.
 == CLI
 
 ```bash
-smm pipelines pipeline-by-status
+smm pipelines by-status
 ```
 
 | Option         | Description                          | Example |
 |----------------|--------------------------------------|---------|
 | Start date     | Filter by created after this date.   | `--start-date=2025-01-01`     |
 | End date       | Filter by created before this date.  | `--end-date=2025-12-31`     |
-| Workflow path | Filter by the workflow file path      | `--workflow-path=".github/workflows/ci.yml"`     |
-
+| Output         | Output format (text or json)         | `--output=json`             |
 
 :::
 
@@ -162,26 +161,24 @@ part of the overall pipeline process. This command associates the jobs wih their
 == CLI
 
 ```bash
-smm pipelines jobs-by-execution-time
+smm pipelines jobs-time-execution
 ```
 
 | Option       | Description                                                    | Example <div style="width:200px"></div>     |
 |--------------|----------------------------------------------------------------|---------------------------------------------|
 | Start date   | Filter by created after this date.                             | `--start-date=2025-01-01`                   |
 | End date     | Filter by created before this date.                            | `--end-date=2025-12-31`                     |
-| Limit        |                                                                | `--top=2`                                   |
-| Filtering    | Filters jobs based on their pipeline                           | `--pipeline-raw-filters=target_branch=main` |
-| Filtering    | Filters out the given jobs                                     | --exclude-jobs="Deploy"                     | 
 | Job name     | Optional job name substring to filter jobs                     | `--job-name=test`                           |
-| Metric       | Optional metric to compute the job duration. Defaults to "avg" | `--metric=sum`                              |
+| Output       | Output format (text or json)                                   | `--output=json`                             |
 
 ### Examples - Shows jobs based on their execution time
 
-List the average time it takes for the jobs to run from start to finishi:
+List the average time it takes for the jobs to run from start to finish:
 
 ```bash
-smm pipelines jobs-by-execution-time \
-  --exclude-jobs=report-build-status
+smm pipelines jobs-time-execution \
+  --start-date 2025-01-01 \
+  --end-date 2025-06-30
 ```
 
 

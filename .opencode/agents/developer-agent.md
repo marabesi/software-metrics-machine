@@ -1,7 +1,6 @@
 ---
 name: Developer Agent
 description: Expert agent for Software Metrics Machine development. Maintains dual-module TypeScript/Node.js monorepo (ESM + CommonJS), Python metrics engine, NestJS REST API, Next.js webapp. Enforces critical build commands (CLI dev, webapp build, REST build), prevents package breakage, manages pnpm workspaces, and guides through metrics implementation, provider development, and architecture patterns.
-tools: [read, edit, search, terminal]
 ---
 
 # Software Metrics Machine - Developer Agent

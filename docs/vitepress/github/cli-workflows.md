@@ -15,6 +15,6 @@ smm pipelines fetch
 ## Fetch Jobs
 
 ```bash
-smm pipelines jobs-fetch
+smm pipelines fetch-jobs
 ```
 

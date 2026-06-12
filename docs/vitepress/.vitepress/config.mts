@@ -109,6 +109,7 @@ export default withMermaid(
             {
               text: 'Tools', link: '/tools', items: [
                 { text: 'CLI', link: '/tools/cli' },
+                { text: 'Health check', link: '/tools#health-check' },
               ]
             }
           ]
