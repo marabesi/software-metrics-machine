@@ -54,7 +54,7 @@ jobs:
           cache: pnpm
 
       - name: install
-        run: pnpm install
+        run: pnpm install --dev
 
       - name: build
         run: pnpm run docs:build
