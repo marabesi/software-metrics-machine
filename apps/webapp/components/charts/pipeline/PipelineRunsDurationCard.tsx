@@ -8,6 +8,7 @@ import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, Responsive
 import { ensureArray } from '@/server/utils/chartData';
 import { JobsDurationByWorkflowItem, RunsByDayData, RunsDurationData } from './types';
 import { useLinkBuilder } from '@/components/providers/LinkBuilderContext';
+import { formatDurationMinutes } from './duration-format';
 
 type ActiveTab = 'duration' | 'job-breakdown' | 'daily-runs';
 
@@ -33,7 +34,7 @@ function DurationTooltip({ active, payload, label }: { active?: boolean; payload
         <p className="font-semibold">{label}</p>
         {payload.map((entry, index: number) => (
           <p key={index} style={{ color: entry.color }} className="text-sm">
-            {entry.name}: {typeof entry.value === 'number' ? entry.value.toFixed(1) : entry.value} min
+            {entry.name}: {typeof entry.value === 'number' ? formatDurationMinutes(entry.value) : entry.value}
           </p>
         ))}
       </div>
@@ -49,7 +50,7 @@ function JobBreakdownTooltip({ active, payload, label }: { active?: boolean; pay
         <p className="font-semibold">{label}</p>
         {payload.map((entry, index: number) => (
           <p key={index} style={{ color: entry.color }} className="text-sm">
-            {entry.name}: {typeof entry.value === 'number' ? entry.value.toFixed(1) : entry.value} min
+            {entry.name}: {typeof entry.value === 'number' ? formatDurationMinutes(entry.value) : entry.value}
           </p>
         ))}
       </div>
@@ -167,12 +168,12 @@ export default function PipelineRunsDurationCard({
               <ComposedChart data={durationRangeData}>
                 <CartesianGrid strokeDasharray="3 3" />
                 <XAxis dataKey="workflow" angle={-45} textAnchor="end" height={100} />
-                <YAxis unit=" min" />
+                <YAxis tickFormatter={(value) => formatDurationMinutes(Number(value) || 0)} />
                 <Tooltip content={<DurationTooltip />} />
                 <Legend />
                 <Bar dataKey="min" stackId="r" fill="rgba(0,0,0,0)" stroke="rgba(0,0,0,0)" legendType="none" />
-                <Bar dataKey="range" stackId="r" fill="#93c5fd" name="Min-Max Range (min)" />
-                <Scatter dataKey="avg" fill="#1d4ed8" name="Avg (min)" />
+                <Bar dataKey="range" stackId="r" fill="#93c5fd" name="Min-Max Range" />
+                <Scatter dataKey="avg" fill="#1d4ed8" name="Average" />
               </ComposedChart>
             </ResponsiveContainer>
             <div className="mt-6 overflow-x-auto">
@@ -180,9 +181,9 @@ export default function PipelineRunsDurationCard({
                 <thead>
                   <tr className="border-b">
                     <th className="text-left p-2">Workflow</th>
-                    <th className="text-right p-2">Avg (min)</th>
-                    <th className="text-right p-2">Min (min)</th>
-                    <th className="text-right p-2">Max (min)</th>
+                    <th className="text-right p-2">Average</th>
+                    <th className="text-right p-2">Minimum</th>
+                    <th className="text-right p-2">Maximum</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -198,9 +199,9 @@ export default function PipelineRunsDurationCard({
                           {item.workflow}
                         </a>
                       </td>
-                      <td className="p-2 text-right">{item.avg.toFixed(2)}</td>
-                      <td className="p-2 text-right">{item.min.toFixed(2)}</td>
-                      <td className="p-2 text-right">{item.max.toFixed(2)}</td>
+                      <td className="p-2 text-right tabular-nums">{formatDurationMinutes(item.avg)}</td>
+                      <td className="p-2 text-right tabular-nums">{formatDurationMinutes(item.min)}</td>
+                      <td className="p-2 text-right tabular-nums">{formatDurationMinutes(item.max)}</td>
                     </tr>
                   ))}
                 </tbody>
@@ -255,7 +256,7 @@ export default function PipelineRunsDurationCard({
             <ResponsiveContainer width="100%" height={Math.max(300, jobBreakdownData.length * 60)}>
               <BarChart data={jobBreakdownData} layout="vertical">
                 <CartesianGrid strokeDasharray="3 3" />
-                <XAxis type="number" unit=" min" />
+                <XAxis type="number" tickFormatter={(value) => formatDurationMinutes(Number(value) || 0)} />
                 <YAxis type="category" dataKey="workflow" width={180} />
                 <Tooltip content={<JobBreakdownTooltip />} />
                 <Legend />

@@ -4,6 +4,7 @@ import { useCallback, useMemo, useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { BarChart, Bar, XAxis, YAxis, Tooltip, Legend, ResponsiveContainer, CartesianGrid } from 'recharts';
 import { JobStepsAverageTimeData, JobStepsAverageTimeByDayData } from './types';
+import { formatDurationMinutes } from './duration-format';
 
 // Generate a sequence of colors for the stacked bars
 const COLORS = [
@@ -42,20 +43,13 @@ export default function JobStepsAnalysis({
     return null;
   }
 
-  const formatTime = (minutes: number) => {
-    if (minutes < 1) {
-      return `${Math.round(minutes * 60)}s`;
-    }
-    return `${minutes.toFixed(2)}m`;
-  };
-
   return (
     <Card>
       <CardHeader>
         <CardTitle>Steps Analysis: {jobName}</CardTitle>
         <p className="text-sm text-gray-500">
           Average execution time of each step across {data[0]?.count || 0} runs.
-          Total average time: {formatTime(totalTime)}.
+          Total average time: {formatDurationMinutes(totalTime)}.
         </p>
       </CardHeader>
       <CardContent>
@@ -111,10 +105,10 @@ export default function JobStepsAnalysis({
                   <CartesianGrid strokeDasharray="3 3" />
                   <XAxis dataKey="day" />
                   <YAxis
-                    tickFormatter={(value) => formatTime(Number(value) || 0)}
+                    tickFormatter={(value) => formatDurationMinutes(Number(value) || 0)}
                   />
                   <Tooltip
-                    formatter={(value: unknown, name: unknown) => [formatTime(Number(value) || 0), String(name)]}
+                    formatter={(value: unknown, name: unknown) => [formatDurationMinutes(Number(value) || 0), String(name)]}
                     wrapperStyle={{ zIndex: 1000 }}
                   />
                   <Legend />
@@ -148,7 +142,7 @@ export default function JobStepsAnalysis({
               <XAxis type="number" hide />
               <YAxis dataKey="name" type="category" hide />
               <Tooltip 
-                formatter={(value: any, name: any) => [formatTime(Number(value) || 0), name]}
+                formatter={(value: any, name: any) => [formatDurationMinutes(Number(value) || 0), name]}
               />
               {data.map((step, index) => (
                 <Bar 
@@ -188,7 +182,7 @@ export default function JobStepsAnalysis({
                       </div>
                     </td>
                     <td className="p-3 text-right tabular-nums">
-                      {formatTime(step.averageDurationMinutes)}
+                      {formatDurationMinutes(step.averageDurationMinutes)}
                     </td>
                     <td className="p-3 text-right tabular-nums text-gray-600">
                       {percentage.toFixed(1)}%

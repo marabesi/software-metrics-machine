@@ -7,6 +7,7 @@ import { useLinkBuilder } from '@/components/providers/LinkBuilderContext';
 import react from 'react';
 import { ApiParams } from '@/server/api';
 import { useFilters } from '@/components/filters/FiltersContext';
+import { formatDurationMinutes } from './duration-format';
 
 interface JobsAverageTimeCardProps {
   data: JobsAverageTimeData[];
@@ -72,11 +73,18 @@ export default function JobsAverageTimeCard({ data, dataByDay }: JobsAverageTime
             <BarChart data={data}>
               <CartesianGrid strokeDasharray="3 3" />
               <XAxis dataKey="job_name" angle={-45} textAnchor="end" height={100} />
-              <YAxis yAxisId="left" />
+              <YAxis yAxisId="left" tickFormatter={(value) => formatDurationMinutes(Number(value) || 0)} />
               <YAxis yAxisId="right" orientation="right" />
-              <Tooltip />
+              <Tooltip
+                formatter={(value: unknown, name: unknown) => {
+                  const label = String(name);
+                  return label === 'Avg Time'
+                    ? [formatDurationMinutes(Number(value) || 0), label]
+                    : [String(value ?? ''), label];
+                }}
+              />
               <Legend />
-              <Bar dataKey="avg_time" yAxisId="left" fill="#82ca9d" name="Avg Time (min)" onClick={(e) => handleBarClick(e.payload)} style={{ cursor: 'pointer' }} />
+              <Bar dataKey="avg_time" yAxisId="left" fill="#82ca9d" name="Avg Time" onClick={(e) => handleBarClick(e.payload)} style={{ cursor: 'pointer' }} />
               <Bar dataKey="count" yAxisId="right" fill="#60a5fa" name="Runs Count" />
             </BarChart>
           </ResponsiveContainer>
@@ -87,11 +95,18 @@ export default function JobsAverageTimeCard({ data, dataByDay }: JobsAverageTime
             <LineChart data={dataByDay}>
               <CartesianGrid strokeDasharray="3 3" />
               <XAxis dataKey="day" angle={-45} textAnchor="end" height={100} />
-              <YAxis yAxisId="left" />
+              <YAxis yAxisId="left" tickFormatter={(value) => formatDurationMinutes(Number(value) || 0)} />
               <YAxis yAxisId="right" orientation="right" />
-              <Tooltip />
+              <Tooltip
+                formatter={(value: unknown, name: unknown) => {
+                  const label = String(name);
+                  return label === 'Avg Time'
+                    ? [formatDurationMinutes(Number(value) || 0), label]
+                    : [String(value ?? ''), label];
+                }}
+              />
               <Legend />
-              <Line yAxisId="left" type="monotone" dataKey="avg_time" stroke="#82ca9d" name="Avg Time (min)" dot={{ r: 4 }} />
+              <Line yAxisId="left" type="monotone" dataKey="avg_time" stroke="#82ca9d" name="Avg Time" dot={{ r: 4 }} />
               <Line yAxisId="right" type="monotone" dataKey="count" stroke="#60a5fa" name="Runs Count" dot={{ r: 3 }} />
             </LineChart>
           </ResponsiveContainer>

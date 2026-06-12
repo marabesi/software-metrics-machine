@@ -137,12 +137,12 @@ export class PipelinesController {
     @Query('aggregation') aggregation?: string,
     @Query() query?: PipelineFiltersQuery
   ) {
-    const runs = await this.loadRunsWithFilters({ ...(query || {}), includeJobs: false });
+    const runs = await this.loadRunsWithFilters({ ...(query || {}), includeJobs: true });
 
     const grouped = new Map<string, number[]>();
 
     for (const run of runs) {
-      const duration = this.pipelinesService.getDurationMinutes(run.startedAt, run.completedAt);
+      const duration = this.pipelinesService.getRunDurationMinutes(run);
       if (duration === null) {
         continue;
       }

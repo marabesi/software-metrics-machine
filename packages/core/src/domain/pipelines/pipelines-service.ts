@@ -12,6 +12,11 @@ import { Configuration } from '../..';
 type PipelineDateFields = {
   createdAt?: string;
   completedAt?: string;
+  startedAt?: string;
+  jobs?: Array<{
+    startedAt?: string;
+    completedAt?: string;
+  }>;
 };
 
 type PipelineRunFilterOptions = {
@@ -28,6 +33,7 @@ export interface IPipelinesService {
     options?: PipelineRunFilterOptions
   ): T[];
   getRunMetricDate(run: PipelineDateFields): string | undefined;
+  getRunDurationMinutes(run: PipelineDateFields): number | null;
   getDurationMinutes(startedAt?: string, completedAt?: string): number | null;
   getPeriodKey(dateString: string | undefined, interval: 'day' | 'week' | 'month'): string;
   getMetrics(filters?: PipelineFilters): Promise<PipelineMetrics>;
@@ -89,6 +95,23 @@ export class PipelinesService implements IPipelinesService {
 
   getRunMetricDate(run: PipelineDateFields): string | undefined {
     return run.completedAt || run.createdAt;
+  }
+
+  getRunDurationMinutes(run: PipelineDateFields): number | null {
+    const jobDurations = (run.jobs || [])
+      .map((job) => ({
+        startedAt: this.toTimestamp(job.startedAt),
+        completedAt: this.toTimestamp(job.completedAt),
+      }))
+      .filter(({ startedAt, completedAt }) => startedAt > 0 && completedAt > 0 && completedAt >= startedAt);
+
+    if (jobDurations.length > 0) {
+      const startedAt = Math.min(...jobDurations.map((duration) => duration.startedAt));
+      const completedAt = Math.max(...jobDurations.map((duration) => duration.completedAt));
+      return (completedAt - startedAt) / (1000 * 60);
+    }
+
+    return this.getDurationMinutes(run.startedAt, run.completedAt);
   }
 
   getDurationMinutes(startedAt?: string, completedAt?: string): number | null {
