@@ -1,6 +1,6 @@
 'use client';
 
-import { useMemo, useState } from 'react';
+import { useCallback, useMemo, useState } from 'react';
 import Box from '@mui/material/Box';
 import { Tab, Tabs } from '@mui/material';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -26,6 +26,38 @@ const JOB_COLORS = [
   '#0ea5e9', '#d946ef', '#fb923c', '#4ade80', '#38bdf8',
 ];
 
+function DurationTooltip({ active, payload, label }: { active?: boolean; payload?: TooltipPayloadEntry[]; label?: string }) {
+  if (active && payload && payload.length) {
+    return (
+      <div className="bg-white p-3 border border-gray-300 rounded shadow">
+        <p className="font-semibold">{label}</p>
+        {payload.map((entry, index: number) => (
+          <p key={index} style={{ color: entry.color }} className="text-sm">
+            {entry.name}: {typeof entry.value === 'number' ? entry.value.toFixed(1) : entry.value} min
+          </p>
+        ))}
+      </div>
+    );
+  }
+  return null;
+}
+
+function JobBreakdownTooltip({ active, payload, label }: { active?: boolean; payload?: TooltipPayloadEntry[]; label?: string }) {
+  if (active && payload && payload.length) {
+    return (
+      <div className="bg-white p-3 border border-gray-300 rounded shadow">
+        <p className="font-semibold">{label}</p>
+        {payload.map((entry, index: number) => (
+          <p key={index} style={{ color: entry.color }} className="text-sm">
+            {entry.name}: {typeof entry.value === 'number' ? entry.value.toFixed(1) : entry.value} min
+          </p>
+        ))}
+      </div>
+    );
+  }
+  return null;
+}
+
 export default function PipelineRunsDurationCard({
   dataByAggregation,
   runsByDay,
@@ -37,6 +69,7 @@ export default function PipelineRunsDurationCard({
 }) {
   const { urlBuilder } = useLinkBuilder();
   const [activeTab, setActiveTab] = useState<ActiveTab>('duration');
+  const [hiddenJobNames, setHiddenJobNames] = useState<Set<string>>(new Set());
 
   const sortedDailyRuns = useMemo(
     () => [...ensureArray<RunsByDayData>(runsByDay)].sort((a, b) => a.day.localeCompare(b.day)),
@@ -80,38 +113,19 @@ export default function PipelineRunsDurationCard({
     const allJobNames = Array.from(jobSet).sort();
     return { jobBreakdownData, allJobNames };
   }, [jobsDurationByWorkflow]);
+  const visibleJobNames = allJobNames.filter((name) => !hiddenJobNames.has(name));
 
-  const DurationTooltip = ({ active, payload, label }: { active?: boolean; payload?: TooltipPayloadEntry[]; label?: string }) => {
-    if (active && payload && payload.length) {
-      return (
-        <div className="bg-white p-3 border border-gray-300 rounded shadow">
-          <p className="font-semibold">{label}</p>
-          {payload.map((entry, index: number) => (
-            <p key={index} style={{ color: entry.color }} className="text-sm">
-              {entry.name}: {typeof entry.value === 'number' ? entry.value.toFixed(1) : entry.value} min
-            </p>
-          ))}
-        </div>
-      );
-    }
-    return null;
-  };
-
-  const JobBreakdownTooltip = ({ active, payload, label }: { active?: boolean; payload?: TooltipPayloadEntry[]; label?: string }) => {
-    if (active && payload && payload.length) {
-      return (
-        <div className="bg-white p-3 border border-gray-300 rounded shadow">
-          <p className="font-semibold">{label}</p>
-          {payload.map((entry, index: number) => (
-            <p key={index} style={{ color: entry.color }} className="text-sm">
-              {entry.name}: {typeof entry.value === 'number' ? entry.value.toFixed(1) : entry.value} min
-            </p>
-          ))}
-        </div>
-      );
-    }
-    return null;
-  };
+  const toggleJob = useCallback((jobName: string) => {
+    setHiddenJobNames((current) => {
+      const next = new Set(current);
+      if (next.has(jobName)) {
+        next.delete(jobName);
+      } else {
+        next.add(jobName);
+      }
+      return next;
+    });
+  }, []);
 
   return (
     <Card>
@@ -196,23 +210,69 @@ export default function PipelineRunsDurationCard({
         )}
 
         {activeTab === 'job-breakdown' && (
-          <ResponsiveContainer width="100%" height={Math.max(300, jobBreakdownData.length * 60)}>
-            <BarChart data={jobBreakdownData} layout="vertical">
-              <CartesianGrid strokeDasharray="3 3" />
-              <XAxis type="number" unit=" min" />
-              <YAxis type="category" dataKey="workflow" width={180} />
-              <Tooltip content={<JobBreakdownTooltip />} />
-              <Legend />
-              {allJobNames.map((name, i) => (
-                <Bar
-                  key={name}
-                  dataKey={name}
-                  stackId="jobs"
-                  fill={JOB_COLORS[i % JOB_COLORS.length]}
-                />
-              ))}
-            </BarChart>
-          </ResponsiveContainer>
+          <>
+            {allJobNames.length > 0 && (
+              <div className="mb-4 flex flex-wrap items-center gap-2" aria-label="Toggle job breakdown jobs">
+                {allJobNames.map((name, index) => (
+                  <label
+                    key={name}
+                    className="inline-flex h-8 max-w-full items-center gap-2 rounded-md border border-gray-200 bg-white px-3 text-sm font-medium text-gray-700 shadow-sm"
+                    title={name}
+                  >
+                    <input
+                      type="checkbox"
+                      checked={!hiddenJobNames.has(name)}
+                      onChange={() => toggleJob(name)}
+                      className="h-4 w-4 rounded border-gray-300"
+                    />
+                    <span
+                      aria-hidden="true"
+                      className="h-2.5 w-2.5 shrink-0 rounded-full"
+                      style={{ backgroundColor: JOB_COLORS[index % JOB_COLORS.length] }}
+                    />
+                    <span className="truncate">{name}</span>
+                  </label>
+                ))}
+                <button
+                  type="button"
+                  onClick={() => setHiddenJobNames(new Set())}
+                  className="h-8 rounded-md border border-gray-200 bg-white px-3 text-sm font-medium text-gray-700 shadow-sm hover:bg-gray-50"
+                >
+                  Select all
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setHiddenJobNames(new Set(allJobNames))}
+                  className="h-8 rounded-md border border-gray-200 bg-white px-3 text-sm font-medium text-gray-700 shadow-sm hover:bg-gray-50"
+                >
+                  Hide all
+                </button>
+              </div>
+            )}
+            {visibleJobNames.length === 0 && allJobNames.length > 0 && (
+              <p className="mb-4 text-sm text-gray-600">No jobs selected.</p>
+            )}
+            <ResponsiveContainer width="100%" height={Math.max(300, jobBreakdownData.length * 60)}>
+              <BarChart data={jobBreakdownData} layout="vertical">
+                <CartesianGrid strokeDasharray="3 3" />
+                <XAxis type="number" unit=" min" />
+                <YAxis type="category" dataKey="workflow" width={180} />
+                <Tooltip content={<JobBreakdownTooltip />} />
+                <Legend />
+                {visibleJobNames.map((name) => {
+                  const colorIndex = Math.max(allJobNames.indexOf(name), 0);
+                  return (
+                    <Bar
+                      key={name}
+                      dataKey={name}
+                      stackId="jobs"
+                      fill={JOB_COLORS[colorIndex % JOB_COLORS.length]}
+                    />
+                  );
+                })}
+              </BarChart>
+            </ResponsiveContainer>
+          </>
         )}
 
         {activeTab === 'daily-runs' && (
@@ -231,4 +291,3 @@ export default function PipelineRunsDurationCard({
     </Card>
   );
 }
-

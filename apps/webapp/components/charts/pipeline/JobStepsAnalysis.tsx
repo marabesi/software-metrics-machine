@@ -1,8 +1,8 @@
 'use client';
 
-import { useMemo } from 'react';
+import { useCallback, useMemo, useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { BarChart, Bar, XAxis, YAxis, Tooltip, Legend, ResponsiveContainer, Cell, CartesianGrid } from 'recharts';
+import { BarChart, Bar, XAxis, YAxis, Tooltip, Legend, ResponsiveContainer, CartesianGrid } from 'recharts';
 import { JobStepsAverageTimeData, JobStepsAverageTimeByDayData } from './types';
 
 // Generate a sequence of colors for the stacked bars
@@ -20,9 +20,23 @@ export default function JobStepsAnalysis({
   dataByDay: JobStepsAverageTimeByDayData[];
   jobName: string;
 }) {
+  const [hiddenStepNames, setHiddenStepNames] = useState<Set<string>>(new Set());
   const totalTime = useMemo(() => {
     return data.reduce((sum, step) => sum + step.averageDurationMinutes, 0);
   }, [data]);
+  const visibleSteps = data.filter((step) => !hiddenStepNames.has(step.name));
+
+  const toggleStep = useCallback((stepName: string) => {
+    setHiddenStepNames((current) => {
+      const next = new Set(current);
+      if (next.has(stepName)) {
+        next.delete(stepName);
+      } else {
+        next.add(stepName);
+      }
+      return next;
+    });
+  }, []);
 
   if (!data || data.length === 0) {
     return null;
@@ -47,34 +61,78 @@ export default function JobStepsAnalysis({
       <CardContent>
         {/* Daily Stacked Bar Chart showing step durations over time */}
         {dataByDay && dataByDay.length > 0 && (
-          <div className="h-64 mb-10">
+          <div className="mb-10">
             <h4 className="text-sm font-semibold mb-4 text-gray-700">Average Duration By Day</h4>
-            <ResponsiveContainer width="100%" height="100%">
-              <BarChart
-                data={dataByDay}
-                margin={{ top: 20, right: 30, left: 20, bottom: 5 }}
-              >
-                <CartesianGrid strokeDasharray="3 3" />
-                <XAxis dataKey="day" />
-                <YAxis 
-                  tickFormatter={(value) => formatTime(Number(value) || 0)}
-                />
-                <Tooltip 
-                  formatter={(value: any, name: any) => [formatTime(Number(value) || 0), name]}
-                  wrapperStyle={{ zIndex: 1000 }}
-                />
-                <Legend />
-                {data.map((step, index) => (
-                  <Bar 
-                    key={step.name} 
-                    dataKey={step.name} 
-                    stackId="a" 
-                    fill={COLORS[index % COLORS.length]} 
-                    name={step.name}
+            <div className="mb-4 flex flex-wrap items-center gap-2" aria-label="Toggle step duration bars">
+              {data.map((step, index) => (
+                <label
+                  key={step.name}
+                  className="inline-flex h-8 max-w-full items-center gap-2 rounded-md border border-gray-200 bg-white px-3 text-sm font-medium text-gray-700 shadow-sm"
+                  title={step.name}
+                >
+                  <input
+                    type="checkbox"
+                    checked={!hiddenStepNames.has(step.name)}
+                    onChange={() => toggleStep(step.name)}
+                    className="h-4 w-4 rounded border-gray-300"
                   />
-                ))}
-              </BarChart>
-            </ResponsiveContainer>
+                  <span
+                    aria-hidden="true"
+                    className="h-2.5 w-2.5 shrink-0 rounded-full"
+                    style={{ backgroundColor: COLORS[index % COLORS.length] }}
+                  />
+                  <span className="truncate">{step.name}</span>
+                </label>
+              ))}
+              <button
+                type="button"
+                onClick={() => setHiddenStepNames(new Set())}
+                className="h-8 rounded-md border border-gray-200 bg-white px-3 text-sm font-medium text-gray-700 shadow-sm hover:bg-gray-50"
+              >
+                Select all
+              </button>
+              <button
+                type="button"
+                onClick={() => setHiddenStepNames(new Set(data.map((step) => step.name)))}
+                className="h-8 rounded-md border border-gray-200 bg-white px-3 text-sm font-medium text-gray-700 shadow-sm hover:bg-gray-50"
+              >
+                Hide all
+              </button>
+            </div>
+            {visibleSteps.length === 0 && (
+              <p className="mb-4 text-sm text-gray-600">No steps selected.</p>
+            )}
+            <div className="h-64">
+              <ResponsiveContainer width="100%" height="100%">
+                <BarChart
+                  data={dataByDay}
+                  margin={{ top: 20, right: 30, left: 20, bottom: 5 }}
+                >
+                  <CartesianGrid strokeDasharray="3 3" />
+                  <XAxis dataKey="day" />
+                  <YAxis
+                    tickFormatter={(value) => formatTime(Number(value) || 0)}
+                  />
+                  <Tooltip
+                    formatter={(value: unknown, name: unknown) => [formatTime(Number(value) || 0), String(name)]}
+                    wrapperStyle={{ zIndex: 1000 }}
+                  />
+                  <Legend />
+                  {visibleSteps.map((step) => {
+                    const colorIndex = Math.max(data.findIndex((item) => item.name === step.name), 0);
+                    return (
+                      <Bar
+                        key={step.name}
+                        dataKey={step.name}
+                        stackId="a"
+                        fill={COLORS[colorIndex % COLORS.length]}
+                        name={step.name}
+                      />
+                    );
+                  })}
+                </BarChart>
+              </ResponsiveContainer>
+            </div>
           </div>
         )}
 
