@@ -36,6 +36,27 @@ function createPRService(): PRsService {
   return new PRsService(prRepository);
 }
 
+function parseCsvList(value?: string): string[] {
+  return (value || '')
+    .split(',')
+    .map((item) => item.trim())
+    .filter((item) => item.length > 0);
+}
+
+function buildPRFilters(options: {
+  startDate?: string;
+  endDate?: string;
+  excludeAuthors?: string;
+  excludeCommenters?: string;
+}) {
+  return {
+    startDate: options.startDate,
+    endDate: options.endDate,
+    excludeAuthors: parseCsvList(options.excludeAuthors),
+    excludeCommenters: parseCsvList(options.excludeCommenters),
+  };
+}
+
 /**
  * PRs Command Group
  *
@@ -121,16 +142,16 @@ export function createPRsCommands(program: Command): void {
     .description('View PR summary statistics')
     .option('--start-date <date>', 'Filter PRs created on or after this date')
     .option('--end-date <date>', 'Filter PRs created on or before this date')
+    .option('--exclude-authors <authors>', 'Comma-separated PR authors to exclude')
+    .option('--exclude-commenters <commenters>', 'Comma-separated PR commenters to exclude')
     .option('--output <format>', 'Output format (text|json)', 'text')
     .action(async (options) => {
       try {
         console.log('📊 Generating PR summary...');
 
         const service = createPRService();
-        const summary = await service.getMetrics({
-          startDate: options.startDate,
-          endDate: options.endDate,
-        });
+        const filters = buildPRFilters(options);
+        const summary = await service.getMetrics(filters);
 
         if (options.output === 'json') {
           console.log(JSON.stringify(summary, null, 2));
@@ -143,14 +164,8 @@ export function createPRsCommands(program: Command): void {
           console.log(`Average Comments: ${summary.averageComments || 'N/A'}`);
 
           // Fetch review metrics
-          const commentsByAuthor = await service.getCommentsByAuthor(
-            { startDate: options.startDate, endDate: options.endDate },
-            10
-          );
-          const firstCommentTime = await service.getFirstCommentTime(
-            { startDate: options.startDate, endDate: options.endDate },
-            10
-          );
+          const commentsByAuthor = await service.getCommentsByAuthor(filters, 10);
+          const firstCommentTime = await service.getFirstCommentTime(filters, 10);
 
           if (commentsByAuthor && commentsByAuthor.length > 0) {
             console.log('\nTop Commenters:\n');
@@ -194,16 +209,15 @@ export function createPRsCommands(program: Command): void {
     .description('View PR metrics grouped by month')
     .option('--start-date <date>', 'Filter PRs created on or after this date')
     .option('--end-date <date>', 'Filter PRs created on or before this date')
+    .option('--exclude-authors <authors>', 'Comma-separated PR authors to exclude')
+    .option('--exclude-commenters <commenters>', 'Comma-separated PR commenters to exclude')
     .option('--output <format>', 'Output format (text|json)', 'text')
     .action(async (options) => {
       try {
         console.log('📊 Analyzing PRs by month...');
 
         const service = createPRService();
-        const metrics = await service.getMetricsByMonth({
-          startDate: options.startDate,
-          endDate: options.endDate,
-        });
+        const metrics = await service.getMetricsByMonth(buildPRFilters(options));
 
         if (options.output === 'json') {
           console.log(JSON.stringify(metrics, null, 2));
@@ -228,16 +242,15 @@ export function createPRsCommands(program: Command): void {
     .description('View PR metrics grouped by week')
     .option('--start-date <date>', 'Filter PRs created on or after this date')
     .option('--end-date <date>', 'Filter PRs created on or before this date')
+    .option('--exclude-authors <authors>', 'Comma-separated PR authors to exclude')
+    .option('--exclude-commenters <commenters>', 'Comma-separated PR commenters to exclude')
     .option('--output <format>', 'Output format (text|json)', 'text')
     .action(async (options) => {
       try {
         console.log('📊 Analyzing PRs by week...');
 
         const service = createPRService();
-        const metrics = await service.getMetricsByWeek({
-          startDate: options.startDate,
-          endDate: options.endDate,
-        });
+        const metrics = await service.getMetricsByWeek(buildPRFilters(options));
 
         if (options.output === 'json') {
           console.log(JSON.stringify(metrics, null, 2));

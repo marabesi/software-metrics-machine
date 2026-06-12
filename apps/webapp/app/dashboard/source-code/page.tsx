@@ -103,16 +103,6 @@ export default async function SourceCodePage({
       <div className="grid grid-cols-1 gap-6">
         <CodeChurnOverTimeCard data={codeChurn} />
       </div>
-      <div className="grid grid-cols-1 gap-6">
-        <EntityChurnCard data={entityChurn} topEntries={filters.topEntries} />
-      </div>
-      <div className="grid grid-cols-1 gap-6">
-        <EntityEffortCard data={entityEffort} topEntries={filters.topEntries} />
-        <EntityEffortTreemap data={entityEffort} />
-      </div>
-      <div className="grid grid-cols-1 gap-6">
-        <EntityOwnershipCard data={entityOwnership} />
-      </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <Card>
@@ -153,6 +143,16 @@ export default async function SourceCodePage({
         </Card>
 
         <LatestPairedCommitsCard data={latestPairedCommits} />
+      </div>
+      <div className="grid grid-cols-1 gap-6">
+        <EntityChurnCard data={entityChurn} topEntries={filters.topEntries} />
+      </div>
+      <div className="grid grid-cols-1 gap-6">
+        <EntityEffortCard data={entityEffort} topEntries={filters.topEntries} />
+        <EntityEffortTreemap data={entityEffort} />
+      </div>
+      <div className="grid grid-cols-1 gap-6">
+        <EntityOwnershipCard data={entityOwnership} />
       </div>
 
       <CodeCouplingCard data={coupling} />

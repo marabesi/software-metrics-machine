@@ -1,20 +1,31 @@
 import { IRepository } from '../infrastructure';
-import { PullRequestJsonResponse } from '../providers/github/github-response-types';
+import {
+  PullRequestCommentJsonResponse,
+  PullRequestJsonResponse,
+} from '../providers/github/github-response-types';
 
 export type PullRequestFilterOptions = {
   authors: string[];
   labels: string[];
 };
 
+export type PullRequestFilterOptionsResult = PullRequestFilterOptions & {
+  commenters: string[];
+};
+
 export class PullRequestFiltersRepository {
   constructor(
     private pullRequestFileSystemRepository: IRepository<PullRequestJsonResponse>,
+    private pullRequestCommentsFileSystemRepository: IRepository<PullRequestCommentJsonResponse>,
     private pullRequestFiltersFileSystemRepository: IRepository<PullRequestFilterOptions>
   ) {}
 
-  async loadOptions(): Promise<PullRequestFilterOptions> {
-    const cachedOptions = await this.pullRequestFiltersFileSystemRepository.load();
-    return cachedOptions || this.refreshOptions();
+  async loadOptions(): Promise<PullRequestFilterOptionsResult> {
+    const cachedOptions = (await this.pullRequestFiltersFileSystemRepository.load()) || await this.refreshOptions();
+    return {
+      ...cachedOptions,
+      commenters: await this.loadCommenterOptions(),
+    };
   }
 
   async refreshOptions(): Promise<PullRequestFilterOptions> {
@@ -37,6 +48,17 @@ export class PullRequestFiltersRepository {
 
     await this.pullRequestFiltersFileSystemRepository.save(options);
     return options;
+  }
+
+  private async loadCommenterOptions(): Promise<string[]> {
+    const comments = await this.pullRequestCommentsFileSystemRepository.loadAll();
+    const commenters = new Set<string>();
+
+    for (const comment of comments) {
+      this.addValue(commenters, comment.user?.login);
+    }
+
+    return this.sortedValues(commenters);
   }
 
   private addValue(target: Set<string>, value?: string | null): void {

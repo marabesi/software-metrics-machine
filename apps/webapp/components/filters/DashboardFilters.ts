@@ -13,6 +13,8 @@ export interface DashboardFilters {
 
   // PR filters
   authorSelect: string[];
+  excludeAuthorSelect: string[];
+  excludeCommenterSelect: string[];
   labelSelector: string[];
   pullRequestStatus?: 'open' | 'closed' | 'merged' | 'draft';
   aggregateBy?: string;
@@ -43,6 +45,8 @@ export const defaultFilters: DashboardFilters = {
   branch: [],
   event: [],
   authorSelect: [],
+  excludeAuthorSelect: [],
+  excludeCommenterSelect: [],
   labelSelector: [],
   aggregateBy: 'week',
   ignorePatternFiles: '',
@@ -110,6 +114,8 @@ export function parseDashboardFilters(
     topEntries: toNumber(getSingleValue(searchParams.topEntries), fallback.topEntries) || fallback.topEntries,
     typeChurn: getSingleValue(searchParams.typeChurn) || fallback.typeChurn,
     authorSelect: getArrayValue(searchParams.authorSelect),
+    excludeAuthorSelect: getArrayValue(searchParams.excludeAuthorSelect),
+    excludeCommenterSelect: getArrayValue(searchParams.excludeCommenterSelect),
     labelSelector: getArrayValue(searchParams.labelSelector),
     pullRequestStatus: getSingleValue(searchParams.pullRequestStatus) as DashboardFilters['pullRequestStatus'] || fallback.pullRequestStatus,
     aggregateBy: getSingleValue(searchParams.aggregateBy) || fallback.aggregateBy,
@@ -151,6 +157,8 @@ export function serializeDashboardFilters(filters: DashboardFilters): URLSearchP
   append('topEntries', filters.topEntries);
   append('typeChurn', filters.typeChurn);
   appendList('authorSelect', filters.authorSelect);
+  appendList('excludeAuthorSelect', filters.excludeAuthorSelect);
+  appendList('excludeCommenterSelect', filters.excludeCommenterSelect);
   appendList('labelSelector', filters.labelSelector);
   append('pullRequestStatus', filters.pullRequestStatus);
   append('aggregateBy', filters.aggregateBy);

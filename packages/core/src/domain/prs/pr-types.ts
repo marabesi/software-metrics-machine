@@ -56,6 +56,8 @@ export interface PRFilters {
   startDate?: string;
   endDate?: string;
   authors?: string[];
+  excludeAuthors?: string[];
+  excludeCommenters?: string[];
   labels?: string[];
   state?: PRStatus;
 }

@@ -225,6 +225,24 @@ describe('CLI Commands', () => {
       expect(formatOption).toBeDefined();
     });
 
+    it('prs commands should expose exclude author and commenter filters', () => {
+      const prsCmd = program.commands.find((cmd) => cmd.name() === 'prs');
+      const metricCommands = ['summary', 'by-month', 'by-week'];
+
+      for (const commandName of metricCommands) {
+        const command = prsCmd?.commands.find((cmd) => cmd.name() === commandName);
+        const excludeAuthorsOption = command?.options.find(
+          (opt) => opt.long === '--exclude-authors'
+        );
+        const excludeCommentersOption = command?.options.find(
+          (opt) => opt.long === '--exclude-commenters'
+        );
+
+        expect(excludeAuthorsOption).toBeDefined();
+        expect(excludeCommentersOption).toBeDefined();
+      }
+    });
+
     describe('Command Descriptions', () => {
       it('should have descriptive help text', () => {
         const prsCmd = program.commands.find((cmd) => cmd.name() === 'prs');

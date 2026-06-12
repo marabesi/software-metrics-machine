@@ -28,6 +28,9 @@ export class PullRequestsRepository implements IReadPullRequestsRepository {
       const authorSet = filters.authors?.length
         ? new Set(filters.authors.map((a) => a.toLowerCase()))
         : null;
+      const excludeAuthorSet = filters.excludeAuthors?.length
+        ? new Set(filters.excludeAuthors.map((a) => a.toLowerCase()))
+        : null;
       const labelSet = filters.labels?.length
         ? new Set(filters.labels.map((l) => l.toLowerCase()))
         : null;
@@ -40,6 +43,10 @@ export class PullRequestsRepository implements IReadPullRequestsRepository {
         }
 
         if (authorSet && !authorSet.has((pr.user?.login || 'unknown').toLowerCase())) {
+          return false;
+        }
+
+        if (excludeAuthorSet && excludeAuthorSet.has((pr.user?.login || 'unknown').toLowerCase())) {
           return false;
         }
 
@@ -57,10 +64,18 @@ export class PullRequestsRepository implements IReadPullRequestsRepository {
       });
     }
 
+    const excludeCommenterSet = filters?.excludeCommenters?.length
+      ? new Set(filters.excludeCommenters.map((commenter) => commenter.toLowerCase()))
+      : null;
+
     return rawPrs.map((pr: PullRequestJsonResponse) => {
-      const commentsForPr = allComments.filter((comment) =>
-        comment.pull_request_url.includes(`/pulls/${pr.number}`)
-      );
+      const commentsForPr = allComments
+        .filter((comment) => comment.pull_request_url.includes(`/pulls/${pr.number}`))
+        .filter(
+          (comment) =>
+            !excludeCommenterSet ||
+            !excludeCommenterSet.has((comment.user?.login || 'unknown').toLowerCase())
+        );
 
       return {
         id: Number(pr.id),

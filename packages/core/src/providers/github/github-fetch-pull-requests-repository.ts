@@ -43,6 +43,7 @@ export class GitHubPullRequestsFetchRepository implements IPullRequestsRepositor
     );
     this.pullRequestFiltersRepository = new PullRequestFiltersRepository(
       this.pullRequestStoreFile,
+      this.pullRequestCommentsStoreFile,
       pullRequestFiltersStoreFile
     );
   }

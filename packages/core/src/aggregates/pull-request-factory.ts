@@ -19,6 +19,7 @@ export class PullRequestFactory {
     const repositories = this.createRepositories(config);
     return new PullRequestFiltersRepository(
       repositories.cache,
+      repositories.pullRequestCommentsStoreFile,
       repositories.pullRequestFiltersStoreFile
     );
   }

@@ -16,6 +16,8 @@ export interface DashboardFilters {
   topEntries?: number;
   typeChurn?: string;
   authorSelect?: string[];
+  excludeAuthorSelect?: string[];
+  excludeCommenterSelect?: string[];
   labelSelector?: string[];
   pullRequestStatus?: 'open' | 'closed' | 'merged' | 'draft';
   aggregateBy?: string;
@@ -66,6 +68,12 @@ export function buildPullRequestApiParams(filters: DashboardFilters): ApiParams 
     start_date: filters.startDate,
     end_date: filters.endDate,
     authors: filters.authorSelect?.length ? filters.authorSelect.join(',') : undefined,
+    exclude_authors: filters.excludeAuthorSelect?.length
+      ? filters.excludeAuthorSelect.join(',')
+      : undefined,
+    exclude_commenters: filters.excludeCommenterSelect?.length
+      ? filters.excludeCommenterSelect.join(',')
+      : undefined,
     labels: filters.labelSelector?.length ? filters.labelSelector.join(',') : undefined,
     status: filters.pullRequestStatus,
     aggregate_by: filters.aggregateBy,

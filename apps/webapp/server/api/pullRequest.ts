@@ -54,6 +54,7 @@ export const pullRequestAPI = {
   getFilterOptions: () =>
     fetchAPI<{
       authors: string[];
+      commenters: string[];
       labels: string[];
     }>('/pull-requests/filter-options'),
 };

@@ -33,6 +33,7 @@ export default function FiltersContainer({ repository }: { repository: string })
   const [branchOptions, setBranchOptions] = useState<string[]>([]);
   const [eventOptions, setEventOptions] = useState<string[]>([]);
   const [authorOptions, setAuthorOptions] = useState<string[]>([]);
+  const [commenterOptions, setCommenterOptions] = useState<string[]>([]);
   const [authorSourceCodeOptions, setAuthorSourceCodeOptions] = useState<string[]>([]);
   const [labelOptions, setLabelOptions] = useState<string[]>([]);
 
@@ -74,9 +75,11 @@ export default function FiltersContainer({ repository }: { repository: string })
 
         const pullRequestOptions = await pullRequestAPI.getFilterOptions().catch(() => ({
           authors: [],
+          commenters: [],
           labels: [],
         }));
         setAuthorOptions(pullRequestOptions.authors);
+        setCommenterOptions(pullRequestOptions.commenters || []);
 
         const sourceCodeAuthors = await sourceCodeAPI.getAuthors().catch(() => []);
         setAuthorSourceCodeOptions(sourceCodeAuthors);
@@ -190,6 +193,18 @@ export default function FiltersContainer({ repository }: { repository: string })
               values={filters.authorSelect}
               options={authorOptions}
               onChange={(values) => updateFilter('authorSelect', values)}
+            />
+            <MultiSelectFilter
+              label="Exclude Authors"
+              values={filters.excludeAuthorSelect}
+              options={authorOptions}
+              onChange={(values) => updateFilter('excludeAuthorSelect', values)}
+            />
+            <MultiSelectFilter
+              label="Exclude Commenters"
+              values={filters.excludeCommenterSelect}
+              options={commenterOptions}
+              onChange={(values) => updateFilter('excludeCommenterSelect', values)}
             />
             <MultiSelectFilter
               label="Labels"

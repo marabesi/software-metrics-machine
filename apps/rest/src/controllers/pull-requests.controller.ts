@@ -21,14 +21,18 @@ export class PullRequestsController {
     @Query('start_date') startDate?: string,
     @Query('end_date') endDate?: string,
     @Query('authors') authors?: string,
+    @Query('exclude_authors') excludeAuthors?: string,
+    @Query('exclude_commenters') excludeCommenters?: string,
     @Query('labels') labels?: string,
     @Query('status') status?: PRDetails['state']
   ) {
     const realFilters = {
       startDate,
       endDate,
-      authors: authors?.split(',') || [],
-      labels: labels?.split(',') || [],
+      authors: this.parseCsvList(authors),
+      excludeAuthors: this.parseCsvList(excludeAuthors),
+      excludeCommenters: this.parseCsvList(excludeCommenters),
+      labels: this.parseCsvList(labels),
       state: status,
     };
     return this.prsService.getSummary(realFilters);
@@ -40,11 +44,21 @@ export class PullRequestsController {
     @Query('end_date') endDate?: string,
     @Query('aggregate_by') aggregateBy?: string,
     @Query('authors') authors?: string,
+    @Query('exclude_authors') excludeAuthors?: string,
+    @Query('exclude_commenters') excludeCommenters?: string,
     @Query('labels') labels?: string,
     @Query('status') status?: PRDetails['state']
   ) {
     const mode = this.normalizeAggregation(aggregateBy);
-    const prs = await this.loadPRsWithFilters({ startDate, endDate, authors, labels, status });
+    const prs = await this.loadPRsWithFilters({
+      startDate,
+      endDate,
+      authors,
+      excludeAuthors,
+      excludeCommenters,
+      labels,
+      status,
+    });
     const counts = new Map<string, { Opened: number; Closed: number }>();
 
     for (const pr of prs) {
@@ -81,9 +95,19 @@ export class PullRequestsController {
     @Query('labels') labels?: string,
     @Query('top') top?: string,
     @Query('authors') authors?: string,
+    @Query('exclude_authors') excludeAuthors?: string,
+    @Query('exclude_commenters') excludeCommenters?: string,
     @Query('status') status?: PRDetails['state']
   ) {
-    const prs = await this.loadPRsWithFilters({ startDate, endDate, authors, labels, status });
+    const prs = await this.loadPRsWithFilters({
+      startDate,
+      endDate,
+      authors,
+      excludeAuthors,
+      excludeCommenters,
+      labels,
+      status,
+    });
     const grouped = new Map<string, number>();
 
     for (const pr of prs) {
@@ -107,9 +131,19 @@ export class PullRequestsController {
     @Query('labels') labels?: string,
     @Query('top') top?: string,
     @Query('authors') authors?: string,
+    @Query('exclude_authors') excludeAuthors?: string,
+    @Query('exclude_commenters') excludeCommenters?: string,
     @Query('status') status?: PRDetails['state']
   ) {
-    const prs = await this.loadPRsWithFilters({ startDate, endDate, authors, labels, status });
+    const prs = await this.loadPRsWithFilters({
+      startDate,
+      endDate,
+      authors,
+      excludeAuthors,
+      excludeCommenters,
+      labels,
+      status,
+    });
     const merged = prs.filter((pr) => Boolean(pr.mergedAt) || Boolean(pr.closedAt));
     const grouped = new Map<string, number[]>();
 
@@ -142,10 +176,20 @@ export class PullRequestsController {
     @Query('aggregate_by') aggregateBy?: string,
     @Query('labels') labels?: string,
     @Query('authors') authors?: string,
+    @Query('exclude_authors') excludeAuthors?: string,
+    @Query('exclude_commenters') excludeCommenters?: string,
     @Query('status') status?: PRDetails['state']
   ) {
     const mode = this.normalizeAggregation(aggregateBy);
-    const prs = await this.loadPRsWithFilters({ startDate, endDate, authors, labels, status });
+    const prs = await this.loadPRsWithFilters({
+      startDate,
+      endDate,
+      authors,
+      excludeAuthors,
+      excludeCommenters,
+      labels,
+      status,
+    });
     const grouped = new Map<string, number[]>();
 
     for (const pr of prs) {
@@ -172,9 +216,19 @@ export class PullRequestsController {
     @Query('end_date') endDate?: string,
     @Query('labels') labels?: string,
     @Query('authors') authors?: string,
+    @Query('exclude_authors') excludeAuthors?: string,
+    @Query('exclude_commenters') excludeCommenters?: string,
     @Query('status') status?: PRDetails['state']
   ) {
-    const prs = await this.loadPRsWithFilters({ startDate, endDate, authors, labels, status });
+    const prs = await this.loadPRsWithFilters({
+      startDate,
+      endDate,
+      authors,
+      excludeAuthors,
+      excludeCommenters,
+      labels,
+      status,
+    });
     const totalComments = prs.reduce((sum, pr) => sum + (pr.totalComments || 0), 0);
     const avgComments = prs.length > 0 ? totalComments / prs.length : 0;
     return { avg_comments: avgComments };
@@ -187,9 +241,19 @@ export class PullRequestsController {
     @Query('labels') labels?: string,
     @Query('top') top?: string,
     @Query('authors') authors?: string,
+    @Query('exclude_authors') excludeAuthors?: string,
+    @Query('exclude_commenters') excludeCommenters?: string,
     @Query('status') status?: PRDetails['state']
   ) {
-    const prs = await this.loadPRsWithFilters({ startDate, endDate, authors, labels, status });
+    const prs = await this.loadPRsWithFilters({
+      startDate,
+      endDate,
+      authors,
+      excludeAuthors,
+      excludeCommenters,
+      labels,
+      status,
+    });
     const grouped = new Map<string, number>();
 
     for (const pr of prs) {
@@ -215,9 +279,19 @@ export class PullRequestsController {
     @Query('labels') labels?: string,
     @Query('top') top?: string,
     @Query('authors') authors?: string,
+    @Query('exclude_authors') excludeAuthors?: string,
+    @Query('exclude_commenters') excludeCommenters?: string,
     @Query('status') status?: PRDetails['state']
   ) {
-    const prs = await this.loadPRsWithFilters({ startDate, endDate, authors, labels, status });
+    const prs = await this.loadPRsWithFilters({
+      startDate,
+      endDate,
+      authors,
+      excludeAuthors,
+      excludeCommenters,
+      labels,
+      status,
+    });
     const grouped = new Map<string, number[]>();
 
     for (const pr of prs) {
@@ -317,16 +391,27 @@ export class PullRequestsController {
     startDate?: string;
     endDate?: string;
     authors?: string;
+    excludeAuthors?: string;
+    excludeCommenters?: string;
     labels?: string;
     status?: PRDetails['state'];
   }): Promise<PRDetails[]> {
     const realFilters = {
       startDate: filters.startDate,
       endDate: filters.endDate,
-      authors: filters.authors?.split(',') || [],
-      labels: filters.labels?.split(',') || [],
+      authors: this.parseCsvList(filters.authors),
+      excludeAuthors: this.parseCsvList(filters.excludeAuthors),
+      excludeCommenters: this.parseCsvList(filters.excludeCommenters),
+      labels: this.parseCsvList(filters.labels),
       state: filters.status,
     };
     return await this.pullRequestsRepo.loadPrsWithFilters(realFilters);
+  }
+
+  private parseCsvList(value?: string): string[] {
+    return (value || '')
+      .split(',')
+      .map((item) => item.trim())
+      .filter((item) => item.length > 0);
   }
 }
