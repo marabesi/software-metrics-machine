@@ -1,6 +1,6 @@
 'use client';
 
-import { createContext, ReactElement, useCallback, useContext, useEffect, useMemo, useState } from 'react';
+import { createContext, ReactElement, useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import { DashboardFilters, defaultFilters, parseDashboardFilters, serializeDashboardFilters } from './DashboardFilters';
 
@@ -31,38 +31,25 @@ export const FiltersProvider = ({ initialFilters, children }: { initialFilters: 
   );
 
   const [filters, setFilters] = useState<DashboardFilters>(initialUrlFilters);
-  const [shouldSyncToUrl, setShouldSyncToUrl] = useState(false);
+  const shouldSyncToUrl = useRef(false);
 
   useEffect(() => {
-    setFilters((currentFilters) => {
-      const nextFilters = parseDashboardFilters(Object.fromEntries(searchParams.entries()), initialFilters);
-      return JSON.stringify(currentFilters) === JSON.stringify(nextFilters) ? currentFilters : nextFilters;
-    });
-  }, [initialFilters, searchParams]);
+    if (!shouldSyncToUrl.current) return;
 
-  // Sync filters to URL after state updates complete (not during render)
-  useEffect(() => {
-    if (!shouldSyncToUrl) return;
-    
+    shouldSyncToUrl.current = false;
     const nextParams = serializeDashboardFilters(filters);
     const queryString = nextParams.toString();
     router.replace(queryString ? `${pathname}?${queryString}` : pathname, { scroll: false });
-    setShouldSyncToUrl(false);
-  }, [filters, pathname, shouldSyncToUrl]);
+  }, [filters, pathname, router]);
 
   const updateFilter = useCallback(<K extends keyof DashboardFilters>(key: K, value: DashboardFilters[K]) => {
-    setFilters((prev) => {
-      return {
-        ...prev,
-        [key]: value,
-      };
-    });
-    setShouldSyncToUrl(true);
+    setFilters((prev) => ({ ...prev, [key]: value }));
+    shouldSyncToUrl.current = true;
   }, []);
 
   const resetFilters = useCallback(() => {
     setFilters(defaultFilters);
-    setShouldSyncToUrl(true);
+    shouldSyncToUrl.current = true;
   }, []);
 
   const contextValue = useMemo(() => ({ filters, updateFilter, resetFilters }), [filters, resetFilters, updateFilter]);

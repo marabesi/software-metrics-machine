@@ -81,7 +81,7 @@ export class GithubWorkflowClient implements IGithubWorkflowClient {
     while (true) {
       this.logger.info(`Fetching workflow runs page ${page} for ${this.owner}/${this.repo}`);
 
-      const optionsParams: any = {
+      const optionsParams: { created?: string; rawFilters?: string } = {
         rawFilters,
       };
 

@@ -1,5 +1,4 @@
 import Card from '@mui/material/Card';
-import Link from 'next/link';
 import { DashboardFilters, defaultFilters, parseDashboardFilters } from "@/components/filters/DashboardFilters";
 import { CardContent, CardHeader } from '@mui/material';
 import { sourceCodeAPI, pipelineAPI, pullRequestAPI, ApiParams } from '@/server/api';

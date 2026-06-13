@@ -8,7 +8,15 @@ import {
   CodeMetricsQueryDto,
   QualityMetricsQueryDto,
 } from './dtos/index';
-import { ErrorResponse } from './dtos/response.dto';
+import {
+  ErrorResponse,
+  MetricsIssueResponse,
+  MetricsPRResponse,
+  MetricsDeploymentResponse,
+  MetricsCodeResponse,
+  MetricsQualityResponse,
+  MetricsFullReportResponse,
+} from './dtos/response.dto';
 
 /**
  * Metrics API Controller
@@ -38,14 +46,14 @@ export class MetricsController {
   @ApiQuery({ name: 'endDate', required: false, type: String, example: '2024-12-31' })
   @ApiOkResponse({ description: 'Issue metrics retrieved successfully', type: Object })
   @ApiResponse({ status: 400, description: 'Invalid query parameters', type: ErrorResponse })
-  async getIssueMetrics(@Query() query: IssueMetricsQueryDto) {
+  async getIssueMetrics(@Query() query: IssueMetricsQueryDto): Promise<MetricsIssueResponse> {
     try {
       this.logger.debug(`Fetching issue metrics: ${JSON.stringify(query)}`);
-      return await this.orchestrator.getIssueMetrics({
+      return (await this.orchestrator.getIssueMetrics({
         status: query.status,
         startDate: query.startDate,
         endDate: query.endDate,
-      });
+      })) as MetricsIssueResponse;
     } catch (error) {
       this.logger.error(
         `Failed to fetch issue metrics: ${error}`,
@@ -68,13 +76,13 @@ export class MetricsController {
   @ApiQuery({ name: 'endDate', required: false, type: String, example: '2024-12-31' })
   @ApiOkResponse({ description: 'Pull request metrics retrieved successfully', type: Object })
   @ApiResponse({ status: 500, description: 'Internal server error', type: ErrorResponse })
-  async getPRMetrics(@Query() query: PRMetricsQueryDto) {
+  async getPRMetrics(@Query() query: PRMetricsQueryDto): Promise<MetricsPRResponse> {
     try {
       this.logger.debug(`Fetching PR metrics: ${JSON.stringify(query)}`);
-      return await this.orchestrator.getPRMetrics({
+      return (await this.orchestrator.getPRMetrics({
         startDate: query.startDate,
         endDate: query.endDate,
-      });
+      })) as MetricsPRResponse;
     } catch (error) {
       this.logger.error(
         `Failed to fetch PR metrics: ${error}`,
@@ -101,14 +109,16 @@ export class MetricsController {
   @ApiQuery({ name: 'endDate', required: false, type: String })
   @ApiOkResponse({ description: 'Deployment metrics retrieved successfully', type: Object })
   @ApiResponse({ status: 500, description: 'Internal server error', type: ErrorResponse })
-  async getDeploymentMetrics(@Query() query: DeploymentMetricsQueryDto) {
+  async getDeploymentMetrics(
+    @Query() query: DeploymentMetricsQueryDto
+  ): Promise<MetricsDeploymentResponse> {
     try {
       this.logger.debug(`Fetching deployment metrics: ${JSON.stringify(query)}`);
-      return await this.orchestrator.getDeploymentMetrics({
+      return (await this.orchestrator.getDeploymentMetrics({
         frequency: query.frequency,
         startDate: query.startDate,
         endDate: query.endDate,
-      });
+      })) as MetricsDeploymentResponse;
     } catch (error) {
       this.logger.error(
         `Failed to fetch deployment metrics: ${error}`,
@@ -132,14 +142,14 @@ export class MetricsController {
   @ApiQuery({ name: 'endDate', required: false, type: String })
   @ApiOkResponse({ description: 'Code metrics retrieved successfully', type: Object })
   @ApiResponse({ status: 500, description: 'Internal server error', type: ErrorResponse })
-  async getCodeMetrics(@Query() query: CodeMetricsQueryDto) {
+  async getCodeMetrics(@Query() query: CodeMetricsQueryDto): Promise<MetricsCodeResponse> {
     try {
       this.logger.debug(`Fetching code metrics: ${JSON.stringify(query)}`);
-      return await this.orchestrator.getCodeMetrics({
+      return (await this.orchestrator.getCodeMetrics({
         selectedAuthors: query.selectedAuthors,
         startDate: query.startDate,
         endDate: query.endDate,
-      });
+      })) as MetricsCodeResponse;
     } catch (error) {
       this.logger.error(
         `Failed to fetch code metrics: ${error}`,
@@ -161,10 +171,10 @@ export class MetricsController {
   @ApiQuery({ name: 'measures', required: false, type: [String] })
   @ApiOkResponse({ description: 'Quality metrics retrieved successfully', type: Object })
   @ApiResponse({ status: 500, description: 'Internal server error', type: ErrorResponse })
-  async getQualityMetrics(@Query() query: QualityMetricsQueryDto) {
+  async getQualityMetrics(@Query() query: QualityMetricsQueryDto): Promise<MetricsQualityResponse> {
     try {
       this.logger.debug(`Fetching quality metrics: ${JSON.stringify(query)}`);
-      return await this.orchestrator.getQualityMetrics(query.measures);
+      return (await this.orchestrator.getQualityMetrics(query.measures)) as MetricsQualityResponse;
     } catch (error) {
       this.logger.error(
         `Failed to fetch quality metrics: ${error}`,
@@ -185,10 +195,10 @@ export class MetricsController {
   @ApiOperation({ summary: 'Get complete metrics report' })
   @ApiOkResponse({ description: 'Complete metrics report', type: Object })
   @ApiResponse({ status: 500, description: 'Internal server error', type: ErrorResponse })
-  async getFullReport() {
+  async getFullReport(): Promise<MetricsFullReportResponse> {
     try {
       this.logger.debug('Fetching full metrics report');
-      return await this.orchestrator.getFullReport();
+      return (await this.orchestrator.getFullReport()) as MetricsFullReportResponse;
     } catch (error) {
       this.logger.error(
         `Failed to fetch full report: ${error}`,

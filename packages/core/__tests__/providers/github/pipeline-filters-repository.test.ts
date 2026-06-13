@@ -18,8 +18,7 @@ describe('PipelineFiltersRepository', () => {
   ) => {
     const pipelineRunRepository = new InMemoryRepository<WorkflowJsonResponse>();
     const pipelineJobsRepository = new InMemoryRepository<WorkflowJobJsonResponse>();
-    const pipelineFiltersRepository =
-      new InMemoryRepository<PipelineFilterOptions>();
+    const pipelineFiltersRepository = new InMemoryRepository<PipelineFilterOptions>();
 
     await pipelineRunRepository.saveAll(runs);
     await pipelineJobsRepository.saveAll(jobs);

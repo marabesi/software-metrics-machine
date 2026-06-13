@@ -18,7 +18,7 @@ export default function FirstCommentTimeCard({ data }: { data: FirstCommentTimeD
     <Card>
       <CardHeader>
         <CardTitle>Time To First Comment</CardTitle>
-        <p className="text-xs text-gray-500 mt-1">Click on bars to view author's PRs</p>
+        <p className="text-xs text-gray-500 mt-1">Click on bars to view author&apos;s PRs</p>
       </CardHeader>
       <CardContent>
         <ResponsiveContainer width="100%" height={300}>

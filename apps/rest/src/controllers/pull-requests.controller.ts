@@ -6,6 +6,17 @@ import {
   PRDetails,
   PullRequestFiltersRepository,
 } from '@smmachine/core';
+import type {
+  PRSummaryResponse,
+  PRThroughTimeResponse,
+  PRByAuthorResponse,
+  PRAverageReviewTimeResponse,
+  PRAverageOpenByResponse,
+  PRAverageCommentsResponse,
+  PRCommentsByAuthorResponse,
+  PRFirstCommentTimeResponse,
+  PRFilterOptionsResponse,
+} from '../dtos/response.dto';
 
 @ApiTags('Pull Request Metrics')
 @Controller()
@@ -25,17 +36,17 @@ export class PullRequestsController {
     @Query('exclude_commenters') excludeCommenters?: string,
     @Query('labels') labels?: string,
     @Query('status') status?: PRDetails['state']
-  ) {
+  ): Promise<PRSummaryResponse> {
     const realFilters = {
       startDate,
       endDate,
-      authors: this.parseCsvList(authors),
-      excludeAuthors: this.parseCsvList(excludeAuthors),
-      excludeCommenters: this.parseCsvList(excludeCommenters),
-      labels: this.parseCsvList(labels),
+      authors: this.splitCommanSeparatedValues(authors),
+      excludeAuthors: this.splitCommanSeparatedValues(excludeAuthors),
+      excludeCommenters: this.splitCommanSeparatedValues(excludeCommenters),
+      labels: this.splitCommanSeparatedValues(labels),
       state: status,
     };
-    return this.prsService.getSummary(realFilters);
+    return this.prsService.getSummary(realFilters) as Promise<PRSummaryResponse>;
   }
 
   @Get('/pull-requests/through-time')
@@ -48,14 +59,14 @@ export class PullRequestsController {
     @Query('exclude_commenters') excludeCommenters?: string,
     @Query('labels') labels?: string,
     @Query('status') status?: PRDetails['state']
-  ) {
+  ): Promise<PRThroughTimeResponse> {
     const filters = {
       startDate,
       endDate,
-      authors: this.parseCsvList(authors),
-      excludeAuthors: this.parseCsvList(excludeAuthors),
-      excludeCommenters: this.parseCsvList(excludeCommenters),
-      labels: this.parseCsvList(labels),
+      authors: this.splitCommanSeparatedValues(authors),
+      excludeAuthors: this.splitCommanSeparatedValues(excludeAuthors),
+      excludeCommenters: this.splitCommanSeparatedValues(excludeCommenters),
+      labels: this.splitCommanSeparatedValues(labels),
       state: status,
     };
     const rows = await this.prsService.getThroughTime(filters, aggregateBy);
@@ -72,7 +83,7 @@ export class PullRequestsController {
     @Query('exclude_authors') excludeAuthors?: string,
     @Query('exclude_commenters') excludeCommenters?: string,
     @Query('status') status?: PRDetails['state']
-  ) {
+  ): Promise<PRByAuthorResponse> {
     const prs = await this.loadPRsWithFilters({
       startDate,
       endDate,
@@ -108,7 +119,7 @@ export class PullRequestsController {
     @Query('exclude_authors') excludeAuthors?: string,
     @Query('exclude_commenters') excludeCommenters?: string,
     @Query('status') status?: PRDetails['state']
-  ) {
+  ): Promise<PRAverageReviewTimeResponse> {
     const prs = await this.loadPRsWithFilters({
       startDate,
       endDate,
@@ -153,7 +164,7 @@ export class PullRequestsController {
     @Query('exclude_authors') excludeAuthors?: string,
     @Query('exclude_commenters') excludeCommenters?: string,
     @Query('status') status?: PRDetails['state']
-  ) {
+  ): Promise<PRAverageOpenByResponse> {
     const mode = this.normalizeAggregation(aggregateBy);
     const prs = await this.loadPRsWithFilters({
       startDate,
@@ -193,7 +204,7 @@ export class PullRequestsController {
     @Query('exclude_authors') excludeAuthors?: string,
     @Query('exclude_commenters') excludeCommenters?: string,
     @Query('status') status?: PRDetails['state']
-  ) {
+  ): Promise<PRAverageCommentsResponse> {
     const prs = await this.loadPRsWithFilters({
       startDate,
       endDate,
@@ -218,7 +229,7 @@ export class PullRequestsController {
     @Query('exclude_authors') excludeAuthors?: string,
     @Query('exclude_commenters') excludeCommenters?: string,
     @Query('status') status?: PRDetails['state']
-  ) {
+  ): Promise<PRCommentsByAuthorResponse> {
     const prs = await this.loadPRsWithFilters({
       startDate,
       endDate,
@@ -256,7 +267,7 @@ export class PullRequestsController {
     @Query('exclude_authors') excludeAuthors?: string,
     @Query('exclude_commenters') excludeCommenters?: string,
     @Query('status') status?: PRDetails['state']
-  ) {
+  ): Promise<PRFirstCommentTimeResponse> {
     const prs = await this.loadPRsWithFilters({
       startDate,
       endDate,
@@ -308,7 +319,7 @@ export class PullRequestsController {
   }
 
   @Get('/pull-requests/filter-options')
-  async filterOptions() {
+  async filterOptions(): Promise<PRFilterOptionsResponse> {
     return this.pullRequestFiltersRepository.loadOptions();
   }
 
@@ -373,16 +384,16 @@ export class PullRequestsController {
     const realFilters = {
       startDate: filters.startDate,
       endDate: filters.endDate,
-      authors: this.parseCsvList(filters.authors),
-      excludeAuthors: this.parseCsvList(filters.excludeAuthors),
-      excludeCommenters: this.parseCsvList(filters.excludeCommenters),
-      labels: this.parseCsvList(filters.labels),
+      authors: this.splitCommanSeparatedValues(filters.authors),
+      excludeAuthors: this.splitCommanSeparatedValues(filters.excludeAuthors),
+      excludeCommenters: this.splitCommanSeparatedValues(filters.excludeCommenters),
+      labels: this.splitCommanSeparatedValues(filters.labels),
       state: filters.status,
     };
     return await this.pullRequestsRepo.loadPrsWithFilters(realFilters);
   }
 
-  private parseCsvList(value?: string): string[] {
+  private splitCommanSeparatedValues(value?: string): string[] {
     return (value || '')
       .split(',')
       .map((item) => item.trim())

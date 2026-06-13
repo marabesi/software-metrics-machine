@@ -2,6 +2,15 @@ import { Controller, Get, Logger, Query } from '@nestjs/common';
 import { ApiQuery, ApiTags } from '@nestjs/swagger';
 import { CodeMaatMetricsRepository, Configuration } from '@smmachine/core';
 import { PairingService } from '@smmachine/core/domain/code/pairing-service';
+import type {
+  CodePairingIndexResponse,
+  CodeChurnResponse,
+  CodeCouplingResponse,
+  CodeEntityChurnResponse,
+  CodeEntityEffortResponse,
+  CodeEntityOwnershipResponse,
+  CodeAuthorsResponse,
+} from '../dtos/response.dto';
 import * as fs from 'fs/promises';
 import * as path from 'path';
 
@@ -45,7 +54,7 @@ export class CodeController {
     @Query('start_date') startDate?: string,
     @Query('end_date') endDate?: string,
     @Query('authors') authors?: string
-  ) {
+  ): Promise<CodePairingIndexResponse> {
     const selectedAuthors = this.parseCsvList(authors);
     const pairing = await this.pairingService.getPairingIndex({
       startDate,
@@ -77,7 +86,7 @@ export class CodeController {
     @Query('start_date') startDate?: string,
     @Query('end_date') endDate?: string,
     @Query('type_churn') typeChurn?: string
-  ) {
+  ): Promise<CodeChurnResponse> {
     const churn = await this.codemaat.getCodeChurn({ startDate, endDate });
     const churnType = (typeChurn || 'total').toLowerCase();
 
@@ -106,7 +115,7 @@ export class CodeController {
     @Query('ignore_files') ignoreFiles?: string,
     @Query('include_only') includeOnly?: string,
     @Query('top') top?: string
-  ) {
+  ): Promise<CodeCouplingResponse> {
     const ignorePatterns = this.parseCsvList(ignoreFiles);
     const includePatterns = this.parseCsvList(includeOnly);
     const coupling = await this.codemaat.getFileCoupling({
@@ -135,7 +144,7 @@ export class CodeController {
     @Query('ignore_files') ignoreFiles?: string,
     @Query('include_only') includeOnly?: string,
     @Query('top') top?: string
-  ) {
+  ): Promise<CodeEntityChurnResponse> {
     const rows = await this.readCsvRecords('entity-churn.csv');
     const filtered = this.filterEntities(rows, ignoreFiles, includeOnly)
       .map((row) => ({
@@ -155,7 +164,7 @@ export class CodeController {
     @Query('ignore_files') ignoreFiles?: string,
     @Query('include_only') includeOnly?: string,
     @Query('top') top?: string
-  ) {
+  ): Promise<CodeEntityEffortResponse> {
     const rows = await this.readCsvRecords('entity-effort.csv');
     const filtered = this.filterEntities(rows, ignoreFiles, includeOnly)
       .map((row) => ({
@@ -174,7 +183,7 @@ export class CodeController {
     @Query('include_only') includeOnly?: string,
     @Query('authors') authors?: string,
     @Query('top') top?: string
-  ) {
+  ): Promise<CodeEntityOwnershipResponse> {
     const authorFilter = new Set(this.parseCsvList(authors).map((author) => author.toLowerCase()));
     const rows = await this.readCsvRecords('entity-ownership.csv');
 
@@ -199,7 +208,7 @@ export class CodeController {
   }
 
   @Get('/code/authors')
-  async codeAuthors() {
+  async codeAuthors(): Promise<CodeAuthorsResponse> {
     const rows = await this.readCsvRecords('entity-ownership.csv');
     return Array.from(
       new Set(
@@ -365,7 +374,7 @@ export class CodeController {
     });
   }
 
-  private buildDataDirectories() {
+  private buildDataDirectories(): { gitProviderDirectory: string; codemaatDirectory: string } {
     const baseDir = this.config.storeData || './outputs';
     const gitProvider = this.config.gitProvider || 'github';
     const repoSlug = (this.config.githubRepository || '').replace('/', '_');

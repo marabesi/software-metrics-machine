@@ -1,8 +1,6 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { GithubPrsClient, GithubWorkflowClient } from '../src';
 import { GitlabMrClient, GitlabPipelineClient } from '../src';
-import axios from 'axios';
-
 vi.mock('axios', () => ({
   default: {
     create: vi.fn().mockImplementation((options) => {

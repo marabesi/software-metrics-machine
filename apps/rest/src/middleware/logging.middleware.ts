@@ -15,14 +15,16 @@ export class LoggingMiddleware implements NestMiddleware {
 
     // Log incoming request
     const queryString =
-      Object.keys(query).length > 0 ? '?' + new URLSearchParams(query as any).toString() : '';
+      Object.keys(query).length > 0
+        ? '?' + new URLSearchParams(query as Record<string, string>).toString()
+        : '';
     this.logger.log(`${method} ${originalUrl}${queryString}`);
 
     // Capture response
     const originalSend = res.send;
     const logger = this.logger;
 
-    res.send = function (data: any) {
+    res.send = function (data: unknown) {
       const duration = Date.now() - start;
       const statusCode = res.statusCode;
 

@@ -66,7 +66,7 @@ export default async function PullRequestsPage({
     // Handle both direct array responses and wrapped responses
     byAuthor = ensureArray<ByAuthorData>(unwrapResult(author as ByAuthorData[] | ResultWrapper<ByAuthorData[]>));
     avgReviewTime = ensureArray<AvgReviewTimeData>(unwrapResult(review as AvgReviewTimeData[] | ResultWrapper<AvgReviewTimeData[]>));
-    let openData = ensureArray<OpenThroughTimeResponseItem>(
+    const openData = ensureArray<OpenThroughTimeResponseItem>(
       unwrapResult(open as OpenThroughTimeResponseItem[] | ResultWrapper<OpenThroughTimeResponseItem[]>)
     );
     // Transform data: group by date and pivot kind into opened/closed

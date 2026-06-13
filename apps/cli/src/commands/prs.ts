@@ -494,7 +494,10 @@ export function createPRsCommands(program: Command): void {
     .option('--exclude-commenters <commenters>', 'Comma-separated PR commenters to exclude')
     .option('--authors <authors>', 'Comma-separated PR authors to include')
     .option('--labels <labels>', 'Comma-separated PR labels to filter by')
-    .option('--aggregate-by <period>', 'Aggregation period: week or month. Shows per-period averages.')
+    .option(
+      '--aggregate-by <period>',
+      'Aggregation period: week or month. Shows per-period averages.'
+    )
     .option('--raw-filters <filters>', 'Comma-separated raw filter string')
     .option('--output <format>', 'Output format (text|json)', 'text')
     .action(async (options) => {
@@ -506,9 +509,10 @@ export function createPRsCommands(program: Command): void {
 
         if (options.aggregateBy) {
           const mode = options.aggregateBy.toLowerCase();
-          const timeframes = mode === 'month'
-            ? await service.getMetricsByMonth(filters)
-            : await service.getMetricsByWeek(filters);
+          const timeframes =
+            mode === 'month'
+              ? await service.getMetricsByMonth(filters)
+              : await service.getMetricsByWeek(filters);
 
           if (options.output === 'json') {
             console.log(JSON.stringify(timeframes, null, 2));

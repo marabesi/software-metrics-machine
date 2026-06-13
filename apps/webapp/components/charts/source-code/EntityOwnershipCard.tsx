@@ -32,6 +32,40 @@ interface TooltipPayloadEntry {
   payload?: AuthorData;
 }
 
+const AuthorTooltip = ({ active, payload, label }: { active?: boolean; payload?: TooltipPayloadEntry[]; label?: string }) => {
+  if (active && payload && payload.length) {
+    const topEntity = (payload[0].payload as AuthorData)?.topEntity || '-';
+    return (
+      <div className="bg-white p-3 border border-gray-300 rounded shadow">
+        <p className="font-semibold">{label}</p>
+        <p className="text-sm text-gray-600">Top file: {topEntity}</p>
+        {payload.map((entry, index: number) => (
+          <p key={index} style={{ color: entry.color }} className="text-sm">
+            {entry.name}: {entry.value}
+          </p>
+        ))}
+      </div>
+    );
+  }
+  return null;
+};
+
+const EntityTooltip = ({ active, payload, label }: { active?: boolean; payload?: TooltipPayloadEntry[]; label?: string }) => {
+  if (active && payload && payload.length) {
+    return (
+      <div className="bg-white p-3 border border-gray-300 rounded shadow">
+        <p className="font-semibold">{label}</p>
+        {payload.map((entry, index: number) => (
+          <p key={index} style={{ color: entry.color }} className="text-sm">
+            {entry.name}: {entry.value}
+          </p>
+        ))}
+      </div>
+    );
+  }
+  return null;
+};
+
 export default function EntityOwnershipCard({ data }: { data: EntityOwnershipData[] }) {
   const [activeTab, setActiveTab] = useState<'by-author' | 'by-file' | 'by-entity'>('by-author');
 
@@ -190,40 +224,6 @@ export default function EntityOwnershipCard({ data }: { data: EntityOwnershipDat
     });
     return colorMap;
   }, [byEntity.authors]);
-
-  const AuthorTooltip = ({ active, payload, label }: { active?: boolean; payload?: TooltipPayloadEntry[]; label?: string }) => {
-    if (active && payload && payload.length) {
-      const topEntity = (payload[0].payload as AuthorData)?.topEntity || '-';
-      return (
-        <div className="bg-white p-3 border border-gray-300 rounded shadow">
-          <p className="font-semibold">{label}</p>
-          <p className="text-sm text-gray-600">Top file: {topEntity}</p>
-          {payload.map((entry, index: number) => (
-            <p key={index} style={{ color: entry.color }} className="text-sm">
-              {entry.name}: {entry.value}
-            </p>
-          ))}
-        </div>
-      );
-    }
-    return null;
-  };
-
-  const EntityTooltip = ({ active, payload, label }: { active?: boolean; payload?: TooltipPayloadEntry[]; label?: string }) => {
-    if (active && payload && payload.length) {
-      return (
-        <div className="bg-white p-3 border border-gray-300 rounded shadow">
-          <p className="font-semibold">{label}</p>
-          {payload.map((entry, index: number) => (
-            <p key={index} style={{ color: entry.color }} className="text-sm">
-              {entry.name}: {entry.value}
-            </p>
-          ))}
-        </div>
-      );
-    }
-    return null;
-  };
 
   return (
     <Card>

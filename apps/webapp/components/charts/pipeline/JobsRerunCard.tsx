@@ -10,7 +10,6 @@ interface JobsRerunCardProps {
 }
 
 export default function JobsRerunCard({ data, dataByDay }: JobsRerunCardProps) {
-  const totalReruns = data.reduce((sum, item) => sum + (item.rerun_count || 0), 0);
   const totalByDayReruns = dataByDay.reduce((sum, item) => sum + (item.rerun_count || 0), 0);
 
   return (

@@ -1,12 +1,22 @@
 import { Logger, logger } from '@smmachine/utils';
 import { SonarqubeRepository } from 'src/aggregates';
 
+export interface QualityFilters {
+  metrics?: string[];
+  startDate?: string;
+  endDate?: string;
+  component?: string;
+  depth?: number;
+  forceRefresh?: boolean;
+  incrementalUpdate?: boolean;
+}
+
 export class SonarQubeService {
   private logger: Logger = logger;
 
   constructor(private sonarqubeRepository: SonarqubeRepository) {}
 
-  async getQualityMetrics(filters?: any): Promise<any> {
+  async getQualityMetrics(_filters?: unknown): Promise<unknown> {
     this.logger.info('Fetching SonarQube quality metrics...');
     try {
       const metrics = await this.sonarqubeRepository.loadAll();

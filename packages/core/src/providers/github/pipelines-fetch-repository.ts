@@ -150,7 +150,10 @@ export class PipelinesFetchRepository {
     const incompletedPath = this.fileInCache('workflows_incompleted.json');
 
     const progress = await this.readJson<WorkflowsProgress | null>(progressPath, null);
-    const runs: WorkflowJsonResponse[] = await this.readJson<any[]>(incompletedPath, []);
+    const runs: WorkflowJsonResponse[] = await this.readJson<WorkflowJsonResponse[]>(
+      incompletedPath,
+      []
+    );
 
     let page = progress?.page || 1;
     const perPage = 100;

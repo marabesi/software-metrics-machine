@@ -1,4 +1,7 @@
-export { PullRequestsRepository, type IReadPullRequestsRepository } from './pull-requests-repository';
+export {
+  PullRequestsRepository,
+  type IReadPullRequestsRepository,
+} from './pull-requests-repository';
 export {
   PullRequestFiltersRepository,
   type PullRequestFilterOptions,
@@ -14,7 +17,7 @@ export {
   CodeMaatMetricsRepository as CodeMetricsRepository,
   type ICodeMetricsRepository,
 } from './codemaat-metrics-repository';
-export { IssuesRepository, type IIssuesRepository } from './issues-repository';
+export { IssuesRepository, type IIssuesRepository, type IssueFilters } from './issues-repository';
 export {
   SonarqubeFetchMetricsRepository,
   type IQualityMetricsRepository,

@@ -1,6 +1,6 @@
 import { INestApplication } from '@nestjs/common';
 import request from 'supertest';
-import { afterAll, beforeAll, describe, expect, it, vi } from 'vitest';
+import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { createMetricsTestApp, MockedMetricsOrchestrator } from './helpers/metrics-test-app';
 
 describe('Jira', () => {

@@ -21,7 +21,7 @@ export interface FileCoupling {
 export interface CodemaatAnalysisResult {
   churn?: CodeChurnResult;
   coupling?: FileCoupling[];
-  entityChurn?: any[];
-  entityEffort?: any[];
-  entityOwnership?: any[];
+  entityChurn?: Array<Record<string, unknown>>;
+  entityEffort?: Array<{ entity: string; 'total-revs': number }>;
+  entityOwnership?: Array<{ entity: string; author: string; added: number; deleted: number }>;
 }

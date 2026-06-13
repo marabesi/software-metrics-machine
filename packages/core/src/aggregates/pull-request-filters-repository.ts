@@ -21,7 +21,8 @@ export class PullRequestFiltersRepository {
   ) {}
 
   async loadOptions(): Promise<PullRequestFilterOptionsResult> {
-    const cachedOptions = (await this.pullRequestFiltersFileSystemRepository.load()) || await this.refreshOptions();
+    const cachedOptions =
+      (await this.pullRequestFiltersFileSystemRepository.load()) || (await this.refreshOptions());
     return {
       ...cachedOptions,
       commenters: await this.loadCommenterOptions(),

@@ -64,10 +64,14 @@ export default function SavedFiltersSection({
   };
 
   useEffect(() => {
-    loadSavedFilters().catch((error) => {
-      console.warn('Unable to load saved filters', error);
-    });
-  }, [activeSection, repository]);
+    savedFiltersStore.getBySection(activeSection, repository)
+      .then((entries) => {
+        setSavedFilters(entries);
+      })
+      .catch((error) => {
+        console.warn('Unable to load saved filters', error);
+      });
+  }, [activeSection, repository, savedFiltersStore]);
 
   return (
     <Stack direction="column" spacing={2}>

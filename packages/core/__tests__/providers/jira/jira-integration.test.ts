@@ -8,7 +8,7 @@
  * - Appropriate permissions
  */
 
-import { describe, it, expect, beforeAll, skip } from 'vitest';
+import { describe, it, expect, beforeAll } from 'vitest';
 import { JiraIssuesClient } from '../../../src/providers/jira/jira-client';
 
 const JIRA_URL = process.env.JIRA_URL || 'https://your-instance.atlassian.net';

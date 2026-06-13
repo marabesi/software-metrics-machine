@@ -13,7 +13,6 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
       },
     })
   );
-  const [isMounted, setIsMounted] = useState(false);
 
   useEffect(() => {
     // Listen for theme changes from ThemeContext
@@ -30,7 +29,6 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
 
     // Initial setup
     handleThemeChange();
-    setIsMounted(true);
 
     // Listen for changes to the dark class
     const observer = new MutationObserver(handleThemeChange);
@@ -41,15 +39,6 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
 
     return () => observer.disconnect();
   }, []);
-
-  if (!isMounted) {
-    return (
-      <MuiThemeProvider theme={muiTheme}>
-        <CssBaseline />
-        <ThemeContextProvider>{children}</ThemeContextProvider>
-      </MuiThemeProvider>
-    );
-  }
 
   return (
     <MuiThemeProvider theme={muiTheme}>

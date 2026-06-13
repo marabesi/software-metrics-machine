@@ -1,6 +1,5 @@
 import { defaultFilters, parseDashboardFilters } from "@/components/filters/DashboardFilters";
 import { sourceCodeAPI } from '@/server/api';
-import { configurationAPI } from '@/server/api/configuration';
 import { buildSourceCodeApiParams } from '@/server/utils/apiParams';
 import { ensureArray } from '@/server/utils/chartData';
 import EntityChurnCard from '@/components/charts/source-code/EntityChurnCard';
@@ -66,14 +65,13 @@ export default async function SourceCodePage({
 
   try {
     const apiParams = buildSourceCodeApiParams(filters);
-    const [churn, couplingData, effort, churnOverTime, ownership, pairing, configResponse] = await Promise.all([
+    const [churn, couplingData, effort, churnOverTime, ownership, pairing] = await Promise.all([
       sourceCodeAPI.entityChurn(apiParams),
       sourceCodeAPI.coupling(apiParams),
       sourceCodeAPI.entityEffort(apiParams),
       sourceCodeAPI.codeChurn(apiParams),
       sourceCodeAPI.entityOwnership(apiParams),
       sourceCodeAPI.pairingIndex(apiParams),
-      configurationAPI.getConfiguration(),
     ]);
     // Handle both direct array responses and wrapped responses
     entityChurn = ensureArray<EntityChurnData>(unwrapResult(churn as EntityChurnData[] | ResultWrapper<EntityChurnData[]>));

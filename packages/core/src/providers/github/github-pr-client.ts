@@ -134,7 +134,7 @@ export class GithubPrsClient implements IGithubPrsClient {
         );
 
         const comments: PullRequestCommentJsonResponse[] = response.data.map(
-          (comment: any) => comment
+          (comment: PullRequestCommentJsonResponse) => comment
         );
 
         if (comments.length === 0) {

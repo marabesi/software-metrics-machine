@@ -79,21 +79,25 @@ export function DeploymentFrequency({ deploymentFrequency }: { deploymentFrequen
     window.open(url, '_blank');
   }, [targetByLabel, urlBuilder]);
 
-  const ClickDot = useCallback((granularity: Granularity, targetLabel: string) => (props: any) => {
-    const { cx, cy, payload } = props;
-    if (!cx || !cy) return null;
-    return (
-      <g onClick={() => handleClick(payload?.period, granularity, targetLabel)} style={{ pointerEvents: 'auto' }}>
-        <rect
-          x={Number(cx) - 10}
-          y={Number(cy) - 10}
-          width={20}
-          height={20}
-          fill="transparent"
-          style={{ cursor: 'pointer', pointerEvents: 'auto' }}
-        />
-      </g>
-    );
+  const ClickDot = useCallback((granularity: Granularity, targetLabel: string) => {
+    const DotComponent = (props: { cx?: number; cy?: number; payload?: { period?: string } }) => {
+      const { cx, cy, payload } = props;
+      if (!cx || !cy) return null;
+      return (
+        <g onClick={() => handleClick(payload?.period ?? '', granularity, targetLabel)} style={{ pointerEvents: 'auto' }}>
+          <rect
+            x={Number(cx) - 10}
+            y={Number(cy) - 10}
+            width={20}
+            height={20}
+            fill="transparent"
+            style={{ cursor: 'pointer', pointerEvents: 'auto' }}
+          />
+        </g>
+      );
+    };
+    DotComponent.displayName = 'ClickDot';
+    return DotComponent;
   }, [handleClick]);
 
   const buildChartData = (

@@ -3,10 +3,18 @@ import { FileSystemRepository } from '../infrastructure/repository';
 import { Issue } from '../domain-types';
 import { type IJiraIssuesClient } from '../providers/jira';
 
+export interface IssueFilters {
+  startDate?: string;
+  endDate?: string;
+  status?: string;
+  forceRefresh?: boolean;
+  incrementalUpdate?: boolean;
+}
+
 export interface IIssuesRepository {
-  getIssues(filters?: any): Promise<Issue[]>;
-  getIssueChanges(issueKey: string): Promise<any[]>;
-  getIssueComments(issueKey: string): Promise<any[]>;
+  getIssues(filters?: IssueFilters): Promise<Issue[]>;
+  getIssueChanges(issueKey: string): Promise<unknown[]>;
+  getIssueComments(issueKey: string): Promise<unknown[]>;
 }
 
 /**
@@ -91,7 +99,13 @@ export class IssuesRepository implements IIssuesRepository {
   /**
    * Get issues with optional filters
    */
-  async getIssues(filters?: any): Promise<Issue[]> {
+  async getIssues(filters?: {
+    startDate?: string;
+    endDate?: string;
+    status?: string;
+    forceRefresh?: boolean;
+    incrementalUpdate?: boolean;
+  }): Promise<Issue[]> {
     return this.refreshIssues(filters);
   }
 
@@ -111,7 +125,7 @@ export class IssuesRepository implements IIssuesRepository {
   /**
    * Get issue changes/history
    */
-  async getIssueChanges(issueKey: string): Promise<any[]> {
+  async getIssueChanges(issueKey: string): Promise<unknown[]> {
     logger.info(`Fetching changes for issue ${issueKey}...`);
     return this.jiraClient.fetchIssueChanges(issueKey);
   }
@@ -119,7 +133,7 @@ export class IssuesRepository implements IIssuesRepository {
   /**
    * Get issue comments
    */
-  async getIssueComments(issueKey: string): Promise<any[]> {
+  async getIssueComments(issueKey: string): Promise<unknown[]> {
     logger.info(`Fetching comments for issue ${issueKey}...`);
     return this.jiraClient.fetchIssueComments(issueKey);
   }

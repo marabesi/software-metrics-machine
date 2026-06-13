@@ -1,6 +1,7 @@
 import { Controller, Get, Logger } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
 import { Configuration } from '@smmachine/core';
+import { ConfigurationResponse } from '../dtos/response.dto';
 
 /**
  * Configuration REST Controller
@@ -14,7 +15,7 @@ export class ConfigurationController {
   constructor(private readonly config: Configuration) {}
 
   @Get('/configuration')
-  configuration() {
+  configuration(): ConfigurationResponse {
     return {
       result: {
         git_provider: this.config.gitProvider,

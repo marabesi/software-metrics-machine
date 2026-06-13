@@ -39,10 +39,12 @@ describe('PullRequestsRepository filters', () => {
   it('excludes PR authors from loaded results', async () => {
     const repository = new PullRequestsRepository(
       {
-        loadAll: vi.fn().mockResolvedValue([
-          createPullRequest({ id: '1', number: '1', user: { login: 'alice', id: 1 } }),
-          createPullRequest({ id: '2', number: '2', user: { login: 'bot', id: 2 } }),
-        ]),
+        loadAll: vi
+          .fn()
+          .mockResolvedValue([
+            createPullRequest({ id: '1', number: '1', user: { login: 'alice', id: 1 } }),
+            createPullRequest({ id: '2', number: '2', user: { login: 'bot', id: 2 } }),
+          ]),
       } as any,
       { loadAll: vi.fn().mockResolvedValue([]) } as any
     );
@@ -58,10 +60,12 @@ describe('PullRequestsRepository filters', () => {
         loadAll: vi.fn().mockResolvedValue([createPullRequest()]),
       } as any,
       {
-        loadAll: vi.fn().mockResolvedValue([
-          createComment({ id: 1, user: { login: 'reviewer', id: 1 } }),
-          createComment({ id: 2, user: { login: 'bot', id: 2 } }),
-        ]),
+        loadAll: vi
+          .fn()
+          .mockResolvedValue([
+            createComment({ id: 1, user: { login: 'reviewer', id: 1 } }),
+            createComment({ id: 2, user: { login: 'bot', id: 2 } }),
+          ]),
       } as any
     );
 

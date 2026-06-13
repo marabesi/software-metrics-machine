@@ -8,12 +8,27 @@ export interface IPRsService {
   getMetricsByMonth(filters?: PRFilters): Promise<PRsByTimeframe[]>;
   getMetricsByWeek(filters?: PRFilters): Promise<PRsByTimeframe[]>;
   getLabelSummaries(filters?: PRFilters): Promise<LabelSummary[]>;
-  getCommentsByAuthor(filters?: PRFilters, top?: number): Promise<any[]>;
-  getFirstCommentTime(filters?: PRFilters, top?: number): Promise<any[]>;
-  getThroughTime(filters?: PRFilters, aggregateBy?: string): Promise<Array<{ date: string; kind: string; count: number }>>;
+  getCommentsByAuthor(
+    filters?: PRFilters,
+    top?: number
+  ): Promise<Array<{ author: string; count: number }>>;
+  getFirstCommentTime(
+    filters?: PRFilters,
+    top?: number
+  ): Promise<Array<{ author: string; avg_hours: number; prs_with_comments: number }>>;
+  getThroughTime(
+    filters?: PRFilters,
+    aggregateBy?: string
+  ): Promise<Array<{ date: string; kind: string; count: number }>>;
   getByAuthor(filters?: PRFilters, top?: number): Promise<Array<{ author: string; count: number }>>;
-  getAverageReviewTime(filters?: PRFilters, top?: number): Promise<Array<{ author: string; avg_days: number }>>;
-  getAverageOpenBy(filters?: PRFilters, aggregateBy?: string): Promise<Array<{ period: string; avg_days: number }>>;
+  getAverageReviewTime(
+    filters?: PRFilters,
+    top?: number
+  ): Promise<Array<{ author: string; avg_days: number }>>;
+  getAverageOpenBy(
+    filters?: PRFilters,
+    aggregateBy?: string
+  ): Promise<Array<{ period: string; avg_days: number }>>;
 }
 
 /**
@@ -175,7 +190,7 @@ export class PRsService implements IPRsService {
     return result.sort((a, b) => b.count - a.count);
   }
 
-  async getSummary(filters?: PRFilters): Promise<any> {
+  async getSummary(filters?: PRFilters): Promise<unknown> {
     const prs = await this.filterPRs(filters);
     const merged = prs.filter((pr) => Boolean(pr.mergedAt)).length;
     const closed = prs.filter((pr) => Boolean(pr.closedAt) && !pr.mergedAt).length;
@@ -255,7 +270,10 @@ export class PRsService implements IPRsService {
     return rows;
   }
 
-  async getByAuthor(filters?: PRFilters, top?: number): Promise<Array<{ author: string; count: number }>> {
+  async getByAuthor(
+    filters?: PRFilters,
+    top?: number
+  ): Promise<Array<{ author: string; count: number }>> {
     const prs = await this.filterPRs(filters);
     const grouped = new Map<string, number>();
 
@@ -271,7 +289,10 @@ export class PRsService implements IPRsService {
       .slice(0, maxRows);
   }
 
-  async getAverageReviewTime(filters?: PRFilters, top?: number): Promise<Array<{ author: string; avg_days: number }>> {
+  async getAverageReviewTime(
+    filters?: PRFilters,
+    top?: number
+  ): Promise<Array<{ author: string; avg_days: number }>> {
     const prs = await this.filterPRs(filters);
     const merged = prs.filter((pr) => Boolean(pr.mergedAt) || Boolean(pr.closedAt));
     const grouped = new Map<string, number[]>();
@@ -296,7 +317,10 @@ export class PRsService implements IPRsService {
       .slice(0, maxRows);
   }
 
-  async getAverageOpenBy(filters?: PRFilters, aggregateBy?: string): Promise<Array<{ period: string; avg_days: number }>> {
+  async getAverageOpenBy(
+    filters?: PRFilters,
+    aggregateBy?: string
+  ): Promise<Array<{ period: string; avg_days: number }>> {
     const prs = await this.filterPRs(filters);
     const mode = this.normalizeAggregation(aggregateBy);
     const grouped = new Map<string, number[]>();
@@ -473,7 +497,10 @@ export class PRsService implements IPRsService {
     return Number.isFinite(parsed) ? parsed : 0;
   }
 
-  async getCommentsByAuthor(filters?: PRFilters, top?: number): Promise<any[]> {
+  async getCommentsByAuthor(
+    filters?: PRFilters,
+    top?: number
+  ): Promise<Array<{ author: string; count: number }>> {
     const prs = await this.filterPRs(filters);
     const grouped = new Map<string, number>();
 
@@ -491,7 +518,10 @@ export class PRsService implements IPRsService {
       .slice(0, maxRows);
   }
 
-  async getFirstCommentTime(filters?: PRFilters, top?: number): Promise<any[]> {
+  async getFirstCommentTime(
+    filters?: PRFilters,
+    top?: number
+  ): Promise<Array<{ author: string; avg_hours: number; prs_with_comments: number }>> {
     const prs = await this.filterPRs(filters);
     const grouped = new Map<string, number[]>();
 

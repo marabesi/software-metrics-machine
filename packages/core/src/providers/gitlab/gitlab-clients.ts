@@ -583,7 +583,9 @@ export class GitlabPipelineClient implements IGithubWorkflowClient, IGithubWorkf
   }
 
   private toWorkflowStatus(status?: string): string {
-    if (['success', 'failed', 'canceled', 'cancelled', 'skipped', 'manual'].includes(status || '')) {
+    if (
+      ['success', 'failed', 'canceled', 'cancelled', 'skipped', 'manual'].includes(status || '')
+    ) {
       return 'completed';
     }
 

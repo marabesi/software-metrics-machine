@@ -4,6 +4,16 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { AvgCommentsData, SummaryData } from './types';
 import { useLinkBuilder } from '@/components/providers/LinkBuilderContext';
 
+function StatBoxLink({ label, value, filters, urlBuilder }: { label: string; value: number; filters?: { status?: string; author?: string; label?: string }; urlBuilder: ReturnType<typeof useLinkBuilder>['urlBuilder'] }) {
+  const href = urlBuilder.getPRsUrl(filters);
+  return (
+    <a href={href} target="_blank" rel="noopener noreferrer" className="block p-4 bg-blue-50 rounded-lg hover:bg-blue-100 transition-colors">
+      <p className="text-sm text-gray-600">{label}</p>
+      <p className="text-3xl font-bold text-blue-600">{value}</p>
+    </a>
+  );
+}
+
 export default function PRStatisticsCard({
   summary,
   avgComments,
@@ -14,16 +24,6 @@ export default function PRStatisticsCard({
   const { urlBuilder } = useLinkBuilder();
   const labels = summary?.labels || [];
 
-  const StatBoxLink = ({ label, value, filters }: { label: string; value: number; filters?: { status?: string; author?: string; label?: string } }) => {
-    const href = urlBuilder.getPRsUrl(filters);
-    return (
-      <a href={href} target="_blank" rel="noopener noreferrer" className="block p-4 bg-blue-50 rounded-lg hover:bg-blue-100 transition-colors">
-        <p className="text-sm text-gray-600">{label}</p>
-        <p className="text-3xl font-bold text-blue-600">{value}</p>
-      </a>
-    );
-  };
-
   return (
     <Card>
       <CardHeader>
@@ -32,7 +32,7 @@ export default function PRStatisticsCard({
       <CardContent>
         <div className="space-y-4">
           <div className="grid grid-cols-2 gap-4">
-            <StatBoxLink label="Total PRs" value={summary?.total_prs || 0} />
+            <StatBoxLink label="Total PRs" value={summary?.total_prs || 0} urlBuilder={urlBuilder} />
             <a href={urlBuilder.getPRsUrl({ status: 'merged' })} target="_blank" rel="noopener noreferrer" className="block p-4 bg-green-50 rounded-lg hover:bg-green-100 transition-colors">
               <p className="text-sm text-gray-600">Merged</p>
               <p className="text-3xl font-bold text-green-600">{summary?.merged_prs || 0}</p>

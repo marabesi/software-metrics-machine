@@ -25,9 +25,7 @@ export class PipelineFiltersRepository {
     private pipelineFiltersFileSystemRepository: IRepository<PipelineFilterOptions>
   ) {}
 
-  async loadOptions(
-    query: PipelineFilterOptionsQuery = {}
-  ): Promise<PipelineFilterOptions> {
+  async loadOptions(query: PipelineFilterOptionsQuery = {}): Promise<PipelineFilterOptions> {
     const cachedOptions = await this.pipelineFiltersFileSystemRepository.load();
     const options = cachedOptions || (await this.refreshOptions());
 

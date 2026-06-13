@@ -233,7 +233,6 @@ describe('Fetch jobs pipeline repository - By day', () => {
       .conclusion('success')
       .build();
 
-    let callCount = 0;
     const fetchJobsPage = vi.fn().mockImplementation((runId, page) => {
       if (runId === 'run-1') {
         if (page === 1) {

@@ -1,6 +1,28 @@
 import { Controller, Get, Logger, Query } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
 import { PipelinesRepository, PipelinesService, PipelineFiltersRepository } from '@smmachine/core';
+import type { DeploymentFrequencyRow } from '../dtos/response.dto';
+import type {
+  PipelineSummaryResponse,
+  PipelineByStatusResponse,
+  PipelineJobsByStatusResponse,
+  PipelineJobsSummaryResponse,
+  PipelineRunsDurationResponse,
+  PipelineJobsDurationByWorkflowResponse,
+  PipelineRunsByResponse,
+  PipelineJobsRerunsResponse,
+  PipelineStepsAverageTimeResponse,
+  PipelineStepsAverageTimeByDayResponse,
+  PipelineJobsAverageTimeResponse,
+  PipelineJobsAverageTimeByDayResponse,
+  PipelineWorkflowsResponse,
+  PipelineStatusesResponse,
+  PipelineConclusionsResponse,
+  PipelineBranchesResponse,
+  PipelineEventsResponse,
+  PipelineJobsResponse,
+  PipelineFilterOptionsResponse,
+} from '../dtos/response.dto';
 
 type PipelineDurationsMetrics = {
   durations: number[];
@@ -59,7 +81,7 @@ export class PipelinesController {
   ) {}
 
   @Get('/pipelines/summary')
-  async pipelineSummary(@Query() query: PipelineFiltersQuery) {
+  async pipelineSummary(@Query() query: PipelineFiltersQuery): Promise<PipelineSummaryResponse> {
     const runs = await this.loadRunsWithFilters(
       { ...query, includeJobs: false },
       { sort_by: { created_at: 'asc' } }
@@ -75,7 +97,7 @@ export class PipelinesController {
   }
 
   @Get('/pipelines/by-status')
-  async byStatus(@Query() query: PipelineFiltersQuery) {
+  async byStatus(@Query() query: PipelineFiltersQuery): Promise<PipelineByStatusResponse> {
     const runs = await this.loadRunsWithFilters({ ...query, includeJobs: false });
 
     const grouped = new Map<string, number>();
@@ -90,7 +112,7 @@ export class PipelinesController {
   }
 
   @Get('/pipelines/jobs-by-status')
-  async jobsByStatus(@Query() query: PipelineFiltersQuery) {
+  async jobsByStatus(@Query() query: PipelineFiltersQuery): Promise<PipelineJobsByStatusResponse> {
     const runs = await this.loadRunsWithFilters({ ...query, includeJobs: true });
 
     const grouped = new Map<string, number>();
@@ -109,7 +131,7 @@ export class PipelinesController {
   }
 
   @Get('/pipelines/jobs-summary')
-  async jobsSummary(@Query() query: PipelineFiltersQuery) {
+  async jobsSummary(@Query() query: PipelineFiltersQuery): Promise<PipelineJobsSummaryResponse> {
     const metrics = await this.pipelinesService.getJobMetrics(this.toServiceFilters(query));
 
     return {
@@ -126,7 +148,7 @@ export class PipelinesController {
   }
 
   @Get('/pipelines/jobs-reruns-by-day')
-  async jobsRerunsByDay(@Query() query: PipelineFiltersQuery) {
+  async jobsRerunsByDay(@Query() query: PipelineFiltersQuery): Promise<PipelineJobsRerunsResponse> {
     const metrics = await this.pipelinesService.getJobRerunsByDay(this.toServiceFilters(query));
 
     return { result: metrics };
@@ -136,7 +158,7 @@ export class PipelinesController {
   async runsDuration(
     @Query('aggregation') aggregation?: string,
     @Query() query?: PipelineFiltersQuery
-  ) {
+  ): Promise<PipelineRunsDurationResponse> {
     const runs = await this.loadRunsWithFilters({ ...(query || {}), includeJobs: true });
 
     const grouped = new Map<string, number[]>();
@@ -191,7 +213,9 @@ export class PipelinesController {
   }
 
   @Get('/pipelines/jobs-duration-by-workflow')
-  async jobsDurationByWorkflow(@Query() query: PipelineFiltersQuery) {
+  async jobsDurationByWorkflow(
+    @Query() query: PipelineFiltersQuery
+  ): Promise<PipelineJobsDurationByWorkflowResponse> {
     const runs = await this.loadRunsWithFilters({ ...query, includeJobs: true });
 
     // Map: workflow -> job name -> list of durations
@@ -226,14 +250,19 @@ export class PipelinesController {
   }
 
   @Get('/pipelines/deployment-frequency')
-  async deploymentFrequency(@Query() query: PipelineFiltersQuery) {
+  async deploymentFrequency(
+    @Query() query: PipelineFiltersQuery
+  ): Promise<DeploymentFrequencyRow[]> {
     return this.pipelinesService.getDeploymentFrequencyWithAllIntervals(
       this.toServiceFilters(query)
     );
   }
 
   @Get('/pipelines/runs-by')
-  async runsBy(@Query('aggregate_by') aggregateBy?: string, @Query() query?: PipelineFiltersQuery) {
+  async runsBy(
+    @Query('aggregate_by') aggregateBy?: string,
+    @Query() query?: PipelineFiltersQuery
+  ): Promise<PipelineRunsByResponse> {
     const runs = await this.loadRunsWithFilters({ ...(query || {}), includeJobs: false });
 
     const mode = (aggregateBy || 'week').toLowerCase();
@@ -262,7 +291,9 @@ export class PipelinesController {
   }
 
   @Get('/pipelines/jobs-steps-average-time')
-  async jobsStepsAverageTime(@Query() query?: PipelineFiltersQuery) {
+  async jobsStepsAverageTime(
+    @Query() query?: PipelineFiltersQuery
+  ): Promise<PipelineStepsAverageTimeResponse> {
     const result = await this.pipelinesService.getJobStepsAverageTime(
       this.toServiceFilters(query || {})
     );
@@ -270,7 +301,9 @@ export class PipelinesController {
   }
 
   @Get('/pipelines/jobs-steps-average-time-by-day')
-  async jobsStepsAverageTimeByDay(@Query() query?: PipelineFiltersQuery) {
+  async jobsStepsAverageTimeByDay(
+    @Query() query?: PipelineFiltersQuery
+  ): Promise<PipelineStepsAverageTimeByDayResponse> {
     const result = await this.pipelinesService.getJobStepsAverageTimeByDay(
       this.toServiceFilters(query || {})
     );
@@ -282,7 +315,7 @@ export class PipelinesController {
     @Query('exclude_jobs') excludeJobs?: string,
     @Query('top') top?: string,
     @Query() query?: PipelineFiltersQuery
-  ) {
+  ): Promise<PipelineJobsAverageTimeResponse> {
     const runs = await this.loadRunsWithFilters({ ...(query || {}), includeJobs: true });
 
     const excluded = new Set(this.parseCsvList(excludeJobs).map((name) => name.toLowerCase()));
@@ -330,7 +363,7 @@ export class PipelinesController {
   async jobsAverageTimeByDay(
     @Query('exclude_jobs') excludeJobs?: string,
     @Query() query?: PipelineFiltersQuery
-  ) {
+  ): Promise<PipelineJobsAverageTimeByDayResponse> {
     const runs = await this.loadRunsWithFilters({ ...(query || {}), includeJobs: true });
 
     const excluded = new Set(this.parseCsvList(excludeJobs).map((name) => name.toLowerCase()));
@@ -374,32 +407,32 @@ export class PipelinesController {
   }
 
   @Get('/pipelines/workflows')
-  async workflows() {
+  async workflows(): Promise<PipelineWorkflowsResponse> {
     return (await this.pipelineFiltersRepository.loadOptions()).workflows;
   }
 
   @Get('/pipelines/statuses')
-  async statuses() {
+  async statuses(): Promise<PipelineStatusesResponse> {
     return (await this.pipelineFiltersRepository.loadOptions()).statuses;
   }
 
   @Get('/pipelines/conclusions')
-  async conclusions() {
+  async conclusions(): Promise<PipelineConclusionsResponse> {
     return (await this.pipelineFiltersRepository.loadOptions()).conclusions;
   }
 
   @Get('/pipelines/branches')
-  async branches() {
+  async branches(): Promise<PipelineBranchesResponse> {
     return (await this.pipelineFiltersRepository.loadOptions()).branches;
   }
 
   @Get('/pipelines/events')
-  async events() {
+  async events(): Promise<PipelineEventsResponse> {
     return (await this.pipelineFiltersRepository.loadOptions()).events;
   }
 
   @Get('/pipelines/jobs')
-  async jobs(@Query() query: PipelineFiltersQuery) {
+  async jobs(@Query() query: PipelineFiltersQuery): Promise<PipelineJobsResponse> {
     return (
       await this.pipelineFiltersRepository.loadOptions({
         workflowPath: query.workflow_path,
@@ -408,7 +441,9 @@ export class PipelinesController {
   }
 
   @Get('/pipelines/filter-options')
-  async filterOptions(@Query() query: PipelineFiltersQuery) {
+  async filterOptions(
+    @Query() query: PipelineFiltersQuery
+  ): Promise<PipelineFilterOptionsResponse> {
     return this.pipelineFiltersRepository.loadOptions({
       workflowPath: query.workflow_path,
     });
@@ -426,7 +461,16 @@ export class PipelinesController {
       .filter((item) => item.length > 0);
   }
 
-  private toServiceFilters(query: PipelineFiltersQuery) {
+  private toServiceFilters(query: PipelineFiltersQuery): {
+    startDate?: string;
+    endDate?: string;
+    workflowPath?: string;
+    status?: string;
+    conclusion?: string;
+    targetBranch?: string;
+    jobName?: string;
+    event?: string;
+  } {
     return {
       startDate: query.start_date,
       endDate: query.end_date,

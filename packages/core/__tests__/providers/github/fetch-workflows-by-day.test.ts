@@ -51,9 +51,7 @@ describe('PipelinesFetchRepository - Fetch workflows by day', () => {
       .path('.github/workflows/ci.yml')
       .build();
 
-    let callCount = 0;
     const fetchWorkflowRunsPage = vi.fn().mockImplementation((page, perPage, options) => {
-      callCount++;
       // First call (day 1)
       if (options?.created?.includes('2026-05-10')) {
         return Promise.resolve({

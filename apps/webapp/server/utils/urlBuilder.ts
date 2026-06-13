@@ -216,9 +216,9 @@ function createGitLabBuilder(config: DashboardGlobalConfiguration): UrlBuilder {
       return `${baseUrl}/-/pipelines/${runId}`;
     },
     
-    getJobRunsUrl(jobName, workflowName) {
+    getJobRunsUrl(_jobName, _workflowName) {
       // GitLab pipeline jobs can be filtered by name - best effort without direct filter
-      return `${baseUrl}/-/pipelines?scope=all`;
+      return `${baseUrl}/-/pipelines/${_workflowName}/${_jobName}?scope=all`;
     },
     
     getSonarqubeComponentUrl(componentKey) {
@@ -244,8 +244,8 @@ function createGitLabBuilder(config: DashboardGlobalConfiguration): UrlBuilder {
         : `${config.sonar_url}/dashboard`;
     },
 
-    getActionPerformanceForJobUrl(jobName: string, workflowName: string, granularity: 'day' | 'week' | 'month', date: string): string {
-      return '#need+custom+implementation+for+GitLab';
+    getActionPerformanceForJobUrl(_jobName: string, _workflowName: string, _granularity: 'day' | 'week' | 'month', _date: string): string {
+      return `#need+custom+implementation+for+GitLab: ${_jobName}, ${_workflowName}, ${_granularity}, ${_date}`;
     }
 
   };

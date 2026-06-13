@@ -10,10 +10,12 @@ import { Configuration } from 'src';
 import path from 'path';
 
 export interface ICodeMetricsRepository {
-  getCodeChurn(options?: any): Promise<any>;
-  getFileCoupling(options?: any): Promise<any>;
-  getEntityEffort(options?: any): Promise<any>;
-  getEntityOwnership(options?: any): Promise<any>;
+  getCodeChurn(options?: { startDate?: string; endDate?: string }): Promise<CodeChurnResult>;
+  getFileCoupling(options?: { ignorePatterns?: string[] }): Promise<FileCoupling[]>;
+  getEntityEffort(_options?: unknown): Promise<Array<{ entity: string; 'total-revs': number }>>;
+  getEntityOwnership(
+    _options?: unknown
+  ): Promise<Array<{ entity: string; author: string; added: number; deleted: number }>>;
 }
 
 /**
@@ -158,13 +160,22 @@ export class CodeMaatMetricsRepository implements ICodeMetricsRepository {
 
       // Find column indices — support multiple header conventions
       const file1Idx = header.findIndex(
-        (h) => h.toLowerCase() === 'entity' || h.toLowerCase() === 'file1' || h.toLowerCase() === 'entity1'
+        (h) =>
+          h.toLowerCase() === 'entity' ||
+          h.toLowerCase() === 'file1' ||
+          h.toLowerCase() === 'entity1'
       );
       const file2Idx = header.findIndex(
-        (h) => h.toLowerCase() === 'coupled' || h.toLowerCase() === 'file2' || h.toLowerCase() === 'entity2'
+        (h) =>
+          h.toLowerCase() === 'coupled' ||
+          h.toLowerCase() === 'file2' ||
+          h.toLowerCase() === 'entity2'
       );
       const couplingIdx = header.findIndex(
-        (h) => h.toLowerCase() === 'degree' || h.toLowerCase() === 'coupling_strength' || h.toLowerCase() === 'strength'
+        (h) =>
+          h.toLowerCase() === 'degree' ||
+          h.toLowerCase() === 'coupling_strength' ||
+          h.toLowerCase() === 'strength'
       );
 
       const averageRevsIdx = header.findIndex((h) => h.toLowerCase().includes('average-revs'));
@@ -302,7 +313,9 @@ export class CodeMaatMetricsRepository implements ICodeMetricsRepository {
     }
   }
 
-  async getEntityEffort(options?: any): Promise<any> {
+  async getEntityEffort(
+    _options?: unknown
+  ): Promise<Array<{ entity: string; 'total-revs': number }>> {
     try {
       const records = this.readCsvRecords('entity-effort.csv');
 
@@ -319,7 +332,9 @@ export class CodeMaatMetricsRepository implements ICodeMetricsRepository {
     }
   }
 
-  async getEntityOwnership(options?: any): Promise<any> {
+  async getEntityOwnership(
+    _options?: unknown
+  ): Promise<Array<{ entity: string; author: string; added: number; deleted: number }>> {
     try {
       const records = this.readCsvRecords('entity-ownership.csv');
 

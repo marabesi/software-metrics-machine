@@ -28,7 +28,7 @@ export class HttpExceptionFilter implements ExceptionFilter {
       statusCode: status,
       message:
         typeof exceptionResponse === 'object' && 'message' in exceptionResponse
-          ? (exceptionResponse as any).message
+          ? String((exceptionResponse as Record<string, unknown>).message)
           : exception.message,
       error: exception.name,
       timestamp: new Date().toISOString(),

@@ -1,13 +1,8 @@
 import { describe, it, expect, beforeEach } from 'vitest';
-import { FileSystemRepository } from '../src';
-import { PipelineJob } from '../src';
-import { PipelineRun } from '../src';
 import { CodeMetricsRepository } from '../src';
 import { IssuesRepository } from '../src';
 import { MetricsOrchestrator } from '../src';
-import { GithubPrsClient, GithubWorkflowClient } from '../src';
 import { IJiraIssuesClient } from '../src';
-import { SonarqubeMeasuresClient } from '../src';
 import { PRsService } from '../src';
 import { PipelinesService } from '../src';
 import { PullRequestFactory } from '../src';
@@ -50,12 +45,6 @@ describe('Metrics System Acceptance Tests', () => {
       fetchIssueComments: async () => [],
     };
 
-    const sonarqubeClient = new SonarqubeMeasuresClient(
-      config.sonarUrl,
-      config.sonarToken,
-      config.sonarProject,
-    );
-
     // Repositories
     const prsRepository = PullRequestFactory.create(config);
     const { pipelineRepository } = PipelineFactory.create(config);
@@ -75,7 +64,7 @@ describe('Metrics System Acceptance Tests', () => {
       codeRepo,
       issuesRepo,
       sonarqubeService,
-      pairingService,
+      pairingService
     );
   });
 
@@ -162,7 +151,6 @@ describe('Metrics System Acceptance Tests', () => {
       expect(issues).toBeDefined();
       expect(quality).toBeDefined();
     });
-
   });
 
   describe('Data Validation', () => {
@@ -203,5 +191,4 @@ describe('Metrics System Acceptance Tests', () => {
       }
     });
   });
-
 });

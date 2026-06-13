@@ -219,11 +219,14 @@ export class PipelinesJobFetchRepository {
     });
 
     const processedRunIds = new Set(progress.processedRunIds || []);
-    const allJobs: WorkflowJobJsonResponse[] = await this.readJson<any[]>(incompletedPath, []);
+    const allJobs: WorkflowJobJsonResponse[] = await this.readJson<WorkflowJobJsonResponse[]>(
+      incompletedPath,
+      []
+    );
     const perPage = 100;
 
     for (const run of workflows) {
-      const runId = String((run as any).id);
+      const runId = String(run.id);
       if (!runId || processedRunIds.has(runId)) {
         continue;
       }
@@ -283,7 +286,7 @@ export class PipelinesJobFetchRepository {
     }
 
     const existingJobs = await this.pipelineJobsFileSystemRepository.loadAll();
-    const mergedJobsByKey = new Map<string, any>();
+    const mergedJobsByKey = new Map<string, WorkflowJobJsonResponse>();
 
     for (const job of existingJobs) {
       mergedJobsByKey.set(`${String(job.run_id)}:${String(job.id)}`, job);

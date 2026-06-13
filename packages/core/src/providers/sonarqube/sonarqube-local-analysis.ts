@@ -1,5 +1,5 @@
 import { existsSync, mkdirSync, readFileSync, unlinkSync, writeFileSync } from 'node:fs';
-import { rimrafSync } from 'rimraf'
+import { rimrafSync } from 'rimraf';
 import path, { resolve } from 'node:path';
 import { spawn } from 'node:child_process';
 import { randomBytes } from 'node:crypto';
@@ -109,7 +109,9 @@ export class SonarqubeLocalAnalysis {
 
     const dataDir = path.resolve(options.dataDirectory);
     if (existsSync(dataDir)) {
-      this.logger.info(`🧹 Removing existing SonarQube data directory at "${dataDir}" to ensure clean state.`);
+      this.logger.info(
+        `🧹 Removing existing SonarQube data directory at "${dataDir}" to ensure clean state.`
+      );
       rimrafSync(dataDir);
     }
 
@@ -453,7 +455,10 @@ export class SonarqubeLocalAnalysis {
   // ── Token management ──────────────────────────────────────────────────────
 
   async getToken(hostUrl: string, username: string, password: string): Promise<string> {
-    if (typeof this.config.sonarLocalRunnerToken === 'string' && this.config.sonarLocalRunnerToken.length > 0) {
+    if (
+      typeof this.config.sonarLocalRunnerToken === 'string' &&
+      this.config.sonarLocalRunnerToken.length > 0
+    ) {
       return this.config.sonarLocalRunnerToken;
     }
 

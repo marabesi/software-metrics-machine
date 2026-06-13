@@ -7,7 +7,7 @@ import { EntityEffortData } from '@/components/charts/source-code/types';
 interface TreemapData {
   name: string;
   value: number;
-  [key: string]: any; // Add index signature
+  [key: string]: string | number;
 }
 
 interface CustomTooltipProps {
@@ -23,7 +23,6 @@ interface CustomizedTreemapContentProps {
   y: number;
   width: number;
   height: number;
-  index: number;
   name: string;
   value: number;
   colors: string[];
@@ -76,7 +75,7 @@ const EntityEffortTreemap: React.FC<EntityEffortTreemapProps> = ({ data }) => {
 };
 
 const CustomizedTreemapContent: React.FC<CustomizedTreemapContentProps> = (props) => {
-  const { depth, x, y, width, height, index, name, value, colors, maxValue } = props;
+  const { depth, x, y, width, height, name, value, colors, maxValue } = props;
 
   const colorIndex = Math.min(
     Math.floor((value / maxValue) * colors.length),

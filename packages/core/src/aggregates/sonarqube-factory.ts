@@ -6,10 +6,12 @@ import { SonarqubeComponentTreeMeasure, TimestampedStore } from '../providers/so
 export class SonarqubeFactory {
   static create(configuration: Configuration): SonarqubeRepository {
     const cacheDir = configuration.getSonarqubePath();
-    const cache = new FileSystemRepository<TimestampedStore<SonarqubeComponentMeasure>>(`${cacheDir}/measures.json`);
-    const cacheComponentTree = new FileSystemRepository<TimestampedStore<SonarqubeComponentTreeMeasure[]>>(
-      `${cacheDir}/component-tree.json`
+    const cache = new FileSystemRepository<TimestampedStore<SonarqubeComponentMeasure>>(
+      `${cacheDir}/measures.json`
     );
+    const cacheComponentTree = new FileSystemRepository<
+      TimestampedStore<SonarqubeComponentTreeMeasure[]>
+    >(`${cacheDir}/component-tree.json`);
 
     return new SonarqubeRepository(cache, cacheComponentTree);
   }

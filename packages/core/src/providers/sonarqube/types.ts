@@ -43,12 +43,12 @@ export interface TimestampedStore<T> {
 
 export function extractLatestData<T>(raw: TimestampedStore<T> | null): T | null {
   if (!raw) return null;
-  if (Array.isArray((raw as any).entries) && (raw as any).entries.length > 0) {
-    const entries = (raw as any).entries as TimestampedEntry<T>[];
-    return entries[entries.length - 1].data;
+  const rawRecord = raw as unknown as { entries?: TimestampedEntry<T>[] };
+  if (Array.isArray(rawRecord.entries) && rawRecord.entries.length > 0) {
+    return rawRecord.entries[rawRecord.entries.length - 1].data;
   }
   // Legacy format (not wrapped in TimestampedStore)
-  if (!(raw as any).entries) {
+  if (!rawRecord.entries) {
     return raw as unknown as T;
   }
   return null;

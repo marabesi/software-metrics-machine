@@ -160,7 +160,7 @@ export function createSonarQubeCommands(program: Command): void {
           if (measureList.length > 0) {
             console.log('\nMeasures:');
             for (const measure of measureList) {
-              console.log(`  ${measure.metric || measure.key}: ${measure.value ?? 'N/A'}`);
+              console.log(`  ${measure.name || measure.key}: ${measure.value ?? 'N/A'}`);
             }
           }
         }

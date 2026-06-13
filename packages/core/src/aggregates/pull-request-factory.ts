@@ -12,7 +12,10 @@ import {
 export class PullRequestFactory {
   static create(config: Configuration): PullRequestsRepository {
     const repositories = this.createRepositories(config);
-    return new PullRequestsRepository(repositories.cache, repositories.pullRequestCommentsStoreFile);
+    return new PullRequestsRepository(
+      repositories.cache,
+      repositories.pullRequestCommentsStoreFile
+    );
   }
 
   static createFilters(config: Configuration): PullRequestFiltersRepository {

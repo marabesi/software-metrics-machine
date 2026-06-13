@@ -37,15 +37,30 @@ export interface IPipelinesService {
   getDurationMinutes(startedAt?: string, completedAt?: string): number | null;
   getPeriodKey(dateString: string | undefined, interval: 'day' | 'week' | 'month'): string;
   getMetrics(filters?: PipelineFilters): Promise<PipelineMetrics>;
-  getDeploymentFrequency(interval: 'day' | 'week' | 'month', filters?: PipelineFilters): Promise<Array<{
-    period: string;
-    count: number;
-  }>>;
-  getDeploymentFrequencyWithAllIntervals(filters?: PipelineFilters): Promise<DeploymentFrequencyRow[]>;
+  getDeploymentFrequency(
+    interval: 'day' | 'week' | 'month',
+    filters?: PipelineFilters
+  ): Promise<
+    Array<{
+      period: string;
+      count: number;
+    }>
+  >;
+  getDeploymentFrequencyWithAllIntervals(
+    filters?: PipelineFilters
+  ): Promise<DeploymentFrequencyRow[]>;
   getJobMetrics(filters?: PipelineFilters): Promise<JobMetrics[]>;
-  getJobRerunsByDay(filters?: PipelineFilters): Promise<Array<{ day: string; rerun_count: number }>>;
-  getJobStepsAverageTime(filters?: PipelineFilters): Promise<Array<{ name: string; averageDurationMinutes: number; count: number }>>;
-  getJobStepsAverageTimeByDay(filters?: PipelineFilters): Promise<Array<{ day: string; steps: Array<{ name: string; averageDurationMinutes: number }> }>>;
+  getJobRerunsByDay(
+    filters?: PipelineFilters
+  ): Promise<Array<{ day: string; rerun_count: number }>>;
+  getJobStepsAverageTime(
+    filters?: PipelineFilters
+  ): Promise<Array<{ name: string; averageDurationMinutes: number; count: number }>>;
+  getJobStepsAverageTimeByDay(
+    filters?: PipelineFilters
+  ): Promise<
+    Array<{ day: string; steps: Array<{ name: string; averageDurationMinutes: number }> }>
+  >;
 }
 
 interface DeploymentFrequencyTarget {
@@ -69,7 +84,10 @@ export interface DeploymentFrequencyRow {
 export class PipelinesService implements IPipelinesService {
   private logger: Logger = logger;
 
-  constructor(private pipelineRepository: IPipelinesRepository, private configuration?: Configuration) {}
+  constructor(
+    private pipelineRepository: IPipelinesRepository,
+    private configuration?: Configuration
+  ) {}
 
   filterRunsByDateRange<T extends PipelineDateFields>(
     runs: T[],
@@ -79,12 +97,15 @@ export class PipelinesService implements IPipelinesService {
   ): T[] {
     const start = startDate ? this.toTimestamp(startDate) : 0;
     const end = endDate ? this.toDateBoundaryTimestamp(endDate, 'end') : 0;
-    const filteredRuns = start || end ? runs.filter((run) => {
-      const runTimestamp = this.toTimestamp(this.getRunMetricDate(run));
-      if (start && runTimestamp < start) return false;
-      if (end && runTimestamp > end) return false;
-      return true;
-    }) : runs;
+    const filteredRuns =
+      start || end
+        ? runs.filter((run) => {
+            const runTimestamp = this.toTimestamp(this.getRunMetricDate(run));
+            if (start && runTimestamp < start) return false;
+            if (end && runTimestamp > end) return false;
+            return true;
+          })
+        : runs;
 
     if (options?.sort_by?.created_at) {
       return this.sortRunsByMetricDate(filteredRuns, options.sort_by.created_at);
@@ -103,7 +124,9 @@ export class PipelinesService implements IPipelinesService {
         startedAt: this.toTimestamp(job.startedAt),
         completedAt: this.toTimestamp(job.completedAt),
       }))
-      .filter(({ startedAt, completedAt }) => startedAt > 0 && completedAt > 0 && completedAt >= startedAt);
+      .filter(
+        ({ startedAt, completedAt }) => startedAt > 0 && completedAt > 0 && completedAt >= startedAt
+      );
 
     if (jobDurations.length > 0) {
       const startedAt = Math.min(...jobDurations.map((duration) => duration.startedAt));
@@ -202,7 +225,9 @@ export class PipelinesService implements IPipelinesService {
     return Array.from(grouped.entries()).map(([period, count]) => ({ period, count }));
   }
 
-  async getDeploymentFrequencyWithAllIntervals(filters?: PipelineFilters): Promise<DeploymentFrequencyRow[]> {
+  async getDeploymentFrequencyWithAllIntervals(
+    filters?: PipelineFilters
+  ): Promise<DeploymentFrequencyRow[]> {
     const targets = this.getDeploymentFrequencyTargets();
 
     if (targets.length === 0) {
@@ -400,7 +425,9 @@ export class PipelinesService implements IPipelinesService {
   /**
    * Get rerun counts grouped by day.
    */
-  async getJobRerunsByDay(filters?: PipelineFilters): Promise<Array<{ day: string; rerun_count: number }>> {
+  async getJobRerunsByDay(
+    filters?: PipelineFilters
+  ): Promise<Array<{ day: string; rerun_count: number }>> {
     const runs = await this.filterRuns(filters);
 
     const grouped = new Map<string, number>();
@@ -426,21 +453,23 @@ export class PipelinesService implements IPipelinesService {
   /**
    * Get average duration of steps for a job.
    */
-  async getJobStepsAverageTime(filters?: PipelineFilters): Promise<Array<{ name: string; averageDurationMinutes: number; count: number }>> {
+  async getJobStepsAverageTime(
+    filters?: PipelineFilters
+  ): Promise<Array<{ name: string; averageDurationMinutes: number; count: number }>> {
     const runs = await this.filterRuns(filters);
-    
+
     // Group durations by step name
     const stepDurations = new Map<string, number[]>();
-    
+
     for (const run of runs) {
       for (const job of run.jobs || []) {
         for (const step of job.steps || []) {
           if (!step.name || !step.startedAt || !step.completedAt) continue;
-          
+
           const started = new Date(step.startedAt).getTime();
           const completed = new Date(step.completedAt).getTime();
           const durationMinutes = (completed - started) / (1000 * 60);
-          
+
           if (!stepDurations.has(step.name)) {
             stepDurations.set(step.name, []);
           }
@@ -448,43 +477,48 @@ export class PipelinesService implements IPipelinesService {
         }
       }
     }
-    
+
     const result: Array<{ name: string; averageDurationMinutes: number; count: number }> = [];
-    
+
     for (const [name, durations] of stepDurations.entries()) {
-      const avg = durations.length > 0 ? durations.reduce((a, b) => a + b, 0) / durations.length : 0;
+      const avg =
+        durations.length > 0 ? durations.reduce((a, b) => a + b, 0) / durations.length : 0;
       result.push({
         name,
         averageDurationMinutes: Math.round(avg * 100) / 100,
         count: durations.length,
       });
     }
-    
+
     return result;
   }
 
   /**
    * Get average duration of steps for a job, grouped by day.
    */
-  async getJobStepsAverageTimeByDay(filters?: PipelineFilters): Promise<Array<{ day: string; steps: Array<{ name: string; averageDurationMinutes: number }> }>> {
+  async getJobStepsAverageTimeByDay(
+    filters?: PipelineFilters
+  ): Promise<
+    Array<{ day: string; steps: Array<{ name: string; averageDurationMinutes: number }> }>
+  > {
     const runs = await this.filterRuns(filters);
-    
+
     // day -> stepName -> durations
     const dayStepDurations = new Map<string, Map<string, number[]>>();
-    
+
     for (const run of runs) {
       const runDate = run.completedAt || run.createdAt;
       if (!runDate) continue;
       const day = this.toDayKey(runDate);
-      
+
       for (const job of run.jobs || []) {
         for (const step of job.steps || []) {
           if (!step.name || !step.startedAt || !step.completedAt) continue;
-          
+
           const started = new Date(step.startedAt).getTime();
           const completed = new Date(step.completedAt).getTime();
           const durationMinutes = (completed - started) / (1000 * 60);
-          
+
           if (!dayStepDurations.has(day)) {
             dayStepDurations.set(day, new Map());
           }
@@ -496,13 +530,17 @@ export class PipelinesService implements IPipelinesService {
         }
       }
     }
-    
-    const result: Array<{ day: string; steps: Array<{ name: string; averageDurationMinutes: number }> }> = [];
-    
+
+    const result: Array<{
+      day: string;
+      steps: Array<{ name: string; averageDurationMinutes: number }>;
+    }> = [];
+
     for (const [day, stepMap] of dayStepDurations.entries()) {
       const steps = [];
       for (const [name, durations] of stepMap.entries()) {
-        const avg = durations.length > 0 ? durations.reduce((a, b) => a + b, 0) / durations.length : 0;
+        const avg =
+          durations.length > 0 ? durations.reduce((a, b) => a + b, 0) / durations.length : 0;
         steps.push({
           name,
           averageDurationMinutes: Math.round(avg * 100) / 100,
@@ -510,7 +548,7 @@ export class PipelinesService implements IPipelinesService {
       }
       result.push({ day, steps });
     }
-    
+
     return result.sort((a, b) => a.day.localeCompare(b.day));
   }
 
@@ -581,7 +619,9 @@ export class PipelinesService implements IPipelinesService {
       if (selectedJobNames.length > 0) {
         result = result
           .filter((run) =>
-            (run.jobs || []).some((job) => selectedJobNames.includes((job.name || '').toLowerCase()))
+            (run.jobs || []).some((job) =>
+              selectedJobNames.includes((job.name || '').toLowerCase())
+            )
           )
           .map((run) => ({
             ...run,
@@ -595,9 +635,7 @@ export class PipelinesService implements IPipelinesService {
     if (filters.jobConclusion) {
       const targetJobConclusion = filters.jobConclusion.trim().toLowerCase();
       result = result
-        .filter((run) =>
-          (run.jobs || []).some((job) => job.conclusion === targetJobConclusion)
-        )
+        .filter((run) => (run.jobs || []).some((job) => job.conclusion === targetJobConclusion))
         .map((run) => ({
           ...run,
           jobs: (run.jobs || []).filter((job) => job.conclusion === targetJobConclusion),

@@ -1,16 +1,13 @@
 import { INestApplication } from '@nestjs/common';
 import request from 'supertest';
-import { afterAll, beforeAll, describe, expect, it, vi } from 'vitest';
-import { createMetricsTestApp, MockedMetricsOrchestrator } from './helpers/metrics-test-app';
+import { afterAll, beforeAll, describe, expect, it } from 'vitest';
+import { createMetricsTestApp } from './helpers/metrics-test-app';
 
 describe('MetricsController - Configuration and Cross-Cutting Behavior', () => {
   let app: INestApplication;
-  let orchestrator: MockedMetricsOrchestrator;
-
   beforeAll(async () => {
     const testApp = await createMetricsTestApp();
     app = testApp.app;
-    orchestrator = testApp.orchestrator;
   });
 
   afterAll(async () => {

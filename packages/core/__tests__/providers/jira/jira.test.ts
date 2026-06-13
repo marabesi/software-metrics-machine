@@ -9,7 +9,12 @@ describe('JiraIssuesClient', () => {
   beforeEach(() => {
     getMock = vi.fn();
     vi.spyOn(axios, 'create').mockReturnValue({ get: getMock } as any);
-    client = new JiraIssuesClient('https://jira.example.com', 'user@example.com', 'api-token', 'PROJECT');
+    client = new JiraIssuesClient(
+      'https://jira.example.com',
+      'user@example.com',
+      'api-token',
+      'PROJECT'
+    );
   });
 
   afterEach(() => {
@@ -72,8 +77,18 @@ describe('JiraIssuesClient', () => {
       });
 
       getMock
-        .mockResolvedValueOnce({ data: { issues: Array.from({ length: 100 }, (_, i) => makeIssue(`PROJ-${i}`)), total: 150 } })
-        .mockResolvedValueOnce({ data: { issues: Array.from({ length: 50 }, (_, i) => makeIssue(`PROJ-${100 + i}`)), total: 150 } });
+        .mockResolvedValueOnce({
+          data: {
+            issues: Array.from({ length: 100 }, (_, i) => makeIssue(`PROJ-${i}`)),
+            total: 150,
+          },
+        })
+        .mockResolvedValueOnce({
+          data: {
+            issues: Array.from({ length: 50 }, (_, i) => makeIssue(`PROJ-${100 + i}`)),
+            total: 150,
+          },
+        });
 
       const issues = await client.fetchIssues();
 
@@ -89,7 +104,9 @@ describe('JiraIssuesClient', () => {
       getMock.mockRejectedValueOnce(axiosError);
       vi.spyOn(axios, 'isAxiosError').mockReturnValue(true);
 
-      await expect(client.fetchIssues()).rejects.toThrow('Jira authentication failed. Check email and token.');
+      await expect(client.fetchIssues()).rejects.toThrow(
+        'Jira authentication failed. Check email and token.'
+      );
     });
   });
 

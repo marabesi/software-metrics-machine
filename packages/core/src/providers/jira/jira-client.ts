@@ -11,9 +11,9 @@ export interface IJiraIssuesClient {
     project?: string;
   }): Promise<Issue[]>;
 
-  fetchIssueChanges(issueKey: string): Promise<any[]>;
+  fetchIssueChanges(issueKey: string): Promise<unknown[]>;
 
-  fetchIssueComments(issueKey: string): Promise<any[]>;
+  fetchIssueComments(issueKey: string): Promise<unknown[]>;
 }
 
 /**
@@ -166,7 +166,7 @@ export class JiraIssuesClient implements IJiraIssuesClient {
     }
   }
 
-  async fetchIssueChanges(issueKey: string): Promise<any[]> {
+  async fetchIssueChanges(issueKey: string): Promise<unknown[]> {
     try {
       this.logger.info(`Fetching changelog for Jira issue: ${issueKey}`);
 
@@ -194,7 +194,7 @@ export class JiraIssuesClient implements IJiraIssuesClient {
     }
   }
 
-  async fetchIssueComments(issueKey: string): Promise<any[]> {
+  async fetchIssueComments(issueKey: string): Promise<unknown[]> {
     try {
       this.logger.info(`Fetching comments for Jira issue: ${issueKey}`);
 

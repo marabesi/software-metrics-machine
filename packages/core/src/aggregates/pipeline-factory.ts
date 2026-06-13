@@ -7,10 +7,7 @@ import {
 import { PipelinesFetchRepository } from '../providers/github/pipelines-fetch-repository';
 import { GithubWorkflowClient, GithubWorkflowJobClient, GitlabPipelineClient } from '../providers';
 import { PipelinesJobFetchRepository } from '../providers/github/pipelines-job-fetch-repository';
-import {
-  PipelineFiltersRepository,
-  PipelineFilterOptions,
-} from './pipeline-filters-repository';
+import { PipelineFiltersRepository, PipelineFilterOptions } from './pipeline-filters-repository';
 
 export default class PipelineFactory {
   static create(config: Configuration) {
@@ -29,10 +26,9 @@ export default class PipelineFactory {
     const pipelineJobsFileSystemRepository = new FileSystemRepository<WorkflowJobJsonResponse>(
       `${config.getPathFromGitProvider()}/jobs.json`
     );
-    const pipelineFiltersFileSystemRepository =
-      new FileSystemRepository<PipelineFilterOptions>(
-        `${config.getPathFromGitProvider()}/pipeline-filter-options.json`
-      );
+    const pipelineFiltersFileSystemRepository = new FileSystemRepository<PipelineFilterOptions>(
+      `${config.getPathFromGitProvider()}/pipeline-filter-options.json`
+    );
 
     const pipelineRepository = new PipelinesRepository(
       pipelineRunFileSystemRepository,

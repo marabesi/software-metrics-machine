@@ -142,7 +142,7 @@ export class Configuration implements IConfiguration {
     const envObj = env === process.env ? { ...env } : env;
 
     // Check if configuration file path is provided
-    let configData: Record<string, any> = {};
+    let configData: Record<string, unknown> = {};
     if (!envObj.SMM_STORE_DATA_AT) {
       throw new Error(`Failed to load configuration from ${configData.toString()}:`);
     }
@@ -156,35 +156,36 @@ export class Configuration implements IConfiguration {
     }
 
     // Load configuration from JSON file (if available) or environment variables
-    this.gitProvider = configData.git_provider || envObj.GIT_PROVIDER;
-    this.githubToken = configData.github_token || envObj.GITHUB_TOKEN;
-    this.gitlabToken = configData.gitlab_token || envObj.GITLAB_TOKEN;
-    this.githubRepository = configData.github_repository || envObj.GITHUB_REPO;
+    const c = configData as unknown as Record<string, string | undefined>;
+    this.gitProvider = c.git_provider || envObj.GIT_PROVIDER;
+    this.githubToken = c.github_token || envObj.GITHUB_TOKEN;
+    this.gitlabToken = c.gitlab_token || envObj.GITLAB_TOKEN;
+    this.githubRepository = c.github_repository || envObj.GITHUB_REPO;
     this.storeData = envObj.SMM_STORE_DATA_AT; // Keep as the path to the config file
-    this.gitRepositoryLocation = configData.git_repository_location || envObj.GIT_REPOSITORY_PATH;
+    this.gitRepositoryLocation = c.git_repository_location || envObj.GIT_REPOSITORY_PATH || '';
     this.deploymentFrequencyTargets = this.normalizeDeploymentFrequencyTargets(configData);
-    this.mainBranch = configData.main_branch;
-    this.dashboardStartDate = configData.dashboard_start_date;
-    this.dashboardEndDate = configData.dashboard_end_date;
-    this.dashboardColor = configData.dashboard_color;
+    this.mainBranch = c.main_branch;
+    this.dashboardStartDate = c.dashboard_start_date;
+    this.dashboardEndDate = c.dashboard_end_date;
+    this.dashboardColor = c.dashboard_color;
 
     let logLevel: string = 'CRITICAL';
-    if (configData.log_level) {
-      logLevel = configData.log_level;
+    if (c.log_level) {
+      logLevel = c.log_level;
     }
     if (envObj.LOGGING_LEVEL) {
       logLevel = envObj.LOGGING_LEVEL;
     }
     this.loggingLevel = logLevel as IConfiguration['loggingLevel'];
 
-    this.jiraUrl = configData.jira_url || envObj.JIRA_URL;
-    this.jiraEmail = configData.jira_email || envObj.JIRA_EMAIL;
-    this.jiraToken = configData.jira_token || envObj.JIRA_TOKEN;
-    this.jiraProject = configData.jira_project || envObj.JIRA_PROJECT;
-    this.sonarUrl = configData.sonar_url || envObj.SONAR_URL;
-    this.sonarToken = configData.sonar_token || envObj.SONAR_TOKEN;
-    this.sonarProject = configData.sonar_project || envObj.SONAR_PROJECT;
-    this.sonarLocalRunnerToken = configData.sonar_local_runner_token;
+    this.jiraUrl = c.jira_url || envObj.JIRA_URL;
+    this.jiraEmail = c.jira_email || envObj.JIRA_EMAIL;
+    this.jiraToken = c.jira_token || envObj.JIRA_TOKEN;
+    this.jiraProject = c.jira_project || envObj.JIRA_PROJECT;
+    this.sonarUrl = c.sonar_url || envObj.SONAR_URL;
+    this.sonarToken = c.sonar_token || envObj.SONAR_TOKEN;
+    this.sonarProject = c.sonar_project || envObj.SONAR_PROJECT;
+    this.sonarLocalRunnerToken = c.sonar_local_runner_token;
     this.storeLogs = configData.store_logs === true || configData.STORE_LOGS === true;
     Logger.configureDefaults({
       level: this.loggingLevel,
@@ -250,7 +251,7 @@ export class Configuration implements IConfiguration {
 
   save(): void {
     const configPath = path.resolve(`${this.storeData}/smm_config.json`);
-    let configData: Record<string, any> = {};
+    let configData: Record<string, unknown> = {};
 
     if (fs.existsSync(configPath)) {
       const fileContent = fs.readFileSync(configPath, 'utf-8');
@@ -264,7 +265,7 @@ export class Configuration implements IConfiguration {
   }
 
   private normalizeDeploymentFrequencyTargets(
-    configData: Record<string, any>
+    configData: Record<string, unknown>
   ): DeploymentFrequencyTarget[] | undefined {
     const configuredTargets = configData.deployment_frequency_targets;
 

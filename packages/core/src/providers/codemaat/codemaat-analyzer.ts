@@ -1,3 +1,4 @@
+import { Configuration } from '../../infrastructure';
 import { CodeMaatMetricsRepository } from '../../aggregates/codemaat-metrics-repository';
 
 /**
@@ -6,6 +7,6 @@ import { CodeMaatMetricsRepository } from '../../aggregates/codemaat-metrics-rep
  */
 export class CodemaatAnalyzer extends CodeMaatMetricsRepository {
   constructor(dataDir: string) {
-    super({ getCodeMaatPath: () => dataDir } as any);
+    super({ getCodeMaatPath: () => dataDir } as unknown as Configuration);
   }
 }
