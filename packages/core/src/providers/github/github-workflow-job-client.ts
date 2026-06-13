@@ -1,16 +1,21 @@
 import axios, { AxiosInstance } from 'axios';
 import { Logger } from '@smmachine/utils';
-import { GitHubWorkflowJobResponse, IGithubWorkflowJobClient } from './github-workflow';
+import { GitHubWorkflowJobResponse, IGithubWorkflowJobClient } from './workflow-types';
+import { GitHubRateLimitManager } from './github-rate-limit-manager';
+import { WorkflowJobJsonResponse } from './github-response-types';
+import { GithubClientRetriable } from './github-client-retriable';
 
 export class GithubWorkflowJobClient implements IGithubWorkflowJobClient {
   private axiosInstance: AxiosInstance;
   private logger: Logger;
   private readonly baseUrl = 'https://api.github.com';
+  private readonly retriableClient: GithubClientRetriable;
 
   constructor(
     token: string,
     private owner: string,
-    private repo: string
+    private repo: string,
+    private rateLimitManager: GitHubRateLimitManager
   ) {
     this.logger = new Logger('GithubWorkflowClient');
 
@@ -22,6 +27,8 @@ export class GithubWorkflowJobClient implements IGithubWorkflowJobClient {
       },
       timeout: 30000,
     });
+
+    this.retriableClient = new GithubClientRetriable(this.axiosInstance, this.rateLimitManager);
   }
 
   async fetchJobsPage(
@@ -39,7 +46,9 @@ export class GithubWorkflowJobClient implements IGithubWorkflowJobClient {
 
     this.logger.info(`${url} ${JSON.stringify(requestParams.params)}`);
 
-    const response = await this.axiosInstance.get(url, requestParams);
+    const response = await this.retriableClient.rateLimitedGet<{
+      jobs: WorkflowJobJsonResponse[];
+    }>(url, requestParams);
 
     const jobs = response.data.jobs || [];
     const hasNext = this.hasNextLink(response.headers?.link) || jobs.length === perPage;

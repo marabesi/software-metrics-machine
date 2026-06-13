@@ -6,6 +6,7 @@ import {
   FirstCommentMetric,
   GithubPrsClient,
   GitlabMrClient,
+  GitHubRateLimitManager,
   GitHubPullRequestsFetchRepository,
   MostCommentedPRData,
   PRFilters,
@@ -25,9 +26,11 @@ function createPRsOrchestratorFetch(): GitHubPullRequestsFetchRepository {
   const config = new Configuration(process.env);
   const [githubOwner, githubRepo] = config.githubRepository!.split('/');
   const isGitlab = config.gitProvider?.toLowerCase() === 'gitlab';
+
+  const rateLimitManager = new GitHubRateLimitManager();
   const prsClient = isGitlab
     ? new GitlabMrClient(config.gitlabToken, config.githubRepository!)
-    : new GithubPrsClient(config.githubToken!, githubOwner, githubRepo);
+    : new GithubPrsClient(config.githubToken!, githubOwner, githubRepo, rateLimitManager);
 
   return new GitHubPullRequestsFetchRepository(prsClient, config);
 }

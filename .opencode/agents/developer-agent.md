@@ -185,6 +185,7 @@ All config comes from environment variables consumed by `Configuration` class (`
 - Change module system of existing packages without discussion
 - Commit secrets, tokens, or `.env` files
 - Add runtime dependencies without using the pnpm catalog
+- Read dist/ files directly they are for distribution only, not for internal imports. Always import from `src/` and let the build handle the rest.
 
 ## Development Workflows
 

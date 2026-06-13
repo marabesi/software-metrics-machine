@@ -1,12 +1,16 @@
 import axios, { AxiosInstance } from 'axios';
 import { Logger } from '@smmachine/utils';
 import { PullRequestCommentJsonResponse, PullRequestJsonResponse } from './github-response-types';
+import { GitHubRateLimitManager } from './github-rate-limit-manager';
+import { GithubClientRetriable } from './github-client-retriable';
+
+type PrStatuses = 'open' | 'closed' | 'all' | 'draft' | 'merged';
 
 export interface IGithubPrsClient {
   fetchPRs(options?: {
     startDate?: string;
     endDate?: string;
-    state?: 'open' | 'closed' | 'all';
+    state?: PrStatuses;
   }): Promise<PullRequestJsonResponse[]>;
 
   fetchPRComments(prNumber: number): Promise<PullRequestCommentJsonResponse[]>;
@@ -23,11 +27,13 @@ export class GithubPrsClient implements IGithubPrsClient {
   private readonly axiosInstance: AxiosInstance;
   private logger: Logger;
   private readonly baseUrl = 'https://api.github.com';
+  private retriableClient: GithubClientRetriable;
 
   constructor(
     token: string,
     private owner: string,
-    private repo: string
+    private repo: string,
+    private rateLimitManager: GitHubRateLimitManager
   ) {
     this.logger = new Logger('GithubPrsClient');
 
@@ -39,12 +45,14 @@ export class GithubPrsClient implements IGithubPrsClient {
       },
       timeout: 30000,
     });
+
+    this.retriableClient = new GithubClientRetriable(this.axiosInstance, this.rateLimitManager);
   }
 
   async fetchPRs(options?: {
     startDate?: string;
     endDate?: string;
-    state?: 'open' | 'closed' | 'all';
+    state?: PrStatuses;
   }): Promise<PullRequestJsonResponse[]> {
     const state = options?.state || 'all';
     const per_page = 100;
@@ -58,15 +66,18 @@ export class GithubPrsClient implements IGithubPrsClient {
           `Fetching PRs page ${page} for ${this.owner}/${this.repo} (state: ${state})`
         );
 
-        const response = await this.axiosInstance.get(`/repos/${this.owner}/${this.repo}/pulls`, {
-          params: {
-            state,
-            sort: 'created',
-            direction: 'desc',
-            per_page,
-            page,
-          },
-        });
+        const response = await this.retriableClient.rateLimitedGet<PullRequestJsonResponse[]>(
+          `/repos/${this.owner}/${this.repo}/pulls`,
+          {
+            params: {
+              state,
+              sort: 'created',
+              direction: 'asc',
+              per_page,
+              page,
+            },
+          }
+        );
 
         const prs = response.data;
 
@@ -123,15 +134,14 @@ export class GithubPrsClient implements IGithubPrsClient {
           `Fetching comments for PR #${prNumber} page ${page} in ${this.owner}/${this.repo}`
         );
 
-        const response = await this.axiosInstance.get(
-          `/repos/${this.owner}/${this.repo}/pulls/${prNumber}/comments`,
-          {
-            params: {
-              per_page,
-              page,
-            },
-          }
-        );
+        const response = await this.retriableClient.rateLimitedGet<
+          PullRequestCommentJsonResponse[]
+        >(`/repos/${this.owner}/${this.repo}/pulls/${prNumber}/comments`, {
+          params: {
+            per_page,
+            page,
+          },
+        });
 
         const comments: PullRequestCommentJsonResponse[] = response.data.map(
           (comment: PullRequestCommentJsonResponse) => comment

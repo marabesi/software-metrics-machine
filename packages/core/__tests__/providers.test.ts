@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
-import { GithubPrsClient, GithubWorkflowClient } from '../src';
+import { GithubPrsClient, GithubWorkflowClient, GitHubRateLimitManager } from '../src';
 import { GitlabMrClient, GitlabPipelineClient } from '../src';
 vi.mock('axios', () => ({
   default: {
@@ -17,7 +17,7 @@ describe('GithubPrsClient', () => {
   let client: GithubPrsClient;
 
   beforeEach(() => {
-    client = new GithubPrsClient('fake-token', 'owner', 'repo');
+    client = new GithubPrsClient('fake-token', 'owner', 'repo', new GitHubRateLimitManager());
   });
 
   it('should fetch PRs', async () => {
@@ -39,7 +39,7 @@ describe('GithubWorkflowClient', () => {
   let client: GithubWorkflowClient;
 
   beforeEach(() => {
-    client = new GithubWorkflowClient('fake-token', 'owner', 'repo');
+    client = new GithubWorkflowClient('fake-token', 'owner', 'repo', new GitHubRateLimitManager());
   });
 
   it('should initialize with token, owner, and repo', () => {

@@ -2,7 +2,7 @@ import { logger } from '@smmachine/utils';
 import { FileSystemRepository } from '../../infrastructure/repository';
 import { type IGithubPrsClient } from '.';
 import { PullRequestCommentJsonResponse, PullRequestJsonResponse } from './github-response-types';
-import { Configuration } from 'src';
+import { Configuration } from '../../';
 import {
   PullRequestFilterOptions,
   PullRequestFiltersRepository,

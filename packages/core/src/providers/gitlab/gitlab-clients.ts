@@ -12,7 +12,7 @@ import {
   GitHubWorkflowResponse,
   IGithubWorkflowClient,
   IGithubWorkflowJobClient,
-} from '../github/github-workflow';
+} from '../github/workflow-types';
 import { IGithubPrsClient } from '../github/github-pr-client';
 import { PipelineRun } from '../../domain';
 

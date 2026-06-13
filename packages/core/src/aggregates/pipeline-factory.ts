@@ -5,7 +5,12 @@ import {
   WorkflowJsonResponse,
 } from '../providers/github/github-response-types';
 import { PipelinesFetchRepository } from '../providers/github/pipelines-fetch-repository';
-import { GithubWorkflowClient, GithubWorkflowJobClient, GitlabPipelineClient } from '../providers';
+import {
+  GithubWorkflowClient,
+  GithubWorkflowJobClient,
+  GitlabPipelineClient,
+  GitHubRateLimitManager,
+} from '../providers';
 import { PipelinesJobFetchRepository } from '../providers/github/pipelines-job-fetch-repository';
 import { PipelineFiltersRepository, PipelineFilterOptions } from './pipeline-filters-repository';
 
@@ -13,12 +18,16 @@ export default class PipelineFactory {
   static create(config: Configuration) {
     const [githubOwner, githubRepo] = config.githubRepository!.split('/');
     const isGitlab = config.gitProvider?.toLowerCase() === 'gitlab';
+
+    // Shared rate limit manager across all GitHub API clients
+    const rateLimitManager = new GitHubRateLimitManager();
+
     const workflowClient = isGitlab
       ? new GitlabPipelineClient(config.gitlabToken, config.githubRepository!)
-      : new GithubWorkflowClient(config.githubToken!, githubOwner, githubRepo);
+      : new GithubWorkflowClient(config.githubToken!, githubOwner, githubRepo, rateLimitManager);
     const workflowJobClient = isGitlab
       ? new GitlabPipelineClient(config.gitlabToken, config.githubRepository!)
-      : new GithubWorkflowJobClient(config.githubToken!, githubOwner, githubRepo);
+      : new GithubWorkflowJobClient(config.githubToken!, githubOwner, githubRepo, rateLimitManager);
 
     const pipelineRunFileSystemRepository = new FileSystemRepository<WorkflowJsonResponse>(
       `${config.getPathFromGitProvider()}/workflows.json`

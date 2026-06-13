@@ -162,7 +162,7 @@ describe('PipelinesRepository', () => {
     expect(workflows[0].id).toBe('filtered-run');
     expect(fetchWorkflowRunsPage).toHaveBeenCalledTimes(1);
     expect(fetchWorkflowRunsPage).toHaveBeenCalledWith(1, 100, {
-      created: '2026-05-05T00:00:00Z..2026-05-15T00:00:00Z',
+      created: '2026-05-05T00:00:00Z..2026-05-15T23:59:59Z',
       rawFilters: 'status=success,branch=main',
     });
   });

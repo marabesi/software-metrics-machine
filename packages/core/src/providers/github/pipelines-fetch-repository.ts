@@ -5,6 +5,7 @@ import { Configuration, IRepository } from '../../infrastructure';
 import { type IGithubWorkflowClient } from '../index';
 import { WorkflowJsonResponse } from './github-response-types';
 import { PipelineFiltersRepository } from '../../aggregates/pipeline-filters-repository';
+import { buildCreatedFilter, toISODateString } from './github-date-utils';
 
 interface WorkflowsProgress {
   page: number;
@@ -113,8 +114,8 @@ export class PipelinesFetchRepository {
     rawFilters?: string
   ): Promise<WorkflowJsonResponse[]> {
     const allRuns: WorkflowJsonResponse[] = [];
-    const current = new Date(startDate);
-    const end = new Date(endDate);
+    const current = new Date(toISODateString(startDate, 'start'));
+    const end = new Date(toISODateString(endDate, 'end'));
 
     while (current <= end) {
       const dayStart = new Date(current);
@@ -222,11 +223,7 @@ export class PipelinesFetchRepository {
   }
 
   private buildCreatedFilter(startDate?: string, endDate?: string): string | undefined {
-    if (!startDate && !endDate) {
-      return undefined;
-    }
-
-    return `${startDate || ''}..${endDate || ''}`;
+    return buildCreatedFilter(startDate, endDate);
   }
 
   private fileInCache(fileName: string): string {

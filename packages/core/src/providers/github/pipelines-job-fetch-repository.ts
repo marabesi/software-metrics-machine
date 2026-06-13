@@ -3,8 +3,9 @@ import * as fs from 'fs/promises';
 import * as path from 'path';
 import { Configuration, IRepository } from '../../infrastructure';
 import { WorkflowJobJsonResponse, WorkflowJsonResponse } from './github-response-types';
-import { IGithubWorkflowJobClient } from './github-workflow';
+import { IGithubWorkflowJobClient } from './workflow-types';
 import { PipelineFiltersRepository } from '../../aggregates/pipeline-filters-repository';
+import { toISODateString } from './github-date-utils';
 
 interface JobsProgress {
   processedRunIds: string[];
@@ -121,8 +122,8 @@ export class PipelinesJobFetchRepository {
     rawFilters?: string
   ): Promise<WorkflowJobJsonResponse[]> {
     const allJobs: WorkflowJobJsonResponse[] = [];
-    const current = new Date(startDate);
-    const end = new Date(endDate);
+    const current = new Date(toISODateString(startDate, 'start'));
+    const end = new Date(toISODateString(endDate, 'end'));
 
     while (current <= end) {
       const dayStart = new Date(current);

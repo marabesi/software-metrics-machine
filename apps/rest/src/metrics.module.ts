@@ -15,8 +15,6 @@ import {
   PipelineFiltersRepository,
   CodeMetricsRepository,
   IssuesRepository,
-  GithubPrsClient,
-  GithubWorkflowClient,
   JiraIssuesClient,
   SonarqubeMeasuresClient,
   CommitTraverser,
@@ -76,28 +74,6 @@ function buildDataDirectories(config: Configuration) {
     {
       provide: Configuration,
       useFactory: () => new Configuration(process.env),
-    },
-
-    // GitHub Clients
-    {
-      provide: GithubPrsClient,
-      useFactory: (config: Configuration) => {
-        const [githubOwner, githubRepo] = (config.githubRepository || '/').split('/');
-        return new GithubPrsClient(config.githubToken || '', githubOwner || '', githubRepo || '');
-      },
-      inject: [Configuration],
-    },
-    {
-      provide: GithubWorkflowClient,
-      useFactory: (config: Configuration) => {
-        const [githubOwner, githubRepo] = (config.githubRepository || '/').split('/');
-        return new GithubWorkflowClient(
-          config.githubToken || '',
-          githubOwner || '',
-          githubRepo || ''
-        );
-      },
-      inject: [Configuration],
     },
 
     // Jira Client

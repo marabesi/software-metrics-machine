@@ -1,5 +1,6 @@
 import { describe, expect, it, vi } from 'vitest';
 import { GithubWorkflowClient } from '../../../src/providers/github/github-workflow-client';
+import { GitHubRateLimitManager } from '../../../src/providers/github/github-rate-limit-manager';
 
 describe('GithubWorkflowClient - Fetch workflows by day', () => {
   const token = 'test-token';
@@ -7,7 +8,7 @@ describe('GithubWorkflowClient - Fetch workflows by day', () => {
   const repo = 'test-repo';
 
   it('should fetch workflows by day when byDay is true', async () => {
-    const client = new GithubWorkflowClient(token, owner, repo);
+    const client = new GithubWorkflowClient(token, owner, repo, new GitHubRateLimitManager());
 
     const mockRuns1 = [
       {
@@ -69,7 +70,7 @@ describe('GithubWorkflowClient - Fetch workflows by day', () => {
   });
 
   it('should fetch all pages for each day before moving to next day', async () => {
-    const client = new GithubWorkflowClient(token, owner, repo);
+    const client = new GithubWorkflowClient(token, owner, repo, new GitHubRateLimitManager());
 
     const mockPage1Day1 = [
       {
@@ -160,7 +161,7 @@ describe('GithubWorkflowClient - Fetch workflows by day', () => {
   });
 
   it('should use original behavior when byDay is false', async () => {
-    const client = new GithubWorkflowClient(token, owner, repo);
+    const client = new GithubWorkflowClient(token, owner, repo, new GitHubRateLimitManager());
 
     const mockRuns = [
       {
@@ -199,7 +200,7 @@ describe('GithubWorkflowClient - Fetch workflows by day', () => {
   });
 
   it('should use original behavior when byDay is not provided', async () => {
-    const client = new GithubWorkflowClient(token, owner, repo);
+    const client = new GithubWorkflowClient(token, owner, repo, new GitHubRateLimitManager());
 
     const mockRuns = [
       {
@@ -234,7 +235,7 @@ describe('GithubWorkflowClient - Fetch workflows by day', () => {
   });
 
   it('should handle single day with byDay flag', async () => {
-    const client = new GithubWorkflowClient(token, owner, repo);
+    const client = new GithubWorkflowClient(token, owner, repo, new GitHubRateLimitManager());
 
     const mockRuns = [
       {
@@ -270,7 +271,7 @@ describe('GithubWorkflowClient - Fetch workflows by day', () => {
   });
 
   it('should handle raw filters with byDay', async () => {
-    const client = new GithubWorkflowClient(token, owner, repo);
+    const client = new GithubWorkflowClient(token, owner, repo, new GitHubRateLimitManager());
 
     const mockRuns = [
       {

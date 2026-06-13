@@ -1,17 +1,23 @@
 import axios, { AxiosInstance } from 'axios';
 import { Logger } from '@smmachine/utils';
 import { PipelineRun } from '../../domain';
-import { GitHubWorkflowResponse, IGithubWorkflowClient } from './github-workflow';
+import { GitHubWorkflowResponse, IGithubWorkflowClient } from './workflow-types';
+import { WorkflowJsonResponse } from './github-response-types';
+import { GitHubRateLimitManager } from './github-rate-limit-manager';
+import { buildCreatedFilter, toISODateString } from './github-date-utils';
+import { GithubClientRetriable } from './github-client-retriable';
 
 export class GithubWorkflowClient implements IGithubWorkflowClient {
-  private axiosInstance: AxiosInstance;
-  private logger: Logger;
+  private readonly axiosInstance: AxiosInstance;
+  private readonly logger: Logger;
   private readonly baseUrl = 'https://api.github.com';
+  private readonly retriableClient: GithubClientRetriable;
 
   constructor(
     token: string,
     private owner: string,
-    private repo: string
+    private repo: string,
+    private rateLimitManager: GitHubRateLimitManager
   ) {
     this.logger = new Logger('GithubWorkflowClient');
 
@@ -23,6 +29,8 @@ export class GithubWorkflowClient implements IGithubWorkflowClient {
       },
       timeout: 30000,
     });
+
+    this.retriableClient = new GithubClientRetriable(this.axiosInstance, this.rateLimitManager);
   }
 
   async fetchWorkflows(options?: {
@@ -85,8 +93,9 @@ export class GithubWorkflowClient implements IGithubWorkflowClient {
         rawFilters,
       };
 
-      if (startDate && endDate) {
-        optionsParams.created = `${startDate}..${endDate}`;
+      const created = buildCreatedFilter(startDate, endDate);
+      if (created) {
+        optionsParams.created = created;
       }
 
       const response = await this.fetchWorkflowRunsPage(page, per_page, optionsParams);
@@ -125,8 +134,8 @@ export class GithubWorkflowClient implements IGithubWorkflowClient {
     endDate: string
   ): Array<{ start: string; end: string }> {
     const days: Array<{ start: string; end: string }> = [];
-    const current = new Date(startDate);
-    const end = new Date(endDate);
+    const current = new Date(toISODateString(startDate, 'start'));
+    const end = new Date(toISODateString(endDate, 'end'));
 
     while (current <= end) {
       const dayStart = new Date(current);
@@ -163,10 +172,12 @@ export class GithubWorkflowClient implements IGithubWorkflowClient {
 
     this.logger.info(`${url} ${JSON.stringify(requestParams.params)}`);
 
-    const response = await this.axiosInstance.get(url, requestParams);
+    const response = await this.retriableClient.rateLimitedGet<{
+      workflow_runs: WorkflowJsonResponse[];
+    }>(url, requestParams);
 
     const runs = response.data.workflow_runs || [];
-    this.logger.info(`Fetched ${runs.length} workflow runs`);
+    this.logger.info(`Fetched ${runs.length} workflow runs on page ${page}`);
 
     const hasNext = this.hasNextLink(response.headers?.link) || runs.length === perPage;
     return { runs, hasNext };
