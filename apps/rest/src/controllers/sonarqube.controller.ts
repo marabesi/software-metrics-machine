@@ -1,6 +1,11 @@
 import { Controller, Get, Query, HttpException, HttpStatus, Logger } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiQuery, ApiResponse, ApiOkResponse } from '@nestjs/swagger';
-import { SonarqubeComponentMeasure, SonarqubeMeasure, SonarqubeRepository } from '@smmachine/core';
+import {
+  SonarqubeComponentMeasure,
+  SonarqubeComponentTreeMeasure,
+  SonarqubeMeasure,
+  SonarqubeRepository,
+} from '@smmachine/core';
 import { ComponentTreeQueryDto, QualityMetricsQueryDto } from '../dtos/index';
 import { ErrorResponse } from '../dtos/response.dto';
 import path from 'path';
@@ -95,7 +100,7 @@ export class SonarqubeController {
   })
   async getComponentTree(
     @Query() query: ComponentTreeQueryDto
-  ): Promise<SonarqubeComponentMeasure[]> {
+  ): Promise<SonarqubeComponentTreeMeasure[]> {
     try {
       this.logger.debug(`Loading component tree: ${JSON.stringify(query)}`);
 
@@ -235,7 +240,7 @@ export class SonarqubeController {
   })
   async getComponentTreeHistory(
     @Query() query: ComponentTreeQueryDto
-  ): Promise<Array<{ fetchedAt: string; data: SonarqubeComponentMeasure[] }>> {
+  ): Promise<Array<{ fetchedAt: string; data: SonarqubeComponentTreeMeasure[] }>> {
     try {
       this.logger.debug(`Loading SonarQube component tree history: ${JSON.stringify(query)}`);
       const entries = await this.sonarqubeRepository.loadAllComponentTreeEntries();
@@ -257,9 +262,9 @@ export class SonarqubeController {
   }
 
   private filterComponentTreeComponents(
-    components: SonarqubeComponentMeasure[],
+    components: SonarqubeComponentTreeMeasure[],
     query: ComponentTreeQueryDto
-  ): SonarqubeComponentMeasure[] {
+  ): SonarqubeComponentTreeMeasure[] {
     const ignorePatterns = query.ignore_files || [];
     const includePatterns = query.include_files || [];
     const removeFolders = query.remove_folders || false;

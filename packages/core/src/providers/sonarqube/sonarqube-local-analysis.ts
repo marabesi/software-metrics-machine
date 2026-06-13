@@ -347,6 +347,20 @@ export class SonarqubeLocalAnalysis {
     );
   }
 
+  readLocalServerUrl(): string | undefined {
+    if (!existsSync(this.localDataFilePath)) {
+      return undefined;
+    }
+
+    try {
+      const contents = readFileSync(this.localDataFilePath, 'utf-8');
+      const parsed = JSON.parse(contents) as Partial<LocalSonarqubeTokenData>;
+      return typeof parsed.serverUrl === 'string' ? parsed.serverUrl : undefined;
+    } catch {
+      return undefined;
+    }
+  }
+
   private clearLocalData(): void {
     this.config.sonarLocalRunnerToken = undefined;
     this.config.save();

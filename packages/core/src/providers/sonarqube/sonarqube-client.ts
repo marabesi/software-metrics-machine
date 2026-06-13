@@ -1,6 +1,6 @@
 import axios, { AxiosInstance } from 'axios';
 import { Logger } from '@smmachine/utils';
-import { SonarqubeComponentMeasure, CodeMetric } from '.';
+import { SonarqubeComponentMeasure, SonarqubeComponentTreeMeasure, CodeMetric } from '.';
 
 export interface ISonarqubeMeasuresClient {
   fetchComponentMeasures(options?: { metrics?: string[] }): Promise<SonarqubeComponentMeasure>;
@@ -15,7 +15,7 @@ export interface ISonarqubeMeasuresClient {
     component?: string;
     depth?: number;
     metrics?: string[];
-  }): Promise<SonarqubeComponentMeasure[]>;
+  }): Promise<SonarqubeComponentTreeMeasure[]>;
 }
 
 /**
@@ -186,7 +186,7 @@ export class SonarqubeMeasuresClient implements ISonarqubeMeasuresClient {
     component?: string;
     depth?: number;
     metrics?: string[];
-  }): Promise<SonarqubeComponentMeasure[]> {
+  }): Promise<SonarqubeComponentTreeMeasure[]> {
     try {
       const component = options?.component || this.projectKey;
       const depth = options?.depth ?? -1; // -1 means all depths

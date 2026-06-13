@@ -28,8 +28,17 @@ function createSonarqubeOrchestrator(options: SonarqubeOrchestratorOptions = {})
     throw new Error('sonarLocalRunnerToken is required to fetch local SonarQube analysis metrics.');
   }
 
+  let sonarUrl = options.sonarUrl ?? config.sonarUrl ?? '';
+  if (options.useLocalAnalysisToken) {
+    const localAnalysis = new SonarqubeLocalAnalysis(config);
+    const localServerUrl = localAnalysis.readLocalServerUrl();
+    if (localServerUrl) {
+      sonarUrl = localServerUrl;
+    }
+  }
+
   const sonarqubeClient = new SonarqubeMeasuresClient(
-    options.sonarUrl ?? config.sonarUrl ?? '',
+    sonarUrl,
     token || '',
     options.sonarProject ?? config.sonarProject ?? ''
   );
@@ -117,6 +126,9 @@ export function createSonarQubeCommands(program: Command): void {
             : undefined,
           scannerToken: options.scannerToken,
         });
+        // wait to give sonarqube time to process the changes and make metrics available before fetching
+        logger.info('Waiting for SonarQube to process analysis results...');
+        await new Promise((resolve) => setTimeout(resolve, 120_000));
         await fetchLocalAnalysisMetrics(result);
       } catch (error) {
         logger.error('Failed to run SonarQube analysis', error);
@@ -136,11 +148,14 @@ export function createSonarQubeCommands(program: Command): void {
       'Comma-separated list of metrics to fetch (default: coverage,sqale_rating,complexity,duplicated_lines_density)'
     )
     .option('--output <format>', 'Output format (text|json)', 'text')
+    .option('--local', 'Use sonar_local_runner_token for API calls', false)
     .action(async (options) => {
       try {
         logger.info('🔄 Fetching quality measures from SonarQube...');
 
-        const orchestrator = createSonarqubeOrchestrator();
+        const orchestrator = createSonarqubeOrchestrator({
+          useLocalAnalysisToken: options.local,
+        });
 
         const metricsParam = options.metrics
           ? { metrics: options.metrics.split(',').map((m: string) => m.trim()) }
@@ -160,7 +175,7 @@ export function createSonarQubeCommands(program: Command): void {
           if (measureList.length > 0) {
             console.log('\nMeasures:');
             for (const measure of measureList) {
-              console.log(`  ${measure.name || measure.key}: ${measure.value ?? 'N/A'}`);
+              console.log(`  ${measure.metric}: ${measure.value ?? 'N/A'}`);
             }
           }
         }
@@ -186,11 +201,14 @@ export function createSonarQubeCommands(program: Command): void {
       'Comma-separated list of metrics to fetch (default: complexity,cognitive_complexity,ncloc,sqale_rating,coverage)'
     )
     .option('--output <format>', 'Output format (text|json)', 'text')
+    .option('--local', 'Use sonar_local_runner_token for API calls', false)
     .action(async (options) => {
       try {
         console.log('🔄 Fetching component tree from SonarQube...');
 
-        const orchestrator = createSonarqubeOrchestrator();
+        const orchestrator = createSonarqubeOrchestrator({
+          useLocalAnalysisToken: options.local,
+        });
 
         const parsedDepth = Number.parseInt(options.depth, 10);
         if (Number.isNaN(parsedDepth)) {
@@ -256,11 +274,14 @@ export function createSonarQubeCommands(program: Command): void {
     )
     .option('--output <format>', 'Output format (text|json)', 'text')
     .option('--save <file>', 'Save results to a JSON file at the given path')
+    .option('--local', 'Use sonar_local_runner_token for API calls', false)
     .action(async (options) => {
       try {
         console.log('🔄 Fetching historical measures from SonarQube...');
 
-        const orchestrator = createSonarqubeOrchestrator();
+        const orchestrator = createSonarqubeOrchestrator({
+          useLocalAnalysisToken: options.local,
+        });
 
         const fetchOptions = {
           metrics: options.metrics

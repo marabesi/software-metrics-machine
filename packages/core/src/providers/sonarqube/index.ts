@@ -1,7 +1,8 @@
 export { SonarqubeMeasuresClient, type ISonarqubeMeasuresClient } from './sonarqube-client';
 export {
   type CodeMetric,
-  type SonarqubeComponentTreeMeasure as SonarqubeComponentMeasure,
+  type SonarqubeComponentMeasure,
+  type SonarqubeComponentTreeMeasure,
   type SonarqubeMeasure,
   type TimestampedEntry,
   type TimestampedStore,

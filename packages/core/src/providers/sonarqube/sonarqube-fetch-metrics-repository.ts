@@ -1,5 +1,10 @@
 import { logger } from '@smmachine/utils';
-import { SonarqubeComponentMeasure, CodeMetric, type ISonarqubeMeasuresClient } from '..';
+import {
+  SonarqubeComponentMeasure,
+  SonarqubeComponentTreeMeasure,
+  CodeMetric,
+  type ISonarqubeMeasuresClient,
+} from '..';
 import { Configuration, FileSystemRepository } from '../../infrastructure';
 import { TimestampedStore, extractLatestData } from './types';
 
@@ -9,7 +14,7 @@ export interface IQualityMetricsRepository {
     component?: string;
     depth?: number;
     metrics?: string[];
-  }): Promise<SonarqubeComponentMeasure[]>;
+  }): Promise<SonarqubeComponentTreeMeasure[]>;
   fetchHistoricalMeasures(options?: {
     metrics?: string[];
     startDate?: string;
@@ -19,7 +24,9 @@ export interface IQualityMetricsRepository {
 
 export class SonarqubeFetchMetricsRepository implements IQualityMetricsRepository {
   private cache: FileSystemRepository<TimestampedStore<SonarqubeComponentMeasure>>;
-  private cacheComponentTree: FileSystemRepository<TimestampedStore<SonarqubeComponentMeasure[]>>;
+  private cacheComponentTree: FileSystemRepository<
+    TimestampedStore<SonarqubeComponentTreeMeasure[]>
+  >;
   private cacheHistorical: FileSystemRepository<TimestampedStore<CodeMetric[]>>;
 
   constructor(
@@ -31,7 +38,7 @@ export class SonarqubeFetchMetricsRepository implements IQualityMetricsRepositor
       `${cacheDir}/measures.json`
     );
     this.cacheComponentTree = new FileSystemRepository<
-      TimestampedStore<SonarqubeComponentMeasure[]>
+      TimestampedStore<SonarqubeComponentTreeMeasure[]>
     >(`${cacheDir}/component-tree.json`);
     this.cacheHistorical = new FileSystemRepository<TimestampedStore<CodeMetric[]>>(
       `${cacheDir}/historical-measures.json`
@@ -56,7 +63,7 @@ export class SonarqubeFetchMetricsRepository implements IQualityMetricsRepositor
     component?: string;
     depth?: number;
     metrics?: string[];
-  }): Promise<SonarqubeComponentMeasure[]> {
+  }): Promise<SonarqubeComponentTreeMeasure[]> {
     try {
       logger.debug(`Fetching component tree: ${JSON.stringify(options)}`);
 
