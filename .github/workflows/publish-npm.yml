@@ -18,7 +18,7 @@ jobs:
         uses: actions/checkout@v6
 
       - name: Set Environment Variables
-        uses: tw3lveparsecs/github-actions-setvars@v0.1
+        uses: tw3lveparsecs/github-actions-setvars@v0.2
         with:
           envFilePath: ./envvars.for.actions
 
