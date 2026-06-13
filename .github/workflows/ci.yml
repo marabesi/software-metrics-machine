@@ -81,7 +81,7 @@ jobs:
       - name: Install dependencies
         run: pnpm install
 
-      - name: Set env variables
+      - name: Run tests
         run: pnpm run test
 
   check-distribution:
