@@ -14,7 +14,7 @@ export default defineConfig({
     pool: 'forks',
     fileParallelism: false,
     include: ['./**/__tests__/**/*.test.ts'],
-    exclude: ['node_modules', 'dist', '.idea', '*.js'],
+    exclude: ['node_modules', 'dist', '.idea', '*.js', 'tmp', 'docs'],
     coverage: {
       provider: 'v8',
       reporter: ['text', 'json', 'html', 'lcov'],

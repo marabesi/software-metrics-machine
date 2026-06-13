@@ -24,7 +24,7 @@ jest.mock('@smmachine/core', () => ({
 
 jest.mock('@/server/api', () => ({
   configurationAPI: {
-    getConfiguration: jest.fn().mockResolvedValue({ git_provider: 'github', github_repository: 'owner/repo' }),
+    getConfiguration: jest.fn().mockResolvedValue({ result: { git_provider: 'github', github_repository: 'owner/repo' } }),
   },
 }));
 
