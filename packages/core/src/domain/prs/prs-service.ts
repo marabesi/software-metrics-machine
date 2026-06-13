@@ -10,6 +10,10 @@ export interface IPRsService {
   getLabelSummaries(filters?: PRFilters): Promise<LabelSummary[]>;
   getCommentsByAuthor(filters?: PRFilters, top?: number): Promise<any[]>;
   getFirstCommentTime(filters?: PRFilters, top?: number): Promise<any[]>;
+  getThroughTime(filters?: PRFilters, aggregateBy?: string): Promise<Array<{ date: string; kind: string; count: number }>>;
+  getByAuthor(filters?: PRFilters, top?: number): Promise<Array<{ author: string; count: number }>>;
+  getAverageReviewTime(filters?: PRFilters, top?: number): Promise<Array<{ author: string; avg_days: number }>>;
+  getAverageOpenBy(filters?: PRFilters, aggregateBy?: string): Promise<Array<{ period: string; avg_days: number }>>;
 }
 
 /**
@@ -216,6 +220,105 @@ export class PRsService implements IPRsService {
     };
   }
 
+  async getThroughTime(
+    filters?: PRFilters,
+    aggregateBy?: string
+  ): Promise<Array<{ date: string; kind: string; count: number }>> {
+    const prs = await this.filterPRs(filters);
+    const mode = this.normalizeAggregation(aggregateBy);
+    const counts = new Map<string, { Opened: number; Closed: number }>();
+
+    for (const pr of prs) {
+      const opened = this.toPeriodKey(pr.createdAt, mode);
+      const current = counts.get(opened) || { Opened: 0, Closed: 0 };
+      current.Opened += 1;
+      counts.set(opened, current);
+
+      const closedAt = pr.mergedAt || pr.closedAt;
+      if (closedAt) {
+        const closedKey = this.toPeriodKey(closedAt, mode);
+        const closedCurrent = counts.get(closedKey) || { Opened: 0, Closed: 0 };
+        closedCurrent.Closed += 1;
+        counts.set(closedKey, closedCurrent);
+      }
+    }
+
+    const dates = Array.from(counts.keys()).sort();
+    const rows: Array<{ date: string; kind: string; count: number }> = [];
+
+    for (const date of dates) {
+      const value = counts.get(date) || { Opened: 0, Closed: 0 };
+      rows.push({ date, kind: 'Opened', count: value.Opened });
+      rows.push({ date, kind: 'Closed', count: value.Closed });
+    }
+
+    return rows;
+  }
+
+  async getByAuthor(filters?: PRFilters, top?: number): Promise<Array<{ author: string; count: number }>> {
+    const prs = await this.filterPRs(filters);
+    const grouped = new Map<string, number>();
+
+    for (const pr of prs) {
+      const author = pr.author?.login || 'unknown';
+      grouped.set(author, (grouped.get(author) || 0) + 1);
+    }
+
+    const maxRows = top || 10;
+    return Array.from(grouped.entries())
+      .map(([author, count]) => ({ author, count }))
+      .sort((a, b) => b.count - a.count)
+      .slice(0, maxRows);
+  }
+
+  async getAverageReviewTime(filters?: PRFilters, top?: number): Promise<Array<{ author: string; avg_days: number }>> {
+    const prs = await this.filterPRs(filters);
+    const merged = prs.filter((pr) => Boolean(pr.mergedAt) || Boolean(pr.closedAt));
+    const grouped = new Map<string, number[]>();
+
+    for (const pr of merged) {
+      const start = this.toTimestamp(pr.createdAt);
+      const end = this.toTimestamp(pr.mergedAt || pr.closedAt || pr.createdAt);
+      const days = (end - start) / (1000 * 60 * 60 * 24);
+      const author = pr.author?.login || 'unknown';
+      const existing = grouped.get(author) || [];
+      existing.push(days);
+      grouped.set(author, existing);
+    }
+
+    const maxRows = top || 10;
+    return Array.from(grouped.entries())
+      .map(([author, values]) => ({
+        author,
+        avg_days: values.length > 0 ? values.reduce((a, b) => a + b, 0) / values.length : 0,
+      }))
+      .sort((a, b) => b.avg_days - a.avg_days)
+      .slice(0, maxRows);
+  }
+
+  async getAverageOpenBy(filters?: PRFilters, aggregateBy?: string): Promise<Array<{ period: string; avg_days: number }>> {
+    const prs = await this.filterPRs(filters);
+    const mode = this.normalizeAggregation(aggregateBy);
+    const grouped = new Map<string, number[]>();
+
+    for (const pr of prs) {
+      const period = this.toPeriodKey(pr.createdAt, mode);
+      const start = this.toTimestamp(pr.createdAt);
+      const end = this.toTimestamp(pr.mergedAt || pr.closedAt || pr.createdAt);
+      const days = (end - start) / (1000 * 60 * 60 * 24);
+      const existing = grouped.get(period) || [];
+      existing.push(days);
+      grouped.set(period, existing);
+    }
+
+    return Array.from(grouped.entries())
+      .map(([period, values]) => ({
+        period,
+        avg_days: values.length > 0 ? values.reduce((a, b) => a + b, 0) / values.length : 0,
+      }))
+      .sort((a, b) => a.period.localeCompare(b.period));
+  }
+
   /**
    * Filter PRs by the provided criteria.
    */
@@ -340,6 +443,26 @@ export class PRsService implements IPRsService {
     return Array.from(labelToPrs.entries())
       .map(([label, count]) => ({ label, prs: count }))
       .sort((a, b) => b.prs - a.prs || a.label.localeCompare(b.label));
+  }
+
+  private normalizeAggregation(aggregateBy?: string): 'day' | 'week' | 'month' {
+    const mode = (aggregateBy || 'week').toLowerCase();
+    return mode === 'day' || mode === 'month' ? mode : 'week';
+  }
+
+  private toDayKey(dateString?: string): string {
+    return dateString ? dateString.split('T')[0] : 'unknown';
+  }
+
+  private toMonthKeyShort(dateString?: string): string {
+    if (!dateString) return 'unknown';
+    return dateString.substring(0, 7);
+  }
+
+  private toPeriodKey(dateString: string | undefined, mode: 'day' | 'week' | 'month'): string {
+    if (mode === 'day') return this.toDayKey(dateString);
+    if (mode === 'month') return this.toMonthKeyShort(dateString);
+    return this.getWeekKey(new Date(dateString || Date.now()));
   }
 
   private toTimestamp(value?: string): number {

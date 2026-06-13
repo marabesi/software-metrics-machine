@@ -136,11 +136,11 @@ export default async function PullRequestsPage({
       </div>
 
       <div className="grid grid-cols-1 gap-6">
-        <PRStatisticsCard summary={summary} avgComments={avgComments} />
+        <AverageDaysPRsRemainOpenCard data={avgOpenBy} />
       </div>
 
       <div className="grid grid-cols-1 gap-6">
-        <AverageDaysPRsRemainOpenCard data={avgOpenBy} />
+        <PRStatisticsCard summary={summary} avgComments={avgComments} />
       </div>
     </div>
   );

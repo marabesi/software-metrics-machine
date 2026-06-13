@@ -49,42 +49,16 @@ export class PullRequestsController {
     @Query('labels') labels?: string,
     @Query('status') status?: PRDetails['state']
   ) {
-    const mode = this.normalizeAggregation(aggregateBy);
-    const prs = await this.loadPRsWithFilters({
+    const filters = {
       startDate,
       endDate,
-      authors,
-      excludeAuthors,
-      excludeCommenters,
-      labels,
-      status,
-    });
-    const counts = new Map<string, { Opened: number; Closed: number }>();
-
-    for (const pr of prs) {
-      const opened = this.toPeriodKey(pr.createdAt, mode);
-      const current = counts.get(opened) || { Opened: 0, Closed: 0 };
-      current.Opened += 1;
-      counts.set(opened, current);
-
-      const closedAt = pr.mergedAt || pr.closedAt;
-      if (closedAt) {
-        const closedDay = this.toPeriodKey(closedAt, mode);
-        const closedCurrent = counts.get(closedDay) || { Opened: 0, Closed: 0 };
-        closedCurrent.Closed += 1;
-        counts.set(closedDay, closedCurrent);
-      }
-    }
-
-    const dates = Array.from(counts.keys()).sort();
-    const rows: Array<{ date: string; kind: string; count: number }> = [];
-
-    for (const date of dates) {
-      const value = counts.get(date) || { Opened: 0, Closed: 0 };
-      rows.push({ date, kind: 'Opened', count: value.Opened });
-      rows.push({ date, kind: 'Closed', count: value.Closed });
-    }
-
+      authors: this.parseCsvList(authors),
+      excludeAuthors: this.parseCsvList(excludeAuthors),
+      excludeCommenters: this.parseCsvList(excludeCommenters),
+      labels: this.parseCsvList(labels),
+      state: status,
+    };
+    const rows = await this.prsService.getThroughTime(filters, aggregateBy);
     return { result: rows };
   }
 

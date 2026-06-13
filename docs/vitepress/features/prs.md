@@ -43,21 +43,22 @@ Show a summary of the PRs fetched from the repository, including total PRs, aver
 
 Not available yet.
 
-
 == CLI
 
 ```bash
 smm prs summary
 ```
 
-| Option         | Description                          | Example                  |
-|----------------|--------------------------------------|--------------------------|
-| Start date     | Fetches PRs created after a date.    | `--start-date=2025-01-01`|
-| End date       | Fetches PRs created before a date.   | `--end-date=2025-12-31`  |
-| Export         | Exports the data as csv to a given file path   | `--csv=my_export.csv`  |
-| Output        | Defines the output format, either text or json. Defaults to text.  | `--output=json`     |
-| Labels         | Filters PRs by attached labels. Multiple labels can be provided separated by commas. | `--labels=bug,enhancement` |
-| Raw filters    | Comma-separated raw filter string (e.g. `status=draft,author=john`). Parsed and merged with other flags. | `--raw-filters="status=draft,author=john"` |
+| Option            | Description                          | Example                  |
+|-------------------|--------------------------------------|--------------------------|
+| Start date        | Fetches PRs created after a date.    | `--start-date=2025-01-01`|
+| End date          | Fetches PRs created before a date.   | `--end-date=2025-12-31`  |
+| Authors           | Comma-separated PR authors to include. | `--authors=alice,bob`  |
+| Exclude authors   | Comma-separated PR authors to exclude. | `--exclude-authors=bot` |
+| Exclude commenters| Comma-separated PR commenters to exclude. | `--exclude-commenters=bot` |
+| Labels            | Filters PRs by attached labels. Multiple labels can be provided separated by commas. | `--labels=bug,enhancement` |
+| Raw filters       | Comma-separated raw filter string (e.g. `status=draft,author=john`). Parsed and merged with other flags. | `--raw-filters="status=draft,author=john"` |
+| Output            | Defines the output format, either text or json. Defaults to text.  | `--output=json`     |
 
 ### Examples - Summary PRs data
 
@@ -120,11 +121,6 @@ Last PR:
 
 :::
 
-
-
-
-
-
 ## Open PRs Through Time
 
 Shows the volume of PRs opened and closed each day. This helps you spot bottlenecks, busy periods, or trends in your team's workflow.
@@ -148,12 +144,17 @@ Shows the volume of PRs opened and closed each day. This helps you spot bottlene
 smm prs through-time
 ```
 
-| Option         | Description                          | Example                  |
-|----------------|--------------------------------------|--------------------------|
-| Start date     | Fetches PRs created after a date.    | `--start-date=2025-01-01`|
-| End date       | Fetches PRs created before a date.   | `--end-date=2025-12-31`  |
-| Authors        | Filters PRs by the authors who created them. Multiple authors can be provided separated by commas. This is the author who opened the PR  | `--authors=author1,author2`     |
-| Raw filters    | Comma-separated raw filter string (e.g. `status=draft,author=john`). Parsed and merged with other flags. | `--raw-filters="status=draft,author=john"` |
+| Option            | Description                          | Example                  |
+|-------------------|--------------------------------------|--------------------------|
+| Start date        | Fetches PRs created after a date.    | `--start-date=2025-01-01`|
+| End date          | Fetches PRs created before a date.   | `--end-date=2025-12-31`  |
+| Authors           | Comma-separated PR authors to include. | `--authors=alice,bob`  |
+| Exclude authors   | Comma-separated PR authors to exclude. | `--exclude-authors=bot` |
+| Exclude commenters| Comma-separated PR commenters to exclude. | `--exclude-commenters=bot` |
+| Labels            | Filters PRs by attached labels.      | `--labels=bug,enhancement` |
+| Aggregate by      | Aggregation period: day, week, or month (default: week). | `--aggregate-by=month` |
+| Raw filters       | Comma-separated raw filter string.   | `--raw-filters="status=draft"` |
+| Output            | Output format (text or json). Defaults to text. | `--output=json` |
 
 ### Examples - Open PRs Through Time
 
@@ -178,15 +179,6 @@ For example, if September 25th shows many opened PRs but none closed, it could s
 3. Data is processed to count opened and closed PRs per day.
 4. You can filter the chart to focus on specific periods, such as a sprint or release window.
 
-
-
-
-
-
-
-
-
-
 ## Average PR Open
 
 Tracks how long PRs stay open before merging. It uses weekly or monthly aggregation to show trends in review speed.
@@ -198,57 +190,35 @@ Tracks how long PRs stay open before merging. It uses weekly or monthly aggregat
 
 Line chart (trend of average days PRs remain open, aggregated by week or month).
 
-
 ### Insight Provided
-
 
 ![Pull requests open by on average](/dashboard/prs/open_prs_average.png)
 
 == CLI
 
 ```bash
-smm prs average-open-by
+smm prs average-open
 ```
 
-| Option         | Description                          | Example                  |
-|----------------|--------------------------------------|--------------------------|
-| Start date     | Fetches PRs created after a date.    | `--start-date=2025-01-01`|
-| End date       | Fetches PRs created before a date.   | `--end-date=2025-12-31`  |
-| Authors        | Filters PRs by the authors who created them. Multiple authors can be provided separated by commas. Thisis the author who opened the PR  | `--authors=author1,author2`     |
-| Aggregate by   | Defines the aggregation period, either by week or month. Defaults to week.  | `--aggregate-by=month`     |
-| Labels         | Filters PRs by the labels attached to it. Multiple labels can be provided separated by commas.  | `--labels=my_label,another_label`     |
-| Raw filters    | Comma-separated raw filter string (e.g. `status=draft,author=john`). Parsed and merged with other flags. | `--raw-filters="status=draft,author=john"` |
-
-### Examples - Average PR Open
-
-A downward trend in average open days means your team is merging PRs faster, indicating improved workflow. For instance,
-if the average drops from 5 to 2 days over several weeks, your review process is getting more efficient.
-
-Computes the number of opened and closed PRs over time for a specific author:
-
-```bash
-smm prs average-open-by \
-  --start-date=2025-01-01 \
-  --end-date=2025-06-30 \
-  --authors=author1,author2 \
-  --aggregate-by=month \
-  --labels=bug,enhancement
-```
-
+| Option            | Description                          | Example                  |
+|-------------------|--------------------------------------|--------------------------|
+| Start date        | Fetches PRs created after a date.    | `--start-date=2025-01-01`|
+| End date          | Fetches PRs created before a date.   | `--end-date=2025-12-31`  |
+| Authors           | Comma-separated PR authors to include. | `--authors=alice,bob`  |
+| Exclude authors   | Comma-separated PR authors to exclude. | `--exclude-authors=bot` |
+| Exclude commenters| Comma-separated PR commenters to exclude. | `--exclude-commenters=bot` |
+| Labels            | Filters PRs by attached labels.      | `--labels=bug,enhancement` |
+| Aggregate by      | Aggregation period: day, week, or month (default: week). | `--aggregate-by=month` |
+| Raw filters       | Comma-separated raw filter string.   | `--raw-filters="status=draft"` |
+| Output            | Output format (text or json). Defaults to text. | `--output=json` |
 
 :::
-
-
 
 ### How It Computes and Filters
 
 1. Calculates the average number of days PRs are open, grouped by week or month.
 2. Supports filters for author, labels (e.g., bug, enhancement), and date range.
 3. Aggregation smooths out daily fluctuations, showing long-term trends.
-
-
-
-
 
 ## Average Review Time By Author
 
@@ -271,26 +241,22 @@ Highlights which contributors have PRs that remain open the longest, helping ide
 == CLI
 
 ```bash
-smm prs review-time-by-author
+smm prs average-review-time
 ```
 
-| Option         | Description                          | Example                  |
-|----------------|--------------------------------------|--------------------------|
-| Labels         | Filters PRs by the labels attached to it.      | `--labels=my_label,another_label`       |
-| Start date     | Fetches PRs created after a date.    | `--start-date=2025-01-01`     |
-| End date       | Fetches PRs created before a date.   | `--end-date=2025-12-31`     |
-| Limit          | If the list is too big --top will show only the top x results from the list.  | `--top=10`     |
-| Raw filters    | Comma-separated raw filter string (e.g. `status=draft,author=john`). Parsed and merged with other flags. | `--raw-filters="status=draft,author=john"` |
-
-### Examples - Average Review Time by Author
-
-```bash
-smm prs review-time-by-author --labels=bug,enhancement --top=5
-```
+| Option            | Description                          | Example                  |
+|-------------------|--------------------------------------|--------------------------|
+| Start date        | Fetches PRs created after a date.    | `--start-date=2025-01-01`|
+| End date          | Fetches PRs created before a date.   | `--end-date=2025-12-31`  |
+| Authors           | Comma-separated PR authors to include. | `--authors=alice,bob`  |
+| Exclude authors   | Comma-separated PR authors to exclude. | `--exclude-authors=bot` |
+| Exclude commenters| Comma-separated PR commenters to exclude. | `--exclude-commenters=bot` |
+| Labels            | Filters PRs by attached labels.      | `--labels=bug,enhancement` |
+| Top               | Show top N authors (default: 10).    | `--top=20`              |
+| Raw filters       | Comma-separated raw filter string.   | `--raw-filters="status=merged"` |
+| Output            | Output format (text or json). Defaults to text. | `--output=json` |
 
 :::
-
-
 
 ### Example Usage
 
@@ -302,12 +268,6 @@ example, if Alice's PRs average 7 days open while others average 2, you can inve
 1. Computes average open time for each author.
 2. Filters by top N authors, labels, and date range.
 3. Data is processed to exclude bots or focus on specific contributors.
-
-
-
-
-
-
 
 ## PRs By Author
 
@@ -328,32 +288,30 @@ Shows who is most active in opening PRs, helping you recognize top contributors 
 smm prs by-author
 ```
 
-:::
+| Option            | Description                          | Example                  |
+|-------------------|--------------------------------------|--------------------------|
+| Start date        | Fetches PRs created after a date.    | `--start-date=2025-01-01`|
+| End date          | Fetches PRs created before a date.   | `--end-date=2025-12-31`  |
+| Authors           | Comma-separated PR authors to include. | `--authors=alice,bob`  |
+| Exclude authors   | Comma-separated PR authors to exclude. | `--exclude-authors=bot` |
+| Exclude commenters| Comma-separated PR commenters to exclude. | `--exclude-commenters=bot` |
+| Labels            | Filters PRs by attached labels.      | `--labels=bug,enhancement` |
+| Top               | Show top N authors (default: 10).    | `--top=20`              |
+| Raw filters       | Comma-separated raw filter string.   | `--raw-filters="status=merged"` |
+| Output            | Output format (text or json). Defaults to text. | `--output=json` |
 
+:::
 
 ### Example Usage
 
 If one developer is opening most PRs, you may want to redistribute tasks or recognize their effort. For example, if Bob
-opened 30 PRs in a month, he’s a key contributor.
+opened 30 PRs in a month, he's a key contributor.
 
 ### How It Computes and Filters
 
 1. Counts PRs opened by each author.
 2. Filters by top N authors, labels, and date range.
 3. Includes bots (e.g., dependabot) to show the impact of automation.
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 ## Average Comments per PR
 
@@ -362,22 +320,24 @@ Plot the average number of comments a PR receives before it is merged, aggregate
 :::tabs key:cli
 == Dashboard
 
-
 ![Comments made in prs averaged](/dashboard/prs/prs_comments_average.png)
 
 == CLI
 
 ```bash
-smm prs average-comments-by --aggregate-by=week
+smm prs average-comments --aggregate-by=week
 ```
 
-| Option         | Description                          | Example                  |
-|----------------|--------------------------------------|--------------------------|
-| Start date     | Filter PRs created on or after this date.    | `--start-date=2025-01-01`|
-| End date       | Filter PRs created on or before this date.   | `--end-date=2025-12-31`  |
-| Authors        | Filter PRs by the authors who created them. Multiple authors can be provided separated by commas. | `--authors=alice,bob`     |
-| Labels         | Filter PRs by attached labels. Multiple labels can be provided separated by commas. | `--labels=bug,enhancement` |
-| Raw filters    | Comma-separated raw filter string (e.g. `status=draft,author=john`). Parsed and merged with other flags. | `--raw-filters="status=draft,author=john"` |
+| Option            | Description                          | Example                  |
+|-------------------|--------------------------------------|--------------------------|
+| Start date        | Fetches PRs created after a date.    | `--start-date=2025-01-01`|
+| End date          | Fetches PRs created before a date.   | `--end-date=2025-12-31`  |
+| Authors           | Comma-separated PR authors to include. | `--authors=alice,bob`  |
+| Exclude authors   | Comma-separated PR authors to exclude. | `--exclude-authors=bot` |
+| Exclude commenters| Comma-separated PR commenters to exclude. | `--exclude-commenters=bot` |
+| Labels            | Filters PRs by attached labels.      | `--labels=bug,enhancement` |
+| Aggregate by      | Aggregation period: week or month. Shows per-period averages. | `--aggregate-by=month` |
+| Raw filters       | Comma-separated raw filter string.   | `--raw-filters="status=merged"` |
+| Output            | Output format (text or json). Defaults to text. | `--output=json` |
 
 :::
-
