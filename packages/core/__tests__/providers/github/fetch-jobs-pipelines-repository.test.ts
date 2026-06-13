@@ -1,12 +1,12 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { PipelineGitHubJobBuilder, PipelineGitHubRunBuilder } from '../../../src';
 import { InMemoryRepository } from '../../../src/test/in-memory-repository';
-import { IGithubWorkflowJobClient } from '../../../src/providers/github/github-workflow';
 import {
   WorkflowJobJsonResponse,
   WorkflowJsonResponse,
 } from '../../../src/providers/github/github-response-types';
 import { PipelinesJobFetchRepository } from '../../../src/providers/github/pipelines-job-fetch-repository';
+import { IGithubWorkflowJobClient } from '../../../src/providers/github/workflow-types';
 
 describe('Fetch jobs pipeline repository', () => {
   const configuration = {

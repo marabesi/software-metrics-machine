@@ -1,7 +1,7 @@
 import { describe, expect, it, vi, beforeEach } from 'vitest';
 import axios from 'axios';
-import { GithubWorkflowClient } from '../../../src/providers/github/github-workflow-client';
-import { GitHubRateLimitManager } from '../../../src/providers/github/github-rate-limit-manager';
+import { GithubWorkflowClient } from '../../../src';
+import { GitHubRateLimitManager } from '../../../src';
 
 describe('GithubWorkflowClient rate limit integration', () => {
   let mockGet: ReturnType<typeof vi.fn>;

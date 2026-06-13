@@ -51,7 +51,7 @@ packages/core/__tests__/
   providers.test.ts
   infrastructure.test.ts
   providers/github/
-    fetch-pull-requests-repository.test.ts
+    github-pr-client.test.ts
     pull-request-filters-repository.test.ts
     ...
 ```
@@ -81,14 +81,20 @@ describe('ServiceName', () => {
 ### Mocking
 - Use `vi.fn()` for mock functions
 - Use `vi.fn(async () => value)` for async mocks
-- Build mock objects inline or with the Builder pattern
+- **ALL mocked data and mocks MUST go through builders** — never inline mock data or repository mocks directly in test files
+- Use in-memory repository builders (`ReadPullRequestsRepositoryBuilder`, `PipelinesRepositoryBuilder`, `RepositoryBuilder<T>`) — these create real implementations, not mocks. If your test needs to spy on method calls, wrap with `vi.spyOn()` in the test itself.
 
-### Builder Pattern
-Use existing builders for test data:
+### Builder Pattern (REQUIRED)
+All test data and mocks MUST be created through builders. Do NOT inline mock objects or raw data in test files — this avoids repeating setup across files.
 
+**Domain data builders** (in `packages/core/__tests__/builders/builders.ts`):
 ```typescript
-import { PullRequestBuilder, PipelineRunBuilder, CommitBuilder } from './builders/builders';
+import {
+  PullRequestBuilder, PipelineRunBuilder, CommitBuilder,
+  PullRequestJsonResponseBuilder, PullRequestCommentJsonResponseBuilder,
+} from './builders/builders';
 
+// Domain types
 const pr = new PullRequestBuilder()
   .withAuthor('Alice')
   .withTitle('Feature X')
@@ -96,6 +102,50 @@ const pr = new PullRequestBuilder()
   .withMergedAt('2024-01-05T00:00:00Z')
   .withComments(3)
   .build();
+
+// GitHub API response types (replaces ad-hoc createPullRequest() helpers)
+const rawPr = new PullRequestJsonResponseBuilder()
+  .withAuthor('alice')
+  .withLabels([{ id: '1', node_id: '', url: '', name: 'bug', color: '', default: false, description: '' }])
+  .withCreatedAt('2026-05-10T00:00:00Z')
+  .build();
+
+const comment = new PullRequestCommentJsonResponseBuilder()
+  .withAuthor('reviewer')
+  .withBody('Looks good')
+  .withCreatedAt('2026-05-10T01:00:00Z')
+  .build();
+```
+
+**In-memory repository builders** (in `packages/core/__tests__/builders/builders.ts`):
+```typescript
+import {
+  ReadPullRequestsRepositoryBuilder,
+  PipelinesRepositoryBuilder,
+  RepositoryBuilder,
+} from './builders/builders';
+
+// IReadPullRequestsRepository (real in-memory impl)
+const prRepo = new ReadPullRequestsRepositoryBuilder()
+  .withPullRequests([prDetails1, prDetails2])
+  .build();
+const service = new PRsService(prRepo);
+
+// IPipelinesRepository (real in-memory impl)
+const pipelineRepo = new PipelinesRepositoryBuilder()
+  .withPipelineRuns([run1, run2])
+  .build();
+const pipelinesService = new PipelinesService(pipelineRepo);
+
+// Generic IRepository<T> (real in-memory impl)
+const commitRepo = new RepositoryBuilder<Commit>()
+  .withLoadAll([commit1, commit2])
+  .build();
+const pairingService = new PairingIndexService(commitRepo);
+
+// If spying is needed, use vi.spyOn() in the test — builders never use vi.fn():
+const spy = vi.spyOn(prRepo, 'loadPrsWithFilters');
+```
 ```
 
 ### Assertions
@@ -126,3 +176,7 @@ Run with: `pnpm --filter <workspace> exec vitest run --coverage`
 - Integration tests go in `__tests__/providers/<name>/*.integration.test.ts` or `.test.ts`
 - Prefix unused callback params with `_` (consistent with ESLint rule)
 - Do NOT add `"type": "module"` to `packages/core` or `packages/utils` — this breaks Vitest
+- **All test data and in-memory repositories MUST go through builders** — never create inline data objects or ad-hoc helper functions like `createPullRequest()`. Always use the builders in `packages/core/__tests__/builders/builders.ts`. If a builder doesn't exist for your type, add one — don't create inline helpers.
+- **Builders must NEVER use `vi.fn()`** — they create real objects (plain data objects, in-memory implementations). If a test needs to spy on method calls or mock specific behavior, use `vi.spyOn()` or `vi.fn()` directly in the test file.
+- When adding a new builder, follow the naming convention: `{TypeName}Builder` with `with{FieldName}()` methods returning `this` for chaining, and a `build(): TypeName` method that returns a shallow clone (`{ ...this.data }`).
+- Source-level builders (like `PipelineGitHubRunBuilder` in `packages/core/src/test/`) are acceptable for production code, but test-only builders belong in `packages/core/__tests__/builders/builders.ts`.

@@ -1,9 +1,17 @@
-/**
- * Mock Data Builders for Testing
- * Mirrors: api/tests/builders.py and related test builder files
- */
-
 import { Commit, PullRequest, PipelineRun, CodeChange } from '../../src/domain-types';
+import type { IReadPullRequestsRepository } from '../../src';
+import type {
+  IPipelinesRepository,
+  LoadPipelinesOptions,
+} from '../../src/aggregates/pipelines-repository';
+import type { IRepository } from '../../src';
+import type { PRDetails, PRFilters } from '../../src';
+import {
+  PullRequestJsonResponse,
+  PullRequestCommentJsonResponse,
+  PullRequestLabelJsonResponse,
+} from '../../src/providers/github/github-response-types';
+import type { Configuration } from '../../src/infrastructure/configuration';
 
 /**
  * Builder for creating mock Commit objects
@@ -252,5 +260,358 @@ export class TestDataFactory {
       );
     }
     return runs;
+  }
+}
+
+// ---------------------------------------------------------------------------
+// GitHub API Response Type Builders
+// ---------------------------------------------------------------------------
+
+/**
+ * Builder for creating mock PullRequestJsonResponse objects (GitHub API response).
+ * Replaces ad-hoc createPullRequest() helpers across multiple test files.
+ *
+ * Usage:
+ *   new PullRequestJsonResponseBuilder()
+ *     .withAuthor('alice')
+ *     .withLabels([{ ... }])
+ *     .build()
+ */
+export class PullRequestJsonResponseBuilder {
+  private data: PullRequestJsonResponse = {
+    url: '',
+    id: '1',
+    node_id: '',
+    html_url: '',
+    diff_url: '',
+    patch_url: '',
+    issue_url: '',
+    number: '1',
+    state: 'open',
+    locked: false,
+    title: 'Test PR',
+    body: '',
+    created_at: '2026-05-10T00:00:00Z',
+    updated_at: '2026-05-10T00:00:00Z',
+    closed_at: '',
+    merged_at: '',
+    labels: [],
+    user: {
+      login: 'alice',
+      id: 1,
+      node_id: '',
+      avatar_url: '',
+      gravatar_id: '',
+      url: '',
+      html_url: '',
+      followers_url: '',
+      following_url: '',
+      gists_url: '',
+      starred_url: '',
+      subscriptions_url: '',
+      organizations_url: '',
+      repos_url: '',
+      events_url: '',
+      received_events_url: '',
+      type: 'User',
+      user_view_type: '',
+      site_admin: false,
+    },
+  };
+
+  withId(id: string): this {
+    this.data.id = id;
+    return this;
+  }
+
+  withNumber(number: string): this {
+    this.data.number = number;
+    return this;
+  }
+
+  withTitle(title: string): this {
+    this.data.title = title;
+    return this;
+  }
+
+  withState(state: string): this {
+    this.data.state = state;
+    return this;
+  }
+
+  withAuthor(login: string, id: number = 1): this {
+    this.data.user = {
+      ...this.data.user!,
+      login,
+      id,
+    };
+    return this;
+  }
+
+  withCreatedAt(date: string): this {
+    this.data.created_at = date;
+    return this;
+  }
+
+  withUpdatedAt(date: string): this {
+    this.data.updated_at = date;
+    return this;
+  }
+
+  withMergedAt(date: string): this {
+    this.data.merged_at = date;
+    this.data.state = 'closed';
+    return this;
+  }
+
+  withClosedAt(date: string): this {
+    this.data.closed_at = date;
+    return this;
+  }
+
+  withBody(body: string): this {
+    this.data.body = body;
+    return this;
+  }
+
+  withLabels(labels: PullRequestLabelJsonResponse[]): this {
+    this.data.labels = labels;
+    return this;
+  }
+
+  withUrl(url: string): this {
+    this.data.html_url = url;
+    return this;
+  }
+
+  build(): PullRequestJsonResponse {
+    return { ...this.data };
+  }
+}
+
+/**
+ * Builder for creating mock PullRequestCommentJsonResponse objects (GitHub API response).
+ */
+export class PullRequestCommentJsonResponseBuilder {
+  private data: PullRequestCommentJsonResponse = {
+    url: '',
+    pull_request_review_id: 1,
+    id: 1,
+    node_id: '',
+    diff_hunk: '',
+    path: '',
+    commit_id: '',
+    original_commit_id: '',
+    user: {
+      login: 'reviewer',
+      id: 1,
+    },
+    body: 'Looks good',
+    created_at: '2026-05-10T00:00:00Z',
+    updated_at: '2026-05-10T00:00:00Z',
+    html_url: '',
+    pull_request_url: '',
+    reactions: {
+      url: '',
+      total_count: 0,
+      '+1': 0,
+      '-1': 0,
+      laugh: 0,
+      hooray: 0,
+      confused: 0,
+      heart: 0,
+      rocket: 0,
+      eyes: 0,
+    },
+  };
+
+  withId(id: number): this {
+    this.data.id = id;
+    return this;
+  }
+
+  withBody(body: string): this {
+    this.data.body = body;
+    return this;
+  }
+
+  withAuthor(login: string, id: number = 1): this {
+    this.data.user = { ...this.data.user!, login, id };
+    return this;
+  }
+
+  withCreatedAt(date: string): this {
+    this.data.created_at = date;
+    return this;
+  }
+
+  withPullRequestUrl(url: string): this {
+    this.data.pull_request_url = url;
+    return this;
+  }
+
+  withReviewId(reviewId: number): this {
+    this.data.pull_request_review_id = reviewId;
+    return this;
+  }
+
+  build(): PullRequestCommentJsonResponse {
+    return { ...this.data };
+  }
+}
+
+// ---------------------------------------------------------------------------
+// In-Memory Repository Builders
+// ---------------------------------------------------------------------------
+
+/**
+ * Builder for creating an in-memory IReadPullRequestsRepository.
+ * Returns a real implementation — no vi.fn() mocks.
+ *
+ * Usage:
+ *   const repo = new ReadPullRequestsRepositoryBuilder()
+ *     .withPullRequests([prDetails1, prDetails2])
+ *     .build();
+ *
+ *   const service = new PRsService(repo);
+ *
+ * If the test needs to spy on method calls, wrap with vi.fn() in the test:
+ *   const repo = new ReadPullRequestsRepositoryBuilder()
+ *     .withPullRequests([prDetails1, prDetails2])
+ *     .build();
+ *   vi.spyOn(repo, 'loadPrsWithFilters');
+ */
+export class ReadPullRequestsRepositoryBuilder {
+  private prs: PRDetails[] = [];
+
+  withPullRequests(prs: PRDetails[]): this {
+    this.prs = prs;
+    return this;
+  }
+
+  build(): IReadPullRequestsRepository {
+    return {
+      loadPrsWithFilters: async (_filters?: PRFilters) => [...this.prs],
+    };
+  }
+}
+
+/**
+ * Builder for creating an in-memory IPipelinesRepository.
+ * Returns a real implementation — no vi.fn() mocks.
+ *
+ * Usage:
+ *   const repo = new PipelinesRepositoryBuilder()
+ *     .withPipelineRuns([run1, run2])
+ *     .build();
+ *
+ *   const service = new PipelinesService(repo);
+ */
+export class PipelinesRepositoryBuilder {
+  private runs: PipelineRun[] = [];
+
+  withPipelineRuns(runs: PipelineRun[]): this {
+    this.runs = runs;
+    return this;
+  }
+
+  build(): IPipelinesRepository {
+    return {
+      loadPipelines: async (_options?: LoadPipelinesOptions) => [...this.runs],
+    };
+  }
+}
+
+/**
+ * Builder for creating an in-memory IRepository<T>.
+ * Returns a real implementation — no vi.fn() mocks.
+ *
+ * Usage:
+ *   const repo = new RepositoryBuilder<Commit>()
+ *     .withLoadAll([commit1, commit2])
+ *     .build();
+ *
+ *   const service = new PairingIndexService(repo);
+ */
+export class RepositoryBuilder<T> {
+  private items: T[] = [];
+  private singleItem: T | null = null;
+  private existsResult: boolean = false;
+
+  withLoadAll(items: T[]): this {
+    this.items = items;
+    return this;
+  }
+
+  withLoad(item: T | null): this {
+    this.singleItem = item;
+    return this;
+  }
+
+  withExists(exists: boolean): this {
+    this.existsResult = exists;
+    return this;
+  }
+
+  build(): IRepository<T> {
+    return {
+      save: async (_item: T) => {},
+      saveAll: async (_items: T[]) => {},
+      load: async () => this.singleItem,
+      loadAll: async () => [...this.items],
+      delete: async () => {},
+      exists: async () => this.existsResult,
+    };
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Configuration Builder
+// ---------------------------------------------------------------------------
+
+/**
+ * Builder for creating test configuration objects.
+ * Replaces `{ getPathFromGitProvider: () => '/tmp' } as any` patterns in tests.
+ *
+ * Produces an object that is structurally compatible with the `Configuration`
+ * class used by fetch repositories and services.
+ *
+ * Usage:
+ *   const config = new TestConfigurationBuilder()
+ *     .withGetPathFromGitProvider('/tmp')
+ *     .build();
+ *
+ *   const repository = new PipelinesFetchRepository(config, client, store);
+ *
+ * If the test needs additional properties not covered by the builder methods,
+ * use withExtra():
+ *   const config = new TestConfigurationBuilder()
+ *     .withGetPathFromGitProvider('/tmp')
+ *     .withExtra('gitProvider', 'github')
+ *     .build();
+ */
+export class TestConfigurationBuilder {
+  private config: Record<string, unknown> = {
+    getPathFromGitProvider: () => '/tmp',
+  };
+
+  /** Sets the return value of `getPathFromGitProvider()` (default: `'/tmp'`). */
+  withGetPathFromGitProvider(path: string): this {
+    this.config.getPathFromGitProvider = () => path;
+    return this;
+  }
+
+  /**
+   * Sets an arbitrary property on the configuration object.
+   * Use this when a test needs a property not covered by the dedicated builder methods.
+   */
+  withExtra(key: string, value: unknown): this {
+    this.config[key] = value;
+    return this;
+  }
+
+  /** Returns a plain object cast to Configuration for use in constructor parameters. */
+  build(): Configuration {
+    return this.config as unknown as Configuration;
   }
 }

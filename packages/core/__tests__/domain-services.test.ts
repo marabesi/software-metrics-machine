@@ -1,8 +1,15 @@
-import { describe, it, expect, beforeEach, vi } from 'vitest';
+import { describe, it, expect, beforeEach } from 'vitest';
 import { PairingIndexService } from '../src';
 import { PRsService } from '../src';
 import { PipelinesService } from '../src';
-import { CommitBuilder, PullRequestBuilder, PipelineRunBuilder } from './builders/builders';
+import {
+  CommitBuilder,
+  PullRequestBuilder,
+  PipelineRunBuilder,
+  RepositoryBuilder,
+  ReadPullRequestsRepositoryBuilder,
+  PipelinesRepositoryBuilder,
+} from './builders/builders';
 import { IRepository } from '../src';
 import { IReadPullRequestsRepository } from '../src/aggregates/pull-requests-repository';
 import { IPipelinesRepository } from '../src/aggregates/pipelines-repository';
@@ -13,31 +20,22 @@ describe('PairingIndexService', () => {
   let mockCommitRepo: IRepository<Commit>;
 
   beforeEach(() => {
-    // Create mock repository
-    mockCommitRepo = {
-      save: vi.fn(),
-      saveAll: vi.fn(),
-      load: vi.fn(),
-      loadAll: vi.fn(async () => {
-        // Return test commits
-        return [
-          new CommitBuilder()
-            .withAuthor('Alice')
-            .withMessage('Add feature')
-            .withTimestamp('2024-01-01T10:00:00Z')
-            .withFiles([{ path: 'src/main.ts', additions: 10, deletions: 0, status: 'added' }])
-            .build(),
-          new CommitBuilder()
-            .withAuthor('Bob')
-            .withMessage('Fix bug')
-            .withTimestamp('2024-01-02T10:00:00Z')
-            .withFiles([{ path: 'src/utils.ts', additions: 5, deletions: 2, status: 'modified' }])
-            .build(),
-        ];
-      }),
-      delete: vi.fn(),
-      exists: vi.fn(),
-    };
+    mockCommitRepo = new RepositoryBuilder<Commit>()
+      .withLoadAll([
+        new CommitBuilder()
+          .withAuthor('Alice')
+          .withMessage('Add feature')
+          .withTimestamp('2024-01-01T10:00:00Z')
+          .withFiles([{ path: 'src/main.ts', additions: 10, deletions: 0, status: 'added' }])
+          .build(),
+        new CommitBuilder()
+          .withAuthor('Bob')
+          .withMessage('Fix bug')
+          .withTimestamp('2024-01-02T10:00:00Z')
+          .withFiles([{ path: 'src/utils.ts', additions: 5, deletions: 2, status: 'modified' }])
+          .build(),
+      ])
+      .build();
 
     pairingService = new PairingIndexService(mockCommitRepo);
   });
@@ -51,7 +49,9 @@ describe('PairingIndexService', () => {
   });
 
   it('should return 0 for pairing index when no commits', async () => {
-    mockCommitRepo.loadAll = vi.fn(async () => []);
+    pairingService = new PairingIndexService(
+      new RepositoryBuilder<Commit>().withLoadAll([]).build()
+    );
 
     const result = await pairingService.getPairingIndex();
 
@@ -112,9 +112,7 @@ describe('PRsService', () => {
         .build(),
     ];
 
-    mockPrRepo = {
-      loadPrsWithFilters: vi.fn(async () => prs),
-    };
+    mockPrRepo = new ReadPullRequestsRepositoryBuilder().withPullRequests(prs).build();
 
     prsService = new PRsService(mockPrRepo);
   });
@@ -207,9 +205,7 @@ describe('PipelinesService', () => {
         .build(),
     ];
 
-    mockPipelineRepo = {
-      loadPipelines: vi.fn(async () => runs),
-    };
+    mockPipelineRepo = new PipelinesRepositoryBuilder().withPipelineRuns(runs).build();
 
     pipelinesService = new PipelinesService(mockPipelineRepo);
   });
@@ -276,7 +272,7 @@ describe('PipelinesService', () => {
   });
 
   it('should aggregate deployment frequency for configured workflow and job targets', async () => {
-    mockPipelineRepo.loadPipelines = vi.fn(async () => [
+    const deployRuns: import('../src/domain-types').PipelineRun[] = [
       {
         id: 'release-run',
         number: 1,
@@ -290,7 +286,6 @@ describe('PipelinesService', () => {
         jobs: [
           {
             id: 'release-job',
-            runId: 'release-run',
             name: 'deploy-production',
             status: 'completed',
             conclusion: 'success',
@@ -312,7 +307,6 @@ describe('PipelinesService', () => {
         jobs: [
           {
             id: 'mobile-job',
-            runId: 'mobile-run',
             name: 'deploy-mobile',
             status: 'completed',
             conclusion: 'success',
@@ -321,7 +315,9 @@ describe('PipelinesService', () => {
           },
         ],
       },
-    ]);
+    ];
+
+    mockPipelineRepo = new PipelinesRepositoryBuilder().withPipelineRuns(deployRuns).build();
 
     pipelinesService = new PipelinesService(mockPipelineRepo, {
       getDeploymentFrequencyTargets: () => [
