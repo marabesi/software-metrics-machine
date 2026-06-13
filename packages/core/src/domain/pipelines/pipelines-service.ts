@@ -134,7 +134,10 @@ export class PipelinesService implements IPipelinesService {
       return (completedAt - startedAt) / (1000 * 60);
     }
 
-    return this.getDurationMinutes(run.startedAt, run.completedAt);
+    // Do not fall back to run-level startedAt/completedAt because completedAt
+    // is typically mapped from updated_at (last record update) rather than the
+    // actual run completion time, producing wildly incorrect durations.
+    return null;
   }
 
   getDurationMinutes(startedAt?: string, completedAt?: string): number | null {
@@ -692,11 +695,9 @@ export class PipelinesService implements IPipelinesService {
     const durations: number[] = [];
 
     for (const run of runs) {
-      if (run.startedAt && run.completedAt) {
-        const started = new Date(run.startedAt).getTime();
-        const completed = new Date(run.completedAt).getTime();
-        const durationMinutes = (completed - started) / (1000 * 60);
-        durations.push(durationMinutes);
+      const duration = this.getRunDurationMinutes(run);
+      if (duration !== null) {
+        durations.push(duration);
       }
     }
 

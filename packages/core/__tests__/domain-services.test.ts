@@ -348,4 +348,126 @@ describe('PipelinesService', () => {
       ])
     );
   });
+
+  describe('getRunDurationMinutes', () => {
+    it('should compute duration from jobs when available', () => {
+      const run = {
+        startedAt: '2025-01-01T10:00:00Z',
+        completedAt: '2025-01-01T20:00:00Z', // stale updated_at: 10 hours later
+        jobs: [
+          {
+            startedAt: '2025-01-01T10:01:00Z',
+            completedAt: '2025-01-01T10:05:00Z',
+          },
+        ],
+      };
+
+      const duration = pipelinesService.getRunDurationMinutes(run);
+
+      // Should use job timestamps (4 minutes), not run-level (600 minutes)
+      expect(duration).toBe(4);
+    });
+
+    it('should return null when no valid jobs exist', () => {
+      const run = {
+        startedAt: '2025-01-01T10:00:00Z',
+        completedAt: '2026-02-05T10:05:00Z', // stale updated_at: ~570,000 minutes
+        jobs: [],
+      };
+
+      const duration = pipelinesService.getRunDurationMinutes(run);
+
+      // Should NOT fall back to stale run-level timestamps
+      expect(duration).toBeNull();
+    });
+
+    it('should return null when jobs have invalid timestamps', () => {
+      const run = {
+        startedAt: '2025-01-01T10:00:00Z',
+        completedAt: '2025-01-01T10:05:00Z',
+        jobs: [
+          {
+            startedAt: '2025-01-01T10:01:00Z',
+            completedAt: '', // invalid
+          },
+        ],
+      };
+
+      const duration = pipelinesService.getRunDurationMinutes(run);
+
+      expect(duration).toBeNull();
+    });
+
+    it('should use the earliest job start and latest job end', () => {
+      const run = {
+        startedAt: '2025-01-01T10:00:00Z',
+        completedAt: '2025-01-01T20:00:00Z',
+        jobs: [
+          {
+            startedAt: '2025-01-01T10:02:00Z',
+            completedAt: '2025-01-01T10:05:00Z',
+          },
+          {
+            startedAt: '2025-01-01T10:01:00Z',
+            completedAt: '2025-01-01T10:10:00Z',
+          },
+        ],
+      };
+
+      const duration = pipelinesService.getRunDurationMinutes(run);
+
+      // earliest start: 10:01, latest end: 10:10 => 9 minutes
+      expect(duration).toBe(9);
+    });
+  });
+
+  describe('getMetrics average duration', () => {
+    it('should exclude runs without jobs from average duration', async () => {
+      const runs: import('../src/domain-types').PipelineRun[] = [
+        {
+          id: 'run-1',
+          number: 1,
+          name: 'Build',
+          status: 'completed',
+          conclusion: 'success',
+          createdAt: '2025-01-01T08:00:00Z',
+          updatedAt: '2025-01-01T08:15:00Z',
+          startedAt: '2025-01-01T08:00:00Z',
+          branch: 'main',
+          path: '.github/workflows/build.yml',
+          jobs: [
+            {
+              id: 'job-1',
+              name: 'test',
+              status: 'completed',
+              conclusion: 'success',
+              startedAt: '2025-01-01T08:01:00Z',
+              completedAt: '2025-01-01T08:05:00Z', // 4 minutes
+            },
+          ],
+        },
+        {
+          id: 'run-2',
+          number: 2,
+          name: 'Build',
+          status: 'completed',
+          conclusion: 'success',
+          createdAt: '2025-01-01T09:00:00Z',
+          updatedAt: '2026-06-01T09:00:00Z', // stale updated_at: ~570k minutes from startedAt
+          startedAt: '2025-01-01T09:00:00Z',
+          branch: 'main',
+          path: '.github/workflows/build.yml',
+          jobs: [], // no jobs - should be excluded
+        },
+      ];
+
+      mockPipelineRepo = new PipelinesRepositoryBuilder().withPipelineRuns(runs).build();
+      pipelinesService = new PipelinesService(mockPipelineRepo);
+
+      const metrics = await pipelinesService.getMetrics();
+
+      // Average should be 4 minutes (only from run-1), not ~570k minutes
+      expect(metrics.averageDurationMinutes).toBe(4);
+    });
+  });
 });
