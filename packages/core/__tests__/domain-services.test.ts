@@ -83,6 +83,47 @@ describe('PairingIndexService', () => {
     const decimalPlaces = result.pairingIndexPercentage.toString().split('.')[1]?.length || 0;
     expect(decimalPlaces).toBeLessThanOrEqual(2);
   });
+
+  it('should filter commits by start date', async () => {
+    const result = await pairingService.getPairingIndex({
+      startDate: '2024-01-02',
+    });
+
+    expect(result.totalAnalyzedCommits).toBe(1);
+  });
+
+  it('should filter commits by end date', async () => {
+    const result = await pairingService.getPairingIndex({
+      endDate: '2024-01-01',
+    });
+
+    expect(result.totalAnalyzedCommits).toBe(1);
+  });
+
+  it('should filter commits by date range', async () => {
+    const result = await pairingService.getPairingIndex({
+      startDate: '2024-01-01',
+      endDate: '2024-01-01',
+    });
+
+    expect(result.totalAnalyzedCommits).toBe(1);
+  });
+
+  it('should return 0 when start date is after all commits', async () => {
+    const result = await pairingService.getPairingIndex({
+      startDate: '2025-01-01',
+    });
+
+    expect(result.totalAnalyzedCommits).toBe(0);
+  });
+
+  it('should return 0 when end date is before all commits', async () => {
+    const result = await pairingService.getPairingIndex({
+      endDate: '2023-01-01',
+    });
+
+    expect(result.totalAnalyzedCommits).toBe(0);
+  });
 });
 
 describe('PRsService', () => {

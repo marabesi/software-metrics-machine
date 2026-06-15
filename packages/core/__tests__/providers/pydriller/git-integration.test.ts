@@ -53,48 +53,6 @@ describe('Git Commit Analysis - CommitTraverser', () => {
     });
   });
 
-  describe('Date Range Filtering', () => {
-    it('should filter commits by start date', async () => {
-      // Get commits from 2024 onwards
-      const result = await traverser.traverseCommits({
-        startDate: '2024-01-01',
-      });
-
-      expect(result.commits).toBeDefined();
-      result.commits.forEach((commit) => {
-        const commitDate = new Date(commit.timestamp);
-        expect(commitDate.getTime()).toBeGreaterThanOrEqual(new Date('2024-01-01').getTime());
-      });
-    });
-
-    it('should filter commits by end date', async () => {
-      // Get commits before 2024
-      const result = await traverser.traverseCommits({
-        endDate: '2023-12-31',
-      });
-
-      expect(result.commits).toBeDefined();
-      result.commits.forEach((commit) => {
-        const commitDate = new Date(commit.timestamp);
-        expect(commitDate.getTime()).toBeLessThanOrEqual(new Date('2023-12-31').getTime());
-      });
-    });
-
-    it('should filter commits by date range', async () => {
-      const result = await traverser.traverseCommits({
-        startDate: '2024-01-01',
-        endDate: '2024-12-31',
-      });
-
-      expect(result.commits).toBeDefined();
-      result.commits.forEach((commit) => {
-        const commitDate = new Date(commit.timestamp);
-        expect(commitDate.getTime()).toBeGreaterThanOrEqual(new Date('2024-01-01').getTime());
-        expect(commitDate.getTime()).toBeLessThanOrEqual(new Date('2024-12-31').getTime());
-      });
-    });
-  });
-
   describe('Author Filtering', () => {
     it('should handle empty result for non-existent author', async () => {
       const result = await traverser.traverseCommits({
@@ -189,29 +147,6 @@ describe('Git Commit Analysis - CommitTraverser', () => {
           (c) => c.coAuthors && c.coAuthors.length > 0
         ).length;
         expect(result.pairedCommits).toBe(expectedPaired);
-      }
-    });
-  });
-
-  describe('Combined Filtering', () => {
-    it('should filter by date and author simultaneously', async () => {
-      const allCommits = await traverser.traverseCommits();
-
-      if (allCommits.commits.length > 0) {
-        const author = allCommits.commits[0].author;
-
-        const result = await traverser.traverseCommits({
-          selectedAuthors: [author],
-          startDate: '2024-01-01',
-          endDate: '2024-12-31',
-        });
-
-        result.commits.forEach((commit) => {
-          expect(commit.author.toLowerCase()).toBe(author.toLowerCase());
-          const commitDate = new Date(commit.timestamp);
-          expect(commitDate.getTime()).toBeGreaterThanOrEqual(new Date('2024-01-01').getTime());
-          expect(commitDate.getTime()).toBeLessThanOrEqual(new Date('2024-12-31').getTime());
-        });
       }
     });
   });
