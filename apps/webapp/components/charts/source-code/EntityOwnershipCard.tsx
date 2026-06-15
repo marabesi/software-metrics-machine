@@ -16,6 +16,7 @@ import {
 } from 'recharts';
 import { ensureArray } from '@/server/utils/chartData';
 import { EntityOwnershipData } from './types';
+import { TargetInfo } from '@/components/charts/TargetInfo';
 
 interface AuthorData {
   author: string;
@@ -228,7 +229,10 @@ export default function EntityOwnershipCard({ data }: { data: EntityOwnershipDat
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Ownership</CardTitle>
+        <div className="flex items-center gap-2">
+          <CardTitle>Ownership</CardTitle>
+          <TargetInfo metric="ownership" />
+        </div>
         <Box sx={{ mt: 2 }}>
           <Tabs
             value={activeTab}

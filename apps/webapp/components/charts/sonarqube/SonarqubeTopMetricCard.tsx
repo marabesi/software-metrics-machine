@@ -13,6 +13,7 @@ import {
 } from 'recharts';
 import { SonarqubeTopMetricData } from './types';
 import { useLinkBuilder } from '@/components/providers/LinkBuilderContext';
+import { TargetInfo } from '@/components/charts/TargetInfo';
 
 export default function SonarqubeTopMetricCard({
   title,
@@ -36,10 +37,17 @@ export default function SonarqubeTopMetricCard({
     }
   };
 
+  const metricKey = title.toLowerCase().includes('complexity')
+    ? 'sonarqube-complexity'
+    : 'sonarqube-coverage';
+
   return (
     <Card>
       <CardHeader>
-        <CardTitle>{title}</CardTitle>
+        <div className="flex items-center gap-2">
+          <CardTitle>{title}</CardTitle>
+          <TargetInfo metric={metricKey} />
+        </div>
         <p className="mt-2 text-sm text-gray-600">{description}</p>
         {data.some(d => d.componentKey) && (
           <p className="text-xs text-gray-500 mt-1">Click on bars to view component in SonarQube</p>

@@ -2,12 +2,16 @@
 
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { CouplingData } from './types';
+import { TargetInfo } from '@/components/charts/TargetInfo';
 
 export default function CodeCouplingCard({ data }: { data: CouplingData[] }) {
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Code Coupling (Top 20)</CardTitle>
+        <div className="flex items-center gap-2">
+          <CardTitle>Code Coupling (Top 20)</CardTitle>
+          <TargetInfo metric="code-coupling" />
+        </div>
         <p className="mt-2 text-sm text-gray-600">
           Lists file pairs that often change together. Higher Degree means stronger coupling;
           Avg. Revs indicates average shared revision activity.

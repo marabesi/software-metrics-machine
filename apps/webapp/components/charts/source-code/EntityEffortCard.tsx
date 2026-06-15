@@ -4,6 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
 import { ensureArray } from '@/server/utils/chartData';
 import { EntityEffortData } from './types';
+import { TargetInfo } from '@/components/charts/TargetInfo';
 
 export default function EntityEffortCard({
   data,
@@ -15,7 +16,10 @@ export default function EntityEffortCard({
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Entity Effort (Top {topEntries})</CardTitle>
+        <div className="flex items-center gap-2">
+          <CardTitle>Entity Effort (Top {topEntries})</CardTitle>
+          <TargetInfo metric="entity-effort" />
+        </div>
         <p className="mt-2 text-sm text-gray-600">
           Shows files touched most often. Taller bars mean more revisions, indicating higher
           maintenance effort.

@@ -5,6 +5,7 @@ import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, Responsive
 import { ensureArray } from '@/server/utils/chartData';
 import { ByAuthorData } from './types';
 import { useLinkBuilder } from '@/components/providers/LinkBuilderContext';
+import { TargetInfo } from '@/components/charts/TargetInfo';
 
 export default function PRsByAuthorCard({ data }: { data: ByAuthorData[] }) {
   const { urlBuilder } = useLinkBuilder();
@@ -17,7 +18,10 @@ export default function PRsByAuthorCard({ data }: { data: ByAuthorData[] }) {
   return (
     <Card>
       <CardHeader>
-        <CardTitle>PRs by Author</CardTitle>
+        <div className="flex items-center gap-2">
+          <CardTitle>PRs by Author</CardTitle>
+          <TargetInfo metric="prs-by-author" />
+        </div>
         <p className="text-xs text-gray-500 mt-1">Click on bars to view author&apos;s PRs</p>
       </CardHeader>
       <CardContent>

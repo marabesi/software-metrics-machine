@@ -4,12 +4,16 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
 import { ensureArray } from '@/server/utils/chartData';
 import { CodeChurnData } from './types';
+import { TargetInfo } from '@/components/charts/TargetInfo';
 
 export default function CodeChurnOverTimeCard({ data }: { data: CodeChurnData[] }) {
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Code Churn Over Time</CardTitle>
+        <div className="flex items-center gap-2">
+          <CardTitle>Code Churn Over Time</CardTitle>
+          <TargetInfo metric="code-churn" />
+        </div>
         <p className="mt-2 text-sm text-gray-600">
           Trend of code changes by date. Higher points mean more lines changed in that period.
         </p>

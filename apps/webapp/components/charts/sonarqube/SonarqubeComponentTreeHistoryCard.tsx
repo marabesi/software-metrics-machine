@@ -13,6 +13,7 @@ import {
 } from 'recharts';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { SonarqubeComponentChartData } from './types';
+import { TargetInfo } from '@/components/charts/TargetInfo';
 
 type ComponentMeasure = {
   key: string;
@@ -112,7 +113,10 @@ export default function SonarqubeComponentTreeHistoryCard({
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Component Tree Metrics History</CardTitle>
+        <div className="flex items-center gap-2">
+          <CardTitle>Component Tree Metrics History</CardTitle>
+          <TargetInfo metric="sonarqube-complexity" />
+        </div>
         <p className="mt-2 text-sm text-gray-600">
           Complexity and cognitive complexity changes over time for the selected files.
         </p>

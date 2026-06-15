@@ -5,6 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { BarChart, Bar, XAxis, YAxis, Tooltip, Legend, ResponsiveContainer, CartesianGrid } from 'recharts';
 import { JobStepsAverageTimeData, JobStepsAverageTimeByDayData } from './types';
 import { formatDurationMinutes } from './duration-format';
+import { TargetInfo } from '@/components/charts/TargetInfo';
 
 // Generate a sequence of colors for the stacked bars
 const COLORS = [
@@ -46,7 +47,10 @@ export default function JobStepsAnalysis({
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Steps Analysis: {jobName}</CardTitle>
+        <div className="flex items-center gap-2">
+          <CardTitle>Steps Analysis: {jobName}</CardTitle>
+          <TargetInfo metric="pipeline-duration" />
+        </div>
         <p className="text-sm text-gray-500">
           Average execution time of each step across {data[0]?.count || 0} runs.
           Total average time: {formatDurationMinutes(totalTime)}.

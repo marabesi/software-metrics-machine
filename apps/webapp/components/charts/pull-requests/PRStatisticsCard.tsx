@@ -3,6 +3,7 @@
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { AvgCommentsData, SummaryData } from './types';
 import { useLinkBuilder } from '@/components/providers/LinkBuilderContext';
+import { TargetInfo } from '@/components/charts/TargetInfo';
 
 function StatBoxLink({ label, value, filters, urlBuilder }: { label: string; value: number; filters?: { status?: string; author?: string; label?: string }; urlBuilder: ReturnType<typeof useLinkBuilder>['urlBuilder'] }) {
   const href = urlBuilder.getPRsUrl(filters);
@@ -27,7 +28,10 @@ export default function PRStatisticsCard({
   return (
     <Card>
       <CardHeader>
-        <CardTitle>PR Statistics</CardTitle>
+        <div className="flex items-center gap-2">
+          <CardTitle>PR Statistics</CardTitle>
+          <TargetInfo metric="pr-statistics" />
+        </div>
       </CardHeader>
       <CardContent>
         <div className="space-y-4">

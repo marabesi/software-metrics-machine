@@ -4,12 +4,16 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
 import { ensureArray } from '@/server/utils/chartData';
 import { CommentsByAuthorData } from './types';
+import { TargetInfo } from '@/components/charts/TargetInfo';
 
 export default function CommentsByAuthorCard({ data }: { data: CommentsByAuthorData[] }) {
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Who Comments The Most</CardTitle>
+        <div className="flex items-center gap-2">
+          <CardTitle>Who Comments The Most</CardTitle>
+          <TargetInfo metric="comments-by-author" />
+        </div>
       </CardHeader>
       <CardContent>
         <ResponsiveContainer width="100%" height={300}>

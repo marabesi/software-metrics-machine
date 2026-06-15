@@ -2,6 +2,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { buildSonarqubeApiParams } from '@/server/utils/apiParams';
 import { sonarqubeAPI } from '@/server/api';
 import { DashboardFilters } from '@/components/filters/DashboardFilters';
+import { TargetInfo } from '@/components/charts/TargetInfo';
 
 interface SonarqubeMeasurementsCardProps {
   filters: DashboardFilters;
@@ -14,7 +15,10 @@ export default async function SonarqubeMeasurementsCard({ filters }: SonarqubeMe
   return (
     <Card>
       <CardHeader>
-        <CardTitle>SonarQube Measurements</CardTitle>
+        <div className="flex items-center gap-2">
+          <CardTitle>SonarQube Measurements</CardTitle>
+          <TargetInfo metric="sonarqube-measurements" />
+        </div>
       </CardHeader>
       <CardContent>
         {measurements && measurements.length > 0 ? (

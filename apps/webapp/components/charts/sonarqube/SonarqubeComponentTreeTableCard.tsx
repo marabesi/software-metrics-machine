@@ -3,6 +3,7 @@
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { SonarqubeComponentChartData } from './types';
 import { useLinkBuilder } from '@/components/providers/LinkBuilderContext';
+import { TargetInfo } from '@/components/charts/TargetInfo';
 
 export default function SonarqubeComponentTreeTableCard({
   data,
@@ -14,7 +15,10 @@ export default function SonarqubeComponentTreeTableCard({
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Component Tree Metrics</CardTitle>
+        <div className="flex items-center gap-2">
+          <CardTitle>Component Tree Metrics</CardTitle>
+          <TargetInfo metric="sonarqube-complexity" />
+        </div>
         <p className="mt-2 text-sm text-gray-600">
           Detailed per-component metrics from SonarQube component tree (complexity, cognitive complexity,
           NLOC and coverage). Click component names to view in SonarQube.

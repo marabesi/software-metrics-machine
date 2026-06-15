@@ -3,7 +3,7 @@ import { formatPullRequestMetrics } from '../../src/formatters';
 import { Command } from 'commander';
 import { commands } from '../../src';
 
-describe('Pull Request Metrics', () => {
+describe('cli: Pull Request Metrics', () => {
   let program: Command;
 
   beforeEach(async () => {

@@ -9,6 +9,7 @@ import { ensureArray } from '@/server/utils/chartData';
 import { JobsDurationByWorkflowItem, RunsByDayData, RunsDurationData } from './types';
 import { useLinkBuilder } from '@/components/providers/LinkBuilderContext';
 import { formatDurationMinutes } from './duration-format';
+import { TargetInfo } from '@/components/charts/TargetInfo';
 
 type ActiveTab = 'duration' | 'job-breakdown' | 'daily-runs';
 
@@ -131,7 +132,10 @@ export default function PipelineRunsDurationCard({
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Pipeline Runs Duration</CardTitle>
+        <div className="flex items-center gap-2">
+          <CardTitle>Pipeline Runs Duration</CardTitle>
+          <TargetInfo metric="pipeline-duration" />
+        </div>
         <Box sx={{ mt: 2 }}>
           <Tabs
             value={activeTab}

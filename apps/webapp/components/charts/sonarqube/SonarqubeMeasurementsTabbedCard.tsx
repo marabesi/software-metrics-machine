@@ -14,6 +14,7 @@ import {
   XAxis,
   YAxis,
 } from 'recharts';
+import { TargetInfo } from '@/components/charts/TargetInfo';
 
 type ActiveTab = 'current' | 'history';
 
@@ -94,7 +95,10 @@ export default function SonarqubeMeasurementsTabbedCard({
   return (
     <Card>
       <CardHeader>
-        <CardTitle>SonarQube Measurements</CardTitle>
+        <div className="flex items-center gap-2">
+          <CardTitle>SonarQube Measurements</CardTitle>
+          <TargetInfo metric="sonarqube-measurements" />
+        </div>
         <Box sx={{ mt: 2 }}>
           <Tabs
             value={activeTab}

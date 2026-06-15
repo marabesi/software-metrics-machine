@@ -3,6 +3,7 @@
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { JobByStatusData } from './types';
 import { useLinkBuilder } from '@/components/providers/LinkBuilderContext';
+import { TargetInfo } from '@/components/charts/TargetInfo';
 
 export default function JobsByStatusCard({ data }: { data: JobByStatusData[] }) {
   const { urlBuilder } = useLinkBuilder();
@@ -22,7 +23,10 @@ export default function JobsByStatusCard({ data }: { data: JobByStatusData[] }) 
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Jobs by Status</CardTitle>
+        <div className="flex items-center gap-2">
+          <CardTitle>Jobs by Status</CardTitle>
+          <TargetInfo metric="jobs-success-rate" />
+        </div>
         <p className="text-xs text-gray-500 mt-1">Click to view pipeline runs with this status</p>
       </CardHeader>
       <CardContent>

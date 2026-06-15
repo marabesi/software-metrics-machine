@@ -4,12 +4,16 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
 import { ensureArray } from '@/server/utils/chartData';
 import { OpenThroughTimeData } from './types';
+import { TargetInfo } from '@/components/charts/TargetInfo';
 
 export default function OpenPRsThroughTimeCard({ data }: { data: OpenThroughTimeData[] }) {
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Open PRs Through Time</CardTitle>
+        <div className="flex items-center gap-2">
+          <CardTitle>Open PRs Through Time</CardTitle>
+          <TargetInfo metric="open-prs-through-time" />
+        </div>
       </CardHeader>
       <CardContent>
         <ResponsiveContainer width="100%" height={300}>

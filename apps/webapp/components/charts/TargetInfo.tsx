@@ -1,0 +1,82 @@
+'use client';
+
+import { useState, useCallback } from 'react';
+import { Popover, Box } from '@mui/material';
+import { METRIC_TARGETS, type TargetDefinition } from './targets';
+
+interface TargetInfoProps {
+  metric?: string;
+  target?: string;
+  description?: string;
+}
+
+export function TargetInfo({ metric, target, description }: TargetInfoProps) {
+  const [anchorEl, setAnchorEl] = useState<HTMLElement | null>(null);
+
+  let definition: TargetDefinition | undefined;
+
+  if (metric) {
+    definition = METRIC_TARGETS[metric];
+  } else if (target && description) {
+    definition = { target, description };
+  }
+
+  const handleClick = useCallback((e: React.MouseEvent<HTMLElement>) => {
+    setAnchorEl(e.currentTarget);
+  }, []);
+
+  const handleClose = useCallback(() => {
+    setAnchorEl(null);
+  }, []);
+
+  if (!definition) {
+    return null;
+  }
+
+  return (
+    <>
+      <div
+        onClick={handleClick}
+        className="inline-flex items-center justify-center w-5 h-5 rounded-full bg-blue-100 text-blue-600 cursor-pointer hover:bg-blue-200 transition-colors shrink-0 select-none"
+      >
+        <span className="text-xs font-semibold">i</span>
+      </div>
+      <Popover
+        open={Boolean(anchorEl)}
+        anchorEl={anchorEl}
+        onClose={handleClose}
+        anchorOrigin={{
+          vertical: 'bottom',
+          horizontal: 'center',
+        }}
+        transformOrigin={{
+          vertical: 'top',
+          horizontal: 'center',
+        }}
+        slotProps={{
+          paper: {
+            sx: {
+              p: 2,
+              maxWidth: 360,
+              borderRadius: 1,
+            },
+          },
+        }}
+      >
+        <Box sx={{ fontSize: '0.875rem', lineHeight: 1.6 }}>
+          <Box sx={{ fontWeight: 600, mb: 0.5 }}>
+            Target: {definition.target}
+          </Box>
+          <Box sx={{ color: 'text.secondary', mb: 1 }}>
+            {definition.description}
+          </Box>
+          {definition.source && (
+            <Box sx={{ fontSize: '0.75rem', color: 'text.disabled', borderTop: '1px solid', borderColor: 'divider', pt: 1, mt: 0.5 }}>
+              Source: {definition.source}
+            </Box>
+          )}
+        </Box>
+      </Popover>
+    </>
+  );
+}

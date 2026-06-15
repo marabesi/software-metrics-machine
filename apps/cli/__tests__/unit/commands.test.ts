@@ -12,7 +12,7 @@ import {
 } from '../../src/formatters';
 import { Command } from 'commander';
 
-describe('CLI Commands', () => {
+describe('cli: CLI Commands', () => {
   let program: Command;
 
   beforeEach(async () => {

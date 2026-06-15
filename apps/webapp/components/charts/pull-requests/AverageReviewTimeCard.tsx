@@ -5,6 +5,7 @@ import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, Responsive
 import { ensureArray } from '@/server/utils/chartData';
 import { AvgReviewTimeData } from './types';
 import { useLinkBuilder } from '@/components/providers/LinkBuilderContext';
+import { TargetInfo } from '@/components/charts/TargetInfo';
 
 export default function AverageReviewTimeCard({ data }: { data: AvgReviewTimeData[] }) {
   const { urlBuilder } = useLinkBuilder();
@@ -17,7 +18,10 @@ export default function AverageReviewTimeCard({ data }: { data: AvgReviewTimeDat
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Average Review Time</CardTitle>
+        <div className="flex items-center gap-2">
+          <CardTitle>Average Review Time</CardTitle>
+          <TargetInfo metric="average-review-time" />
+        </div>
         <p className="text-xs text-gray-500 mt-1">Click on bars to view author&apos;s PRs</p>
       </CardHeader>
       <CardContent>

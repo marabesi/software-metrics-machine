@@ -12,6 +12,7 @@ import {
   YAxis,
 } from 'recharts';
 import { MostCommentedPRData } from './types';
+import { TargetInfo } from '@/components/charts/TargetInfo';
 
 interface MostCommentedPRsCardProps {
   data: MostCommentedPRData[];
@@ -56,7 +57,10 @@ const MostCommentedPRsCard: React.FC<MostCommentedPRsCardProps> = ({ data }) => 
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Most Commented Pull Requests</CardTitle>
+        <div className="flex items-center gap-2">
+          <CardTitle>Most Commented Pull Requests</CardTitle>
+          <TargetInfo metric="most-commented-prs" />
+        </div>
       </CardHeader>
       <CardContent>
         {chartData.length > 0 ? (

@@ -4,6 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
 import { ensureArray } from '@/server/utils/chartData';
 import { EntityChurnData } from './types';
+import { TargetInfo } from '@/components/charts/TargetInfo';
 
 export default function EntityChurnCard({
   data,
@@ -15,7 +16,10 @@ export default function EntityChurnCard({
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Entity Churn (Top {topEntries})</CardTitle>
+        <div className="flex items-center gap-2">
+          <CardTitle>Entity Churn (Top {topEntries})</CardTitle>
+          <TargetInfo metric="entity-churn" />
+        </div>
         <p className="mt-2 text-sm text-gray-600">
           Compares files with the highest change volume. Each bar is one file: green is lines added
           and red is lines deleted.

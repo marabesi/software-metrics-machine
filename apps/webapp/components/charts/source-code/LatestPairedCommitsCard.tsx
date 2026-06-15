@@ -2,13 +2,17 @@
 import { useLinkBuilder } from "@/components/providers/LinkBuilderContext";
 import { CardTitle } from "@/components/ui/card";
 import { Card, CardHeader, CardContent } from "@mui/material";
+import { TargetInfo } from '@/components/charts/TargetInfo';
 
 export function LatestPairedCommitsCard({ data }: { data: Array<{ hash: string; author: string; co_authors: string[]; timestamp: string; subject: string }> }) {
   const { urlBuilder } = useLinkBuilder();
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Latest 20 Paired Commits</CardTitle>
+        <div className="flex items-center gap-2">
+          <CardTitle>Latest 20 Paired Commits</CardTitle>
+          <TargetInfo metric="pairing-index" />
+        </div>
         <p className="mt-2 text-sm text-gray-600">
           Most recent commits containing co-authors.
         </p>

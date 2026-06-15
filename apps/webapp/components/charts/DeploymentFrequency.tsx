@@ -6,6 +6,7 @@ import { ensureArray } from '@/server/utils/chartData';
 import { DeploymentFrequencyPoint } from '@/app/dashboard/insights/insights-types';
 import { useConfiguration } from '../providers/ConfigurationContext';
 import { useLinkBuilder } from '../providers/LinkBuilderContext';
+import { TargetInfo } from './TargetInfo';
 
 type Granularity = 'day' | 'week' | 'month';
 type ChartRow = {
@@ -162,6 +163,10 @@ export function DeploymentFrequency({ deploymentFrequency }: { deploymentFrequen
 
   return (
     <div style={{ userSelect: 'none', WebkitUserSelect: 'none' }}>
+      <div className="flex items-center gap-2 mb-4">
+        <h3 className="text-sm font-semibold text-gray-700">Deployment Frequency Targets</h3>
+        <TargetInfo metric="deployment-frequency" />
+      </div>
       {targetLabels.length > 0 && (
         <div className="mb-4 flex flex-wrap items-center gap-2" aria-label="Toggle deployment frequency workflows">
           {targetLabels.map((targetLabel, index) => (

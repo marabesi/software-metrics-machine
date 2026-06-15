@@ -5,6 +5,7 @@ import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, Responsive
 import { ensureArray } from '@/server/utils/chartData';
 import { FirstCommentTimeData } from './types';
 import { useLinkBuilder } from '@/components/providers/LinkBuilderContext';
+import { TargetInfo } from '@/components/charts/TargetInfo';
 
 export default function FirstCommentTimeCard({ data }: { data: FirstCommentTimeData[] }) {
   const { urlBuilder } = useLinkBuilder();
@@ -17,7 +18,10 @@ export default function FirstCommentTimeCard({ data }: { data: FirstCommentTimeD
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Time To First Comment</CardTitle>
+        <div className="flex items-center gap-2">
+          <CardTitle>Time To First Comment</CardTitle>
+          <TargetInfo metric="time-to-first-comment" />
+        </div>
         <p className="text-xs text-gray-500 mt-1">Click on bars to view author&apos;s PRs</p>
       </CardHeader>
       <CardContent>

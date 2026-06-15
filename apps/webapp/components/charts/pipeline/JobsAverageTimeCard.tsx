@@ -8,6 +8,7 @@ import react from 'react';
 import { ApiParams } from '@/server/api';
 import { useFilters } from '@/components/filters/FiltersContext';
 import { formatDurationMinutes } from './duration-format';
+import { TargetInfo } from '@/components/charts/TargetInfo';
 
 interface JobsAverageTimeCardProps {
   data: JobsAverageTimeData[];
@@ -32,7 +33,10 @@ export default function JobsAverageTimeCard({ data, dataByDay }: JobsAverageTime
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Jobs Average Time</CardTitle>
+        <div className="flex items-center gap-2">
+          <CardTitle>Jobs Average Time</CardTitle>
+          <TargetInfo metric="job-avg-time" />
+        </div>
         <div className="flex gap-2 mt-3">
           <button
             onClick={() => setActiveTab('by-job')}
