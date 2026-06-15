@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useCallback } from 'react';
-import { Popover, Box } from '@mui/material';
+import { Popover, Box, Link } from '@mui/material';
 import { METRIC_TARGETS, type TargetDefinition } from './targets';
 
 interface TargetInfoProps {
@@ -18,7 +18,7 @@ export function TargetInfo({ metric, target, description }: TargetInfoProps) {
   if (metric) {
     definition = METRIC_TARGETS[metric];
   } else if (target && description) {
-    definition = { target, description };
+    definition = { target, description, sources: [] };
   }
 
   const handleClick = useCallback((e: React.MouseEvent<HTMLElement>) => {
@@ -57,7 +57,7 @@ export function TargetInfo({ metric, target, description }: TargetInfoProps) {
           paper: {
             sx: {
               p: 2,
-              maxWidth: 360,
+              maxWidth: 380,
               borderRadius: 1,
             },
           },
@@ -67,12 +67,37 @@ export function TargetInfo({ metric, target, description }: TargetInfoProps) {
           <Box sx={{ fontWeight: 600, mb: 0.5 }}>
             Target: {definition.target}
           </Box>
-          <Box sx={{ color: 'text.secondary', mb: 1 }}>
+          <Box sx={{ color: 'text.secondary', mb: definition.sources.length > 0 ? 1.5 : 0 }}>
             {definition.description}
           </Box>
-          {definition.source && (
-            <Box sx={{ fontSize: '0.75rem', color: 'text.disabled', borderTop: '1px solid', borderColor: 'divider', pt: 1, mt: 0.5 }}>
-              Source: {definition.source}
+          {definition.sources.length > 0 && (
+            <Box
+              sx={{
+                borderTop: '1px solid',
+                borderColor: 'divider',
+                pt: 1.5,
+              }}
+            >
+              <Box sx={{ fontSize: '0.75rem', fontWeight: 600, color: 'text.secondary', mb: 0.75 }}>
+                Sources
+              </Box>
+              {definition.sources.map((source, idx) => (
+                <Box key={idx} sx={{ mb: 0.5, '&:last-child': { mb: 0 } }}>
+                  <Link
+                    href={source.url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    sx={{
+                      fontSize: '0.75rem',
+                      color: 'primary.main',
+                      textDecoration: 'none',
+                      '&:hover': { textDecoration: 'underline' },
+                    }}
+                  >
+                    {idx + 1}. {source.label}
+                  </Link>
+                </Box>
+              ))}
             </Box>
           )}
         </Box>
