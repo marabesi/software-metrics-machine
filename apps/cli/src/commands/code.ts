@@ -103,6 +103,7 @@ export function createCodeCommands(program: Command): void {
     .option('--end-date <date>', 'End date (YYYY-MM-DD)')
     .option('--authors <list>', 'Comma-separated list of authors to filter')
     .option('--force', 'Force refetch commits from git and bypass cache')
+    .option('--buffer <size>', 'Max buffer size in MB for git output (default: 100)', '100')
     .option('--output <format>', 'Output format (text|json)', 'text')
     .action(async (options) => {
       try {
@@ -117,6 +118,7 @@ export function createCodeCommands(program: Command): void {
           startDate: options.startDate,
           endDate: options.endDate,
           forceRefresh: options.force,
+          maxBuffer: Number(options.buffer),
         });
         const commits = result;
 
@@ -130,7 +132,16 @@ export function createCodeCommands(program: Command): void {
           if (options.endDate) logger.info(`End Date: ${options.endDate}`);
         }
       } catch (error) {
-        logger.error('Failed to analyze change sets', error);
+        const isMaxBufferError = error instanceof Error && error.message.includes('maxBuffer');
+
+        if (isMaxBufferError) {
+          logger.error(
+            `The git output exceeded the buffer limit. ` +
+              `Try increasing it with: --buffer <larger_number_in_MB>`
+          );
+        } else {
+          logger.error('Failed to analyze change sets', error);
+        }
         process.exit(1);
       }
     });

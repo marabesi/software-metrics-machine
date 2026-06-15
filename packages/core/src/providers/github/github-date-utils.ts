@@ -1,3 +1,5 @@
+import { TimeZoneProvider } from '../../infrastructure/timezone-provider';
+
 /**
  * Attempts to extract year, month, day from a date string in common formats.
  * Returns `null` if the format is not recognised.
@@ -47,14 +49,37 @@ function extractDateParts(dateStr: string): [string, string, string] | null {
  *   - `start` boundary:  YYYY-MM-DDT00:00:00Z
  *   - `end` boundary:    YYYY-MM-DDT23:59:59Z
  *
- * Unlike `new Date(dateStr)`, this function extracts date components directly
- * from the input string, avoiding timezone-dependent shifts.
+ * When a `TimeZoneProvider` is supplied, boundaries are calculated in the
+ * configured timezone and converted to UTC, ensuring date-only inputs like
+ * "2025-03-15" map to the correct UTC range for that timezone.
  *
- * @param dateStr  - Date string (e.g. "2025-01-01" or "01-06-2026")
+ * If the input is already a full ISO 8601 timestamp (with time), it is
+ * returned as-is — no boundary adjustment needed since a precise time
+ * is already specified.
+ *
+ * @param dateStr  - Date string (e.g. "2025-01-01" or "2025-01-01T15:30:00Z")
  * @param boundary - "start" → beginning of day, "end" → end of day
+ * @param tz       - Optional timezone provider for timezone-aware boundaries
  * @returns ISO 8601 string, or the original input if format is not recognised
  */
-export function toISODateString(dateStr: string, boundary: 'start' | 'end'): string {
+export function toISODateString(
+  dateStr: string,
+  boundary: 'start' | 'end',
+  tz?: TimeZoneProvider
+): string {
+  // If the input is already a full timestamp with time, return as-is.
+  if (/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}/.test(dateStr.trim())) {
+    return dateStr;
+  }
+
+  // If a timezone provider is given and the input is a date-only string,
+  // use timezone-aware boundary calculation.
+  if (tz && /^\d{4}-\d{2}-\d{2}$/.test(dateStr.trim())) {
+    const d =
+      boundary === 'start' ? tz.getStartOfDayBoundary(dateStr) : tz.getEndOfDayBoundary(dateStr);
+    return d.toISOString();
+  }
+
   const parts = extractDateParts(dateStr);
 
   if (!parts) {
@@ -74,19 +99,38 @@ export function toISODateString(dateStr: string, boundary: 'start' | 'end'): str
  * Builds a GitHub-compatible `created` filter from optional start/end dates.
  * Each date string is normalized to ISO 8601 (UTC) before joining with `..`.
  *
+ * When a `TimeZoneProvider` is supplied, date-only inputs are interpreted in
+ * the configured timezone before converting to UTC boundaries.
+ *
  * Returns `undefined` when both dates are absent so the caller can omit the param.
  *
  * @param startDate - Start date string (optional)
  * @param endDate   - End date string (optional)
- * @returns A `created` filter string like "2025-01-01T00:00:00Z..2026-01-06T23:59:59Z",
- *          or `undefined` if neither date is provided. */
-export function buildCreatedFilter(startDate?: string, endDate?: string): string | undefined {
+ * @param tz        - Optional timezone provider for timezone-aware boundaries
+ * @returns A `created` filter string like ">2025-06-10T00:00:00Z",
+ *          "2025-01-01T00:00:00Z..2026-01-06T23:59:59Z",
+ *          or `undefined` if neither date is provided.
+ */
+export function buildCreatedFilter(
+  startDate?: string,
+  endDate?: string,
+  tz?: TimeZoneProvider
+): string | undefined {
   if (!startDate && !endDate) {
     return undefined;
   }
 
-  const start = startDate ? toISODateString(startDate, 'start') : '';
-  const end = endDate ? toISODateString(endDate, 'end') : '';
+  if (startDate && endDate) {
+    const start = toISODateString(startDate, 'start', tz);
+    const end = toISODateString(endDate, 'end', tz);
+    return `${start}..${end}`;
+  }
 
-  return `${start}..${end}`;
+  if (startDate) {
+    const start = toISODateString(startDate, 'start', tz);
+    return `>${start}`;
+  }
+
+  const end = toISODateString(endDate!, 'end', tz);
+  return `<${end}`;
 }

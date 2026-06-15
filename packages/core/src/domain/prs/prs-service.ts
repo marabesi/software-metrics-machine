@@ -1,6 +1,7 @@
 import { Logger, logger } from '@smmachine/utils';
 import { PRDetails, PRFilters, PRMetrics, PRsByTimeframe, LabelSummary } from './pr-types';
 import { IReadPullRequestsRepository } from '../../aggregates/pull-requests-repository';
+import { TimeZoneProvider } from '../../infrastructure/timezone-provider';
 import { stopWords } from './stop-words';
 
 export interface IPRsService {
@@ -37,8 +38,14 @@ export interface IPRsService {
  */
 export class PRsService implements IPRsService {
   private logger: Logger = logger;
+  private tz: TimeZoneProvider;
 
-  constructor(private prRepository: IReadPullRequestsRepository) {}
+  constructor(
+    private prRepository: IReadPullRequestsRepository,
+    timeZoneProvider?: TimeZoneProvider
+  ) {
+    this.tz = timeZoneProvider || new TimeZoneProvider('UTC');
+  }
 
   /**
    * Get overall PR metrics for the given filters.
@@ -363,24 +370,11 @@ export class PRsService implements IPRsService {
   }
 
   private getMonthKey(date: Date): string {
-    const year = date.getFullYear();
-    const month = String(date.getMonth() + 1).padStart(2, '0');
-    return `${year}-${month}`;
+    return this.tz.getMonthKey(date);
   }
 
   private getWeekKey(date: Date): string {
-    // ISO week calculation
-    const temp = new Date(date);
-    const dayOfWeek = temp.getUTCDay();
-    const diff = temp.getUTCDate() - dayOfWeek + (dayOfWeek === 0 ? -6 : 1); // Adjust when day is Sunday
-    const firstDay = new Date(temp.setUTCDate(diff));
-
-    const week = Math.ceil(
-      (firstDay.getTime() - new Date(firstDay.getUTCFullYear(), 0, 1).getTime()) / 604800000
-    );
-    const year = firstDay.getUTCFullYear();
-
-    return `${year}-W${String(week).padStart(2, '0')}`;
+    return this.tz.getWeekKey(date);
   }
 
   private calculateTimeframeMetrics(period: string, prs: PRDetails[]): PRsByTimeframe {
@@ -475,18 +469,15 @@ export class PRsService implements IPRsService {
   }
 
   private toDayKey(dateString?: string): string {
-    return dateString ? dateString.split('T')[0] : 'unknown';
+    return dateString ? this.tz.getDateKey(dateString) : 'unknown';
   }
 
   private toMonthKeyShort(dateString?: string): string {
-    if (!dateString) return 'unknown';
-    return dateString.substring(0, 7);
+    return dateString ? this.tz.getMonthKey(dateString) : 'unknown';
   }
 
   private toPeriodKey(dateString: string | undefined, mode: 'day' | 'week' | 'month'): string {
-    if (mode === 'day') return this.toDayKey(dateString);
-    if (mode === 'month') return this.toMonthKeyShort(dateString);
-    return this.getWeekKey(new Date(dateString || Date.now()));
+    return this.tz.getIntervalKey(dateString, mode);
   }
 
   private toTimestamp(value?: string): number {

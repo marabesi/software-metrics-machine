@@ -104,6 +104,11 @@ export interface IConfiguration {
   sonarLocalRunnerToken?: string;
 
   storeLogs?: boolean;
+
+  /**
+   * IANA timezone identifier (e.g. "Europe/Madrid", "UTC")
+   */
+  timezone?: string;
 }
 
 export interface DeploymentFrequencyTarget {
@@ -136,6 +141,7 @@ export class Configuration implements IConfiguration {
   sonarProject?: string;
   sonarLocalRunnerToken?: string;
   storeLogs?: boolean;
+  timezone?: string;
 
   constructor(env: Record<string, string | undefined> = process.env) {
     // Convert env to plain object if it's process.env (has null prototype in some Node versions)
@@ -187,6 +193,7 @@ export class Configuration implements IConfiguration {
     this.sonarProject = c.sonar_project || envObj.SONAR_PROJECT;
     this.sonarLocalRunnerToken = c.sonar_local_runner_token;
     this.storeLogs = configData.store_logs === true || configData.STORE_LOGS === true;
+    this.timezone = c.timezone || envObj.SMM_TIMEZONE || 'UTC';
     Logger.configureDefaults({
       level: this.loggingLevel,
       filePath: this.getLogPath(),

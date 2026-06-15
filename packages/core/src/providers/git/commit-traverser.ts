@@ -8,6 +8,7 @@ export interface ICommitTraverser {
     excludedAuthors?: string[];
     startDate?: string;
     endDate?: string;
+    maxBuffer?: number;
   }): Promise<TraverserResult>;
 }
 
@@ -33,6 +34,7 @@ export class CommitTraverser implements ICommitTraverser {
     excludedAuthors?: string[];
     startDate?: string;
     endDate?: string;
+    maxBuffer?: number;
   }): Promise<TraverserResult> {
     try {
       this.logger.info(`Traversing commits in ${this.gitRepositoryPath}`);
@@ -83,31 +85,30 @@ export class CommitTraverser implements ICommitTraverser {
    *   %b = body (contains Co-authored-by trailers)
    *   %n = newline
    * Separator: --COMMIT-SEPARATOR-- between commits
+   *
+   * Date filtering is NOT applied here because git's --since/--until flags
+   * use the system timezone, which may differ from the configured timezone.
+   * All date filtering happens in the caller (PairingService) using
+   * TimeZoneProvider for correct timezone-aware boundaries.
    */
   private async fetchCommits(options?: {
     selectedAuthors?: string[];
     excludedAuthors?: string[];
-    startDate?: string;
-    endDate?: string;
+    maxBuffer?: number;
   }): Promise<Commit[]> {
     try {
-      // Build git log command
-      let gitCommand =
+      // Build git log command — no date flags, filtering is done by the caller
+      const gitCommand =
         'git log --format=%H%n%an%n%ae%n%cI%n%s%n%b%n---COMMIT-SEPARATOR--- --reverse';
 
-      // Add date filters if provided
-      if (options?.startDate || options?.endDate) {
-        const since = options?.startDate ? `--since="${options.startDate}"` : '';
-        const until = options?.endDate ? `--until="${options.endDate}"` : '';
-        gitCommand = `${gitCommand} ${since} ${until}`;
-      }
+      const maxBufferBytes = (options?.maxBuffer ?? 100) * 1024 * 1024;
 
       // Execute git command
       this.logger.info(`Executing: ${gitCommand}`);
       const output = execSync(gitCommand, {
         cwd: this.gitRepositoryPath,
-        timeout: 60000, // 60 seconds timeout,
-        maxBuffer: 10 * 1024 * 1024,
+        timeout: 120000, // 120 seconds timeout
+        maxBuffer: maxBufferBytes,
       });
 
       // Parse output into commits
@@ -181,30 +182,18 @@ export class CommitTraverser implements ICommitTraverser {
   }
 
   /**
-   * Apply date and author filters to commits
+   * Apply author filters to commits.
+   * Date filtering is NOT done here — it is handled by PairingService
+   * using TimeZoneProvider for correct timezone-aware boundaries.
    */
   private filterCommits(
     commits: Commit[],
-    startDate?: string,
-    endDate?: string,
+    _startDate?: string,
+    _endDate?: string,
     selectedAuthors?: string[],
     excludedAuthors?: string[]
   ): Commit[] {
     let filtered = commits;
-
-    // Apply date range filter
-    if (startDate || endDate) {
-      const start = startDate ? new Date(startDate).getTime() : null;
-      const end = endDate ? new Date(endDate).getTime() : null;
-
-      filtered = filtered.filter((commit) => {
-        const commitTime = new Date(commit.timestamp).getTime();
-
-        if (start && commitTime < start) return false;
-        if (end && commitTime > end) return false;
-        return true;
-      });
-    }
 
     // Apply author filters
     if (selectedAuthors && selectedAuthors.length > 0) {

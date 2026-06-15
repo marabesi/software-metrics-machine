@@ -2,22 +2,27 @@ import { logger } from '@smmachine/utils';
 import * as fs from 'fs/promises';
 import * as path from 'path';
 import { Configuration, IRepository } from '../../infrastructure';
+import { TimeZoneProvider } from '../../infrastructure/timezone-provider';
 import { type IGithubWorkflowClient } from '../index';
 import { WorkflowJsonResponse } from './github-response-types';
 import { PipelineFiltersRepository } from '../../aggregates/pipeline-filters-repository';
-import { buildCreatedFilter, toISODateString } from './github-date-utils';
+import { buildCreatedFilter } from './github-date-utils';
 
 interface WorkflowsProgress {
   page: number;
 }
 
 export class PipelinesFetchRepository {
+  private tz: TimeZoneProvider;
+
   constructor(
     private configuration: Configuration,
     private githubWorkflowClient: IGithubWorkflowClient,
     private pipelineRunFileSystemRepository: IRepository<WorkflowJsonResponse>,
     private pipelineFiltersRepository?: PipelineFiltersRepository
-  ) {}
+  ) {
+    this.tz = new TimeZoneProvider(configuration.timezone);
+  }
 
   async fetchPipelines(options?: {
     startDate?: string;
@@ -30,8 +35,8 @@ export class PipelinesFetchRepository {
     const fromCache = await this.pipelineRunFileSystemRepository.loadAll();
 
     if (options?.incrementalUpdate && fromCache.length > 0) {
-      const latestDate = this.findLatestDate(fromCache.map((r) => r.updated_at));
-      logger.info(`Incremental update: fetching pipelines updated after ${latestDate}...`);
+      const latestDate = this.findLatestDate(fromCache.map((r) => r.created_at));
+      logger.info(`Incremental update: fetching pipelines created after ${latestDate}...`);
       let freshRuns: WorkflowJsonResponse[];
 
       if (options?.byDay && options?.endDate) {
@@ -114,20 +119,20 @@ export class PipelinesFetchRepository {
     rawFilters?: string
   ): Promise<WorkflowJsonResponse[]> {
     const allRuns: WorkflowJsonResponse[] = [];
-    const current = new Date(toISODateString(startDate, 'start'));
-    const end = new Date(toISODateString(endDate, 'end'));
 
-    while (current <= end) {
-      const dayStart = new Date(current);
-      dayStart.setUTCHours(0, 0, 0, 0);
+    // For fetch, convert timezone-aware dates to UTC boundaries for the GitHub API.
+    // getStartOfDayBoundary("2025-03-15") in Europe/Madrid → 2025-03-14T23:00:00Z
+    // getEndOfDayBoundary("2025-03-15") in Europe/Madrid   → 2025-03-15T22:59:59.999Z
+    const totalDays = this.countDays(startDate, endDate);
+    for (let i = 0; i < totalDays; i++) {
+      const dayDate = this.addDays(startDate, i);
+      const dayStart = this.tz.getStartOfDayBoundary(dayDate);
+      const dayEnd = this.tz.getEndOfDayBoundary(dayDate);
 
-      const dayEnd = new Date(current);
-      dayEnd.setUTCHours(23, 59, 59, 999);
+      const dayStartStr = dayStart.toISOString();
+      const dayEndStr = dayEnd.toISOString();
 
-      const dayStartStr = dayStart.toISOString().split('T')[0] + 'T00:00:00Z';
-      const dayEndStr = dayEnd.toISOString().split('T')[0] + 'T23:59:59Z';
-
-      logger.info(`Fetching workflows for day ${dayStartStr}...`);
+      logger.info(`Fetching workflows for day ${dayDate} (UTC: ${dayStartStr}..${dayEndStr})...`);
 
       const dayRuns = await this.fetchWorkflowsWithResume({
         created: `${dayStartStr}..${dayEndStr}`,
@@ -135,10 +140,28 @@ export class PipelinesFetchRepository {
       });
 
       allRuns.push(...dayRuns);
-      current.setUTCDate(current.getUTCDate() + 1);
     }
 
     return allRuns;
+  }
+
+  /**
+   * Count the number of days between two date strings (inclusive).
+   */
+  private countDays(startDate: string, endDate: string): number {
+    const start = new Date(startDate);
+    const end = new Date(endDate);
+    const diffMs = end.getTime() - start.getTime();
+    return Math.floor(diffMs / (1000 * 60 * 60 * 24)) + 1;
+  }
+
+  /**
+   * Add N days to a date string and return "YYYY-MM-DD".
+   */
+  private addDays(dateStr: string, days: number): string {
+    const d = new Date(dateStr);
+    d.setUTCDate(d.getUTCDate() + days);
+    return d.toISOString().split('T')[0];
   }
 
   private async fetchWorkflowsWithResume(options?: {
@@ -223,7 +246,7 @@ export class PipelinesFetchRepository {
   }
 
   private buildCreatedFilter(startDate?: string, endDate?: string): string | undefined {
-    return buildCreatedFilter(startDate, endDate);
+    return buildCreatedFilter(startDate, endDate, this.tz);
   }
 
   private fileInCache(fileName: string): string {

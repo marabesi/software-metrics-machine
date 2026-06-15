@@ -1,4 +1,5 @@
 import { Configuration, FileSystemRepository } from '../infrastructure';
+import { TimeZoneProvider } from '../infrastructure/timezone-provider';
 import { PullRequestsRepository } from './pull-requests-repository';
 import {
   PullRequestCommentJsonResponse,
@@ -12,9 +13,11 @@ import {
 export class PullRequestFactory {
   static create(config: Configuration): PullRequestsRepository {
     const repositories = this.createRepositories(config);
+    const tz = new TimeZoneProvider(config.timezone);
     return new PullRequestsRepository(
       repositories.cache,
-      repositories.pullRequestCommentsStoreFile
+      repositories.pullRequestCommentsStoreFile,
+      tz
     );
   }
 

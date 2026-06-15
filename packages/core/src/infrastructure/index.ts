@@ -4,3 +4,4 @@
 
 export * from './configuration';
 export * from './repository';
+export * from './timezone-provider';

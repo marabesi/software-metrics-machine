@@ -35,9 +35,9 @@ describe('toISODateString', () => {
     expect(result).toBe('2026-05-15T00:00:00Z');
   });
 
-  it('should convert ISO date with time to correct end boundary', () => {
+  it('should return ISO timestamp unchanged when it already includes time', () => {
     const result = toISODateString('2026-05-15T00:00:00Z', 'end');
-    expect(result).toBe('2026-05-15T23:59:59Z');
+    expect(result).toBe('2026-05-15T00:00:00Z');
   });
 
   it('should return original input for unparseable dates', () => {
@@ -82,13 +82,13 @@ describe('buildCreatedFilter', () => {
     expect(result).toBeUndefined();
   });
 
-  it('should handle only start date', () => {
+  it('should handle only start date with > prefix', () => {
     const result = buildCreatedFilter('2025-01-01');
-    expect(result).toBe('2025-01-01T00:00:00Z..');
+    expect(result).toBe('>2025-01-01T00:00:00Z');
   });
 
-  it('should handle only end date', () => {
+  it('should handle only end date with < prefix', () => {
     const result = buildCreatedFilter(undefined, '2026-01-06');
-    expect(result).toBe('..2026-01-06T23:59:59Z');
+    expect(result).toBe('<2026-01-06T23:59:59Z');
   });
 });

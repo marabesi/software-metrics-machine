@@ -2,10 +2,10 @@ import { logger } from '@smmachine/utils';
 import * as fs from 'fs/promises';
 import * as path from 'path';
 import { Configuration, IRepository } from '../../infrastructure';
+import { TimeZoneProvider } from '../../infrastructure/timezone-provider';
 import { WorkflowJobJsonResponse, WorkflowJsonResponse } from './github-response-types';
 import { IGithubWorkflowJobClient } from './workflow-types';
 import { PipelineFiltersRepository } from '../../aggregates/pipeline-filters-repository';
-import { toISODateString } from './github-date-utils';
 
 interface JobsProgress {
   processedRunIds: string[];
@@ -16,13 +16,17 @@ interface JobsProgress {
 }
 
 export class PipelinesJobFetchRepository {
+  private tz: TimeZoneProvider;
+
   constructor(
     private configuration: Configuration,
     private githubWorkflowClient: IGithubWorkflowJobClient,
     private pipelineRunFileSystemRepository: IRepository<WorkflowJsonResponse>,
     private pipelineJobsFileSystemRepository: IRepository<WorkflowJobJsonResponse>,
     private pipelineFiltersRepository?: PipelineFiltersRepository
-  ) {}
+  ) {
+    this.tz = new TimeZoneProvider(configuration.timezone);
+  }
 
   async fetchJobs(filters: {
     forceRefresh?: boolean;
@@ -122,17 +126,17 @@ export class PipelinesJobFetchRepository {
     rawFilters?: string
   ): Promise<WorkflowJobJsonResponse[]> {
     const allJobs: WorkflowJobJsonResponse[] = [];
-    const current = new Date(toISODateString(startDate, 'start'));
-    const end = new Date(toISODateString(endDate, 'end'));
 
-    while (current <= end) {
-      const dayStart = new Date(current);
-      dayStart.setUTCHours(0, 0, 0, 0);
+    // For fetch, convert timezone-aware dates to UTC boundaries for the GitHub API.
+    const totalDays = this.countDays(startDate, endDate);
+    for (let i = 0; i < totalDays; i++) {
+      const dayDate = this.addDays(startDate, i);
+      const dayStart = this.tz.getStartOfDayBoundary(dayDate);
+      const dayEnd = this.tz.getEndOfDayBoundary(dayDate);
 
-      const dayEnd = new Date(current);
-      dayEnd.setUTCHours(23, 59, 59, 999);
-
-      logger.info(`Fetching jobs for day ${dayStart.toISOString().split('T')[0]}...`);
+      logger.info(
+        `Fetching jobs for day ${dayDate} (UTC: ${dayStart.toISOString()}...${dayEnd.toISOString()})...`
+      );
 
       const runsForDay = cachedRuns.filter((run) => {
         const createdAt = run.created_at;
@@ -152,11 +156,28 @@ export class PipelinesJobFetchRepository {
         const dayJobs = await this.fetchJobsWithResume(runsForDay, rawFilters);
         allJobs.push(...dayJobs);
       }
-
-      current.setUTCDate(current.getUTCDate() + 1);
     }
 
     return allJobs;
+  }
+
+  /**
+   * Count the number of days between two date strings (inclusive).
+   */
+  private countDays(startDate: string, endDate: string): number {
+    const start = new Date(startDate);
+    const end = new Date(endDate);
+    const diffMs = end.getTime() - start.getTime();
+    return Math.floor(diffMs / (1000 * 60 * 60 * 24)) + 1;
+  }
+
+  /**
+   * Add N days to a date string and return "YYYY-MM-DD".
+   */
+  private addDays(dateStr: string, days: number): string {
+    const d = new Date(dateStr);
+    d.setUTCDate(d.getUTCDate() + days);
+    return d.toISOString().split('T')[0];
   }
 
   private findLatestDate(dates: (string | undefined | null)[]): string {
@@ -354,13 +375,15 @@ export class PipelinesJobFetchRepository {
     }
 
     const isDateOnly = /^\d{4}-\d{2}-\d{2}$/.test(dateValue);
-    const normalizedDateValue = isDateOnly
-      ? boundary === 'start'
-        ? `${dateValue}T00:00:00.000Z`
-        : `${dateValue}T23:59:59.999Z`
-      : dateValue;
+    if (isDateOnly) {
+      const d =
+        boundary === 'start'
+          ? this.tz.getStartOfDayBoundary(dateValue)
+          : this.tz.getEndOfDayBoundary(dateValue);
+      return d;
+    }
 
-    const parsed = new Date(normalizedDateValue);
+    const parsed = new Date(dateValue);
     return Number.isNaN(parsed.getTime()) ? undefined : parsed;
   }
 }

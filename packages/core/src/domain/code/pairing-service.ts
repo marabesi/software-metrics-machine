@@ -1,5 +1,6 @@
 import { Logger, logger } from '@smmachine/utils';
 import { IRepository } from '../../infrastructure/repository';
+import { TimeZoneProvider } from '../../infrastructure/timezone-provider';
 import {
   Commit,
   PairingIndexResult,
@@ -25,8 +26,14 @@ export interface IPairingIndexService {
  */
 export class PairingService implements IPairingIndexService {
   private logger: Logger = logger;
+  private tz: TimeZoneProvider;
 
-  constructor(private commitRepository: IRepository<Commit>) {}
+  constructor(
+    private commitRepository: IRepository<Commit>,
+    timeZoneProvider?: TimeZoneProvider
+  ) {
+    this.tz = timeZoneProvider || new TimeZoneProvider('UTC');
+  }
 
   async getPairingIndex(options?: {
     selectedAuthors?: string[];
@@ -198,8 +205,8 @@ export class PairingService implements IPairingIndexService {
       return commits;
     }
 
-    const start = startDate ? new Date(startDate) : null;
-    const end = endDate ? new Date(endDate) : null;
+    const start = startDate ? this.tz.getStartOfDayBoundary(startDate) : null;
+    const end = endDate ? this.tz.getEndOfDayBoundary(endDate) : null;
 
     return commits.filter((commit) => {
       const commitDate = new Date(commit.timestamp);

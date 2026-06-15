@@ -29,6 +29,7 @@ import {
 } from '@smmachine/core';
 import PipelineFactory from '@smmachine/core/aggregates/pipeline-factory';
 import { PairingService } from '@smmachine/core/domain/code/pairing-service';
+import { TimeZoneProvider } from '@smmachine/core/infrastructure/timezone-provider';
 
 function buildDataDirectories(config: Configuration) {
   const baseDir = config.storeData || './outputs';
@@ -169,10 +170,11 @@ function buildDataDirectories(config: Configuration) {
     },
     {
       provide: PRsService,
-      useFactory: (pullRequestRepository: PullRequestsRepository) => {
-        return new PRsService(pullRequestRepository);
+      useFactory: (pullRequestRepository: PullRequestsRepository, config: Configuration) => {
+        const tz = new TimeZoneProvider(config.timezone);
+        return new PRsService(pullRequestRepository, tz);
       },
-      inject: [PullRequestsRepository],
+      inject: [PullRequestsRepository, Configuration],
     },
     {
       provide: SonarQubeService,

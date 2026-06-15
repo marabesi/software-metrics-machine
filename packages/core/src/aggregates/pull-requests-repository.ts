@@ -1,4 +1,5 @@
 import { FileSystemRepository } from '../infrastructure/repository';
+import { TimeZoneProvider } from '../infrastructure/timezone-provider';
 import { PRDetails, PRFilters } from '../domain/prs/pr-types';
 import {
   PullRequestCommentJsonResponse,
@@ -13,7 +14,8 @@ export interface IReadPullRequestsRepository {
 export class PullRequestsRepository implements IReadPullRequestsRepository {
   constructor(
     private cache: FileSystemRepository<PullRequestJsonResponse>,
-    private pullRequestCommentsStoreFile: FileSystemRepository<PullRequestCommentJsonResponse>
+    private pullRequestCommentsStoreFile: FileSystemRepository<PullRequestCommentJsonResponse>,
+    private timeZoneProvider: TimeZoneProvider = new TimeZoneProvider('UTC')
   ) {}
 
   async loadPrsWithFilters(filters?: PRFilters): Promise<PRDetails[]> {
@@ -23,8 +25,12 @@ export class PullRequestsRepository implements IReadPullRequestsRepository {
     let rawPrs = fromCache;
 
     if (filters) {
-      const start = filters.startDate ? new Date(filters.startDate) : null;
-      const end = filters.endDate ? new Date(filters.endDate) : null;
+      const start = filters.startDate
+        ? this.timeZoneProvider.getStartOfDayBoundary(filters.startDate)
+        : null;
+      const end = filters.endDate
+        ? this.timeZoneProvider.getEndOfDayBoundary(filters.endDate)
+        : null;
       const authorSet = filters.authors?.length
         ? new Set(filters.authors.map((a) => a.toLowerCase()))
         : null;

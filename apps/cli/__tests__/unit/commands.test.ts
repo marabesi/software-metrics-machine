@@ -251,6 +251,24 @@ describe('CLI Commands', () => {
       });
     });
 
+    describe('Fetch Commits Command', () => {
+      it('should have --buffer option on fetch-commits', () => {
+        const codeCmd = program.commands.find((cmd) => cmd.name() === 'code');
+        const fetchCmd = codeCmd?.commands.find((cmd) => cmd.name() === 'fetch-commits');
+        const bufferOption = fetchCmd?.options.find((opt) => opt.long === '--buffer');
+
+        expect(bufferOption).toBeDefined();
+      });
+
+      it('should have default buffer value of 100', () => {
+        const codeCmd = program.commands.find((cmd) => cmd.name() === 'code');
+        const fetchCmd = codeCmd?.commands.find((cmd) => cmd.name() === 'fetch-commits');
+        const bufferOption = fetchCmd?.options.find((opt) => opt.long === '--buffer');
+
+        expect(bufferOption?.defaultValue).toBe('100');
+      });
+    });
+
     describe('SonarQube Analysis Command', () => {
       it('should register sonarqube analysis run command', () => {
         const sonarqubeCmd = program.commands.find((cmd) => cmd.name() === 'sonarqube');

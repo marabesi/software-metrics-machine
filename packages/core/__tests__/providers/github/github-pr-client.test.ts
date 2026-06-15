@@ -163,6 +163,43 @@ describe('GithubPrsClient rate limit integration', () => {
     });
   });
 
+  describe('fetchPRs sort order', () => {
+    function makePR(id: string, createdAt: string): Record<string, string> {
+      return { id, number: id, created_at: createdAt, updated_at: createdAt, state: 'open' };
+    }
+
+    it('should sort by created DESC (newest first) by default', async () => {
+      mockGet.mockResolvedValue({ data: [], headers: {} });
+
+      const client = new GithubPrsClient('token', 'owner', 'repo', rateLimitManager as any);
+      await client.fetchPRs();
+
+      const callParams = mockGet.mock.calls[0][1]?.params;
+      expect(callParams.sort).toBe('created');
+      expect(callParams.direction).toBe('desc');
+    });
+
+    it('should include PRs with created_at >= startDate and stop when older', async () => {
+      mockGet
+        .mockResolvedValueOnce({
+          data: [makePR('4', '2026-06-20T12:00:00Z'), makePR('3', '2026-06-15T12:00:00Z')],
+          headers: {},
+        })
+        .mockResolvedValueOnce({
+          data: [makePR('2', '2026-06-10T12:00:00Z'), makePR('1', '2026-06-05T12:00:00Z')],
+          headers: {},
+        });
+
+      const client = new GithubPrsClient('token', 'owner', 'repo', rateLimitManager as any);
+      const prs = await client.fetchPRs({ startDate: '2026-06-12T00:00:00Z' });
+
+      // Only PRs created on or after startDate
+      expect(prs).toHaveLength(2);
+      expect(prs[0].id).toBe('4');
+      expect(prs[1].id).toBe('3');
+    });
+  });
+
   describe('fetchPRComments', () => {
     it('should call waitIfNeeded before making a request', async () => {
       mockGet.mockResolvedValue({ data: [], headers: {} });

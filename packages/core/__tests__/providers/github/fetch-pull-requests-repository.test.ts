@@ -62,6 +62,57 @@ function createPullRequest(
 }
 
 describe('GitHubPullRequestsFetchRepository', () => {
+  it('should perform incremental update fetching PRs created since latest cached update', async () => {
+    const providerDir = await fs.mkdtemp(path.join(os.tmpdir(), 'smm-pr-incr-'));
+    const cachedPrs = [
+      createPullRequest({
+        id: '1',
+        created_at: '2026-05-01T00:00:00Z',
+        updated_at: '2026-05-10T00:00:00Z',
+      }),
+      createPullRequest({
+        id: '2',
+        created_at: '2026-05-05T00:00:00Z',
+        updated_at: '2026-05-15T00:00:00Z',
+      }),
+    ];
+
+    // Pre-populate cache
+    await fs.writeFile(path.join(providerDir, 'prs.json'), JSON.stringify(cachedPrs));
+
+    const newPrs = [
+      createPullRequest({
+        id: '3',
+        created_at: '2026-05-20T00:00:00Z',
+        updated_at: '2026-05-20T00:00:00Z',
+      }),
+    ];
+
+    const fetchPRs = vi.fn().mockResolvedValue(newPrs);
+    const githubPrsClient: IGithubPrsClient = {
+      fetchPRs,
+      fetchPRComments: vi.fn(),
+    };
+    const config = {
+      getPathFromGitProvider: () => providerDir,
+    };
+
+    const repository = new GitHubPullRequestsFetchRepository(githubPrsClient, config as never);
+
+    const result = await repository.fetchPRs({ incrementalUpdate: true });
+
+    // startDate is the latest updated_at from cache (2026-05-15)
+    expect(fetchPRs).toHaveBeenCalledWith({
+      startDate: '2026-05-15T00:00:00.000Z',
+      endDate: undefined,
+    });
+
+    // Merged result includes cached + new PRs (3 total)
+    expect(result).toHaveLength(3);
+    const ids = result.map((pr) => pr.id).sort();
+    expect(ids).toEqual(['1', '2', '3']);
+  });
+
   it('creates pull request filter options after fetching pull requests', async () => {
     const providerDir = await fs.mkdtemp(path.join(os.tmpdir(), 'smm-pr-filters-'));
     const githubPrsClient: IGithubPrsClient = {

@@ -12,6 +12,7 @@ export class GitFetchRepository {
     startDate?: string;
     endDate?: string;
     forceRefresh?: boolean;
+    maxBuffer?: number;
   }): Promise<Commit[]> {
     const fromCache = await this.commitCache.loadAll();
 
@@ -24,6 +25,7 @@ export class GitFetchRepository {
     const result = await this.commitTraverser.traverseCommits({
       startDate: options?.startDate,
       endDate: options?.endDate,
+      maxBuffer: options?.maxBuffer,
     });
 
     await this.commitCache.saveAll(result.commits);

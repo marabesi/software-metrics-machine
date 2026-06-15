@@ -60,7 +60,7 @@ export class GithubPrsClient implements IGithubPrsClient {
     const allPRs: PullRequestJsonResponse[] = [];
 
     try {
-      // Fetch all PRs with pagination
+      // Fetch all PRs with pagination (newest first by created_at)
       while (true) {
         this.logger.info(
           `Fetching PRs page ${page} for ${this.owner}/${this.repo} (state: ${state})`
@@ -72,7 +72,7 @@ export class GithubPrsClient implements IGithubPrsClient {
             params: {
               state,
               sort: 'created',
-              direction: 'asc',
+              direction: 'desc',
               per_page,
               page,
             },
@@ -89,9 +89,8 @@ export class GithubPrsClient implements IGithubPrsClient {
         for (const pr of prs) {
           const prDetail: PullRequestJsonResponse = { ...pr };
 
-          // Filter by date if provided
           if (options?.startDate && new Date(pr.created_at) < new Date(options.startDate)) {
-            break; // Stop pagination if we've gone past startDate
+            break;
           }
 
           if (!options?.endDate || new Date(pr.created_at) <= new Date(options.endDate)) {

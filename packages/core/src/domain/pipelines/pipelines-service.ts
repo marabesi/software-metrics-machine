@@ -8,6 +8,7 @@ import {
 } from './pipeline-types';
 import { IPipelinesRepository } from '../../aggregates/pipelines-repository';
 import { Configuration } from '../..';
+import { TimeZoneProvider } from '../../infrastructure/timezone-provider';
 
 type PipelineDateFields = {
   createdAt?: string;
@@ -83,11 +84,14 @@ export interface DeploymentFrequencyRow {
 
 export class PipelinesService implements IPipelinesService {
   private logger: Logger = logger;
+  private tz: TimeZoneProvider;
 
   constructor(
     private pipelineRepository: IPipelinesRepository,
     private configuration?: Configuration
-  ) {}
+  ) {
+    this.tz = new TimeZoneProvider(configuration?.timezone);
+  }
 
   filterRunsByDateRange<T extends PipelineDateFields>(
     runs: T[],
@@ -150,15 +154,7 @@ export class PipelinesService implements IPipelinesService {
   }
 
   getPeriodKey(dateString: string | undefined, interval: 'day' | 'week' | 'month'): string {
-    if (!dateString) {
-      return 'unknown';
-    }
-
-    if (interval === 'day') {
-      return dateString.split('T')[0];
-    }
-
-    return this.getIntervalKey(new Date(dateString), interval);
+    return this.tz.getIntervalKey(dateString, interval);
   }
 
   /**
@@ -566,7 +562,7 @@ export class PipelinesService implements IPipelinesService {
   }
 
   private toDayKey(dateString: string): string {
-    return dateString ? dateString.split('T')[0] : 'unknown';
+    return this.tz.getDateKey(dateString);
   }
 
   private getDeploymentFrequencyTargets(): DeploymentFrequencyTarget[] {
@@ -657,10 +653,16 @@ export class PipelinesService implements IPipelinesService {
   }
 
   private toDateBoundaryTimestamp(value: string, boundary: 'start' | 'end'): number {
-    const normalizedValue =
-      boundary === 'end' && /^\d{4}-\d{2}-\d{2}$/.test(value) ? `${value}T23:59:59.999Z` : value;
+    const isDateOnly = /^\d{4}-\d{2}-\d{2}$/.test(value);
+    if (isDateOnly) {
+      const d =
+        boundary === 'end'
+          ? this.tz.getEndOfDayBoundary(value)
+          : this.tz.getStartOfDayBoundary(value);
+      return d.getTime();
+    }
 
-    return this.toTimestamp(normalizedValue);
+    return this.toTimestamp(value);
   }
 
   private sortRunsByMetricDate<T extends PipelineDateFields>(
@@ -716,28 +718,11 @@ export class PipelinesService implements IPipelinesService {
 
   private getIntervalKey(date: Date, interval: 'day' | 'week' | 'month'): string {
     if (interval === 'day') {
-      const year = date.getFullYear();
-      const month = String(date.getMonth() + 1).padStart(2, '0');
-      const day = String(date.getDate()).padStart(2, '0');
-      return `${year}-${month}-${day}`;
+      return this.tz.getDateKey(date);
     } else if (interval === 'week') {
-      // ISO week
-      const temp = new Date(date);
-      const dayOfWeek = temp.getUTCDay();
-      const diff = temp.getUTCDate() - dayOfWeek + (dayOfWeek === 0 ? -6 : 1);
-      const firstDay = new Date(temp.setUTCDate(diff));
-
-      const week = Math.ceil(
-        (firstDay.getTime() - new Date(firstDay.getUTCFullYear(), 0, 1).getTime()) / 604800000
-      );
-      const year = firstDay.getUTCFullYear();
-
-      return `${year}-W${String(week).padStart(2, '0')}`;
+      return this.tz.getWeekKey(date);
     } else {
-      // Month
-      const year = date.getFullYear();
-      const month = String(date.getMonth() + 1).padStart(2, '0');
-      return `${year}-${month}`;
+      return this.tz.getMonthKey(date);
     }
   }
 

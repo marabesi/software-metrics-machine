@@ -1,5 +1,6 @@
 import { Command } from 'commander';
 import { Configuration } from '@smmachine/core/infrastructure/configuration';
+import { TimeZoneProvider } from '@smmachine/core/infrastructure/timezone-provider';
 import { Logger } from '@smmachine/utils';
 import {
   CommentAuthor,
@@ -36,8 +37,9 @@ function createPRsOrchestratorFetch(): GitHubPullRequestsFetchRepository {
 }
 
 function createPRService(): PRsService {
+  const config = new Configuration(process.env);
   const prRepository = createPRsOrchestratorRead();
-  return new PRsService(prRepository);
+  return new PRsService(prRepository, new TimeZoneProvider(config.timezone));
 }
 
 function parseCsvList(value?: string): string[] {
