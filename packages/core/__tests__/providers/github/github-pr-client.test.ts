@@ -8,7 +8,7 @@ import {
   GitHubPullRequestsFetchRepository,
   type IGithubPrsClient,
 } from '../../../src';
-import { PullRequestJsonResponseBuilder } from '../../builders/builders';
+import { PullRequestJsonResponseBuilder } from '../../../src/test/builders';
 
 // ---------------------------------------------------------------------------
 // Helpers

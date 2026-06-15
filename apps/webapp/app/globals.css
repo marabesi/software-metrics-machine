@@ -20,3 +20,49 @@
     z-index: 1000 !important;
   }
 }
+
+@media print {
+  html {
+    color-scheme: light;
+  }
+
+  body {
+    background: white !important;
+    color: black !important;
+  }
+
+  nav,
+  header,
+  footer,
+  .MuiDrawer-root,
+  .MuiAppBar-root,
+  .MuiButton-root,
+  .MuiIconButton-root,
+  .MuiTabs-root,
+  .recharts-tooltip-wrapper,
+  .no-print {
+    display: none !important;
+  }
+
+  main {
+    margin: 0 !important;
+    padding: 16px !important;
+    width: 100% !important;
+  }
+
+  .MuiCard-root,
+  .MuiPaper-root {
+    break-inside: avoid;
+    box-shadow: none !important;
+    border: 1px solid #ccc !important;
+    margin-bottom: 16px !important;
+  }
+
+  .recharts-responsive-container > div {
+    overflow: visible !important;
+  }
+
+  .recharts-surface {
+    overflow: visible;
+  }
+}

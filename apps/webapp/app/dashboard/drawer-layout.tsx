@@ -11,6 +11,7 @@ import Divider from '@mui/material/Divider';
 import IconButton from '@mui/material/IconButton';
 import MenuIcon from '@mui/icons-material/Menu';
 import GitHubIcon from '@mui/icons-material/GitHub';
+import Print from '@mui/icons-material/Print';
 import ChevronLeftIcon from '@mui/icons-material/ChevronLeft';
 import ChevronRightIcon from '@mui/icons-material/ChevronRight';
 import FiltersContainer from '@/components/filters/FiltersContainer';
@@ -103,6 +104,16 @@ export default function DrawerLayout({
               Software Metrics Machine {repository && `- ${repository}`}
             </Typography>
             <ThemeToggle />
+            <IconButton
+              color="inherit"
+              aria-label="print page"
+              onClick={() => window.print()}
+              edge="end"
+              sx={{ ml: 1 }}
+              className="no-print"
+            >
+              <Print />
+            </IconButton>
             <IconButton
               color="inherit"
               aria-label="open repository in github"

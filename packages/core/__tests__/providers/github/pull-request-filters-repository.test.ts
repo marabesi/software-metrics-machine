@@ -8,7 +8,7 @@ import { InMemoryRepository } from '../../../src/test/in-memory-repository';
 import {
   PullRequestJsonResponseBuilder,
   PullRequestCommentJsonResponseBuilder,
-} from '../../builders/builders';
+} from '../../../src/test/builders';
 
 describe('PullRequestFiltersRepository', () => {
   it('loads distinct filter options from cached pull requests', async () => {

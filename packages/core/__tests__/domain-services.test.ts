@@ -9,7 +9,7 @@ import {
   RepositoryBuilder,
   ReadPullRequestsRepositoryBuilder,
   PipelinesRepositoryBuilder,
-} from './builders/builders';
+} from '../src/test/builders';
 import { IRepository } from '../src';
 import { IReadPullRequestsRepository } from '../src/aggregates/pull-requests-repository';
 import { IPipelinesRepository } from '../src/aggregates/pipelines-repository';

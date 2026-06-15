@@ -1,17 +1,17 @@
-import { Commit, PullRequest, PipelineRun, CodeChange } from '../../src/domain-types';
-import type { IReadPullRequestsRepository } from '../../src';
+import { Commit, PullRequest, PipelineRun, CodeChange } from '../domain-types';
+import type { IReadPullRequestsRepository } from '../index';
 import type {
   IPipelinesRepository,
   LoadPipelinesOptions,
-} from '../../src/aggregates/pipelines-repository';
-import type { IRepository } from '../../src';
-import type { PRDetails, PRFilters } from '../../src';
+} from '../aggregates/pipelines-repository';
+import type { IRepository } from '../index';
+import type { PRDetails, PRFilters } from '../index';
 import {
   PullRequestJsonResponse,
   PullRequestCommentJsonResponse,
   PullRequestLabelJsonResponse,
-} from '../../src/providers/github/github-response-types';
-import type { Configuration } from '../../src/infrastructure/configuration';
+} from '../providers/github/github-response-types';
+import type { Configuration } from '../infrastructure/configuration';
 
 /**
  * Builder for creating mock Commit objects

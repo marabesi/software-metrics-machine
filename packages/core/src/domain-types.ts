@@ -116,6 +116,7 @@ export interface PRDetails {
  */
 export interface PipelineJob {
   id: string;
+  runId: string;
   name: string;
   startedAt: string; // ISO format
   completedAt?: string;

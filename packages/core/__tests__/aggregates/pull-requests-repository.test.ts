@@ -3,7 +3,7 @@ import { PullRequestsRepository } from '../../src/aggregates/pull-requests-repos
 import {
   PullRequestJsonResponseBuilder,
   PullRequestCommentJsonResponseBuilder,
-} from '../builders/builders';
+} from '../../src/test/builders';
 
 describe('PullRequestsRepository filters', () => {
   it('excludes PR authors from loaded results', async () => {
