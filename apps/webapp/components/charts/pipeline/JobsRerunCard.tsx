@@ -60,12 +60,18 @@ export default function JobsRerunCard({ data, dataByDay }: JobsRerunCardProps) {
 
         {/* Jobs Table */}
         <div>
-          <h3 className="text-sm font-medium mb-3 text-gray-700">Reruns by Job</h3>
+          <div className="flex items-baseline gap-2 mb-3">
+            <h3 className="text-sm font-medium text-gray-700">Jobs Summary</h3>
+            <span className="text-xs text-gray-400">Failure rate = (failed / total runs) × 100</span>
+          </div>
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
               <thead>
                 <tr className="border-b">
                   <th className="text-left p-2">Job</th>
+                  <th className="text-right p-2">Total Runs</th>
+                  <th className="text-right p-2">Success Rate</th>
+                  <th className="text-right p-2">Failure Rate</th>
                   <th className="text-right p-2">Reruns</th>
                 </tr>
               </thead>
@@ -73,6 +79,9 @@ export default function JobsRerunCard({ data, dataByDay }: JobsRerunCardProps) {
                 {Array.isArray(data) && data.map((item, idx) => (
                   <tr key={`job-rerun-${idx}`} className="border-b hover:bg-gray-50">
                     <td className="p-2 text-gray-800">{item.job_name || 'Unknown'}</td>
+                    <td className="p-2 text-right">{item.total_runs || 0}</td>
+                    <td className="p-2 text-right text-green-600">{(item.success_rate || 0).toFixed(1)}%</td>
+                    <td className="p-2 text-right text-red-600">{(item.failure_rate || 0).toFixed(1)}%</td>
                     <td className="p-2 text-right font-medium text-red-600">{item.rerun_count || 0}</td>
                   </tr>
                 ))}

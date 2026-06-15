@@ -142,6 +142,7 @@ export class PipelinesController {
         success_count: item.successCount,
         failure_count: item.failureCount,
         success_rate: item.successRate,
+        failure_rate: item.failureRate,
         rerun_count: item.rerunCount,
       })),
     };

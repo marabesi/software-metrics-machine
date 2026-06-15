@@ -172,6 +172,7 @@ export default async function PipelinesPage({
           success_count: item.success_count || 0,
           failure_count: item.failure_count || 0,
           success_rate: item.success_rate || 0,
+          failure_rate: item.failure_rate || 0,
           rerun_count: item.rerun_count || 0,
         }))
       : [];

@@ -78,6 +78,7 @@ export interface JobMetrics {
   successCount: number;
   failureCount: number;
   successRate: number;
+  failureRate: number;
   rerunCount: number;
   cancelledCount: number;
   skippedCount: number;

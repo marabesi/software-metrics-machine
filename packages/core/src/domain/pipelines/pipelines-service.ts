@@ -358,6 +358,7 @@ export class PipelinesService implements IPipelinesService {
             successCount: 0,
             failureCount: 0,
             successRate: 0,
+            failureRate: 0,
             rerunCount: 0,
             actionRequiredCount: 0,
             cancelledCount: 0,
@@ -413,6 +414,11 @@ export class PipelinesService implements IPipelinesService {
       metrics.successRate =
         metrics.totalRuns > 0
           ? Math.round((metrics.successCount / metrics.totalRuns) * 10000) / 100
+          : 0;
+
+      metrics.failureRate =
+        metrics.totalRuns > 0
+          ? Math.round((metrics.failureCount / metrics.totalRuns) * 10000) / 100
           : 0;
 
       result.push(metrics);

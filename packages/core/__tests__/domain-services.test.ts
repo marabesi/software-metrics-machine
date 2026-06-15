@@ -300,6 +300,8 @@ describe('PipelinesService', () => {
       expect(job.totalRuns).toBeGreaterThanOrEqual(0);
       expect(job.successRate).toBeGreaterThanOrEqual(0);
       expect(job.successRate).toBeLessThanOrEqual(100);
+      expect(job.failureRate).toBeGreaterThanOrEqual(0);
+      expect(job.failureRate).toBeLessThanOrEqual(100);
     }
   });
 

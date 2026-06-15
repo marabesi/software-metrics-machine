@@ -20,7 +20,12 @@ interface PullRequestMetrics {
 interface DeploymentMetrics {
   deploymentFrequency?: Array<{ date: string; value: number }>;
   pipelineMetrics?: { totalRuns?: number; successRate?: number };
-  jobMetrics?: Array<{ jobName: string; avgDuration: number; successRate?: number }>;
+  jobMetrics?: Array<{
+    jobName: string;
+    avgDuration: number;
+    successRate?: number;
+    failureRate?: number;
+  }>;
 }
 
 interface CodeMetrics {
@@ -139,6 +144,9 @@ export function formatDeploymentMetrics(
       output += `    - Avg Duration: ${job.avgDuration}s\n`;
       if (job.successRate !== undefined) {
         output += `    - Success Rate: ${(job.successRate * 100).toFixed(1)}%\n`;
+      }
+      if (job.failureRate !== undefined) {
+        output += `    - Failure Rate: ${(job.failureRate * 100).toFixed(1)}%\n`;
       }
     }
   }

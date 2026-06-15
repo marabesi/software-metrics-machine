@@ -179,6 +179,7 @@ export interface PipelineJobsSummaryResponse {
     success_count: number;
     failure_count: number;
     success_rate: number;
+    failure_rate: number;
     rerun_count: number;
   }>;
 }

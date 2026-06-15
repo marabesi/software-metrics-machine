@@ -76,6 +76,7 @@ export interface JobSummaryResponseItem {
   success_count?: number;
   failure_count?: number;
   success_rate?: number;
+  failure_rate?: number;
   rerun_count?: number;
 }
 
@@ -86,6 +87,7 @@ export interface JobSummaryData {
   success_count: number;
   failure_count: number;
   success_rate: number;
+  failure_rate: number;
   rerun_count: number;
 }
 

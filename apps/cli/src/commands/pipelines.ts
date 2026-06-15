@@ -251,7 +251,8 @@ export function createPipelinesCommands(program: Command): void {
             console.log(`Job name: ${item.jobName}`);
             console.log(`Total Jobs: ${item.totalRuns}`);
             console.log(`Reruns: ${item.rerunCount}`);
-            console.log(`Success rate: ${item.successRate}`);
+            console.log(`Success rate: ${item.successRate}%`);
+            console.log(`Failure rate: ${item.failureRate}%`);
             console.log(`Average Duration Minutes: ${item.averageDurationMinutes}`);
             console.log(`Failure count: ${item.failureCount}`);
             console.log('\n\n');
@@ -359,8 +360,8 @@ export function createPipelinesCommands(program: Command): void {
           metrics.forEach((item) => {
             console.log('\n=== Jobs by Status ===\n');
             console.log(`Name: ${item.jobName}`);
-            console.log(`✅ Successful: ${item.successCount}, success rate: ${item.successCount}`);
-            console.log(`❌ Failed: ${item.failureCount}`);
+            console.log(`✅ Successful: ${item.successCount}, success rate: ${item.successRate}%`);
+            console.log(`❌ Failed: ${item.failureCount}, failure rate: ${item.failureRate}%`);
             console.log(`Average duration in minutes: ${item.averageDurationMinutes}`);
           });
         }

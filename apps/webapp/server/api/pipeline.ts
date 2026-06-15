@@ -21,6 +21,7 @@ export const pipelineAPI = {
       success_count: number;
       failure_count: number;
       success_rate: number;
+      failure_rate: number;
       rerun_count: number;
     }>>('/pipelines/jobs-summary', params),
 
