@@ -1,6 +1,7 @@
 'use client';
 
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { SortableTable } from '@/components/ui/sortable-table';
 import { SonarqubeComponentChartData } from './types';
 import { useLinkBuilder } from '@/components/providers/LinkBuilderContext';
 import { TargetInfo } from '@/components/charts/TargetInfo';
@@ -11,6 +12,65 @@ export default function SonarqubeComponentTreeTableCard({
   data: SonarqubeComponentChartData[];
 }) {
   const { urlBuilder } = useLinkBuilder();
+
+  const columns = [
+    {
+      key: 'name',
+      label: 'Component',
+      renderCell: (item: SonarqubeComponentChartData) => (
+        <a
+          href={urlBuilder.getSonarqubeComponentUrl(item.key)}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="text-blue-600 hover:text-blue-800 hover:underline font-mono text-xs"
+        >
+          {item.name || item.key}
+        </a>
+      ),
+    },
+    {
+      key: 'complexity',
+      label: 'Complexity',
+      align: 'right' as const,
+      renderCell: (item: SonarqubeComponentChartData) => (
+        <a
+          href={urlBuilder.getSonarqubeComponentMeasuresUrl(item.key, 'complexity')}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="text-blue-600 hover:text-blue-800 hover:underline"
+        >
+          {item.complexity.toFixed(0)}
+        </a>
+      ),
+    },
+    {
+      key: 'cognitiveComplexity',
+      label: 'Cognitive',
+      align: 'right' as const,
+      renderCell: (item: SonarqubeComponentChartData) => (
+        <a
+          href={urlBuilder.getSonarqubeComponentMeasuresUrl(item.key, 'cognitive_complexity')}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="text-blue-600 hover:text-blue-800 hover:underline"
+        >
+          {item.cognitiveComplexity.toFixed(0)}
+        </a>
+      ),
+    },
+    {
+      key: 'ncloc',
+      label: 'NLOC',
+      align: 'right' as const,
+      renderCell: (item: SonarqubeComponentChartData) => item.ncloc.toFixed(0),
+    },
+    {
+      key: 'coverage',
+      label: 'Coverage',
+      align: 'right' as const,
+      renderCell: (item: SonarqubeComponentChartData) => `${item.coverage.toFixed(1)}%`,
+    },
+  ];
 
   return (
     <Card>
@@ -25,57 +85,12 @@ export default function SonarqubeComponentTreeTableCard({
         </p>
       </CardHeader>
       <CardContent>
-        <div className="overflow-x-auto">
-          <table className="w-full text-sm">
-            <thead>
-              <tr className="border-b">
-                <th className="text-left p-2">Component</th>
-                <th className="text-right p-2">Complexity</th>
-                <th className="text-right p-2">Cognitive</th>
-                <th className="text-right p-2">NLOC</th>
-                <th className="text-right p-2">Coverage</th>
-              </tr>
-            </thead>
-            <tbody>
-              {data.map((item, idx) => (
-                <tr key={`sq-component-${item.key}-${idx}`} className="border-b hover:bg-gray-50">
-                  <td className="p-2 font-mono text-xs">
-                    <a
-                      href={urlBuilder.getSonarqubeComponentUrl(item.key)}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="text-blue-600 hover:text-blue-800 hover:underline"
-                    >
-                      {item.name || item.key}
-                    </a>
-                  </td>
-                  <td className="p-2 text-right">
-                    <a
-                      href={urlBuilder.getSonarqubeComponentMeasuresUrl(item.key, 'complexity')}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="text-blue-600 hover:text-blue-800 hover:underline"
-                    >
-                      {item.complexity.toFixed(0)}
-                    </a>
-                  </td>
-                  <td className="p-2 text-right">
-                    <a
-                      href={urlBuilder.getSonarqubeComponentMeasuresUrl(item.key, 'cognitive_complexity')}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="text-blue-600 hover:text-blue-800 hover:underline"
-                    >
-                      {item.cognitiveComplexity.toFixed(0)}
-                    </a>
-                  </td>
-                  <td className="p-2 text-right">{item.ncloc.toFixed(0)}</td>
-                  <td className="p-2 text-right">{item.coverage.toFixed(1)}%</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
+        <SortableTable
+          columns={columns}
+          rows={data}
+          getRowKey={(item) => item.key}
+          defaultSort={{ key: 'complexity', direction: 'desc' }}
+        />
       </CardContent>
     </Card>
   );

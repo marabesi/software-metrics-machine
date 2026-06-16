@@ -9,6 +9,7 @@ import EntityOwnershipCard from '@/components/charts/source-code/EntityOwnership
 import CodeCouplingCard from '@/components/charts/source-code/CodeCouplingCard';
 import EntityEffortTreemap from '@/components/entity-effort-treemap';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { SortableTable } from '@/components/ui/sortable-table';
 import {
   CodeChurnData,
   CouplingData,
@@ -114,28 +115,24 @@ export default async function SourceCodePage({
             {topPairings.length === 0 ? (
               <p className="text-sm text-gray-500">No paired commits found for the selected filters.</p>
             ) : (
-              <div className="overflow-x-auto">
-                <table className="w-full text-sm">
-                  <thead>
-                    <tr className="border-b">
-                      <th className="text-left p-2">Pair</th>
-                      <th className="text-right p-2">Paired Commits</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {topPairings.map((pair) => (
-                      <tr key={`${pair.author}-${pair.co_author}`} className="border-b hover:bg-gray-50">
-                        <td className="p-2">{pair.author} + {pair.co_author}</td>
-                        <td className="p-2 text-right">
-                          <span className="px-2 py-1 rounded bg-blue-100 text-blue-800">
-                            {pair.paired_commits}
-                          </span>
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
+              <SortableTable
+                columns={[
+                  { key: 'author', label: 'Pair', renderCell: (pair) => `${pair.author} + ${pair.co_author}` },
+                  {
+                    key: 'paired_commits',
+                    label: 'Paired Commits',
+                    align: 'right' as const,
+                    renderCell: (pair) => (
+                      <span className="px-2 py-1 rounded bg-blue-100 text-blue-800">
+                        {pair.paired_commits}
+                      </span>
+                    ),
+                  },
+                ]}
+                rows={topPairings}
+                getRowKey={(pair) => `${pair.author}-${pair.co_author}`}
+                defaultSort={{ key: 'paired_commits', direction: 'desc' }}
+              />
             )}
           </CardContent>
         </Card>

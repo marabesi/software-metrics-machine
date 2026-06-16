@@ -1,6 +1,7 @@
 'use client';
 
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { SortableTable } from '@/components/ui/sortable-table';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
 import { JobSummaryData, JobRerunsByDayData } from './types';
 import { TargetInfo } from '@/components/charts/TargetInfo';
@@ -12,6 +13,35 @@ interface JobsRerunCardProps {
 
 export default function JobsRerunCard({ data, dataByDay }: JobsRerunCardProps) {
   const totalByDayReruns = dataByDay.reduce((sum, item) => sum + (item.rerun_count || 0), 0);
+
+  const columns = [
+    { key: 'job_name', label: 'Job' },
+    { key: 'total_runs', label: 'Total Runs', align: 'right' as const },
+    {
+      key: 'success_rate',
+      label: 'Success Rate',
+      align: 'right' as const,
+      renderCell: (item: JobSummaryData) => (
+        <span className="text-green-600">{(item.success_rate || 0).toFixed(1)}%</span>
+      ),
+    },
+    {
+      key: 'failure_rate',
+      label: 'Failure Rate',
+      align: 'right' as const,
+      renderCell: (item: JobSummaryData) => (
+        <span className="text-red-600">{(item.failure_rate || 0).toFixed(1)}%</span>
+      ),
+    },
+    {
+      key: 'rerun_count',
+      label: 'Reruns',
+      align: 'right' as const,
+      renderCell: (item: JobSummaryData) => (
+        <span className="font-medium text-red-600">{item.rerun_count || 0}</span>
+      ),
+    },
+  ];
 
   return (
     <Card>
@@ -64,30 +94,12 @@ export default function JobsRerunCard({ data, dataByDay }: JobsRerunCardProps) {
             <h3 className="text-sm font-medium text-gray-700">Jobs Summary</h3>
             <span className="text-xs text-gray-400">Failure rate = (failed / total runs) × 100</span>
           </div>
-          <div className="overflow-x-auto">
-            <table className="w-full text-sm">
-              <thead>
-                <tr className="border-b">
-                  <th className="text-left p-2">Job</th>
-                  <th className="text-right p-2">Total Runs</th>
-                  <th className="text-right p-2">Success Rate</th>
-                  <th className="text-right p-2">Failure Rate</th>
-                  <th className="text-right p-2">Reruns</th>
-                </tr>
-              </thead>
-              <tbody>
-                {Array.isArray(data) && data.map((item, idx) => (
-                  <tr key={`job-rerun-${idx}`} className="border-b hover:bg-gray-50">
-                    <td className="p-2 text-gray-800">{item.job_name || 'Unknown'}</td>
-                    <td className="p-2 text-right">{item.total_runs || 0}</td>
-                    <td className="p-2 text-right text-green-600">{(item.success_rate || 0).toFixed(1)}%</td>
-                    <td className="p-2 text-right text-red-600">{(item.failure_rate || 0).toFixed(1)}%</td>
-                    <td className="p-2 text-right font-medium text-red-600">{item.rerun_count || 0}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+          <SortableTable
+            columns={columns}
+            rows={Array.isArray(data) ? data : []}
+            getRowKey={(item) => item.job_name || 'unknown'}
+            defaultSort={{ key: 'rerun_count', direction: 'desc' }}
+          />
         </div>
       </CardContent>
     </Card>

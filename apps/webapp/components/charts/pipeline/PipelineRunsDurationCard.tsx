@@ -4,6 +4,7 @@ import { useCallback, useMemo, useState } from 'react';
 import Box from '@mui/material/Box';
 import { Tab, Tabs } from '@mui/material';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { SortableTable } from '@/components/ui/sortable-table';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, Scatter, ComposedChart } from 'recharts';
 import { ensureArray } from '@/server/utils/chartData';
 import { JobsDurationByWorkflowItem, RunsByDayData, RunsDurationData } from './types';
@@ -181,35 +182,51 @@ export default function PipelineRunsDurationCard({
               </ComposedChart>
             </ResponsiveContainer>
             <div className="mt-6 overflow-x-auto">
-              <table className="w-full text-sm">
-                <thead>
-                  <tr className="border-b">
-                    <th className="text-left p-2">Workflow</th>
-                    <th className="text-right p-2">Average</th>
-                    <th className="text-right p-2">Minimum</th>
-                    <th className="text-right p-2">Maximum</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {durationRangeData.map((item, idx) => (
-                    <tr key={`workflow-${idx}`} className="border-b hover:bg-gray-50">
-                      <td className="p-2">
-                        <a
-                          href={urlBuilder.getPipelinesUrl({ workflow: item.workflow })}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="text-blue-600 hover:text-blue-800 hover:underline"
-                        >
-                          {item.workflow}
-                        </a>
-                      </td>
-                      <td className="p-2 text-right tabular-nums">{formatDurationMinutes(item.avg)}</td>
-                      <td className="p-2 text-right tabular-nums">{formatDurationMinutes(item.min)}</td>
-                      <td className="p-2 text-right tabular-nums">{formatDurationMinutes(item.max)}</td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
+              <SortableTable
+                columns={[
+                  {
+                    key: 'workflow',
+                    label: 'Workflow',
+                    renderCell: (item: (typeof durationRangeData)[number]) => (
+                      <a
+                        href={urlBuilder.getPipelinesUrl({ workflow: item.workflow })}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-blue-600 hover:text-blue-800 hover:underline"
+                      >
+                        {item.workflow}
+                      </a>
+                    ),
+                  },
+                  {
+                    key: 'avg',
+                    label: 'Average',
+                    align: 'right' as const,
+                    renderCell: (item: (typeof durationRangeData)[number]) => (
+                      <span className="tabular-nums">{formatDurationMinutes(item.avg)}</span>
+                    ),
+                  },
+                  {
+                    key: 'min',
+                    label: 'Minimum',
+                    align: 'right' as const,
+                    renderCell: (item: (typeof durationRangeData)[number]) => (
+                      <span className="tabular-nums">{formatDurationMinutes(item.min)}</span>
+                    ),
+                  },
+                  {
+                    key: 'max',
+                    label: 'Maximum',
+                    align: 'right' as const,
+                    renderCell: (item: (typeof durationRangeData)[number]) => (
+                      <span className="tabular-nums">{formatDurationMinutes(item.max)}</span>
+                    ),
+                  },
+                ]}
+                rows={durationRangeData}
+                getRowKey={(item) => item.workflow}
+                defaultSort={{ key: 'avg', direction: 'desc' }}
+              />
             </div>
           </>
         )}

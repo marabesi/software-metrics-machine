@@ -2,6 +2,7 @@
 
 import { useCallback, useMemo, useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { SortableTable } from '@/components/ui/sortable-table';
 import { BarChart, Bar, XAxis, YAxis, Tooltip, Legend, ResponsiveContainer, CartesianGrid } from 'recharts';
 import { JobStepsAverageTimeData, JobStepsAverageTimeByDayData } from './types';
 import { formatDurationMinutes } from './duration-format';
@@ -163,39 +164,47 @@ export default function JobStepsAnalysis({
 
         {/* Breakdown List */}
         <div className="overflow-x-auto">
-          <table className="w-full text-sm text-left border-collapse">
-            <thead>
-              <tr className="border-b bg-gray-50/50">
-                <th className="p-3 font-medium text-gray-600">Step Name</th>
-                <th className="p-3 font-medium text-gray-600 text-right">Average Time</th>
-                <th className="p-3 font-medium text-gray-600 text-right">% of Total</th>
-              </tr>
-            </thead>
-            <tbody>
-              {data.map((step, index) => {
-                const percentage = totalTime > 0 ? (step.averageDurationMinutes / totalTime) * 100 : 0;
-                return (
-                  <tr key={step.name} className="border-b last:border-0 hover:bg-gray-50">
-                    <td className="p-3">
-                      <div className="flex items-center gap-2">
-                        <div 
-                          className="w-3 h-3 rounded-full" 
-                          style={{ backgroundColor: COLORS[index % COLORS.length] }} 
-                        />
-                        <span className="font-medium text-gray-800">{step.name}</span>
-                      </div>
-                    </td>
-                    <td className="p-3 text-right tabular-nums">
-                      {formatDurationMinutes(step.averageDurationMinutes)}
-                    </td>
-                    <td className="p-3 text-right tabular-nums text-gray-600">
-                      {percentage.toFixed(1)}%
-                    </td>
-                  </tr>
-                );
-              })}
-            </tbody>
-          </table>
+          <SortableTable
+            columns={[
+              {
+                key: 'name',
+                label: 'Step Name',
+                renderCell: (step: JobStepsAverageTimeData & { _colorIndex: number }) => (
+                  <div className="flex items-center gap-2">
+                    <div
+                      className="w-3 h-3 rounded-full"
+                      style={{ backgroundColor: COLORS[step._colorIndex % COLORS.length] }}
+                    />
+                    <span className="font-medium text-gray-800">{step.name}</span>
+                  </div>
+                ),
+              },
+              {
+                key: 'averageDurationMinutes',
+                label: 'Average Time',
+                align: 'right' as const,
+                renderCell: (step: JobStepsAverageTimeData) => (
+                  <span className="tabular-nums">{formatDurationMinutes(step.averageDurationMinutes)}</span>
+                ),
+              },
+              {
+                key: '_percentage',
+                label: '% of Total',
+                align: 'right' as const,
+                renderCell: (step: JobStepsAverageTimeData & { _percentage: number }) => (
+                  <span className="tabular-nums text-gray-600">{step._percentage.toFixed(1)}%</span>
+                ),
+                compare: (a: JobStepsAverageTimeData & { _percentage: number }, b: JobStepsAverageTimeData & { _percentage: number }) => a._percentage - b._percentage,
+              },
+            ]}
+            rows={data.map((step, index) => ({
+              ...step,
+              _colorIndex: index,
+              _percentage: totalTime > 0 ? (step.averageDurationMinutes / totalTime) * 100 : 0,
+            }))}
+            getRowKey={(step) => step.name}
+            defaultSort={{ key: 'averageDurationMinutes', direction: 'desc' }}
+          />
         </div>
       </CardContent>
     </Card>
