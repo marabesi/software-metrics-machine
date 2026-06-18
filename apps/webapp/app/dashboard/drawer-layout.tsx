@@ -135,7 +135,10 @@ export default function DrawerLayout({
               <FolderOpenIcon />
             </IconButton>
             <Typography variant="h6" noWrap component="div" sx={{ flexGrow: 1 }}>
-              Software Metrics Machine {repository && `- ${repository}`}
+              <Link href="/" className="text-white no-underline">
+                Software Metrics Machine
+              </Link>
+            {repository && ` - ${repository}`}
             </Typography>
             <ThemeToggle />
             <IconButton
