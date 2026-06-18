@@ -1,4 +1,4 @@
-import { Controller, Get, Logger, Query } from '@nestjs/common';
+import { Controller, Get, Query } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
 import { PipelinesRepository, PipelinesService, PipelineFiltersRepository } from '@smmachine/core';
 import type { DeploymentFrequencyRow } from '../dtos/response.dto';
@@ -37,6 +37,7 @@ interface PipelineFiltersQuery {
   conclusion?: string;
   branch?: string;
   job_name?: string;
+  job_conclusion?: string;
   event?: string;
 }
 
@@ -72,8 +73,6 @@ type LoadRunsOptions = {
 @ApiTags('Pipeline Metrics')
 @Controller()
 export class PipelinesController {
-  private readonly logger = new Logger('PipelinesController');
-
   constructor(
     private readonly pipelinesRepo: PipelinesRepository,
     private readonly pipelinesService: PipelinesService,
@@ -499,47 +498,18 @@ export class PipelinesController {
     },
     options?: LoadRunsOptions
   ): Promise<RunLike[]> {
-    this.logger.debug('Loading runs with filters:', filters);
-    const selectedJobNames = filters.job_name
-      ? filters.job_name
-          .split(',')
-          .map((n) => n.trim().toLowerCase())
-          .filter(Boolean)
-      : [];
-    const runs: RunLike[] = await this.pipelinesRepo.loadPipelines({
+    return this.pipelinesRepo.loadPipelines({
       includeJobs: filters.includeJobs,
-      jobNames: selectedJobNames,
+      startDate: filters.start_date,
+      endDate: filters.end_date,
+      workflowPath: filters.workflow_path,
+      status: filters.status,
+      conclusion: filters.conclusion,
+      targetBranch: filters.branch,
+      event: filters.event,
+      jobName: filters.job_name,
       jobConclusion: filters.job_conclusion,
+      sort_by: options?.sort_by,
     });
-
-    const dateFilteredRuns = this.pipelinesService.filterRunsByDateRange(
-      runs,
-      filters.start_date,
-      filters.end_date,
-      options
-    );
-    const filteredRuns = dateFilteredRuns.filter((run: RunLike) => {
-      if (filters.workflow_path && run.path !== filters.workflow_path) {
-        return false;
-      }
-      if (filters.status && (run.status || '').toLowerCase() !== filters.status.toLowerCase()) {
-        return false;
-      }
-      if (
-        filters.conclusion &&
-        (run.conclusion || '').toLowerCase() !== filters.conclusion.toLowerCase()
-      ) {
-        return false;
-      }
-      if (filters.branch && run.branch !== filters.branch) {
-        return false;
-      }
-      if (filters.event && run.event !== filters.event) {
-        return false;
-      }
-      return true;
-    });
-
-    return filteredRuns;
   }
 }

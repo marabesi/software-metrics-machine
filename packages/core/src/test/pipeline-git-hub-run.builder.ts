@@ -49,6 +49,11 @@ export class PipelineGitHubRunBuilder {
     return this;
   }
 
+  event(value: string): PipelineGitHubRunBuilder {
+    this.data.event = value;
+    return this;
+  }
+
   createdAt(value: string): PipelineGitHubRunBuilder {
     this.data.created_at = value;
     return this;

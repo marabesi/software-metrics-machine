@@ -40,6 +40,7 @@ export interface PipelineRun {
   completedAt?: string;
   runAttempt?: number;
   branch: string;
+  event?: string;
   commit?: string;
   path: string; // workflow file path
   jobs?: PipelineJob[];

@@ -17,8 +17,8 @@ describe('PipelinesController', () => {
     return { controller, pipelinesRepo };
   }
 
-  it('filters runs by the same completed day used by the runs-by chart', async () => {
-    const { controller } = createController([
+  it('passes date filters to the repository for the runs-by chart', async () => {
+    const { controller, pipelinesRepo } = createController([
       {
         path: 'ci.yml',
         createdAt: '2026-05-09T23:55:00Z',
@@ -29,11 +29,6 @@ describe('PipelinesController', () => {
         createdAt: '2026-05-10T10:00:00Z',
         completedAt: '2026-05-10T10:30:00Z',
       },
-      {
-        path: 'ci.yml',
-        createdAt: '2026-05-10T23:55:00Z',
-        completedAt: '2026-05-11T00:05:00Z',
-      },
     ]);
 
     const result = await controller.runsBy('day', {
@@ -41,6 +36,13 @@ describe('PipelinesController', () => {
       end_date: '2026-05-10',
     });
 
+    expect(pipelinesRepo.loadPipelines).toHaveBeenCalledWith(
+      expect.objectContaining({
+        includeJobs: false,
+        startDate: '2026-05-10',
+        endDate: '2026-05-10',
+      })
+    );
     expect(result).toEqual([{ period: '2026-05-10', workflow: 'ci.yml', runs: 2 }]);
   });
 
@@ -76,4 +78,5 @@ describe('PipelinesController', () => {
       },
     ]);
   });
+
 });

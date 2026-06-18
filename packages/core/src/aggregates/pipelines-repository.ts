@@ -6,11 +6,23 @@ import {
   WorkflowJsonResponse,
 } from '../providers/github/github-response-types';
 import { PipelineJob, PipelineRun, PipelineStep } from '../domain';
+import { TimeZoneProvider } from '../infrastructure/timezone-provider';
 
 export type LoadPipelinesOptions = {
   includeJobs?: boolean;
+  startDate?: string;
+  endDate?: string;
+  workflowPath?: string;
+  status?: string;
+  conclusion?: string;
+  targetBranch?: string;
+  event?: string;
+  jobName?: string;
   jobNames?: string[];
   jobConclusion?: string;
+  sort_by?: {
+    created_at?: 'asc' | 'desc';
+  };
 };
 
 export interface IPipelinesRepository {
@@ -18,6 +30,8 @@ export interface IPipelinesRepository {
 }
 
 export class PipelinesRepository implements IPipelinesRepository {
+  private tz = new TimeZoneProvider();
+
   constructor(
     private pipelineRunFileSystemRepository: IRepository<WorkflowJsonResponse>,
     private pipelineJobsFileSystemRepository: IRepository<WorkflowJobJsonResponse>
@@ -35,8 +49,8 @@ export class PipelinesRepository implements IPipelinesRepository {
   async loadPipelines(
     options: LoadPipelinesOptions = { includeJobs: true }
   ): Promise<PipelineRun[]> {
-    const pipelineRuns = await this.loadPipelineRuns();
-    const selectedJobNames = this.normalizeJobNames(options.jobNames);
+    const pipelineRuns = this.filterRuns(await this.loadPipelineRuns(), options);
+    const selectedJobNames = this.normalizeJobNames(options.jobNames, options.jobName);
     const targetJobConclusion = options.jobConclusion?.trim().toLowerCase();
     const needsJobs =
       options.includeJobs !== false || selectedJobNames.length > 0 || Boolean(targetJobConclusion);
@@ -47,6 +61,9 @@ export class PipelinesRepository implements IPipelinesRepository {
 
     const jobs = await this.pipelineJobsFileSystemRepository.loadAll();
     if (jobs.length === 0 || pipelineRuns.length === 0) {
+      if (selectedJobNames.length > 0 || targetJobConclusion) {
+        return [];
+      }
       return pipelineRuns;
     }
 
@@ -132,8 +149,69 @@ export class PipelinesRepository implements IPipelinesRepository {
     };
   };
 
-  private normalizeJobNames(jobNames?: string[]): string[] {
-    return jobNames?.map((name) => name.trim().toLowerCase()).filter(Boolean) || [];
+  private normalizeJobNames(jobNames?: string[], jobName?: string): string[] {
+    return [...(jobNames || []), ...this.parseCsvList(jobName)]
+      .map((name) => name.trim().toLowerCase())
+      .filter(Boolean);
+  }
+
+  private parseCsvList(value?: string): string[] {
+    if (!value) {
+      return [];
+    }
+
+    return value
+      .split(',')
+      .map((item) => item.trim())
+      .filter((item) => item.length > 0);
+  }
+
+  private filterRuns(runs: PipelineRun[], options: LoadPipelinesOptions): PipelineRun[] {
+    const selectedStatuses = this.parseCsvList(options.status).map((item) => item.toLowerCase());
+    const selectedConclusions = this.parseCsvList(options.conclusion).map((item) =>
+      item.toLowerCase()
+    );
+    const selectedBranches = this.parseCsvList(options.targetBranch);
+    const selectedEvents = this.parseCsvList(options.event);
+    const start = options.startDate ? this.toTimestamp(options.startDate) : 0;
+    const end = options.endDate ? this.toDateBoundaryTimestamp(options.endDate, 'end') : 0;
+
+    const filteredRuns = runs.filter((run) => {
+      if (start || end) {
+        const runTimestamp = this.toTimestamp(this.getRunMetricDate(run));
+        if (start && runTimestamp < start) return false;
+        if (end && runTimestamp > end) return false;
+      }
+      if (options.workflowPath && run.path !== options.workflowPath) {
+        return false;
+      }
+      if (
+        selectedStatuses.length > 0 &&
+        !selectedStatuses.includes((run.status || '').toLowerCase())
+      ) {
+        return false;
+      }
+      if (
+        selectedConclusions.length > 0 &&
+        !selectedConclusions.includes((run.conclusion || '').toLowerCase())
+      ) {
+        return false;
+      }
+      if (selectedBranches.length > 0 && !selectedBranches.includes(run.branch || '')) {
+        return false;
+      }
+      if (selectedEvents.length > 0 && !selectedEvents.includes(run.event || '')) {
+        return false;
+      }
+
+      return true;
+    });
+
+    if (options.sort_by?.created_at) {
+      return this.sortRunsByMetricDate(filteredRuns, options.sort_by.created_at);
+    }
+
+    return filteredRuns;
   }
 
   private filterRunsByJobs(
@@ -173,6 +251,44 @@ export class PipelinesRepository implements IPipelinesRepository {
     const runWithoutJobs = { ...run };
     delete runWithoutJobs.jobs;
     return runWithoutJobs;
+  }
+
+  private getRunMetricDate(run: PipelineRun): string | undefined {
+    return run.completedAt || run.createdAt;
+  }
+
+  private toTimestamp(value?: string): number {
+    if (!value) {
+      return 0;
+    }
+
+    const parsed = new Date(value).getTime();
+    return Number.isFinite(parsed) ? parsed : 0;
+  }
+
+  private toDateBoundaryTimestamp(value: string, boundary: 'start' | 'end'): number {
+    const isDateOnly = /^\d{4}-\d{2}-\d{2}$/.test(value);
+    if (isDateOnly) {
+      const d =
+        boundary === 'end'
+          ? this.tz.getEndOfDayBoundary(value)
+          : this.tz.getStartOfDayBoundary(value);
+      return d.getTime();
+    }
+
+    return this.toTimestamp(value);
+  }
+
+  private sortRunsByMetricDate(
+    runs: PipelineRun[],
+    direction: 'asc' | 'desc'
+  ): PipelineRun[] {
+    const sortDirection = direction === 'asc' ? 1 : -1;
+    return [...runs].sort(
+      (a, b) =>
+        (this.toTimestamp(this.getRunMetricDate(a)) - this.toTimestamp(this.getRunMetricDate(b))) *
+        sortDirection
+    );
   }
 
   private calculateDurationInSeconds(startedAt: string, completedAt: string): number {

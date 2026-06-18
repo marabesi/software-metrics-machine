@@ -190,4 +190,132 @@ describe('PipelinesRepository loadPipelines', () => {
     expect(loadedRuns[0].jobs).toHaveLength(1);
     expect(loadedRuns[0].jobs?.[0].name).toBe('test');
   });
+
+  it('should filter pipelines and events before narrowing jobs', async () => {
+    const runs = [
+      new PipelineGitHubRunBuilder()
+        .id('run-1')
+        .path('.github/workflows/ci.yml')
+        .event('push')
+        .build(),
+      new PipelineGitHubRunBuilder()
+        .id('run-2')
+        .path('.github/workflows/deploy.yml')
+        .event('push')
+        .build(),
+      new PipelineGitHubRunBuilder()
+        .id('run-3')
+        .path('.github/workflows/ci.yml')
+        .event('schedule')
+        .build(),
+    ];
+    const jobs = [
+      new PipelineGitHubJobBuilder().id('job-1').runId('run-1').name('build').build(),
+      new PipelineGitHubJobBuilder().id('job-2').runId('run-1').name('test').build(),
+      new PipelineGitHubJobBuilder().id('job-3').runId('run-2').name('build').build(),
+      new PipelineGitHubJobBuilder().id('job-4').runId('run-3').name('build').build(),
+    ];
+
+    await pipelineRunRepository.saveAll(runs);
+    await pipelineJobsRepository.saveAll(jobs);
+
+    const repository = createRepository();
+
+    const loadedRuns = await repository.loadPipelines({
+      includeJobs: true,
+      workflowPath: '.github/workflows/ci.yml',
+      event: 'push',
+      jobNames: ['build'],
+    });
+
+    expect(loadedRuns).toHaveLength(1);
+    expect(loadedRuns[0].id).toBe('run-1');
+    expect(loadedRuns[0].jobs).toEqual([
+      expect.objectContaining({
+        id: 'job-1',
+        name: 'build',
+        runId: 'run-1',
+      }),
+    ]);
+  });
+
+  it('should support multiple selected events when filtering jobs', async () => {
+    const runs = [
+      new PipelineGitHubRunBuilder()
+        .id('run-1')
+        .path('.github/workflows/ci.yml')
+        .event('push')
+        .build(),
+      new PipelineGitHubRunBuilder()
+        .id('run-2')
+        .path('.github/workflows/ci.yml')
+        .event('workflow_dispatch')
+        .build(),
+      new PipelineGitHubRunBuilder()
+        .id('run-3')
+        .path('.github/workflows/ci.yml')
+        .event('schedule')
+        .build(),
+    ];
+    const jobs = [
+      new PipelineGitHubJobBuilder().id('job-1').runId('run-1').name('build').build(),
+      new PipelineGitHubJobBuilder().id('job-2').runId('run-2').name('build').build(),
+      new PipelineGitHubJobBuilder().id('job-3').runId('run-3').name('build').build(),
+    ];
+
+    await pipelineRunRepository.saveAll(runs);
+    await pipelineJobsRepository.saveAll(jobs);
+
+    const repository = createRepository();
+
+    const loadedRuns = await repository.loadPipelines({
+      includeJobs: true,
+      workflowPath: '.github/workflows/ci.yml',
+      event: 'push,workflow_dispatch',
+      jobNames: ['build'],
+    });
+
+    expect(loadedRuns.map((run) => run.id)).toEqual(['run-1', 'run-2']);
+    expect(loadedRuns.flatMap((run) => run.jobs || []).map((job) => job.id)).toEqual([
+      'job-1',
+      'job-2',
+    ]);
+  });
+
+  it('should filter runs by completed day', async () => {
+    const runs = [
+      new PipelineGitHubRunBuilder()
+        .id('run-1')
+        .path('.github/workflows/ci.yml')
+        .createdAt('2026-05-09T23:55:00Z')
+        .updatedAt('2026-05-10T00:05:00Z')
+        .build(),
+      new PipelineGitHubRunBuilder()
+        .id('run-2')
+        .path('.github/workflows/ci.yml')
+        .createdAt('2026-05-10T10:00:00Z')
+        .updatedAt('2026-05-10T10:30:00Z')
+        .build(),
+      new PipelineGitHubRunBuilder()
+        .id('run-3')
+        .path('.github/workflows/ci.yml')
+        .createdAt('2026-05-10T23:55:00Z')
+        .updatedAt('2026-05-11T00:05:00Z')
+        .build(),
+    ];
+
+    await pipelineRunRepository.saveAll(runs);
+    await pipelineJobsRepository.saveAll([]);
+
+    const repository = createRepository();
+
+    const loadedRuns = await repository.loadPipelines({
+      includeJobs: false,
+      startDate: '2026-05-10',
+      endDate: '2026-05-10',
+      sort_by: { created_at: 'asc' },
+    });
+
+    expect(loadedRuns.map((run) => run.id)).toEqual(['run-1', 'run-2']);
+  });
 });

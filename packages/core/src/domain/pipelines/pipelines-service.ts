@@ -583,71 +583,22 @@ export class PipelinesService implements IPipelinesService {
    * Filter runs by the provided criteria.
    */
   private async filterRuns(filters?: PipelineFilters): Promise<PipelineRun[]> {
-    let result = await this.loadCachedWorkflowsWithJobs();
-
     if (!filters) {
-      return result;
+      return this.loadCachedWorkflowsWithJobs();
     }
 
-    // Filter by date range
-    if (filters.startDate || filters.endDate) {
-      result = this.filterRunsByDateRange(result, filters.startDate, filters.endDate);
-    }
-
-    // Filter by branch
-    if (filters.targetBranch) {
-      result = this.filterByBranch(result, filters.targetBranch);
-    }
-
-    // Filter by workflow path
-    if (filters.workflowPath) {
-      result = this.filterByWorkflowPath(result, filters.workflowPath);
-    }
-
-    // Filter by conclusion
-    if (filters.conclusion) {
-      result = this.filterByConclusion(result, filters.conclusion);
-    }
-
-    // Filter by status
-    if (filters.status) {
-      result = this.filterByStatus(result, filters.status);
-    }
-
-    // Filter by selected job names and keep only selected jobs on each run
-    if (filters.jobName) {
-      const selectedJobNames = filters.jobName
-        .split(',')
-        .map((name) => name.trim().toLowerCase())
-        .filter((name) => name.length > 0);
-
-      if (selectedJobNames.length > 0) {
-        result = result
-          .filter((run) =>
-            (run.jobs || []).some((job) =>
-              selectedJobNames.includes((job.name || '').toLowerCase())
-            )
-          )
-          .map((run) => ({
-            ...run,
-            jobs: (run.jobs || []).filter((job) =>
-              selectedJobNames.includes((job.name || '').toLowerCase())
-            ),
-          }));
-      }
-    }
-
-    if (filters.jobConclusion) {
-      const targetJobConclusion = filters.jobConclusion.trim().toLowerCase();
-      result = result
-        .filter((run) => (run.jobs || []).some((job) => job.conclusion === targetJobConclusion))
-        .map((run) => ({
-          ...run,
-          jobs: (run.jobs || []).filter((job) => job.conclusion === targetJobConclusion),
-        }));
-    }
-
-    return result;
+    return this.pipelineRepository.loadPipelines({
+      includeJobs: true,
+      startDate: filters.startDate,
+      endDate: filters.endDate,
+      targetBranch: filters.targetBranch,
+      event: filters.event,
+      workflowPath: filters.workflowPath,
+      status: filters.status,
+      conclusion: filters.conclusion,
+      jobName: filters.jobName,
+      jobConclusion: filters.jobConclusion,
+    });
   }
 
   private toTimestamp(value?: string): number {
@@ -681,22 +632,6 @@ export class PipelinesService implements IPipelinesService {
         (this.toTimestamp(this.getRunMetricDate(a)) - this.toTimestamp(this.getRunMetricDate(b))) *
         sortDirection
     );
-  }
-
-  private filterByBranch(runs: PipelineRun[], branch: string): PipelineRun[] {
-    return runs.filter((run) => run.branch === branch);
-  }
-
-  private filterByWorkflowPath(runs: PipelineRun[], path: string): PipelineRun[] {
-    return runs.filter((run) => run.path.includes(path));
-  }
-
-  private filterByConclusion(runs: PipelineRun[], conclusion: string): PipelineRun[] {
-    return runs.filter((run) => run.conclusion === conclusion);
-  }
-
-  private filterByStatus(runs: PipelineRun[], status: string): PipelineRun[] {
-    return runs.filter((run) => run.status === status);
   }
 
   private extractDurations(runs: PipelineRun[]): number[] {

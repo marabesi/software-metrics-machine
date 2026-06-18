@@ -517,8 +517,105 @@ export class PipelinesRepositoryBuilder {
 
   build(): IPipelinesRepository {
     return {
-      loadPipelines: async (_options?: LoadPipelinesOptions) => [...this.runs],
+      loadPipelines: async (options?: LoadPipelinesOptions) => this.loadPipelines(options),
     };
+  }
+
+  private loadPipelines(options: LoadPipelinesOptions = { includeJobs: true }): PipelineRun[] {
+    const selectedJobNames = this.parseCsvList(options.jobName)
+      .concat(options.jobNames || [])
+      .map((name) => name.trim().toLowerCase())
+      .filter(Boolean);
+    const selectedBranches = this.parseCsvList(options.targetBranch);
+    const selectedStatuses = this.parseCsvList(options.status).map((status) => status.toLowerCase());
+    const selectedConclusions = this.parseCsvList(options.conclusion).map((conclusion) =>
+      conclusion.toLowerCase()
+    );
+    const selectedEvents = this.parseCsvList(options.event);
+    const targetJobConclusion = options.jobConclusion?.trim().toLowerCase();
+    const start = options.startDate ? this.toTimestamp(options.startDate) : 0;
+    const end = options.endDate ? this.toEndOfDayTimestamp(options.endDate) : 0;
+
+    let runs = this.runs.filter((run) => {
+      if (start || end) {
+        const runTimestamp = this.toTimestamp(run.completedAt || run.createdAt);
+        if (start && runTimestamp < start) return false;
+        if (end && runTimestamp > end) return false;
+      }
+      if (options.workflowPath && run.path !== options.workflowPath) return false;
+      if (selectedBranches.length > 0 && !selectedBranches.includes(run.branch || '')) return false;
+      if (
+        selectedStatuses.length > 0 &&
+        !selectedStatuses.includes((run.status || '').toLowerCase())
+      ) {
+        return false;
+      }
+      if (
+        selectedConclusions.length > 0 &&
+        !selectedConclusions.includes((run.conclusion || '').toLowerCase())
+      ) {
+        return false;
+      }
+      if (selectedEvents.length > 0 && !selectedEvents.includes((run as { event?: string }).event || '')) {
+        return false;
+      }
+
+      return true;
+    });
+
+    if (selectedJobNames.length > 0 || targetJobConclusion) {
+      runs = runs
+        .map((run) => ({
+          ...run,
+          jobs: (run.jobs || [])
+            .filter(
+              (job) =>
+                selectedJobNames.length === 0 ||
+                selectedJobNames.includes((job.name || '').toLowerCase())
+            )
+            .filter((job) => {
+              if (!targetJobConclusion) return true;
+              return (job.conclusion || '').toLowerCase() === targetJobConclusion;
+            }),
+        }))
+        .filter((run) => (run.jobs || []).length > 0);
+    } else {
+      runs = runs.map((run) => ({ ...run, jobs: run.jobs ? [...run.jobs] : undefined }));
+    }
+
+    if (options.includeJobs === false) {
+      return runs.map(({ jobs: _jobs, ...run }) => run);
+    }
+
+    return runs;
+  }
+
+  private parseCsvList(value?: string): string[] {
+    if (!value) {
+      return [];
+    }
+
+    return value
+      .split(',')
+      .map((item) => item.trim())
+      .filter((item) => item.length > 0);
+  }
+
+  private toTimestamp(value?: string): number {
+    if (!value) {
+      return 0;
+    }
+
+    const parsed = new Date(value).getTime();
+    return Number.isFinite(parsed) ? parsed : 0;
+  }
+
+  private toEndOfDayTimestamp(value: string): number {
+    if (/^\d{4}-\d{2}-\d{2}$/.test(value)) {
+      return new Date(`${value}T23:59:59.999Z`).getTime();
+    }
+
+    return this.toTimestamp(value);
   }
 }
 
