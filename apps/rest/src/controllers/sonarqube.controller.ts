@@ -8,7 +8,6 @@ import {
 } from '@smmachine/core';
 import { ComponentTreeQueryDto, QualityMetricsQueryDto } from '../dtos/index';
 import { ErrorResponse } from '../dtos/response.dto';
-import path from 'path';
 
 /**
  * SonarQube API Controller
@@ -108,9 +107,12 @@ export class SonarqubeController {
         component: query.component,
         depth: query.depth,
         metrics: query.metrics,
+        ignore_files: query.ignore_files,
+        include_files: query.include_files,
+        remove_folders: query.remove_folders,
       });
 
-      return this.filterComponentTreeComponents(components, query);
+      return components;
     } catch (error) {
       this.logger.error(
         `Failed to fetch component tree: ${error}`,
@@ -150,13 +152,7 @@ export class SonarqubeController {
   ): Promise<SonarqubeComponentMeasure | null> {
     try {
       this.logger.debug(`Loading quality metrics: ${JSON.stringify(query)}`);
-      const measures = query.measures
-        ? Array.isArray(query.measures)
-          ? query.measures
-          : [query.measures]
-        : undefined;
-
-      return await this.sonarqubeRepository.loadAll(measures);
+      return await this.sonarqubeRepository.loadAll({ measures: query.measures });
     } catch (error) {
       this.logger.error(
         `Failed to fetch quality metrics: ${error}`,
@@ -243,12 +239,14 @@ export class SonarqubeController {
   ): Promise<Array<{ fetchedAt: string; data: SonarqubeComponentTreeMeasure[] }>> {
     try {
       this.logger.debug(`Loading SonarQube component tree history: ${JSON.stringify(query)}`);
-      const entries = await this.sonarqubeRepository.loadAllComponentTreeEntries();
-
-      return entries.map((entry) => ({
-        fetchedAt: entry.fetchedAt,
-        data: this.filterComponentTreeComponents(entry.data, query),
-      }));
+      return await this.sonarqubeRepository.loadAllComponentTreeEntries({
+        component: query.component,
+        depth: query.depth,
+        metrics: query.metrics,
+        ignore_files: query.ignore_files,
+        include_files: query.include_files,
+        remove_folders: query.remove_folders,
+      });
     } catch (error) {
       this.logger.error(
         `Failed to fetch SonarQube component tree history: ${error}`,
@@ -261,98 +259,4 @@ export class SonarqubeController {
     }
   }
 
-  private filterComponentTreeComponents(
-    components: SonarqubeComponentTreeMeasure[],
-    query: ComponentTreeQueryDto
-  ): SonarqubeComponentTreeMeasure[] {
-    const ignorePatterns = query.ignore_files || [];
-    const includePatterns = query.include_files || [];
-    const removeFolders = query.remove_folders || false;
-
-    if (ignorePatterns.length === 0 && includePatterns.length === 0 && !removeFolders) {
-      return components;
-    }
-
-    return components.filter((component) => {
-      // SonarQube uses 'qualifier' field for component type (FIL=file, DIR=directory, TRK=project, etc.)
-      const componentType = component.type || component.qualifier;
-      if (removeFolders && (componentType === 'DIR' || componentType === 'TRK')) {
-        return false;
-      }
-
-      const key = component.key || '';
-      const name = component.name || '';
-
-      if (includePatterns.length > 0) {
-        const matchesInclude = includePatterns.some(
-          (pattern) => this.matchesIgnore(key, [pattern]) || this.matchesIgnore(name, [pattern])
-        );
-        if (!matchesInclude) {
-          return false;
-        }
-      }
-
-      return !this.matchesIgnore(key, ignorePatterns) && !this.matchesIgnore(name, ignorePatterns);
-    });
-  }
-
-  private matchesIgnore(entity: string, ignorePatterns: string[]): boolean {
-    if (!entity || ignorePatterns.length === 0) {
-      return false;
-    }
-
-    return ignorePatterns.some((pattern) => this.matchesPattern(entity, pattern));
-  }
-
-  private matchesPattern(entity: string, pattern: string): boolean {
-    const normalizedEntity = entity.toLowerCase().replace(/\\/g, '/');
-    const normalizedPattern = pattern.toLowerCase();
-
-    if (!this.containsGlobToken(normalizedPattern)) {
-      return normalizedEntity.includes(normalizedPattern);
-    }
-
-    const regex = this.globToRegExp(normalizedPattern);
-
-    if (!normalizedPattern.includes('/')) {
-      const basename = path.posix.basename(normalizedEntity);
-      return regex.test(basename);
-    }
-
-    return regex.test(normalizedEntity);
-  }
-
-  private containsGlobToken(value: string): boolean {
-    return /[*?[\]]/.test(value);
-  }
-
-  private globToRegExp(globPattern: string): RegExp {
-    let regexPattern = '^';
-
-    for (let index = 0; index < globPattern.length; index += 1) {
-      const current = globPattern[index];
-      const next = globPattern[index + 1];
-
-      if (current === '*' && next === '*') {
-        regexPattern += '.*';
-        index += 1;
-        continue;
-      }
-
-      if (current === '*') {
-        regexPattern += '[^/]*';
-        continue;
-      }
-
-      if (current === '?') {
-        regexPattern += '[^/]';
-        continue;
-      }
-
-      regexPattern += current.replace(/[|\\{}()[\]^$+?.]/g, '\\$&');
-    }
-
-    regexPattern += '$';
-    return new RegExp(regexPattern);
-  }
 }

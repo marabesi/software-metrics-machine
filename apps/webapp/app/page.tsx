@@ -12,7 +12,7 @@ const resources = [
   {
     title: 'Documentation',
     description: 'Learn how to use Software Metrics Machine',
-    href: 'https://marabesi.github.io/software-metrics-machine/',
+    href: 'https://marabesi.github.io/software-metrics-machine/getting-started.html',
     icon: '📚',
   },
   {
@@ -32,6 +32,12 @@ const resources = [
     description: 'Learn about SonarQube provider configuration',
     href: 'https://marabesi.github.io/software-metrics-machine/sonarqube.html',
     icon: '🔍',
+  },
+  {
+    title: 'Resources used in SMM',
+    description: 'Learn about the resources used in SMM',
+    href: '/dashboard/references',
+    icon: '📦',
   },
 ];
 

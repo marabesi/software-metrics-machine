@@ -19,6 +19,7 @@ export type LoadPipelinesOptions = {
   event?: string;
   jobName?: string;
   jobNames?: string[];
+  excludeJobName?: string | string[];
   jobConclusion?: string;
   sort_by?: {
     created_at?: 'asc' | 'desc';
@@ -51,6 +52,7 @@ export class PipelinesRepository implements IPipelinesRepository {
   ): Promise<PipelineRun[]> {
     const pipelineRuns = this.filterRuns(await this.loadPipelineRuns(), options);
     const selectedJobNames = this.normalizeJobNames(options.jobNames, options.jobName);
+    const excludedJobNames = this.normalizeJobNames(undefined, options.excludeJobName);
     const targetJobConclusion = options.jobConclusion?.trim().toLowerCase();
     const needsJobs =
       options.includeJobs !== false || selectedJobNames.length > 0 || Boolean(targetJobConclusion);
@@ -88,6 +90,7 @@ export class PipelinesRepository implements IPipelinesRepository {
     const jobFilteredRuns = this.filterRunsByJobs(
       pipelineRuns,
       selectedJobNames,
+      excludedJobNames,
       targetJobConclusion
     );
 
@@ -95,13 +98,13 @@ export class PipelinesRepository implements IPipelinesRepository {
       return jobFilteredRuns.map(this.withoutJobs);
     }
 
-    if (selectedJobNames.length === 0 && !targetJobConclusion) {
+    if (selectedJobNames.length === 0 && excludedJobNames.length === 0 && !targetJobConclusion) {
       return jobFilteredRuns;
     }
 
     return jobFilteredRuns.map((run) => ({
       ...run,
-      jobs: this.filterJobs(run.jobs || [], selectedJobNames, targetJobConclusion),
+      jobs: this.filterJobs(run.jobs || [], selectedJobNames, excludedJobNames, targetJobConclusion),
     }));
   }
 
@@ -149,8 +152,12 @@ export class PipelinesRepository implements IPipelinesRepository {
     };
   };
 
-  private normalizeJobNames(jobNames?: string[], jobName?: string): string[] {
-    return [...(jobNames || []), ...this.parseCsvList(jobName)]
+  private normalizeJobNames(jobNames?: string[], jobName?: string | string[]): string[] {
+    const rawJobNames = Array.isArray(jobName)
+      ? jobName.flatMap((name) => this.parseCsvList(name))
+      : this.parseCsvList(jobName);
+
+    return [...(jobNames || []), ...rawJobNames]
       .map((name) => name.trim().toLowerCase())
       .filter(Boolean);
   }
@@ -217,20 +224,24 @@ export class PipelinesRepository implements IPipelinesRepository {
   private filterRunsByJobs(
     runs: PipelineRun[],
     selectedJobNames: string[],
+    excludedJobNames: string[],
     targetJobConclusion?: string
   ): PipelineRun[] {
-    if (selectedJobNames.length === 0 && !targetJobConclusion) {
+    if (selectedJobNames.length === 0 && excludedJobNames.length === 0 && !targetJobConclusion) {
       return runs;
     }
 
     return runs.filter(
-      (run) => this.filterJobs(run.jobs || [], selectedJobNames, targetJobConclusion).length > 0
+      (run) =>
+        this.filterJobs(run.jobs || [], selectedJobNames, excludedJobNames, targetJobConclusion)
+          .length > 0
     );
   }
 
   private filterJobs(
     jobs: PipelineJob[],
     selectedJobNames: string[],
+    excludedJobNames: string[],
     targetJobConclusion?: string
   ): PipelineJob[] {
     return jobs
@@ -238,6 +249,7 @@ export class PipelinesRepository implements IPipelinesRepository {
         (job) =>
           selectedJobNames.length === 0 || selectedJobNames.includes((job.name || '').toLowerCase())
       )
+      .filter((job) => !excludedJobNames.includes((job.name || '').toLowerCase()))
       .filter((job) => {
         if (!targetJobConclusion) {
           return true;

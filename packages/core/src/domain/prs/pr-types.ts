@@ -55,10 +55,10 @@ export interface PRComment {
 export interface PRFilters {
   startDate?: string;
   endDate?: string;
-  authors?: string[];
-  excludeAuthors?: string[];
-  excludeCommenters?: string[];
-  labels?: string[];
+  authors?: string | string[];
+  excludeAuthors?: string | string[];
+  excludeCommenters?: string | string[];
+  labels?: string | string[];
   state?: PRStatus;
 }
 

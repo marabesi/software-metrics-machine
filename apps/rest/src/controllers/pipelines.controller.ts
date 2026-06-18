@@ -316,16 +316,19 @@ export class PipelinesController {
     @Query('top') top?: string,
     @Query() query?: PipelineFiltersQuery
   ): Promise<PipelineJobsAverageTimeResponse> {
-    const runs = await this.loadRunsWithFilters({ ...(query || {}), includeJobs: true });
+    const runs = await this.loadRunsWithFilters({
+      ...(query || {}),
+      exclude_job_name: excludeJobs,
+      includeJobs: true,
+    });
 
-    const excluded = new Set(this.parseCsvList(excludeJobs).map((name) => name.toLowerCase()));
     const grouped = new Map<string, PipelineDurationsMetrics>();
 
     for (const run of runs) {
       const jobs = run.jobs || [];
       for (const job of jobs) {
         const name = (job.name || '').trim();
-        if (!name || excluded.has(name.toLowerCase())) {
+        if (!name) {
           continue;
         }
         const duration = this.pipelinesService.getDurationMinutes(job.startedAt, job.completedAt);
@@ -364,9 +367,12 @@ export class PipelinesController {
     @Query('exclude_jobs') excludeJobs?: string,
     @Query() query?: PipelineFiltersQuery
   ): Promise<PipelineJobsAverageTimeByDayResponse> {
-    const runs = await this.loadRunsWithFilters({ ...(query || {}), includeJobs: true });
+    const runs = await this.loadRunsWithFilters({
+      ...(query || {}),
+      exclude_job_name: excludeJobs,
+      includeJobs: true,
+    });
 
-    const excluded = new Set(this.parseCsvList(excludeJobs).map((name) => name.toLowerCase()));
     const grouped = new Map<string, number[]>();
 
     for (const run of runs) {
@@ -379,7 +385,7 @@ export class PipelinesController {
 
       for (const job of jobs) {
         const name = (job.name || '').trim();
-        if (!name || excluded.has(name.toLowerCase())) {
+        if (!name) {
           continue;
         }
         const duration = this.pipelinesService.getDurationMinutes(job.startedAt, job.completedAt);
@@ -451,16 +457,6 @@ export class PipelinesController {
 
   // ========== PRIVATE HELPERS ==========
 
-  private parseCsvList(value?: string): string[] {
-    if (!value) {
-      return [];
-    }
-    return value
-      .split(',')
-      .map((item) => item.trim())
-      .filter((item) => item.length > 0);
-  }
-
   private toServiceFilters(query: PipelineFiltersQuery): {
     startDate?: string;
     endDate?: string;
@@ -492,6 +488,7 @@ export class PipelinesController {
       conclusion?: string;
       branch?: string;
       job_name?: string;
+      exclude_job_name?: string;
       job_conclusion?: string;
       event?: string;
       includeJobs: boolean;
@@ -508,6 +505,7 @@ export class PipelinesController {
       targetBranch: filters.branch,
       event: filters.event,
       jobName: filters.job_name,
+      excludeJobName: filters.exclude_job_name,
       jobConclusion: filters.job_conclusion,
       sort_by: options?.sort_by,
     });

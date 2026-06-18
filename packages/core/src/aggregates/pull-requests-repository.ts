@@ -31,14 +31,17 @@ export class PullRequestsRepository implements IReadPullRequestsRepository {
       const end = filters.endDate
         ? this.timeZoneProvider.getEndOfDayBoundary(filters.endDate)
         : null;
-      const authorSet = filters.authors?.length
-        ? new Set(filters.authors.map((a) => a.toLowerCase()))
+      const authors = this.normalizeList(filters.authors);
+      const excludeAuthors = this.normalizeList(filters.excludeAuthors);
+      const labels = this.normalizeList(filters.labels);
+      const authorSet = authors.length
+        ? new Set(authors.map((a) => a.toLowerCase()))
         : null;
-      const excludeAuthorSet = filters.excludeAuthors?.length
-        ? new Set(filters.excludeAuthors.map((a) => a.toLowerCase()))
+      const excludeAuthorSet = excludeAuthors.length
+        ? new Set(excludeAuthors.map((a) => a.toLowerCase()))
         : null;
-      const labelSet = filters.labels?.length
-        ? new Set(filters.labels.map((l) => l.toLowerCase()))
+      const labelSet = labels.length
+        ? new Set(labels.map((l) => l.toLowerCase()))
         : null;
 
       rawPrs = rawPrs.filter((pr) => {
@@ -70,8 +73,9 @@ export class PullRequestsRepository implements IReadPullRequestsRepository {
       });
     }
 
-    const excludeCommenterSet = filters?.excludeCommenters?.length
-      ? new Set(filters.excludeCommenters.map((commenter) => commenter.toLowerCase()))
+    const excludeCommenters = this.normalizeList(filters?.excludeCommenters);
+    const excludeCommenterSet = excludeCommenters.length
+      ? new Set(excludeCommenters.map((commenter) => commenter.toLowerCase()))
       : null;
 
     return rawPrs.map((pr: PullRequestJsonResponse) => {
@@ -125,5 +129,17 @@ export class PullRequestsRepository implements IReadPullRequestsRepository {
         })),
       };
     });
+  }
+
+  private normalizeList(value?: string | string[]): string[] {
+    if (!value) {
+      return [];
+    }
+
+    const values = Array.isArray(value) ? value : [value];
+    return values
+      .flatMap((item) => String(item).split(','))
+      .map((item) => item.trim())
+      .filter((item) => item.length > 0);
   }
 }

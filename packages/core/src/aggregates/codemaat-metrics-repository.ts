@@ -10,13 +10,49 @@ import { Configuration } from 'src';
 import path from 'path';
 
 export interface ICodeMetricsRepository {
-  getCodeChurn(options?: { startDate?: string; endDate?: string }): Promise<CodeChurnResult>;
-  getFileCoupling(options?: { ignorePatterns?: string[] }): Promise<FileCoupling[]>;
-  getEntityEffort(_options?: unknown): Promise<Array<{ entity: string; 'total-revs': number }>>;
+  getCodeChurn(options: CodeMaatChurnOptions & { typeChurn: string }): Promise<CodeChurnValueResult>;
+  getCodeChurn(options?: CodeMaatChurnOptions): Promise<CodeChurnResult>;
+  getFileCoupling(options?: CodeMaatEntityFilterOptions): Promise<FileCoupling[]>;
+  getEntityChurn(
+    options?: CodeMaatEntityFilterOptions
+  ): Promise<Array<{ entity: string; added: number; deleted: number; commits: number }>>;
+  getEntityEffort(
+    options?: CodeMaatEntityFilterOptions
+  ): Promise<Array<{ entity: string; 'total-revs': number }>>;
   getEntityOwnership(
-    _options?: unknown
+    options: CodeMaatEntityFilterOptions & { select: 'authors' }
+  ): Promise<string[]>;
+  getEntityOwnership(
+    options?: CodeMaatEntityFilterOptions
   ): Promise<Array<{ entity: string; author: string; added: number; deleted: number }>>;
 }
+
+export type CodeMaatEntityFilterOptions = {
+  ignorePatterns?: string | string[];
+  includePatterns?: string | string[];
+  authors?: string | string[];
+  top?: string | number;
+  sortBy?: 'degree' | 'churn' | 'revs';
+  select?: 'authors';
+};
+
+export type CodeMaatChurnOptions = {
+  startDate?: string;
+  endDate?: string;
+  typeChurn?: string;
+};
+
+export type CodeChurnValue = {
+  date: string;
+  type: string;
+  value: number;
+};
+
+export type CodeChurnValueResult = {
+  data: CodeChurnValue[];
+  startDate?: string;
+  endDate?: string;
+};
 
 /**
  * Combines Git and CodeMaat providers with code metrics domain logic
@@ -35,7 +71,9 @@ export class CodeMaatMetricsRepository implements ICodeMetricsRepository {
     this.logger = new Logger('CodeMaatMetricsRepository');
   }
 
-  async getCodeChurn(options?: { startDate?: string; endDate?: string }): Promise<CodeChurnResult> {
+  async getCodeChurn(options: CodeMaatChurnOptions & { typeChurn: string }): Promise<CodeChurnValueResult>;
+  async getCodeChurn(options?: CodeMaatChurnOptions): Promise<CodeChurnResult>;
+  async getCodeChurn(options?: CodeMaatChurnOptions): Promise<CodeChurnResult | CodeChurnValueResult> {
     try {
       const csvPath = path.join(this.dataDir, 'abs-churn.csv');
 
@@ -120,10 +158,24 @@ export class CodeMaatMetricsRepository implements ICodeMetricsRepository {
 
       this.logger.info(`Parsed ${data.length} code churn records`);
 
-      return {
+      const result = {
         data,
         startDate: options?.startDate,
         endDate: options?.endDate,
+      };
+
+      if (!options || !Object.prototype.hasOwnProperty.call(options, 'typeChurn')) {
+        return result;
+      }
+
+      const churnType = (options.typeChurn || 'total').toLowerCase();
+      return {
+        ...result,
+        data: data.map((row) => ({
+          date: row.date,
+          type: churnType,
+          value: this.getChurnValue(row, churnType),
+        })),
       };
     } catch (error) {
       const errorMsg = error instanceof Error ? error.message : String(error);
@@ -132,7 +184,7 @@ export class CodeMaatMetricsRepository implements ICodeMetricsRepository {
     }
   }
 
-  async getFileCoupling(options?: { ignorePatterns?: string[] }): Promise<FileCoupling[]> {
+  async getFileCoupling(options?: CodeMaatEntityFilterOptions): Promise<FileCoupling[]> {
     try {
       const csvPath = path.join(this.dataDir, 'coupling.csv');
 
@@ -202,12 +254,7 @@ export class CodeMaatMetricsRepository implements ICodeMetricsRepository {
         const degree = parseInt(row[couplingIdx], 10) || 0;
         const averageRevs = averageRevsIdx >= 0 ? parseInt(row[averageRevsIdx], 10) || 0 : 0;
 
-        // Apply ignore patterns if provided
-        if (
-          options?.ignorePatterns &&
-          (this.isIgnoredPath(entity, options.ignorePatterns) ||
-            this.isIgnoredPath(coupled, options.ignorePatterns))
-        ) {
+        if (!this.matchesCouplingFilters(entity, coupled, options)) {
           continue;
         }
 
@@ -221,24 +268,14 @@ export class CodeMaatMetricsRepository implements ICodeMetricsRepository {
 
       this.logger.info(`Parsed ${coupleData.length} file coupling relationships`);
 
-      return coupleData;
+      const sorted =
+        options?.sortBy === 'degree' ? coupleData.sort((a, b) => b.degree - a.degree) : coupleData;
+      return this.limitRows(sorted, options?.top);
     } catch (error) {
       const errorMsg = error instanceof Error ? error.message : String(error);
       this.logger.error(`Failed to read file coupling: ${errorMsg}`);
       throw error;
     }
-  }
-
-  private isIgnoredPath(filePath: string, patterns: string[]): boolean {
-    return patterns.some((pattern) => {
-      if (pattern.startsWith('*')) {
-        // Glob suffix match e.g. *.js
-        const ext = pattern.slice(1);
-        return filePath.endsWith(ext);
-      }
-      // Prefix match e.g. dist/, test/, node_modules/
-      return filePath.startsWith(pattern);
-    });
   }
 
   private detectCsvDelimiter(headerLine: string): string {
@@ -293,9 +330,7 @@ export class CodeMaatMetricsRepository implements ICodeMetricsRepository {
           startDate: options?.startDate,
           endDate: options?.endDate,
         }),
-        this.getFileCoupling({
-          ignorePatterns: options?.ignorePatterns,
-        }),
+        this.getFileCoupling({ ignorePatterns: options?.ignorePatterns }),
       ]);
 
       const result: CodemaatAnalysisResult = {
@@ -313,8 +348,32 @@ export class CodeMaatMetricsRepository implements ICodeMetricsRepository {
     }
   }
 
+  async getEntityChurn(
+    options?: CodeMaatEntityFilterOptions
+  ): Promise<Array<{ entity: string; added: number; deleted: number; commits: number }>> {
+    try {
+      const records = this.readCsvRecords('entity-churn.csv');
+
+      return records
+        .map((record) => ({
+          entity: String(record.entity || ''),
+          added: this.toNumber(record.added),
+          deleted: this.toNumber(record.deleted),
+          commits: this.toNumber(record.commits),
+        }))
+        .filter((row) => row.entity.length > 0)
+        .filter((row) => this.matchesEntityFilters(row.entity, options))
+        .sort((a, b) => b.added + b.deleted - (a.added + a.deleted))
+        .slice(0, this.resolveLimit(options?.top, Number.POSITIVE_INFINITY));
+    } catch (error) {
+      const errorMsg = error instanceof Error ? error.message : String(error);
+      this.logger.error(`Failed to read entity churn: ${errorMsg}`);
+      throw error;
+    }
+  }
+
   async getEntityEffort(
-    _options?: unknown
+    options?: CodeMaatEntityFilterOptions
   ): Promise<Array<{ entity: string; 'total-revs': number }>> {
     try {
       const records = this.readCsvRecords('entity-effort.csv');
@@ -324,7 +383,10 @@ export class CodeMaatMetricsRepository implements ICodeMetricsRepository {
           entity: String(record.entity || ''),
           'total-revs': this.toNumber(record['total-revs'] || record.total_revs || record.revs),
         }))
-        .filter((row) => row.entity.length > 0);
+        .filter((row) => row.entity.length > 0)
+        .filter((row) => this.matchesEntityFilters(row.entity, options))
+        .sort((a, b) => b['total-revs'] - a['total-revs'])
+        .slice(0, this.resolveLimit(options?.top, Number.POSITIVE_INFINITY));
     } catch (error) {
       const errorMsg = error instanceof Error ? error.message : String(error);
       this.logger.error(`Failed to read entity effort: ${errorMsg}`);
@@ -333,19 +395,37 @@ export class CodeMaatMetricsRepository implements ICodeMetricsRepository {
   }
 
   async getEntityOwnership(
-    _options?: unknown
-  ): Promise<Array<{ entity: string; author: string; added: number; deleted: number }>> {
+    options: CodeMaatEntityFilterOptions & { select: 'authors' }
+  ): Promise<string[]>;
+  async getEntityOwnership(
+    options?: CodeMaatEntityFilterOptions
+  ): Promise<Array<{ entity: string; author: string; added: number; deleted: number }>>;
+  async getEntityOwnership(
+    options?: CodeMaatEntityFilterOptions
+  ): Promise<Array<{ entity: string; author: string; added: number; deleted: number }> | string[]> {
     try {
       const records = this.readCsvRecords('entity-ownership.csv');
 
-      return records
+      const rows = records
         .map((record) => ({
           entity: String(record.entity || ''),
           author: String(record.author || ''),
           added: this.toNumber(record.added),
           deleted: this.toNumber(record.deleted),
         }))
-        .filter((row) => row.entity.length > 0 && row.author.length > 0);
+        .filter((row) => row.entity.length > 0 && row.author.length > 0)
+        .filter((row) => this.matchesEntityFilters(row.entity, options))
+        .filter((row) => {
+          const authors = this.normalizeList(options?.authors).map((author) => author.toLowerCase());
+          return authors.length === 0 || authors.includes(row.author.toLowerCase());
+        })
+        .sort((a, b) => b.added + b.deleted - (a.added + a.deleted));
+
+      if (options?.select === 'authors') {
+        return Array.from(new Set(rows.map((row) => row.author).filter((author) => author.length > 0))).sort();
+      }
+
+      return rows.slice(0, this.resolveLimit(options?.top, Number.POSITIVE_INFINITY));
     } catch (error) {
       const errorMsg = error instanceof Error ? error.message : String(error);
       this.logger.error(`Failed to read entity ownership: ${errorMsg}`);
@@ -408,5 +488,143 @@ export class CodeMaatMetricsRepository implements ICodeMetricsRepository {
     }
 
     return 0;
+  }
+
+  private getChurnValue(row: CodeChurn, churnType: string): number {
+    if (churnType === 'added') {
+      return row.added;
+    }
+    if (churnType === 'deleted') {
+      return row.deleted;
+    }
+    if (churnType === 'commits') {
+      return row.commits;
+    }
+    return row.added + row.deleted;
+  }
+
+  private limitRows<T>(rows: T[], top?: string | number): T[] {
+    const limit = this.resolveLimit(top, Number.POSITIVE_INFINITY);
+    return rows.slice(0, limit);
+  }
+
+  private resolveLimit(top: string | number | undefined, fallback: number): number {
+    if (top === undefined || top === null || top === '') {
+      return fallback;
+    }
+
+    const parsed = Number(top);
+    return Number.isFinite(parsed) ? parsed : fallback;
+  }
+
+  private normalizeList(value?: string | string[]): string[] {
+    if (!value) {
+      return [];
+    }
+
+    const values = Array.isArray(value) ? value : [value];
+    return values
+      .flatMap((item) => String(item).split(','))
+      .map((item) => item.trim())
+      .filter((item) => item.length > 0);
+  }
+
+  private matchesEntityFilters(entity: string, options?: CodeMaatEntityFilterOptions): boolean {
+    if (!entity) {
+      return false;
+    }
+
+    const ignorePatterns = this.normalizeList(options?.ignorePatterns);
+    const includePatterns = this.normalizeList(options?.includePatterns);
+
+    if (ignorePatterns.some((pattern) => this.matchesPattern(entity, pattern))) {
+      return false;
+    }
+
+    if (
+      includePatterns.length > 0 &&
+      !includePatterns.some((pattern) => this.matchesPattern(entity, pattern))
+    ) {
+      return false;
+    }
+
+    return true;
+  }
+
+  private matchesCouplingFilters(
+    entity: string,
+    coupled: string,
+    options?: CodeMaatEntityFilterOptions
+  ): boolean {
+    const ignorePatterns = this.normalizeList(options?.ignorePatterns);
+    const includePatterns = this.normalizeList(options?.includePatterns);
+
+    if (
+      ignorePatterns.some(
+        (pattern) => this.matchesPattern(entity, pattern) || this.matchesPattern(coupled, pattern)
+      )
+    ) {
+      return false;
+    }
+
+    if (includePatterns.length === 0) {
+      return true;
+    }
+
+    return includePatterns.some(
+      (pattern) => this.matchesPattern(entity, pattern) || this.matchesPattern(coupled, pattern)
+    );
+  }
+
+  private matchesPattern(entity: string, pattern: string): boolean {
+    const normalizedEntity = entity.toLowerCase().replace(/\\/g, '/');
+    const normalizedPattern = pattern.toLowerCase();
+
+    if (!this.containsGlobToken(normalizedPattern)) {
+      return normalizedEntity.includes(normalizedPattern);
+    }
+
+    const regex = this.globToRegExp(normalizedPattern);
+
+    if (!normalizedPattern.includes('/')) {
+      const basename = path.posix.basename(normalizedEntity);
+      return regex.test(basename);
+    }
+
+    return regex.test(normalizedEntity);
+  }
+
+  private containsGlobToken(value: string): boolean {
+    return /[*?[\]]/.test(value);
+  }
+
+  private globToRegExp(globPattern: string): RegExp {
+    let regexPattern = '^';
+
+    for (let index = 0; index < globPattern.length; index += 1) {
+      const current = globPattern[index];
+      const next = globPattern[index + 1];
+
+      if (current === '*' && next === '*') {
+        regexPattern += '.*';
+        index += 1;
+        continue;
+      }
+
+      if (current === '*') {
+        regexPattern += '[^/]*';
+        continue;
+      }
+
+      if (current === '?') {
+        regexPattern += '[^/]';
+        continue;
+      }
+
+      regexPattern += current.replace(/[|\\{}()[\]^$+?.]/g, '\\$&');
+    }
+
+    regexPattern += '$';
+    return new RegExp(regexPattern);
   }
 }
