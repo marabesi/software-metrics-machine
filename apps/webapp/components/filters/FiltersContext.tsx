@@ -20,7 +20,13 @@ export const useFilters = () => {
   return context;
 };
 
-export const FiltersProvider = ({ initialFilters, children }: { initialFilters: DashboardFilters; children?: ReactElement | undefined }) => {
+export const FiltersProvider = ({
+  initialFilters,
+  children,
+}: {
+  initialFilters?: DashboardFilters;
+  children?: ReactElement | undefined;
+}) => {
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();

@@ -73,14 +73,18 @@ The Jira provider requires these fields in `smm_config.json`:
 
 ```json
 {
-  "git_provider": "github",
-  "github_repository": "owner/repo",
-  "git_repository_location": "/path/to/repo",
-  "github_token": "your_github_token",
-  "jira_url": "https://your-domain.atlassian.net",
-  "jira_email": "your-email@example.com",
-  "jira_token": "your_jira_api_token",
-  "jira_project": "PROJ"
+  "projects": [
+    {
+      "git_provider": "github",
+      "github_repository": "owner/repo",
+      "git_repository_location": "/path/to/repo",
+      "github_token": "your_github_token",
+      "jira_url": "https://your-domain.atlassian.net",
+      "jira_email": "your-email@example.com",
+      "jira_token": "your_jira_api_token",
+      "jira_project": "PROJ"
+    }
+  ]
 }
 ```
 

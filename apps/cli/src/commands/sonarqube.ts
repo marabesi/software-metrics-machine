@@ -1,7 +1,7 @@
 import { writeFileSync } from 'node:fs';
 import { resolve } from 'node:path';
-import { Command } from 'commander';
-import { Configuration } from '@smmachine/core/infrastructure/configuration';
+import type { SmmCommand } from './smm-command';
+import { ConfigurationRepository } from '@smmachine/core/infrastructure/configuration-repository';
 import { Logger } from '@smmachine/utils';
 import { SonarqubeMeasuresClient } from '@smmachine/core/providers/sonarqube/sonarqube-client';
 import { SonarqubeFetchMetricsRepository } from '@smmachine/core/providers/sonarqube/sonarqube-fetch-metrics-repository';
@@ -19,8 +19,12 @@ type SonarqubeOrchestratorOptions = {
   useLocalAnalysisToken?: boolean;
 };
 
-function createSonarqubeOrchestrator(options: SonarqubeOrchestratorOptions = {}) {
-  const config = new Configuration(process.env);
+function createSonarqubeOrchestrator(
+  options: SonarqubeOrchestratorOptions = {},
+  projectName?: string
+) {
+  const configRepo = new ConfigurationRepository(process.env, projectName);
+  const config = configRepo.getActiveConfiguration();
   const token = options.useLocalAnalysisToken
     ? config.sonarLocalRunnerToken
     : (options.sonarToken ?? config.sonarToken);
@@ -46,12 +50,18 @@ function createSonarqubeOrchestrator(options: SonarqubeOrchestratorOptions = {})
   return new SonarqubeFetchMetricsRepository(sonarqubeClient, config);
 }
 
-async function fetchLocalAnalysisMetrics(result: SonarqubeLocalAnalysisResult): Promise<void> {
-  const orchestrator = createSonarqubeOrchestrator({
-    sonarUrl: result.containerUrls.hostUrl,
-    sonarProject: result.projectKey,
-    useLocalAnalysisToken: true,
-  });
+async function fetchLocalAnalysisMetrics(
+  result: SonarqubeLocalAnalysisResult,
+  projectName?: string
+): Promise<void> {
+  const orchestrator = createSonarqubeOrchestrator(
+    {
+      sonarUrl: result.containerUrls.hostUrl,
+      sonarProject: result.projectKey,
+      useLocalAnalysisToken: true,
+    },
+    projectName
+  );
 
   logger.info('🔄 Fetching SonarQube metrics from local analysis...');
   await orchestrator.fetchQualityMetrics();
@@ -72,17 +82,17 @@ async function fetchLocalAnalysisMetrics(result: SonarqubeLocalAnalysisResult): 
  *   smm sonarqube fetch-measures   Fetch quality measures from SonarQube
  *   smm sonarqube fetch-component-tree   Fetch component tree from SonarQube
  */
-export function createSonarQubeCommands(program: Command): void {
+export function createSonarQubeCommands(program: SmmCommand): void {
   const sonarqubeGroup = program
-    .command('sonarqube')
+    .subcommand('sonarqube')
     .description('SonarQube integration operations');
 
   const sonarqubeAnalysisGroup = sonarqubeGroup
-    .command('analysis')
+    .subcommand('analysis')
     .description('Run local SonarQube analysis through Docker');
 
   sonarqubeAnalysisGroup
-    .command('run')
+    .subcommand('run')
     .description('Start local SonarQube (if needed) and execute sonar-scanner in Docker')
     .option('--container-server-name <name>', 'SonarQube container name', 'sonarqube')
     .option(
@@ -106,9 +116,11 @@ export function createSonarQubeCommands(program: Command): void {
     .option('--properties <value>', 'Raw SONAR_SCANNER_OPTS value passed directly to scanner')
     .option('--admin-user <user>', 'Predefined local SonarQube admin username', 'admin')
     .option('--admin-password <password>', 'Predefined local SonarQube admin password', 'admin')
-    .action(async (options) => {
+    .actionWithSmm(async (options, command) => {
       try {
-        const config = new Configuration(process.env);
+        const projectName = command.getSelectedProject();
+        const configRepo = new ConfigurationRepository(process.env, projectName);
+        const config = configRepo.getActiveConfiguration();
         const analysis = new SonarqubeLocalAnalysis(config);
         const result = await analysis.run({
           containerName: String(options.containerServerName),
@@ -129,7 +141,7 @@ export function createSonarQubeCommands(program: Command): void {
         // wait to give sonarqube time to process the changes and make metrics available before fetching
         logger.info('Waiting for SonarQube to process analysis results...');
         await new Promise((resolve) => setTimeout(resolve, 120_000));
-        await fetchLocalAnalysisMetrics(result);
+        await fetchLocalAnalysisMetrics(result, projectName);
       } catch (error) {
         logger.error('Failed to run SonarQube analysis', error);
         process.exit(1);
@@ -141,7 +153,7 @@ export function createSonarQubeCommands(program: Command): void {
    * Fetch quality measures from SonarQube
    */
   sonarqubeGroup
-    .command('fetch-measures')
+    .subcommand('fetch-measures')
     .description('Fetch quality measures from SonarQube')
     .option(
       '--metrics <list>',
@@ -149,13 +161,17 @@ export function createSonarQubeCommands(program: Command): void {
     )
     .option('--output <format>', 'Output format (text|json)', 'text')
     .option('--local', 'Use sonar_local_runner_token for API calls', false)
-    .action(async (options) => {
+    .actionWithSmm(async (options, command) => {
       try {
         logger.info('🔄 Fetching quality measures from SonarQube...');
+        const projectName = command.getSelectedProject();
 
-        const orchestrator = createSonarqubeOrchestrator({
-          useLocalAnalysisToken: options.local,
-        });
+        const orchestrator = createSonarqubeOrchestrator(
+          {
+            useLocalAnalysisToken: options.local,
+          },
+          projectName
+        );
 
         const metricsParam = options.metrics
           ? { metrics: options.metrics.split(',').map((m: string) => m.trim()) }
@@ -192,7 +208,7 @@ export function createSonarQubeCommands(program: Command): void {
    * Fetch component tree with metrics from SonarQube
    */
   sonarqubeGroup
-    .command('fetch-component-tree')
+    .subcommand('fetch-component-tree')
     .description('Fetch component tree with metrics from SonarQube')
     .option('--component <key>', 'Component key (default: configured SONAR_PROJECT)')
     .option('--depth <number>', 'Depth of tree traversal (-1 for all depths)', '-1')
@@ -202,13 +218,17 @@ export function createSonarQubeCommands(program: Command): void {
     )
     .option('--output <format>', 'Output format (text|json)', 'text')
     .option('--local', 'Use sonar_local_runner_token for API calls', false)
-    .action(async (options) => {
+    .actionWithSmm(async (options, command) => {
       try {
         console.log('🔄 Fetching component tree from SonarQube...');
+        const projectName = command.getSelectedProject();
 
-        const orchestrator = createSonarqubeOrchestrator({
-          useLocalAnalysisToken: options.local,
-        });
+        const orchestrator = createSonarqubeOrchestrator(
+          {
+            useLocalAnalysisToken: options.local,
+          },
+          projectName
+        );
 
         const parsedDepth = Number.parseInt(options.depth, 10);
         if (Number.isNaN(parsedDepth)) {
@@ -260,7 +280,7 @@ export function createSonarQubeCommands(program: Command): void {
    * Fetch historical measures from SonarQube and optionally store as JSON
    */
   sonarqubeGroup
-    .command('fetch-historical-measures')
+    .subcommand('fetch-historical-measures')
     .description('Fetch historical measures from SonarQube')
     .option(
       '--metrics <list>',
@@ -275,13 +295,17 @@ export function createSonarQubeCommands(program: Command): void {
     .option('--output <format>', 'Output format (text|json)', 'text')
     .option('--save <file>', 'Save results to a JSON file at the given path')
     .option('--local', 'Use sonar_local_runner_token for API calls', false)
-    .action(async (options) => {
+    .actionWithSmm(async (options, command) => {
       try {
         console.log('🔄 Fetching historical measures from SonarQube...');
+        const projectName = command.getSelectedProject();
 
-        const orchestrator = createSonarqubeOrchestrator({
-          useLocalAnalysisToken: options.local,
-        });
+        const orchestrator = createSonarqubeOrchestrator(
+          {
+            useLocalAnalysisToken: options.local,
+          },
+          projectName
+        );
 
         const fetchOptions = {
           metrics: options.metrics

@@ -23,7 +23,20 @@ export interface DashboardConfiguration {
   result: DashboardGlobalConfiguration;
 }
 
+export interface ProjectItem {
+  github_repository: string;
+}
+
+export interface ProjectsListResponse {
+  result: ProjectItem[];
+}
+
 export const configurationAPI = {
   getConfiguration: () =>
     fetchAPI<DashboardConfiguration>('/configuration'),
+};
+
+export const projectsAPI = {
+  getProjects: () =>
+    fetchAPI<ProjectsListResponse>('/projects'),
 };

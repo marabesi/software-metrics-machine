@@ -2,6 +2,12 @@ import {render, screen, waitFor} from "@testing-library/react";
 import DashboardLayout from "@/app/dashboard/layout";
 import React from "react";
 
+jest.mock('next/headers', () => ({
+  cookies: jest.fn().mockResolvedValue({
+    get: jest.fn(() => undefined),
+  }),
+}));
+
 // Mock Next.js router
 jest.mock('next/navigation', () => ({
   useRouter: jest.fn(() => ({
@@ -25,6 +31,9 @@ jest.mock('@smmachine/core', () => ({
 jest.mock('@/server/api', () => ({
   configurationAPI: {
     getConfiguration: jest.fn().mockResolvedValue({ result: { git_provider: 'github', github_repository: 'owner/repo' } }),
+  },
+  projectsAPI: {
+    getProjects: jest.fn().mockResolvedValue({ result: [{ github_repository: 'owner/repo' }] }),
   },
 }));
 

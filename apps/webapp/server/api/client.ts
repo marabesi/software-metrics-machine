@@ -1,5 +1,6 @@
 'use server';
 
+import { cookies } from 'next/headers';
 import { getServerEnv } from '../config/server-env';
 
 export interface ApiParams {
@@ -12,6 +13,13 @@ export async function fetchAPI<T>(endpoint: string, params?: ApiParams): Promise
   const { smmRestBaseUrl } = getServerEnv();
   const apiBaseUrl = `${smmRestBaseUrl}/api/v1`;
   const url = new URL(endpoint, apiBaseUrl);
+
+  // Append active project from cookie if set
+  const cookieStore = await cookies();
+  const activeProject = cookieStore.get('smm_active_project')?.value;
+  if (activeProject) {
+    url.searchParams.append('project', decodeURIComponent(activeProject));
+  }
   
   if (params) {
     Object.entries(params).forEach(([key, value]) => {

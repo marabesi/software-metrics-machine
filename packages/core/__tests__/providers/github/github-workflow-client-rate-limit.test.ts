@@ -3,6 +3,30 @@ import axios from 'axios';
 import { GithubWorkflowClient } from '../../../src';
 import { GitHubRateLimitManager } from '../../../src';
 
+async function runWithTimers<T>(action: () => Promise<T>): Promise<T> {
+  vi.useFakeTimers();
+
+  try {
+    const outcomePromise = action().then(
+      (value) => ({ status: 'fulfilled' as const, value }),
+      (error) => ({ status: 'rejected' as const, error })
+    );
+
+    for (let i = 0; i < 20; i++) {
+      await vi.advanceTimersByTimeAsync(1000);
+    }
+
+    const outcome = await outcomePromise;
+    if (outcome.status === 'rejected') {
+      throw outcome.error;
+    }
+
+    return outcome.value;
+  } finally {
+    vi.useRealTimers();
+  }
+}
+
 describe('GithubWorkflowClient rate limit integration', () => {
   let mockGet: ReturnType<typeof vi.fn>;
   let rateLimitManager: GitHubRateLimitManager;
@@ -52,7 +76,7 @@ describe('GithubWorkflowClient rate limit integration', () => {
       });
 
     const client = new GithubWorkflowClient('token', 'owner', 'repo', rateLimitManager);
-    const result = await client.fetchWorkflows();
+    const result = await runWithTimers(() => client.fetchWorkflows());
 
     expect(waitForResetSpy).toHaveBeenCalled();
     expect(result).toEqual([]);
@@ -69,7 +93,7 @@ describe('GithubWorkflowClient rate limit integration', () => {
       });
 
     const client = new GithubWorkflowClient('token', 'owner', 'repo', rateLimitManager);
-    const result = await client.fetchWorkflows();
+    const result = await runWithTimers(() => client.fetchWorkflows());
 
     expect(waitForResetSpy).toHaveBeenCalled();
     expect(result).toEqual([]);
@@ -82,7 +106,7 @@ describe('GithubWorkflowClient rate limit integration', () => {
     mockGet.mockRejectedValue(error);
 
     const client = new GithubWorkflowClient('token', 'owner', 'repo', rateLimitManager);
-    await expect(client.fetchWorkflows()).rejects.toThrow();
+    await expect(runWithTimers(() => client.fetchWorkflows())).rejects.toThrow();
 
     // Called 2 times (attempt 0, 1) — on attempt 2 it throws without waiting
     expect(waitForResetSpy).toHaveBeenCalledTimes(2);

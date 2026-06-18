@@ -1,10 +1,12 @@
-import { Module, MiddlewareConsumer, NestModule } from '@nestjs/common';
+import { Module, MiddlewareConsumer, NestModule, Scope } from '@nestjs/common';
+import { REQUEST } from '@nestjs/core';
 import * as path from 'path';
 import { MetricsController } from './metrics.controller';
 import { CodeController } from './controllers/code.controller';
 import { PipelinesController } from './controllers/pipelines.controller';
 import { PullRequestsController } from './controllers/pull-requests.controller';
 import { ConfigurationController } from './controllers/configuration.controller';
+import { ProjectsController } from './controllers/projects.controller';
 import { SonarqubeController } from './controllers/sonarqube.controller';
 import { LoggingMiddleware } from './middleware/logging.middleware';
 import {
@@ -18,6 +20,7 @@ import {
   JiraIssuesClient,
   SonarqubeMeasuresClient,
   CommitTraverser,
+  ConfigurationRepository,
   Configuration,
   PipelinesService,
   PRsService,
@@ -68,13 +71,33 @@ function buildDataDirectories(config: Configuration) {
     PipelinesController,
     PullRequestsController,
     ConfigurationController,
+    ProjectsController,
     SonarqubeController,
   ],
   providers: [
-    // Configuration
+    // Configuration Repository (singleton — caches project list)
+    {
+      provide: ConfigurationRepository,
+      useFactory: () => new ConfigurationRepository(process.env),
+    },
+
+    // Configuration (request-scoped — resolved per request from ?project= query param)
     {
       provide: Configuration,
-      useFactory: () => new Configuration(process.env),
+      scope: Scope.REQUEST,
+      useFactory: (configRepo: ConfigurationRepository, req: Record<string, unknown>) => {
+        const request = req as { query?: { project?: string }; url?: string };
+        const projectName = request.query?.project as string | undefined;
+        if (projectName) {
+          const projectConfig = configRepo.getProjectByName(projectName);
+          if (projectConfig) {
+            return Configuration.fromProjectConfig(projectConfig, configRepo.getEnv());
+          }
+        }
+        // Fallback: use default active configuration
+        return configRepo.getActiveConfiguration();
+      },
+      inject: [ConfigurationRepository, REQUEST],
     },
 
     // Jira Client
@@ -220,7 +243,7 @@ function buildDataDirectories(config: Configuration) {
       ],
     },
   ],
-  exports: [MetricsOrchestrator, Configuration],
+  exports: [MetricsOrchestrator, Configuration, ConfigurationRepository],
 })
 export class MetricsModule implements NestModule {
   configure(consumer: MiddlewareConsumer) {

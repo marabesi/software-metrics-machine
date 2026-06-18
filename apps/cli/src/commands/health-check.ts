@@ -1,7 +1,8 @@
-import { Command } from 'commander';
+import { ConfigurationRepository } from '@smmachine/core/infrastructure/configuration-repository';
 import { Configuration } from '@smmachine/core/infrastructure/configuration';
 import { Logger } from '@smmachine/utils';
 import * as fs from 'fs/promises';
+import type { SmmCommand } from './smm-command';
 
 type DatasetCheck = {
   id: string;
@@ -40,9 +41,9 @@ type DatasetDefinition = {
 
 const logger = new Logger('HealthCheckCommand');
 
-export function createHealthCheckCommand(program: Command): void {
+export function createHealthCheckCommand(program: SmmCommand): void {
   program
-    .command('health-check')
+    .subcommand('health-check')
     .description('Analyze local cache data quality (missing, stale, invalid, and coverage gaps)')
     .option('--output <format>', 'Output format (text|json)', 'text')
     .option('--provider <name>', 'Filter provider (all|github|jira|sonarqube)', 'all')
@@ -51,9 +52,11 @@ export function createHealthCheckCommand(program: Command): void {
       'Only report potential gaps larger than this number of days',
       '1'
     )
-    .action(async (options) => {
+    .actionWithSmm(async (options, command) => {
       try {
-        const config = new Configuration(process.env);
+        const projectName = command.getSelectedProject();
+        const configRepo = new ConfigurationRepository(process.env, projectName);
+        const config = configRepo.getActiveConfiguration();
         const maxGapDays = Number.parseInt(options.maxGapDays, 10);
 
         if (Number.isNaN(maxGapDays) || maxGapDays < 1) {

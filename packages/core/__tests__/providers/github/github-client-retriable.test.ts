@@ -4,29 +4,32 @@ import { GithubClientRetriable } from '../../../src/providers/github/github-clie
 import { GitHubRateLimitManager } from '../../../src/providers/github/github-rate-limit-manager';
 
 /**
- * Helper to run an operation with fake timers, advancing time past each
- * backoff interval so tests complete in milliseconds instead of waiting
- * for real wall-clock delays.
- *
- * NOTE: Only use this for operations that SUCCEED (retry then resolve).
- * For operations that exhaust retries and throw, use
- * `runWithRealTimersAndReject` instead to avoid unhandled rejection
- * warnings caused by fake-timer / microtask interactions.
+ * Helper to run an operation with fake timers so retry backoffs complete
+ * in milliseconds instead of waiting for real wall-clock delays.
  */
 async function runWithTimers<T>(action: () => Promise<T>): Promise<T> {
   vi.useFakeTimers();
 
-  const promise = action();
+  try {
+    const outcomePromise = action().then(
+      (value) => ({ status: 'fulfilled' as const, value }),
+      (error) => ({ status: 'rejected' as const, error })
+    );
 
-  // Tick in 1s increments, long enough to cover the full retry cycle
-  // (max 5s + 10s = 15s + some margin)
-  for (let i = 0; i < 20; i++) {
-    await vi.advanceTimersByTimeAsync(1000);
+    // Step time forward to cover retry backoff windows without real waiting.
+    for (let i = 0; i < 20; i++) {
+      await vi.advanceTimersByTimeAsync(1000);
+    }
+
+    const outcome = await outcomePromise;
+    if (outcome.status === 'rejected') {
+      throw outcome.error;
+    }
+
+    return outcome.value;
+  } finally {
+    vi.useRealTimers();
   }
-
-  const result = await promise;
-  vi.useRealTimers();
-  return result;
 }
 
 describe('GithubClientRetriable', () => {
@@ -87,9 +90,7 @@ describe('GithubClientRetriable', () => {
 
       mockGet.mockRejectedValue(error);
 
-      // Run without fake timers (real wall-clock delay: ~15s) to avoid
-      // unhandled rejection tracking issues with fake timers + mock rejections.
-      await expect(client.rateLimitedGet('/test')).rejects.toThrow();
+      await expect(runWithTimers(() => client.rateLimitedGet('/test'))).rejects.toThrow();
 
       // Called 2 times (attempt 0, 1) — on attempt 2 it throws without waiting
       expect(waitForResetSpy).toHaveBeenCalledTimes(2);
@@ -250,9 +251,7 @@ describe('GithubClientRetriable', () => {
 
       mockGet.mockRejectedValue(error);
 
-      // Run without fake timers to avoid microtask/rejection tracking issues.
-      // Real wall-clock delay: ~15s (5s + 10s backoff). Timeout is 20s per test.
-      await expect(client.rateLimitedGet('/test')).rejects.toThrow();
+      await expect(runWithTimers(() => client.rateLimitedGet('/test'))).rejects.toThrow();
     });
 
     it('should throw after 3 consecutive 502 errors', async () => {
@@ -264,7 +263,7 @@ describe('GithubClientRetriable', () => {
 
       mockGet.mockRejectedValue(error);
 
-      await expect(client.rateLimitedGet('/test')).rejects.toThrow();
+      await expect(runWithTimers(() => client.rateLimitedGet('/test'))).rejects.toThrow();
     });
 
     it('should NOT retry on 500 — pass through', async () => {

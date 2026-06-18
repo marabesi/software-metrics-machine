@@ -10,16 +10,16 @@ end_date=2026-06-06
 # pnpm run build
 
 # code 
-pnpm run --filter=cli dev code fetch-commits --start-date=$start_date --end-date=$end_date --force
-pnpm run --filter=cli dev code codemaat-fetch --start-date=$start_date --end-date=$end_date --force
+pnpm run --filter=cli dev code fetch-commits --start-date=$start_date --end-date=$end_date --project=$PROJECT --force
+pnpm run --filter=cli dev code codemaat-fetch --start-date=$start_date --end-date=$end_date --project=$PROJECT --force
 
 # prs
-pnpm run --filter=cli dev prs fetch --start-date=$start_date --end-date=$end_date --force
-pnpm run --filter=cli dev prs fetch-comments --start-date=$start_date --end-date=$end_date --force
+pnpm run --filter=cli dev prs fetch --start-date=$start_date --end-date=$end_date --project=$PROJECT --force
+pnpm run --filter=cli dev prs fetch-comments --start-date=$start_date --end-date=$end_date --project=$PROJECT --force
 
 # pipelines
-pnpm run --filter=cli dev pipelines fetch --start-date=$start_date --end-date=$end_date --force --by-day
-pnpm run --filter=cli dev pipelines fetch-jobs --run-start-date=$start_date --run-end-date=$end_date --force --by-day
+pnpm run --filter=cli dev pipelines fetch --start-date=$start_date --end-date=$end_date --project=$PROJECT --force --by-day
+pnpm run --filter=cli dev pipelines fetch-jobs --run-start-date=$start_date --run-end-date=$end_date --project=$PROJECT --force --by-day
 
 # pnpm run --filter=cli dev sonarqube analysis run --data-dir "./sonarqube_data" --properties "-Dsonar.projectKey=$PROJECT -Dsonar.javascript.exclusions=**/node_modules/**"
 # pnpm run --filter=cli dev sonarqube fetch-measures

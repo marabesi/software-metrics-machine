@@ -3,6 +3,30 @@ import axios from 'axios';
 import { GithubWorkflowJobClient } from '../../../src/providers/github/github-workflow-job-client';
 import { GitHubRateLimitManager } from '../../../src/providers/github/github-rate-limit-manager';
 
+async function runWithTimers<T>(action: () => Promise<T>): Promise<T> {
+  vi.useFakeTimers();
+
+  try {
+    const outcomePromise = action().then(
+      (value) => ({ status: 'fulfilled' as const, value }),
+      (error) => ({ status: 'rejected' as const, error })
+    );
+
+    for (let i = 0; i < 20; i++) {
+      await vi.advanceTimersByTimeAsync(1000);
+    }
+
+    const outcome = await outcomePromise;
+    if (outcome.status === 'rejected') {
+      throw outcome.error;
+    }
+
+    return outcome.value;
+  } finally {
+    vi.useRealTimers();
+  }
+}
+
 describe('GithubWorkflowJobClient rate limit integration', () => {
   let mockGet: ReturnType<typeof vi.fn>;
   let rateLimitManager: GitHubRateLimitManager;
@@ -54,7 +78,7 @@ describe('GithubWorkflowJobClient rate limit integration', () => {
       });
 
     const client = new GithubWorkflowJobClient('token', 'owner', 'repo', rateLimitManager);
-    const result = await client.fetchJobsPage('123', 1);
+    const result = await runWithTimers(() => client.fetchJobsPage('123', 1));
 
     expect(waitForResetSpy).toHaveBeenCalled();
     expect(result.jobs).toEqual([]);
@@ -71,7 +95,7 @@ describe('GithubWorkflowJobClient rate limit integration', () => {
       });
 
     const client = new GithubWorkflowJobClient('token', 'owner', 'repo', rateLimitManager);
-    const result = await client.fetchJobsPage('123', 1);
+    const result = await runWithTimers(() => client.fetchJobsPage('123', 1));
 
     expect(waitForResetSpy).toHaveBeenCalled();
     expect(result.jobs).toEqual([]);
@@ -84,7 +108,7 @@ describe('GithubWorkflowJobClient rate limit integration', () => {
     mockGet.mockRejectedValue(error);
 
     const client = new GithubWorkflowJobClient('token', 'owner', 'repo', rateLimitManager);
-    await expect(client.fetchJobsPage('123', 1)).rejects.toThrow();
+    await expect(runWithTimers(() => client.fetchJobsPage('123', 1))).rejects.toThrow();
 
     // Called 2 times (attempt 0, 1) — on attempt 2 it throws without waiting
     expect(waitForResetSpy).toHaveBeenCalledTimes(2);

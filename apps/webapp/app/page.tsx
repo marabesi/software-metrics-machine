@@ -1,5 +1,6 @@
 import { getServerEnv } from '@/server/config/server-env';
 import Link from 'next/link';
+import SavedFiltersOverview from '@/components/home/SavedFiltersOverview';
 
 const resources = [
   {
@@ -63,6 +64,10 @@ export default function Home() {
               API Docs
             </a>
           </div>
+        </div>
+
+        <div className="mb-16">
+          <SavedFiltersOverview />
         </div>
 
         {/* Resources Section */}

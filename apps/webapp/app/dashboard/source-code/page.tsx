@@ -8,8 +8,6 @@ import CodeChurnOverTimeCard from '@/components/charts/source-code/CodeChurnOver
 import EntityOwnershipCard from '@/components/charts/source-code/EntityOwnershipCard';
 import CodeCouplingCard from '@/components/charts/source-code/CodeCouplingCard';
 import EntityEffortTreemap from '@/components/entity-effort-treemap';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { SortableTable } from '@/components/ui/sortable-table';
 import {
   CodeChurnData,
   CouplingData,
@@ -18,6 +16,7 @@ import {
   EntityOwnershipData,
 } from '@/components/charts/source-code/types';
 import { LatestPairedCommitsCard } from "@/components/charts/source-code/LatestPairedCommitsCard";
+import { TopPairingsCard } from '@/components/charts/source-code/TopPairingsCard';
 
 type ResultWrapper<T> = {
   result: T;
@@ -104,38 +103,7 @@ export default async function SourceCodePage({
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <Card>
-          <CardHeader>
-            <CardTitle>Who Paired The Most With Whom</CardTitle>
-            <p className="mt-2 text-sm text-gray-600">
-              Ranked by number of paired commits between each author pair.
-            </p>
-          </CardHeader>
-          <CardContent>
-            {topPairings.length === 0 ? (
-              <p className="text-sm text-gray-500">No paired commits found for the selected filters.</p>
-            ) : (
-              <SortableTable
-                columns={[
-                  { key: 'author', label: 'Pair', renderCell: (pair) => `${pair.author} + ${pair.co_author}` },
-                  {
-                    key: 'paired_commits',
-                    label: 'Paired Commits',
-                    align: 'right' as const,
-                    renderCell: (pair) => (
-                      <span className="px-2 py-1 rounded bg-blue-100 text-blue-800">
-                        {pair.paired_commits}
-                      </span>
-                    ),
-                  },
-                ]}
-                rows={topPairings}
-                getRowKey={(pair) => `${pair.author}-${pair.co_author}`}
-                defaultSort={{ key: 'paired_commits', direction: 'desc' }}
-              />
-            )}
-          </CardContent>
-        </Card>
+        <TopPairingsCard data={topPairings} />
 
         <LatestPairedCommitsCard data={latestPairedCommits} />
       </div>

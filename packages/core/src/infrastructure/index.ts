@@ -3,5 +3,6 @@
  */
 
 export * from './configuration';
+export * from './configuration-repository';
 export * from './repository';
 export * from './timezone-provider';

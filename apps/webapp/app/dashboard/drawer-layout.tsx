@@ -4,7 +4,7 @@ import * as React from 'react';
 import { styled, useTheme } from '@mui/material/styles';
 import Box from '@mui/material/Box';
 import Drawer from '@mui/material/Drawer';
-import MuiAppBar, { AppBarProps as MuiAppBarProps } from '@mui/material/AppBar';
+import MuiAppBar from '@mui/material/AppBar';
 import Toolbar from '@mui/material/Toolbar';
 import Typography from '@mui/material/Typography';
 import Divider from '@mui/material/Divider';
@@ -12,16 +12,24 @@ import IconButton from '@mui/material/IconButton';
 import MenuIcon from '@mui/icons-material/Menu';
 import GitHubIcon from '@mui/icons-material/GitHub';
 import Print from '@mui/icons-material/Print';
+import MenuBookIcon from '@mui/icons-material/MenuBook';
+import FolderOpenIcon from '@mui/icons-material/FolderOpen';
+import Link from 'next/link';
 import ChevronLeftIcon from '@mui/icons-material/ChevronLeft';
 import ChevronRightIcon from '@mui/icons-material/ChevronRight';
 import FiltersContainer from '@/components/filters/FiltersContainer';
+import ProjectsSidebar from '@/components/ProjectsSidebar';
 import DashboardTabs from '@/components/tabs/TabContext';
 import { ThemeToggle } from '@/components/ThemeToggle';
 
 const drawerWidth = 400;
+const leftDrawerWidth = 280;
 
-const Main = styled('main', { shouldForwardProp: (prop) => prop !== 'open' })<{
+const Main = styled('main', {
+  shouldForwardProp: (prop) => prop !== 'open' && prop !== 'leftOpen',
+})<{
   open?: boolean;
+  leftOpen?: boolean;
 }>(({ theme }) => ({
   flexGrow: 1,
   padding: theme.spacing(3),
@@ -30,6 +38,7 @@ const Main = styled('main', { shouldForwardProp: (prop) => prop !== 'open' })<{
     duration: theme.transitions.duration.leavingScreen,
   }),
   marginRight: `-${drawerWidth}px`,
+  marginLeft: `-${leftDrawerWidth}px`,
   variants: [
     {
       props: ({ open }) => open,
@@ -41,34 +50,38 @@ const Main = styled('main', { shouldForwardProp: (prop) => prop !== 'open' })<{
         marginRight: 0,
       },
     },
-  ],
-}));
-
-interface AppBarProps extends MuiAppBarProps {
-  open?: boolean;
-}
-
-const AppBar = styled(MuiAppBar, {
-  shouldForwardProp: (prop) => prop !== 'open',
-})<AppBarProps>(({ theme }) => ({
-  transition: theme.transitions.create(['margin', 'width'], {
-    easing: theme.transitions.easing.sharp,
-    duration: theme.transitions.duration.leavingScreen,
-  }),
-  variants: [
     {
-      props: ({ open }) => open,
+      props: ({ leftOpen }) => leftOpen,
       style: {
-        width: `calc(100% - ${drawerWidth}px)`,
-        marginRight: `${drawerWidth}px`,
-        transition: theme.transitions.create(['margin', 'width'], {
+        transition: theme.transitions.create('margin', {
           easing: theme.transitions.easing.easeOut,
           duration: theme.transitions.duration.enteringScreen,
         }),
+        marginLeft: 0,
       },
     },
   ],
 }));
+
+const AppBar = styled(MuiAppBar, {
+  shouldForwardProp: (prop) => prop !== 'open' && prop !== 'leftOpen',
+})<{ open?: boolean; leftOpen?: boolean }>(({ theme, open, leftOpen }) => {
+  const totalLeft = leftOpen ? leftDrawerWidth : 0;
+  const totalRight = open ? drawerWidth : 0;
+  return {
+    width: `calc(100% - ${totalLeft}px - ${totalRight}px)`,
+    marginLeft: `${totalLeft}px`,
+    marginRight: `${totalRight}px`,
+    transition: theme.transitions.create(['margin', 'width'], {
+      easing: open || leftOpen
+        ? theme.transitions.easing.easeOut
+        : theme.transitions.easing.sharp,
+      duration: open || leftOpen
+        ? theme.transitions.duration.enteringScreen
+        : theme.transitions.duration.leavingScreen,
+    }),
+  };
+});
 
 const DrawerHeader = styled('div')(({ theme }) => ({
   display: 'flex',
@@ -86,20 +99,41 @@ export default function DrawerLayout({
   children: React.ReactNode;
 }) {
   const theme = useTheme();
-  const [open, setOpen] = React.useState(true);
+  const [rightOpen, setRightOpen] = React.useState(true);
+  const [leftOpen, setLeftOpen] = React.useState(false);
 
-  const handleDrawerOpen = () => {
-    setOpen(true);
+  const handleRightDrawerOpen = () => {
+    setRightOpen(true);
   };
 
-  const handleDrawerClose = () => {
-    setOpen(false);
+  const handleRightDrawerClose = () => {
+    setRightOpen(false);
+  };
+
+  const handleLeftDrawerOpen = () => {
+    setLeftOpen(true);
+  };
+
+  const handleLeftDrawerClose = () => {
+    setLeftOpen(false);
   };
 
   return (
       <Box sx={{ display: 'flex' }}>
-        <AppBar position="fixed" open={open}>
+        <AppBar position="fixed" open={rightOpen} leftOpen={leftOpen}>
           <Toolbar>
+            <IconButton
+              color="inherit"
+              aria-label="open projects panel"
+              onClick={handleLeftDrawerOpen}
+              edge="start"
+              sx={[
+                { mr: 2 },
+                leftOpen && { display: 'none' },
+              ]}
+            >
+              <FolderOpenIcon />
+            </IconButton>
             <Typography variant="h6" noWrap component="div" sx={{ flexGrow: 1 }}>
               Software Metrics Machine {repository && `- ${repository}`}
             </Typography>
@@ -128,25 +162,65 @@ export default function DrawerLayout({
             </IconButton>
             <IconButton
               color="inherit"
+              aria-label="view references and sources"
+              component={Link}
+              href="/dashboard/references"
+              edge="end"
+              sx={{ ml: 1 }}
+            >
+              <MenuBookIcon />
+            </IconButton>
+            <IconButton
+              color="inherit"
               aria-label="open drawer"
-              onClick={handleDrawerOpen}
+              onClick={handleRightDrawerOpen}
               edge="end"
               sx={[
                 {
                   ml: 2,
                 },
-                open && { display: 'none' },
+                rightOpen && { display: 'none' },
               ]}
             >
               <MenuIcon />
             </IconButton>
           </Toolbar>
         </AppBar>
-        <Main open={open}>
+
+        {/* Left Drawer - Projects */}
+        <Drawer
+          sx={{
+            width: leftDrawerWidth,
+            flexShrink: 0,
+            '& .MuiDrawer-paper': {
+              width: leftDrawerWidth,
+              boxSizing: 'border-box',
+            },
+          }}
+          variant="persistent"
+          anchor="left"
+          open={leftOpen}
+        >
+          <DrawerHeader sx={{ justifyContent: 'space-between' }}>
+            <Typography variant="h6" sx={{ ml: 1 }}>Projects</Typography>
+            <IconButton onClick={handleLeftDrawerClose}>
+              {theme.direction === 'ltr' ? <ChevronLeftIcon /> : <ChevronRightIcon />}
+            </IconButton>
+          </DrawerHeader>
+          <Divider />
+          <Box sx={{ overflowY: 'auto' }}>
+            <ProjectsSidebar />
+          </Box>
+        </Drawer>
+
+        {/* Main Content */}
+        <Main open={rightOpen} leftOpen={leftOpen}>
           <DrawerHeader />
           <DashboardTabs />
           {children}
         </Main>
+
+        {/* Right Drawer - Filters */}
         <Drawer
           sx={{
             width: drawerWidth,
@@ -158,10 +232,10 @@ export default function DrawerLayout({
           }}
           variant="persistent"
           anchor="right"
-          open={open}
+          open={rightOpen}
         >
           <DrawerHeader>
-            <IconButton onClick={handleDrawerClose}>
+            <IconButton onClick={handleRightDrawerClose}>
               {theme.direction === 'ltr' ? <ChevronLeftIcon /> : <ChevronRightIcon />}
             </IconButton>
           </DrawerHeader>

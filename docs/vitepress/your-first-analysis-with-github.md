@@ -47,11 +47,15 @@ following content:
 
 ```json
 {
-  "git_provider": "github",
-  "github_token": "your_github_token",
-  "github_repository": "vuejs/vue",
-  "git_repository_location": "/path/to/cloned/vue",
-  "main_branch": "main"
+  "projects": [
+    {
+      "git_provider": "github",
+      "github_token": "your_github_token",
+      "github_repository": "vuejs/vue",
+      "git_repository_location": "/path/to/cloned/vue",
+      "main_branch": "main"
+    }
+  ]
 }
 ```
 

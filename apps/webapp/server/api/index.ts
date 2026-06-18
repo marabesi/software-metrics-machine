@@ -2,7 +2,7 @@ export { sourceCodeAPI } from './sourceCode';
 export { pipelineAPI } from './pipeline';
 export { pullRequestAPI } from './pullRequest';
 export { sonarqubeAPI } from './sonarqube';
-export { configurationAPI } from './configuration';
+export { configurationAPI, projectsAPI } from './configuration';
 export { fetchAPI, type ApiParams } from './client';
 
 function sourceCodeAPI() {

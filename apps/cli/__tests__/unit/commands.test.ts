@@ -198,6 +198,11 @@ describe('cli: CLI Commands', () => {
   });
 
   describe('Configuration Validation', () => {
+    it('should expose global --project option', () => {
+      const projectOption = program.options.find((opt) => opt.long === '--project');
+      expect(projectOption).toBeDefined();
+    });
+
     it('code command should register summary subcommand', () => {
       const codeCmd = program.commands.find((cmd) => cmd.name() === 'code');
       const summaryCmd = codeCmd?.commands.find((cmd) => cmd.name() === 'summary');

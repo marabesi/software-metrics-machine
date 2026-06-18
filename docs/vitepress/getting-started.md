@@ -57,15 +57,19 @@ In the folder pointed to store the data, create a configuration file named `smm_
 
 ```json
 {
-  "git_provider": "github",
-  "github_token": "your_github_token",
-  "github_repository": "marabesi/json-tool",
-  "git_repository_location": "/your/local/repo"
+  "projects": [
+    {
+      "git_provider": "github",
+      "github_token": "your_github_token",
+      "github_repository": "marabesi/json-tool",
+      "git_repository_location": "/your/local/repo"
+    }
+  ]
 }
 ```
 
 This configuration is the central point to configure the project and give it default values. Replace `your_github_token` with
-the token you generated, and `/your/local/repo` with the path where you cloned the repository. A table wih the full
+the token you generated, and `/your/local/repo` with the path where you cloned the repository. A table with the full
 configuration options is available at [Configuration options](./features/configuration.md).
 
 ### Checkpoint store data

@@ -1,4 +1,3 @@
-import { Command } from 'commander';
 import { createPRsCommands } from './commands/prs';
 import { createPipelinesCommands } from './commands/pipelines';
 import { createCodeCommands } from './commands/code';
@@ -8,17 +7,19 @@ import { createDashboardCommands } from './commands/dashboard';
 import { createToolsCommands } from './commands/tools';
 import { createHealthCheckCommand } from './commands/health-check';
 import { Logger } from '@smmachine/utils';
+import { SmmCommand } from './commands/smm-command';
 
 const logger = new Logger('smm-cli');
 
 export function commands() {
-  const program = new Command();
+  const program = new SmmCommand();
 
   program
     .name('smm')
     .description('Software Metrics Machine - High-performing team metrics')
     .version('1.0.0')
     .option('--debug', 'Enable debug logging')
+    .option('--project <name>', 'Select active project by name (github_repository)')
     .hook('preAction', (thisCommand) => {
       const options = thisCommand.opts();
       if (options.debug || process.env.DEBUG) {

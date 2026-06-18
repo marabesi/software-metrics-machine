@@ -3,6 +3,30 @@ import axios from 'axios';
 import { GithubPrsClient } from '../../../src';
 import { GitHubRateLimitManager } from '../../../src';
 
+async function runWithTimers<T>(action: () => Promise<T>): Promise<T> {
+  vi.useFakeTimers();
+
+  try {
+    const outcomePromise = action().then(
+      (value) => ({ status: 'fulfilled' as const, value }),
+      (error) => ({ status: 'rejected' as const, error })
+    );
+
+    for (let i = 0; i < 20; i++) {
+      await vi.advanceTimersByTimeAsync(1000);
+    }
+
+    const outcome = await outcomePromise;
+    if (outcome.status === 'rejected') {
+      throw outcome.error;
+    }
+
+    return outcome.value;
+  } finally {
+    vi.useRealTimers();
+  }
+}
+
 describe('GithubPrsClient rate limit integration', () => {
   let mockGet: ReturnType<typeof vi.fn>;
   let rateLimitManager: GitHubRateLimitManager;
@@ -49,7 +73,7 @@ describe('GithubPrsClient rate limit integration', () => {
         .mockResolvedValueOnce({ data: [], headers });
 
       const client = new GithubPrsClient('token', 'owner', 'repo', rateLimitManager);
-      await client.fetchPRs();
+      await runWithTimers(() => client.fetchPRs());
 
       expect(waitForResetSpy).toHaveBeenCalled();
     });
@@ -66,7 +90,7 @@ describe('GithubPrsClient rate limit integration', () => {
         .mockResolvedValueOnce({ data: [], headers });
 
       const client = new GithubPrsClient('token', 'owner', 'repo', rateLimitManager);
-      await client.fetchPRs();
+      await runWithTimers(() => client.fetchPRs());
 
       expect(waitForResetSpy).toHaveBeenCalled();
     });
@@ -78,7 +102,7 @@ describe('GithubPrsClient rate limit integration', () => {
       mockGet.mockRejectedValue(error);
 
       const client = new GithubPrsClient('token', 'owner', 'repo', rateLimitManager);
-      await expect(client.fetchPRs()).rejects.toThrow();
+      await expect(runWithTimers(() => client.fetchPRs())).rejects.toThrow();
 
       // Called 2 times (attempt 0, 1) — on attempt 2 it throws without waiting
       expect(waitForResetSpy).toHaveBeenCalledTimes(2);
@@ -143,7 +167,7 @@ describe('GithubPrsClient rate limit integration', () => {
         .mockResolvedValueOnce({ data: [], headers: {} });
 
       const client = new GithubPrsClient('token', 'owner', 'repo', rateLimitManager);
-      await client.fetchPRComments(1);
+      await runWithTimers(() => client.fetchPRComments(1));
 
       expect(waitForResetSpy).toHaveBeenCalled();
     });

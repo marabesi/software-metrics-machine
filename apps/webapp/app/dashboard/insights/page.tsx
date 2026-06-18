@@ -3,8 +3,9 @@ import { DashboardFilters, defaultFilters, parseDashboardFilters } from "@/compo
 import { CardContent, CardHeader } from '@mui/material';
 import { sourceCodeAPI, pipelineAPI, pullRequestAPI, ApiParams } from '@/server/api';
 import { DeploymentFrequency } from '@/components/charts/DeploymentFrequency';
+import { Recommendations } from '@/components/charts/Recommendations';
 import { ContextLink } from '@/components/filters/ContextLink';
-import { DeploymentFrequencyPoint, DeploymentFrequencyResponseItem, PairingIndex, PipelineSummary, PullRequestSummary, ResultWrapper } from './insights-types';
+import { AverageReviewTimeItem, DeploymentFrequencyPoint, DeploymentFrequencyResponseItem, JobsSummaryItem, PairingIndex, PipelineSummary, PullRequestSummary, ResultWrapper } from './insights-types';
 
 function unwrapResult<T>(data: T | ResultWrapper<T>): T {
   if (typeof data === 'object' && data !== null && 'result' in data) {
@@ -76,15 +77,19 @@ export default async function InsightsSection({
   let pipelineSummary: PipelineSummary | null = null;
   let prSummary: PullRequestSummary | null = null;
   let deploymentFrequency: DeploymentFrequencyPoint[] = [];
+  let jobsSummary: JobsSummaryItem[] = [];
+  let averageReviewTime: AverageReviewTimeItem[] = [];
 
   try {
     const apiParams = buildApiParams(filters);
     const pipelineParams = buildPipelineApiParams(filters);
-    const [pairing, pipeline, pr, deployment] = await Promise.all([
+    const [pairing, pipeline, pr, deployment, jobs, reviewTime] = await Promise.all([
       sourceCodeAPI.pairingIndex(apiParams),
       pipelineAPI.summary(apiParams),
       pullRequestAPI.summary(apiParams),
       pipelineAPI.deploymentFrequency(pipelineParams),
+      pipelineAPI.jobsSummary(apiParams),
+      pullRequestAPI.averageReviewTime(apiParams),
     ]);
     const prData = unwrapResult(pr as PullRequestSummary | ResultWrapper<PullRequestSummary>);
     const pairingData = unwrapResult(pairing as PairingIndex | ResultWrapper<PairingIndex>);
@@ -118,13 +123,17 @@ export default async function InsightsSection({
     pairingIndex = pairingData || null;
     pipelineSummary = pipelineData || null;
     prSummary = prData;
-    deploymentFrequency = deploymentData
+    deploymentFrequency = deploymentData;
+    jobsSummary = Array.isArray(jobs) ? jobs : [];
+    averageReviewTime = Array.isArray(reviewTime) ? reviewTime : [];
   } catch (error) {
     console.error('Error fetching insights:', error);
     pairingIndex = null;
     pipelineSummary = null;
     prSummary = null;
     deploymentFrequency = [];
+    jobsSummary = [];
+    averageReviewTime = [];
   }
 
   const pipelineFirstDataPoint = extractDate(pipelineSummary?.first_run);
@@ -229,6 +238,14 @@ export default async function InsightsSection({
           <DeploymentFrequency deploymentFrequency={deploymentFrequency} />
         </CardContent>
       </Card>
+
+      <Recommendations
+        pairingIndex={pairingIndex}
+        prSummary={prSummary ? { total: prSummary.total ?? 0, merged: prSummary.merged ?? 0, closed: prSummary.closed ?? 0, open: prSummary.open ?? 0 } : null}
+        deploymentFrequency={deploymentFrequency}
+        jobsSummary={jobsSummary}
+        averageReviewTime={averageReviewTime}
+      />
     </div>
   );
 }

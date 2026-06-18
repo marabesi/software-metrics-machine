@@ -47,3 +47,17 @@ export interface DeploymentFrequencyPoint {
   week_count: number;
   month_count: number;
 }
+export interface JobsSummaryItem {
+  job_name: string;
+  total_runs: number;
+  avg_duration_minutes: number;
+  success_count: number;
+  failure_count: number;
+  success_rate: number;
+  failure_rate: number;
+  rerun_count: number;
+}
+export interface AverageReviewTimeItem {
+  author: string;
+  avg_hours: number;
+}

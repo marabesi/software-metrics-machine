@@ -1,28 +1,30 @@
-import { Command } from 'commander';
-import { Configuration } from '@smmachine/core/infrastructure/configuration';
+import type { SmmCommand } from './smm-command';
+import { ConfigurationRepository } from '@smmachine/core/infrastructure/configuration-repository';
 import { Logger } from '@smmachine/utils';
 import { PipelinesService } from '@smmachine/core';
 import PipelineFactory from '@smmachine/core/aggregates/pipeline-factory';
 
 const logger = new Logger('PipelinesCommand');
 
-const config = new Configuration(process.env);
-
-const { pipelineRepository, workflowRepository, workflowJobRepository } =
-  PipelineFactory.create(config);
-
-const pipelineService = new PipelinesService(pipelineRepository, config);
+function createPipelineDependencies(projectName?: string) {
+  const configRepo = new ConfigurationRepository(process.env, projectName);
+  const config = configRepo.getActiveConfiguration();
+  const { pipelineRepository, workflowRepository, workflowJobRepository } =
+    PipelineFactory.create(config);
+  const pipelineService = new PipelinesService(pipelineRepository, config);
+  return { config, pipelineRepository, workflowRepository, workflowJobRepository, pipelineService };
+}
 
 type DeploymentFrequencyInterval = Awaited<
   ReturnType<PipelinesService['getDeploymentFrequencyWithAllIntervals']>
 >[number];
 type JobStepAverageTime = Awaited<ReturnType<PipelinesService['getJobStepsAverageTime']>>[number];
 
-export function createPipelinesCommands(program: Command): void {
-  const pipelinesGroup = program.command('pipelines').description('Pipeline/workflow operations');
+export function createPipelinesCommands(program: SmmCommand): void {
+  const pipelinesGroup = program.subcommand('pipelines').description('Pipeline/workflow operations');
 
   pipelinesGroup
-    .command('fetch')
+    .subcommand('fetch')
     .description('Fetch pipeline runs from the configured Git provider')
     .option('--force', 'Force re-fetching pipelines even if already fetched', false)
     .option(
@@ -33,9 +35,11 @@ export function createPipelinesCommands(program: Command): void {
     .option('--end-date <date>', 'Filter runs created on or before this date (ISO 8601)')
     .option('--raw-filters <filters>', 'Raw filters (e.g., status=success,branch=main)')
     .option('--by-day', 'Fetch workflows day by day instead of all at once', false)
-    .action(async (options) => {
+    .actionWithSmm(async (options, command) => {
       try {
         logger.info('🔄 Fetching pipeline runs from the configured Git provider...');
+        const projectName = command.getSelectedProject();
+        const { workflowRepository } = createPipelineDependencies(projectName);
 
         await workflowRepository.fetchPipelines({
           forceRefresh: options.force,
@@ -54,7 +58,7 @@ export function createPipelinesCommands(program: Command): void {
     });
 
   pipelinesGroup
-    .command('fetch-jobs')
+    .subcommand('fetch-jobs')
     .description('Fetch pipeline jobs from the configured Git provider')
     .option('--force', 'Force re-fetching jobs even if already fetched')
     .option(
@@ -65,9 +69,11 @@ export function createPipelinesCommands(program: Command): void {
     .option('--run-end-date <date>', 'Filter pipelines created on or before this date')
     .option('--raw-filters <filters>', 'Raw filters (e.g., status=success,branch=main)')
     .option('--by-day', 'Fetch jobs day by day instead of all at once', false)
-    .action(async (options) => {
+    .actionWithSmm(async (options, command) => {
       try {
         logger.info('🔄 Fetching pipeline jobs from the configured Git provider...');
+        const projectName = command.getSelectedProject();
+        const { workflowJobRepository } = createPipelineDependencies(projectName);
 
         await workflowJobRepository.fetchJobs({
           forceRefresh: options.force,
@@ -86,16 +92,18 @@ export function createPipelinesCommands(program: Command): void {
     });
 
   pipelinesGroup
-    .command('summary')
+    .subcommand('summary')
     .description('Display a summary of pipeline runs')
     .option('--max-workflows <number>', 'Maximum number of workflows to list', '10')
     .option('--start-date <date>', 'Start date (inclusive) in YYYY-MM-DD')
     .option('--end-date <date>', 'End date (inclusive) in YYYY-MM-DD')
     .option('--output <format>', 'Output format (text|json)', 'text')
     .option('--raw-filters <filters>', 'Raw Provider filters string')
-    .action(async (options) => {
+    .actionWithSmm(async (options, command) => {
       try {
         console.log('📊 Generating pipeline summary...');
+        const projectName = command.getSelectedProject();
+        const { pipelineService } = createPipelineDependencies(projectName);
 
         const metrics = await pipelineService.getMetrics({
           startDate: options.startDate,
@@ -119,14 +127,16 @@ export function createPipelinesCommands(program: Command): void {
     });
 
   pipelinesGroup
-    .command('by-status')
+    .subcommand('by-status')
     .description('View pipeline runs grouped by status')
     .option('--start-date <date>', 'Start date (YYYY-MM-DD)')
     .option('--end-date <date>', 'End date (YYYY-MM-DD)')
     .option('--output <format>', 'Output format (text|json)', 'text')
-    .action(async (options) => {
+    .actionWithSmm(async (options, command) => {
       try {
         console.log('📊 Analyzing pipelines by status...');
+        const projectName = command.getSelectedProject();
+        const { pipelineService } = createPipelineDependencies(projectName);
 
         const metrics = await pipelineService.getMetrics({
           startDate: options.startDate,
@@ -158,15 +168,17 @@ export function createPipelinesCommands(program: Command): void {
     });
 
   pipelinesGroup
-    .command('runs-duration')
+    .subcommand('runs-duration')
     .description('View pipeline run durations')
     .option('--start-date <date>', 'Start date (YYYY-MM-DD)')
     .option('--end-date <date>', 'End date (YYYY-MM-DD)')
     .option('--workflow <name>', 'Filter by workflow name')
     .option('--output <format>', 'Output format (text|json)', 'text')
-    .action(async (options) => {
+    .actionWithSmm(async (options, command) => {
       try {
         console.log('⏱️  Analyzing pipeline run durations...');
+        const projectName = command.getSelectedProject();
+        const { pipelineService } = createPipelineDependencies(projectName);
 
         const metrics = await pipelineService.getMetrics({
           startDate: options.startDate,
@@ -190,15 +202,17 @@ export function createPipelinesCommands(program: Command): void {
     });
 
   pipelinesGroup
-    .command('runs-by')
+    .subcommand('runs-by')
     .description('View pipeline runs by time period')
     .option('--start-date <date>', 'Start date (YYYY-MM-DD)')
     .option('--end-date <date>', 'End date (YYYY-MM-DD)')
     .option('--period <period>', 'Time period (day|week|month)', 'week')
     .option('--output <format>', 'Output format (text|json)', 'text')
-    .action(async (options) => {
+    .actionWithSmm(async (options, command) => {
       try {
         console.log('📈 Analyzing pipeline runs by time period...');
+        const projectName = command.getSelectedProject();
+        const { pipelineService } = createPipelineDependencies(projectName);
 
         const metrics = await pipelineService.getDeploymentFrequencyWithAllIntervals({
           startDate: options.startDate,
@@ -227,15 +241,17 @@ export function createPipelinesCommands(program: Command): void {
     });
 
   pipelinesGroup
-    .command('jobs-summary')
+    .subcommand('jobs-summary')
     .description('Display a summary of pipeline jobs')
     .option('--max-jobs <number>', 'Maximum number of jobs to list', '20')
     .option('--start-date <date>', 'Start date (YYYY-MM-DD)')
     .option('--end-date <date>', 'End date (YYYY-MM-DD)')
     .option('--output <format>', 'Output format (text|json)', 'text')
-    .action(async (options) => {
+    .actionWithSmm(async (options, command) => {
       try {
         console.log('📊 Generating pipeline jobs summary...');
+        const projectName = command.getSelectedProject();
+        const { pipelineService } = createPipelineDependencies(projectName);
 
         const metrics = await pipelineService.getJobMetrics({
           startDate: options.startDate,
@@ -265,15 +281,17 @@ export function createPipelinesCommands(program: Command): void {
     });
 
   pipelinesGroup
-    .command('jobs-time-execution')
+    .subcommand('jobs-time-execution')
     .description('View pipeline job execution times')
     .option('--start-date <date>', 'Start date (YYYY-MM-DD)')
     .option('--end-date <date>', 'End date (YYYY-MM-DD)')
     .option('--job <name>', 'Filter by job name')
     .option('--output <format>', 'Output format (text|json)', 'text')
-    .action(async (options) => {
+    .actionWithSmm(async (options, command) => {
       try {
         console.log('⏱️  Analyzing job execution times...');
+        const projectName = command.getSelectedProject();
+        const { pipelineService } = createPipelineDependencies(projectName);
 
         const metrics = await pipelineService.getJobMetrics({
           startDate: options.startDate,
@@ -301,15 +319,17 @@ export function createPipelinesCommands(program: Command): void {
     });
 
   pipelinesGroup
-    .command('jobs-steps-average-time')
+    .subcommand('jobs-steps-average-time')
     .description('View pipeline job steps average execution times')
     .option('--start-date <date>', 'Start date (YYYY-MM-DD)')
     .option('--end-date <date>', 'End date (YYYY-MM-DD)')
     .option('--job <name>', 'Filter by job name')
     .option('--output <format>', 'Output format (text|json)', 'text')
-    .action(async (options) => {
+    .actionWithSmm(async (options, command) => {
       try {
         console.log('⏱️  Analyzing job steps execution times...');
+        const projectName = command.getSelectedProject();
+        const { pipelineService } = createPipelineDependencies(projectName);
 
         const metrics = await pipelineService.getJobStepsAverageTime({
           startDate: options.startDate,
@@ -340,14 +360,16 @@ export function createPipelinesCommands(program: Command): void {
    * View jobs grouped by status
    */
   pipelinesGroup
-    .command('jobs-by-status')
+    .subcommand('jobs-by-status')
     .description('View pipeline jobs grouped by status')
     .option('--start-date <date>', 'Start date (YYYY-MM-DD)')
     .option('--end-date <date>', 'End date (YYYY-MM-DD)')
     .option('--output <format>', 'Output format (text|json)', 'text')
-    .action(async (options) => {
+    .actionWithSmm(async (options, command) => {
       try {
         console.log('📊 Analyzing jobs by status...');
+        const projectName = command.getSelectedProject();
+        const { pipelineService } = createPipelineDependencies(projectName);
 
         const metrics = await pipelineService.getJobMetrics({
           startDate: options.startDate,
@@ -372,15 +394,17 @@ export function createPipelinesCommands(program: Command): void {
     });
 
   pipelinesGroup
-    .command('deployment-frequency')
+    .subcommand('deployment-frequency')
     .description('Calculate deployment frequency (DORA metric)')
     .option('--start-date <date>', 'Start date (YYYY-MM-DD)')
     .option('--end-date <date>', 'End date (YYYY-MM-DD)')
     .option('--period <period>', 'Time period (day|week|month)', 'week')
     .option('--output <format>', 'Output format (text|json)', 'text')
-    .action(async (options) => {
+    .actionWithSmm(async (options, command) => {
       try {
         console.log('🚀 Calculating deployment frequency...');
+        const projectName = command.getSelectedProject();
+        const { config, pipelineService } = createPipelineDependencies(projectName);
 
         const deploymentTargets = config.getDeploymentFrequencyTargets();
         const metrics = await pipelineService.getDeploymentFrequencyWithAllIntervals({
@@ -431,14 +455,16 @@ export function createPipelinesCommands(program: Command): void {
    * Calculate lead time for changes (DORA metric)
    */
   pipelinesGroup
-    .command('lead-time')
+    .subcommand('lead-time')
     .description('Calculate lead time for changes (DORA metric)')
     .option('--start-date <date>', 'Start date (YYYY-MM-DD)')
     .option('--end-date <date>', 'End date (YYYY-MM-DD)')
     .option('--output <format>', 'Output format (text|json)', 'text')
-    .action(async (options) => {
+    .actionWithSmm(async (options, command) => {
       try {
         console.log('⏱️  Calculating lead time for changes...');
+        const projectName = command.getSelectedProject();
+        const { pipelineService } = createPipelineDependencies(projectName);
 
         const metrics = await pipelineService.getMetrics({
           startDate: options.startDate,

@@ -1,12 +1,13 @@
-import { Command } from 'commander';
-import { Configuration } from '@smmachine/core/infrastructure/configuration';
+import type { SmmCommand } from './smm-command';
+import { ConfigurationRepository } from '@smmachine/core/infrastructure/configuration-repository';
 import { Logger } from '@smmachine/utils';
 import { createJiraDependencies } from '../factories/jira-factory';
 
 const logger = new Logger('JiraCommand');
 
-function createJiraOrchestrator() {
-  const config = new Configuration(process.env);
+function createJiraOrchestrator(projectName?: string) {
+  const configRepo = new ConfigurationRepository(process.env, projectName);
+  const config = configRepo.getActiveConfiguration();
   const { issuesRepository } = createJiraDependencies(config, config.getJiraPath());
 
   return issuesRepository;
@@ -22,15 +23,15 @@ function createJiraOrchestrator() {
  *   smm jira fetch-changelog   Fetch issue changelog from Jira
  *   smm jira fetch-comments    Fetch issue comments from Jira
  */
-export function createJiraCommands(program: Command): void {
-  const jiraGroup = program.command('jira').description('Jira integration operations');
+export function createJiraCommands(program: SmmCommand): void {
+  const jiraGroup = program.subcommand('jira').description('Jira integration operations');
 
   /**
    * smm jira fetch-issues [options]
    * Fetch issues from Jira
    */
   jiraGroup
-    .command('fetch-issues')
+    .subcommand('fetch-issues')
     .description('Fetch issues from Jira')
     .option('--force', 'Force re-fetching issues even if already fetched')
     .option(
@@ -41,11 +42,11 @@ export function createJiraCommands(program: Command): void {
     .option('--end-date <date>', 'Filter issues created on or before this date')
     .option('--status <status>', 'Filter by issue status')
     .option('--output <format>', 'Output format (text|json)', 'text')
-    .action(async (options) => {
+    .actionWithSmm(async (options, command) => {
       try {
         console.log('🔄 Fetching issues from Jira...');
-
-        const orchestrator = createJiraOrchestrator();
+        const projectName = command.getSelectedProject();
+        const orchestrator = createJiraOrchestrator(projectName);
         const issues = await orchestrator.getIssues({
           forceRefresh: options.force,
           startDate: options.startDate,
@@ -70,7 +71,7 @@ export function createJiraCommands(program: Command): void {
    * Fetch issue changelog from Jira
    */
   jiraGroup
-    .command('fetch-changelog')
+    .subcommand('fetch-changelog')
     .description('Fetch issue changelog from Jira')
     .option('--issue <key>', 'Specific issue key to fetch changelog for', '')
     .option('--output <format>', 'Output format (text|json)', 'text')
@@ -101,7 +102,7 @@ export function createJiraCommands(program: Command): void {
    * Fetch issue comments from Jira
    */
   jiraGroup
-    .command('fetch-comments')
+    .subcommand('fetch-comments')
     .description('Fetch issue comments from Jira')
     .option('--issue <key>', 'Specific issue key to fetch comments for', '')
     .option('--output <format>', 'Output format (text|json)', 'text')

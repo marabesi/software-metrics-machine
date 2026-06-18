@@ -26,12 +26,16 @@ Example `smm_config.json`:
 
 ```json
 {
-  "git_provider": "github",
-  "github_repository": "owner/repo",
-  "git_repository_location": "/path/to/repository",
-  "sonar_url": "https://sonarqube.example.com",
-  "sonar_token": "your_sonar_token",
-  "sonar_project": "project_key"
+  "projects": [
+    {
+      "git_provider": "github",
+      "github_repository": "owner/repo",
+      "git_repository_location": "/path/to/repository",
+      "sonar_url": "https://sonarqube.example.com",
+      "sonar_token": "your_sonar_token",
+      "sonar_project": "project_key"
+    }
+  ]
 }
 ```
 

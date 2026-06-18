@@ -1,5 +1,5 @@
-import { Command } from 'commander';
-import { Configuration } from '@smmachine/core/infrastructure/configuration';
+import type { SmmCommand } from './smm-command';
+import { ConfigurationRepository } from '@smmachine/core/infrastructure/configuration-repository';
 import { TimeZoneProvider } from '@smmachine/core/infrastructure/timezone-provider';
 import { Logger } from '@smmachine/utils';
 import {
@@ -18,13 +18,19 @@ import {
 
 const logger = new Logger('PRsCommand');
 
-function createPRsOrchestratorRead(): PullRequestsRepository {
-  const config = new Configuration(process.env);
+function createConfigurationRepository(projectName?: string): ConfigurationRepository {
+  return new ConfigurationRepository(process.env, projectName);
+}
+
+function createPRsOrchestratorRead(projectName?: string): PullRequestsRepository {
+  const configRepo = createConfigurationRepository(projectName);
+  const config = configRepo.getActiveConfiguration();
   return PullRequestFactory.create(config);
 }
 
-function createPRsOrchestratorFetch(): GitHubPullRequestsFetchRepository {
-  const config = new Configuration(process.env);
+function createPRsOrchestratorFetch(projectName?: string): GitHubPullRequestsFetchRepository {
+  const configRepo = createConfigurationRepository(projectName);
+  const config = configRepo.getActiveConfiguration();
   const [githubOwner, githubRepo] = config.githubRepository!.split('/');
   const isGitlab = config.gitProvider?.toLowerCase() === 'gitlab';
 
@@ -36,9 +42,10 @@ function createPRsOrchestratorFetch(): GitHubPullRequestsFetchRepository {
   return new GitHubPullRequestsFetchRepository(prsClient, config);
 }
 
-function createPRService(): PRsService {
-  const config = new Configuration(process.env);
-  const prRepository = createPRsOrchestratorRead();
+function createPRService(projectName?: string): PRsService {
+  const configRepo = createConfigurationRepository(projectName);
+  const config = configRepo.getActiveConfiguration();
+  const prRepository = createPRsOrchestratorRead(projectName);
   return new PRsService(prRepository, new TimeZoneProvider(config.timezone));
 }
 
@@ -122,15 +129,15 @@ function buildPRFilters(options: {
  *   smm prs by-month    View PR metrics by month
  *   smm prs by-week     View PR metrics by week
  */
-export function createPRsCommands(program: Command): void {
-  const prsGroup = program.command('prs').description('Pull request operations');
+export function createPRsCommands(program: SmmCommand): void {
+  const prsGroup = program.subcommand('prs').description('Pull request operations');
 
   /**
    * smm prs fetch [options]
    * Fetch pull requests from GitHub
    */
   prsGroup
-    .command('fetch')
+    .subcommand('fetch')
     .description('Fetch pull requests from the configured Git provider')
     .option('--force', 'Force re-fetching PRs even if already fetched')
     .option(
@@ -139,10 +146,11 @@ export function createPRsCommands(program: Command): void {
     )
     .option('--start-date <date>', 'Filter PRs created on or after this date (ISO 8601)')
     .option('--end-date <date>', 'Filter PRs created on or before this date (ISO 8601)')
-    .action(async (options) => {
+    .actionWithSmm(async (options, command) => {
       try {
         logger.info('🔄 Fetching pull requests from the configured Git provider...');
-        const orchestrator = createPRsOrchestratorFetch();
+        const projectName = command.getSelectedProject();
+        const orchestrator = createPRsOrchestratorFetch(projectName);
         await orchestrator.fetchPRs({
           startDate: options.startDate,
           endDate: options.endDate,
@@ -157,22 +165,23 @@ export function createPRsCommands(program: Command): void {
     });
 
   prsGroup
-    .command('fetch-comments')
+    .subcommand('fetch-comments')
     .description('Fetch pull request comments from the configured Git provider')
     .option('--force', 'Force re-fetching PR comments even if already fetched')
     .option('--update', 'Incremental update: only fetch comments updated since last sync')
     .option('--start-date <date>', 'Filter PRs by creation date on or after this date (ISO 8601)')
     .option('--end-date <date>', 'Filter PRs by creation date on or before this date (ISO 8601)')
-    .action(async (options) => {
+    .actionWithSmm(async (options, command) => {
       try {
         logger.info('🔄 Fetching pull request comments from the configured Git provider...');
-        const orchestrator = createPRsOrchestratorRead();
+        const projectName = command.getSelectedProject();
+        const orchestrator = createPRsOrchestratorRead(projectName);
         const prs = await orchestrator.loadPrsWithFilters({
           startDate: options.startDate,
           endDate: options.endDate,
         });
 
-        const orchestratorFetch = createPRsOrchestratorFetch();
+        const orchestratorFetch = createPRsOrchestratorFetch(projectName);
 
         for (const pr of prs) {
           await orchestratorFetch.fetchPRComments(pr.number, {
@@ -192,7 +201,7 @@ export function createPRsCommands(program: Command): void {
    * View PR summary statistics
    */
   prsGroup
-    .command('summary')
+    .subcommand('summary')
     .description('View PR summary statistics')
     .option('--start-date <date>', 'Filter PRs created on or after this date')
     .option('--end-date <date>', 'Filter PRs created on or before this date')
@@ -205,11 +214,12 @@ export function createPRsCommands(program: Command): void {
       'Comma-separated raw filter string (e.g. status=draft,author=john)'
     )
     .option('--output <format>', 'Output format (text|json)', 'text')
-    .action(async (options) => {
+    .actionWithSmm(async (options, command) => {
       try {
         console.log('📊 Generating PR summary...');
 
-        const service = createPRService();
+        const projectName = command.getSelectedProject();
+        const service = createPRService(projectName);
         const filters = buildPRFilters(options);
         const summary = await service.getMetrics(filters);
 
@@ -265,18 +275,19 @@ export function createPRsCommands(program: Command): void {
    * View PR metrics grouped by month
    */
   prsGroup
-    .command('by-month')
+    .subcommand('by-month')
     .description('View PR metrics grouped by month')
     .option('--start-date <date>', 'Filter PRs created on or after this date')
     .option('--end-date <date>', 'Filter PRs created on or before this date')
     .option('--exclude-authors <authors>', 'Comma-separated PR authors to exclude')
     .option('--exclude-commenters <commenters>', 'Comma-separated PR commenters to exclude')
     .option('--output <format>', 'Output format (text|json)', 'text')
-    .action(async (options) => {
+    .actionWithSmm(async (options, command) => {
       try {
         console.log('📊 Analyzing PRs by month...');
 
-        const service = createPRService();
+        const projectName = command.getSelectedProject();
+        const service = createPRService(projectName);
         const metrics = await service.getMetricsByMonth(buildPRFilters(options));
 
         if (options.output === 'json') {
@@ -298,18 +309,19 @@ export function createPRsCommands(program: Command): void {
    * View PR metrics grouped by week
    */
   prsGroup
-    .command('by-week')
+    .subcommand('by-week')
     .description('View PR metrics grouped by week')
     .option('--start-date <date>', 'Filter PRs created on or after this date')
     .option('--end-date <date>', 'Filter PRs created on or before this date')
     .option('--exclude-authors <authors>', 'Comma-separated PR authors to exclude')
     .option('--exclude-commenters <commenters>', 'Comma-separated PR commenters to exclude')
     .option('--output <format>', 'Output format (text|json)', 'text')
-    .action(async (options) => {
+    .actionWithSmm(async (options, command) => {
       try {
         console.log('📊 Analyzing PRs by week...');
 
-        const service = createPRService();
+        const projectName = command.getSelectedProject();
+        const service = createPRService(projectName);
         const metrics = await service.getMetricsByWeek(buildPRFilters(options));
 
         if (options.output === 'json') {
@@ -331,7 +343,7 @@ export function createPRsCommands(program: Command): void {
    * View PRs opened and closed through time
    */
   prsGroup
-    .command('through-time')
+    .subcommand('through-time')
     .description('View PRs opened and closed through time (daily/weekly/monthly)')
     .option('--start-date <date>', 'Filter PRs created on or after this date')
     .option('--end-date <date>', 'Filter PRs created on or before this date')
@@ -342,11 +354,12 @@ export function createPRsCommands(program: Command): void {
     .option('--aggregate-by <period>', 'Aggregation period: day, week, or month (default: week)')
     .option('--raw-filters <filters>', 'Comma-separated raw filter string')
     .option('--output <format>', 'Output format (text|json)', 'text')
-    .action(async (options) => {
+    .actionWithSmm(async (options, command) => {
       try {
         console.log('📊 Analyzing PRs through time...');
 
-        const service = createPRService();
+        const projectName = command.getSelectedProject();
+        const service = createPRService(projectName);
         const filters = buildPRFilters(options);
         const rows = await service.getThroughTime(filters, options.aggregateBy);
 
@@ -371,7 +384,7 @@ export function createPRsCommands(program: Command): void {
    * View PRs grouped by author
    */
   prsGroup
-    .command('by-author')
+    .subcommand('by-author')
     .description('View PRs grouped by author')
     .option('--start-date <date>', 'Filter PRs created on or after this date')
     .option('--end-date <date>', 'Filter PRs created on or before this date')
@@ -382,11 +395,12 @@ export function createPRsCommands(program: Command): void {
     .option('--top <number>', 'Show top N authors', '10')
     .option('--raw-filters <filters>', 'Comma-separated raw filter string')
     .option('--output <format>', 'Output format (text|json)', 'text')
-    .action(async (options) => {
+    .actionWithSmm(async (options, command) => {
       try {
         console.log('📊 Analyzing PRs by author...');
 
-        const service = createPRService();
+        const projectName = command.getSelectedProject();
+        const service = createPRService(projectName);
         const filters = buildPRFilters(options);
         const authors = await service.getByAuthor(filters, Number(options.top));
 
@@ -411,7 +425,7 @@ export function createPRsCommands(program: Command): void {
    * View average review time by author
    */
   prsGroup
-    .command('average-review-time')
+    .subcommand('average-review-time')
     .description('View average review time (days) by author')
     .option('--start-date <date>', 'Filter PRs created on or after this date')
     .option('--end-date <date>', 'Filter PRs created on or before this date')
@@ -422,11 +436,12 @@ export function createPRsCommands(program: Command): void {
     .option('--top <number>', 'Show top N authors', '10')
     .option('--raw-filters <filters>', 'Comma-separated raw filter string')
     .option('--output <format>', 'Output format (text|json)', 'text')
-    .action(async (options) => {
+    .actionWithSmm(async (options, command) => {
       try {
         console.log('📊 Calculating average review time...');
 
-        const service = createPRService();
+        const projectName = command.getSelectedProject();
+        const service = createPRService(projectName);
         const filters = buildPRFilters(options);
         const reviews = await service.getAverageReviewTime(filters, Number(options.top));
 
@@ -451,7 +466,7 @@ export function createPRsCommands(program: Command): void {
    * View average PR open time by period
    */
   prsGroup
-    .command('average-open')
+    .subcommand('average-open')
     .description('View average PR open time (days) aggregated by day/week/month')
     .option('--start-date <date>', 'Filter PRs created on or after this date')
     .option('--end-date <date>', 'Filter PRs created on or before this date')
@@ -462,11 +477,12 @@ export function createPRsCommands(program: Command): void {
     .option('--aggregate-by <period>', 'Aggregation period: day, week, or month (default: week)')
     .option('--raw-filters <filters>', 'Comma-separated raw filter string')
     .option('--output <format>', 'Output format (text|json)', 'text')
-    .action(async (options) => {
+    .actionWithSmm(async (options, command) => {
       try {
         console.log('📊 Calculating average PR open time...');
 
-        const service = createPRService();
+        const projectName = command.getSelectedProject();
+        const service = createPRService(projectName);
         const filters = buildPRFilters(options);
         const periods = await service.getAverageOpenBy(filters, options.aggregateBy);
 
@@ -491,7 +507,7 @@ export function createPRsCommands(program: Command): void {
    * View average comments per PR
    */
   prsGroup
-    .command('average-comments')
+    .subcommand('average-comments')
     .description('View average number of comments per PR')
     .option('--start-date <date>', 'Filter PRs created on or after this date')
     .option('--end-date <date>', 'Filter PRs created on or before this date')
@@ -505,11 +521,12 @@ export function createPRsCommands(program: Command): void {
     )
     .option('--raw-filters <filters>', 'Comma-separated raw filter string')
     .option('--output <format>', 'Output format (text|json)', 'text')
-    .action(async (options) => {
+    .actionWithSmm(async (options, command) => {
       try {
         console.log('📊 Calculating average comments per PR...');
 
-        const service = createPRService();
+        const projectName = command.getSelectedProject();
+        const service = createPRService(projectName);
         const filters = buildPRFilters(options);
 
         if (options.aggregateBy) {
