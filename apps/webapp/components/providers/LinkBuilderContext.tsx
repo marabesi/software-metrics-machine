@@ -1,6 +1,6 @@
 'use client';
 
-import { createContext, ReactElement, useContext, useMemo } from 'react';
+import { createContext, ReactNode, useContext, useMemo } from 'react';
 import { UrlBuilder, createUrlBuilder } from '@/server/utils/urlBuilder';
 import { DashboardGlobalConfiguration } from '@/server/api/configuration';
 
@@ -24,7 +24,7 @@ export const LinkBuilderProvider = ({
   children,
 }: {
   config: DashboardGlobalConfiguration;
-  children?: ReactElement | undefined;
+  children?: ReactNode | undefined;
 }) => {
   const urlBuilder = useMemo(() => createUrlBuilder(config), [config]);
   const contextValue = useMemo(() => ({ urlBuilder, config }), [urlBuilder, config]);

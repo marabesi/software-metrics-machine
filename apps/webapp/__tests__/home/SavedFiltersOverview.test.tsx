@@ -1,6 +1,21 @@
-import { render, screen, waitFor } from '@testing-library/react';
+import { fireEvent, render, screen, waitFor } from '@testing-library/react';
 import SavedFiltersOverview from '@/components/home/SavedFiltersOverview';
 import { defaultFilters } from '@/components/filters/DashboardFilters';
+import { ProjectsProvider } from '@/components/providers/ProjectsContext';
+
+function renderSavedFiltersOverview() {
+  return render(
+    <ProjectsProvider
+      projects={[
+        { github_repository: 'owner/repo-a' },
+        { github_repository: 'owner/repo-b' },
+      ]}
+      initialActiveProject="owner/repo-a"
+    >
+      <SavedFiltersOverview />
+    </ProjectsProvider>,
+  );
+}
 
 describe('SavedFiltersOverview', () => {
   beforeEach(() => {
@@ -59,7 +74,7 @@ describe('SavedFiltersOverview', () => {
       ],
     }));
 
-    render(<SavedFiltersOverview />);
+    renderSavedFiltersOverview();
 
     await waitFor(() => {
       expect(screen.getByText('owner/repo-a')).toBeInTheDocument();
@@ -79,10 +94,44 @@ describe('SavedFiltersOverview', () => {
     expect(sourceCodeLink).toHaveAttribute('href', '/dashboard/source-code?aggregateMetric=sum&ignorePatternFiles=dist%2F**&includePatternFiles=src%2F**&topEntries=20&typeChurn=commits&aggregateBy=week&sonarqubeRemoveFolders=true');
   });
 
-  it('renders the empty state when there are no saved filters', () => {
-    render(<SavedFiltersOverview />);
+  it('selects the saved filter project before opening it', async () => {
+    document.cookie = 'smm_active_project=owner%2Frepo-a;path=/;max-age=31536000';
+    window.localStorage.setItem('smm.saved-filters', JSON.stringify({
+      version: 1,
+      filters: [
+        {
+          id: 'source-code-filter',
+          name: 'Repo B Hotspots',
+          section: 'source-code',
+          pathname: '/dashboard/source-code',
+          filters: {
+            ...defaultFilters,
+            ignorePatternFiles: 'dist/**',
+            includePatternFiles: 'src/**',
+            typeChurn: 'commits',
+            aggregateMetric: 'sum',
+          },
+          repository: 'owner/repo-b',
+          createdAt: '2026-06-18T08:00:00.000Z',
+        },
+      ],
+    }));
 
-    expect(screen.getByText('Saved Views')).toBeInTheDocument();
+    renderSavedFiltersOverview();
+
+    const savedFilterLink = await screen.findByRole('link', { name: /Repo B Hotspots/i });
+    savedFilterLink.addEventListener('click', (event) => event.preventDefault());
+    fireEvent.click(savedFilterLink);
+
+    expect(document.cookie).toContain('smm_active_project=owner%2Frepo-b');
+  });
+
+  it('renders the empty state when there are no saved filters', async () => {
+    renderSavedFiltersOverview();
+
+    await waitFor(() => {
+      expect(screen.getByText('Saved Views')).toBeInTheDocument();
+    });
     expect(screen.getByText('Save filters from any dashboard page and your shortcuts will appear here.')).toBeInTheDocument();
   });
 });

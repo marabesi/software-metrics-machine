@@ -1,17 +1,15 @@
 'use client';
 
-import { createContext, ReactNode, useContext } from 'react';
+import { createContext, ReactNode, useCallback, useContext, useEffect, useMemo, useState } from 'react';
 import { ProjectItem } from '@/server/api/configuration';
 
 interface ProjectsContextValue {
   projects: ProjectItem[];
   activeProject: string | undefined;
+  selectProject: (projectName: string) => void;
 }
 
-const ProjectsContext = createContext<ProjectsContextValue>({
-  projects: [],
-  activeProject: undefined,
-});
+const ProjectsContext = createContext<ProjectsContextValue | undefined>(undefined);
 
 export const useProjects = (): ProjectsContextValue => {
   const context = useContext(ProjectsContext);
@@ -23,15 +21,31 @@ export const useProjects = (): ProjectsContextValue => {
 
 export const ProjectsProvider = ({
   projects,
-  activeProject,
+  initialActiveProject,
   children,
 }: {
   projects: ProjectItem[];
-  activeProject?: string;
+  initialActiveProject?: string;
   children?: ReactNode | undefined;
 }) => {
+  const [activeProject, setActiveProject] = useState<string | undefined>(initialActiveProject);
+
+  useEffect(() => {
+    setActiveProject(initialActiveProject);
+  }, [initialActiveProject]);
+
+  const selectProject = useCallback((projectName: string) => {
+    setActiveProject(projectName);
+    document.cookie = `smm_active_project=${encodeURIComponent(projectName)};path=/;max-age=31536000`;
+  }, []);
+
+  const contextValue = useMemo(
+    () => ({ projects, activeProject, selectProject }),
+    [activeProject, projects, selectProject],
+  );
+
   return (
-    <ProjectsContext.Provider value={{ projects, activeProject }}>
+    <ProjectsContext.Provider value={contextValue}>
       {children}
     </ProjectsContext.Provider>
   );

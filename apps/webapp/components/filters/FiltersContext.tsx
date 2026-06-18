@@ -1,6 +1,6 @@
 'use client';
 
-import { createContext, ReactElement, useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react';
+import { createContext, ReactNode, useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import { DashboardFilters, defaultFilters, parseDashboardFilters, serializeDashboardFilters } from './DashboardFilters';
 
@@ -25,7 +25,7 @@ export const FiltersProvider = ({
   children,
 }: {
   initialFilters?: DashboardFilters;
-  children?: ReactElement | undefined;
+  children?: ReactNode | undefined;
 }) => {
   const router = useRouter();
   const pathname = usePathname();

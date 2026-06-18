@@ -9,11 +9,11 @@ import FolderIcon from '@mui/icons-material/Folder';
 import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 
 export default function ProjectsSidebar() {
-  const { projects, activeProject } = useProjects();
+  const { projects, activeProject, selectProject } = useProjects();
 
   const handleProjectClick = (projectName: string) => {
     // Switch project and drop stale filter params from the current URL.
-    document.cookie = `smm_active_project=${encodeURIComponent(projectName)};path=/;max-age=31536000`;
+    selectProject(projectName);
 
     const nextUrl = new URL(window.location.href);
     nextUrl.search = '';

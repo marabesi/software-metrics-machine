@@ -8,6 +8,7 @@ import {
   SavedFilterEntry,
   SavedFiltersStore,
 } from '@/components/filters/saved-filters-store';
+import { useProjects } from '@/components/providers/ProjectsContext';
 
 const sectionOrder: DashboardSection[] = [
   'insights',
@@ -38,6 +39,7 @@ function repositoryLabel(repository: string): string {
 }
 
 export default function SavedFiltersOverview() {
+  const { selectProject } = useProjects();
   const savedFiltersStore = useMemo(() => new SavedFiltersStore(), []);
   const [savedFilters, setSavedFilters] = useState<SavedFilterEntry[]>([]);
 
@@ -132,6 +134,7 @@ export default function SavedFiltersOverview() {
                         <Link
                           key={entry.id}
                           href={href}
+                          onClick={() => selectProject(entry.repository)}
                           className="flex items-center justify-between rounded-lg border border-slate-200 px-3 py-2 text-sm text-slate-700 transition-colors hover:border-blue-300 hover:bg-blue-50 hover:text-blue-700"
                         >
                           <span className="font-medium">{entry.name}</span>
