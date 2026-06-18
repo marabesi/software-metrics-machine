@@ -121,7 +121,7 @@ export function createSonarQubeCommands(program: SmmCommand): void {
         const projectName = command.getSelectedProject();
         const configRepo = new ConfigurationRepository(process.env, projectName);
         const config = configRepo.getActiveConfiguration();
-        const analysis = new SonarqubeLocalAnalysis(config);
+        const analysis = new SonarqubeLocalAnalysis(config, configRepo);
         const result = await analysis.run({
           containerName: String(options.containerServerName),
           scannerContainerName: String(options.scannerContainerName),

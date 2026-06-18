@@ -1,5 +1,4 @@
 import { Command } from 'commander';
-import type { CommandOptions } from 'commander';
 
 type GlobalCliOptions = {
   debug?: boolean;
@@ -21,11 +20,9 @@ export class SmmCommand extends Command {
     return this.command(nameAndArgs) as SmmCommand;
   }
 
-  actionWithSmm(
-    handler: (options: CommandOptions, command: SmmCommand) => void | Promise<void>
-  ): this {
+  actionWithSmm(handler: (options: any, command: SmmCommand) => void | Promise<void>): this {
     return this.action((options: unknown, command: Command) => {
-      return handler(options as CommandOptions, command as unknown as SmmCommand);
+      return handler(options, command as unknown as SmmCommand);
     });
   }
 

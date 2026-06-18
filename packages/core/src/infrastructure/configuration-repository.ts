@@ -1,7 +1,13 @@
 import * as fs from 'fs';
 import * as path from 'path';
 import { logger } from '@smmachine/utils';
-import { Configuration, ISmmConfigFile, ISmmProjectConfig } from './configuration';
+import {
+  Configuration,
+  DeploymentFrequencyTarget,
+  IConfiguration,
+  ISmmConfigFile,
+  ISmmProjectConfig,
+} from './configuration';
 
 /**
  * Repository interface for accessing project configurations.
@@ -12,6 +18,11 @@ export interface IConfigurationRepository {
    * Returns the active Configuration instance for the current project.
    */
   getActiveConfiguration(): Configuration;
+
+  /**
+   * Creates a Configuration directly from a project entry.
+   */
+  fromProjectConfig(projectConfig: ISmmProjectConfig): Configuration;
 
   /**
    * Returns all project configurations from smm_config.json.
@@ -44,6 +55,11 @@ export interface IConfigurationRepository {
   getProjectByIndex(index: number): ISmmProjectConfig | undefined;
 
   /**
+   * Returns the root-level default GitHub token from smm_config.json.
+   */
+  getDefaultGithubToken(): string | undefined;
+
+  /**
    * Persists changes to the active project configuration.
    */
   save(): void;
@@ -73,20 +89,73 @@ export class ConfigurationRepository implements IConfigurationRepository {
     this.configPath = path.resolve(`${envObj.SMM_STORE_DATA_AT}/smm_config.json`);
     this.rawConfig = this.loadRawConfig();
     this.projects = this.extractProjects();
+
+    if (Array.isArray(this.rawConfig.projects) && this.projects.length === 0) {
+      throw new Error('smm_config.json has empty projects array.');
+    }
+
     this.activeProjectIndex =
       this.projects.length > 0 ? this.resolveActiveProjectIndex(projectName) : 0;
 
-    // Only create Configuration if there's a projects array with content
     if (this.projects.length > 0) {
-      this.configuration = new Configuration(envObj, projectName);
+      this.configuration = this.fromProjectConfig(this.projects[this.activeProjectIndex]);
     } else {
-      // No projects — create a minimal configuration from env vars only
-      this.configuration = new Configuration(envObj);
+      this.configuration = this.fromRootConfig(this.rawConfig);
     }
   }
 
   getActiveConfiguration(): Configuration {
     return this.configuration;
+  }
+
+  fromProjectConfig(projectConfig: ISmmProjectConfig): Configuration {
+    return this.buildConfiguration(projectConfig as unknown as Record<string, unknown>);
+  }
+
+  private fromRootConfig(configData: Record<string, unknown>): Configuration {
+    return this.buildConfiguration(configData);
+  }
+
+  private buildConfiguration(configData: Record<string, unknown>): Configuration {
+    const config = Object.create(Configuration.prototype) as Configuration;
+
+    const c = configData as unknown as Record<string, string | undefined>;
+    config.gitProvider = c.git_provider || this.env.GIT_PROVIDER;
+    config.githubToken =
+      c.github_token || this.getDefaultGithubToken() || this.env.GITHUB_TOKEN;
+    config.gitlabToken = c.gitlab_token || this.env.GITLAB_TOKEN;
+    config.githubRepository = c.github_repository || this.env.GITHUB_REPO;
+    config.storeData = this.env.SMM_STORE_DATA_AT!;
+    config.gitRepositoryLocation =
+      c.git_repository_location || this.env.GIT_REPOSITORY_PATH || '';
+    config.deploymentFrequencyTargets = this.normalizeDeploymentFrequencyTargets(configData);
+    config.mainBranch = c.main_branch;
+    config.dashboardStartDate = c.dashboard_start_date;
+    config.dashboardEndDate = c.dashboard_end_date;
+    config.dashboardColor = c.dashboard_color;
+
+    let logLevel: string = 'CRITICAL';
+    if (c.log_level) {
+      logLevel = c.log_level;
+    }
+    if (this.env.LOGGING_LEVEL) {
+      logLevel = this.env.LOGGING_LEVEL;
+    }
+    config.loggingLevel = logLevel as IConfiguration['loggingLevel'];
+
+    config.jiraUrl = c.jira_url || this.env.JIRA_URL;
+    config.jiraEmail = c.jira_email || this.env.JIRA_EMAIL;
+    config.jiraToken = c.jira_token || this.env.JIRA_TOKEN;
+    config.jiraProject = c.jira_project || this.env.JIRA_PROJECT;
+    config.sonarUrl = c.sonar_url || this.env.SONAR_URL;
+    config.sonarToken = c.sonar_token || this.env.SONAR_TOKEN;
+    config.sonarProject = c.sonar_project || this.env.SONAR_PROJECT;
+    config.sonarLocalRunnerToken = c.sonar_local_runner_token;
+    config.storeLogs = configData.store_logs === true || configData.STORE_LOGS === true;
+    config.timezone = c.timezone || this.env.SMM_TIMEZONE || 'UTC';
+    config.validate();
+
+    return config;
   }
 
   getAllProjects(): ISmmProjectConfig[] {
@@ -105,10 +174,6 @@ export class ConfigurationRepository implements IConfigurationRepository {
     return this.getProjectByRepository(name);
   }
 
-  getEnv(): Record<string, string | undefined> {
-    return this.env;
-  }
-
   getProjectByIndex(index: number): ISmmProjectConfig | undefined {
     if (index < 0 || index >= this.projects.length) {
       return undefined;
@@ -116,8 +181,25 @@ export class ConfigurationRepository implements IConfigurationRepository {
     return this.projects[index];
   }
 
+  getDefaultGithubToken(): string | undefined {
+    return typeof this.rawConfig.github_token === 'string' ? this.rawConfig.github_token : undefined;
+  }
+
   save(): void {
-    this.configuration.save();
+    const rawConfig = this.loadRawConfig();
+
+    const projectUpdate: Partial<ISmmProjectConfig> = {
+      sonar_local_runner_token: this.configuration.sonarLocalRunnerToken,
+    };
+
+    if (Array.isArray(rawConfig.projects) && rawConfig.projects[this.activeProjectIndex]) {
+      Object.assign(rawConfig.projects[this.activeProjectIndex], projectUpdate);
+    }
+
+    fs.writeFileSync(this.configPath, JSON.stringify(rawConfig, null, 2), 'utf-8');
+    this.rawConfig = rawConfig;
+    this.projects = this.extractProjects();
+    logger.debug(`Configuration saved to file: ${this.configPath}`);
   }
 
   private loadRawConfig(): ISmmConfigFile & Record<string, unknown> {
@@ -291,5 +373,30 @@ export class ConfigurationRepository implements IConfigurationRepository {
       );
     }
     return found;
+  }
+
+  private normalizeDeploymentFrequencyTargets(
+    configData: Record<string, unknown>
+  ): DeploymentFrequencyTarget[] | undefined {
+    const configuredTargets = configData.deployment_frequency_targets;
+
+    if (Array.isArray(configuredTargets)) {
+      const targets = configuredTargets
+        .map((target): DeploymentFrequencyTarget | null => {
+          if (!target || typeof target !== 'object') {
+            return null;
+          }
+
+          const pipeline = typeof target.pipeline === 'string' ? target.pipeline.trim() : '';
+          const job = typeof target.job === 'string' ? target.job.trim() : '';
+
+          return pipeline && job ? { pipeline, job } : null;
+        })
+        .filter((target): target is DeploymentFrequencyTarget => target !== null);
+
+      return targets.length > 0 ? targets : undefined;
+    }
+
+    return undefined;
   }
 }

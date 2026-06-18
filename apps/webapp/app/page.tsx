@@ -42,7 +42,9 @@ export default function Home() {
       <div className="max-w-6xl mx-auto">
         <div className="text-center space-y-8 mb-16">
           <h1 className="text-5xl font-bold text-gray-900">
-            Software Metrics Machine
+            <Link href="/" className="inline-block">
+              Software Metrics Machine
+            </Link>
           </h1>
           <p className="text-xl text-gray-600 max-w-2xl mx-auto">
             Analyze your repository&apos;s health with comprehensive metrics for source code,

@@ -55,7 +55,7 @@ function buildDataDirectories(config: Configuration) {
  * All providers and repositories are initialized here.
  *
  * Dependencies:
- * - Configuration: Loads environment variables
+ * - ConfigurationRepository: Loads environment variables and smm_config.json
  * - GitHub Clients: Real API integration
  * - Jira Client: Issue tracking
  * - SonarQube Client: Code quality metrics
@@ -91,7 +91,7 @@ function buildDataDirectories(config: Configuration) {
         if (projectName) {
           const projectConfig = configRepo.getProjectByName(projectName);
           if (projectConfig) {
-            return Configuration.fromProjectConfig(projectConfig, configRepo.getEnv());
+            return configRepo.fromProjectConfig(projectConfig);
           }
         }
         // Fallback: use default active configuration

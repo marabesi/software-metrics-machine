@@ -5,6 +5,7 @@ import { spawn } from 'node:child_process';
 import { randomBytes } from 'node:crypto';
 import { Logger } from '@smmachine/utils';
 import { Configuration } from '../../infrastructure/configuration';
+import type { IConfigurationRepository } from '../../infrastructure/configuration-repository';
 
 type CommandExecutionResult = {
   code: number;
@@ -96,7 +97,10 @@ export class SonarqubeLocalAnalysis {
   private readonly logger: Logger;
   private readonly localDataFilePath: string;
 
-  constructor(private readonly config: Configuration) {
+  constructor(
+    private readonly config: Configuration,
+    private readonly configurationRepository?: IConfigurationRepository
+  ) {
     this.logger = new Logger('SonarqubeLocalAnalysis');
     this.localDataFilePath = resolve(config.getSonarqubePath(), LOCAL_SONARQUBE_TOKEN_FILE);
   }
@@ -177,7 +181,7 @@ export class SonarqubeLocalAnalysis {
       options.scannerToken || (await this.getToken(hostUrl, options.adminUser, effectivePassword));
     if (options.scannerToken && options.scannerToken !== this.config.sonarLocalRunnerToken) {
       this.config.sonarLocalRunnerToken = options.scannerToken;
-      this.config.save();
+      this.saveConfiguration();
     }
     const projectKey = this.getProjectKey(options.scannerOptions);
 
@@ -363,7 +367,7 @@ export class SonarqubeLocalAnalysis {
 
   private clearLocalData(): void {
     this.config.sonarLocalRunnerToken = undefined;
-    this.config.save();
+    this.saveConfiguration();
 
     if (existsSync(this.localDataFilePath)) {
       this.logger.info(
@@ -510,7 +514,7 @@ export class SonarqubeLocalAnalysis {
     }
 
     this.config.sonarLocalRunnerToken = payload.token;
-    this.config.save();
+    this.saveConfiguration();
 
     this.writeLocalData(sanitizedUrl, {
       generatedAt: new Date().toISOString(),
@@ -519,5 +523,13 @@ export class SonarqubeLocalAnalysis {
     });
 
     return payload.token;
+  }
+
+  private saveConfiguration(): void {
+    if (!this.configurationRepository) {
+      throw new Error('ConfigurationRepository is required to persist configuration changes.');
+    }
+
+    this.configurationRepository.save();
   }
 }

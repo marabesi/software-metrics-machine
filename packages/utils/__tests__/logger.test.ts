@@ -13,12 +13,10 @@ describe('Logger', () => {
   let tempDir: string | undefined;
 
   beforeEach(() => {
-    Logger.configureDefaults({ level: 'INFO', filePath: undefined });
     logger = new Logger('TestLogger', 'DEBUG');
   });
 
   afterEach(() => {
-    Logger.configureDefaults({ level: 'INFO', filePath: undefined });
     if (tempDir) {
       rmSync(tempDir, { recursive: true, force: true });
       tempDir = undefined;
@@ -116,7 +114,7 @@ describe('Logger', () => {
 
   it('should allow file path changes after creation', () => {
     const logPath = createTempLogPath();
-    Logger.configureDefaults({ level: 'INFO', storeLogs: true });
+    logger = new Logger('TestLogger', { level: 'INFO', storeLogs: true });
     logger.setFilePath(logPath);
 
     logger.info('Runtime file path message');
@@ -125,15 +123,17 @@ describe('Logger', () => {
     expect(contents).toContain('[INFO] [TestLogger] Runtime file path message');
   });
 
-  it('should use configured defaults for existing logger instances', () => {
+  it('should use INFO level when no level is configured', () => {
     const logPath = createTempLogPath();
-    logger = new Logger('DefaultFileLogger');
+    logger = new Logger('DefaultFileLogger', { filePath: logPath, storeLogs: true });
 
-    Logger.configureDefaults({ level: 'DEBUG', filePath: logPath, storeLogs: true });
     logger.debug('Default file path message');
+    logger.info('Info file path message');
 
     const contents = readFileSync(logPath, 'utf8');
     expect(logger.getFilePath()).toBe(logPath);
-    expect(contents).toContain('[DEBUG] [DefaultFileLogger] Default file path message');
+    expect(logger.getLevel()).toBe('INFO');
+    expect(contents).not.toContain('Default file path message');
+    expect(contents).toContain('[INFO] [DefaultFileLogger] Info file path message');
   });
 });

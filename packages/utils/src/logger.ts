@@ -18,10 +18,6 @@ export interface LoggerOptions {
 }
 
 export class Logger {
-  private static defaultLevel: LogLevel = 'INFO';
-  private static defaultFilePath: string | undefined;
-  private static defaultStoreLogs = false;
-
   private level: LogLevel | undefined;
   private name: string;
   private filePath?: string;
@@ -47,14 +43,6 @@ export class Logger {
     this.level = levelOrOptions.level;
     this.filePath = levelOrOptions.filePath;
     this.storeLogs = levelOrOptions.storeLogs;
-  }
-
-  static configureDefaults(options: LoggerOptions): void {
-    if (options.level) {
-      Logger.defaultLevel = options.level;
-    }
-    Logger.defaultFilePath = options.filePath;
-    Logger.defaultStoreLogs = options.storeLogs === true;
   }
 
   private shouldLog(level: LogLevel): boolean {
@@ -87,10 +75,7 @@ export class Logger {
   }
 
   private appendToFile(formattedMessage: string, data?: unknown): void {
-    const shouldStoreLogs = this.storeLogs ?? Logger.defaultStoreLogs;
-    const filePath = this.filePath || Logger.defaultFilePath;
-
-    if (!shouldStoreLogs || !filePath) {
+    if (!this.storeLogs || !this.filePath) {
       return;
     }
 
@@ -98,8 +83,8 @@ export class Logger {
     const line = formattedData ? `${formattedMessage} ${formattedData}` : formattedMessage;
 
     try {
-      mkdirSync(dirname(filePath), { recursive: true });
-      appendFileSync(filePath, `${line}\n`, 'utf8');
+      mkdirSync(dirname(this.filePath), { recursive: true });
+      appendFileSync(this.filePath, `${line}\n`, 'utf8');
     } catch {
       // Logging should never make the main application fail.
     }
@@ -151,7 +136,7 @@ export class Logger {
   }
 
   getLevel(): LogLevel {
-    return this.level || Logger.defaultLevel;
+    return this.level || 'INFO';
   }
 
   setFilePath(filePath?: string): void {
@@ -159,7 +144,7 @@ export class Logger {
   }
 
   getFilePath(): string | undefined {
-    return this.filePath || Logger.defaultFilePath;
+    return this.filePath;
   }
 }
 

@@ -2,7 +2,7 @@
 
 export SMM_STORE_DATA_AT=$1
 
-PROJECT=example
+PROJECT=example/repo
 
 start_date=2026-03-10
 end_date=2026-06-06

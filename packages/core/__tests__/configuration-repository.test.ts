@@ -2,22 +2,17 @@
  * Tests for ConfigurationRepository
  */
 
-import { mkdtempSync, rmSync, writeFileSync } from 'node:fs';
+import { mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
-import { Logger } from '@smmachine/utils';
 import { afterEach, beforeEach, describe, it, expect } from 'vitest';
 import { ConfigurationRepository } from '../src/infrastructure/configuration-repository';
+import type { ISmmProjectConfig } from '../src/infrastructure/configuration';
 
 describe('ConfigurationRepository', () => {
   let tempDir: string | undefined;
 
-  beforeEach(() => {
-    Logger.configureDefaults({ level: 'INFO', filePath: undefined });
-  });
-
   afterEach(() => {
-    Logger.configureDefaults({ level: 'INFO', filePath: undefined });
     if (tempDir) {
       rmSync(tempDir, { recursive: true, force: true });
       tempDir = undefined;
@@ -63,6 +58,81 @@ describe('ConfigurationRepository', () => {
       expect(config.githubToken).toBe('token-a');
     });
 
+    it('should normalize deployment frequency targets for the active configuration', () => {
+      writeFileSync(
+        join(tempDir, 'smm_config.json'),
+        JSON.stringify({
+          projects: [
+            {
+              github_repository: 'org/repo-a',
+              git_repository_location: '/tmp/repo-a',
+              deployment_frequency_targets: [
+                { pipeline: ' .github/workflows/release.yml ', job: ' deploy-production ' },
+                { pipeline: '.github/workflows/mobile.yml', job: 'deploy-mobile' },
+              ],
+            },
+          ],
+        }),
+        'utf-8'
+      );
+
+      const repo = new ConfigurationRepository({ SMM_STORE_DATA_AT: tempDir }, 'org/repo-a');
+
+      expect(repo.getActiveConfiguration().getDeploymentFrequencyTargets()).toEqual([
+        { pipeline: '.github/workflows/release.yml', job: 'deploy-production' },
+        { pipeline: '.github/workflows/mobile.yml', job: 'deploy-mobile' },
+      ]);
+    });
+
+    it('should expose root github_token as default token', () => {
+      writeFileSync(
+        join(tempDir, 'smm_config.json'),
+        JSON.stringify({
+          github_token: 'default-token',
+          projects: [
+            {
+              github_repository: 'org/repo-a',
+              git_repository_location: '/tmp/repo-a',
+            },
+          ],
+        }),
+        'utf-8'
+      );
+
+      const repo = new ConfigurationRepository({ SMM_STORE_DATA_AT: tempDir }, 'org/repo-a');
+
+      expect(repo.getDefaultGithubToken()).toBe('default-token');
+      expect(repo.getActiveConfiguration().githubToken).toBe('default-token');
+    });
+
+    it('should use root github_token default when creating configuration from project config', () => {
+      writeFileSync(
+        join(tempDir, 'smm_config.json'),
+        JSON.stringify({
+          github_token: 'default-token',
+          projects: [
+            {
+              github_repository: 'org/repo-a',
+              git_repository_location: '/tmp/repo-a',
+            },
+          ],
+        }),
+        'utf-8'
+      );
+
+      const repo = new ConfigurationRepository(
+        {
+          SMM_STORE_DATA_AT: tempDir,
+          GITHUB_TOKEN: 'env-token',
+        },
+        'org/repo-a'
+      );
+      const projectConfig = repo.getProjectByName('org/repo-a');
+
+      expect(projectConfig).toBeDefined();
+      expect(repo.fromProjectConfig(projectConfig!).githubToken).toBe('default-token');
+    });
+
     it('should default to first project when project is not specified', () => {
       const repo = new ConfigurationRepository({ SMM_STORE_DATA_AT: tempDir });
       const config = repo.getActiveConfiguration();
@@ -101,6 +171,20 @@ describe('ConfigurationRepository', () => {
       const repo = new ConfigurationRepository({ SMM_STORE_DATA_AT: tempDir }, 'org/repo-b');
       const config = repo.getActiveConfiguration();
       expect(config.githubRepository).toBe('org/repo-b');
+    });
+
+    it('should save changes to the active project', () => {
+      const repo = new ConfigurationRepository({ SMM_STORE_DATA_AT: tempDir }, 'org/repo-b');
+      const config = repo.getActiveConfiguration();
+      config.sonarLocalRunnerToken = 'local-token-b';
+
+      repo.save();
+
+      const saved = JSON.parse(
+        readFileSync(join(tempDir, 'smm_config.json'), 'utf-8')
+      ) as Record<string, ISmmProjectConfig[]>;
+      expect(saved.projects[0].sonar_local_runner_token).toBeUndefined();
+      expect(saved.projects[1].sonar_local_runner_token).toBe('local-token-b');
     });
 
     it('should throw when project not found', () => {

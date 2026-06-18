@@ -2,23 +2,17 @@
  * Tests for Infrastructure
  */
 
-import { existsSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
+import { mkdtempSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
-import { Logger, logger } from '@smmachine/utils';
-import { afterEach, beforeEach, describe, it, expect } from 'vitest';
-import { Configuration } from '../src/infrastructure/configuration';
+import { afterEach, describe, it, expect } from 'vitest';
+import { ConfigurationRepository } from '../src/infrastructure/configuration-repository';
 
 describe('Infrastructure', () => {
   describe('Configuration', () => {
     let tempDir: string | undefined;
 
-    beforeEach(() => {
-      Logger.configureDefaults({ level: 'INFO', filePath: undefined });
-    });
-
     afterEach(() => {
-      Logger.configureDefaults({ level: 'INFO', filePath: undefined });
       if (tempDir) {
         rmSync(tempDir, { recursive: true, force: true });
         tempDir = undefined;
@@ -32,15 +26,14 @@ describe('Infrastructure', () => {
         LOGGING_LEVEL: 'DEBUG',
         GIT_REPOSITORY_PATH: '/tmp/repo',
       };
-      const config = new Configuration(env);
+      const config = new ConfigurationRepository(env).getActiveConfiguration();
       expect(config.githubToken).toBe('gh_test');
       expect(config.loggingLevel).toBe('DEBUG');
       expect(config.storeData).toBe('/tmp');
       expect(config.getLogPath()).toBe(join('/tmp', 'github_', 'smm.log'));
-      expect(logger.getFilePath()).toBe(config.getLogPath());
     });
 
-    it('should store logs in smm.log only when store logs is enabled', () => {
+    it('should load store logs configuration', () => {
       tempDir = mkdtempSync(join(tmpdir(), 'smm-config-'));
       writeFileSync(
         join(tempDir, 'smm_config.json'),
@@ -57,55 +50,30 @@ describe('Infrastructure', () => {
         'utf-8'
       );
 
-      const config = new Configuration({ SMM_STORE_DATA_AT: tempDir });
-      logger.info('Stored configuration log');
+      const config = new ConfigurationRepository({
+        SMM_STORE_DATA_AT: tempDir,
+      }).getActiveConfiguration();
 
       expect(config.storeLogs).toBe(true);
       expect(config.getLogPath()).toBe(join(tempDir, 'github_owner_repo', 'smm.log'));
-      expect(existsSync(config.getLogPath())).toBe(true);
-      expect(readFileSync(config.getLogPath(), 'utf8')).toContain('Stored configuration log');
     });
 
     it('should use default values when env vars not set', () => {
-      const config = new Configuration({ SMM_STORE_DATA_AT: '/tmp' });
+      const config = new ConfigurationRepository({
+        SMM_STORE_DATA_AT: '/tmp',
+      }).getActiveConfiguration();
       expect(config.loggingLevel).toBe('CRITICAL');
       expect(config.storeData).toBe('/tmp');
     });
 
     it('should validate configuration', () => {
-      const config = new Configuration({
+      const config = new ConfigurationRepository({
         SMM_STORE_DATA_AT: '/tmp',
         GIT_REPOSITORY_PATH: '/tmp/repo',
-      });
+      }).getActiveConfiguration();
       const validation = config.validate();
       expect(validation.valid).toBe(true);
       expect(validation.errors).toHaveLength(0);
-    });
-
-    it('should load deployment frequency targets from object array configuration', () => {
-      tempDir = mkdtempSync(join(tmpdir(), 'smm-config-'));
-      writeFileSync(
-        join(tempDir, 'smm_config.json'),
-        JSON.stringify({
-          projects: [
-            {
-              git_repository_location: '/tmp/repo',
-              deployment_frequency_targets: [
-                { pipeline: '.github/workflows/release.yml', job: 'deploy-production' },
-                { pipeline: '.github/workflows/mobile.yml', job: 'deploy-mobile' },
-              ],
-            },
-          ],
-        }),
-        'utf-8'
-      );
-
-      const config = new Configuration({ SMM_STORE_DATA_AT: tempDir });
-
-      expect(config.getDeploymentFrequencyTargets()).toEqual([
-        { pipeline: '.github/workflows/release.yml', job: 'deploy-production' },
-        { pipeline: '.github/workflows/mobile.yml', job: 'deploy-mobile' },
-      ]);
     });
 
     describe('multi-project support', () => {
@@ -130,10 +98,69 @@ describe('Infrastructure', () => {
           'utf-8'
         );
 
-        const config = new Configuration({ SMM_STORE_DATA_AT: tempDir });
+        const config = new ConfigurationRepository({
+          SMM_STORE_DATA_AT: tempDir,
+        }).getActiveConfiguration();
         expect(config.githubRepository).toBe('org/repo-a');
         expect(config.gitRepositoryLocation).toBe('/tmp/repo-a');
         expect(config.githubToken).toBe('token-a');
+      });
+
+      it('should use root github_token as default when selected project has no github_token', () => {
+        tempDir = mkdtempSync(join(tmpdir(), 'smm-config-'));
+        writeFileSync(
+          join(tempDir, 'smm_config.json'),
+          JSON.stringify({
+            github_token: 'default-token',
+            projects: [
+              {
+                github_repository: 'org/repo-a',
+                git_repository_location: '/tmp/repo-a',
+              },
+              {
+                github_repository: 'org/repo-b',
+                git_repository_location: '/tmp/repo-b',
+                github_token: 'project-token',
+              },
+            ],
+          }),
+          'utf-8'
+        );
+
+        const config = new ConfigurationRepository(
+          {
+            SMM_STORE_DATA_AT: tempDir,
+            GITHUB_TOKEN: 'env-token',
+          },
+          'org/repo-a'
+        ).getActiveConfiguration();
+
+        expect(config.githubToken).toBe('default-token');
+      });
+
+      it('should prefer project github_token over root github_token', () => {
+        tempDir = mkdtempSync(join(tmpdir(), 'smm-config-'));
+        writeFileSync(
+          join(tempDir, 'smm_config.json'),
+          JSON.stringify({
+            github_token: 'default-token',
+            projects: [
+              {
+                github_repository: 'org/repo-a',
+                git_repository_location: '/tmp/repo-a',
+                github_token: 'project-token',
+              },
+            ],
+          }),
+          'utf-8'
+        );
+
+        const config = new ConfigurationRepository(
+          { SMM_STORE_DATA_AT: tempDir },
+          'org/repo-a'
+        ).getActiveConfiguration();
+
+        expect(config.githubToken).toBe('project-token');
       });
 
       it('should select project by constructor projectName (github_repository)', () => {
@@ -155,7 +182,10 @@ describe('Infrastructure', () => {
           'utf-8'
         );
 
-        const config = new Configuration({ SMM_STORE_DATA_AT: tempDir }, 'org/repo-b');
+        const config = new ConfigurationRepository(
+          { SMM_STORE_DATA_AT: tempDir },
+          'org/repo-b'
+        ).getActiveConfiguration();
         expect(config.githubRepository).toBe('org/repo-b');
         expect(config.gitRepositoryLocation).toBe('/tmp/repo-b');
       });
@@ -175,9 +205,9 @@ describe('Infrastructure', () => {
           'utf-8'
         );
 
-        const config = new Configuration({
+        const config = new ConfigurationRepository({
           SMM_STORE_DATA_AT: tempDir,
-        });
+        }).getActiveConfiguration();
         expect(config.githubRepository).toBe('org/repo-a');
         expect(config.gitRepositoryLocation).toBe('/tmp/repo-a');
       });
@@ -199,20 +229,20 @@ describe('Infrastructure', () => {
 
         expect(
           () =>
-            new Configuration(
+            new ConfigurationRepository(
               {
                 SMM_STORE_DATA_AT: tempDir,
               },
               'nonexistent/repo'
             )
-        ).toThrow('Project "nonexistent/repo" not found in smm_config.json');
+        ).toThrow('Project "nonexistent/repo" not found');
       });
 
       it('should throw error when projects array is empty', () => {
         tempDir = mkdtempSync(join(tmpdir(), 'smm-config-'));
         writeFileSync(join(tempDir, 'smm_config.json'), JSON.stringify({ projects: [] }), 'utf-8');
 
-        expect(() => new Configuration({ SMM_STORE_DATA_AT: tempDir })).toThrow(
+        expect(() => new ConfigurationRepository({ SMM_STORE_DATA_AT: tempDir })).toThrow(
           'smm_config.json has empty projects array'
         );
       });
@@ -228,7 +258,9 @@ describe('Infrastructure', () => {
           'utf-8'
         );
 
-        const config = new Configuration({ SMM_STORE_DATA_AT: tempDir });
+        const config = new ConfigurationRepository({
+          SMM_STORE_DATA_AT: tempDir,
+        }).getActiveConfiguration();
         expect(config.githubRepository).toBe('org/repo');
         expect(config.gitRepositoryLocation).toBe('/tmp/repo');
       });

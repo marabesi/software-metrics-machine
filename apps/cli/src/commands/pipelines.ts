@@ -21,7 +21,9 @@ type DeploymentFrequencyInterval = Awaited<
 type JobStepAverageTime = Awaited<ReturnType<PipelinesService['getJobStepsAverageTime']>>[number];
 
 export function createPipelinesCommands(program: SmmCommand): void {
-  const pipelinesGroup = program.subcommand('pipelines').description('Pipeline/workflow operations');
+  const pipelinesGroup = program
+    .subcommand('pipelines')
+    .description('Pipeline/workflow operations');
 
   pipelinesGroup
     .subcommand('fetch')
