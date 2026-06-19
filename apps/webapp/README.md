@@ -1,58 +1,60 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# @smmachine/webapp
 
-## Software Metrics Dashboard
+Next.js dashboard for Software Metrics Machine. Displays pull request, pipeline, and code metrics served by the REST API.
 
-This Next.js application provides a comprehensive dashboard for analyzing software metrics including:
-- **Source Code Metrics**: Pairing index, code churn, coupling, entity effort
-- **Pipeline Metrics**: CI/CD runs, job status, deployment frequency
-- **Pull Request Metrics**: Review times, author contributions, PR trends
+## Features
 
-The dashboard consumes a REST API running at `http://localhost:8000`.
+- **Pull request metrics**: review times, author contributions, PR trends
+- **Pipeline metrics**: CI/CD runs, job status, deployment frequency
+- **Source code metrics**: pairing index, code churn, coupling, entity effort
 
-## Getting Started
+## Development
 
-### 1. Install Dependencies
-
-```bash
-npm install
-```
-
-### 2. Configure Environment
-
-Create a `.env.local` file:
+### 1. Install dependencies
 
 ```bash
-cp .env.local.example .env.local
+# From the repo root
+pnpm install
 ```
 
-Default configuration:
-```
+### 2. Configure environment
+
+Create `.env.local` in this directory:
+
+```bash
 SMM_REST_BASE_URL=http://localhost:8000
 ```
 
-### 3. Run Development Server
+> **Note**: `SMM_REST_BASE_URL` is a server-side runtime variable — it is read when the process starts, not inlined at build time. You can change it by setting the env var before starting the server; no rebuild required.
+
+### 3. Start the REST API
+
+The webapp requires the REST API to be running. From the repo root:
 
 ```bash
-pnpm dev
+SMM_STORE_DATA_AT=./.data pnpm --filter @smmachine/rest dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+### 4. Run the dev server
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+```bash
+SMM_REST_BASE_URL=http://localhost:8000 pnpm --filter @smmachine/webapp dev -- -H 0.0.0.0
+```
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+Open http://localhost:3000.
 
-## Learn More
+## Production
 
-To learn more about Next.js, take a look at the following resources:
+In production the webapp is served via the CLI:
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+```bash
+smm dashboard serve   # webapp on :3000, REST API on :3001
+```
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+This requires a full build from the repo root first:
 
-## Deploy on Vercel
+```bash
+SMM_REST_BASE_URL=http://localhost:3001 pnpm run build:npm
+```
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+The webapp uses `output: standalone` — use `smm dashboard serve` or `node .next/standalone/server.js` to serve it. `next start` is not compatible with standalone output.

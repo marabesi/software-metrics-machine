@@ -1,8 +1,6 @@
-# CLI Package - Software Metrics Machine
+# @smmachine/cli
 
-## Overview
-
-The CLI package provides a command-line interface for the Software Metrics Machine, enabling developers and teams to access metrics from the command line.
+Command-line interface for Software Metrics Machine.
 
 ## Installation
 
@@ -10,461 +8,543 @@ The CLI package provides a command-line interface for the Software Metrics Machi
 npm install -g @smmachine/launcher
 ```
 
+## Quick start
+
+```bash
+# 1. Create a data directory
+mkdir -p ~/.smm-data
+
+# 2. Create config
+cat > ~/.smm-data/smm_config.json <<EOF
+{
+  "projects": [{
+    "git_provider": "github",
+    "github_token": "ghp_...",
+    "github_repository": "owner/repo",
+    "git_repository_location": "/path/to/local/clone",
+    "main_branch": "main"
+  }]
+}
+EOF
+
+# 3. Export the data dir and check config is valid
+export SMM_STORE_DATA_AT=~/.smm-data
+smm health-check
+
+# 4. Fetch data and start the dashboard
+smm prs fetch --start-date 2025-01-01 --end-date 2025-06-01
+smm pipelines fetch --start-date 2025-01-01 --end-date 2025-06-01 --by-day
+smm dashboard serve
+```
+
 ## Configuration
 
-The CLI requires configuration for the data providers you want to use. Set the following environment variables:
+`SMM_STORE_DATA_AT` (required) — path to the directory where `smm_config.json` lives and where all fetched data is stored.
 
-### GitHub Configuration
-```bash
-GITHUB_TOKEN=ghp_xxxxxxxxxxxxxxxxxxxxx
-GITHUB_OWNER=yourorg
-GITHUB_REPO=yourrepo
+### `smm_config.json` schema
+
+```json
+{
+  "projects": [
+    {
+      "git_provider": "github",
+      "github_token": "ghp_...",
+      "github_repository": "owner/repo",
+      "git_repository_location": "/absolute/path/to/local/clone",
+      "main_branch": "main",
+      "dashboard_start_date": "2025-01-01",
+      "dashboard_end_date": "2025-12-31",
+      "dashboard_color": "#1976d2",
+      "deployment_frequency_targets": [
+        { "pipeline": ".github/workflows/ci.yml", "job": "deploy" }
+      ],
+      "log_level": "INFO",
+      "store_logs": true,
+      "timezone": "Europe/Madrid",
+      "jira_url": "https://xxx.atlassian.net",
+      "jira_email": "user@example.com",
+      "jira_token": "...",
+      "jira_project": "KAN",
+      "sonar_url": "https://sonarcloud.io",
+      "sonar_token": "...",
+      "sonar_project": "...",
+      "sonar_local_runner_token": "..."
+    }
+  ]
+}
 ```
 
-### Jira Configuration
-```bash
-JIRA_URL=https://jira.company.com
-JIRA_EMAIL=user@company.com
-JIRA_TOKEN=xxxxxxxxxxxxxxxx
-JIRA_PROJECT=PROJ
+Multiple projects are supported. Select the active one with `smm --project owner/repo <command>`.
+
+## Global options
+
+```
+-V, --version           output the version number
+--debug                 enable debug logging
+--project <name>        select active project by github_repository value
+-h, --help              display help
 ```
 
-### SonarQube Configuration
-```bash
-SONARQUBE_URL=https://sonarqube.company.com
-SONARQUBE_TOKEN=squ_xxxxxxxxxxxxxxxxxxxxx
-SONARQUBE_PROJECT=com.company:projectkey
+## Commands
+
+### `smm prs` — Pull request operations
+
+#### `smm prs fetch`
+Fetch pull requests from the configured Git provider.
+
+```
+--force               force re-fetch even if data already exists
+--update              incremental update: fetch only newer items and merge with cache
+--start-date <date>   PRs created on or after this date (ISO 8601)
+--end-date <date>     PRs created on or before this date (ISO 8601)
 ```
 
-### Git Configuration
-```bash
-REPO_PATH=/path/to/repository
+#### `smm prs fetch-comments`
+Fetch pull request comments.
+
+```
+--force               force re-fetch
+--update              incremental update
+--start-date <date>   filter PRs by creation date on or after (ISO 8601)
+--end-date <date>     filter PRs by creation date on or before (ISO 8601)
 ```
 
-### Other Configuration
-```bash
-OUTPUT_DIR=./outputs          # Directory for caching metrics
-DEBUG=true                    # Enable debug logging
-NODE_ENV=production           # development|production
+#### `smm prs summary`
+View PR summary statistics.
+
+```
+--start-date <date>
+--end-date <date>
+--authors <list>              comma-separated authors to include
+--exclude-authors <list>      comma-separated authors to exclude
+--exclude-commenters <list>   comma-separated commenters to exclude
+--labels <list>               comma-separated labels to filter by
+--raw-filters <filters>       raw filter string (e.g. status=draft,author=john)
+--output <format>             text|json  (default: text)
 ```
 
-## Usage
+#### `smm prs by-month`
+View PR metrics grouped by month.
 
-### Pull Request Metrics
-
-Get metrics related to pull requests:
-
-```bash
-# Default format (text)
-smm metrics pr
-
-# With date filtering
-smm metrics pr --start-date 2024-01-01 --end-date 2024-12-31
-
-# JSON output
-smm metrics pr --format json
-
-# CSV format
-smm metrics pr --format csv
-
-# Verbose output (includes stack traces on errors)
-smm metrics pr --verbose
+```
+--start-date <date>
+--end-date <date>
+--exclude-authors <list>
+--exclude-commenters <list>
+--output <format>             text|json  (default: text)
 ```
 
-Output:
+#### `smm prs by-week`
+View PR metrics grouped by week. Same options as `by-month`.
+
+#### `smm prs through-time`
+View PRs opened and closed over time (daily/weekly/monthly).
+
 ```
-⏳ Fetching pull request metrics...
-
-📊 Pull Request Metrics
-═══════════════════════════════════════
-Total PRs: 42
-Lead Time: 2.5 days
-Total Comments: 156
-
-Labels:
-  • bug: 8
-  • feature: 15
-  • docs: 5
-```
-
-### Deployment Metrics
-
-Get deployment frequency and job metrics:
-
-```bash
-# Default (weekly aggregation)
-smm metrics deployment
-
-# Daily aggregation
-smm metrics deployment --frequency day
-
-# With date range
-smm metrics deployment --start-date 2024-01-01 --frequency month
-
-# JSON output
-smm metrics deployment --format json
+--start-date <date>
+--end-date <date>
+--authors <list>
+--exclude-authors <list>
+--exclude-commenters <list>
+--labels <list>
+--aggregate-by <period>       day|week|month  (default: week)
+--raw-filters <filters>
+--output <format>             text|json  (default: text)
 ```
 
-Output:
+#### `smm prs by-author`
+View PRs grouped by author.
+
 ```
-🚀 Deployment Metrics
-═══════════════════════════════════════
-Total Runs: 100
-Success Rate: 95.0%
-
-Deployment Frequency:
-  • 2024-03-20: 5 deployments
-  • 2024-03-21: 4 deployments
-```
-
-### Code Metrics
-
-Get code churn and pairing index:
-
-```bash
-# All code metrics
-smm metrics code
-
-# Filter by specific authors
-smm metrics code --authors "Alice,Bob"
-
-# With date range
-smm metrics code --start-date 2024-01-01 --end-date 2024-12-31
-
-# CSV format
-smm metrics code --format csv
+--start-date <date>
+--end-date <date>
+--authors <list>
+--exclude-authors <list>
+--exclude-commenters <list>
+--labels <list>
+--top <number>                show top N authors  (default: 10)
+--raw-filters <filters>
+--output <format>             text|json  (default: text)
 ```
 
-Output:
+#### `smm prs average-review-time`
+View average review time (days) by author. Same options as `by-author`.
+
+#### `smm prs average-open`
+View average PR open time (days) aggregated by period.
+
 ```
-💻 Code Metrics
-═══════════════════════════════════════
-Pairing Index: 45%
-Code Churn: +1520 -890
-
-File Coupling (5 pairs):
-  • src/auth.ts ↔ src/middleware.ts
-    Coupling: 85.3%
-  • src/db.ts ↔ src/models/user.ts
-    Coupling: 92.1%
-```
-
-### Issue Metrics
-
-Get metrics from Jira:
-
-```bash
-# All issues
-smm metrics issues
-
-# Filter by status
-smm metrics issues --status Done
-
-# With date range
-smm metrics issues --start-date 2024-01-01
-
-# JSON output
-smm metrics issues --format json
+--start-date <date>
+--end-date <date>
+--authors <list>
+--exclude-authors <list>
+--exclude-commenters <list>
+--labels <list>
+--aggregate-by <period>       day|week|month  (default: week)
+--raw-filters <filters>
+--output <format>             text|json  (default: text)
 ```
 
-Output:
+#### `smm prs average-comments`
+View average number of comments per PR. Same options as `average-open`.
+
+---
+
+### `smm pipelines` — Pipeline/workflow operations
+
+#### `smm pipelines fetch`
+Fetch pipeline runs from the configured Git provider.
+
 ```
-🎫 Issue Metrics
-═══════════════════════════════════════
-Total Issues: 320
-
-Recent Issues:
-  • [Done] PROJ-001
-    Priority: High
-    Created: 2024-03-20T10:30:00Z
-  • [In Progress] PROJ-002
-    Priority: Medium
-    Created: 2024-03-21T14:15:00Z
-```
-
-### Quality Metrics
-
-Get code quality data from SonarQube:
-
-```bash
-# All quality metrics
-smm metrics quality
-
-# Specific metrics
-smm metrics quality --measures "coverage,complexity"
-
-# JSON output
-smm metrics quality --format json
+--force               force re-fetch
+--update              incremental update
+--start-date <date>   runs created on or after (ISO 8601)
+--end-date <date>     runs created on or before (ISO 8601)
+--raw-filters <f>     raw filters (e.g. status=success,branch=main)
+--by-day              fetch day by day instead of all at once (recommended for large datasets)
 ```
 
-Available measures:
-- coverage
-- complexity
-- sqale_rating
-- duplicated_lines_density
-- ncloc (number of lines of code)
-- vulnerability_rating
+#### `smm pipelines fetch-jobs`
+Fetch pipeline jobs.
 
-Output:
 ```
-✅ Quality Metrics
-═══════════════════════════════════════
-Coverage: 78.5%
-Complexity: 42
-Sqale Rating: A
-Duplicated Lines Density: 2.3%
-Ncloc: 15420
-Vulnerability Rating: A
+--force
+--update
+--run-start-date <date>   filter by pipeline creation date on or after
+--run-end-date <date>     filter by pipeline creation date on or before
+--raw-filters <f>
+--by-day
 ```
 
-### Complete Report
+#### `smm pipelines summary`
+Display a summary of pipeline runs.
 
-Generate a comprehensive report aggregating all metrics:
-
-```bash
-# Text format (default)
-smm metrics report
-
-# With filters
-smm metrics report \
-  --start-date 2024-01-01 \
-  --end-date 2024-12-31 \
-  --authors "Alice,Bob" \
-  --status Done
-
-# JSON format
-smm metrics report --format json
-
-# CSV format
-smm metrics report --format csv
+```
+--max-workflows <n>   maximum number of workflows to list  (default: 10)
+--start-date <date>
+--end-date <date>
+--raw-filters <f>
+--output <format>     text|json  (default: text)
 ```
 
-Output:
+#### `smm pipelines by-status`
+View pipeline runs grouped by status.
+
 ```
-╔════════════════════════════════════════════════════════╗
-║                    Software Metrics Machine            ║
-║                  Comprehensive Report                  ║
-╚════════════════════════════════════════════════════════╝
-Generated: 2024-03-29T10:30:00.000Z
-
-Applied Filters:
-  • startDate: 2024-01-01
-  • endDate: 2024-12-31
-
-📊 Pull Request Metrics
-═══════════════════════════════════════
-Total PRs: 42
-Lead Time: 2.5 days
-...
-
-🚀 Deployment Metrics
-═══════════════════════════════════════
-Total Runs: 100
-Success Rate: 95.0%
-...
+--start-date <date>
+--end-date <date>
+--output <format>     text|json  (default: text)
 ```
 
-## Global Options
+#### `smm pipelines runs-duration`
+View pipeline run durations.
 
-### Debug Logging
-
-Enable detailed logging for troubleshooting:
-
-```bash
-smm --debug metrics pr
-# or
-DEBUG=true smm metrics pr
+```
+--start-date <date>
+--end-date <date>
+--workflow <name>     filter by workflow name
+--output <format>     text|json  (default: text)
 ```
 
-### Help
+#### `smm pipelines runs-by`
+View pipeline runs by time period.
 
-```bash
-smm --help
-smm metrics --help
-smm metrics pr --help
+```
+--start-date <date>
+--end-date <date>
+--period <period>     day|week|month  (default: week)
+--output <format>     text|json  (default: text)
 ```
 
-### Version
+#### `smm pipelines jobs-summary`
+Display a summary of pipeline jobs.
 
-```bash
-smm --version
+```
+--max-jobs <n>        maximum number of jobs to list  (default: 20)
+--start-date <date>
+--end-date <date>
+--output <format>     text|json  (default: text)
 ```
 
-## Error Handling
+#### `smm pipelines jobs-time-execution`
+View pipeline job execution times.
 
-The CLI provides clear error messages:
-
-```bash
-# Missing configuration
-$ smm metrics pr
-❌ Error: No provider configuration found. Please set at least one of: GITHUB_TOKEN, JIRA_URL, SONARQUBE_URL, REPO_PATH
-
-# Wrong arguments
-$ smm metrics deployment --frequency invalid
-❌ Error: Invalid frequency. Use day, week, or month
-
-# Provider error
-$ smm metrics issues
-❌ Error: Failed to connect to Jira. Check JIRA_URL and JIRA_TOKEN
-
-# Verbose mode (includes stack trace)
-$ smm metrics pr --verbose
-❌ Error: Database connection failed
-
-Stack Trace:
-Error: ECONNREFUSED 127.0.0.1:27017
-    at TCPConnectWrap.afterConnect [as oncomplete] (net.js:1141:33)
+```
+--start-date <date>
+--end-date <date>
+--job <name>          filter by job name
+--output <format>     text|json  (default: text)
 ```
 
-## Output Formats
+#### `smm pipelines jobs-steps-average-time`
+View pipeline job steps average execution times.
 
-### Text (Default)
-
-Human-readable format with emojis and formatting:
-
-```bash
-smm metrics pr --format text
+```
+--start-date <date>
+--end-date <date>
+--job <name>
+--output <format>     text|json  (default: text)
 ```
 
-### JSON
+#### `smm pipelines jobs-by-status`
+View pipeline jobs grouped by status.
 
-Machine-readable JSON format, suitable for piping to other tools:
-
-```bash
-smm metrics pr --format json | jq '.leadTime.average'
+```
+--start-date <date>
+--end-date <date>
+--output <format>     text|json  (default: text)
 ```
 
-### CSV
+#### `smm pipelines deployment-frequency`
+Calculate deployment frequency (DORA metric).
 
-Comma-separated values, suitable for Excel or data analysis:
-
-```bash
-smm metrics pr --format csv > metrics.csv
+```
+--start-date <date>
+--end-date <date>
+--period <period>     day|week|month  (default: week)
+--output <format>     text|json  (default: text)
 ```
 
-## Examples
+#### `smm pipelines lead-time`
+Calculate lead time for changes (DORA metric).
 
-### Daily Report
-
-Create a daily metrics report and save to file:
-
-```bash
-smm metrics report --format json > report-$(date +%Y-%m-%d).json
+```
+--start-date <date>
+--end-date <date>
+--output <format>     text|json  (default: text)
 ```
 
-### Compare Week-over-Week
+---
 
-Get metrics for two different weeks:
+### `smm code` — Code analysis operations
 
-```bash
-echo "=== This Week ==="
-smm metrics pr --start-date 2024-03-20 --end-date 2024-03-26
+> Code analysis requires a local git clone of the repository (`git_repository_location` in config).
+> `smm code codemaat-fetch` additionally requires **Java** to be installed.
 
-echo ""
-echo "=== Last Week ==="
-smm metrics pr --start-date 2024-03-13 --end-date 2024-03-19
+#### `smm code fetch-commits`
+Analyze change sets from the git repository. Run this before `codemaat-fetch`.
+
+```
+--start-date <date>
+--end-date <date>
+--authors <list>      comma-separated authors to filter
+--force               bypass cache and re-read from git
+--buffer <size>       max buffer in MB for git output  (default: 100)
+--output <format>     text|json  (default: text)
 ```
 
-### Export to CSV for Analysis
+#### `smm code codemaat-fetch`
+Run CodeMaat analysis and produce CSV output. Requires `fetch-commits` to have run first. Requires Java.
 
-```bash
-smm metrics report --format csv > metrics.csv
-# Open in Excel or Google Sheets
+```
+--start-date <date>   required
+--end-date <date>
+--subfolder <path>    subfolder within the repo to analyze  (default: repo root)
+--force               regenerate CSV files even if they exist
+--output <format>     text|json  (default: text)
 ```
 
-### Monitor Deployment Frequency
+#### `smm code summary`
+View code summary with pairing insights.
 
-Check deployment frequency every hour:
-
-```bash
-watch -n 3600 'smm metrics deployment | grep "Success Rate"'
+```
+--start-date <date>
+--end-date <date>
+--output <format>     text|json|csv  (default: text)
 ```
 
-### Programmatic Usage
+#### `smm code churn`
+Calculate code churn metrics.
 
-Parse JSON output in scripts:
-
-```bash
-#!/bin/bash
-METRICS=$(smm metrics pr --format json)
-LEAD_TIME=$(echo $METRICS | jq '.leadTime.average')
-echo "Current lead time: ${LEAD_TIME} days"
+```
+--start-date <date>
+--end-date <date>
+--authors <list>
+--output <format>     text|json|csv  (default: text)
 ```
 
-## Troubleshooting
+#### `smm code coupling`
+Analyze code coupling between modules.
 
-### "No provider configuration found"
-
-Make sure at least one provider is configured:
-
-```bash
-# Check environment variables
-env | grep GITHUB
-env | grep JIRA
-env | grep SONARQUBE
-env | grep REPO_PATH
+```
+--start-date <date>
+--end-date <date>
+--min-coupling <n>    minimum coupling threshold  (default: 0.3)
+--output <format>     text|json|csv  (default: text)
 ```
 
-### "Failed to fetch metrics"
+#### `smm code entity-churn`
+Calculate entity-level churn metrics.
 
-1. Check provider credentials:
-   ```bash
-   curl -H "Authorization: token $GITHUB_TOKEN" \
-     https://api.github.com/user
-   ```
+```
+--start-date <date>
+--end-date <date>
+--top <n>             show top N entities  (default: 20)
+--output <format>     text|json|csv  (default: text)
+```
 
-2. Verify network connectivity:
-   ```bash
-   ping api.github.com
-   ```
+#### `smm code entity-effort`
+Calculate entity effort metrics. Same options as `entity-churn`.
 
-3. Enable debug logging:
-   ```bash
-   DEBUG=true smm metrics pr
-   ```
+#### `smm code entity-ownership`
+Analyze entity ownership by developer.
 
-### Slow Response Time
+```
+--start-date <date>
+--end-date <date>
+--entity <path>       specific file/entity to analyze
+--output <format>     text|json|csv  (default: text)
+```
 
-1. Check network connectivity
-2. Verify provider API status
-3. Consider date filtering to reduce data volume:
-   ```bash
-   smm metrics pr --start-date $(date -d '7 days ago' +%Y-%m-%d)
-   ```
+#### `smm code pairing-index`
+Calculate developer pairing index.
+
+```
+--start-date <date>
+--end-date <date>
+--min-shared <n>      minimum shared commits  (default: 2)
+--output <format>     text|json|csv  (default: text)
+```
+
+---
+
+### `smm jira` — Jira integration operations
+
+#### `smm jira fetch-issues`
+Fetch issues from Jira.
+
+```
+--force
+--update              incremental update
+--start-date <date>
+--end-date <date>
+--status <status>     filter by issue status
+--output <format>     text|json  (default: text)
+```
+
+#### `smm jira fetch-changelog`
+Fetch issue changelog. Note: limited support in the current version.
+
+```
+--issue <key>         specific issue key
+--output <format>     text|json  (default: text)
+```
+
+#### `smm jira fetch-comments`
+Fetch issue comments. Note: limited support in the current version.
+
+```
+--issue <key>
+--output <format>     text|json  (default: text)
+```
+
+---
+
+### `smm sonarqube` — SonarQube integration operations
+
+#### `smm sonarqube analysis run`
+Start a local SonarQube instance (if needed) and run sonar-scanner via Docker.
+
+```
+--container-server-name <name>     (default: sonarqube)
+--scanner-container-name <name>    (default: sonarqube-scanner)
+--container-server-image <image>   (default: sonarqube:community)
+--scanner-image <image>            (default: sonarsource/sonar-scanner-cli)
+--data-dir <path>                  host path mounted to /opt/sonarqube/data  (default: ./sonarqube_data)
+--server-port <port>               host port mapped to SonarQube 9000  (default: 9000)
+--scanner-host-url <url>           SONAR_HOST_URL passed to scanner
+--scanner-token <token>            SONAR_TOKEN passed to scanner
+--properties <value>               raw SONAR_SCANNER_OPTS value
+--admin-user <user>                (default: admin)
+--admin-password <password>        (default: admin)
+```
+
+#### `smm sonarqube fetch-measures`
+Fetch quality measures from SonarQube.
+
+```
+--metrics <list>      comma-separated metrics  (default: coverage,sqale_rating,complexity,duplicated_lines_density)
+--local               use sonar_local_runner_token instead of sonar_token
+--output <format>     text|json  (default: text)
+```
+
+#### `smm sonarqube fetch-component-tree`
+Fetch component tree with metrics.
+
+```
+--component <key>     component key  (default: configured sonar_project)
+--depth <n>           tree depth, -1 for all  (default: -1)
+--metrics <list>      (default: complexity,cognitive_complexity,ncloc,sqale_rating,coverage)
+--local
+--output <format>     text|json  (default: text)
+```
+
+#### `smm sonarqube fetch-historical-measures`
+Fetch historical measures from SonarQube.
+
+```
+--metrics <list>      (default: sqale_rating,coverage,duplicated_lines_density)
+--start-date <date>
+--end-date <date>
+--update              incremental update since last sync
+--save <file>         save results to a JSON file at the given path
+--local
+--output <format>     text|json  (default: text)
+```
+
+---
+
+### `smm dashboard` — Dashboard operations
+
+#### `smm dashboard serve`
+Start the bundled REST API and webapp servers.
+
+```
+--webapp-port <port>   (default: 3000)
+--rest-port <port>     (default: 3001)
+--host <host>          (default: 0.0.0.0)
+```
+
+Requires a full build (`pnpm run build:npm` from the repo root) before first run.
+
+---
+
+### `smm tools` — Utility tools
+
+#### `smm tools json-merge`
+Merge multiple JSON files into one.
+
+```
+--input <pattern>     glob pattern for input files  (default: *.json)
+--output <file>       output file path  (default: merged.json)
+--pretty              pretty-print the output JSON
+```
+
+---
+
+### `smm health-check`
+Analyze local cache data quality (missing, stale, invalid, coverage gaps).
+
+```
+--provider <name>      all|github|jira|sonarqube  (default: all)
+--max-gap-days <days>  only report gaps larger than N days  (default: 1)
+--output <format>      text|json  (default: text)
+```
+
+---
 
 ## Development
 
-### Building from Source
+Requires **Node.js ≥ 25.2.1** and **pnpm ≥ 10.0.0**.
 
 ```bash
-npm run build -w cli
+# Install dependencies from repo root
+pnpm install
+
+# Run CLI in dev mode (no build step needed)
+# Use an absolute path — the dev script changes into apps/cli/ before running
+SMM_STORE_DATA_AT=$(pwd)/.data pnpm run cli
+
+# Run tests
+pnpm --filter @smmachine/cli test
 ```
-
-### Running in Development Mode
-
-```bash
-npm run dev -w cli -- metrics pr
-```
-
-### Running Tests
-
-```bash
-npm run test -w cli
-```
-
-### Linking Locally
-
-For testing locally without publishing:
-
-```bash
-npm link -w cli
-smm metrics pr
-```
-
-## Contributing
-
-Contributions are welcome! Please follow the existing code style and add tests for new features.
-
-## License
-
-MIT
