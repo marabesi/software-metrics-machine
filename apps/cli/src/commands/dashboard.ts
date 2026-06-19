@@ -1,8 +1,8 @@
-import { Command } from 'commander';
 import { Logger } from '@smmachine/utils';
 import * as fs from 'fs';
 import * as path from 'path';
 import { ChildProcess, spawn } from 'child_process';
+import type { SmmCommand } from './smm-command';
 
 const logger = new Logger('DashboardCommand');
 
@@ -115,20 +115,20 @@ function terminateServices(services: ServiceProcess[]): void {
  * Commands:
  *   smm dashboard serve    Start the dashboard server
  */
-export function createDashboardCommands(program: Command): void {
-  const dashboardGroup = program.command('dashboard').description('Dashboard operations');
+export function createDashboardCommands(program: SmmCommand): void {
+  const dashboardGroup = program.subcommand('dashboard').description('Dashboard operations');
 
   /**
    * smm dashboard serve [options]
    * Start the dashboard server
    */
   dashboardGroup
-    .command('serve')
+    .subcommand('serve')
     .description('Start bundled REST API and dashboard webapp servers')
     .option('--webapp-port <number>', 'Port to run the webapp server on', '3000')
     .option('--rest-port <number>', 'Port to run the REST API server on', '3001')
     .option('--host <host>', 'Host to bind the server to', '0.0.0.0')
-    .action(async (options) => {
+    .actionWithSmm(async (options) => {
       try {
         const webPort = String(options.webappPort);
         const restPort = String(options.restPort);

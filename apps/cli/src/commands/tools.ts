@@ -1,6 +1,6 @@
-import { Command } from 'commander';
 import { Logger } from '@smmachine/utils';
 import * as fs from 'fs';
+import type { SmmCommand } from './smm-command';
 
 const logger = new Logger('ToolsCommand');
 type JsonObject = Record<string, unknown>;
@@ -13,20 +13,20 @@ type JsonObject = Record<string, unknown>;
  * Commands:
  *   smm tools json-merge   Merge multiple JSON files
  */
-export function createToolsCommands(program: Command): void {
-  const toolsGroup = program.command('tools').description('Utility tools');
+export function createToolsCommands(program: SmmCommand): void {
+  const toolsGroup = program.subcommand('tools').description('Utility tools');
 
   /**
    * smm tools json-merge [options]
    * Merge multiple JSON files into one
    */
   toolsGroup
-    .command('json-merge')
+    .subcommand('json-merge')
     .description('Merge multiple JSON files into one')
     .option('--input <pattern>', 'Input file pattern (glob)', '*.json')
     .option('--output <file>', 'Output file path', 'merged.json')
     .option('--pretty', 'Pretty print the output JSON')
-    .action(async (options) => {
+    .actionWithSmm(async (options) => {
       try {
         console.log('🔄 Merging JSON files...');
 

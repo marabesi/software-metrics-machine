@@ -1,4 +1,6 @@
 import { Command } from 'commander';
+import type { Configuration } from '@smmachine/core/infrastructure/configuration';
+import { ConfigurationRepository } from '@smmachine/core/infrastructure/configuration-repository';
 
 type GlobalCliOptions = {
   debug?: boolean;
@@ -12,6 +14,8 @@ type GlobalCliOptions = {
  * utility helpers for global option access.
  */
 export class SmmCommand extends Command {
+  private configurationRepository?: ConfigurationRepository;
+
   override createCommand(name?: string): SmmCommand {
     return new SmmCommand(name);
   }
@@ -22,7 +26,8 @@ export class SmmCommand extends Command {
 
   actionWithSmm(handler: (options: any, command: SmmCommand) => void | Promise<void>): this {
     return this.action((options: unknown, command: Command) => {
-      return handler(options, command as unknown as SmmCommand);
+      const smmCommand = command as unknown as SmmCommand;
+      return handler(options, smmCommand);
     });
   }
 
@@ -32,5 +37,20 @@ export class SmmCommand extends Command {
 
   getSelectedProject(): string | undefined {
     return this.getGlobalOptions().project;
+  }
+
+  getConfigurationRepository(): ConfigurationRepository {
+    if (!this.configurationRepository) {
+      this.configurationRepository = new ConfigurationRepository(
+        process.env,
+        this.getSelectedProject()
+      );
+    }
+
+    return this.configurationRepository;
+  }
+
+  getConfiguration(): Configuration {
+    return this.getConfigurationRepository().getActiveConfiguration();
   }
 }

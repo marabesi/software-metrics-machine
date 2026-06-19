@@ -1,4 +1,3 @@
-import { ConfigurationRepository } from '@smmachine/core/infrastructure/configuration-repository';
 import { Configuration } from '@smmachine/core/infrastructure/configuration';
 import { Logger } from '@smmachine/utils';
 import * as fs from 'fs/promises';
@@ -54,9 +53,7 @@ export function createHealthCheckCommand(program: SmmCommand): void {
     )
     .actionWithSmm(async (options, command) => {
       try {
-        const projectName = command.getSelectedProject();
-        const configRepo = new ConfigurationRepository(process.env, projectName);
-        const config = configRepo.getActiveConfiguration();
+        const config = command.getConfiguration();
         const maxGapDays = Number.parseInt(options.maxGapDays, 10);
 
         if (Number.isNaN(maxGapDays) || maxGapDays < 1) {

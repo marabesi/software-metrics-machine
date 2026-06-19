@@ -1,5 +1,4 @@
 import type { SmmCommand } from './smm-command';
-import { ConfigurationRepository } from '@smmachine/core/infrastructure/configuration-repository';
 import { TimeZoneProvider } from '@smmachine/core/infrastructure/timezone-provider';
 import { Logger } from '@smmachine/utils';
 import {
@@ -18,19 +17,13 @@ import {
 
 const logger = new Logger('PRsCommand');
 
-function createConfigurationRepository(projectName?: string): ConfigurationRepository {
-  return new ConfigurationRepository(process.env, projectName);
-}
-
-function createPRsOrchestratorRead(projectName?: string): PullRequestsRepository {
-  const configRepo = createConfigurationRepository(projectName);
-  const config = configRepo.getActiveConfiguration();
+function createPRsOrchestratorRead(command: SmmCommand): PullRequestsRepository {
+  const config = command.getConfiguration();
   return PullRequestFactory.create(config);
 }
 
-function createPRsOrchestratorFetch(projectName?: string): GitHubPullRequestsFetchRepository {
-  const configRepo = createConfigurationRepository(projectName);
-  const config = configRepo.getActiveConfiguration();
+function createPRsOrchestratorFetch(command: SmmCommand): GitHubPullRequestsFetchRepository {
+  const config = command.getConfiguration();
   const [githubOwner, githubRepo] = config.githubRepository!.split('/');
   const isGitlab = config.gitProvider?.toLowerCase() === 'gitlab';
 
@@ -42,10 +35,9 @@ function createPRsOrchestratorFetch(projectName?: string): GitHubPullRequestsFet
   return new GitHubPullRequestsFetchRepository(prsClient, config);
 }
 
-function createPRService(projectName?: string): PRsService {
-  const configRepo = createConfigurationRepository(projectName);
-  const config = configRepo.getActiveConfiguration();
-  const prRepository = createPRsOrchestratorRead(projectName);
+function createPRService(command: SmmCommand): PRsService {
+  const config = command.getConfiguration();
+  const prRepository = createPRsOrchestratorRead(command);
   return new PRsService(prRepository, new TimeZoneProvider(config.timezone));
 }
 
@@ -149,8 +141,7 @@ export function createPRsCommands(program: SmmCommand): void {
     .actionWithSmm(async (options, command) => {
       try {
         logger.info('🔄 Fetching pull requests from the configured Git provider...');
-        const projectName = command.getSelectedProject();
-        const orchestrator = createPRsOrchestratorFetch(projectName);
+        const orchestrator = createPRsOrchestratorFetch(command);
         await orchestrator.fetchPRs({
           startDate: options.startDate,
           endDate: options.endDate,
@@ -174,14 +165,13 @@ export function createPRsCommands(program: SmmCommand): void {
     .actionWithSmm(async (options, command) => {
       try {
         logger.info('🔄 Fetching pull request comments from the configured Git provider...');
-        const projectName = command.getSelectedProject();
-        const orchestrator = createPRsOrchestratorRead(projectName);
+        const orchestrator = createPRsOrchestratorRead(command);
         const prs = await orchestrator.loadPrsWithFilters({
           startDate: options.startDate,
           endDate: options.endDate,
         });
 
-        const orchestratorFetch = createPRsOrchestratorFetch(projectName);
+        const orchestratorFetch = createPRsOrchestratorFetch(command);
 
         for (const pr of prs) {
           await orchestratorFetch.fetchPRComments(pr.number, {
@@ -217,9 +207,7 @@ export function createPRsCommands(program: SmmCommand): void {
     .actionWithSmm(async (options, command) => {
       try {
         console.log('📊 Generating PR summary...');
-
-        const projectName = command.getSelectedProject();
-        const service = createPRService(projectName);
+        const service = createPRService(command);
         const filters = buildPRFilters(options);
         const summary = await service.getMetrics(filters);
 
@@ -285,9 +273,7 @@ export function createPRsCommands(program: SmmCommand): void {
     .actionWithSmm(async (options, command) => {
       try {
         console.log('📊 Analyzing PRs by month...');
-
-        const projectName = command.getSelectedProject();
-        const service = createPRService(projectName);
+        const service = createPRService(command);
         const metrics = await service.getMetricsByMonth(buildPRFilters(options));
 
         if (options.output === 'json') {
@@ -319,9 +305,7 @@ export function createPRsCommands(program: SmmCommand): void {
     .actionWithSmm(async (options, command) => {
       try {
         console.log('📊 Analyzing PRs by week...');
-
-        const projectName = command.getSelectedProject();
-        const service = createPRService(projectName);
+        const service = createPRService(command);
         const metrics = await service.getMetricsByWeek(buildPRFilters(options));
 
         if (options.output === 'json') {
@@ -357,9 +341,7 @@ export function createPRsCommands(program: SmmCommand): void {
     .actionWithSmm(async (options, command) => {
       try {
         console.log('📊 Analyzing PRs through time...');
-
-        const projectName = command.getSelectedProject();
-        const service = createPRService(projectName);
+        const service = createPRService(command);
         const filters = buildPRFilters(options);
         const rows = await service.getThroughTime(filters, options.aggregateBy);
 
@@ -398,9 +380,7 @@ export function createPRsCommands(program: SmmCommand): void {
     .actionWithSmm(async (options, command) => {
       try {
         console.log('📊 Analyzing PRs by author...');
-
-        const projectName = command.getSelectedProject();
-        const service = createPRService(projectName);
+        const service = createPRService(command);
         const filters = buildPRFilters(options);
         const authors = await service.getByAuthor(filters, Number(options.top));
 
@@ -439,9 +419,7 @@ export function createPRsCommands(program: SmmCommand): void {
     .actionWithSmm(async (options, command) => {
       try {
         console.log('📊 Calculating average review time...');
-
-        const projectName = command.getSelectedProject();
-        const service = createPRService(projectName);
+        const service = createPRService(command);
         const filters = buildPRFilters(options);
         const reviews = await service.getAverageReviewTime(filters, Number(options.top));
 
@@ -480,9 +458,7 @@ export function createPRsCommands(program: SmmCommand): void {
     .actionWithSmm(async (options, command) => {
       try {
         console.log('📊 Calculating average PR open time...');
-
-        const projectName = command.getSelectedProject();
-        const service = createPRService(projectName);
+        const service = createPRService(command);
         const filters = buildPRFilters(options);
         const periods = await service.getAverageOpenBy(filters, options.aggregateBy);
 
@@ -524,9 +500,7 @@ export function createPRsCommands(program: SmmCommand): void {
     .actionWithSmm(async (options, command) => {
       try {
         console.log('📊 Calculating average comments per PR...');
-
-        const projectName = command.getSelectedProject();
-        const service = createPRService(projectName);
+        const service = createPRService(command);
         const filters = buildPRFilters(options);
 
         if (options.aggregateBy) {

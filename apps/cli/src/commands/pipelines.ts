@@ -1,14 +1,12 @@
 import type { SmmCommand } from './smm-command';
-import { ConfigurationRepository } from '@smmachine/core/infrastructure/configuration-repository';
 import { Logger } from '@smmachine/utils';
 import { PipelinesService } from '@smmachine/core';
 import PipelineFactory from '@smmachine/core/aggregates/pipeline-factory';
 
 const logger = new Logger('PipelinesCommand');
 
-function createPipelineDependencies(projectName?: string) {
-  const configRepo = new ConfigurationRepository(process.env, projectName);
-  const config = configRepo.getActiveConfiguration();
+function createPipelineDependencies(command: SmmCommand) {
+  const config = command.getConfiguration();
   const { pipelineRepository, workflowRepository, workflowJobRepository } =
     PipelineFactory.create(config);
   const pipelineService = new PipelinesService(pipelineRepository, config);
@@ -40,8 +38,7 @@ export function createPipelinesCommands(program: SmmCommand): void {
     .actionWithSmm(async (options, command) => {
       try {
         logger.info('🔄 Fetching pipeline runs from the configured Git provider...');
-        const projectName = command.getSelectedProject();
-        const { workflowRepository } = createPipelineDependencies(projectName);
+        const { workflowRepository } = createPipelineDependencies(command);
 
         await workflowRepository.fetchPipelines({
           forceRefresh: options.force,
@@ -74,8 +71,7 @@ export function createPipelinesCommands(program: SmmCommand): void {
     .actionWithSmm(async (options, command) => {
       try {
         logger.info('🔄 Fetching pipeline jobs from the configured Git provider...');
-        const projectName = command.getSelectedProject();
-        const { workflowJobRepository } = createPipelineDependencies(projectName);
+        const { workflowJobRepository } = createPipelineDependencies(command);
 
         await workflowJobRepository.fetchJobs({
           forceRefresh: options.force,
@@ -104,8 +100,7 @@ export function createPipelinesCommands(program: SmmCommand): void {
     .actionWithSmm(async (options, command) => {
       try {
         console.log('📊 Generating pipeline summary...');
-        const projectName = command.getSelectedProject();
-        const { pipelineService } = createPipelineDependencies(projectName);
+        const { pipelineService } = createPipelineDependencies(command);
 
         const metrics = await pipelineService.getMetrics({
           startDate: options.startDate,
@@ -137,8 +132,7 @@ export function createPipelinesCommands(program: SmmCommand): void {
     .actionWithSmm(async (options, command) => {
       try {
         console.log('📊 Analyzing pipelines by status...');
-        const projectName = command.getSelectedProject();
-        const { pipelineService } = createPipelineDependencies(projectName);
+        const { pipelineService } = createPipelineDependencies(command);
 
         const metrics = await pipelineService.getMetrics({
           startDate: options.startDate,
@@ -179,8 +173,7 @@ export function createPipelinesCommands(program: SmmCommand): void {
     .actionWithSmm(async (options, command) => {
       try {
         console.log('⏱️  Analyzing pipeline run durations...');
-        const projectName = command.getSelectedProject();
-        const { pipelineService } = createPipelineDependencies(projectName);
+        const { pipelineService } = createPipelineDependencies(command);
 
         const metrics = await pipelineService.getMetrics({
           startDate: options.startDate,
@@ -213,8 +206,7 @@ export function createPipelinesCommands(program: SmmCommand): void {
     .actionWithSmm(async (options, command) => {
       try {
         console.log('📈 Analyzing pipeline runs by time period...');
-        const projectName = command.getSelectedProject();
-        const { pipelineService } = createPipelineDependencies(projectName);
+        const { pipelineService } = createPipelineDependencies(command);
 
         const metrics = await pipelineService.getDeploymentFrequencyWithAllIntervals({
           startDate: options.startDate,
@@ -252,8 +244,7 @@ export function createPipelinesCommands(program: SmmCommand): void {
     .actionWithSmm(async (options, command) => {
       try {
         console.log('📊 Generating pipeline jobs summary...');
-        const projectName = command.getSelectedProject();
-        const { pipelineService } = createPipelineDependencies(projectName);
+        const { pipelineService } = createPipelineDependencies(command);
 
         const metrics = await pipelineService.getJobMetrics({
           startDate: options.startDate,
@@ -292,8 +283,7 @@ export function createPipelinesCommands(program: SmmCommand): void {
     .actionWithSmm(async (options, command) => {
       try {
         console.log('⏱️  Analyzing job execution times...');
-        const projectName = command.getSelectedProject();
-        const { pipelineService } = createPipelineDependencies(projectName);
+        const { pipelineService } = createPipelineDependencies(command);
 
         const metrics = await pipelineService.getJobMetrics({
           startDate: options.startDate,
@@ -330,8 +320,7 @@ export function createPipelinesCommands(program: SmmCommand): void {
     .actionWithSmm(async (options, command) => {
       try {
         console.log('⏱️  Analyzing job steps execution times...');
-        const projectName = command.getSelectedProject();
-        const { pipelineService } = createPipelineDependencies(projectName);
+        const { pipelineService } = createPipelineDependencies(command);
 
         const metrics = await pipelineService.getJobStepsAverageTime({
           startDate: options.startDate,
@@ -370,8 +359,7 @@ export function createPipelinesCommands(program: SmmCommand): void {
     .actionWithSmm(async (options, command) => {
       try {
         console.log('📊 Analyzing jobs by status...');
-        const projectName = command.getSelectedProject();
-        const { pipelineService } = createPipelineDependencies(projectName);
+        const { pipelineService } = createPipelineDependencies(command);
 
         const metrics = await pipelineService.getJobMetrics({
           startDate: options.startDate,
@@ -405,8 +393,7 @@ export function createPipelinesCommands(program: SmmCommand): void {
     .actionWithSmm(async (options, command) => {
       try {
         console.log('🚀 Calculating deployment frequency...');
-        const projectName = command.getSelectedProject();
-        const { config, pipelineService } = createPipelineDependencies(projectName);
+        const { config, pipelineService } = createPipelineDependencies(command);
 
         const deploymentTargets = config.getDeploymentFrequencyTargets();
         const metrics = await pipelineService.getDeploymentFrequencyWithAllIntervals({
@@ -465,8 +452,7 @@ export function createPipelinesCommands(program: SmmCommand): void {
     .actionWithSmm(async (options, command) => {
       try {
         console.log('⏱️  Calculating lead time for changes...');
-        const projectName = command.getSelectedProject();
-        const { pipelineService } = createPipelineDependencies(projectName);
+        const { pipelineService } = createPipelineDependencies(command);
 
         const metrics = await pipelineService.getMetrics({
           startDate: options.startDate,

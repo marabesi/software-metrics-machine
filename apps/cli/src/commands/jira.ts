@@ -1,13 +1,11 @@
 import type { SmmCommand } from './smm-command';
-import { ConfigurationRepository } from '@smmachine/core/infrastructure/configuration-repository';
 import { Logger } from '@smmachine/utils';
 import { createJiraDependencies } from '../factories/jira-factory';
 
 const logger = new Logger('JiraCommand');
 
-function createJiraOrchestrator(projectName?: string) {
-  const configRepo = new ConfigurationRepository(process.env, projectName);
-  const config = configRepo.getActiveConfiguration();
+function createJiraOrchestrator(command: SmmCommand) {
+  const config = command.getConfiguration();
   const { issuesRepository } = createJiraDependencies(config, config.getJiraPath());
 
   return issuesRepository;
@@ -45,8 +43,7 @@ export function createJiraCommands(program: SmmCommand): void {
     .actionWithSmm(async (options, command) => {
       try {
         console.log('🔄 Fetching issues from Jira...');
-        const projectName = command.getSelectedProject();
-        const orchestrator = createJiraOrchestrator(projectName);
+        const orchestrator = createJiraOrchestrator(command);
         const issues = await orchestrator.getIssues({
           forceRefresh: options.force,
           startDate: options.startDate,
@@ -75,7 +72,7 @@ export function createJiraCommands(program: SmmCommand): void {
     .description('Fetch issue changelog from Jira')
     .option('--issue <key>', 'Specific issue key to fetch changelog for', '')
     .option('--output <format>', 'Output format (text|json)', 'text')
-    .action(async (options) => {
+    .actionWithSmm(async (options) => {
       try {
         if (!options.issue) {
           console.error('❌ Error: --issue parameter is required');
@@ -106,7 +103,7 @@ export function createJiraCommands(program: SmmCommand): void {
     .description('Fetch issue comments from Jira')
     .option('--issue <key>', 'Specific issue key to fetch comments for', '')
     .option('--output <format>', 'Output format (text|json)', 'text')
-    .action(async (options) => {
+    .actionWithSmm(async (options) => {
       try {
         if (!options.issue) {
           console.error('❌ Error: --issue parameter is required');

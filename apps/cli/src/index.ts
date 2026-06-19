@@ -39,9 +39,9 @@ export function commands() {
 
   // Global help
   program
-    .command('help')
+    .subcommand('help')
     .description('Show help information')
-    .action(() => {
+    .actionWithSmm(() => {
       program.outputHelp();
     });
   return program;

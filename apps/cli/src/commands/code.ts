@@ -3,7 +3,6 @@ import { GitFactory } from '@smmachine/core/aggregates/git-factory';
 import { CodemaatFetchRepository } from '@smmachine/core/providers/codemaat/codemaat-fetch-repository';
 import { CodemaatService } from '@smmachine/core/domain/code/codemaat-service';
 import { Logger } from '@smmachine/utils';
-import { ConfigurationRepository } from '@smmachine/core/infrastructure/configuration-repository';
 import { CodemaatFactory } from '@smmachine/core/aggregates/codemaat-factory';
 import { PairingFactory } from '@smmachine/core/aggregates/pairing-factory';
 import type { CodeChurn } from '@smmachine/core/providers/codemaat/types';
@@ -11,17 +10,8 @@ import path from 'path';
 
 const logger = new Logger('CodeCommand');
 
-function createConfigurationRepository(projectName?: string): ConfigurationRepository {
-  return new ConfigurationRepository(process.env, projectName);
-}
-
-function loadConfiguration(projectName?: string) {
-  const configRepo = createConfigurationRepository(projectName);
-  return configRepo.getActiveConfiguration();
-}
-
-function createCodemaatService(projectName?: string): CodemaatService {
-  const repository = CodemaatFactory.create(loadConfiguration(projectName));
+function createCodemaatService(command: SmmCommand): CodemaatService {
+  const repository = CodemaatFactory.create(command.getConfiguration());
   return new CodemaatService(repository);
 }
 
@@ -37,9 +27,8 @@ export function createCodeCommands(program: SmmCommand): void {
     .actionWithSmm(async (options, command) => {
       try {
         logger.info('📊 Generating code summary...');
-        const projectName = command.getSelectedProject();
 
-        const pairingService = PairingFactory.create(loadConfiguration(projectName));
+        const pairingService = PairingFactory.create(command.getConfiguration());
         const summary = await pairingService.getPairingIndex({
           startDate: options.startDate,
           endDate: options.endDate,
@@ -114,8 +103,7 @@ export function createCodeCommands(program: SmmCommand): void {
     .actionWithSmm(async (options, command) => {
       try {
         logger.info('🔍 Analyzing change sets...');
-        const projectName = command.getSelectedProject();
-        const config = loadConfiguration(projectName);
+        const config = command.getConfiguration();
         const repoPath = config.gitRepositoryLocation;
 
         const factory = GitFactory.create(config);
@@ -163,8 +151,7 @@ export function createCodeCommands(program: SmmCommand): void {
     .actionWithSmm(async (options, command) => {
       try {
         logger.info('🔍 Running CodeMaat analysis...');
-        const projectName = command.getSelectedProject();
-        const config = loadConfiguration(projectName);
+        const config = command.getConfiguration();
         const fetchRepository = new CodemaatFetchRepository(config);
         const result = fetchRepository.fetch({
           startDate: options.startDate,
@@ -210,8 +197,7 @@ export function createCodeCommands(program: SmmCommand): void {
     .actionWithSmm(async (options, command) => {
       try {
         logger.info('📊 Calculating code churn...');
-        const projectName = command.getSelectedProject();
-        const codemaatService = createCodemaatService(projectName);
+        const codemaatService = createCodemaatService(command);
         const metrics = await codemaatService.getCodeChurn({
           startDate: options.startDate,
           endDate: options.endDate,
@@ -256,8 +242,7 @@ export function createCodeCommands(program: SmmCommand): void {
     .actionWithSmm(async (options, command) => {
       try {
         logger.info('🔗 Analyzing code coupling...');
-        const projectName = command.getSelectedProject();
-        const codemaatService = createCodemaatService(projectName);
+        const codemaatService = createCodemaatService(command);
         const coupling = await codemaatService.getFileCoupling({
           ignorePatterns: undefined,
         });
@@ -285,8 +270,7 @@ export function createCodeCommands(program: SmmCommand): void {
     .actionWithSmm(async (options, command) => {
       try {
         logger.info('📊 Calculating entity churn...');
-        const projectName = command.getSelectedProject();
-        const codemaatService = createCodemaatService(projectName);
+        const codemaatService = createCodemaatService(command);
         const metrics = await codemaatService.getCodeChurn({
           startDate: options.startDate,
           endDate: options.endDate,
@@ -320,9 +304,8 @@ export function createCodeCommands(program: SmmCommand): void {
     .actionWithSmm(async (options, command) => {
       try {
         logger.info('⏱️  Calculating entity effort...');
-        const projectName = command.getSelectedProject();
         const maxRows = Number(options.top);
-        const codemaatService = createCodemaatService(projectName);
+        const codemaatService = createCodemaatService(command);
         const metrics = await codemaatService.getEntityEffort({
           top: Number.isFinite(maxRows) ? maxRows : undefined,
         });
@@ -349,8 +332,7 @@ export function createCodeCommands(program: SmmCommand): void {
     .actionWithSmm(async (options, command) => {
       try {
         logger.info('👥 Analyzing entity ownership...');
-        const projectName = command.getSelectedProject();
-        const codemaatService = createCodemaatService(projectName);
+        const codemaatService = createCodemaatService(command);
         const metrics = await codemaatService.getEntityOwnership({
           authors: undefined,
           top: 100,
@@ -384,8 +366,7 @@ export function createCodeCommands(program: SmmCommand): void {
     .actionWithSmm(async (options, command) => {
       try {
         logger.info('👥 Calculating developer pairing index...');
-        const projectName = command.getSelectedProject();
-        const pairingService = PairingFactory.create(loadConfiguration(projectName));
+        const pairingService = PairingFactory.create(command.getConfiguration());
         const pairing = await pairingService.getPairingIndex({
           startDate: options.startDate,
           endDate: options.endDate,
