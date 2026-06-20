@@ -1,7 +1,7 @@
 import * as fs from 'fs/promises';
 import * as os from 'os';
 import * as path from 'path';
-import { describe, expect, it } from 'vitest';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 import { SonarqubeLocalAnalysis } from '../../../src';
 import { MockLoggerBuilder } from '../../mock-logger-builder';
 
@@ -11,7 +11,8 @@ type GetProjectKeyAccessor = {
 
 function buildAnalysis(
   configOverrides: Record<string, unknown> = {},
-  sonarqubePath = '/tmp/unused-sonarqube-path'
+  sonarqubePath = '/tmp/unused-sonarqube-path',
+  configurationRepository: { save: () => void } = { save: () => {} }
 ): SonarqubeLocalAnalysis {
   const configuration = {
     getSonarqubePath: () => sonarqubePath,
@@ -19,7 +20,11 @@ function buildAnalysis(
   };
   const logger = new MockLoggerBuilder().build();
 
-  return new SonarqubeLocalAnalysis(configuration as never, undefined, logger);
+  return new SonarqubeLocalAnalysis(
+    configuration as never,
+    configurationRepository as never,
+    logger
+  );
 }
 
 describe('SonarqubeLocalAnalysis', () => {
@@ -117,6 +122,154 @@ describe('SonarqubeLocalAnalysis', () => {
       const token = await analysis.getToken('http://localhost:9000', 'admin', 'password');
 
       expect(token).toBe('reused-token');
+    });
+  });
+
+  describe('HTTP-backed operations', () => {
+    afterEach(() => {
+      vi.unstubAllGlobals();
+    });
+
+    describe('changePassword', () => {
+      it('updates the password and persists it to local data on success', async () => {
+        const sonarqubePath = await fs.mkdtemp(path.join(os.tmpdir(), 'smm-sq-local-'));
+        const fetchMock = vi.fn().mockResolvedValue({ ok: true });
+        vi.stubGlobal('fetch', fetchMock);
+        const analysis = buildAnalysis({}, sonarqubePath);
+
+        const newPassword = await analysis.changePassword(
+          'http://localhost:9000',
+          'admin',
+          'old-password',
+          'new-password'
+        );
+
+        expect(newPassword).toBe('new-password');
+        expect(fetchMock).toHaveBeenCalledWith(
+          'http://localhost:9000/api/users/change_password',
+          expect.objectContaining({ method: 'POST' })
+        );
+
+        const stored = JSON.parse(
+          await fs.readFile(path.join(sonarqubePath, 'local_sonarqube_data.json'), 'utf-8')
+        );
+        expect(stored.username).toBe('admin');
+        expect(stored.password).toBe('new-password');
+        expect(stored.serverUrl).toBe('http://localhost:9000');
+      });
+
+      it('throws when the change password request fails', async () => {
+        const sonarqubePath = await fs.mkdtemp(path.join(os.tmpdir(), 'smm-sq-local-'));
+        const fetchMock = vi.fn().mockResolvedValue({
+          ok: false,
+          status: 401,
+          statusText: 'Unauthorized',
+          text: () => Promise.resolve('bad credentials'),
+        });
+        vi.stubGlobal('fetch', fetchMock);
+        const analysis = buildAnalysis({}, sonarqubePath);
+
+        await expect(
+          analysis.changePassword('http://localhost:9000', 'admin', 'old-password', 'new-password')
+        ).rejects.toThrow('Failed to update SonarQube admin password. 401 Unauthorized - bad credentials');
+      });
+    });
+
+    describe('ensurePassword', () => {
+      it('returns the stored password without calling fetch when one is already on disk', async () => {
+        const sonarqubePath = await fs.mkdtemp(path.join(os.tmpdir(), 'smm-sq-local-'));
+        await fs.writeFile(
+          path.join(sonarqubePath, 'local_sonarqube_data.json'),
+          JSON.stringify({ serverUrl: 'http://localhost:9000', password: 'stored-password' })
+        );
+        const fetchMock = vi.fn();
+        vi.stubGlobal('fetch', fetchMock);
+        const analysis = buildAnalysis({}, sonarqubePath);
+
+        const password = await analysis.ensurePassword('http://localhost:9000', 'admin', 'default');
+
+        expect(password).toBe('stored-password');
+        expect(fetchMock).not.toHaveBeenCalled();
+      });
+
+      it('generates and persists a new password when none is stored', async () => {
+        const sonarqubePath = await fs.mkdtemp(path.join(os.tmpdir(), 'smm-sq-local-'));
+        const fetchMock = vi.fn().mockResolvedValue({ ok: true });
+        vi.stubGlobal('fetch', fetchMock);
+        const analysis = buildAnalysis({}, sonarqubePath);
+
+        const password = await analysis.ensurePassword('http://localhost:9000', 'admin', 'default');
+
+        expect(password).toMatch(/^smm-/);
+        expect(fetchMock).toHaveBeenCalledWith(
+          'http://localhost:9000/api/users/change_password',
+          expect.objectContaining({ method: 'POST' })
+        );
+
+        const stored = JSON.parse(
+          await fs.readFile(path.join(sonarqubePath, 'local_sonarqube_data.json'), 'utf-8')
+        );
+        expect(stored.password).toBe(password);
+      });
+    });
+
+    describe('generateToken', () => {
+      it('stores the generated token and persists configuration on success', async () => {
+        const sonarqubePath = await fs.mkdtemp(path.join(os.tmpdir(), 'smm-sq-local-'));
+        const fetchMock = vi.fn().mockResolvedValue({
+          ok: true,
+          json: () => Promise.resolve({ token: 'generated-token', login: 'admin' }),
+        });
+        vi.stubGlobal('fetch', fetchMock);
+        const save = vi.fn();
+        const config: Record<string, unknown> = {};
+        const analysis = buildAnalysis(config, sonarqubePath, { save });
+
+        const token = await analysis.generateToken('http://localhost:9000', 'admin', 'password');
+
+        expect(token).toBe('generated-token');
+        expect(save).toHaveBeenCalledTimes(1);
+        expect(fetchMock).toHaveBeenCalledWith(
+          'http://localhost:9000/api/user_tokens/generate',
+          expect.objectContaining({ method: 'POST' })
+        );
+
+        const stored = JSON.parse(
+          await fs.readFile(path.join(sonarqubePath, 'local_sonarqube_data.json'), 'utf-8')
+        );
+        expect(stored.tokenName).toBe('smm-sonarqube-local-token');
+        expect(stored.login).toBe('admin');
+      });
+
+      it('throws when the generate token request fails', async () => {
+        const sonarqubePath = await fs.mkdtemp(path.join(os.tmpdir(), 'smm-sq-local-'));
+        const fetchMock = vi.fn().mockResolvedValue({
+          ok: false,
+          status: 500,
+          statusText: 'Internal Server Error',
+          text: () => Promise.resolve(''),
+        });
+        vi.stubGlobal('fetch', fetchMock);
+        const analysis = buildAnalysis({}, sonarqubePath);
+
+        await expect(
+          analysis.generateToken('http://localhost:9000', 'admin', 'password')
+        ).rejects.toThrow('Failed to generate SonarQube token. 500 Internal Server Error');
+      });
+
+      it('throws when the response payload has no token', async () => {
+        const sonarqubePath = await fs.mkdtemp(path.join(os.tmpdir(), 'smm-sq-local-'));
+        const fetchMock = vi.fn().mockResolvedValue({
+          ok: true,
+          json: () => Promise.resolve({}),
+        });
+        vi.stubGlobal('fetch', fetchMock);
+        const analysis = buildAnalysis({}, sonarqubePath);
+
+        await expect(
+          analysis.generateToken('http://localhost:9000', 'admin', 'password')
+        ).rejects.toThrow('SonarQube token generation response did not include a token.');
+      });
     });
   });
 });
