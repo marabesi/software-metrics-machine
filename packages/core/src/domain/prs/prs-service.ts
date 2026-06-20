@@ -1,5 +1,15 @@
 import { Logger } from '@smmachine/utils';
-import { PRDetails, PRFilters, PRMetrics, PRsByTimeframe, LabelSummary } from './pr-types';
+import {
+  PRDetails,
+  PRFilters,
+  PRMetrics,
+  PRsByTimeframe,
+  LabelSummary,
+  PRSummary,
+  PRSummaryFirstCommentTime,
+  PRSummaryPullRequest,
+  PRSummaryResponse,
+} from './pr-types';
 import { IReadPullRequestsRepository } from '../../aggregates/pull-requests-repository';
 import { TimeZoneProvider } from '../../infrastructure/timezone-provider';
 import { stopWords } from './stop-words';
@@ -197,10 +207,10 @@ export class PRsService implements IPRsService {
     return result.sort((a, b) => b.count - a.count);
   }
 
-  async getSummary(filters?: PRFilters): Promise<unknown> {
+  async getSummary(filters?: PRFilters): Promise<PRSummaryResponse> {
     const prs = await this.filterPRs(filters);
     const merged = prs.filter((pr) => Boolean(pr.mergedAt)).length;
-    const closed = prs.filter((pr) => Boolean(pr.closedAt) && !pr.mergedAt).length;
+    const closed = prs.filter((pr) => Boolean(pr.closedAt)).length;
     const open = prs.filter((pr) => !pr.closedAt && !pr.mergedAt).length;
     const totalComments = prs.reduce((sum, pr) => sum + (pr.totalComments || 0), 0);
     const avgComments = prs.length > 0 ? totalComments / prs.length : 0;
@@ -212,6 +222,7 @@ export class PRsService implements IPRsService {
     const sorted = [...prs].sort(
       (a, b) => this.toTimestamp(a.createdAt) - this.toTimestamp(b.createdAt)
     );
+    const sortedByComments = [...prs].sort((a, b) => (b.totalComments || 0) - (a.totalComments || 0));
 
     const mostCommentedPRs = prs
       .filter((pr) => (pr.totalComments || 0) > 0 && pr.id && pr.title && pr.url)
@@ -224,21 +235,42 @@ export class PRsService implements IPRsService {
         comments_count: pr.totalComments!,
       }));
 
+    const commentsByAuthor = this.extractCommentsByAuthor(prs);
+    const topCommenter = commentsByAuthor[0] || null;
+    const summary: PRSummary = {
+      total_prs: prs.length,
+      merged_prs: merged,
+      closed_prs: closed,
+      prs_without_conclusion: prs.length - merged,
+      open_prs: open,
+      avg_comments_per_pr: avgComments,
+      unique_authors: authorsSet.size,
+      unique_labels: labelSummary.length,
+      labels: labelSummary,
+      first_pr: sorted.length > 0 ? this.toSummaryPullRequest(sorted[0]) : null,
+      last_pr: sorted.length > 0 ? this.toSummaryPullRequest(sorted[sorted.length - 1]) : null,
+      top_themes: this.extractTopThemes(prs),
+      most_commented_pr:
+        sortedByComments.length > 0 && (sortedByComments[0].totalComments || 0) > 0
+          ? {
+              number: sortedByComments[0].number,
+              title: sortedByComments[0].title,
+              author: sortedByComments[0].author?.login || 'unknown',
+              comments: sortedByComments[0].totalComments || 0,
+            }
+          : null,
+      most_commented_prs: mostCommentedPRs,
+      top_commenter: topCommenter
+        ? {
+            login: topCommenter.author,
+            comments: topCommenter.count,
+          }
+        : null,
+      time_to_first_comment_hours: this.calculateFirstCommentTimeSummary(prs),
+    };
+
     return {
-      result: {
-        total_prs: prs.length,
-        merged_prs: merged,
-        closed_prs: closed,
-        open_prs: open,
-        avg_comments_per_pr: avgComments,
-        unique_authors: authorsSet.size,
-        unique_labels: labelSummary.length,
-        labels: labelSummary,
-        first_pr: sorted.length > 0 ? sorted[0] : null,
-        last_pr: sorted.length > 0 ? sorted[sorted.length - 1] : null,
-        top_themes: this.extractTopThemes(prs),
-        most_commented_prs: mostCommentedPRs,
-      },
+      result: summary,
     };
   }
 
@@ -463,6 +495,78 @@ export class PRsService implements IPRsService {
       .sort((a, b) => b.prs - a.prs || a.label.localeCompare(b.label));
   }
 
+  private extractCommentsByAuthor(prs: PRDetails[]): Array<{ author: string; count: number }> {
+    const grouped = new Map<string, number>();
+
+    for (const pr of prs) {
+      for (const comment of pr.comments || []) {
+        const author = comment.author?.login || 'unknown';
+        grouped.set(author, (grouped.get(author) || 0) + 1);
+      }
+    }
+
+    return Array.from(grouped.entries())
+      .map(([author, count]) => ({ author, count }))
+      .sort((a, b) => b.count - a.count || a.author.localeCompare(b.author));
+  }
+
+  private toSummaryPullRequest(pr: PRDetails): PRSummaryPullRequest {
+    return {
+      number: pr.number,
+      title: pr.title,
+      author: pr.author?.login || 'unknown',
+      created: pr.createdAt,
+      merged: pr.mergedAt,
+      closed: pr.closedAt,
+    };
+  }
+
+  private calculateFirstCommentTimeSummary(prs: PRDetails[]): PRSummaryFirstCommentTime {
+    const hoursUntilFirstComment: number[] = [];
+
+    for (const pr of prs) {
+      if (!Array.isArray(pr.comments) || pr.comments.length === 0) {
+        continue;
+      }
+
+      const firstComment = [...pr.comments]
+        .filter((comment) => Boolean(comment.createdAt))
+        .sort((a, b) => this.toTimestamp(a.createdAt) - this.toTimestamp(b.createdAt))[0];
+
+      if (!firstComment) {
+        continue;
+      }
+
+      const prOpenedAt = this.toTimestamp(pr.createdAt);
+      const firstCommentAt = this.toTimestamp(firstComment.createdAt);
+      if (prOpenedAt === 0 || firstCommentAt === 0 || firstCommentAt < prOpenedAt) {
+        continue;
+      }
+
+      hoursUntilFirstComment.push((firstCommentAt - prOpenedAt) / (1000 * 60 * 60));
+    }
+
+    const sorted = [...hoursUntilFirstComment].sort((a, b) => a - b);
+    const average =
+      sorted.length > 0 ? sorted.reduce((sum, value) => sum + value, 0) / sorted.length : 0;
+    const mid = Math.floor(sorted.length / 2);
+    const median =
+      sorted.length === 0
+        ? 0
+        : sorted.length % 2 === 0
+          ? (sorted[mid - 1] + sorted[mid]) / 2
+          : sorted[mid];
+
+    return {
+      average,
+      median,
+      min: sorted[0] || 0,
+      max: sorted[sorted.length - 1] || 0,
+      prs_with_comment: sorted.length,
+      prs_without_comment: prs.length - sorted.length,
+    };
+  }
+
   private normalizeAggregation(aggregateBy?: string): 'day' | 'week' | 'month' {
     const mode = (aggregateBy || 'week').toLowerCase();
     return mode === 'day' || mode === 'month' ? mode : 'week';
@@ -493,20 +597,8 @@ export class PRsService implements IPRsService {
     top?: number
   ): Promise<Array<{ author: string; count: number }>> {
     const prs = await this.filterPRs(filters);
-    const grouped = new Map<string, number>();
-
-    for (const pr of prs) {
-      for (const comment of pr.comments || []) {
-        const author = comment.author?.login || 'unknown';
-        grouped.set(author, (grouped.get(author) || 0) + 1);
-      }
-    }
-
     const maxRows = top || 10;
-    return Array.from(grouped.entries())
-      .map(([author, count]) => ({ author, count }))
-      .sort((a, b) => b.count - a.count)
-      .slice(0, maxRows);
+    return this.extractCommentsByAuthor(prs).slice(0, maxRows);
   }
 
   async getFirstCommentTime(

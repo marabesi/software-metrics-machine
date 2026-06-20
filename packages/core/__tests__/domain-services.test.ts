@@ -172,6 +172,128 @@ describe('PRsService', () => {
     expect(metrics.mergedPRs).toBeGreaterThanOrEqual(0);
   });
 
+  it('should calculate PR summary for CLI and REST consumers', async () => {
+    const prs = [
+      {
+        id: 101,
+        number: 1,
+        title: 'First change',
+        createdAt: '2025-01-01T00:00:00Z',
+        updatedAt: '2025-01-01T00:00:00Z',
+        closedAt: '2025-01-02T00:00:00Z',
+        author: { login: 'alice', id: 1 },
+        labels: [{ name: 'bug' }],
+        state: 'closed',
+        url: 'https://example.test/pulls/1',
+        totalComments: 1,
+        comments: [
+          {
+            url: 'https://example.test/comments/1',
+            body: 'github code review',
+            pull_request_review_id: 1,
+            id: 1,
+            createdAt: '2025-01-01T02:00:00Z',
+            author: { login: 'reviewer', id: 3 },
+            reactions: {
+              url: '',
+              total_count: 0,
+              '+1': 0,
+              '-1': 0,
+              laugh: 0,
+              hooray: 0,
+              confused: 0,
+              heart: 0,
+              rocket: 0,
+              eyes: 0,
+            },
+          },
+        ],
+      },
+      {
+        id: 102,
+        number: 2,
+        title: 'Second change',
+        createdAt: '2025-01-03T00:00:00Z',
+        updatedAt: '2025-01-03T00:00:00Z',
+        mergedAt: '2025-01-04T00:00:00Z',
+        closedAt: '2025-01-04T00:00:00Z',
+        author: { login: 'bob', id: 2 },
+        labels: [{ name: 'bug' }],
+        state: 'merged',
+        url: 'https://example.test/pulls/2',
+        totalComments: 2,
+        comments: [
+          {
+            url: 'https://example.test/comments/2',
+            body: 'github code',
+            pull_request_review_id: 2,
+            id: 2,
+            createdAt: '2025-01-03T04:00:00Z',
+            author: { login: 'reviewer', id: 3 },
+            reactions: {
+              url: '',
+              total_count: 0,
+              '+1': 0,
+              '-1': 0,
+              laugh: 0,
+              hooray: 0,
+              confused: 0,
+              heart: 0,
+              rocket: 0,
+              eyes: 0,
+            },
+          },
+          {
+            url: 'https://example.test/comments/3',
+            body: 'code',
+            pull_request_review_id: 3,
+            id: 3,
+            createdAt: '2025-01-03T05:00:00Z',
+            author: { login: 'other-reviewer', id: 4 },
+            reactions: {
+              url: '',
+              total_count: 0,
+              '+1': 0,
+              '-1': 0,
+              laugh: 0,
+              hooray: 0,
+              confused: 0,
+              heart: 0,
+              rocket: 0,
+              eyes: 0,
+            },
+          },
+        ],
+      },
+    ];
+    prsService = new PRsService(
+      new ReadPullRequestsRepositoryBuilder().withPullRequests(prs).build(),
+      undefined,
+      logger
+    );
+
+    const summary = (await prsService.getSummary()).result;
+
+    expect(summary.total_prs).toBe(2);
+    expect(summary.merged_prs).toBe(1);
+    expect(summary.closed_prs).toBe(2);
+    expect(summary.prs_without_conclusion).toBe(1);
+    expect(summary.avg_comments_per_pr).toBe(1.5);
+    expect(summary.labels).toEqual([{ label: 'bug', prs: 2 }]);
+    expect(summary.first_pr?.number).toBe(1);
+    expect(summary.last_pr?.number).toBe(2);
+    expect(summary.most_commented_pr).toMatchObject({ number: 2, comments: 2 });
+    expect(summary.top_commenter).toEqual({ login: 'reviewer', comments: 2 });
+    expect(summary.time_to_first_comment_hours).toMatchObject({
+      average: 3,
+      median: 3,
+      min: 2,
+      max: 4,
+      prs_with_comment: 2,
+      prs_without_comment: 0,
+    });
+  });
+
   it('should get metrics by month', async () => {
     const metrics = await prsService.getMetricsByMonth();
 

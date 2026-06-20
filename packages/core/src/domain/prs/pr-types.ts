@@ -75,6 +75,69 @@ export interface PRMetrics {
   labelSummary: LabelSummary[];
 }
 
+export interface PRSummaryPullRequest {
+  number: number;
+  title: string;
+  author: string;
+  created: string;
+  merged?: string;
+  closed?: string;
+}
+
+export interface PRSummaryMostCommentedPullRequest {
+  number: number;
+  title: string;
+  author: string;
+  comments: number;
+}
+
+export interface PRSummaryLabel {
+  label: string;
+  prs: number;
+}
+
+export interface PRSummaryTheme {
+  text: string;
+  value: number;
+}
+
+export interface PRSummaryTopCommenter {
+  login: string;
+  comments: number;
+}
+
+export interface PRSummaryFirstCommentTime {
+  average: number;
+  median: number;
+  min: number;
+  max: number;
+  prs_with_comment: number;
+  prs_without_comment: number;
+}
+
+export interface PRSummary {
+  total_prs: number;
+  merged_prs: number;
+  closed_prs: number;
+  prs_without_conclusion: number;
+  open_prs: number;
+  avg_comments_per_pr: number;
+  unique_authors: number;
+  unique_labels: number;
+  labels: PRSummaryLabel[];
+  first_pr: PRSummaryPullRequest | null;
+  last_pr: PRSummaryPullRequest | null;
+  top_themes: PRSummaryTheme[];
+  most_commented_pr: PRSummaryMostCommentedPullRequest | null;
+  most_commented_prs: MostCommentedPRData[];
+  top_commenter: PRSummaryTopCommenter | null;
+  time_to_first_comment_hours: PRSummaryFirstCommentTime;
+}
+
+export interface PRSummaryResponse {
+  result: PRSummary;
+}
+
 export interface CommentAuthor {
   author: string;
   count: number;

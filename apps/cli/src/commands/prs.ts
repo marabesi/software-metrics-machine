@@ -1,14 +1,12 @@
 import type { SmmCommand } from './smm-command';
 import { TimeZoneProvider } from '@smmachine/core/infrastructure/timezone-provider';
 import {
-  CommentAuthor,
-  FirstCommentMetric,
   GithubPrsClient,
   GitlabMrClient,
   GitHubRateLimitManager,
   GitHubPullRequestsFetchRepository,
-  MostCommentedPRData,
   PRFilters,
+  PRSummary,
   PRsService,
   PullRequestFactory,
   PullRequestsRepository,
@@ -110,6 +108,102 @@ function buildPRFilters(options: {
   }
 
   return filters;
+}
+
+function formatOptionalDate(value?: string): string {
+  return value || 'None';
+}
+
+function formatHours(value: number): string {
+  return Number.isInteger(value) ? String(value) : String(Math.round(value * 100) / 100);
+}
+
+export function formatPRSummary(summary: PRSummary): string {
+  const lines: string[] = [
+    'PRs Summary:',
+    '',
+    `Total PRs: ${summary.total_prs}`,
+    `Merged PRs: ${summary.merged_prs}`,
+    `Closed PRs: ${summary.closed_prs}`,
+    `PRs Without Conclusion: ${summary.prs_without_conclusion}`,
+    `Unique Authors: ${summary.unique_authors}`,
+    `Unique Labels: ${summary.unique_labels}`,
+    `Average of comments per PR: ${summary.avg_comments_per_pr}`,
+    '',
+    'Labels:',
+  ];
+
+  for (const label of summary.labels) {
+    lines.push(`  - ${label.label}: ${label.prs} PRs`);
+  }
+
+  lines.push('', 'First PR:');
+  if (summary.first_pr) {
+    lines.push(
+      `  Number: ${summary.first_pr.number}`,
+      `  Title: ${summary.first_pr.title}`,
+      `  Author: ${summary.first_pr.author}`,
+      `  Created: ${summary.first_pr.created}`,
+      `  Merged: ${formatOptionalDate(summary.first_pr.merged)}`,
+      `  Closed: ${formatOptionalDate(summary.first_pr.closed)}`
+    );
+  } else {
+    lines.push('  None');
+  }
+
+  lines.push('', 'Last PR:');
+  if (summary.last_pr) {
+    lines.push(
+      `  Number: ${summary.last_pr.number}`,
+      `  Title: ${summary.last_pr.title}`,
+      `  Author: ${summary.last_pr.author}`,
+      `  Created: ${summary.last_pr.created}`,
+      `  Merged: ${formatOptionalDate(summary.last_pr.merged)}`,
+      `  Closed: ${formatOptionalDate(summary.last_pr.closed)}`
+    );
+  } else {
+    lines.push('  None');
+  }
+
+  lines.push('', 'Most commented PR:');
+  if (summary.most_commented_pr) {
+    lines.push(
+      `  Number: ${summary.most_commented_pr.number}`,
+      `  Title: ${summary.most_commented_pr.title}`,
+      `  Author: ${summary.most_commented_pr.author}`,
+      `  Comments: ${summary.most_commented_pr.comments}`
+    );
+  } else {
+    lines.push('  None');
+  }
+
+  lines.push('', 'Top commenter:');
+  if (summary.top_commenter) {
+    lines.push(
+      `  Login: ${summary.top_commenter.login}`,
+      `  Comments: ${summary.top_commenter.comments}`
+    );
+  } else {
+    lines.push('  None');
+  }
+
+  lines.push('', 'Top themes:');
+  for (const theme of summary.top_themes) {
+    lines.push(`  ${theme.text}: ${theme.value}`);
+  }
+
+  lines.push(
+    '',
+    'Time to first comment (hours):',
+    `  Average: ${formatHours(summary.time_to_first_comment_hours.average)}`,
+    `  Median: ${formatHours(summary.time_to_first_comment_hours.median)}`,
+    `  Min: ${formatHours(summary.time_to_first_comment_hours.min)}`,
+    `  Max: ${formatHours(summary.time_to_first_comment_hours.max)}`,
+    `  PRs with comment: ${summary.time_to_first_comment_hours.prs_with_comment}`,
+    `  PRs without comment: ${summary.time_to_first_comment_hours.prs_without_comment}`
+  );
+
+  return lines.join('\n');
 }
 
 /**
@@ -214,46 +308,12 @@ export function createPRsCommands(program: SmmCommand): void {
         console.log('📊 Generating PR summary...');
         const service = createPRService(command);
         const filters = buildPRFilters(options);
-        const summary = await service.getMetrics(filters);
+        const summary = await service.getSummary(filters);
 
         if (options.output === 'json') {
           console.log(JSON.stringify(summary, null, 2));
         } else {
-          console.log('\n=== PR Summary ===\n');
-          console.log(`Total PRs: ${summary.totalPRs || 0}`);
-          console.log(`Open PRs: ${summary.openPRs || 0}`);
-          console.log(`Closed PRs: ${summary.closedPRs || 0}`);
-          console.log(`Merged PRs: ${summary.mergedPRs || 0}`);
-          console.log(`Average Comments: ${summary.averageComments || 'N/A'}`);
-
-          // Fetch review metrics
-          const commentsByAuthor = await service.getCommentsByAuthor(filters, 10);
-          const firstCommentTime = await service.getFirstCommentTime(filters, 10);
-
-          if (commentsByAuthor && commentsByAuthor.length > 0) {
-            console.log('\nTop Commenters:\n');
-            commentsByAuthor.forEach((commenter: CommentAuthor, index: number) => {
-              console.log(`  ${index + 1}. ${commenter.author}: ${commenter.count} comments`);
-            });
-          }
-
-          if (firstCommentTime && firstCommentTime.length > 0) {
-            console.log('\nAverage Time to First Comment (by PR author):\n');
-            firstCommentTime.forEach((metric: FirstCommentMetric, index: number) => {
-              console.log(
-                `  ${index + 1}. ${metric.author}: ${metric.avg_hours.toFixed(2)} hours (${metric.prs_with_comments} PRs)`
-              );
-            });
-          }
-
-          if (summary.most_commented_prs && summary.most_commented_prs.length > 0) {
-            console.log('\nMost Commented Pull Requests:\n');
-            summary.most_commented_prs.forEach((pr: MostCommentedPRData) => {
-              console.log(
-                `  - PR #${pr.pull_request_id}: ${pr.pull_request_title} (${pr.comments_count} comments) - ${pr.pull_request_url}`
-              );
-            });
-          }
+          console.log(`\n${formatPRSummary(summary.result)}`);
         }
 
         console.log('\n✅ Summary generated');
