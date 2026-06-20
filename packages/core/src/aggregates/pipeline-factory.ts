@@ -1,5 +1,5 @@
 import { PipelinesRepository } from './pipelines-repository';
-import { Configuration, FileSystemRepository } from '../infrastructure';
+import { Configuration, RepositoryFactory } from '../infrastructure';
 import {
   WorkflowJobJsonResponse,
   WorkflowJsonResponse,
@@ -42,17 +42,20 @@ export default class PipelineFactory {
           logger
         );
 
-    const pipelineRunFileSystemRepository = new FileSystemRepository<WorkflowJsonResponse>(
+    const pipelineRunFileSystemRepository = RepositoryFactory.create<WorkflowJsonResponse>(
       `${config.getPathFromGitProvider()}/workflows.json`,
-      logger
+      logger,
+      config
     );
-    const pipelineJobsFileSystemRepository = new FileSystemRepository<WorkflowJobJsonResponse>(
+    const pipelineJobsFileSystemRepository = RepositoryFactory.create<WorkflowJobJsonResponse>(
       `${config.getPathFromGitProvider()}/jobs.json`,
-      logger
+      logger,
+      config
     );
-    const pipelineFiltersFileSystemRepository = new FileSystemRepository<PipelineFilterOptions>(
+    const pipelineFiltersFileSystemRepository = RepositoryFactory.create<PipelineFilterOptions>(
       `${config.getPathFromGitProvider()}/pipeline-filter-options.json`,
-      logger
+      logger,
+      config
     );
 
     const pipelineRepository = new PipelinesRepository(

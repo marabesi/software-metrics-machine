@@ -1,5 +1,23 @@
 import * as path from 'path';
 
+export type StorageType = 'json' | 'sqlite';
+
+export type JsonPrimitive = string | number | boolean | null;
+export type JsonValue = JsonPrimitive | JsonObject | JsonValue[];
+
+export interface JsonObject {
+  [key: string]: JsonValue | undefined;
+}
+
+export interface InternalConfiguration {
+  /**
+   * Storage backend type for repository persistence.
+   * - 'json' (default): JSON files on disk
+   * - 'sqlite': SQLite database (coming soon)
+   */
+  storageType: StorageType;
+}
+
 export interface IConfiguration {
   /**
    * Git provider (github, gitlab)
@@ -107,17 +125,27 @@ export interface IConfiguration {
    * IANA timezone identifier (e.g. "Europe/Madrid", "UTC")
    */
   timezone?: string;
+
+  /**
+   * Internal configuration for developer-only settings.
+   * Controls internal behavior like storage backend selection.
+   */
+  internal?: InternalConfiguration;
 }
 
-export interface DeploymentFrequencyTarget {
+export interface DeploymentFrequencyTarget extends JsonObject {
   pipeline: string;
   job: string;
+}
+
+export interface ISmmInternalConfig extends JsonObject {
+  storage_type?: StorageType;
 }
 
 /**
  * Shape of a single project entry in smm_config.json
  */
-export interface ISmmProjectConfig {
+export interface ISmmProjectConfig extends JsonObject {
   git_provider?: string;
   github_token?: string;
   gitlab_token?: string;
@@ -139,12 +167,13 @@ export interface ISmmProjectConfig {
   sonar_local_runner_token?: string;
   store_logs?: boolean;
   timezone?: string;
+  internal?: ISmmInternalConfig;
 }
 
 /**
  * Shape of smm_config.json with multi-project support
  */
-export interface ISmmConfigFile {
+export interface ISmmConfigFile extends JsonObject {
   github_token?: string;
   projects?: ISmmProjectConfig[];
 }
@@ -177,6 +206,7 @@ export class Configuration implements IConfiguration {
   sonarLocalRunnerToken?: string;
   storeLogs?: boolean;
   timezone?: string;
+  internal: InternalConfiguration = { storageType: 'json' };
 
   constructor(values: Partial<IConfiguration> = {}) {
     Object.assign(this, values);

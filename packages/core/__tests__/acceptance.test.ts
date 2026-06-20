@@ -38,6 +38,7 @@ describe('Metrics System Acceptance Tests', () => {
       getCodeMaatPath: () => `${cacheDir}/codemaat`,
       getSonarqubePath: () => `${cacheDir}/sonarqube`,
       getGitPath: () => `${cacheDir}/git`,
+      internal: { storageType: 'json' as const },
     } as any;
     const logger = new MockLoggerBuilder().build();
 
@@ -51,7 +52,7 @@ describe('Metrics System Acceptance Tests', () => {
     const prsRepository = PullRequestFactory.create(config, logger);
     const { pipelineRepository } = PipelineFactory.create(config, logger);
     const codeRepo = new CodeMetricsRepository(config, logger);
-    const issuesRepo = new IssuesRepository(jiraClient, `${cacheDir}/jira`, logger);
+    const issuesRepo = new IssuesRepository(jiraClient, `${cacheDir}/jira`, logger, config);
     const sonarqubeRepository = SonarqubeFactory.create(config, logger);
 
     // Services

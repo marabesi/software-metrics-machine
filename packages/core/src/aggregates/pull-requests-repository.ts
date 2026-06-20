@@ -1,4 +1,4 @@
-import { FileSystemRepository } from '../infrastructure/repository';
+import { IRepository } from '../infrastructure';
 import { TimeZoneProvider } from '../infrastructure/timezone-provider';
 import { PRDetails, PRFilters } from '../domain/prs/pr-types';
 import { CommonRepository, RawFilter } from './common-repository';
@@ -14,8 +14,8 @@ export interface IReadPullRequestsRepository {
 
 export class PullRequestsRepository extends CommonRepository implements IReadPullRequestsRepository {
   constructor(
-    private cache: FileSystemRepository<PullRequestJsonResponse>,
-    private pullRequestCommentsStoreFile: FileSystemRepository<PullRequestCommentJsonResponse>,
+    private cache: IRepository<PullRequestJsonResponse>,
+    private pullRequestCommentsStoreFile: IRepository<PullRequestCommentJsonResponse>,
     private timeZoneProvider: TimeZoneProvider = new TimeZoneProvider('UTC')
   ) {
     super();

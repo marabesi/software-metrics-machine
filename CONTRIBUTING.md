@@ -121,6 +121,94 @@ The project uses environment variables for configuration, consumed by the `Confi
 SMM_REST_BASE_URL=http://localhost:8000
 ```
 
+### Internal configuration (`config.internal`)
+
+The `Configuration` object has an `internal` property for **developer-only settings** that control internal behavior like storage backend selection. This is separate from user-facing environment variables.
+
+```typescript
+// packages/core/src/infrastructure/configuration.ts
+export type StorageType = 'json' | 'sqlite';
+
+export interface InternalConfiguration {
+  storageType: StorageType;  // 'json' (default) | 'sqlite'
+}
+
+export interface IConfiguration {
+  // ... user-facing properties ...
+  internal?: InternalConfiguration;
+}
+```
+
+**Why it exists:** Some settings (like which storage backend to use) are implementation details that developers may need to switch, but shouldn't be exposed as user-facing configuration in `smm_config.json`.
+
+**How it's used:**
+
+The `RepositoryFactory` reads `config.internal?.storageType` to decide which repository implementation to create:
+
+```typescript
+// packages/core/src/infrastructure/repository-factory.ts
+static create<T>(filePath: string, logger: Logger, config: Configuration): IRepository<T> {
+  const storageType = config.internal?.storageType ?? 'json';
+  switch (storageType) {
+    case 'json':
+      return new JsonFileSystemRepository<T>(filePath, logger);
+    // Future: case 'sqlite':
+    //   return new SqliteRepository<T>(filePath, logger);
+    default:
+      throw new Error(`Unknown storage type: ${storageType}`);
+  }
+}
+```
+
+**How to set it:**
+
+In tests or factories, set `internal` on the configuration object:
+
+```typescript
+const config = {
+  // ... other config ...
+  internal: { storageType: 'json' },
+};
+```
+
+Or use the `TestConfigurationBuilder`:
+
+```typescript
+const config = new TestConfigurationBuilder()
+  .withGetPathFromGitProvider('/tmp')
+  .withStorageType('json')
+  .build();
+```
+
+**How to extend:**
+
+To add a new internal setting:
+
+1. Add the property to `InternalConfiguration` in `packages/core/src/infrastructure/configuration.ts`
+2. Set a default in the `Configuration` class constructor
+3. Access it via `config.internal.yourSetting` where needed
+
+```typescript
+export interface InternalConfiguration {
+  storageType: StorageType;
+  cacheStrategy: 'aggressive' | 'conservative';  // new setting
+}
+
+// In Configuration class:
+internal: InternalConfiguration = {
+  storageType: 'json',
+  cacheStrategy: 'aggressive',
+};
+```
+
+**CLI usage:**
+
+The CLI reads `SMM_STORAGE_TYPE` from the environment and applies it to the configuration. For other internal settings, you can set them via environment variables and wire them through the configuration repository:
+
+```bash
+SMM_STORAGE_TYPE=sqlite pnpm cli -- prs summary
+```
+
 ## Development Workflows
 
 ### CLI development

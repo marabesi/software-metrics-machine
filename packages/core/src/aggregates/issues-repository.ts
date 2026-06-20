@@ -1,5 +1,5 @@
 import { Logger } from '@smmachine/utils';
-import { FileSystemRepository } from '../infrastructure/repository';
+import { IRepository, RepositoryFactory, Configuration } from '../infrastructure';
 import { Issue } from '../domain-types';
 import { type IJiraIssuesClient } from '../providers/jira';
 
@@ -26,14 +26,19 @@ export interface IIssuesRepository {
  * - Accessing issue comments
  */
 export class IssuesRepository implements IIssuesRepository {
-  private cache: FileSystemRepository<Issue>;
+  private cache: IRepository<Issue>;
 
   constructor(
     private jiraClient: IJiraIssuesClient,
     cacheDir: string,
-    private logger: Logger
+    private logger: Logger,
+    private config: Configuration = new Configuration()
   ) {
-    this.cache = new FileSystemRepository<Issue>(`${cacheDir}/issues.json`, logger);
+    this.cache = RepositoryFactory.create<Issue>(
+      `${cacheDir}/issues.json`,
+      logger,
+      this.config
+    );
   }
 
   /**

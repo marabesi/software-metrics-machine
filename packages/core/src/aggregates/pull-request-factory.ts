@@ -1,4 +1,4 @@
-import { Configuration, FileSystemRepository } from '../infrastructure';
+import { Configuration, RepositoryFactory } from '../infrastructure';
 import { TimeZoneProvider } from '../infrastructure/timezone-provider';
 import { PullRequestsRepository } from './pull-requests-repository';
 import {
@@ -14,7 +14,7 @@ import { Logger } from '@smmachine/utils';
 export class PullRequestFactory {
   static create(
     config: Configuration,
-    logger: Logger
+    logger: Logger,
   ): PullRequestsRepository {
     const repositories = this.createRepositories(config, logger);
     const tz = new TimeZoneProvider(config.timezone);
@@ -27,7 +27,7 @@ export class PullRequestFactory {
 
   static createFilters(
     config: Configuration,
-    logger: Logger
+    logger: Logger,
   ): PullRequestFiltersRepository {
     const repositories = this.createRepositories(config, logger);
     return new PullRequestFiltersRepository(
@@ -37,18 +37,24 @@ export class PullRequestFactory {
     );
   }
 
-  private static createRepositories(config: Configuration, logger: Logger) {
-    const cache = new FileSystemRepository<PullRequestJsonResponse>(
+  private static createRepositories(
+    config: Configuration,
+    logger: Logger,
+  ) {
+    const cache = RepositoryFactory.create<PullRequestJsonResponse>(
       `${config.getPathFromGitProvider()}/prs.json`,
-      logger
+      logger,
+      config
     );
-    const pullRequestCommentsStoreFile = new FileSystemRepository<PullRequestCommentJsonResponse>(
+    const pullRequestCommentsStoreFile = RepositoryFactory.create<PullRequestCommentJsonResponse>(
       `${config.getPathFromGitProvider()}/pr-comments.json`,
-      logger
+      logger,
+      config
     );
-    const pullRequestFiltersStoreFile = new FileSystemRepository<PullRequestFilterOptions>(
+    const pullRequestFiltersStoreFile = RepositoryFactory.create<PullRequestFilterOptions>(
       `${config.getPathFromGitProvider()}/pull-request-filter-options.json`,
-      logger
+      logger,
+      config
     );
 
     return {

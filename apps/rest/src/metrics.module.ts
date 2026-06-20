@@ -164,7 +164,7 @@ function createLogger(config: Configuration, name: string): Logger {
       useFactory: (config: Configuration) => {
         return PullRequestFactory.createFilters(
           config,
-          createLogger(config, 'PullRequestFiltersRepository')
+          createLogger(config, 'PullRequestFiltersRepository'),
         );
       },
       inject: [Configuration],
@@ -210,7 +210,8 @@ function createLogger(config: Configuration, name: string): Logger {
         return new IssuesRepository(
           client,
           paths.jiraDirectory,
-          createLogger(config, 'IssuesRepository')
+          createLogger(config, 'IssuesRepository'),
+          config
         );
       },
       inject: [JiraIssuesClient, Configuration],

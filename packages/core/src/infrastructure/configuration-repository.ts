@@ -7,6 +7,8 @@ import {
   IConfiguration,
   ISmmConfigFile,
   ISmmProjectConfig,
+  JsonObject,
+  StorageType,
 } from './configuration';
 
 /**
@@ -73,7 +75,7 @@ export interface IConfigurationRepository {
 export class ConfigurationRepository implements IConfigurationRepository {
   private configuration: Configuration;
   private projects: ISmmProjectConfig[];
-  private rawConfig: ISmmConfigFile & Record<string, unknown>;
+  private rawConfig: ISmmConfigFile;
   private activeProjectIndex: number;
   private configPath: string;
   private env: Record<string, string | undefined>;
@@ -113,53 +115,61 @@ export class ConfigurationRepository implements IConfigurationRepository {
   }
 
   fromProjectConfig(projectConfig: ISmmProjectConfig): Configuration {
-    return this.buildConfiguration(projectConfig as unknown as Record<string, unknown>);
+    return this.buildConfiguration(projectConfig);
   }
 
-  private fromRootConfig(configData: Record<string, unknown>): Configuration {
+  private fromRootConfig(configData: JsonObject): Configuration {
     return this.buildConfiguration(configData);
   }
 
-  private buildConfiguration(configData: Record<string, unknown>): Configuration {
-    const config = Object.create(Configuration.prototype) as Configuration;
+  private buildConfiguration(configData: JsonObject): Configuration {
+    const config = new Configuration();
 
-    const c = configData as unknown as Record<string, string | undefined>;
-    config.gitProvider = c.git_provider || this.env.GIT_PROVIDER;
-    config.githubRepository = c.github_repository || this.env.GITHUB_REPO || this.env.GITHUB_REPOSITORY;
+    config.gitProvider = this.getString(configData, 'git_provider') || this.env.GIT_PROVIDER;
+    config.githubRepository =
+      this.getString(configData, 'github_repository') ||
+      this.env.GITHUB_REPO ||
+      this.env.GITHUB_REPOSITORY;
     config.githubToken =
       this.getProjectGithubTokenFromEnv(config.githubRepository) ||
-      c.github_token ||
+      this.getString(configData, 'github_token') ||
       this.getDefaultGithubToken() ||
       this.env.GITHUB_TOKEN;
-    config.gitlabToken = c.gitlab_token || this.env.GITLAB_TOKEN;
+    config.gitlabToken = this.getString(configData, 'gitlab_token') || this.env.GITLAB_TOKEN;
     config.storeData = this.env.SMM_STORE_DATA_AT!;
     config.gitRepositoryLocation =
-      c.git_repository_location || this.env.GIT_REPOSITORY_PATH || '';
+      this.getString(configData, 'git_repository_location') ||
+      this.env.GIT_REPOSITORY_PATH ||
+      '';
     config.deploymentFrequencyTargets = this.normalizeDeploymentFrequencyTargets(configData);
-    config.mainBranch = c.main_branch;
-    config.dashboardStartDate = c.dashboard_start_date;
-    config.dashboardEndDate = c.dashboard_end_date;
-    config.dashboardColor = c.dashboard_color;
+    config.mainBranch = this.getString(configData, 'main_branch');
+    config.dashboardStartDate = this.getString(configData, 'dashboard_start_date');
+    config.dashboardEndDate = this.getString(configData, 'dashboard_end_date');
+    config.dashboardColor = this.getString(configData, 'dashboard_color');
 
     let logLevel: string = 'CRITICAL';
-    if (c.log_level) {
-      logLevel = c.log_level;
+    const configuredLogLevel = this.getString(configData, 'log_level');
+    if (configuredLogLevel) {
+      logLevel = configuredLogLevel;
     }
     if (this.env.LOGGING_LEVEL) {
       logLevel = this.env.LOGGING_LEVEL;
     }
     config.loggingLevel = logLevel as IConfiguration['loggingLevel'];
 
-    config.jiraUrl = c.jira_url || this.env.JIRA_URL;
-    config.jiraEmail = c.jira_email || this.env.JIRA_EMAIL;
-    config.jiraToken = c.jira_token || this.env.JIRA_TOKEN;
-    config.jiraProject = c.jira_project || this.env.JIRA_PROJECT;
-    config.sonarUrl = c.sonar_url || this.env.SONAR_URL;
-    config.sonarToken = c.sonar_token || this.env.SONAR_TOKEN;
-    config.sonarProject = c.sonar_project || this.env.SONAR_PROJECT;
-    config.sonarLocalRunnerToken = c.sonar_local_runner_token;
+    config.jiraUrl = this.getString(configData, 'jira_url') || this.env.JIRA_URL;
+    config.jiraEmail = this.getString(configData, 'jira_email') || this.env.JIRA_EMAIL;
+    config.jiraToken = this.getString(configData, 'jira_token') || this.env.JIRA_TOKEN;
+    config.jiraProject = this.getString(configData, 'jira_project') || this.env.JIRA_PROJECT;
+    config.sonarUrl = this.getString(configData, 'sonar_url') || this.env.SONAR_URL;
+    config.sonarToken = this.getString(configData, 'sonar_token') || this.env.SONAR_TOKEN;
+    config.sonarProject = this.getString(configData, 'sonar_project') || this.env.SONAR_PROJECT;
+    config.sonarLocalRunnerToken = this.getString(configData, 'sonar_local_runner_token');
     config.storeLogs = configData.store_logs === true || configData.STORE_LOGS === true;
-    config.timezone = c.timezone || this.env.SMM_TIMEZONE || 'UTC';
+    config.timezone = this.getString(configData, 'timezone') || this.env.SMM_TIMEZONE || 'UTC';
+    config.internal = {
+      storageType: this.resolveStorageType(configData),
+    };
     config.validate();
 
     return config;
@@ -224,7 +234,7 @@ export class ConfigurationRepository implements IConfigurationRepository {
     this.logger?.debug(`Configuration saved to file: ${this.configPath}`);
   }
 
-  private loadRawConfig(): ISmmConfigFile & Record<string, unknown> {
+  private loadRawConfig(): ISmmConfigFile {
     if (!fs.existsSync(this.configPath)) {
       return {};
     }
@@ -240,7 +250,7 @@ export class ConfigurationRepository implements IConfigurationRepository {
 
     this.validateConfig(parsed, this.configPath);
 
-    return parsed as ISmmConfigFile & Record<string, unknown>;
+    return parsed as ISmmConfigFile;
   }
 
   /**
@@ -254,7 +264,9 @@ export class ConfigurationRepository implements IConfigurationRepository {
       );
     }
 
-    const obj = data as Record<string, unknown>;
+    const obj = data as JsonObject;
+
+    this.validateInternalConfig(obj.internal, 'internal', configPath);
 
     // Validate projects field if present
     if ('projects' in obj) {
@@ -268,6 +280,40 @@ export class ConfigurationRepository implements IConfigurationRepository {
         const project = obj.projects[i];
         this.validateProject(project, i, configPath);
       }
+    }
+  }
+
+  private validateInternalConfig(
+    internalConfig: unknown,
+    pathPrefix: string,
+    configPath: string
+  ): void {
+    if (internalConfig === undefined || internalConfig === null) {
+      return;
+    }
+
+    if (typeof internalConfig !== 'object' || Array.isArray(internalConfig)) {
+      throw new Error(
+        `smm_config.json at ${configPath}: ${pathPrefix} must be a JSON object, got ${Array.isArray(internalConfig) ? 'array' : typeof internalConfig}.`
+      );
+    }
+
+    const obj = internalConfig as JsonObject;
+    if ('storageType' in obj) {
+      throw new Error(
+        `smm_config.json at ${configPath}: ${pathPrefix}.storageType is not supported. Use ${pathPrefix}.storage_type instead.`
+      );
+    }
+
+    const storageType = obj.storage_type;
+    if (
+      storageType !== undefined &&
+      storageType !== null &&
+      typeof storageType !== 'string'
+    ) {
+      throw new Error(
+        `smm_config.json at ${configPath}: ${pathPrefix}.storage_type must be a string, got ${typeof storageType}.`
+      );
     }
   }
 
@@ -286,7 +332,9 @@ export class ConfigurationRepository implements IConfigurationRepository {
       );
     }
 
-    const obj = project as Record<string, unknown>;
+    const obj = project as JsonObject;
+    this.validateInternalConfig(obj.internal, `projects[${index}].internal`, configPath);
+
     const stringFields = [
       'git_provider',
       'github_token',
@@ -353,7 +401,7 @@ export class ConfigurationRepository implements IConfigurationRepository {
             `smm_config.json at ${configPath}: projects[${index}].deployment_frequency_targets[${t}] must be an object, got ${Array.isArray(target) ? 'array' : typeof target}.`
           );
         }
-        const targetObj = target as Record<string, unknown>;
+        const targetObj = target as JsonObject;
         if (typeof targetObj.pipeline !== 'string') {
           throw new Error(
             `smm_config.json at ${configPath}: projects[${index}].deployment_frequency_targets[${t}].pipeline must be a string.`
@@ -398,14 +446,14 @@ export class ConfigurationRepository implements IConfigurationRepository {
   }
 
   private normalizeDeploymentFrequencyTargets(
-    configData: Record<string, unknown>
+    configData: JsonObject
   ): DeploymentFrequencyTarget[] | undefined {
     const configuredTargets = configData.deployment_frequency_targets;
 
     if (Array.isArray(configuredTargets)) {
       const targets = configuredTargets
         .map((target): DeploymentFrequencyTarget | null => {
-          if (!target || typeof target !== 'object') {
+          if (!target || typeof target !== 'object' || Array.isArray(target)) {
             return null;
           }
 
@@ -420,5 +468,32 @@ export class ConfigurationRepository implements IConfigurationRepository {
     }
 
     return undefined;
+  }
+
+  private getString(configData: JsonObject | undefined, key: string): string | undefined {
+    const value = configData?.[key];
+    return typeof value === 'string' ? value : undefined;
+  }
+
+  private getJsonObject(configData: JsonObject, key: string): JsonObject | undefined {
+    const value = configData[key];
+    return value !== null && typeof value === 'object' && !Array.isArray(value) ? value : undefined;
+  }
+
+  private resolveStorageType(configData: JsonObject): StorageType {
+    const projectInternalConfig = this.getJsonObject(configData, 'internal');
+    const rootInternalConfig =
+      configData === this.rawConfig ? undefined : this.getJsonObject(this.rawConfig, 'internal');
+    const storageType =
+      this.getConfiguredStorageType(projectInternalConfig) ||
+      this.getConfiguredStorageType(rootInternalConfig) ||
+      this.env.SMM_STORAGE_TYPE ||
+      'json';
+
+    return storageType as StorageType;
+  }
+
+  private getConfiguredStorageType(configData: JsonObject | undefined): string | undefined {
+    return this.getString(configData, 'storage_type');
   }
 }

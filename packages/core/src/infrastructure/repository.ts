@@ -38,9 +38,10 @@ export interface IRepository<T> {
 }
 
 /**
- * Base repository class for file system operations
+ * Repository class for JSON file system operations.
+ * Stores data as formatted JSON files on disk.
  */
-export class FileSystemRepository<T> implements IRepository<T> {
+export class JsonFileSystemRepository<T> implements IRepository<T> {
   protected filePath: string;
 
   constructor(
@@ -136,3 +137,8 @@ export class FileSystemRepository<T> implements IRepository<T> {
     }
   }
 }
+
+/**
+ * @deprecated Use JsonFileSystemRepository instead. This alias will be removed in a future version.
+ */
+export const FileSystemRepository = JsonFileSystemRepository;

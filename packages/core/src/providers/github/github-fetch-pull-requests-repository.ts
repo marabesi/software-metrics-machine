@@ -1,5 +1,5 @@
 import { Logger } from '@smmachine/utils';
-import { FileSystemRepository } from '../../infrastructure/repository';
+import { IRepository, RepositoryFactory } from '../../infrastructure';
 import { type IGithubPrsClient } from '.';
 import { PullRequestCommentJsonResponse, PullRequestJsonResponse } from './github-response-types';
 import { Configuration } from '../../';
@@ -24,27 +24,30 @@ export interface IPullRequestsRepository {
 }
 
 export class GitHubPullRequestsFetchRepository implements IPullRequestsRepository {
-  private pullRequestStoreFile: FileSystemRepository<PullRequestJsonResponse>;
-  private pullRequestCommentsStoreFile: FileSystemRepository<PullRequestCommentJsonResponse>;
+  private pullRequestStoreFile: IRepository<PullRequestJsonResponse>;
+  private pullRequestCommentsStoreFile: IRepository<PullRequestCommentJsonResponse>;
   private pullRequestFiltersRepository: PullRequestFiltersRepository;
 
   constructor(
     private githubPrsClient: IGithubPrsClient,
     config: Configuration,
-    private logger: Logger
+    private logger: Logger,
   ) {
     const providerDir = config.getPathFromGitProvider();
-    this.pullRequestStoreFile = new FileSystemRepository<PullRequestJsonResponse>(
+    this.pullRequestStoreFile = RepositoryFactory.create<PullRequestJsonResponse>(
       `${providerDir}/prs.json`,
-      logger
+      logger,
+      config
     );
-    this.pullRequestCommentsStoreFile = new FileSystemRepository<PullRequestCommentJsonResponse>(
+    this.pullRequestCommentsStoreFile = RepositoryFactory.create<PullRequestCommentJsonResponse>(
       `${providerDir}/pr-comments.json`,
-      logger
+      logger,
+      config
     );
-    const pullRequestFiltersStoreFile = new FileSystemRepository<PullRequestFilterOptions>(
+    const pullRequestFiltersStoreFile = RepositoryFactory.create<PullRequestFilterOptions>(
       `${providerDir}/pull-request-filter-options.json`,
-      logger
+      logger,
+      config
     );
     this.pullRequestFiltersRepository = new PullRequestFiltersRepository(
       this.pullRequestStoreFile,

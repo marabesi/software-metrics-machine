@@ -5,7 +5,7 @@ import {
   CodeMetric,
   type ISonarqubeMeasuresClient,
 } from '..';
-import { Configuration, FileSystemRepository } from '../../infrastructure';
+import { Configuration, IRepository, RepositoryFactory } from '../../infrastructure';
 import { TimestampedStore, extractLatestData } from './types';
 
 export interface IQualityMetricsRepository {
@@ -23,28 +23,30 @@ export interface IQualityMetricsRepository {
 }
 
 export class SonarqubeFetchMetricsRepository implements IQualityMetricsRepository {
-  private cache: FileSystemRepository<TimestampedStore<SonarqubeComponentMeasure>>;
-  private cacheComponentTree: FileSystemRepository<
+  private cache: IRepository<TimestampedStore<SonarqubeComponentMeasure>>;
+  private cacheComponentTree: IRepository<
     TimestampedStore<SonarqubeComponentTreeMeasure[]>
   >;
-  private cacheHistorical: FileSystemRepository<TimestampedStore<CodeMetric[]>>;
+  private cacheHistorical: IRepository<TimestampedStore<CodeMetric[]>>;
 
   constructor(
     private sonarqubeClient: ISonarqubeMeasuresClient,
     private configuration: Configuration,
-    private logger: Logger
+    private logger: Logger,
   ) {
     const cacheDir = this.configuration.getSonarqubePath();
-    this.cache = new FileSystemRepository<TimestampedStore<SonarqubeComponentMeasure>>(
+    this.cache = RepositoryFactory.create<TimestampedStore<SonarqubeComponentMeasure>>(
       `${cacheDir}/measures.json`,
-      logger
+      logger,
+      this.configuration
     );
-    this.cacheComponentTree = new FileSystemRepository<
+    this.cacheComponentTree = RepositoryFactory.create<
       TimestampedStore<SonarqubeComponentTreeMeasure[]>
-    >(`${cacheDir}/component-tree.json`, logger);
-    this.cacheHistorical = new FileSystemRepository<TimestampedStore<CodeMetric[]>>(
+    >(`${cacheDir}/component-tree.json`, logger, this.configuration);
+    this.cacheHistorical = RepositoryFactory.create<TimestampedStore<CodeMetric[]>>(
       `${cacheDir}/historical-measures.json`,
-      logger
+      logger,
+      this.configuration
     );
   }
 
@@ -174,7 +176,7 @@ export class SonarqubeFetchMetricsRepository implements IQualityMetricsRepositor
   }
 
   private async appendTimestampedEntry<T>(
-    repo: FileSystemRepository<TimestampedStore<T>>,
+    repo: IRepository<TimestampedStore<T>>,
     data: T
   ): Promise<void> {
     const raw = await repo.load();
