@@ -32,9 +32,10 @@ export class JiraIssuesClient implements IJiraIssuesClient {
     private url: string,
     private email: string,
     private token: string,
-    private project?: string
+    private project: string | undefined,
+    logger: Logger
   ) {
-    this.logger = new Logger('JiraIssuesClient');
+    this.logger = logger;
 
     // Ensure URL ends without slash for consistency
     const baseURL = this.url.endsWith('/') ? this.url.slice(0, -1) : this.url;

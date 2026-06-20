@@ -1,4 +1,4 @@
-import { logger } from '@smmachine/utils';
+import { Logger } from '@smmachine/utils';
 import * as fs from 'fs/promises';
 import * as path from 'path';
 import { Configuration, IRepository } from '../../infrastructure';
@@ -19,7 +19,8 @@ export class PipelinesFetchRepository {
     private configuration: Configuration,
     private githubWorkflowClient: IGithubWorkflowClient,
     private pipelineRunFileSystemRepository: IRepository<WorkflowJsonResponse>,
-    private pipelineFiltersRepository?: PipelineFiltersRepository
+    private pipelineFiltersRepository: PipelineFiltersRepository | undefined,
+    private logger: Logger
   ) {
     this.tz = new TimeZoneProvider(configuration.timezone);
   }
@@ -36,7 +37,7 @@ export class PipelinesFetchRepository {
 
     if (options?.incrementalUpdate && fromCache.length > 0) {
       const latestDate = this.findLatestDate(fromCache.map((r) => r.created_at));
-      logger.info(`Incremental update: fetching pipelines created after ${latestDate}...`);
+      this.logger.info(`Incremental update: fetching pipelines created after ${latestDate}...`);
       let freshRuns: WorkflowJsonResponse[];
 
       if (options?.byDay && options?.endDate) {
@@ -60,7 +61,7 @@ export class PipelinesFetchRepository {
       !options?.forceRefresh &&
       fromCache.length > 0
     ) {
-      logger.info(
+      this.logger.info(
         `Fetching pipelines for range [${options?.startDate || 'any'}..${options?.endDate || 'any'}] and merging with cache...`
       );
       let workflows: WorkflowJsonResponse[];
@@ -83,11 +84,11 @@ export class PipelinesFetchRepository {
     }
 
     if (fromCache.length > 0 && !options?.forceRefresh) {
-      logger.info(`Using cached pipelines: ${fromCache.length} records`);
+      this.logger.info(`Using cached pipelines: ${fromCache.length} records`);
       return fromCache;
     }
 
-    logger.info(`Fetching workflows from GitHub ${options?.startDate} - ${options?.endDate}...`);
+    this.logger.info(`Fetching workflows from GitHub ${options?.startDate} - ${options?.endDate}...`);
     let workflows: WorkflowJsonResponse[];
 
     if (options?.byDay && options?.startDate && options?.endDate) {
@@ -132,7 +133,7 @@ export class PipelinesFetchRepository {
       const dayStartStr = dayStart.toISOString();
       const dayEndStr = dayEnd.toISOString();
 
-      logger.info(`Fetching workflows for day ${dayDate} (UTC: ${dayStartStr}..${dayEndStr})...`);
+      this.logger.info(`Fetching workflows for day ${dayDate} (UTC: ${dayStartStr}..${dayEndStr})...`);
 
       const dayRuns = await this.fetchWorkflowsWithResume({
         created: `${dayStartStr}..${dayEndStr}`,
@@ -185,7 +186,7 @@ export class PipelinesFetchRepository {
 
     while (!stopPagination) {
       try {
-        logger.info(`Fetching workflows total of ${perPage} in page ${page} from GitHub...`);
+        this.logger.info(`Fetching workflows total of ${perPage} in page ${page} from GitHub...`);
         const response = await this.githubWorkflowClient.fetchWorkflowRunsPage(page, perPage, {
           created: options?.created,
           rawFilters: options?.rawFilters,
@@ -210,7 +211,7 @@ export class PipelinesFetchRepository {
         await this.writeJson(progressPath, { page });
       } catch (error) {
         if (this.isUnprocessableEntityError(error)) {
-          logger.info(
+          this.logger.info(
             `GitHub returned 422 while fetching workflows page ${page}; treating as pagination end.`
           );
           await this.writeJson(incompletedPath, runs);

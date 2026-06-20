@@ -98,12 +98,12 @@ type GitlabFetchOptions = {
  * GitHub dashboards and domain services.
  */
 export class GitlabMrClient implements IGithubPrsClient {
-  private logger = new Logger('GitlabMrClient');
   private readonly encodedProjectId: string;
 
   constructor(
     private token: string | undefined,
     private projectId: string,
+    private logger: Logger,
     private runner: GitlabCliRunner = defaultGitlabCliRunner
   ) {
     this.encodedProjectId = encodeURIComponent(projectId);
@@ -319,12 +319,12 @@ export class GitlabMrClient implements IGithubPrsClient {
 }
 
 export class GitlabPipelineClient implements IGithubWorkflowClient, IGithubWorkflowJobClient {
-  private logger = new Logger('GitlabPipelineClient');
   private readonly encodedProjectId: string;
 
   constructor(
     private token: string | undefined,
     private projectId: string,
+    private logger: Logger,
     private runner: GitlabCliRunner = defaultGitlabCliRunner
   ) {
     this.encodedProjectId = encodeURIComponent(projectId);

@@ -1,5 +1,5 @@
 import { IRepository } from '../infrastructure';
-import { logger } from '@smmachine/utils';
+import { Logger } from '@smmachine/utils';
 import {
   WorkflowJobJsonResponse,
   WorkflowJobStepJsonResponse,
@@ -35,14 +35,15 @@ export class PipelinesRepository implements IPipelinesRepository {
 
   constructor(
     private pipelineRunFileSystemRepository: IRepository<WorkflowJsonResponse>,
-    private pipelineJobsFileSystemRepository: IRepository<WorkflowJobJsonResponse>
+    private pipelineJobsFileSystemRepository: IRepository<WorkflowJobJsonResponse>,
+    private logger: Logger
   ) {}
 
   private async loadPipelineRuns(): Promise<PipelineRun[]> {
     const runs = await this.pipelineRunFileSystemRepository.loadAll();
     const pipelineRuns = runs.map(this.mapPipelinesToDomain);
 
-    logger.info(`Loaded ${pipelineRuns.length} pipeline runs from file system repository`);
+    this.logger.info(`Loaded ${pipelineRuns.length} pipeline runs from file system repository`);
 
     return pipelineRuns;
   }

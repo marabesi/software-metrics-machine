@@ -1,10 +1,12 @@
 import { IssuesRepository } from '@smmachine/core/aggregates/issues-repository';
 import { Configuration } from '@smmachine/core/infrastructure/configuration';
 import { JiraIssuesClient } from '@smmachine/core/providers/jira/jira-client';
+import type { Logger } from '@smmachine/utils';
 
 export function createJiraDependencies(
   config: Configuration,
-  jiraDirectory: string
+  jiraDirectory: string,
+  logger: Logger
 ): {
   issuesRepository: IssuesRepository;
 } {
@@ -12,10 +14,11 @@ export function createJiraDependencies(
     config.jiraUrl || '',
     config.jiraEmail || '',
     config.jiraToken || '',
-    config.jiraProject || ''
+    config.jiraProject || '',
+    logger
   );
 
   return {
-    issuesRepository: new IssuesRepository(jiraClient, jiraDirectory),
+    issuesRepository: new IssuesRepository(jiraClient, jiraDirectory, logger),
   };
 }

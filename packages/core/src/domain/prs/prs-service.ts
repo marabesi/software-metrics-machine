@@ -1,4 +1,4 @@
-import { Logger, logger } from '@smmachine/utils';
+import { Logger } from '@smmachine/utils';
 import { PRDetails, PRFilters, PRMetrics, PRsByTimeframe, LabelSummary } from './pr-types';
 import { IReadPullRequestsRepository } from '../../aggregates/pull-requests-repository';
 import { TimeZoneProvider } from '../../infrastructure/timezone-provider';
@@ -37,12 +37,12 @@ export interface IPRsService {
  * Calculates lead time, review speed, and other PR metrics.
  */
 export class PRsService implements IPRsService {
-  private logger: Logger = logger;
   private tz: TimeZoneProvider;
 
   constructor(
     private prRepository: IReadPullRequestsRepository,
-    timeZoneProvider?: TimeZoneProvider
+    timeZoneProvider: TimeZoneProvider | undefined,
+    private logger: Logger
   ) {
     this.tz = timeZoneProvider || new TimeZoneProvider('UTC');
   }

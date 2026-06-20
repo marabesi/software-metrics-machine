@@ -34,9 +34,10 @@ export class SonarqubeMeasuresClient implements ISonarqubeMeasuresClient {
   constructor(
     private url: string,
     private token: string,
-    private projectKey: string
+    private projectKey: string,
+    logger: Logger
   ) {
-    this.logger = new Logger('SonarqubeMeasuresClient');
+    this.logger = logger;
 
     // Ensure URL ends without slash for consistency
     const baseURL = this.url.endsWith('/') ? this.url.slice(0, -1) : this.url;

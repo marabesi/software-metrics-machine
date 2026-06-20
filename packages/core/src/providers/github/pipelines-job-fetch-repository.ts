@@ -1,4 +1,4 @@
-import { logger } from '@smmachine/utils';
+import { Logger } from '@smmachine/utils';
 import * as fs from 'fs/promises';
 import * as path from 'path';
 import { Configuration, IRepository } from '../../infrastructure';
@@ -23,7 +23,8 @@ export class PipelinesJobFetchRepository {
     private githubWorkflowClient: IGithubWorkflowJobClient,
     private pipelineRunFileSystemRepository: IRepository<WorkflowJsonResponse>,
     private pipelineJobsFileSystemRepository: IRepository<WorkflowJobJsonResponse>,
-    private pipelineFiltersRepository?: PipelineFiltersRepository
+    private pipelineFiltersRepository: PipelineFiltersRepository | undefined,
+    private logger: Logger
   ) {
     this.tz = new TimeZoneProvider(configuration.timezone);
   }
@@ -40,7 +41,7 @@ export class PipelinesJobFetchRepository {
 
     if (filters?.incrementalUpdate && cachedJobs.length > 0) {
       const latestDate = this.findLatestDate(cachedJobs.map((j) => j.completed_at));
-      logger.info(`Incremental update: fetching jobs for runs after ${latestDate}...`);
+      this.logger.info(`Incremental update: fetching jobs for runs after ${latestDate}...`);
       const cachedRuns = await this.pipelineRunFileSystemRepository.loadAll();
       const startDate = this.toDateBoundary(latestDate, 'start');
       let freshJobs: WorkflowJobJsonResponse[];
@@ -69,7 +70,7 @@ export class PipelinesJobFetchRepository {
       !filters?.forceRefresh &&
       cachedJobs.length > 0
     ) {
-      logger.info(
+      this.logger.info(
         `Fetching jobs for range [${filters?.startDate || 'any'}..${filters?.endDate || 'any'}] and merging with cache...`
       );
       const cachedRuns = await this.pipelineRunFileSystemRepository.loadAll();
@@ -96,7 +97,7 @@ export class PipelinesJobFetchRepository {
     }
 
     if (cachedJobs.length > 0 && !filters?.forceRefresh) {
-      logger.info(`Using cached jobs: ${cachedJobs.length} records`);
+      this.logger.info(`Using cached jobs: ${cachedJobs.length} records`);
       return cachedJobs;
     }
 
@@ -114,7 +115,7 @@ export class PipelinesJobFetchRepository {
       const endDate = this.toDateBoundary(filters.endDate, 'end');
 
       const filteredRuns = this.filterRunsByDateRange(cachedRuns, startDate, endDate);
-      logger.info(`Fetching jobs for ${filteredRuns.length} workflow runs...`);
+      this.logger.info(`Fetching jobs for ${filteredRuns.length} workflow runs...`);
       return this.fetchJobsWithResume(filteredRuns, filters.rawFilters);
     }
   }
@@ -134,7 +135,7 @@ export class PipelinesJobFetchRepository {
       const dayStart = this.tz.getStartOfDayBoundary(dayDate);
       const dayEnd = this.tz.getEndOfDayBoundary(dayDate);
 
-      logger.info(
+      this.logger.info(
         `Fetching jobs for day ${dayDate} (UTC: ${dayStart.toISOString()}...${dayEnd.toISOString()})...`
       );
 
@@ -284,7 +285,7 @@ export class PipelinesJobFetchRepository {
           const statusCode = this.getHttpStatusCode(error);
 
           if (statusCode === 404 || statusCode === 502) {
-            logger.error(
+            this.logger.error(
               `Skipping workflow run ${runId} at page ${page}: jobs endpoint returned ${statusCode}. This run will be marked as processed to avoid blocking the pipeline, but its jobs will not be included.`
             );
 

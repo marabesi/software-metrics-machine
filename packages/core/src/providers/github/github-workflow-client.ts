@@ -17,9 +17,10 @@ export class GithubWorkflowClient implements IGithubWorkflowClient {
     token: string,
     private owner: string,
     private repo: string,
-    private rateLimitManager: GitHubRateLimitManager
+    private rateLimitManager: GitHubRateLimitManager,
+    logger: Logger
   ) {
-    this.logger = new Logger('GithubWorkflowClient');
+    this.logger = logger;
 
     this.axiosInstance = axios.create({
       baseURL: this.baseUrl,
@@ -30,7 +31,11 @@ export class GithubWorkflowClient implements IGithubWorkflowClient {
       timeout: 30000,
     });
 
-    this.retriableClient = new GithubClientRetriable(this.axiosInstance, this.rateLimitManager);
+    this.retriableClient = new GithubClientRetriable(
+      this.axiosInstance,
+      this.rateLimitManager,
+      logger
+    );
   }
 
   async fetchWorkflows(options?: {

@@ -1,11 +1,12 @@
-import { logger } from '@smmachine/utils';
+import { Logger } from '@smmachine/utils';
 import { ICommitTraverser, IRepository } from 'src';
 import { Commit } from 'src/domain-types';
 
 export class GitFetchRepository {
   constructor(
     private commitTraverser: ICommitTraverser,
-    private commitCache: IRepository<Commit>
+    private commitCache: IRepository<Commit>,
+    private logger: Logger
   ) {}
 
   async fetchCommits(options?: {
@@ -17,11 +18,11 @@ export class GitFetchRepository {
     const fromCache = await this.commitCache.loadAll();
 
     if (!options?.forceRefresh && fromCache.length > 0) {
-      logger.info(`Using cached commits: ${fromCache.length} records`);
+      this.logger.info(`Using cached commits: ${fromCache.length} records`);
       return fromCache;
     }
 
-    logger.info('Analyzing commits from git repository...');
+    this.logger.info('Analyzing commits from git repository...');
     const result = await this.commitTraverser.traverseCommits({
       startDate: options?.startDate,
       endDate: options?.endDate,

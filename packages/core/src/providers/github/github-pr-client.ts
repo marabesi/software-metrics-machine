@@ -33,9 +33,10 @@ export class GithubPrsClient implements IGithubPrsClient {
     token: string,
     private owner: string,
     private repo: string,
-    private rateLimitManager: GitHubRateLimitManager
+    private rateLimitManager: GitHubRateLimitManager,
+    logger: Logger
   ) {
-    this.logger = new Logger('GithubPrsClient');
+    this.logger = logger;
 
     this.axiosInstance = axios.create({
       baseURL: this.baseUrl,
@@ -46,7 +47,11 @@ export class GithubPrsClient implements IGithubPrsClient {
       timeout: 30000,
     });
 
-    this.retriableClient = new GithubClientRetriable(this.axiosInstance, this.rateLimitManager);
+    this.retriableClient = new GithubClientRetriable(
+      this.axiosInstance,
+      this.rateLimitManager,
+      logger
+    );
   }
 
   async fetchPRs(options?: {

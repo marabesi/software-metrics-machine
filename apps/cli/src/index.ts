@@ -9,8 +9,6 @@ import { createHealthCheckCommand } from './commands/health-check';
 import { Logger } from '@smmachine/utils';
 import { SmmCommand } from './commands/smm-command';
 
-const logger = new Logger('smm-cli');
-
 export function commands() {
   const program = new SmmCommand();
 
@@ -19,13 +17,7 @@ export function commands() {
     .description('Software Metrics Machine - High-performing team metrics')
     .version('1.0.0')
     .option('--debug', 'Enable debug logging')
-    .option('--project <name>', 'Select active project by name (github_repository)')
-    .hook('preAction', (thisCommand) => {
-      const options = thisCommand.opts();
-      if (options.debug || process.env.DEBUG) {
-        logger.setLevel('DEBUG');
-      }
-    });
+    .option('--project <name>', 'Select active project by name (github_repository)');
 
   // Register command groups
   createPRsCommands(program);
@@ -106,6 +98,7 @@ export async function main() {
   try {
     await program.parseAsync();
   } catch (error) {
+    const logger = new Logger('smm-cli', process.env.DEBUG ? 'DEBUG' : undefined);
     if (error instanceof Error) {
       logger.error(`CLI Error: ${error.message}`);
       if (process.env.DEBUG) {
@@ -119,6 +112,7 @@ export async function main() {
 }
 
 main().catch((error) => {
+  const logger = new Logger('smm-cli', process.env.DEBUG ? 'DEBUG' : undefined);
   logger.error(`Fatal error: ${error instanceof Error ? error.message : String(error)}`);
   if (process.env.DEBUG && error instanceof Error) {
     console.error(error.stack);

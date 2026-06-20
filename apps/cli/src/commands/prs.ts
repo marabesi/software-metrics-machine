@@ -1,6 +1,5 @@
 import type { SmmCommand } from './smm-command';
 import { TimeZoneProvider } from '@smmachine/core/infrastructure/timezone-provider';
-import { Logger } from '@smmachine/utils';
 import {
   CommentAuthor,
   FirstCommentMetric,
@@ -15,30 +14,33 @@ import {
   PullRequestsRepository,
 } from '@smmachine/core';
 
-const logger = new Logger('PRsCommand');
-
 function createPRsOrchestratorRead(command: SmmCommand): PullRequestsRepository {
   const config = command.getConfiguration();
-  return PullRequestFactory.create(config);
+  return PullRequestFactory.create(config, command.getLogger('PRsCommand'));
 }
 
 function createPRsOrchestratorFetch(command: SmmCommand): GitHubPullRequestsFetchRepository {
   const config = command.getConfiguration();
+  const logger = command.getLogger('PRsCommand');
   const [githubOwner, githubRepo] = config.githubRepository!.split('/');
   const isGitlab = config.gitProvider?.toLowerCase() === 'gitlab';
 
-  const rateLimitManager = new GitHubRateLimitManager();
+  const rateLimitManager = new GitHubRateLimitManager(logger);
   const prsClient = isGitlab
-    ? new GitlabMrClient(config.gitlabToken, config.githubRepository!)
-    : new GithubPrsClient(config.githubToken!, githubOwner, githubRepo, rateLimitManager);
+    ? new GitlabMrClient(config.gitlabToken, config.githubRepository!, logger)
+    : new GithubPrsClient(config.githubToken!, githubOwner, githubRepo, rateLimitManager, logger);
 
-  return new GitHubPullRequestsFetchRepository(prsClient, config);
+  return new GitHubPullRequestsFetchRepository(prsClient, config, logger);
 }
 
 function createPRService(command: SmmCommand): PRsService {
   const config = command.getConfiguration();
   const prRepository = createPRsOrchestratorRead(command);
-  return new PRsService(prRepository, new TimeZoneProvider(config.timezone));
+  return new PRsService(
+    prRepository,
+    new TimeZoneProvider(config.timezone),
+    command.getLogger('PRsCommand')
+  );
 }
 
 function parseCsvList(value?: string): string[] {
@@ -139,6 +141,7 @@ export function createPRsCommands(program: SmmCommand): void {
     .option('--start-date <date>', 'Filter PRs created on or after this date (ISO 8601)')
     .option('--end-date <date>', 'Filter PRs created on or before this date (ISO 8601)')
     .actionWithSmm(async (options, command) => {
+      const logger = command.getLogger('PRsCommand');
       try {
         logger.info('🔄 Fetching pull requests from the configured Git provider...');
         const orchestrator = createPRsOrchestratorFetch(command);
@@ -163,6 +166,7 @@ export function createPRsCommands(program: SmmCommand): void {
     .option('--start-date <date>', 'Filter PRs by creation date on or after this date (ISO 8601)')
     .option('--end-date <date>', 'Filter PRs by creation date on or before this date (ISO 8601)')
     .actionWithSmm(async (options, command) => {
+      const logger = command.getLogger('PRsCommand');
       try {
         logger.info('🔄 Fetching pull request comments from the configured Git provider...');
         const orchestrator = createPRsOrchestratorRead(command);
@@ -205,6 +209,7 @@ export function createPRsCommands(program: SmmCommand): void {
     )
     .option('--output <format>', 'Output format (text|json)', 'text')
     .actionWithSmm(async (options, command) => {
+      const logger = command.getLogger('PRsCommand');
       try {
         console.log('📊 Generating PR summary...');
         const service = createPRService(command);
@@ -271,6 +276,7 @@ export function createPRsCommands(program: SmmCommand): void {
     .option('--exclude-commenters <commenters>', 'Comma-separated PR commenters to exclude')
     .option('--output <format>', 'Output format (text|json)', 'text')
     .actionWithSmm(async (options, command) => {
+      const logger = command.getLogger('PRsCommand');
       try {
         console.log('📊 Analyzing PRs by month...');
         const service = createPRService(command);
@@ -303,6 +309,7 @@ export function createPRsCommands(program: SmmCommand): void {
     .option('--exclude-commenters <commenters>', 'Comma-separated PR commenters to exclude')
     .option('--output <format>', 'Output format (text|json)', 'text')
     .actionWithSmm(async (options, command) => {
+      const logger = command.getLogger('PRsCommand');
       try {
         console.log('📊 Analyzing PRs by week...');
         const service = createPRService(command);
@@ -339,6 +346,7 @@ export function createPRsCommands(program: SmmCommand): void {
     .option('--raw-filters <filters>', 'Comma-separated raw filter string')
     .option('--output <format>', 'Output format (text|json)', 'text')
     .actionWithSmm(async (options, command) => {
+      const logger = command.getLogger('PRsCommand');
       try {
         console.log('📊 Analyzing PRs through time...');
         const service = createPRService(command);
@@ -378,6 +386,7 @@ export function createPRsCommands(program: SmmCommand): void {
     .option('--raw-filters <filters>', 'Comma-separated raw filter string')
     .option('--output <format>', 'Output format (text|json)', 'text')
     .actionWithSmm(async (options, command) => {
+      const logger = command.getLogger('PRsCommand');
       try {
         console.log('📊 Analyzing PRs by author...');
         const service = createPRService(command);
@@ -417,6 +426,7 @@ export function createPRsCommands(program: SmmCommand): void {
     .option('--raw-filters <filters>', 'Comma-separated raw filter string')
     .option('--output <format>', 'Output format (text|json)', 'text')
     .actionWithSmm(async (options, command) => {
+      const logger = command.getLogger('PRsCommand');
       try {
         console.log('📊 Calculating average review time...');
         const service = createPRService(command);
@@ -456,6 +466,7 @@ export function createPRsCommands(program: SmmCommand): void {
     .option('--raw-filters <filters>', 'Comma-separated raw filter string')
     .option('--output <format>', 'Output format (text|json)', 'text')
     .actionWithSmm(async (options, command) => {
+      const logger = command.getLogger('PRsCommand');
       try {
         console.log('📊 Calculating average PR open time...');
         const service = createPRService(command);
@@ -498,6 +509,7 @@ export function createPRsCommands(program: SmmCommand): void {
     .option('--raw-filters <filters>', 'Comma-separated raw filter string')
     .option('--output <format>', 'Output format (text|json)', 'text')
     .actionWithSmm(async (options, command) => {
+      const logger = command.getLogger('PRsCommand');
       try {
         console.log('📊 Calculating average comments per PR...');
         const service = createPRService(command);

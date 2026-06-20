@@ -33,6 +33,7 @@ import {
 import PipelineFactory from '@smmachine/core/aggregates/pipeline-factory';
 import { PairingService } from '@smmachine/core/domain/code/pairing-service';
 import { TimeZoneProvider } from '@smmachine/core/infrastructure/timezone-provider';
+import { Logger } from '@smmachine/utils';
 
 function buildDataDirectories(config: Configuration) {
   const baseDir = config.storeData || './outputs';
@@ -46,6 +47,14 @@ function buildDataDirectories(config: Configuration) {
     sonarqubeDirectory: path.join(dataDirectory, 'sonarqube'),
     codemaatDirectory: path.join(dataDirectory, 'codemaat'),
   };
+}
+
+function createLogger(config: Configuration, name: string): Logger {
+  return new Logger(name, {
+    level: config.loggingLevel,
+    filePath: config.getLogPath(),
+    storeLogs: config.storeLogs,
+  });
 }
 
 /**
@@ -78,7 +87,12 @@ function buildDataDirectories(config: Configuration) {
     // Configuration Repository (singleton — caches project list)
     {
       provide: ConfigurationRepository,
-      useFactory: () => new ConfigurationRepository(process.env),
+      useFactory: () =>
+        new ConfigurationRepository(
+          process.env,
+          undefined,
+          new Logger('ConfigurationRepository')
+        ),
     },
 
     // Configuration (request-scoped — resolved per request from ?project= query param)
@@ -108,7 +122,8 @@ function buildDataDirectories(config: Configuration) {
           config.jiraUrl || '',
           config.jiraEmail || '',
           config.jiraToken || '',
-          config.jiraProject || ''
+          config.jiraProject || '',
+          createLogger(config, 'JiraIssuesClient')
         ),
       inject: [Configuration],
     },
@@ -120,7 +135,8 @@ function buildDataDirectories(config: Configuration) {
         new SonarqubeMeasuresClient(
           config.sonarUrl || '',
           config.sonarToken || '',
-          config.sonarProject || ''
+          config.sonarProject || '',
+          createLogger(config, 'SonarqubeMeasuresClient')
         ),
       inject: [Configuration],
     },
@@ -129,49 +145,61 @@ function buildDataDirectories(config: Configuration) {
     {
       provide: CommitTraverser,
       useFactory: (config: Configuration) =>
-        new CommitTraverser(config.gitRepositoryLocation || '.'),
+        new CommitTraverser(
+          config.gitRepositoryLocation || '.',
+          createLogger(config, 'CommitTraverser')
+        ),
       inject: [Configuration],
     },
     // Repositories
     {
       provide: PullRequestsRepository,
       useFactory: (config: Configuration) => {
-        return PullRequestFactory.create(config);
+        return PullRequestFactory.create(config, createLogger(config, 'PullRequestsRepository'));
       },
       inject: [Configuration],
     },
     {
       provide: PullRequestFiltersRepository,
       useFactory: (config: Configuration) => {
-        return PullRequestFactory.createFilters(config);
+        return PullRequestFactory.createFilters(
+          config,
+          createLogger(config, 'PullRequestFiltersRepository')
+        );
       },
       inject: [Configuration],
     },
     {
       provide: PipelinesRepository,
       useFactory: (config: Configuration) => {
-        return PipelineFactory.create(config).pipelineRepository;
+        return PipelineFactory.create(config, createLogger(config, 'PipelinesRepository'))
+          .pipelineRepository;
       },
       inject: [Configuration],
     },
     {
       provide: PipelineFiltersRepository,
       useFactory: (config: Configuration) => {
-        return PipelineFactory.create(config).pipelineFiltersRepository;
+        return PipelineFactory.create(config, createLogger(config, 'PipelineFiltersRepository'))
+          .pipelineFiltersRepository;
       },
       inject: [Configuration],
     },
     {
       provide: PipelinesService,
       useFactory: (pipelineRepository: PipelinesRepository, configuration: Configuration) => {
-        return new PipelinesService(pipelineRepository, configuration);
+        return new PipelinesService(
+          pipelineRepository,
+          configuration,
+          createLogger(configuration, 'PipelinesService')
+        );
       },
       inject: [PipelinesRepository, Configuration],
     },
     {
       provide: CodeMetricsRepository,
       useFactory: (config: Configuration) => {
-        return new CodeMetricsRepository(config);
+        return new CodeMetricsRepository(config, createLogger(config, 'CodeMetricsRepository'));
       },
       inject: [Configuration],
     },
@@ -179,14 +207,18 @@ function buildDataDirectories(config: Configuration) {
       provide: IssuesRepository,
       useFactory: (client: JiraIssuesClient, config: Configuration) => {
         const paths = buildDataDirectories(config);
-        return new IssuesRepository(client, paths.jiraDirectory);
+        return new IssuesRepository(
+          client,
+          paths.jiraDirectory,
+          createLogger(config, 'IssuesRepository')
+        );
       },
       inject: [JiraIssuesClient, Configuration],
     },
     {
       provide: SonarqubeRepository,
       useFactory: (config: Configuration) => {
-        const repo = SonarqubeFactory.create(config);
+        const repo = SonarqubeFactory.create(config, createLogger(config, 'SonarqubeRepository'));
         return repo;
       },
       inject: [Configuration],
@@ -195,21 +227,21 @@ function buildDataDirectories(config: Configuration) {
       provide: PRsService,
       useFactory: (pullRequestRepository: PullRequestsRepository, config: Configuration) => {
         const tz = new TimeZoneProvider(config.timezone);
-        return new PRsService(pullRequestRepository, tz);
+        return new PRsService(pullRequestRepository, tz, createLogger(config, 'PRsService'));
       },
       inject: [PullRequestsRepository, Configuration],
     },
     {
       provide: SonarQubeService,
-      useFactory: (sonarqubeRepository: SonarqubeRepository) => {
-        return new SonarQubeService(sonarqubeRepository);
+      useFactory: (sonarqubeRepository: SonarqubeRepository, config: Configuration) => {
+        return new SonarQubeService(sonarqubeRepository, createLogger(config, 'SonarQubeService'));
       },
-      inject: [SonarqubeRepository],
+      inject: [SonarqubeRepository, Configuration],
     },
     {
       provide: PairingService,
       useFactory: (config: Configuration) => {
-        return PairingFactory.create(config);
+        return PairingFactory.create(config, createLogger(config, 'PairingService'));
       },
       inject: [Configuration],
     },
@@ -223,16 +255,19 @@ function buildDataDirectories(config: Configuration) {
         pairingService: PairingService,
         codeMetricsRepository: CodeMetricsRepository,
         issuesRepository: IssuesRepository,
-        sonarqubeService: SonarQubeService
-      ) =>
-        new MetricsOrchestrator(
+        sonarqubeService: SonarQubeService,
+        config: Configuration
+      ) => {
+        return new MetricsOrchestrator(
           prsService,
           pipelinesService,
           codeMetricsRepository,
           issuesRepository,
           sonarqubeService,
-          pairingService
-        ),
+          pairingService,
+          createLogger(config, 'MetricsOrchestrator')
+        );
+      },
       inject: [
         PRsService,
         PipelinesService,
@@ -240,6 +275,7 @@ function buildDataDirectories(config: Configuration) {
         CodeMetricsRepository,
         IssuesRepository,
         SonarQubeService,
+        Configuration,
       ],
     },
   ],

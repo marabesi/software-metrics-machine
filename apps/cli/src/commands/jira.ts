@@ -1,12 +1,13 @@
 import type { SmmCommand } from './smm-command';
-import { Logger } from '@smmachine/utils';
 import { createJiraDependencies } from '../factories/jira-factory';
-
-const logger = new Logger('JiraCommand');
 
 function createJiraOrchestrator(command: SmmCommand) {
   const config = command.getConfiguration();
-  const { issuesRepository } = createJiraDependencies(config, config.getJiraPath());
+  const { issuesRepository } = createJiraDependencies(
+    config,
+    config.getJiraPath(),
+    command.getLogger('JiraCommand')
+  );
 
   return issuesRepository;
 }
@@ -41,6 +42,7 @@ export function createJiraCommands(program: SmmCommand): void {
     .option('--status <status>', 'Filter by issue status')
     .option('--output <format>', 'Output format (text|json)', 'text')
     .actionWithSmm(async (options, command) => {
+      const logger = command.getLogger('JiraCommand');
       try {
         console.log('🔄 Fetching issues from Jira...');
         const orchestrator = createJiraOrchestrator(command);
@@ -72,7 +74,8 @@ export function createJiraCommands(program: SmmCommand): void {
     .description('Fetch issue changelog from Jira')
     .option('--issue <key>', 'Specific issue key to fetch changelog for', '')
     .option('--output <format>', 'Output format (text|json)', 'text')
-    .actionWithSmm(async (options) => {
+    .actionWithSmm(async (options, command) => {
+      const logger = command.getLogger('JiraCommand');
       try {
         if (!options.issue) {
           console.error('❌ Error: --issue parameter is required');
@@ -103,7 +106,8 @@ export function createJiraCommands(program: SmmCommand): void {
     .description('Fetch issue comments from Jira')
     .option('--issue <key>', 'Specific issue key to fetch comments for', '')
     .option('--output <format>', 'Output format (text|json)', 'text')
-    .actionWithSmm(async (options) => {
+    .actionWithSmm(async (options, command) => {
+      const logger = command.getLogger('JiraCommand');
       try {
         if (!options.issue) {
           console.error('❌ Error: --issue parameter is required');

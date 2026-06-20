@@ -2,16 +2,16 @@ import type { SmmCommand } from './smm-command';
 import { GitFactory } from '@smmachine/core/aggregates/git-factory';
 import { CodemaatFetchRepository } from '@smmachine/core/providers/codemaat/codemaat-fetch-repository';
 import { CodemaatService } from '@smmachine/core/domain/code/codemaat-service';
-import { Logger } from '@smmachine/utils';
 import { CodemaatFactory } from '@smmachine/core/aggregates/codemaat-factory';
 import { PairingFactory } from '@smmachine/core/aggregates/pairing-factory';
 import type { CodeChurn } from '@smmachine/core/providers/codemaat/types';
 import path from 'path';
 
-const logger = new Logger('CodeCommand');
-
 function createCodemaatService(command: SmmCommand): CodemaatService {
-  const repository = CodemaatFactory.create(command.getConfiguration());
+  const repository = CodemaatFactory.create(
+    command.getConfiguration(),
+    command.getLogger('CodeCommand')
+  );
   return new CodemaatService(repository);
 }
 
@@ -25,10 +25,11 @@ export function createCodeCommands(program: SmmCommand): void {
     .option('--end-date <date>', 'End date (YYYY-MM-DD)')
     .option('--output <format>', 'Output format (text|json|csv)', 'text')
     .actionWithSmm(async (options, command) => {
+      const logger = command.getLogger('CodeCommand');
       try {
         logger.info('📊 Generating code summary...');
 
-        const pairingService = PairingFactory.create(command.getConfiguration());
+        const pairingService = PairingFactory.create(command.getConfiguration(), logger);
         const summary = await pairingService.getPairingIndex({
           startDate: options.startDate,
           endDate: options.endDate,
@@ -101,12 +102,13 @@ export function createCodeCommands(program: SmmCommand): void {
     .option('--buffer <size>', 'Max buffer size in MB for git output (default: 100)', '100')
     .option('--output <format>', 'Output format (text|json)', 'text')
     .actionWithSmm(async (options, command) => {
+      const logger = command.getLogger('CodeCommand');
       try {
         logger.info('🔍 Analyzing change sets...');
         const config = command.getConfiguration();
         const repoPath = config.gitRepositoryLocation;
 
-        const factory = GitFactory.create(config);
+        const factory = GitFactory.create(config, logger);
 
         const result = await factory.fetchCommits({
           startDate: options.startDate,
@@ -149,10 +151,11 @@ export function createCodeCommands(program: SmmCommand): void {
     .option('--force', 'Force regeneration of CodeMaat CSV files')
     .option('--output <format>', 'Output format (text|json)', 'text')
     .actionWithSmm(async (options, command) => {
+      const logger = command.getLogger('CodeCommand');
       try {
         logger.info('🔍 Running CodeMaat analysis...');
         const config = command.getConfiguration();
-        const fetchRepository = new CodemaatFetchRepository(config);
+        const fetchRepository = new CodemaatFetchRepository(config, logger);
         const result = fetchRepository.fetch({
           startDate: options.startDate,
           subfolder: options.subfolder,
@@ -195,6 +198,7 @@ export function createCodeCommands(program: SmmCommand): void {
     .option('--authors <list>', 'Comma-separated list of authors to filter')
     .option('--output <format>', 'Output format (text|json|csv)', 'text')
     .actionWithSmm(async (options, command) => {
+      const logger = command.getLogger('CodeCommand');
       try {
         logger.info('📊 Calculating code churn...');
         const codemaatService = createCodemaatService(command);
@@ -240,6 +244,7 @@ export function createCodeCommands(program: SmmCommand): void {
     .option('--min-coupling <number>', 'Minimum coupling threshold', '0.3')
     .option('--output <format>', 'Output format (text|json|csv)', 'text')
     .actionWithSmm(async (options, command) => {
+      const logger = command.getLogger('CodeCommand');
       try {
         logger.info('🔗 Analyzing code coupling...');
         const codemaatService = createCodemaatService(command);
@@ -268,6 +273,7 @@ export function createCodeCommands(program: SmmCommand): void {
     .option('--top <number>', 'Show top N entities', '20')
     .option('--output <format>', 'Output format (text|json|csv)', 'text')
     .actionWithSmm(async (options, command) => {
+      const logger = command.getLogger('CodeCommand');
       try {
         logger.info('📊 Calculating entity churn...');
         const codemaatService = createCodemaatService(command);
@@ -302,6 +308,7 @@ export function createCodeCommands(program: SmmCommand): void {
     .option('--top <number>', 'Show top N entities', '20')
     .option('--output <format>', 'Output format (text|json|csv)', 'text')
     .actionWithSmm(async (options, command) => {
+      const logger = command.getLogger('CodeCommand');
       try {
         logger.info('⏱️  Calculating entity effort...');
         const maxRows = Number(options.top);
@@ -330,6 +337,7 @@ export function createCodeCommands(program: SmmCommand): void {
     .option('--entity <path>', 'Specific entity/file to analyze')
     .option('--output <format>', 'Output format (text|json|csv)', 'text')
     .actionWithSmm(async (options, command) => {
+      const logger = command.getLogger('CodeCommand');
       try {
         logger.info('👥 Analyzing entity ownership...');
         const codemaatService = createCodemaatService(command);
@@ -364,9 +372,10 @@ export function createCodeCommands(program: SmmCommand): void {
     .option('--min-shared <number>', 'Minimum shared commits', '2')
     .option('--output <format>', 'Output format (text|json|csv)', 'text')
     .actionWithSmm(async (options, command) => {
+      const logger = command.getLogger('CodeCommand');
       try {
         logger.info('👥 Calculating developer pairing index...');
-        const pairingService = PairingFactory.create(command.getConfiguration());
+        const pairingService = PairingFactory.create(command.getConfiguration(), logger);
         const pairing = await pairingService.getPairingIndex({
           startDate: options.startDate,
           endDate: options.endDate,

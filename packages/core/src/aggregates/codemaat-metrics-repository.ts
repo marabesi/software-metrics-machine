@@ -66,9 +66,12 @@ export class CodeMaatMetricsRepository implements ICodeMetricsRepository {
   private logger: Logger;
   private dataDir: string;
 
-  constructor(configuration: Configuration) {
+  constructor(
+    configuration: Configuration,
+    logger: Logger
+  ) {
     this.dataDir = configuration.getCodeMaatPath();
-    this.logger = new Logger('CodeMaatMetricsRepository');
+    this.logger = logger;
   }
 
   async getCodeChurn(options: CodeMaatChurnOptions & { typeChurn: string }): Promise<CodeChurnValueResult>;

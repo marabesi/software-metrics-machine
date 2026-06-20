@@ -33,8 +33,8 @@ export class GitHubRateLimitManager {
   /** Max backoff cap */
   private static readonly BACKOFF_MAX_SECONDS = 60;
 
-  constructor() {
-    this.logger = new Logger('GitHubRateLimitManager');
+  constructor(logger: Logger) {
+    this.logger = logger;
   }
 
   // ── Header parsing ────────────────────────────────────────────────────

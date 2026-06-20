@@ -1,4 +1,4 @@
-import { logger } from '@smmachine/utils';
+import { Logger } from '@smmachine/utils';
 import {
   SonarqubeComponentMeasure,
   SonarqubeComponentTreeMeasure,
@@ -31,17 +31,20 @@ export class SonarqubeFetchMetricsRepository implements IQualityMetricsRepositor
 
   constructor(
     private sonarqubeClient: ISonarqubeMeasuresClient,
-    private configuration: Configuration
+    private configuration: Configuration,
+    private logger: Logger
   ) {
     const cacheDir = this.configuration.getSonarqubePath();
     this.cache = new FileSystemRepository<TimestampedStore<SonarqubeComponentMeasure>>(
-      `${cacheDir}/measures.json`
+      `${cacheDir}/measures.json`,
+      logger
     );
     this.cacheComponentTree = new FileSystemRepository<
       TimestampedStore<SonarqubeComponentTreeMeasure[]>
-    >(`${cacheDir}/component-tree.json`);
+    >(`${cacheDir}/component-tree.json`, logger);
     this.cacheHistorical = new FileSystemRepository<TimestampedStore<CodeMetric[]>>(
-      `${cacheDir}/historical-measures.json`
+      `${cacheDir}/historical-measures.json`,
+      logger
     );
   }
 
@@ -49,7 +52,7 @@ export class SonarqubeFetchMetricsRepository implements IQualityMetricsRepositor
    * Get quality metrics
    */
   async fetchQualityMetrics(options?: { metrics?: string[] }): Promise<SonarqubeComponentMeasure> {
-    logger.info('Fetching quality metrics from SonarQube...');
+    this.logger.info('Fetching quality metrics from SonarQube...');
     const metrics = await this.sonarqubeClient.fetchComponentMeasures({
       metrics: options?.metrics,
     });
@@ -65,7 +68,7 @@ export class SonarqubeFetchMetricsRepository implements IQualityMetricsRepositor
     metrics?: string[];
   }): Promise<SonarqubeComponentTreeMeasure[]> {
     try {
-      logger.debug(`Fetching component tree: ${JSON.stringify(options)}`);
+      this.logger.debug(`Fetching component tree: ${JSON.stringify(options)}`);
 
       const componentTree = await this.sonarqubeClient.fetchComponentTree({
         component: options?.component,
@@ -76,7 +79,7 @@ export class SonarqubeFetchMetricsRepository implements IQualityMetricsRepositor
 
       return componentTree;
     } catch (error) {
-      logger.error(
+      this.logger.error(
         `Failed to fetch component tree: ${error}`,
         error instanceof Error ? error.stack : ''
       );
@@ -94,7 +97,7 @@ export class SonarqubeFetchMetricsRepository implements IQualityMetricsRepositor
     incrementalUpdate?: boolean;
   }): Promise<CodeMetric[]> {
     try {
-      logger.debug(`Fetching historical measures: ${JSON.stringify(options)}`);
+      this.logger.debug(`Fetching historical measures: ${JSON.stringify(options)}`);
 
       const fromDisk = await this.cacheHistorical.load();
       const cachedData = extractLatestData(fromDisk);
@@ -103,7 +106,7 @@ export class SonarqubeFetchMetricsRepository implements IQualityMetricsRepositor
       if (options?.incrementalUpdate) {
         if (cached.length > 0) {
           const latestDate = this.findLatestDateInMeasures(cached);
-          logger.info(`Incremental update: fetching historical measures after ${latestDate}...`);
+          this.logger.info(`Incremental update: fetching historical measures after ${latestDate}...`);
           const fresh = await this.sonarqubeClient.fetchHistoricalMeasures({
             metrics: options?.metrics,
             startDate: latestDate,
@@ -118,7 +121,7 @@ export class SonarqubeFetchMetricsRepository implements IQualityMetricsRepositor
       // Manual date range with merge
       if ((options?.startDate || options?.endDate) && !options?.forceRefresh) {
         if (cached.length > 0) {
-          logger.info(
+          this.logger.info(
             `Fetching historical measures for range [${options?.startDate || 'any'}..${options?.endDate || 'any'}] and merging with cache...`
           );
           const fresh = await this.sonarqubeClient.fetchHistoricalMeasures({
@@ -136,7 +139,7 @@ export class SonarqubeFetchMetricsRepository implements IQualityMetricsRepositor
       await this.appendTimestampedEntry(this.cacheHistorical, historical);
       return historical;
     } catch (error) {
-      logger.error(
+      this.logger.error(
         `Failed to fetch historical measures: ${error}`,
         error instanceof Error ? error.stack : ''
       );

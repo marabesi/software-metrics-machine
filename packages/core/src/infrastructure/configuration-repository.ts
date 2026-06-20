@@ -1,6 +1,6 @@
 import * as fs from 'fs';
 import * as path from 'path';
-import { logger } from '@smmachine/utils';
+import { Logger } from '@smmachine/utils';
 import {
   Configuration,
   DeploymentFrequencyTarget,
@@ -78,7 +78,11 @@ export class ConfigurationRepository implements IConfigurationRepository {
   private configPath: string;
   private env: Record<string, string | undefined>;
 
-  constructor(env: Record<string, string | undefined> = process.env, projectName?: string) {
+  constructor(
+    env: Record<string, string | undefined> = process.env,
+    projectName: string | undefined,
+    private logger: Logger
+  ) {
     const envObj = env === process.env ? { ...env } : env;
     this.env = envObj;
 
@@ -199,7 +203,7 @@ export class ConfigurationRepository implements IConfigurationRepository {
     fs.writeFileSync(this.configPath, JSON.stringify(rawConfig, null, 2), 'utf-8');
     this.rawConfig = rawConfig;
     this.projects = this.extractProjects();
-    logger.debug(`Configuration saved to file: ${this.configPath}`);
+    this.logger.debug(`Configuration saved to file: ${this.configPath}`);
   }
 
   private loadRawConfig(): ISmmConfigFile & Record<string, unknown> {
@@ -358,7 +362,7 @@ export class ConfigurationRepository implements IConfigurationRepository {
   private resolveActiveProjectIndex(projectName?: string): number {
     if (!projectName) {
       if (this.projects.length > 1) {
-        logger.warn(
+        this.logger.warn(
           `smm_config.json has ${this.projects.length} projects. Please specify one with --project <name>. Available: ${this.projects.map((p) => p.github_repository || '(unnamed)').join(', ')}`
         );
       }

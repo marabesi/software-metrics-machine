@@ -1,4 +1,4 @@
-import { Logger, logger } from '@smmachine/utils';
+import { Logger } from '@smmachine/utils';
 import { SonarqubeRepository } from 'src/aggregates';
 
 export interface QualityFilters {
@@ -12,9 +12,10 @@ export interface QualityFilters {
 }
 
 export class SonarQubeService {
-  private logger: Logger = logger;
-
-  constructor(private sonarqubeRepository: SonarqubeRepository) {}
+  constructor(
+    private sonarqubeRepository: SonarqubeRepository,
+    private logger: Logger
+  ) {}
 
   async getQualityMetrics(_filters?: unknown): Promise<unknown> {
     this.logger.info('Fetching SonarQube quality metrics...');

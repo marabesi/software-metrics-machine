@@ -1,10 +1,8 @@
-import { Logger } from '@smmachine/utils';
 import * as fs from 'fs';
 import * as path from 'path';
 import { ChildProcess, spawn } from 'child_process';
 import type { SmmCommand } from './smm-command';
-
-const logger = new Logger('DashboardCommand');
+import type { Logger } from '@smmachine/utils';
 
 type ServiceProcess = {
   name: string;
@@ -84,7 +82,8 @@ function spawnService(
   scriptPath: string,
   args: string[],
   cwd: string,
-  env: NodeJS.ProcessEnv
+  env: NodeJS.ProcessEnv,
+  logger: Logger
 ): ChildProcess {
   const child = spawn(process.execPath, [scriptPath, ...args], {
     cwd,
@@ -128,7 +127,8 @@ export function createDashboardCommands(program: SmmCommand): void {
     .option('--webapp-port <number>', 'Port to run the webapp server on', '3000')
     .option('--rest-port <number>', 'Port to run the REST API server on', '3001')
     .option('--host <host>', 'Host to bind the server to', '0.0.0.0')
-    .actionWithSmm(async (options) => {
+    .actionWithSmm(async (options, command) => {
+      const logger = command.getLogger('DashboardCommand');
       try {
         const webPort = String(options.webappPort);
         const restPort = String(options.restPort);
@@ -152,7 +152,7 @@ export function createDashboardCommands(program: SmmCommand): void {
           ...commonEnv,
           HOST: host,
           PORT: restPort,
-        });
+        }, logger);
         services.push({ name: 'rest', process: restProcess });
 
         const webappProcess = spawnService(
@@ -168,7 +168,8 @@ export function createDashboardCommands(program: SmmCommand): void {
             REST_PORT: restPort,
             SMM_REST_BASE_URL: `http://${host}:${restPort}`,
             NODE_ENV: process.env.NODE_ENV || 'production',
-          }
+          },
+          logger
         );
         services.push({ name: 'webapp', process: webappProcess });
 

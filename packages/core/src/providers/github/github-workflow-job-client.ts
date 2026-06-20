@@ -15,9 +15,10 @@ export class GithubWorkflowJobClient implements IGithubWorkflowJobClient {
     token: string,
     private owner: string,
     private repo: string,
-    private rateLimitManager: GitHubRateLimitManager
+    private rateLimitManager: GitHubRateLimitManager,
+    logger: Logger
   ) {
-    this.logger = new Logger('GithubWorkflowClient');
+    this.logger = logger;
 
     this.axiosInstance = axios.create({
       baseURL: this.baseUrl,
@@ -28,7 +29,11 @@ export class GithubWorkflowJobClient implements IGithubWorkflowJobClient {
       timeout: 30000,
     });
 
-    this.retriableClient = new GithubClientRetriable(this.axiosInstance, this.rateLimitManager);
+    this.retriableClient = new GithubClientRetriable(
+      this.axiosInstance,
+      this.rateLimitManager,
+      logger
+    );
   }
 
   async fetchJobsPage(

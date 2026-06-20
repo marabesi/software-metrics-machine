@@ -20,9 +20,10 @@ export interface CodemaatFetchResult {
 }
 
 export class CodemaatFetchRepository {
-  private logger = new Logger('CodemaatFetchRepository');
-
-  constructor(private configuration: Configuration) {}
+  constructor(
+    private configuration: Configuration,
+    private logger: Logger
+  ) {}
 
   fetch(options: CodemaatFetchOptions): CodemaatFetchResult {
     if (!options.startDate) {

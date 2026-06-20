@@ -1,4 +1,4 @@
-import { Logger, logger } from '@smmachine/utils';
+import { Logger } from '@smmachine/utils';
 import { IRepository } from '../../infrastructure/repository';
 import { TimeZoneProvider } from '../../infrastructure/timezone-provider';
 import {
@@ -25,12 +25,12 @@ export interface IPairingIndexService {
  * Formula: (paired_commits / total_analyzed_commits) * 100
  */
 export class PairingService implements IPairingIndexService {
-  private logger: Logger = logger;
   private tz: TimeZoneProvider;
 
   constructor(
     private commitRepository: IRepository<Commit>,
-    timeZoneProvider?: TimeZoneProvider
+    timeZoneProvider: TimeZoneProvider | undefined,
+    private logger: Logger
   ) {
     this.tz = timeZoneProvider || new TimeZoneProvider('UTC');
   }

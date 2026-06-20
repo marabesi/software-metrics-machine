@@ -1,4 +1,4 @@
-import { logger } from '@smmachine/utils';
+import { Logger } from '@smmachine/utils';
 import { CodeMaatMetricsRepository } from './codemaat-metrics-repository';
 import { IssuesRepository } from './issues-repository';
 import { PairingIndexService, PipelinesService, PRsService, SonarQubeService } from '../domain';
@@ -26,14 +26,15 @@ export class MetricsOrchestrator implements IMetricsOrchestrator {
     private codeRepo: CodeMaatMetricsRepository,
     private issuesRepo: IssuesRepository,
     private sonarqubeService: SonarQubeService,
-    private pairingIndexService: PairingIndexService
+    private pairingIndexService: PairingIndexService,
+    private logger: Logger
   ) {}
 
   /**
    * Get PR metrics (lead time, comments, etc.)
    */
   async getPRMetrics(filters?: OrchestratorFilters): Promise<unknown> {
-    logger.debug('Orchestrating PR metrics...');
+    this.logger.debug('Orchestrating PR metrics...');
     return this.prsRepo.getMetrics(filters);
   }
 
@@ -41,7 +42,7 @@ export class MetricsOrchestrator implements IMetricsOrchestrator {
    * Get deployment metrics (frequency, success rate, job metrics)
    */
   async getDeploymentMetrics(filters?: OrchestratorFilters): Promise<unknown> {
-    logger.info('Orchestrating deployment metrics...');
+    this.logger.info('Orchestrating deployment metrics...');
 
     const metrics = await this.pipelinesRepo.getMetrics(filters);
     const frequency = await this.pipelinesRepo.getDeploymentFrequencyWithAllIntervals(filters);
@@ -58,7 +59,7 @@ export class MetricsOrchestrator implements IMetricsOrchestrator {
    * Get code metrics (pairing index, churn, coupling)
    */
   async getCodeMetrics(filters?: OrchestratorFilters): Promise<unknown> {
-    logger.info('Orchestrating code metrics...');
+    this.logger.info('Orchestrating code metrics...');
 
     const pairing = await this.pairingIndexService.getPairingIndex(filters);
     const churn = await this.codeRepo.getCodeChurn(filters);
@@ -75,7 +76,7 @@ export class MetricsOrchestrator implements IMetricsOrchestrator {
    * Get issue metrics from Jira
    */
   async getIssueMetrics(filters?: OrchestratorFilters): Promise<unknown> {
-    logger.info('Orchestrating issue metrics...');
+    this.logger.info('Orchestrating issue metrics...');
 
     const issues = await this.issuesRepo.getIssues(filters);
 
@@ -89,7 +90,7 @@ export class MetricsOrchestrator implements IMetricsOrchestrator {
    * Get quality metrics from SonarQube
    */
   async getQualityMetrics(filters?: OrchestratorFilters): Promise<unknown> {
-    logger.info('Orchestrating quality metrics...');
+    this.logger.info('Orchestrating quality metrics...');
 
     return this.sonarqubeService.getQualityMetrics(filters);
   }
@@ -98,7 +99,7 @@ export class MetricsOrchestrator implements IMetricsOrchestrator {
    * Get a complete metrics report across all sources
    */
   async getFullReport(filters?: OrchestratorFilters): Promise<unknown> {
-    logger.info('Orchestrating full metrics report...');
+    this.logger.info('Orchestrating full metrics report...');
 
     const [pullRequests, deployment, code, issues, quality] = await Promise.all([
       this.getPRMetrics(filters),

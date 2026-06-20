@@ -1,15 +1,13 @@
 import { writeFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 import type { SmmCommand } from './smm-command';
-import { Logger } from '@smmachine/utils';
 import { SonarqubeMeasuresClient } from '@smmachine/core/providers/sonarqube/sonarqube-client';
 import { SonarqubeFetchMetricsRepository } from '@smmachine/core/providers/sonarqube/sonarqube-fetch-metrics-repository';
 import {
   SonarqubeLocalAnalysis,
   type SonarqubeLocalAnalysisResult,
 } from '@smmachine/core/providers/sonarqube/sonarqube-local-analysis';
-
-const logger = new Logger('SonarQubeCommand');
+import type { Logger } from '@smmachine/utils';
 
 type SonarqubeOrchestratorOptions = {
   sonarUrl?: string;
@@ -23,6 +21,7 @@ function createSonarqubeOrchestrator(
   command: SmmCommand
 ) {
   const config = command.getConfiguration();
+  const logger = command.getLogger('SonarQubeCommand');
   const token = options.useLocalAnalysisToken
     ? config.sonarLocalRunnerToken
     : (options.sonarToken ?? config.sonarToken);
@@ -32,7 +31,7 @@ function createSonarqubeOrchestrator(
 
   let sonarUrl = options.sonarUrl ?? config.sonarUrl ?? '';
   if (options.useLocalAnalysisToken) {
-    const localAnalysis = new SonarqubeLocalAnalysis(config);
+    const localAnalysis = new SonarqubeLocalAnalysis(config, undefined, logger);
     const localServerUrl = localAnalysis.readLocalServerUrl();
     if (localServerUrl) {
       sonarUrl = localServerUrl;
@@ -42,15 +41,17 @@ function createSonarqubeOrchestrator(
   const sonarqubeClient = new SonarqubeMeasuresClient(
     sonarUrl,
     token || '',
-    options.sonarProject ?? config.sonarProject ?? ''
+    options.sonarProject ?? config.sonarProject ?? '',
+    logger
   );
 
-  return new SonarqubeFetchMetricsRepository(sonarqubeClient, config);
+  return new SonarqubeFetchMetricsRepository(sonarqubeClient, config, logger);
 }
 
 async function fetchLocalAnalysisMetrics(
   result: SonarqubeLocalAnalysisResult,
-  command: SmmCommand
+  command: SmmCommand,
+  logger: Logger
 ): Promise<void> {
   const orchestrator = createSonarqubeOrchestrator(
     {
@@ -115,10 +116,11 @@ export function createSonarQubeCommands(program: SmmCommand): void {
     .option('--admin-user <user>', 'Predefined local SonarQube admin username', 'admin')
     .option('--admin-password <password>', 'Predefined local SonarQube admin password', 'admin')
     .actionWithSmm(async (options, command) => {
+      const logger = command.getLogger('SonarQubeCommand');
       try {
         const configRepo = command.getConfigurationRepository();
         const config = command.getConfiguration();
-        const analysis = new SonarqubeLocalAnalysis(config, configRepo);
+        const analysis = new SonarqubeLocalAnalysis(config, configRepo, logger);
         const result = await analysis.run({
           containerName: String(options.containerServerName),
           scannerContainerName: String(options.scannerContainerName),
@@ -138,7 +140,7 @@ export function createSonarQubeCommands(program: SmmCommand): void {
         // wait to give sonarqube time to process the changes and make metrics available before fetching
         logger.info('Waiting for SonarQube to process analysis results...');
         await new Promise((resolve) => setTimeout(resolve, 120_000));
-        await fetchLocalAnalysisMetrics(result, command);
+        await fetchLocalAnalysisMetrics(result, command, logger);
       } catch (error) {
         logger.error('Failed to run SonarQube analysis', error);
         process.exit(1);
@@ -159,6 +161,7 @@ export function createSonarQubeCommands(program: SmmCommand): void {
     .option('--output <format>', 'Output format (text|json)', 'text')
     .option('--local', 'Use sonar_local_runner_token for API calls', false)
     .actionWithSmm(async (options, command) => {
+      const logger = command.getLogger('SonarQubeCommand');
       try {
         logger.info('🔄 Fetching quality measures from SonarQube...');
         const orchestrator = createSonarqubeOrchestrator(
@@ -214,6 +217,7 @@ export function createSonarQubeCommands(program: SmmCommand): void {
     .option('--output <format>', 'Output format (text|json)', 'text')
     .option('--local', 'Use sonar_local_runner_token for API calls', false)
     .actionWithSmm(async (options, command) => {
+      const logger = command.getLogger('SonarQubeCommand');
       try {
         console.log('🔄 Fetching component tree from SonarQube...');
         const orchestrator = createSonarqubeOrchestrator(
@@ -289,6 +293,7 @@ export function createSonarQubeCommands(program: SmmCommand): void {
     .option('--save <file>', 'Save results to a JSON file at the given path')
     .option('--local', 'Use sonar_local_runner_token for API calls', false)
     .actionWithSmm(async (options, command) => {
+      const logger = command.getLogger('SonarQubeCommand');
       try {
         console.log('🔄 Fetching historical measures from SonarQube...');
         const orchestrator = createSonarqubeOrchestrator(

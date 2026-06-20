@@ -1,5 +1,4 @@
 import { Configuration } from '@smmachine/core/infrastructure/configuration';
-import { Logger } from '@smmachine/utils';
 import * as fs from 'fs/promises';
 import type { SmmCommand } from './smm-command';
 
@@ -38,8 +37,6 @@ type DatasetDefinition = {
   requiredFields: string[];
 };
 
-const logger = new Logger('HealthCheckCommand');
-
 export function createHealthCheckCommand(program: SmmCommand): void {
   program
     .subcommand('health-check')
@@ -52,6 +49,7 @@ export function createHealthCheckCommand(program: SmmCommand): void {
       '1'
     )
     .actionWithSmm(async (options, command) => {
+      const logger = command.getLogger('HealthCheckCommand');
       try {
         const config = command.getConfiguration();
         const maxGapDays = Number.parseInt(options.maxGapDays, 10);

@@ -1,6 +1,6 @@
 import * as fs from 'fs/promises';
 import { dirname } from 'path';
-import { logger } from '@smmachine/utils';
+import { Logger } from '@smmachine/utils';
 
 /**
  * Generic repository interface for file system operations
@@ -43,7 +43,10 @@ export interface IRepository<T> {
 export class FileSystemRepository<T> implements IRepository<T> {
   protected filePath: string;
 
-  constructor(filePath: string) {
+  constructor(
+    filePath: string,
+    private logger: Logger
+  ) {
     this.filePath = filePath;
   }
 
@@ -81,7 +84,7 @@ export class FileSystemRepository<T> implements IRepository<T> {
 
   async loadAll(): Promise<T[]> {
     try {
-      logger.debug(`Loading all items from ${this.filePath}`);
+      this.logger.debug(`Loading all items from ${this.filePath}`);
       const data = await fs.readFile(this.filePath, 'utf-8');
       const parsed = JSON.parse(data);
 

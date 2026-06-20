@@ -7,9 +7,10 @@ export class GithubClientRetriable {
 
   constructor(
     private readonly axiosInstance: AxiosInstance,
-    private rateLimitManager: GitHubRateLimitManager
+    private rateLimitManager: GitHubRateLimitManager,
+    logger: Logger
   ) {
-    this.logger = new Logger('GithubClientRetriable');
+    this.logger = logger;
   }
 
   /**

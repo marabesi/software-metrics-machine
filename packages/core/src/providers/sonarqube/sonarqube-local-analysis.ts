@@ -99,9 +99,10 @@ export class SonarqubeLocalAnalysis {
 
   constructor(
     private readonly config: Configuration,
-    private readonly configurationRepository?: IConfigurationRepository
+    private readonly configurationRepository: IConfigurationRepository | undefined,
+    logger: Logger
   ) {
-    this.logger = new Logger('SonarqubeLocalAnalysis');
+    this.logger = logger;
     this.localDataFilePath = resolve(config.getSonarqubePath(), LOCAL_SONARQUBE_TOKEN_FILE);
   }
 

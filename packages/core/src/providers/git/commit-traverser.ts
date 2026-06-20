@@ -25,8 +25,11 @@ export interface ICommitTraverser {
 export class CommitTraverser implements ICommitTraverser {
   private logger: Logger;
 
-  constructor(private gitRepositoryPath: string) {
-    this.logger = new Logger('CommitTraverser');
+  constructor(
+    private gitRepositoryPath: string,
+    logger: Logger
+  ) {
+    this.logger = logger;
   }
 
   async traverseCommits(options?: {

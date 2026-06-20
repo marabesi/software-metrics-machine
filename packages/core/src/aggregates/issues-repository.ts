@@ -1,4 +1,4 @@
-import { logger } from '@smmachine/utils';
+import { Logger } from '@smmachine/utils';
 import { FileSystemRepository } from '../infrastructure/repository';
 import { Issue } from '../domain-types';
 import { type IJiraIssuesClient } from '../providers/jira';
@@ -30,9 +30,10 @@ export class IssuesRepository implements IIssuesRepository {
 
   constructor(
     private jiraClient: IJiraIssuesClient,
-    cacheDir: string
+    cacheDir: string,
+    private logger: Logger
   ) {
-    this.cache = new FileSystemRepository<Issue>(`${cacheDir}/issues.json`);
+    this.cache = new FileSystemRepository<Issue>(`${cacheDir}/issues.json`, logger);
   }
 
   /**
@@ -49,7 +50,7 @@ export class IssuesRepository implements IIssuesRepository {
 
     if (options?.incrementalUpdate && fromCache.length > 0) {
       const latestDate = this.findLatestDate(fromCache.map((i) => i.createdAt));
-      logger.info(`Incremental update: fetching Jira issues created after ${latestDate}...`);
+      this.logger.info(`Incremental update: fetching Jira issues created after ${latestDate}...`);
       const freshIssues = await this.jiraClient.fetchIssues({
         startDate: latestDate,
         endDate: options?.endDate,
@@ -66,7 +67,7 @@ export class IssuesRepository implements IIssuesRepository {
       !options?.forceRefresh &&
       fromCache.length > 0
     ) {
-      logger.info(
+      this.logger.info(
         `Fetching Jira issues for range [${options?.startDate || 'any'}..${options?.endDate || 'any'}] and merging with cache...`
       );
       const freshIssues = await this.jiraClient.fetchIssues({
@@ -80,11 +81,11 @@ export class IssuesRepository implements IIssuesRepository {
     }
 
     if (!options?.forceRefresh && fromCache.length > 0) {
-      logger.info(`Using cached issues: ${fromCache.length} records`);
+      this.logger.info(`Using cached issues: ${fromCache.length} records`);
       return fromCache;
     }
 
-    logger.info('Fetching issues from Jira...');
+    this.logger.info('Fetching issues from Jira...');
     const freshIssues = await this.jiraClient.fetchIssues({
       startDate: options?.startDate,
       endDate: options?.endDate,
@@ -126,7 +127,7 @@ export class IssuesRepository implements IIssuesRepository {
    * Get issue changes/history
    */
   async getIssueChanges(issueKey: string): Promise<unknown[]> {
-    logger.info(`Fetching changes for issue ${issueKey}...`);
+    this.logger.info(`Fetching changes for issue ${issueKey}...`);
     return this.jiraClient.fetchIssueChanges(issueKey);
   }
 
@@ -134,7 +135,7 @@ export class IssuesRepository implements IIssuesRepository {
    * Get issue comments
    */
   async getIssueComments(issueKey: string): Promise<unknown[]> {
-    logger.info(`Fetching comments for issue ${issueKey}...`);
+    this.logger.info(`Fetching comments for issue ${issueKey}...`);
     return this.jiraClient.fetchIssueComments(issueKey);
   }
 }

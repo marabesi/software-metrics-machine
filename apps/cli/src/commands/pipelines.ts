@@ -1,15 +1,13 @@
 import type { SmmCommand } from './smm-command';
-import { Logger } from '@smmachine/utils';
 import { PipelinesService } from '@smmachine/core';
 import PipelineFactory from '@smmachine/core/aggregates/pipeline-factory';
 
-const logger = new Logger('PipelinesCommand');
-
 function createPipelineDependencies(command: SmmCommand) {
   const config = command.getConfiguration();
+  const logger = command.getLogger('PipelinesCommand');
   const { pipelineRepository, workflowRepository, workflowJobRepository } =
-    PipelineFactory.create(config);
-  const pipelineService = new PipelinesService(pipelineRepository, config);
+    PipelineFactory.create(config, logger);
+  const pipelineService = new PipelinesService(pipelineRepository, config, logger);
   return { config, pipelineRepository, workflowRepository, workflowJobRepository, pipelineService };
 }
 
@@ -36,6 +34,7 @@ export function createPipelinesCommands(program: SmmCommand): void {
     .option('--raw-filters <filters>', 'Raw filters (e.g., status=success,branch=main)')
     .option('--by-day', 'Fetch workflows day by day instead of all at once', false)
     .actionWithSmm(async (options, command) => {
+      const logger = command.getLogger('PipelinesCommand');
       try {
         logger.info('🔄 Fetching pipeline runs from the configured Git provider...');
         const { workflowRepository } = createPipelineDependencies(command);
@@ -69,6 +68,7 @@ export function createPipelinesCommands(program: SmmCommand): void {
     .option('--raw-filters <filters>', 'Raw filters (e.g., status=success,branch=main)')
     .option('--by-day', 'Fetch jobs day by day instead of all at once', false)
     .actionWithSmm(async (options, command) => {
+      const logger = command.getLogger('PipelinesCommand');
       try {
         logger.info('🔄 Fetching pipeline jobs from the configured Git provider...');
         const { workflowJobRepository } = createPipelineDependencies(command);
@@ -98,6 +98,7 @@ export function createPipelinesCommands(program: SmmCommand): void {
     .option('--output <format>', 'Output format (text|json)', 'text')
     .option('--raw-filters <filters>', 'Raw Provider filters string')
     .actionWithSmm(async (options, command) => {
+      const logger = command.getLogger('PipelinesCommand');
       try {
         console.log('📊 Generating pipeline summary...');
         const { pipelineService } = createPipelineDependencies(command);
@@ -130,6 +131,7 @@ export function createPipelinesCommands(program: SmmCommand): void {
     .option('--end-date <date>', 'End date (YYYY-MM-DD)')
     .option('--output <format>', 'Output format (text|json)', 'text')
     .actionWithSmm(async (options, command) => {
+      const logger = command.getLogger('PipelinesCommand');
       try {
         console.log('📊 Analyzing pipelines by status...');
         const { pipelineService } = createPipelineDependencies(command);
@@ -171,6 +173,7 @@ export function createPipelinesCommands(program: SmmCommand): void {
     .option('--workflow <name>', 'Filter by workflow name')
     .option('--output <format>', 'Output format (text|json)', 'text')
     .actionWithSmm(async (options, command) => {
+      const logger = command.getLogger('PipelinesCommand');
       try {
         console.log('⏱️  Analyzing pipeline run durations...');
         const { pipelineService } = createPipelineDependencies(command);
@@ -204,6 +207,7 @@ export function createPipelinesCommands(program: SmmCommand): void {
     .option('--period <period>', 'Time period (day|week|month)', 'week')
     .option('--output <format>', 'Output format (text|json)', 'text')
     .actionWithSmm(async (options, command) => {
+      const logger = command.getLogger('PipelinesCommand');
       try {
         console.log('📈 Analyzing pipeline runs by time period...');
         const { pipelineService } = createPipelineDependencies(command);
@@ -242,6 +246,7 @@ export function createPipelinesCommands(program: SmmCommand): void {
     .option('--end-date <date>', 'End date (YYYY-MM-DD)')
     .option('--output <format>', 'Output format (text|json)', 'text')
     .actionWithSmm(async (options, command) => {
+      const logger = command.getLogger('PipelinesCommand');
       try {
         console.log('📊 Generating pipeline jobs summary...');
         const { pipelineService } = createPipelineDependencies(command);
@@ -281,6 +286,7 @@ export function createPipelinesCommands(program: SmmCommand): void {
     .option('--job <name>', 'Filter by job name')
     .option('--output <format>', 'Output format (text|json)', 'text')
     .actionWithSmm(async (options, command) => {
+      const logger = command.getLogger('PipelinesCommand');
       try {
         console.log('⏱️  Analyzing job execution times...');
         const { pipelineService } = createPipelineDependencies(command);
@@ -318,6 +324,7 @@ export function createPipelinesCommands(program: SmmCommand): void {
     .option('--job <name>', 'Filter by job name')
     .option('--output <format>', 'Output format (text|json)', 'text')
     .actionWithSmm(async (options, command) => {
+      const logger = command.getLogger('PipelinesCommand');
       try {
         console.log('⏱️  Analyzing job steps execution times...');
         const { pipelineService } = createPipelineDependencies(command);
@@ -357,6 +364,7 @@ export function createPipelinesCommands(program: SmmCommand): void {
     .option('--end-date <date>', 'End date (YYYY-MM-DD)')
     .option('--output <format>', 'Output format (text|json)', 'text')
     .actionWithSmm(async (options, command) => {
+      const logger = command.getLogger('PipelinesCommand');
       try {
         console.log('📊 Analyzing jobs by status...');
         const { pipelineService } = createPipelineDependencies(command);
@@ -391,6 +399,7 @@ export function createPipelinesCommands(program: SmmCommand): void {
     .option('--period <period>', 'Time period (day|week|month)', 'week')
     .option('--output <format>', 'Output format (text|json)', 'text')
     .actionWithSmm(async (options, command) => {
+      const logger = command.getLogger('PipelinesCommand');
       try {
         console.log('🚀 Calculating deployment frequency...');
         const { config, pipelineService } = createPipelineDependencies(command);
@@ -450,6 +459,7 @@ export function createPipelinesCommands(program: SmmCommand): void {
     .option('--end-date <date>', 'End date (YYYY-MM-DD)')
     .option('--output <format>', 'Output format (text|json)', 'text')
     .actionWithSmm(async (options, command) => {
+      const logger = command.getLogger('PipelinesCommand');
       try {
         console.log('⏱️  Calculating lead time for changes...');
         const { pipelineService } = createPipelineDependencies(command);

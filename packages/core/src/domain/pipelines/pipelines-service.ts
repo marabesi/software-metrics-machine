@@ -1,4 +1,4 @@
-import { Logger, logger } from '@smmachine/utils';
+import { Logger } from '@smmachine/utils';
 import {
   JobMetrics,
   PipelineFilters,
@@ -83,12 +83,12 @@ export interface DeploymentFrequencyRow {
 }
 
 export class PipelinesService implements IPipelinesService {
-  private logger: Logger = logger;
   private tz: TimeZoneProvider;
 
   constructor(
     private pipelineRepository: IPipelinesRepository,
-    private configuration?: Configuration
+    private configuration: Configuration | undefined,
+    private logger: Logger
   ) {
     this.tz = new TimeZoneProvider(configuration?.timezone);
   }

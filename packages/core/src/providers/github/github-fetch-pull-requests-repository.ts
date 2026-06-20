@@ -1,4 +1,4 @@
-import { logger } from '@smmachine/utils';
+import { Logger } from '@smmachine/utils';
 import { FileSystemRepository } from '../../infrastructure/repository';
 import { type IGithubPrsClient } from '.';
 import { PullRequestCommentJsonResponse, PullRequestJsonResponse } from './github-response-types';
@@ -29,17 +29,21 @@ export class GitHubPullRequestsFetchRepository implements IPullRequestsRepositor
 
   constructor(
     private githubPrsClient: IGithubPrsClient,
-    config: Configuration
+    config: Configuration,
+    private logger: Logger
   ) {
     const providerDir = config.getPathFromGitProvider();
     this.pullRequestStoreFile = new FileSystemRepository<PullRequestJsonResponse>(
-      `${providerDir}/prs.json`
+      `${providerDir}/prs.json`,
+      logger
     );
     this.pullRequestCommentsStoreFile = new FileSystemRepository<PullRequestCommentJsonResponse>(
-      `${providerDir}/pr-comments.json`
+      `${providerDir}/pr-comments.json`,
+      logger
     );
     const pullRequestFiltersStoreFile = new FileSystemRepository<PullRequestFilterOptions>(
-      `${providerDir}/pull-request-filter-options.json`
+      `${providerDir}/pull-request-filter-options.json`,
+      logger
     );
     this.pullRequestFiltersRepository = new PullRequestFiltersRepository(
       this.pullRequestStoreFile,
@@ -61,7 +65,7 @@ export class GitHubPullRequestsFetchRepository implements IPullRequestsRepositor
 
     if (options?.incrementalUpdate && fromCache.length > 0) {
       const latestDate = this.findLatestDate(fromCache.map((pr) => pr.updated_at));
-      logger.info(`Incremental update: fetching PRs updated after ${latestDate}...`);
+      this.logger.info(`Incremental update: fetching PRs updated after ${latestDate}...`);
       const freshPRs = await this.githubPrsClient.fetchPRs({
         startDate: latestDate,
         endDate: options?.endDate,
@@ -78,7 +82,7 @@ export class GitHubPullRequestsFetchRepository implements IPullRequestsRepositor
       !options?.forceRefresh &&
       fromCache.length > 0
     ) {
-      logger.info(
+      this.logger.info(
         `Fetching PRs for range [${options?.startDate || 'any'}..${options?.endDate || 'any'}] and merging with cache...`
       );
       const freshPRs = await this.githubPrsClient.fetchPRs({
@@ -92,11 +96,11 @@ export class GitHubPullRequestsFetchRepository implements IPullRequestsRepositor
     }
 
     if (!options?.forceRefresh && fromCache.length > 0) {
-      logger.debug(`Using cached PRs: ${fromCache.length} records`);
+      this.logger.debug(`Using cached PRs: ${fromCache.length} records`);
       return fromCache;
     }
 
-    logger.info('Fetching PRs from GitHub...');
+    this.logger.info('Fetching PRs from GitHub...');
     const freshPRs = await this.githubPrsClient.fetchPRs({
       startDate: options?.startDate,
       endDate: options?.endDate,
@@ -140,7 +144,7 @@ export class GitHubPullRequestsFetchRepository implements IPullRequestsRepositor
 
     if (options?.incrementalUpdate && cachedCommentsForPR.length > 0) {
       const latestDate = this.findLatestCommentDate(cachedCommentsForPR);
-      logger.info(
+      this.logger.info(
         `Incremental update for PR #${prNumber}: fetching comments updated after ${latestDate}...`
       );
       const freshComments = await this.githubPrsClient.fetchPRComments(prNumber);
@@ -157,13 +161,13 @@ export class GitHubPullRequestsFetchRepository implements IPullRequestsRepositor
     }
 
     if (!options?.forceRefresh && cachedCommentsForPR.length > 0) {
-      logger.debug(
+      this.logger.debug(
         `Using cached comments for PR #${prNumber}: ${cachedCommentsForPR.length} records`
       );
       return cachedCommentsForPR;
     }
 
-    logger.info(`Fetching comments for PR #${prNumber} from GitHub...`);
+    this.logger.info(`Fetching comments for PR #${prNumber} from GitHub...`);
     const freshComments = await this.githubPrsClient.fetchPRComments(prNumber);
 
     const updatedComments = fromCache
