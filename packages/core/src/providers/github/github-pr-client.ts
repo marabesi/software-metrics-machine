@@ -3,6 +3,7 @@ import { Logger } from '@smmachine/utils';
 import { PullRequestCommentJsonResponse, PullRequestJsonResponse } from './github-response-types';
 import { GitHubRateLimitManager } from './github-rate-limit-manager';
 import { GithubClientRetriable } from './github-client-retriable';
+import { RawFiltersParser } from './raw-filters-parser';
 
 type PrStatuses = 'open' | 'closed' | 'all' | 'draft' | 'merged';
 
@@ -11,6 +12,7 @@ export interface IGithubPrsClient {
     startDate?: string;
     endDate?: string;
     state?: PrStatuses;
+    rawFilters?: string;
   }): Promise<PullRequestJsonResponse[]>;
 
   fetchPRComments(prNumber: number): Promise<PullRequestCommentJsonResponse[]>;
@@ -28,6 +30,7 @@ export class GithubPrsClient implements IGithubPrsClient {
   private logger: Logger;
   private readonly baseUrl = 'https://api.github.com';
   private retriableClient: GithubClientRetriable;
+  private readonly rawFiltersParser = new RawFiltersParser();
 
   constructor(
     token: string,
@@ -58,6 +61,7 @@ export class GithubPrsClient implements IGithubPrsClient {
     startDate?: string;
     endDate?: string;
     state?: PrStatuses;
+    rawFilters?: string;
   }): Promise<PullRequestJsonResponse[]> {
     const state = options?.state || 'all';
     const per_page = 100;
@@ -80,6 +84,7 @@ export class GithubPrsClient implements IGithubPrsClient {
               direction: 'desc',
               per_page,
               page,
+              ...this.rawFiltersParser.parse(options?.rawFilters),
             },
           }
         );

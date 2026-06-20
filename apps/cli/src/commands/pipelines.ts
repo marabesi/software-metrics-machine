@@ -1,5 +1,5 @@
 import type { SmmCommand } from './smm-command';
-import { PipelinesService } from '@smmachine/core';
+import { PipelinesService, type PipelineFilters } from '@smmachine/core';
 import PipelineFactory from '@smmachine/core/aggregates/pipeline-factory';
 
 function createPipelineDependencies(command: SmmCommand) {
@@ -15,6 +15,22 @@ type DeploymentFrequencyInterval = Awaited<
   ReturnType<PipelinesService['getDeploymentFrequencyWithAllIntervals']>
 >[number];
 type JobStepAverageTime = Awaited<ReturnType<PipelinesService['getJobStepsAverageTime']>>[number];
+
+function buildPipelineFilters(options: {
+  startDate?: string;
+  endDate?: string;
+  workflow?: string;
+  job?: string;
+  rawFilters?: string;
+}): PipelineFilters {
+  return {
+    startDate: options.startDate,
+    endDate: options.endDate,
+    workflowPath: options.workflow,
+    jobName: options.job,
+    rawFilters: options.rawFilters,
+  };
+}
 
 export function createPipelinesCommands(program: SmmCommand): void {
   const pipelinesGroup = program
@@ -103,10 +119,7 @@ export function createPipelinesCommands(program: SmmCommand): void {
         console.log('📊 Generating pipeline summary...');
         const { pipelineService } = createPipelineDependencies(command);
 
-        const metrics = await pipelineService.getMetrics({
-          startDate: options.startDate,
-          endDate: options.endDate,
-        });
+        const metrics = await pipelineService.getMetrics(buildPipelineFilters(options));
 
         if (options.output === 'json') {
           console.log(JSON.stringify(metrics, null, 2));
@@ -129,6 +142,7 @@ export function createPipelinesCommands(program: SmmCommand): void {
     .description('View pipeline runs grouped by status')
     .option('--start-date <date>', 'Start date (YYYY-MM-DD)')
     .option('--end-date <date>', 'End date (YYYY-MM-DD)')
+    .option('--raw-filters <filters>', 'Raw Provider filters string')
     .option('--output <format>', 'Output format (text|json)', 'text')
     .actionWithSmm(async (options, command) => {
       const logger = command.getLogger('PipelinesCommand');
@@ -136,10 +150,7 @@ export function createPipelinesCommands(program: SmmCommand): void {
         console.log('📊 Analyzing pipelines by status...');
         const { pipelineService } = createPipelineDependencies(command);
 
-        const metrics = await pipelineService.getMetrics({
-          startDate: options.startDate,
-          endDate: options.endDate,
-        });
+        const metrics = await pipelineService.getMetrics(buildPipelineFilters(options));
 
         if (options.output === 'json') {
           console.log(
@@ -171,6 +182,7 @@ export function createPipelinesCommands(program: SmmCommand): void {
     .option('--start-date <date>', 'Start date (YYYY-MM-DD)')
     .option('--end-date <date>', 'End date (YYYY-MM-DD)')
     .option('--workflow <name>', 'Filter by workflow name')
+    .option('--raw-filters <filters>', 'Raw Provider filters string')
     .option('--output <format>', 'Output format (text|json)', 'text')
     .actionWithSmm(async (options, command) => {
       const logger = command.getLogger('PipelinesCommand');
@@ -178,10 +190,7 @@ export function createPipelinesCommands(program: SmmCommand): void {
         console.log('⏱️  Analyzing pipeline run durations...');
         const { pipelineService } = createPipelineDependencies(command);
 
-        const metrics = await pipelineService.getMetrics({
-          startDate: options.startDate,
-          endDate: options.endDate,
-        });
+        const metrics = await pipelineService.getMetrics(buildPipelineFilters(options));
 
         if (options.output === 'json') {
           console.log(JSON.stringify({ averageDuration: metrics.averageDurationMinutes }, null, 2));
@@ -205,6 +214,7 @@ export function createPipelinesCommands(program: SmmCommand): void {
     .option('--start-date <date>', 'Start date (YYYY-MM-DD)')
     .option('--end-date <date>', 'End date (YYYY-MM-DD)')
     .option('--period <period>', 'Time period (day|week|month)', 'week')
+    .option('--raw-filters <filters>', 'Raw Provider filters string')
     .option('--output <format>', 'Output format (text|json)', 'text')
     .actionWithSmm(async (options, command) => {
       const logger = command.getLogger('PipelinesCommand');
@@ -212,10 +222,9 @@ export function createPipelinesCommands(program: SmmCommand): void {
         console.log('📈 Analyzing pipeline runs by time period...');
         const { pipelineService } = createPipelineDependencies(command);
 
-        const metrics = await pipelineService.getDeploymentFrequencyWithAllIntervals({
-          startDate: options.startDate,
-          endDate: options.endDate,
-        });
+        const metrics = await pipelineService.getDeploymentFrequencyWithAllIntervals(
+          buildPipelineFilters(options)
+        );
 
         if (options.output === 'json') {
           console.log(JSON.stringify(metrics, null, 2));
@@ -244,6 +253,7 @@ export function createPipelinesCommands(program: SmmCommand): void {
     .option('--max-jobs <number>', 'Maximum number of jobs to list', '20')
     .option('--start-date <date>', 'Start date (YYYY-MM-DD)')
     .option('--end-date <date>', 'End date (YYYY-MM-DD)')
+    .option('--raw-filters <filters>', 'Raw Provider filters string')
     .option('--output <format>', 'Output format (text|json)', 'text')
     .actionWithSmm(async (options, command) => {
       const logger = command.getLogger('PipelinesCommand');
@@ -251,10 +261,7 @@ export function createPipelinesCommands(program: SmmCommand): void {
         console.log('📊 Generating pipeline jobs summary...');
         const { pipelineService } = createPipelineDependencies(command);
 
-        const metrics = await pipelineService.getJobMetrics({
-          startDate: options.startDate,
-          endDate: options.endDate,
-        });
+        const metrics = await pipelineService.getJobMetrics(buildPipelineFilters(options));
 
         if (options.output === 'json') {
           console.log(JSON.stringify(metrics, null, 2));
@@ -284,6 +291,7 @@ export function createPipelinesCommands(program: SmmCommand): void {
     .option('--start-date <date>', 'Start date (YYYY-MM-DD)')
     .option('--end-date <date>', 'End date (YYYY-MM-DD)')
     .option('--job <name>', 'Filter by job name')
+    .option('--raw-filters <filters>', 'Raw Provider filters string')
     .option('--output <format>', 'Output format (text|json)', 'text')
     .actionWithSmm(async (options, command) => {
       const logger = command.getLogger('PipelinesCommand');
@@ -291,10 +299,7 @@ export function createPipelinesCommands(program: SmmCommand): void {
         console.log('⏱️  Analyzing job execution times...');
         const { pipelineService } = createPipelineDependencies(command);
 
-        const metrics = await pipelineService.getJobMetrics({
-          startDate: options.startDate,
-          endDate: options.endDate,
-        });
+        const metrics = await pipelineService.getJobMetrics(buildPipelineFilters(options));
 
         if (options.output === 'json') {
           console.log(JSON.stringify(metrics, null, 2));
@@ -322,6 +327,7 @@ export function createPipelinesCommands(program: SmmCommand): void {
     .option('--start-date <date>', 'Start date (YYYY-MM-DD)')
     .option('--end-date <date>', 'End date (YYYY-MM-DD)')
     .option('--job <name>', 'Filter by job name')
+    .option('--raw-filters <filters>', 'Raw Provider filters string')
     .option('--output <format>', 'Output format (text|json)', 'text')
     .actionWithSmm(async (options, command) => {
       const logger = command.getLogger('PipelinesCommand');
@@ -329,11 +335,7 @@ export function createPipelinesCommands(program: SmmCommand): void {
         console.log('⏱️  Analyzing job steps execution times...');
         const { pipelineService } = createPipelineDependencies(command);
 
-        const metrics = await pipelineService.getJobStepsAverageTime({
-          startDate: options.startDate,
-          endDate: options.endDate,
-          jobName: options.job,
-        });
+        const metrics = await pipelineService.getJobStepsAverageTime(buildPipelineFilters(options));
 
         if (options.output === 'json') {
           console.log(JSON.stringify(metrics, null, 2));
@@ -362,6 +364,7 @@ export function createPipelinesCommands(program: SmmCommand): void {
     .description('View pipeline jobs grouped by status')
     .option('--start-date <date>', 'Start date (YYYY-MM-DD)')
     .option('--end-date <date>', 'End date (YYYY-MM-DD)')
+    .option('--raw-filters <filters>', 'Raw Provider filters string')
     .option('--output <format>', 'Output format (text|json)', 'text')
     .actionWithSmm(async (options, command) => {
       const logger = command.getLogger('PipelinesCommand');
@@ -369,10 +372,7 @@ export function createPipelinesCommands(program: SmmCommand): void {
         console.log('📊 Analyzing jobs by status...');
         const { pipelineService } = createPipelineDependencies(command);
 
-        const metrics = await pipelineService.getJobMetrics({
-          startDate: options.startDate,
-          endDate: options.endDate,
-        });
+        const metrics = await pipelineService.getJobMetrics(buildPipelineFilters(options));
 
         if (options.output === 'json') {
           console.log(JSON.stringify(metrics, null, 2));
@@ -397,6 +397,7 @@ export function createPipelinesCommands(program: SmmCommand): void {
     .option('--start-date <date>', 'Start date (YYYY-MM-DD)')
     .option('--end-date <date>', 'End date (YYYY-MM-DD)')
     .option('--period <period>', 'Time period (day|week|month)', 'week')
+    .option('--raw-filters <filters>', 'Raw Provider filters string')
     .option('--output <format>', 'Output format (text|json)', 'text')
     .actionWithSmm(async (options, command) => {
       const logger = command.getLogger('PipelinesCommand');
@@ -405,10 +406,9 @@ export function createPipelinesCommands(program: SmmCommand): void {
         const { config, pipelineService } = createPipelineDependencies(command);
 
         const deploymentTargets = config.getDeploymentFrequencyTargets();
-        const metrics = await pipelineService.getDeploymentFrequencyWithAllIntervals({
-          startDate: options.startDate,
-          endDate: options.endDate,
-        });
+        const metrics = await pipelineService.getDeploymentFrequencyWithAllIntervals(
+          buildPipelineFilters(options)
+        );
 
         if (options.output === 'json') {
           console.log(JSON.stringify(metrics, null, 2));
@@ -457,6 +457,7 @@ export function createPipelinesCommands(program: SmmCommand): void {
     .description('Calculate lead time for changes (DORA metric)')
     .option('--start-date <date>', 'Start date (YYYY-MM-DD)')
     .option('--end-date <date>', 'End date (YYYY-MM-DD)')
+    .option('--raw-filters <filters>', 'Raw Provider filters string')
     .option('--output <format>', 'Output format (text|json)', 'text')
     .actionWithSmm(async (options, command) => {
       const logger = command.getLogger('PipelinesCommand');
@@ -464,10 +465,7 @@ export function createPipelinesCommands(program: SmmCommand): void {
         console.log('⏱️  Calculating lead time for changes...');
         const { pipelineService } = createPipelineDependencies(command);
 
-        const metrics = await pipelineService.getMetrics({
-          startDate: options.startDate,
-          endDate: options.endDate,
-        });
+        const metrics = await pipelineService.getMetrics(buildPipelineFilters(options));
 
         const leadTime = metrics.averageDurationMinutes;
 

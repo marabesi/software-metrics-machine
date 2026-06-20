@@ -1,3 +1,4 @@
+export { CommonRepository, type RawFilter } from './common-repository';
 export {
   PullRequestsRepository,
   type IReadPullRequestsRepository,

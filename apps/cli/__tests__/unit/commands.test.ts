@@ -248,6 +248,52 @@ describe('cli: CLI Commands', () => {
       }
     });
 
+    it('prs commands should expose raw filters consistently', () => {
+      const prsCmd = program.commands.find((cmd) => cmd.name() === 'prs');
+      const commandsWithRawFilters = [
+        'fetch',
+        'fetch-comments',
+        'summary',
+        'by-month',
+        'by-week',
+        'through-time',
+        'by-author',
+        'average-review-time',
+        'average-open',
+        'average-comments',
+      ];
+
+      for (const commandName of commandsWithRawFilters) {
+        const command = prsCmd?.commands.find((cmd) => cmd.name() === commandName);
+        const rawFiltersOption = command?.options.find((opt) => opt.long === '--raw-filters');
+        expect(rawFiltersOption).toBeDefined();
+      }
+    });
+
+    it('pipeline metric commands should expose raw filters consistently', () => {
+      const pipelinesCmd = program.commands.find((cmd) => cmd.name() === 'pipelines');
+      const commandsWithRawFilters = [
+        'fetch',
+        'fetch-jobs',
+        'summary',
+        'by-status',
+        'runs-duration',
+        'runs-by',
+        'jobs-summary',
+        'jobs-time-execution',
+        'jobs-steps-average-time',
+        'jobs-by-status',
+        'deployment-frequency',
+        'lead-time',
+      ];
+
+      for (const commandName of commandsWithRawFilters) {
+        const command = pipelinesCmd?.commands.find((cmd) => cmd.name() === commandName);
+        const rawFiltersOption = command?.options.find((opt) => opt.long === '--raw-filters');
+        expect(rawFiltersOption).toBeDefined();
+      }
+    });
+
     describe('Command Descriptions', () => {
       it('should have descriptive help text', () => {
         const prsCmd = program.commands.find((cmd) => cmd.name() === 'prs');

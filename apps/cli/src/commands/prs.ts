@@ -65,46 +65,11 @@ function buildPRFilters(options: {
     excludeCommenters: parseCsvList(options.excludeCommenters),
     authors: parseCsvList(options.authors),
     labels: parseCsvList(options.labels),
+    rawFilters: options.rawFilters,
   };
 
   if (options.state) {
     filters.state = options.state as PRFilters['state'];
-  }
-
-  if (options.rawFilters) {
-    const parts = options.rawFilters
-      .split(',')
-      .map((p) => p.trim())
-      .filter((p) => p.length > 0);
-    for (const part of parts) {
-      const eqIdx = part.indexOf('=');
-      if (eqIdx === -1) continue;
-      const key = part.slice(0, eqIdx).trim().toLowerCase();
-      const value = part.slice(eqIdx + 1).trim();
-      if (!value) continue;
-
-      switch (key) {
-        case 'status':
-          filters.state = value as PRFilters['state'];
-          break;
-        case 'author':
-        case 'authors':
-          filters.authors = [...(filters.authors || []), ...parseCsvList(value)];
-          break;
-        case 'label':
-        case 'labels':
-          filters.labels = [...(filters.labels || []), ...parseCsvList(value)];
-          break;
-        case 'start_date':
-        case 'start-date':
-          filters.startDate = value;
-          break;
-        case 'end_date':
-        case 'end-date':
-          filters.endDate = value;
-          break;
-      }
-    }
   }
 
   return filters;
@@ -234,6 +199,7 @@ export function createPRsCommands(program: SmmCommand): void {
     )
     .option('--start-date <date>', 'Filter PRs created on or after this date (ISO 8601)')
     .option('--end-date <date>', 'Filter PRs created on or before this date (ISO 8601)')
+    .option('--raw-filters <filters>', 'Comma-separated raw filter string')
     .actionWithSmm(async (options, command) => {
       const logger = command.getLogger('PRsCommand');
       try {
@@ -242,6 +208,7 @@ export function createPRsCommands(program: SmmCommand): void {
         await orchestrator.fetchPRs({
           startDate: options.startDate,
           endDate: options.endDate,
+          rawFilters: options.rawFilters,
           forceRefresh: options.force,
           incrementalUpdate: options.update,
         });
@@ -259,15 +226,13 @@ export function createPRsCommands(program: SmmCommand): void {
     .option('--update', 'Incremental update: only fetch comments updated since last sync')
     .option('--start-date <date>', 'Filter PRs by creation date on or after this date (ISO 8601)')
     .option('--end-date <date>', 'Filter PRs by creation date on or before this date (ISO 8601)')
+    .option('--raw-filters <filters>', 'Comma-separated raw filter string')
     .actionWithSmm(async (options, command) => {
       const logger = command.getLogger('PRsCommand');
       try {
         logger.info('🔄 Fetching pull request comments from the configured Git provider...');
         const orchestrator = createPRsOrchestratorRead(command);
-        const prs = await orchestrator.loadPrsWithFilters({
-          startDate: options.startDate,
-          endDate: options.endDate,
-        });
+        const prs = await orchestrator.loadPrsWithFilters(buildPRFilters(options));
 
         const orchestratorFetch = createPRsOrchestratorFetch(command);
 
@@ -334,6 +299,7 @@ export function createPRsCommands(program: SmmCommand): void {
     .option('--end-date <date>', 'Filter PRs created on or before this date')
     .option('--exclude-authors <authors>', 'Comma-separated PR authors to exclude')
     .option('--exclude-commenters <commenters>', 'Comma-separated PR commenters to exclude')
+    .option('--raw-filters <filters>', 'Comma-separated raw filter string')
     .option('--output <format>', 'Output format (text|json)', 'text')
     .actionWithSmm(async (options, command) => {
       const logger = command.getLogger('PRsCommand');
@@ -367,6 +333,7 @@ export function createPRsCommands(program: SmmCommand): void {
     .option('--end-date <date>', 'Filter PRs created on or before this date')
     .option('--exclude-authors <authors>', 'Comma-separated PR authors to exclude')
     .option('--exclude-commenters <commenters>', 'Comma-separated PR commenters to exclude')
+    .option('--raw-filters <filters>', 'Comma-separated raw filter string')
     .option('--output <format>', 'Output format (text|json)', 'text')
     .actionWithSmm(async (options, command) => {
       const logger = command.getLogger('PRsCommand');

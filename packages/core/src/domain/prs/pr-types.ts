@@ -60,6 +60,7 @@ export interface PRFilters {
   excludeCommenters?: string | string[];
   labels?: string | string[];
   state?: PRStatus;
+  rawFilters?: string;
 }
 
 export interface PRMetrics {

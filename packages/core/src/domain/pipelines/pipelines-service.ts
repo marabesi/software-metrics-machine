@@ -598,6 +598,7 @@ export class PipelinesService implements IPipelinesService {
       conclusion: filters.conclusion,
       jobName: filters.jobName,
       jobConclusion: filters.jobConclusion,
+      rawFilters: filters.rawFilters,
     });
   }
 

@@ -15,6 +15,7 @@ import {
 } from '../github/workflow-types';
 import { IGithubPrsClient } from '../github/github-pr-client';
 import { PipelineRun } from '../../domain';
+import { RawFiltersParser } from '../github/raw-filters-parser';
 
 const execFileAsync = promisify(execFile);
 
@@ -99,6 +100,7 @@ type GitlabFetchOptions = {
  */
 export class GitlabMrClient implements IGithubPrsClient {
   private readonly encodedProjectId: string;
+  private readonly rawFiltersParser = new RawFiltersParser();
 
   constructor(
     private token: string | undefined,
@@ -113,11 +115,13 @@ export class GitlabMrClient implements IGithubPrsClient {
     startDate?: string;
     endDate?: string;
     state?: 'open' | 'closed' | 'all';
+    rawFilters?: string;
   }): Promise<PullRequestJsonResponse[]> {
     return this.fetchMergeRequests({
       startDate: options?.startDate,
       endDate: options?.endDate,
       state: this.toGitlabState(options?.state),
+      rawFilters: options?.rawFilters,
     });
   }
 
@@ -128,6 +132,7 @@ export class GitlabMrClient implements IGithubPrsClient {
       sort: 'desc',
       ...(options?.startDate ? { created_after: options.startDate } : {}),
       ...(options?.endDate ? { created_before: options.endDate } : {}),
+      ...this.rawFiltersParser.parse(options?.rawFilters),
     });
 
     return mergeRequests.map((mr) => this.mapMergeRequest(mr));
@@ -320,6 +325,7 @@ export class GitlabMrClient implements IGithubPrsClient {
 
 export class GitlabPipelineClient implements IGithubWorkflowClient, IGithubWorkflowJobClient {
   private readonly encodedProjectId: string;
+  private readonly rawFiltersParser = new RawFiltersParser();
 
   constructor(
     private token: string | undefined,
@@ -386,7 +392,7 @@ export class GitlabPipelineClient implements IGithubWorkflowClient, IGithubWorkf
   ): Promise<GitHubWorkflowResponse> {
     const query = {
       ...this.parseCreatedFilter(options?.created),
-      ...this.parseRawFilters(options?.rawFilters),
+      ...this.rawFiltersParser.parse(options?.rawFilters),
       per_page: perPage,
       page,
     };
@@ -553,33 +559,6 @@ export class GitlabPipelineClient implements IGithubWorkflowClient, IGithubWorkf
 
   private buildStatusFilter(status?: string): string | undefined {
     return status ? `status=${status}` : undefined;
-  }
-
-  private parseRawFilters(rawFilters?: string): Record<string, string> {
-    if (!rawFilters) {
-      return {};
-    }
-
-    return rawFilters.split(',').reduce<Record<string, string>>((filters, entry) => {
-      const trimmedEntry = entry.trim();
-      if (!trimmedEntry) {
-        return filters;
-      }
-
-      const separatorIndex = trimmedEntry.indexOf('=');
-      if (separatorIndex <= 0) {
-        return filters;
-      }
-
-      const key = trimmedEntry.slice(0, separatorIndex).trim();
-      const value = trimmedEntry.slice(separatorIndex + 1).trim();
-
-      if (key && value) {
-        filters[key] = value;
-      }
-
-      return filters;
-    }, {});
   }
 
   private toWorkflowStatus(status?: string): string {

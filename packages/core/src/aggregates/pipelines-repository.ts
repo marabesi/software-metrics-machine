@@ -7,6 +7,7 @@ import {
 } from '../providers/github/github-response-types';
 import { PipelineJob, PipelineRun, PipelineStep } from '../domain';
 import { TimeZoneProvider } from '../infrastructure/timezone-provider';
+import { CommonRepository, RawFilter } from './common-repository';
 
 export type LoadPipelinesOptions = {
   includeJobs?: boolean;
@@ -21,6 +22,7 @@ export type LoadPipelinesOptions = {
   jobNames?: string[];
   excludeJobName?: string | string[];
   jobConclusion?: string;
+  rawFilters?: string;
   sort_by?: {
     created_at?: 'asc' | 'desc';
   };
@@ -30,14 +32,16 @@ export interface IPipelinesRepository {
   loadPipelines(options?: LoadPipelinesOptions): Promise<PipelineRun[]>;
 }
 
-export class PipelinesRepository implements IPipelinesRepository {
+export class PipelinesRepository extends CommonRepository implements IPipelinesRepository {
   private tz = new TimeZoneProvider();
 
   constructor(
     private pipelineRunFileSystemRepository: IRepository<WorkflowJsonResponse>,
     private pipelineJobsFileSystemRepository: IRepository<WorkflowJobJsonResponse>,
     private logger: Logger
-  ) {}
+  ) {
+    super();
+  }
 
   private async loadPipelineRuns(): Promise<PipelineRun[]> {
     const runs = await this.pipelineRunFileSystemRepository.loadAll();
@@ -55,11 +59,15 @@ export class PipelinesRepository implements IPipelinesRepository {
     const selectedJobNames = this.normalizeJobNames(options.jobNames, options.jobName);
     const excludedJobNames = this.normalizeJobNames(undefined, options.excludeJobName);
     const targetJobConclusion = options.jobConclusion?.trim().toLowerCase();
+    const rawFilters = this.parseRawFilters(options.rawFilters);
     const needsJobs =
-      options.includeJobs !== false || selectedJobNames.length > 0 || Boolean(targetJobConclusion);
+      options.includeJobs !== false ||
+      selectedJobNames.length > 0 ||
+      Boolean(targetJobConclusion) ||
+      rawFilters.length > 0;
 
     if (!needsJobs) {
-      return pipelineRuns;
+      return this.applyRawFilters(pipelineRuns, rawFilters);
     }
 
     const jobs = await this.pipelineJobsFileSystemRepository.loadAll();
@@ -67,7 +75,8 @@ export class PipelinesRepository implements IPipelinesRepository {
       if (selectedJobNames.length > 0 || targetJobConclusion) {
         return [];
       }
-      return pipelineRuns;
+      const filteredRuns = this.applyRawFilters(pipelineRuns, rawFilters);
+      return options.includeJobs === false ? filteredRuns.map(this.withoutJobs) : filteredRuns;
     }
 
     const runsById = new Map<string, PipelineRun>();
@@ -95,18 +104,16 @@ export class PipelinesRepository implements IPipelinesRepository {
       targetJobConclusion
     );
 
-    if (options.includeJobs === false) {
-      return jobFilteredRuns.map(this.withoutJobs);
-    }
+    const namedFilteredRuns =
+      selectedJobNames.length === 0 && excludedJobNames.length === 0 && !targetJobConclusion
+        ? jobFilteredRuns
+        : jobFilteredRuns.map((run) => ({
+            ...run,
+            jobs: this.filterJobs(run.jobs || [], selectedJobNames, excludedJobNames, targetJobConclusion),
+          }));
 
-    if (selectedJobNames.length === 0 && excludedJobNames.length === 0 && !targetJobConclusion) {
-      return jobFilteredRuns;
-    }
-
-    return jobFilteredRuns.map((run) => ({
-      ...run,
-      jobs: this.filterJobs(run.jobs || [], selectedJobNames, excludedJobNames, targetJobConclusion),
-    }));
+    const rawFilteredRuns = this.applyRawFilters(namedFilteredRuns, rawFilters);
+    return options.includeJobs === false ? rawFilteredRuns.map(this.withoutJobs) : rawFilteredRuns;
   }
 
   async loadPipelineJobs(): Promise<PipelineJob[]> {
@@ -234,8 +241,8 @@ export class PipelinesRepository implements IPipelinesRepository {
 
     return runs.filter(
       (run) =>
-        this.filterJobs(run.jobs || [], selectedJobNames, excludedJobNames, targetJobConclusion)
-          .length > 0
+        this.filterJobs(run.jobs || [], selectedJobNames, excludedJobNames, targetJobConclusion).length >
+        0
     );
   }
 
@@ -258,6 +265,41 @@ export class PipelinesRepository implements IPipelinesRepository {
 
         return (job.conclusion || '').toLowerCase() === targetJobConclusion;
       });
+  }
+
+  private applyRawFilters(runs: PipelineRun[], rawFilters: RawFilter[]): PipelineRun[] {
+    if (rawFilters.length === 0) {
+      return runs;
+    }
+
+    return runs.flatMap((run) => {
+      const runWithoutJobs = { ...run };
+      delete runWithoutJobs.jobs;
+
+      const jobs = run.jobs || [];
+      const matchesAtAnyLayer = rawFilters.every(
+        (filter) =>
+          this.matchesRawFilters(runWithoutJobs, [filter]) ||
+          jobs.some((job) => this.matchesRawFilters(job, [filter]))
+      );
+      const jobRelevantFilters = rawFilters.filter((filter) =>
+        jobs.some((job) => this.collectRawFilterValues(job, filter.key).length > 0)
+      );
+      const filteredJobs =
+        jobRelevantFilters.length > 0
+          ? jobs.filter((job) => this.matchesRawFilters(job, jobRelevantFilters))
+          : jobs;
+
+      if (!matchesAtAnyLayer) {
+        return [];
+      }
+
+      if (!run.jobs) {
+        return [run];
+      }
+
+      return [{ ...run, jobs: filteredJobs }];
+    });
   }
 
   private withoutJobs(run: PipelineRun): PipelineRun {

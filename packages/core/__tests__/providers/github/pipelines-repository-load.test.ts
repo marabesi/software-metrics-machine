@@ -86,6 +86,64 @@ describe('PipelinesRepository loadPipelines', () => {
     expect(loadedRuns[1].jobs).toBeUndefined();
   });
 
+  it('should apply raw filters to cached pipeline runs and jobs', async () => {
+    const runs = [
+      new PipelineGitHubRunBuilder()
+        .id('run-1')
+        .number('1')
+        .name('CI')
+        .status('completed')
+        .conclusion('success')
+        .createdAt('2026-05-10T00:00:00Z')
+        .updatedAt('2026-05-10T00:05:00Z')
+        .startedAt('2026-05-10T00:00:00Z')
+        .branch('main')
+        .path('.github/workflows/ci.yml')
+        .build(),
+      new PipelineGitHubRunBuilder()
+        .id('run-2')
+        .number('2')
+        .name('CI')
+        .status('completed')
+        .conclusion('failure')
+        .createdAt('2026-05-11T00:00:00Z')
+        .updatedAt('2026-05-11T00:05:00Z')
+        .startedAt('2026-05-11T00:00:00Z')
+        .branch('feature')
+        .path('.github/workflows/ci.yml')
+        .build(),
+    ];
+
+    const jobs = [
+      new PipelineGitHubJobBuilder()
+        .id('job-1')
+        .runId('run-1')
+        .name('deploy')
+        .status('completed')
+        .conclusion('success')
+        .build(),
+      new PipelineGitHubJobBuilder()
+        .id('job-2')
+        .runId('run-2')
+        .name('deploy')
+        .status('completed')
+        .conclusion('failure')
+        .build(),
+    ];
+
+    await pipelineRunRepository.saveAll(runs);
+    await pipelineJobsRepository.saveAll(jobs);
+
+    const repository = createRepository();
+    const loadedRuns = await repository.loadPipelines({
+      rawFilters: 'branch=main|name=deploy|conclusion=success',
+    });
+
+    expect(loadedRuns).toHaveLength(1);
+    expect(loadedRuns[0].id).toBe('run-1');
+    expect(loadedRuns[0].jobs?.map((job) => job.id)).toEqual(['job-1']);
+  });
+
   it('should load pipeline runs without reading jobs when jobs are excluded', async () => {
     const runs = [
       new PipelineGitHubRunBuilder()

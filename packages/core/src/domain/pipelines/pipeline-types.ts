@@ -57,6 +57,7 @@ export interface PipelineFilters {
   jobName?: string;
   jobConclusion?: string;
   includeDefined?: boolean; // Only .yml/.yaml files
+  rawFilters?: string;
 }
 
 export interface DeploymentFrequency {

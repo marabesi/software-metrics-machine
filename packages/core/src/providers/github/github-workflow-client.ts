@@ -6,12 +6,14 @@ import { WorkflowJsonResponse } from './github-response-types';
 import { GitHubRateLimitManager } from './github-rate-limit-manager';
 import { buildCreatedFilter, toISODateString } from './github-date-utils';
 import { GithubClientRetriable } from './github-client-retriable';
+import { RawFiltersParser } from './raw-filters-parser';
 
 export class GithubWorkflowClient implements IGithubWorkflowClient {
   private readonly axiosInstance: AxiosInstance;
   private readonly logger: Logger;
   private readonly baseUrl = 'https://api.github.com';
   private readonly retriableClient: GithubClientRetriable;
+  private readonly rawFiltersParser = new RawFiltersParser();
 
   constructor(
     token: string,
@@ -170,7 +172,7 @@ export class GithubWorkflowClient implements IGithubWorkflowClient {
         per_page: perPage,
         page,
         ...(options?.created ? { created: options.created } : {}),
-        ...this.parseRawFilters(options?.rawFilters),
+        ...this.rawFiltersParser.parse(options?.rawFilters),
       },
     };
     const url = `/repos/${this.owner}/${this.repo}/actions/runs`;
@@ -195,31 +197,4 @@ export class GithubWorkflowClient implements IGithubWorkflowClient {
     return linkHeader.includes('rel="next"');
   }
 
-  private parseRawFilters(rawFilters?: string): Record<string, string> {
-    if (!rawFilters) {
-      return {};
-    }
-
-    return rawFilters.split(',').reduce<Record<string, string>>((filters, entry) => {
-      const trimmedEntry = entry.trim();
-      if (!trimmedEntry) {
-        return filters;
-      }
-
-      const separatorIndex = trimmedEntry.indexOf('=');
-      if (separatorIndex <= 0) {
-        return filters;
-      }
-
-      const key = trimmedEntry.slice(0, separatorIndex).trim();
-      const value = trimmedEntry.slice(separatorIndex + 1).trim();
-
-      if (!key || !value) {
-        return filters;
-      }
-
-      filters[key] = value;
-      return filters;
-    }, {});
-  }
 }

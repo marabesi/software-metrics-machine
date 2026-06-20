@@ -1,6 +1,7 @@
 import { FileSystemRepository } from '../infrastructure/repository';
 import { TimeZoneProvider } from '../infrastructure/timezone-provider';
 import { PRDetails, PRFilters } from '../domain/prs/pr-types';
+import { CommonRepository, RawFilter } from './common-repository';
 import {
   PullRequestCommentJsonResponse,
   PullRequestJsonResponse,
@@ -11,12 +12,14 @@ export interface IReadPullRequestsRepository {
   loadPrsWithFilters(filters?: PRFilters): Promise<PRDetails[]>;
 }
 
-export class PullRequestsRepository implements IReadPullRequestsRepository {
+export class PullRequestsRepository extends CommonRepository implements IReadPullRequestsRepository {
   constructor(
     private cache: FileSystemRepository<PullRequestJsonResponse>,
     private pullRequestCommentsStoreFile: FileSystemRepository<PullRequestCommentJsonResponse>,
     private timeZoneProvider: TimeZoneProvider = new TimeZoneProvider('UTC')
-  ) {}
+  ) {
+    super();
+  }
 
   async loadPrsWithFilters(filters?: PRFilters): Promise<PRDetails[]> {
     const fromCache = await this.cache.loadAll();
@@ -67,6 +70,8 @@ export class PullRequestsRepository implements IReadPullRequestsRepository {
           if (filters.state === 'merged' && !pr.merged_at) return false;
           if (filters.state === 'closed' && (!pr.closed_at || pr.merged_at)) return false;
           if (filters.state === 'open' && (pr.closed_at || pr.merged_at)) return false;
+          if (filters.state === 'draft' && !(pr as PullRequestJsonResponse & { draft?: boolean }).draft)
+            return false;
         }
 
         return true;
@@ -78,7 +83,7 @@ export class PullRequestsRepository implements IReadPullRequestsRepository {
       ? new Set(excludeCommenters.map((commenter) => commenter.toLowerCase()))
       : null;
 
-    return rawPrs.map((pr: PullRequestJsonResponse) => {
+    const mappedPrs = rawPrs.map((pr: PullRequestJsonResponse) => {
       const commentsForPr = allComments
         .filter((comment) => comment.pull_request_url.includes(`/pulls/${pr.number}`))
         .filter(
@@ -129,6 +134,8 @@ export class PullRequestsRepository implements IReadPullRequestsRepository {
         })),
       };
     });
+
+    return this.applyRawFilters(mappedPrs, this.parseRawFilters(filters?.rawFilters));
   }
 
   private normalizeList(value?: string | string[]): string[] {
@@ -141,5 +148,13 @@ export class PullRequestsRepository implements IReadPullRequestsRepository {
       .flatMap((item) => String(item).split(','))
       .map((item) => item.trim())
       .filter((item) => item.length > 0);
+  }
+
+  private applyRawFilters(prs: PRDetails[], rawFilters: RawFilter[]): PRDetails[] {
+    if (rawFilters.length === 0) {
+      return prs;
+    }
+
+    return prs.filter((pr) => this.matchesRawFilters(pr, rawFilters));
   }
 }

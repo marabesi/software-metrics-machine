@@ -14,6 +14,7 @@ export interface IPullRequestsRepository {
     endDate?: string;
     forceRefresh?: boolean;
     incrementalUpdate?: boolean;
+    rawFilters?: string;
   }): Promise<PullRequestJsonResponse[]>;
 
   fetchPRComments(
@@ -60,6 +61,7 @@ export class GitHubPullRequestsFetchRepository implements IPullRequestsRepositor
     endDate?: string;
     forceRefresh?: boolean;
     incrementalUpdate?: boolean;
+    rawFilters?: string;
   }): Promise<PullRequestJsonResponse[]> {
     const fromCache = await this.pullRequestStoreFile.loadAll();
 
@@ -69,6 +71,7 @@ export class GitHubPullRequestsFetchRepository implements IPullRequestsRepositor
       const freshPRs = await this.githubPrsClient.fetchPRs({
         startDate: latestDate,
         endDate: options?.endDate,
+        rawFilters: options?.rawFilters,
       });
       const merged = this.mergePRs(fromCache, freshPRs);
       await this.pullRequestStoreFile.saveAll(merged);
@@ -88,6 +91,7 @@ export class GitHubPullRequestsFetchRepository implements IPullRequestsRepositor
       const freshPRs = await this.githubPrsClient.fetchPRs({
         startDate: options?.startDate,
         endDate: options?.endDate,
+        rawFilters: options?.rawFilters,
       });
       const merged = this.mergePRs(fromCache, freshPRs);
       await this.pullRequestStoreFile.saveAll(merged);
@@ -104,6 +108,7 @@ export class GitHubPullRequestsFetchRepository implements IPullRequestsRepositor
     const freshPRs = await this.githubPrsClient.fetchPRs({
       startDate: options?.startDate,
       endDate: options?.endDate,
+      rawFilters: options?.rawFilters,
     });
 
     // Persist fetched data to disk so subsequent commands can reuse cached data.
