@@ -2,6 +2,7 @@ import { SonarqubeComponentMeasure } from '..';
 import path from 'path';
 import { IRepository } from '../infrastructure';
 import {
+  CodeMetric,
   SonarqubeComponentTreeMeasure,
   SonarqubeMeasure,
   TimestampedEntry,
@@ -32,15 +33,20 @@ export type SonarqubeComponentTreeFilters = {
 export class SonarqubeRepository {
   constructor(
     private measurementRepository: IRepository<TimestampedStore<SonarqubeComponentMeasure>>,
-    private componentTreeRepository: IRepository<TimestampedStore<SonarqubeComponentTreeMeasure[]>>
+    private componentTreeRepository: IRepository<TimestampedStore<SonarqubeComponentTreeMeasure[]>>,
+    private historicalMeasuresRepository?: IRepository<TimestampedStore<CodeMetric[]>>
   ) {}
 
-  async loadAll(options?: SonarqubeMeasureFilters | string[]): Promise<SonarqubeComponentMeasure | null> {
+  async loadAll(
+    options?: SonarqubeMeasureFilters | string[]
+  ): Promise<SonarqubeComponentMeasure | null> {
     const store = await this.measurementRepository.load();
     return this.filterComponentMeasure(extractLatestData(store), options);
   }
 
-  async loadMeasurements(options?: SonarqubeMeasureFilters | string[]): Promise<SonarqubeMeasure[]> {
+  async loadMeasurements(
+    options?: SonarqubeMeasureFilters | string[]
+  ): Promise<SonarqubeMeasure[]> {
     const data = await this.loadAll(options);
     if (!data) {
       return [];
@@ -74,9 +80,7 @@ export class SonarqubeRepository {
 
   async loadAllComponentTreeEntries(
     options?: SonarqubeComponentTreeFilters
-  ): Promise<
-    TimestampedEntry<SonarqubeComponentTreeMeasure[]>[]
-  > {
+  ): Promise<TimestampedEntry<SonarqubeComponentTreeMeasure[]>[]> {
     const store = await this.componentTreeRepository.load();
     if (!store) return [];
 
@@ -84,6 +88,30 @@ export class SonarqubeRepository {
     return entries.map((entry: TimestampedEntry<SonarqubeComponentTreeMeasure[]>) => ({
       fetchedAt: entry.fetchedAt,
       data: this.filterComponentTree(Array.isArray(entry.data) ? entry.data : [], options),
+    }));
+  }
+
+  async loadHistoricalMeasures(
+    options?: SonarqubeMeasureFilters | string[]
+  ): Promise<CodeMetric[]> {
+    const store = await this.historicalMeasuresRepository?.load();
+    return this.filterHistoricalMeasures(extractLatestData(store ?? null) || [], options);
+  }
+
+  async loadCoverageHistory(): Promise<CodeMetric[]> {
+    return this.loadHistoricalMeasures({ measures: 'coverage' });
+  }
+
+  async loadAllHistoricalMeasureEntries(
+    options?: SonarqubeMeasureFilters | string[]
+  ): Promise<TimestampedEntry<CodeMetric[]>[]> {
+    const store = await this.historicalMeasuresRepository?.load();
+    if (!store) return [];
+
+    const entries = Array.isArray(store.entries) ? store.entries : [];
+    return entries.map((entry: TimestampedEntry<CodeMetric[]>) => ({
+      fetchedAt: entry.fetchedAt,
+      data: this.filterHistoricalMeasures(Array.isArray(entry.data) ? entry.data : [], options),
     }));
   }
 
@@ -109,6 +137,21 @@ export class SonarqubeRepository {
   private normalizeMeasures(options?: SonarqubeMeasureFilters | string[]): string[] {
     const value = Array.isArray(options) ? options : options?.measures;
     return this.normalizeList(value);
+  }
+
+  private filterHistoricalMeasures(
+    measures: CodeMetric[],
+    options?: SonarqubeMeasureFilters | string[]
+  ): CodeMetric[] {
+    const measureFilters = this.normalizeMeasures(options);
+    if (measureFilters.length === 0) {
+      return measures;
+    }
+
+    return measures.filter((measure) => {
+      const metric = measure.metric ?? measure.key.split('_')[0] ?? measure.name;
+      return measureFilters.includes(metric);
+    });
   }
 
   private filterComponentTree(

@@ -21,6 +21,7 @@ export interface UrlBuilder {
   // SonarQube links
   getSonarqubeComponentUrl(componentKey: string): string;
   getSonarqubeComponentMeasuresUrl(componentKey: string, metric: string): string;
+  getSonarqubeProjectMeasuresUrl(metric: string): string;
   getSonarqubeProjectUrl(): string;
 
   getActionPerformanceForJobUrl(jobName: string, workflowName: string, granularity: 'day' | 'week' | 'month', date: string): string
@@ -140,6 +141,13 @@ function createGitHubBuilder(config: DashboardGlobalConfiguration): UrlBuilder {
       return `${config.sonar_url}/component_measures?id=${encodeURIComponent(config.sonar_project)}&metric=${encodeURIComponent(metric)}&selected=${encodeURIComponent(componentKey)}`;
     },
 
+    getSonarqubeProjectMeasuresUrl(metric) {
+      if (!config.sonar_url || !config.sonar_project) {
+        return '#';
+      }
+      return `${config.sonar_url}/component_measures?id=${encodeURIComponent(config.sonar_project)}&metric=${encodeURIComponent(metric)}`;
+    },
+
     getSonarqubeProjectUrl() {
       if (!config.sonar_url || !config.sonar_project) {
         return '#';
@@ -233,6 +241,13 @@ function createGitLabBuilder(config: DashboardGlobalConfiguration): UrlBuilder {
         return '#';
       }
       return `${config.sonar_url}/component_measures?id=${encodeURIComponent(config.sonar_project)}&metric=${encodeURIComponent(metric)}&selected=${encodeURIComponent(componentKey)}`;
+    },
+
+    getSonarqubeProjectMeasuresUrl(metric) {
+      if (!config.sonar_url || !config.sonar_project) {
+        return '#';
+      }
+      return `${config.sonar_url}/component_measures?id=${encodeURIComponent(config.sonar_project)}&metric=${encodeURIComponent(metric)}`;
     },
     
     getSonarqubeProjectUrl() {

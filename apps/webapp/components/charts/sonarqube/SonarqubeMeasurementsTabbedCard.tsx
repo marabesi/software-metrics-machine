@@ -15,6 +15,7 @@ import {
   YAxis,
 } from 'recharts';
 import { TargetInfo } from '@/components/charts/TargetInfo';
+import { useLinkBuilder } from '@/components/providers/LinkBuilderContext';
 
 type ActiveTab = 'current' | 'history';
 
@@ -74,6 +75,7 @@ export default function SonarqubeMeasurementsTabbedCard({
   measurements: Array<{ metric: string; value: string }>;
   history: MeasurementEntry[];
 }) {
+  const { urlBuilder } = useLinkBuilder();
   const [activeTab, setActiveTab] = useState<ActiveTab>('current');
   const { chartData, metrics } = useMemo(() => buildChartData(history), [history]);
   const [hiddenMetrics, setHiddenMetrics] = useState<Set<string>>(() => new Set());
@@ -90,6 +92,18 @@ export default function SonarqubeMeasurementsTabbedCard({
       }
       return next;
     });
+  }
+
+  function openMetricInSonarqube(metric: string) {
+    const url = urlBuilder.getSonarqubeProjectMeasuresUrl(metric);
+    if (url === '#') {
+      return;
+    }
+
+    const opened = window.open(url, '_blank', 'noopener,noreferrer');
+    if (opened) {
+      opened.opener = null;
+    }
   }
 
   return (
@@ -201,6 +215,8 @@ export default function SonarqubeMeasurementsTabbedCard({
                             dataKey={metric}
                             stackId="measurements"
                             fill={METRIC_COLORS[colorIndex % METRIC_COLORS.length]}
+                            onClick={() => openMetricInSonarqube(metric)}
+                            style={{ cursor: 'pointer' }}
                           />
                         );
                       })}

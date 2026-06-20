@@ -19,9 +19,9 @@ export interface LoggerOptions {
 
 export class Logger {
   private level: LogLevel | undefined;
-  private name: string;
+  private readonly name: string;
   private filePath?: string;
-  private storeLogs?: boolean;
+  private readonly storeLogs?: boolean;
 
   constructor(
     name: string,

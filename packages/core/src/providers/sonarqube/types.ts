@@ -1,8 +1,10 @@
 export interface CodeMetric {
   key: string;
   name: string;
+  metric?: string;
   value: string | number;
   formatter: string;
+  timestamp?: string;
 }
 
 export interface SonarqubeComponentTreeMeasure {

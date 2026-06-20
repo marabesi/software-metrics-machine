@@ -14,6 +14,7 @@ import {
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { SonarqubeComponentChartData } from './types';
 import { TargetInfo } from '@/components/charts/TargetInfo';
+import { useLinkBuilder } from '@/components/providers/LinkBuilderContext';
 
 type ComponentMeasure = {
   key: string;
@@ -94,6 +95,7 @@ export default function SonarqubeComponentTreeHistoryCard({
   files: SonarqubeComponentChartData[];
   history: ComponentTreeHistoryEntry[];
 }) {
+  const { urlBuilder } = useLinkBuilder();
   const [hiddenFileKeys, setHiddenFileKeys] = useState<Set<string>>(() => new Set());
   const chartData = useMemo(() => buildChartData(history, files), [history, files]);
   const visibleFiles = files.filter((file) => !hiddenFileKeys.has(file.key));
@@ -110,6 +112,18 @@ export default function SonarqubeComponentTreeHistoryCard({
     });
   }
 
+  function openComponentMetricInSonarqube(componentKey: string, metric: string) {
+    const url = urlBuilder.getSonarqubeComponentMeasuresUrl(componentKey, metric);
+    if (url === '#') {
+      return;
+    }
+
+    const opened = window.open(url, '_blank', 'noopener,noreferrer');
+    if (opened) {
+      opened.opener = null;
+    }
+  }
+
   return (
     <Card>
       <CardHeader>
@@ -118,7 +132,8 @@ export default function SonarqubeComponentTreeHistoryCard({
           <TargetInfo metric="sonarqube-complexity" />
         </div>
         <p className="mt-2 text-sm text-gray-600">
-          Complexity and cognitive complexity changes over time for the selected files.
+          Complexity and cognitive complexity changes over time for the selected files. Click a
+          line to open that file and metric in SonarQube.
         </p>
       </CardHeader>
       <CardContent>
@@ -190,6 +205,8 @@ export default function SonarqubeComponentTreeHistoryCard({
                         strokeWidth={2}
                         dot={false}
                         connectNulls
+                        onClick={() => openComponentMetricInSonarqube(file.key, 'complexity')}
+                        style={{ cursor: 'pointer' }}
                       />,
                       <Line
                         key={`${file.key}:cognitive_complexity`}
@@ -201,6 +218,10 @@ export default function SonarqubeComponentTreeHistoryCard({
                         strokeDasharray="5 5"
                         dot={false}
                         connectNulls
+                        onClick={() =>
+                          openComponentMetricInSonarqube(file.key, 'cognitive_complexity')
+                        }
+                        style={{ cursor: 'pointer' }}
                       />,
                     ];
                   })}

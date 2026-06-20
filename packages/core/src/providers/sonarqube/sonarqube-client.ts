@@ -151,8 +151,10 @@ export class SonarqubeMeasuresClient implements ISonarqubeMeasuresClient {
           flatMeasures.push({
             key: `${measure.metric}_${history.date}`,
             name: `${measure.metric} on ${history.date}`,
+            metric: measure.metric,
             value: history.value || 0,
-            formatter: 'PERCENT', // Default formatter
+            formatter: measure.metric === 'coverage' ? 'PERCENT' : 'NUMBER',
+            timestamp: history.date,
           });
         }
       }

@@ -1,7 +1,7 @@
 import { Controller, Get, Logger } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
 import { Configuration } from '@smmachine/core';
-import { ConfigurationResponse } from '../dtos/response.dto';
+import { ConfigurationResponse } from '../dtos';
 
 /**
  * Configuration REST Controller

@@ -12,6 +12,7 @@ type JsonObject = Record<string, unknown>;
  */
 export function createToolsCommands(program: SmmCommand): void {
   const toolsGroup = program.subcommand('tools').description('Utility tools');
+  const logger = program.getLogger('ToolsCommand');
 
   /**
    * smm tools json-merge [options]
@@ -23,10 +24,9 @@ export function createToolsCommands(program: SmmCommand): void {
     .option('--input <pattern>', 'Input file pattern (glob)', '*.json')
     .option('--output <file>', 'Output file path', 'merged.json')
     .option('--pretty', 'Pretty print the output JSON')
-    .actionWithSmm(async (options, command) => {
-      const logger = command.getLogger('ToolsCommand');
+    .actionWithSmm(async (options) => {
       try {
-        console.log('🔄 Merging JSON files...');
+        logger.info('🔄 Merging JSON files...');
 
         const inputPattern = options.input;
         const outputFile = options.output;

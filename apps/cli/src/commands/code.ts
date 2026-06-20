@@ -7,16 +7,14 @@ import { PairingFactory } from '@smmachine/core/aggregates/pairing-factory';
 import type { CodeChurn } from '@smmachine/core/providers/codemaat/types';
 import path from 'path';
 
-function createCodemaatService(command: SmmCommand): CodemaatService {
-  const repository = CodemaatFactory.create(
-    command.getConfiguration(),
-    command.getLogger('CodeCommand')
-  );
-  return new CodemaatService(repository);
-}
-
 export function createCodeCommands(program: SmmCommand): void {
   const codeGroup = program.subcommand('code').description('Code analysis operations');
+  const logger = program.getLogger('CodeCommand');
+  const config = program.getConfiguration();
+  const fetchRepository = new CodemaatFetchRepository(config, logger);
+
+  const repository = CodemaatFactory.create(config, logger);
+  const codemaatService = new CodemaatService(repository);
 
   codeGroup
     .subcommand('summary')
@@ -25,7 +23,6 @@ export function createCodeCommands(program: SmmCommand): void {
     .option('--end-date <date>', 'End date (YYYY-MM-DD)')
     .option('--output <format>', 'Output format (text|json|csv)', 'text')
     .actionWithSmm(async (options, command) => {
-      const logger = command.getLogger('CodeCommand');
       try {
         logger.info('📊 Generating code summary...');
 
@@ -102,7 +99,6 @@ export function createCodeCommands(program: SmmCommand): void {
     .option('--buffer <size>', 'Max buffer size in MB for git output (default: 100)', '100')
     .option('--output <format>', 'Output format (text|json)', 'text')
     .actionWithSmm(async (options, command) => {
-      const logger = command.getLogger('CodeCommand');
       try {
         logger.info('🔍 Analyzing change sets...');
         const config = command.getConfiguration();
@@ -150,12 +146,9 @@ export function createCodeCommands(program: SmmCommand): void {
     .option('--subfolder <path>', 'Subfolder within the repository to analyze', '')
     .option('--force', 'Force regeneration of CodeMaat CSV files')
     .option('--output <format>', 'Output format (text|json)', 'text')
-    .actionWithSmm(async (options, command) => {
-      const logger = command.getLogger('CodeCommand');
+    .actionWithSmm(async (options) => {
       try {
         logger.info('🔍 Running CodeMaat analysis...');
-        const config = command.getConfiguration();
-        const fetchRepository = new CodemaatFetchRepository(config, logger);
         const result = fetchRepository.fetch({
           startDate: options.startDate,
           subfolder: options.subfolder,
@@ -201,7 +194,6 @@ export function createCodeCommands(program: SmmCommand): void {
       const logger = command.getLogger('CodeCommand');
       try {
         logger.info('📊 Calculating code churn...');
-        const codemaatService = createCodemaatService(command);
         const metrics = await codemaatService.getCodeChurn({
           startDate: options.startDate,
           endDate: options.endDate,
@@ -247,7 +239,6 @@ export function createCodeCommands(program: SmmCommand): void {
       const logger = command.getLogger('CodeCommand');
       try {
         logger.info('🔗 Analyzing code coupling...');
-        const codemaatService = createCodemaatService(command);
         const coupling = await codemaatService.getFileCoupling({
           ignorePatterns: undefined,
         });
@@ -276,7 +267,6 @@ export function createCodeCommands(program: SmmCommand): void {
       const logger = command.getLogger('CodeCommand');
       try {
         logger.info('📊 Calculating entity churn...');
-        const codemaatService = createCodemaatService(command);
         const metrics = await codemaatService.getCodeChurn({
           startDate: options.startDate,
           endDate: options.endDate,
@@ -312,7 +302,6 @@ export function createCodeCommands(program: SmmCommand): void {
       try {
         logger.info('⏱️  Calculating entity effort...');
         const maxRows = Number(options.top);
-        const codemaatService = createCodemaatService(command);
         const metrics = await codemaatService.getEntityEffort({
           top: Number.isFinite(maxRows) ? maxRows : undefined,
         });
@@ -340,7 +329,6 @@ export function createCodeCommands(program: SmmCommand): void {
       const logger = command.getLogger('CodeCommand');
       try {
         logger.info('👥 Analyzing entity ownership...');
-        const codemaatService = createCodemaatService(command);
         const metrics = await codemaatService.getEntityOwnership({
           authors: undefined,
           top: 100,

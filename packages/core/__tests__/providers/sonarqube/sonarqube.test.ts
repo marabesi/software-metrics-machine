@@ -71,6 +71,57 @@ describe('SonarqubeMeasuresClient', () => {
     });
   });
 
+  it('should fetch historical coverage measures with metric and timestamp fields', async () => {
+    mockGet.mockResolvedValueOnce({
+      data: {
+        measures: [
+          {
+            metric: 'coverage',
+            history: [
+              { date: '2024-01-01T00:00:00+0000', value: '81.3' },
+              { date: '2024-02-01T00:00:00+0000', value: '82.1' },
+            ],
+          },
+        ],
+      },
+    });
+
+    const measures = await client.fetchHistoricalMeasures({
+      metrics: ['coverage'],
+      startDate: '2024-01-01',
+      endDate: '2024-02-29',
+    });
+
+    expect(measures).toEqual([
+      {
+        key: 'coverage_2024-01-01T00:00:00+0000',
+        name: 'coverage on 2024-01-01T00:00:00+0000',
+        metric: 'coverage',
+        value: '81.3',
+        formatter: 'PERCENT',
+        timestamp: '2024-01-01T00:00:00+0000',
+      },
+      {
+        key: 'coverage_2024-02-01T00:00:00+0000',
+        name: 'coverage on 2024-02-01T00:00:00+0000',
+        metric: 'coverage',
+        value: '82.1',
+        formatter: 'PERCENT',
+        timestamp: '2024-02-01T00:00:00+0000',
+      },
+    ]);
+    expect(mockGet).toHaveBeenCalledWith('/api/measures/search_history', {
+      params: {
+        component: 'project-key',
+        metrics: 'coverage',
+        from: '2024-01-01',
+        to: '2024-02-29',
+        p: 1,
+        ps: 100,
+      },
+    });
+  });
+
   it('should map 401 errors to auth error message', async () => {
     const axiosError = Object.assign(new Error('Request failed'), {
       isAxiosError: true,
