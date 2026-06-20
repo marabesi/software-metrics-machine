@@ -10,11 +10,13 @@
 
 import { describe, it, expect, beforeAll } from 'vitest';
 import { JiraIssuesClient } from '../../../src/providers/jira/jira-client';
+import { MockLoggerBuilder } from '../../mock-logger-builder';
 
 const JIRA_URL = process.env.JIRA_URL || 'https://your-instance.atlassian.net';
 const JIRA_EMAIL = process.env.JIRA_EMAIL || 'user@example.com';
 const JIRA_TOKEN = process.env.JIRA_TOKEN || 'test-token';
 const JIRA_PROJECT = process.env.JIRA_PROJECT || 'TEST';
+const logger = new MockLoggerBuilder().build();
 
 // Skip real API tests if not configured
 const skipRealApiTests = !process.env.RUN_JIRA_INTEGRATION_TESTS;
@@ -23,7 +25,13 @@ describe('Jira API Integration Tests', () => {
   let jiraClient: JiraIssuesClient;
 
   beforeAll(() => {
-    jiraClient = new JiraIssuesClient(JIRA_URL, JIRA_EMAIL, JIRA_TOKEN, JIRA_PROJECT);
+    jiraClient = new JiraIssuesClient(
+      JIRA_URL,
+      JIRA_EMAIL,
+      JIRA_TOKEN,
+      JIRA_PROJECT,
+      logger
+    );
   });
 
   describe('JiraIssuesClient', () => {
@@ -107,7 +115,8 @@ describe('Jira API Integration Tests', () => {
         JIRA_URL,
         'invalid@example.com',
         'invalid-token',
-        JIRA_PROJECT
+        JIRA_PROJECT,
+        logger
       );
 
       try {
@@ -118,7 +127,13 @@ describe('Jira API Integration Tests', () => {
     });
 
     it('should throw error on invalid project', async () => {
-      const client = new JiraIssuesClient(JIRA_URL, JIRA_EMAIL, JIRA_TOKEN, 'INVALID');
+      const client = new JiraIssuesClient(
+        JIRA_URL,
+        JIRA_EMAIL,
+        JIRA_TOKEN,
+        'INVALID',
+        logger
+      );
 
       try {
         await client.fetchIssues();
@@ -136,7 +151,8 @@ describe('Jira API Unit Tests', () => {
       'https://example.atlassian.net',
       'user@example.com',
       'token123',
-      'PROJ'
+      'PROJ',
+      logger
     );
 
     expect(client).toBeDefined();
@@ -147,14 +163,16 @@ describe('Jira API Unit Tests', () => {
       'https://example.atlassian.net/',
       'user@example.com',
       'token123',
-      'PROJ'
+      'PROJ',
+      logger
     );
 
     const client2 = new JiraIssuesClient(
       'https://example.atlassian.net',
       'user@example.com',
       'token123',
-      'PROJ'
+      'PROJ',
+      logger
     );
 
     expect(client1).toBeDefined();

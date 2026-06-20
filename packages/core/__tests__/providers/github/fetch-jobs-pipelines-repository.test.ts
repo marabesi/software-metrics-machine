@@ -7,6 +7,7 @@ import {
 } from '../../../src/providers/github/github-response-types';
 import { PipelinesJobFetchRepository } from '../../../src/providers/github/pipelines-job-fetch-repository';
 import { IGithubWorkflowJobClient } from '../../../src/providers/github/workflow-types';
+import { MockLoggerBuilder } from '../../mock-logger-builder';
 
 describe('Fetch jobs pipeline repository', () => {
   const configuration = {
@@ -15,6 +16,7 @@ describe('Fetch jobs pipeline repository', () => {
 
   const pipelineRunRepository = new InMemoryRepository<WorkflowJsonResponse>();
   const pipelineJobsRepository = new InMemoryRepository<WorkflowJobJsonResponse>();
+  const logger = new MockLoggerBuilder().build();
 
   beforeEach(async () => {
     await pipelineRunRepository.delete();
@@ -30,7 +32,8 @@ describe('Fetch jobs pipeline repository', () => {
       githubWorkflowClient,
       pipelineRunRepository,
       pipelineJobsRepository,
-      pipelineFiltersRepository as never
+      pipelineFiltersRepository as never,
+      logger
     );
 
     return { repository };

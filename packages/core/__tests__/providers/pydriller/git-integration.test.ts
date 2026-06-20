@@ -1,12 +1,15 @@
 import { describe, it, expect, beforeAll } from 'vitest';
 import { CommitTraverser } from '../../../src';
+import { MockLoggerBuilder } from '../../mock-logger-builder';
+
+const logger = new MockLoggerBuilder().build();
 
 describe('Git Commit Analysis - CommitTraverser', () => {
   let traverser: CommitTraverser;
 
   beforeAll(() => {
     // Use the current project's git repository for testing
-    traverser = new CommitTraverser(process.cwd());
+    traverser = new CommitTraverser(process.cwd(), logger);
   });
 
   describe('Commit Traversal', () => {
@@ -153,7 +156,7 @@ describe('Git Commit Analysis - CommitTraverser', () => {
 
   describe('Error Handling', () => {
     it('should handle invalid repository path gracefully', async () => {
-      const invalidTraverser = new CommitTraverser('/invalid/path/does/not/exist');
+      const invalidTraverser = new CommitTraverser('/invalid/path/does/not/exist', logger);
 
       try {
         await invalidTraverser.traverseCommits();
@@ -165,7 +168,7 @@ describe('Git Commit Analysis - CommitTraverser', () => {
     });
 
     it('should initialize successfully', () => {
-      const traverser = new CommitTraverser(process.cwd());
+      const traverser = new CommitTraverser(process.cwd(), logger);
       expect(traverser).toBeDefined();
     });
   });

@@ -3,15 +3,17 @@ import * as fs from 'fs';
 import * as path from 'path';
 import * as os from 'os';
 import { CodemaatAnalyzer } from '../../../src';
+import { MockLoggerBuilder } from '../../mock-logger-builder';
 
 describe('CodeMaat Analyzer Tests', () => {
   let tempDir: string;
   let analyzer: CodemaatAnalyzer;
+  const logger = new MockLoggerBuilder().build();
 
   beforeAll(() => {
     // Create temporary directory for test CSV files
     tempDir = fs.mkdtempSync(path.join(os.tmpdir(), 'codemaat-test-'));
-    analyzer = new CodemaatAnalyzer(tempDir);
+    analyzer = new CodemaatAnalyzer(tempDir, logger);
   });
 
   afterAll(() => {
@@ -238,7 +240,7 @@ src/api.ts,src/utils.ts,78`;
   describe('Error Handling', () => {
     it('should handle directory with no CSV files', async () => {
       const emptyDir = fs.mkdtempSync(path.join(os.tmpdir(), 'codemaat-empty-'));
-      const emptyAnalyzer = new CodemaatAnalyzer(emptyDir);
+      const emptyAnalyzer = new CodemaatAnalyzer(emptyDir, logger);
 
       try {
         const churn = await emptyAnalyzer.getCodeChurn();

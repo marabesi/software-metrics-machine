@@ -4,6 +4,7 @@ import * as path from 'path';
 import { describe, expect, it, vi } from 'vitest';
 import { GitHubPullRequestsFetchRepository, IGithubPrsClient } from '../../../src';
 import { PullRequestJsonResponse } from '../../../src/providers/github/github-response-types';
+import { MockLoggerBuilder } from '../../mock-logger-builder';
 
 function createPullRequest(
   overrides: Partial<PullRequestJsonResponse> = {}
@@ -62,6 +63,8 @@ function createPullRequest(
 }
 
 describe('GitHubPullRequestsFetchRepository', () => {
+  const logger = new MockLoggerBuilder().build();
+
   it('should perform incremental update fetching PRs created since latest cached update', async () => {
     const providerDir = await fs.mkdtemp(path.join(os.tmpdir(), 'smm-pr-incr-'));
     const cachedPrs = [
@@ -97,7 +100,11 @@ describe('GitHubPullRequestsFetchRepository', () => {
       getPathFromGitProvider: () => providerDir,
     };
 
-    const repository = new GitHubPullRequestsFetchRepository(githubPrsClient, config as never);
+    const repository = new GitHubPullRequestsFetchRepository(
+      githubPrsClient,
+      config as never,
+      logger
+    );
 
     const result = await repository.fetchPRs({ incrementalUpdate: true });
 
@@ -140,7 +147,11 @@ describe('GitHubPullRequestsFetchRepository', () => {
       getPathFromGitProvider: () => providerDir,
     };
 
-    const repository = new GitHubPullRequestsFetchRepository(githubPrsClient, config as never);
+    const repository = new GitHubPullRequestsFetchRepository(
+      githubPrsClient,
+      config as never,
+      logger
+    );
 
     await repository.fetchPRs({ forceRefresh: true });
 

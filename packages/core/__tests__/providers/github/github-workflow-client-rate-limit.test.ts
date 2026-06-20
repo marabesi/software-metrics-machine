@@ -2,6 +2,7 @@ import { describe, expect, it, vi, beforeEach } from 'vitest';
 import axios from 'axios';
 import { GithubWorkflowClient } from '../../../src';
 import { GitHubRateLimitManager } from '../../../src';
+import { MockLoggerBuilder } from '../../mock-logger-builder';
 
 async function runWithTimers<T>(action: () => Promise<T>): Promise<T> {
   vi.useFakeTimers();
@@ -30,12 +31,13 @@ async function runWithTimers<T>(action: () => Promise<T>): Promise<T> {
 describe('GithubWorkflowClient rate limit integration', () => {
   let mockGet: ReturnType<typeof vi.fn>;
   let rateLimitManager: GitHubRateLimitManager;
+  const logger = new MockLoggerBuilder().build();
 
   beforeEach(() => {
     vi.clearAllMocks();
     mockGet = vi.fn();
     vi.spyOn(axios, 'create').mockReturnValue({ get: mockGet } as any);
-    rateLimitManager = new GitHubRateLimitManager();
+    rateLimitManager = new GitHubRateLimitManager(logger);
   });
 
   it('should call waitIfNeeded before fetching workflow runs page', async () => {
@@ -45,7 +47,7 @@ describe('GithubWorkflowClient rate limit integration', () => {
       headers: {},
     });
 
-    const client = new GithubWorkflowClient('token', 'owner', 'repo', rateLimitManager);
+    const client = new GithubWorkflowClient('token', 'owner', 'repo', rateLimitManager, logger);
     await client.fetchWorkflows();
 
     expect(waitSpy).toHaveBeenCalled();
@@ -59,7 +61,7 @@ describe('GithubWorkflowClient rate limit integration', () => {
       headers,
     });
 
-    const client = new GithubWorkflowClient('token', 'owner', 'repo', rateLimitManager);
+    const client = new GithubWorkflowClient('token', 'owner', 'repo', rateLimitManager, logger);
     await client.fetchWorkflows();
 
     expect(headersSpy).toHaveBeenCalledWith(headers);
@@ -75,7 +77,7 @@ describe('GithubWorkflowClient rate limit integration', () => {
         headers: {},
       });
 
-    const client = new GithubWorkflowClient('token', 'owner', 'repo', rateLimitManager);
+    const client = new GithubWorkflowClient('token', 'owner', 'repo', rateLimitManager, logger);
     const result = await runWithTimers(() => client.fetchWorkflows());
 
     expect(waitForResetSpy).toHaveBeenCalled();
@@ -92,7 +94,7 @@ describe('GithubWorkflowClient rate limit integration', () => {
         headers: {},
       });
 
-    const client = new GithubWorkflowClient('token', 'owner', 'repo', rateLimitManager);
+    const client = new GithubWorkflowClient('token', 'owner', 'repo', rateLimitManager, logger);
     const result = await runWithTimers(() => client.fetchWorkflows());
 
     expect(waitForResetSpy).toHaveBeenCalled();
@@ -105,7 +107,7 @@ describe('GithubWorkflowClient rate limit integration', () => {
 
     mockGet.mockRejectedValue(error);
 
-    const client = new GithubWorkflowClient('token', 'owner', 'repo', rateLimitManager);
+    const client = new GithubWorkflowClient('token', 'owner', 'repo', rateLimitManager, logger);
     await expect(runWithTimers(() => client.fetchWorkflows())).rejects.toThrow();
 
     // Called 2 times (attempt 0, 1) — on attempt 2 it throws without waiting
@@ -122,7 +124,7 @@ describe('GithubWorkflowClient rate limit integration', () => {
 
     mockGet.mockRejectedValue(error);
 
-    const client = new GithubWorkflowClient('token', 'owner', 'repo', rateLimitManager);
+    const client = new GithubWorkflowClient('token', 'owner', 'repo', rateLimitManager, logger);
     await expect(client.fetchWorkflows()).rejects.toThrow();
 
     expect(waitForResetSpy).not.toHaveBeenCalled();
@@ -134,7 +136,7 @@ describe('GithubWorkflowClient rate limit integration', () => {
 
     mockGet.mockRejectedValue(error);
 
-    const client = new GithubWorkflowClient('token', 'owner', 'repo', rateLimitManager);
+    const client = new GithubWorkflowClient('token', 'owner', 'repo', rateLimitManager, logger);
     await expect(client.fetchWorkflows()).rejects.toThrow();
 
     expect(waitForResetSpy).not.toHaveBeenCalled();
@@ -148,7 +150,7 @@ describe('GithubWorkflowClient rate limit integration', () => {
       headers: {},
     });
 
-    const client = new GithubWorkflowClient('token', 'owner', 'repo', rateLimitManager);
+    const client = new GithubWorkflowClient('token', 'owner', 'repo', rateLimitManager, logger);
     await client.fetchWorkflows({
       startDate: '2026-05-10T00:00:00Z',
       endDate: '2026-05-11T23:59:59Z',

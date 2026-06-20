@@ -10,12 +10,14 @@ vi.mock(import('child_process'), async (importOriginal) => {
 
 import { execSync } from 'child_process';
 import { CommitTraverser } from '../../../src';
+import { MockLoggerBuilder } from '../../mock-logger-builder';
 
 const mockExecSync = vi.mocked(execSync);
+const logger = new MockLoggerBuilder().build();
 
 describe('CommitTraverser', () => {
   const GIT_OUTPUT = `abc123\nAlice\nalice@b.com\n2025-01-01T00:00:00Z\nInitial commit\n\n---COMMIT-SEPARATOR---\ndef456\nBob\nbob@c.com\n2025-01-02T00:00:00Z\nAdd feature\nCo-authored-by: Alice <alice@b.com>\n---COMMIT-SEPARATOR---\n`;
-  const traverser = new CommitTraverser('/fake/path');
+  const traverser = new CommitTraverser('/fake/path', logger);
 
   beforeEach(() => {
     vi.clearAllMocks();

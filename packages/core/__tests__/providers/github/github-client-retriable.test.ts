@@ -2,6 +2,7 @@ import { describe, expect, it, vi, beforeEach, afterEach } from 'vitest';
 import axios from 'axios';
 import { GithubClientRetriable } from '../../../src/providers/github/github-client-retriable';
 import { GitHubRateLimitManager } from '../../../src/providers/github/github-rate-limit-manager';
+import { MockLoggerBuilder } from '../../mock-logger-builder';
 
 /**
  * Helper to run an operation with fake timers so retry backoffs complete
@@ -36,14 +37,15 @@ describe('GithubClientRetriable', () => {
   let mockGet: ReturnType<typeof vi.fn>;
   let rateLimitManager: GitHubRateLimitManager;
   let client: GithubClientRetriable;
+  const logger = new MockLoggerBuilder().build();
 
   beforeEach(() => {
     vi.clearAllMocks();
     mockGet = vi.fn();
     vi.spyOn(axios, 'create').mockReturnValue({ get: mockGet } as any);
-    rateLimitManager = new GitHubRateLimitManager();
+    rateLimitManager = new GitHubRateLimitManager(logger);
     const instance = axios.create();
-    client = new GithubClientRetriable(instance, rateLimitManager);
+    client = new GithubClientRetriable(instance, rateLimitManager, logger);
     (instance as any).get = mockGet;
   });
 

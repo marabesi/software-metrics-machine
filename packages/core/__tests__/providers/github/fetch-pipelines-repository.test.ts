@@ -4,6 +4,7 @@ import { InMemoryRepository } from '../../../src/test/in-memory-repository';
 import { IGithubWorkflowClient } from '../../../src';
 import { WorkflowJsonResponse } from '../../../src/providers/github/github-response-types';
 import { PipelinesFetchRepository } from '../../../src/providers/github/pipelines-fetch-repository';
+import { MockLoggerBuilder } from '../../mock-logger-builder';
 
 describe('PipelinesRepository', () => {
   const configuration = {
@@ -11,6 +12,7 @@ describe('PipelinesRepository', () => {
   } as any;
 
   const pipelineRunRepository = new InMemoryRepository<WorkflowJsonResponse>();
+  const logger = new MockLoggerBuilder().build();
 
   const createRepository = async (
     githubWorkflowClient: IGithubWorkflowClient,
@@ -20,7 +22,8 @@ describe('PipelinesRepository', () => {
       configuration,
       githubWorkflowClient,
       pipelineRunRepository,
-      pipelineFiltersRepository as never
+      pipelineFiltersRepository as never,
+      logger
     );
 
     return { repository };

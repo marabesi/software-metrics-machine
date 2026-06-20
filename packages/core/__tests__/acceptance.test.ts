@@ -10,6 +10,7 @@ import { SonarQubeService } from '../src';
 import { SonarqubeFactory } from '../src';
 import { PairingFactory } from '../src';
 import PipelineFactory from '../src/aggregates/pipeline-factory';
+import { MockLoggerBuilder } from './mock-logger-builder';
 
 /**
  * Acceptance tests for the complete metrics system.
@@ -38,6 +39,7 @@ describe('Metrics System Acceptance Tests', () => {
       getSonarqubePath: () => `${cacheDir}/sonarqube`,
       getGitPath: () => `${cacheDir}/git`,
     } as any;
+    const logger = new MockLoggerBuilder().build();
 
     const jiraClient: IJiraIssuesClient = {
       fetchIssues: async () => [],
@@ -46,17 +48,17 @@ describe('Metrics System Acceptance Tests', () => {
     };
 
     // Repositories
-    const prsRepository = PullRequestFactory.create(config);
-    const { pipelineRepository } = PipelineFactory.create(config);
-    const codeRepo = new CodeMetricsRepository(config);
-    const issuesRepo = new IssuesRepository(jiraClient, `${cacheDir}/jira`);
-    const sonarqubeRepository = SonarqubeFactory.create(config);
+    const prsRepository = PullRequestFactory.create(config, logger);
+    const { pipelineRepository } = PipelineFactory.create(config, logger);
+    const codeRepo = new CodeMetricsRepository(config, logger);
+    const issuesRepo = new IssuesRepository(jiraClient, `${cacheDir}/jira`, logger);
+    const sonarqubeRepository = SonarqubeFactory.create(config, logger);
 
     // Services
-    const prsService = new PRsService(prsRepository);
-    const pipelinesService = new PipelinesService(pipelineRepository);
-    const sonarqubeService = new SonarQubeService(sonarqubeRepository);
-    const pairingService = PairingFactory.create(config);
+    const prsService = new PRsService(prsRepository, undefined, logger);
+    const pipelinesService = new PipelinesService(pipelineRepository, undefined, logger);
+    const sonarqubeService = new SonarQubeService(sonarqubeRepository, logger);
+    const pairingService = PairingFactory.create(config, logger);
 
     orchestrator = new MetricsOrchestrator(
       prsService,
@@ -64,7 +66,8 @@ describe('Metrics System Acceptance Tests', () => {
       codeRepo,
       issuesRepo,
       sonarqubeService,
-      pairingService
+      pairingService,
+      logger
     );
   });
 

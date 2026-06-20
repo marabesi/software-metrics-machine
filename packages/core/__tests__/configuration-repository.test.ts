@@ -133,6 +133,64 @@ describe('ConfigurationRepository', () => {
       expect(repo.fromProjectConfig(projectConfig!).githubToken).toBe('default-token');
     });
 
+    it('should use project-specific GitHub token from environment', () => {
+      writeFileSync(
+        join(tempDir, 'smm_config.json'),
+        JSON.stringify({
+          projects: [
+            {
+              github_repository: 'bla/123',
+              git_repository_location: '/tmp/repo-a',
+            },
+            {
+              github_repository: 'bu/456',
+              git_repository_location: '/tmp/repo-b',
+            },
+          ],
+        }),
+        'utf-8'
+      );
+
+      const repo = new ConfigurationRepository(
+        {
+          SMM_STORE_DATA_AT: tempDir,
+          BLA_123_GITHUB_TOKEN: 'token-from-bla-env',
+          BU_456_GITHUB_TOKEN: 'token-from-bu-env',
+        },
+        'bu/456'
+      );
+
+      expect(repo.getActiveConfiguration().githubToken).toBe('token-from-bu-env');
+    });
+
+    it('should prefer project-specific environment token over JSON tokens', () => {
+      writeFileSync(
+        join(tempDir, 'smm_config.json'),
+        JSON.stringify({
+          github_token: 'default-token',
+          projects: [
+            {
+              github_repository: 'bla/123',
+              git_repository_location: '/tmp/repo-a',
+              github_token: 'project-token',
+            },
+          ],
+        }),
+        'utf-8'
+      );
+
+      const repo = new ConfigurationRepository(
+        {
+          SMM_STORE_DATA_AT: tempDir,
+          BLA_123_GITHUB_TOKEN: 'env-project-token',
+          GITHUB_TOKEN: 'generic-env-token',
+        },
+        'bla/123'
+      );
+
+      expect(repo.getActiveConfiguration().githubToken).toBe('env-project-token');
+    });
+
     it('should default to first project when project is not specified', () => {
       const repo = new ConfigurationRepository({ SMM_STORE_DATA_AT: tempDir });
       const config = repo.getActiveConfiguration();

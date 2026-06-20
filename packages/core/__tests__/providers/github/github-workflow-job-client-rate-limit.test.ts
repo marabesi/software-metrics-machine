@@ -2,6 +2,7 @@ import { describe, expect, it, vi, beforeEach } from 'vitest';
 import axios from 'axios';
 import { GithubWorkflowJobClient } from '../../../src/providers/github/github-workflow-job-client';
 import { GitHubRateLimitManager } from '../../../src/providers/github/github-rate-limit-manager';
+import { MockLoggerBuilder } from '../../mock-logger-builder';
 
 async function runWithTimers<T>(action: () => Promise<T>): Promise<T> {
   vi.useFakeTimers();
@@ -30,12 +31,13 @@ async function runWithTimers<T>(action: () => Promise<T>): Promise<T> {
 describe('GithubWorkflowJobClient rate limit integration', () => {
   let mockGet: ReturnType<typeof vi.fn>;
   let rateLimitManager: GitHubRateLimitManager;
+  const logger = new MockLoggerBuilder().build();
 
   beforeEach(() => {
     vi.clearAllMocks();
     mockGet = vi.fn();
     vi.spyOn(axios, 'create').mockReturnValue({ get: mockGet } as any);
-    rateLimitManager = new GitHubRateLimitManager();
+    rateLimitManager = new GitHubRateLimitManager(logger);
   });
 
   it('should call waitIfNeeded before fetching jobs page', async () => {
@@ -45,7 +47,7 @@ describe('GithubWorkflowJobClient rate limit integration', () => {
       headers: {},
     });
 
-    const client = new GithubWorkflowJobClient('token', 'owner', 'repo', rateLimitManager);
+    const client = new GithubWorkflowJobClient('token', 'owner', 'repo', rateLimitManager, logger);
     const result = await client.fetchJobsPage('123', 1);
 
     expect(waitSpy).toHaveBeenCalled();
@@ -61,7 +63,7 @@ describe('GithubWorkflowJobClient rate limit integration', () => {
       headers,
     });
 
-    const client = new GithubWorkflowJobClient('token', 'owner', 'repo', rateLimitManager);
+    const client = new GithubWorkflowJobClient('token', 'owner', 'repo', rateLimitManager, logger);
     await client.fetchJobsPage('123', 1);
 
     expect(headersSpy).toHaveBeenCalledWith(headers);
@@ -77,7 +79,7 @@ describe('GithubWorkflowJobClient rate limit integration', () => {
         headers: {},
       });
 
-    const client = new GithubWorkflowJobClient('token', 'owner', 'repo', rateLimitManager);
+    const client = new GithubWorkflowJobClient('token', 'owner', 'repo', rateLimitManager, logger);
     const result = await runWithTimers(() => client.fetchJobsPage('123', 1));
 
     expect(waitForResetSpy).toHaveBeenCalled();
@@ -94,7 +96,7 @@ describe('GithubWorkflowJobClient rate limit integration', () => {
         headers: {},
       });
 
-    const client = new GithubWorkflowJobClient('token', 'owner', 'repo', rateLimitManager);
+    const client = new GithubWorkflowJobClient('token', 'owner', 'repo', rateLimitManager, logger);
     const result = await runWithTimers(() => client.fetchJobsPage('123', 1));
 
     expect(waitForResetSpy).toHaveBeenCalled();
@@ -107,7 +109,7 @@ describe('GithubWorkflowJobClient rate limit integration', () => {
 
     mockGet.mockRejectedValue(error);
 
-    const client = new GithubWorkflowJobClient('token', 'owner', 'repo', rateLimitManager);
+    const client = new GithubWorkflowJobClient('token', 'owner', 'repo', rateLimitManager, logger);
     await expect(runWithTimers(() => client.fetchJobsPage('123', 1))).rejects.toThrow();
 
     // Called 2 times (attempt 0, 1) — on attempt 2 it throws without waiting
@@ -124,7 +126,7 @@ describe('GithubWorkflowJobClient rate limit integration', () => {
 
     mockGet.mockRejectedValue(error);
 
-    const client = new GithubWorkflowJobClient('token', 'owner', 'repo', rateLimitManager);
+    const client = new GithubWorkflowJobClient('token', 'owner', 'repo', rateLimitManager, logger);
     await expect(client.fetchJobsPage('123', 1)).rejects.toThrow();
 
     expect(waitForResetSpy).not.toHaveBeenCalled();
@@ -136,7 +138,7 @@ describe('GithubWorkflowJobClient rate limit integration', () => {
 
     mockGet.mockRejectedValue(error);
 
-    const client = new GithubWorkflowJobClient('token', 'owner', 'repo', rateLimitManager);
+    const client = new GithubWorkflowJobClient('token', 'owner', 'repo', rateLimitManager, logger);
     await expect(client.fetchJobsPage('123', 1)).rejects.toThrow();
 
     expect(waitForResetSpy).not.toHaveBeenCalled();

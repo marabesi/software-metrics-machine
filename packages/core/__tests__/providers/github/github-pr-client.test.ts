@@ -9,6 +9,9 @@ import {
   type IGithubPrsClient,
 } from '../../../src';
 import { PullRequestJsonResponseBuilder } from '../../../src/test/builders';
+import { MockLoggerBuilder } from '../../mock-logger-builder';
+
+const logger = new MockLoggerBuilder().build();
 
 // ---------------------------------------------------------------------------
 // Helpers
@@ -38,7 +41,8 @@ describe('GithubPrsClient basic functionality', () => {
       'fake-token',
       'owner',
       'repo',
-      createMockRateLimitManager() as any
+      createMockRateLimitManager() as any,
+      logger
     );
   });
 
@@ -75,7 +79,7 @@ describe('GithubPrsClient rate limit integration', () => {
     it('should call waitIfNeeded before making a request', async () => {
       mockGet.mockResolvedValue({ data: [], headers: {} });
 
-      const client = new GithubPrsClient('token', 'owner', 'repo', rateLimitManager as any);
+      const client = new GithubPrsClient('token', 'owner', 'repo', rateLimitManager as any, logger);
       await client.fetchPRs();
 
       expect(rateLimitManager.waitIfNeeded).toHaveBeenCalled();
@@ -85,7 +89,7 @@ describe('GithubPrsClient rate limit integration', () => {
       const headers = { 'x-ratelimit-remaining': '4999', 'x-ratelimit-limit': '5000' };
       mockGet.mockResolvedValue({ data: [], headers });
 
-      const client = new GithubPrsClient('token', 'owner', 'repo', rateLimitManager as any);
+      const client = new GithubPrsClient('token', 'owner', 'repo', rateLimitManager as any, logger);
       await client.fetchPRs();
 
       expect(rateLimitManager.updateFromHeaders).toHaveBeenCalledWith(headers);
@@ -102,7 +106,7 @@ describe('GithubPrsClient rate limit integration', () => {
         .mockRejectedValueOnce({ isAxiosError: true, response: { status: 429, headers } })
         .mockResolvedValueOnce({ data: [], headers });
 
-      const client = new GithubPrsClient('token', 'owner', 'repo', rateLimitManager as any);
+      const client = new GithubPrsClient('token', 'owner', 'repo', rateLimitManager as any, logger);
       await client.fetchPRs();
 
       expect(rateLimitManager.waitForReset).toHaveBeenCalled();
@@ -118,7 +122,7 @@ describe('GithubPrsClient rate limit integration', () => {
         .mockRejectedValueOnce({ isAxiosError: true, response: { status: 403, headers } })
         .mockResolvedValueOnce({ data: [], headers });
 
-      const client = new GithubPrsClient('token', 'owner', 'repo', rateLimitManager as any);
+      const client = new GithubPrsClient('token', 'owner', 'repo', rateLimitManager as any, logger);
       await client.fetchPRs();
 
       expect(rateLimitManager.waitForReset).toHaveBeenCalled();
@@ -129,7 +133,7 @@ describe('GithubPrsClient rate limit integration', () => {
 
       mockGet.mockRejectedValue(error);
 
-      const client = new GithubPrsClient('token', 'owner', 'repo', rateLimitManager as any);
+      const client = new GithubPrsClient('token', 'owner', 'repo', rateLimitManager as any, logger);
       await expect(client.fetchPRs()).rejects.toThrow();
 
       // Called 2 times (attempt 0, 1) — on attempt 2 it throws without waiting
@@ -145,7 +149,7 @@ describe('GithubPrsClient rate limit integration', () => {
 
       mockGet.mockRejectedValue(error);
 
-      const client = new GithubPrsClient('token', 'owner', 'repo', rateLimitManager as any);
+      const client = new GithubPrsClient('token', 'owner', 'repo', rateLimitManager as any, logger);
       await expect(client.fetchPRs()).rejects.toThrow();
 
       expect(rateLimitManager.waitForReset).not.toHaveBeenCalled();
@@ -156,7 +160,7 @@ describe('GithubPrsClient rate limit integration', () => {
 
       mockGet.mockRejectedValue(error);
 
-      const client = new GithubPrsClient('token', 'owner', 'repo', rateLimitManager as any);
+      const client = new GithubPrsClient('token', 'owner', 'repo', rateLimitManager as any, logger);
       await expect(client.fetchPRs()).rejects.toThrow();
 
       expect(rateLimitManager.waitForReset).not.toHaveBeenCalled();
@@ -171,7 +175,7 @@ describe('GithubPrsClient rate limit integration', () => {
     it('should sort by created DESC (newest first) by default', async () => {
       mockGet.mockResolvedValue({ data: [], headers: {} });
 
-      const client = new GithubPrsClient('token', 'owner', 'repo', rateLimitManager as any);
+      const client = new GithubPrsClient('token', 'owner', 'repo', rateLimitManager as any, logger);
       await client.fetchPRs();
 
       const callParams = mockGet.mock.calls[0][1]?.params;
@@ -190,7 +194,7 @@ describe('GithubPrsClient rate limit integration', () => {
           headers: {},
         });
 
-      const client = new GithubPrsClient('token', 'owner', 'repo', rateLimitManager as any);
+      const client = new GithubPrsClient('token', 'owner', 'repo', rateLimitManager as any, logger);
       const prs = await client.fetchPRs({ startDate: '2026-06-12T00:00:00Z' });
 
       // Only PRs created on or after startDate
@@ -204,7 +208,7 @@ describe('GithubPrsClient rate limit integration', () => {
     it('should call waitIfNeeded before making a request', async () => {
       mockGet.mockResolvedValue({ data: [], headers: {} });
 
-      const client = new GithubPrsClient('token', 'owner', 'repo', rateLimitManager as any);
+      const client = new GithubPrsClient('token', 'owner', 'repo', rateLimitManager as any, logger);
       await client.fetchPRComments(1);
 
       expect(rateLimitManager.waitIfNeeded).toHaveBeenCalled();
@@ -214,7 +218,7 @@ describe('GithubPrsClient rate limit integration', () => {
       const headers = { 'x-ratelimit-remaining': '4998', 'x-ratelimit-limit': '5000' };
       mockGet.mockResolvedValue({ data: [], headers });
 
-      const client = new GithubPrsClient('token', 'owner', 'repo', rateLimitManager as any);
+      const client = new GithubPrsClient('token', 'owner', 'repo', rateLimitManager as any, logger);
       await client.fetchPRComments(1);
 
       expect(rateLimitManager.updateFromHeaders).toHaveBeenCalledWith(headers);
@@ -225,7 +229,7 @@ describe('GithubPrsClient rate limit integration', () => {
         .mockRejectedValueOnce({ isAxiosError: true, response: { status: 429, headers: {} } })
         .mockResolvedValueOnce({ data: [], headers: {} });
 
-      const client = new GithubPrsClient('token', 'owner', 'repo', rateLimitManager as any);
+      const client = new GithubPrsClient('token', 'owner', 'repo', rateLimitManager as any, logger);
       await client.fetchPRComments(1);
 
       expect(rateLimitManager.waitForReset).toHaveBeenCalled();
@@ -280,7 +284,11 @@ describe('GitHubPullRequestsFetchRepository', () => {
       getPathFromGitProvider: () => providerDir,
     };
 
-    const repository = new GitHubPullRequestsFetchRepository(githubPrsClient, config as never);
+    const repository = new GitHubPullRequestsFetchRepository(
+      githubPrsClient,
+      config as never,
+      logger
+    );
 
     await repository.fetchPRs({ forceRefresh: true });
 

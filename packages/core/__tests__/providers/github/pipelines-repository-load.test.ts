@@ -6,13 +6,15 @@ import {
   WorkflowJobJsonResponse,
   WorkflowJsonResponse,
 } from '../../../src/providers/github/github-response-types';
+import { MockLoggerBuilder } from '../../mock-logger-builder';
 
 describe('PipelinesRepository loadPipelines', () => {
   const pipelineRunRepository = new InMemoryRepository<WorkflowJsonResponse>();
   const pipelineJobsRepository = new InMemoryRepository<WorkflowJobJsonResponse>();
+  const logger = new MockLoggerBuilder().build();
 
   const createRepository = () => {
-    return new PipelinesRepository(pipelineRunRepository, pipelineJobsRepository);
+    return new PipelinesRepository(pipelineRunRepository, pipelineJobsRepository, logger);
   };
 
   it('should load pipelines with corresponding jobs attached', async () => {

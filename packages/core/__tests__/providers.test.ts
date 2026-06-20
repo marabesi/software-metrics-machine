@@ -1,6 +1,9 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { GithubPrsClient, GithubWorkflowClient, GitHubRateLimitManager } from '../src';
 import { GitlabMrClient, GitlabPipelineClient } from '../src';
+import { MockLoggerBuilder } from './mock-logger-builder';
+
+const logger = new MockLoggerBuilder().build();
 vi.mock('axios', () => ({
   default: {
     create: vi.fn().mockImplementation((options) => {
@@ -17,7 +20,13 @@ describe('GithubPrsClient', () => {
   let client: GithubPrsClient;
 
   beforeEach(() => {
-    client = new GithubPrsClient('fake-token', 'owner', 'repo', new GitHubRateLimitManager());
+    client = new GithubPrsClient(
+      'fake-token',
+      'owner',
+      'repo',
+      new GitHubRateLimitManager(logger),
+      logger
+    );
   });
 
   it('should fetch PRs', async () => {
@@ -39,7 +48,13 @@ describe('GithubWorkflowClient', () => {
   let client: GithubWorkflowClient;
 
   beforeEach(() => {
-    client = new GithubWorkflowClient('fake-token', 'owner', 'repo', new GitHubRateLimitManager());
+    client = new GithubWorkflowClient(
+      'fake-token',
+      'owner',
+      'repo',
+      new GitHubRateLimitManager(logger),
+      logger
+    );
   });
 
   it('should initialize with token, owner, and repo', () => {
@@ -88,7 +103,7 @@ describe('GitlabMrClient', () => {
 
   beforeEach(() => {
     runner.mockClear();
-    client = new GitlabMrClient('fake-token', 'project-id', runner);
+    client = new GitlabMrClient('fake-token', 'project-id', logger, runner);
   });
 
   it('should initialize with token and project ID', () => {
@@ -170,7 +185,7 @@ describe('GitlabPipelineClient', () => {
 
   beforeEach(() => {
     runner.mockClear();
-    client = new GitlabPipelineClient('fake-token', 'project-id', runner);
+    client = new GitlabPipelineClient('fake-token', 'project-id', logger, runner);
   });
 
   it('should initialize with token and project ID', () => {

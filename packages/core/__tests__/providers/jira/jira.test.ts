@@ -1,10 +1,12 @@
 import { vi, describe, it, expect, beforeEach, afterEach, type MockInstance } from 'vitest';
 import axios from 'axios';
 import { JiraIssuesClient } from '../../../src';
+import { MockLoggerBuilder } from '../../mock-logger-builder';
 
 describe('JiraIssuesClient', () => {
   let client: JiraIssuesClient;
   let getMock: MockInstance;
+  const logger = new MockLoggerBuilder().build();
 
   beforeEach(() => {
     getMock = vi.fn();
@@ -13,7 +15,8 @@ describe('JiraIssuesClient', () => {
       'https://jira.example.com',
       'user@example.com',
       'api-token',
-      'PROJECT'
+      'PROJECT',
+      logger
     );
   });
 

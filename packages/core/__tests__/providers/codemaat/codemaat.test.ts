@@ -1,10 +1,12 @@
 import { CodemaatAnalyzer } from '../../../src';
+import { MockLoggerBuilder } from '../../mock-logger-builder';
 
 describe('CodemaatAnalyzer', () => {
   let analyzer: CodemaatAnalyzer;
+  const logger = new MockLoggerBuilder().build();
 
   beforeEach(() => {
-    analyzer = new CodemaatAnalyzer('/path/to/data');
+    analyzer = new CodemaatAnalyzer('/path/to/data', logger);
   });
 
   it('should initialize with data directory', () => {

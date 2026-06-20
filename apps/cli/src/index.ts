@@ -85,6 +85,10 @@ export function commands() {
  *   GITHUB_TOKEN, GITHUB_REPOSITORY, GIT_REPOSITORY_LOCATION,
  *   JIRA_URL, JIRA_EMAIL, JIRA_TOKEN, JIRA_PROJECT,
  *   SONAR_URL, SONAR_TOKEN, SONAR_PROJECT
+ *
+ *   For project-specific GitHub tokens, uppercase github_repository, replace
+ *   non-alphanumeric characters with underscores, and append _GITHUB_TOKEN:
+ *   BLA_123_GITHUB_TOKEN for github_repository "bla/123".
  */
 export async function main() {
   const program = commands();

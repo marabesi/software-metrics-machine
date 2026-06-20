@@ -125,10 +125,13 @@ export class ConfigurationRepository implements IConfigurationRepository {
 
     const c = configData as unknown as Record<string, string | undefined>;
     config.gitProvider = c.git_provider || this.env.GIT_PROVIDER;
+    config.githubRepository = c.github_repository || this.env.GITHUB_REPO || this.env.GITHUB_REPOSITORY;
     config.githubToken =
-      c.github_token || this.getDefaultGithubToken() || this.env.GITHUB_TOKEN;
+      this.getProjectGithubTokenFromEnv(config.githubRepository) ||
+      c.github_token ||
+      this.getDefaultGithubToken() ||
+      this.env.GITHUB_TOKEN;
     config.gitlabToken = c.gitlab_token || this.env.GITLAB_TOKEN;
-    config.githubRepository = c.github_repository || this.env.GITHUB_REPO;
     config.storeData = this.env.SMM_STORE_DATA_AT!;
     config.gitRepositoryLocation =
       c.git_repository_location || this.env.GIT_REPOSITORY_PATH || '';
@@ -189,6 +192,21 @@ export class ConfigurationRepository implements IConfigurationRepository {
     return typeof this.rawConfig.github_token === 'string' ? this.rawConfig.github_token : undefined;
   }
 
+  private getProjectGithubTokenFromEnv(repository: string | undefined): string | undefined {
+    const envVarName = this.getProjectGithubTokenEnvVarName(repository);
+    return envVarName ? this.env[envVarName] : undefined;
+  }
+
+  private getProjectGithubTokenEnvVarName(repository: string | undefined): string | undefined {
+    const normalizedRepository = repository
+      ?.trim()
+      .replace(/[^a-zA-Z0-9]+/g, '_')
+      .replace(/^_+|_+$/g, '')
+      .toUpperCase();
+
+    return normalizedRepository ? `${normalizedRepository}_GITHUB_TOKEN` : undefined;
+  }
+
   save(): void {
     const rawConfig = this.loadRawConfig();
 
@@ -203,7 +221,7 @@ export class ConfigurationRepository implements IConfigurationRepository {
     fs.writeFileSync(this.configPath, JSON.stringify(rawConfig, null, 2), 'utf-8');
     this.rawConfig = rawConfig;
     this.projects = this.extractProjects();
-    this.logger.debug(`Configuration saved to file: ${this.configPath}`);
+    this.logger?.debug(`Configuration saved to file: ${this.configPath}`);
   }
 
   private loadRawConfig(): ISmmConfigFile & Record<string, unknown> {
@@ -362,7 +380,7 @@ export class ConfigurationRepository implements IConfigurationRepository {
   private resolveActiveProjectIndex(projectName?: string): number {
     if (!projectName) {
       if (this.projects.length > 1) {
-        this.logger.warn(
+        this.logger?.warn(
           `smm_config.json has ${this.projects.length} projects. Please specify one with --project <name>. Available: ${this.projects.map((p) => p.github_repository || '(unnamed)').join(', ')}`
         );
       }

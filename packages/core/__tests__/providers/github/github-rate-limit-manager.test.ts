@@ -1,12 +1,14 @@
 import { describe, expect, it, vi, beforeEach, afterEach } from 'vitest';
 import { GitHubRateLimitManager } from '../../../src/providers/github/github-rate-limit-manager';
+import { MockLoggerBuilder } from '../../mock-logger-builder';
 
 describe('GitHubRateLimitManager', () => {
   let manager: GitHubRateLimitManager;
+  const logger = new MockLoggerBuilder().build();
 
   beforeEach(() => {
     vi.useFakeTimers();
-    manager = new GitHubRateLimitManager();
+    manager = new GitHubRateLimitManager(logger);
   });
 
   afterEach(() => {

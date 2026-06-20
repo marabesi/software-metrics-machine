@@ -76,6 +76,18 @@ smm dashboard serve
 
 Multiple projects are supported. Select the active one with `smm --project owner/repo <command>`.
 
+GitHub tokens can be provided through environment variables instead of `smm_config.json`.
+For project-specific tokens, uppercase the `github_repository` value and replace non-alphanumeric
+characters with `_`, then append `_GITHUB_TOKEN`:
+
+```bash
+export BLA_123_GITHUB_TOKEN=xxx   # used for github_repository "bla/123"
+export BU_456_GITHUB_TOKEN=xxx    # used for github_repository "bu/456"
+```
+
+Project-specific token environment variables take precedence over project `github_token`,
+root `github_token`, and the generic `GITHUB_TOKEN`.
+
 ## Global options
 
 ```

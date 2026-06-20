@@ -1,10 +1,12 @@
 import axios from 'axios';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { SonarqubeMeasuresClient } from '../../../src/providers/sonarqube/sonarqube-client';
+import { MockLoggerBuilder } from '../../mock-logger-builder';
 
 vi.mock('axios');
 
 const mockGet = vi.fn();
+const logger = new MockLoggerBuilder().build();
 
 describe('SonarqubeMeasuresClient', () => {
   let client: SonarqubeMeasuresClient;
@@ -27,7 +29,8 @@ describe('SonarqubeMeasuresClient', () => {
     client = new SonarqubeMeasuresClient(
       'https://sonarqube.example.com',
       'sonar-token',
-      'project-key'
+      'project-key',
+      logger
     );
   });
 
@@ -42,7 +45,7 @@ describe('SonarqubeMeasuresClient', () => {
   });
 
   it('should initialize sonarcloud.io with query token', () => {
-    new SonarqubeMeasuresClient('https://sonarcloud.io', 'sonar-token', 'project-key');
+    new SonarqubeMeasuresClient('https://sonarcloud.io', 'sonar-token', 'project-key', logger);
     expect(axios.create).toHaveBeenCalledWith(
       expect.objectContaining({
         baseURL: 'https://sonarcloud.io',
@@ -101,7 +104,8 @@ describe('SonarqubeMeasuresClient', () => {
     const sonarCloudClient = new SonarqubeMeasuresClient(
       'https://sonarcloud.io',
       'sonar-token',
-      'project-key'
+      'project-key',
+      logger
     );
     mockGet.mockResolvedValueOnce({
       data: {

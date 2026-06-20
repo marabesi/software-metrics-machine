@@ -7,6 +7,7 @@ import {
   WorkflowJsonResponse,
 } from '../../../src/providers/github/github-response-types';
 import { PipelinesJobFetchRepository } from '../../../src/providers/github/pipelines-job-fetch-repository';
+import { MockLoggerBuilder } from '../../mock-logger-builder';
 
 describe('Fetch jobs pipeline repository - By day', () => {
   const configuration = {
@@ -15,13 +16,16 @@ describe('Fetch jobs pipeline repository - By day', () => {
 
   const pipelineRunRepository = new InMemoryRepository<WorkflowJsonResponse>();
   const pipelineJobsRepository = new InMemoryRepository<WorkflowJobJsonResponse>();
+  const logger = new MockLoggerBuilder().build();
 
   const createRepository = async (githubWorkflowClient: IGithubWorkflowJobClient) => {
     const repository = new PipelinesJobFetchRepository(
       configuration,
       githubWorkflowClient,
       pipelineRunRepository,
-      pipelineJobsRepository
+      pipelineJobsRepository,
+      undefined,
+      logger
     );
 
     return { repository };

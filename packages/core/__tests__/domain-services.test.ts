@@ -14,6 +14,9 @@ import { IRepository } from '../src';
 import { IReadPullRequestsRepository } from '../src/aggregates/pull-requests-repository';
 import { IPipelinesRepository } from '../src/aggregates/pipelines-repository';
 import { Commit } from '../src/domain-types';
+import { MockLoggerBuilder } from './mock-logger-builder';
+
+const logger = new MockLoggerBuilder().build();
 
 describe('PairingIndexService', () => {
   let pairingService: PairingIndexService;
@@ -37,7 +40,7 @@ describe('PairingIndexService', () => {
       ])
       .build();
 
-    pairingService = new PairingIndexService(mockCommitRepo);
+    pairingService = new PairingIndexService(mockCommitRepo, undefined, logger);
   });
 
   it('should calculate pairing index correctly', async () => {
@@ -50,7 +53,9 @@ describe('PairingIndexService', () => {
 
   it('should return 0 for pairing index when no commits', async () => {
     pairingService = new PairingIndexService(
-      new RepositoryBuilder<Commit>().withLoadAll([]).build()
+      new RepositoryBuilder<Commit>().withLoadAll([]).build(),
+      undefined,
+      logger
     );
 
     const result = await pairingService.getPairingIndex();
@@ -155,7 +160,7 @@ describe('PRsService', () => {
 
     mockPrRepo = new ReadPullRequestsRepositoryBuilder().withPullRequests(prs).build();
 
-    prsService = new PRsService(mockPrRepo);
+    prsService = new PRsService(mockPrRepo, undefined, logger);
   });
 
   it('should calculate overall metrics', async () => {
@@ -248,7 +253,7 @@ describe('PipelinesService', () => {
 
     mockPipelineRepo = new PipelinesRepositoryBuilder().withPipelineRuns(runs).build();
 
-    pipelinesService = new PipelinesService(mockPipelineRepo);
+    pipelinesService = new PipelinesService(mockPipelineRepo, undefined, logger);
   });
 
   it('should calculate overall metrics', async () => {
@@ -362,12 +367,16 @@ describe('PipelinesService', () => {
 
     mockPipelineRepo = new PipelinesRepositoryBuilder().withPipelineRuns(deployRuns).build();
 
-    pipelinesService = new PipelinesService(mockPipelineRepo, {
-      getDeploymentFrequencyTargets: () => [
-        { pipeline: '.github/workflows/release.yml', job: 'deploy-production' },
-        { pipeline: '.github/workflows/mobile.yml', job: 'deploy-mobile' },
-      ],
-    } as any);
+    pipelinesService = new PipelinesService(
+      mockPipelineRepo,
+      {
+        getDeploymentFrequencyTargets: () => [
+          { pipeline: '.github/workflows/release.yml', job: 'deploy-production' },
+          { pipeline: '.github/workflows/mobile.yml', job: 'deploy-mobile' },
+        ],
+      } as any,
+      logger
+    );
 
     const frequency = await pipelinesService.getDeploymentFrequencyWithAllIntervals();
 
@@ -505,7 +514,7 @@ describe('PipelinesService', () => {
       ];
 
       mockPipelineRepo = new PipelinesRepositoryBuilder().withPipelineRuns(runs).build();
-      pipelinesService = new PipelinesService(mockPipelineRepo);
+      pipelinesService = new PipelinesService(mockPipelineRepo, undefined, logger);
 
       const metrics = await pipelinesService.getMetrics();
 

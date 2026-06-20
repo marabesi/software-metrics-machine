@@ -2,8 +2,11 @@ import { describe, expect, it, vi } from 'vitest';
 import { type ICommitTraverser, Commit } from '../../../src';
 import { InMemoryRepository } from '../../../src/test/in-memory-repository';
 import { GitFetchRepository } from '../../../src/providers/git/git-fetch-repository';
+import { MockLoggerBuilder } from '../../mock-logger-builder';
 
 describe('GitFetchRepository', () => {
+  const logger = new MockLoggerBuilder().build();
+
   const createMocks = (commits?: Commit[]) => {
     const traverseCommits = vi.fn().mockResolvedValue({
       totalAnalyzedCommits: commits?.length ?? 0,
@@ -20,7 +23,7 @@ describe('GitFetchRepository', () => {
   it('should pass maxBuffer to traverser when force refreshing', async () => {
     const { traverseCommits, commitTraverser, commitCache } = createMocks();
 
-    const repository = new GitFetchRepository(commitTraverser, commitCache);
+    const repository = new GitFetchRepository(commitTraverser, commitCache, logger);
     await repository.fetchCommits({ forceRefresh: true, maxBuffer: 200 });
 
     expect(traverseCommits).toHaveBeenCalledWith({ maxBuffer: 200 });
@@ -29,7 +32,7 @@ describe('GitFetchRepository', () => {
   it('should pass maxBuffer with startDate and endDate to traverser', async () => {
     const { traverseCommits, commitTraverser, commitCache } = createMocks();
 
-    const repository = new GitFetchRepository(commitTraverser, commitCache);
+    const repository = new GitFetchRepository(commitTraverser, commitCache, logger);
     await repository.fetchCommits({
       startDate: '2025-01-01',
       endDate: '2025-01-31',
@@ -58,7 +61,7 @@ describe('GitFetchRepository', () => {
     const { traverseCommits, commitTraverser, commitCache } = createMocks();
     await commitCache.saveAll(cachedCommits);
 
-    const repository = new GitFetchRepository(commitTraverser, commitCache);
+    const repository = new GitFetchRepository(commitTraverser, commitCache, logger);
     const result = await repository.fetchCommits();
 
     expect(result).toEqual(cachedCommits);
@@ -78,7 +81,7 @@ describe('GitFetchRepository', () => {
     ];
     const { traverseCommits, commitTraverser, commitCache } = createMocks(fetchedCommits);
 
-    const repository = new GitFetchRepository(commitTraverser, commitCache);
+    const repository = new GitFetchRepository(commitTraverser, commitCache, logger);
     await repository.fetchCommits({ forceRefresh: true });
 
     const cached = await commitCache.loadAll();

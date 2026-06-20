@@ -10,10 +10,12 @@
 
 import { describe, it, expect, beforeAll } from 'vitest';
 import { SonarqubeMeasuresClient } from '../../../src/providers/sonarqube/sonarqube-client';
+import { MockLoggerBuilder } from '../../mock-logger-builder';
 
 const SONARQUBE_URL = process.env.SONARQUBE_URL || 'http://localhost:9000';
 const SONARQUBE_TOKEN = process.env.SONARQUBE_TOKEN || 'test-token';
 const SONARQUBE_PROJECT = process.env.SONARQUBE_PROJECT || 'my-project';
+const logger = new MockLoggerBuilder().build();
 
 // Skip real API tests if not configured
 const skipRealApiTests = !process.env.RUN_SONARQUBE_INTEGRATION_TESTS;
@@ -22,7 +24,12 @@ describe.skip('SonarQube API Integration Tests', () => {
   let sonarClient: SonarqubeMeasuresClient;
 
   beforeAll(() => {
-    sonarClient = new SonarqubeMeasuresClient(SONARQUBE_URL, SONARQUBE_TOKEN, SONARQUBE_PROJECT);
+    sonarClient = new SonarqubeMeasuresClient(
+      SONARQUBE_URL,
+      SONARQUBE_TOKEN,
+      SONARQUBE_PROJECT,
+      logger
+    );
   });
 
   describe('SonarqubeMeasuresClient', () => {
@@ -73,7 +80,8 @@ describe.skip('SonarQube API Integration Tests', () => {
       const invalidClient = new SonarqubeMeasuresClient(
         SONARQUBE_URL,
         SONARQUBE_TOKEN,
-        'non-existent-project-key'
+        'non-existent-project-key',
+        logger
       );
 
       try {
@@ -87,7 +95,8 @@ describe.skip('SonarQube API Integration Tests', () => {
       const invalidClient = new SonarqubeMeasuresClient(
         SONARQUBE_URL,
         'invalid-token',
-        SONARQUBE_PROJECT
+        SONARQUBE_PROJECT,
+        logger
       );
 
       try {
@@ -101,7 +110,8 @@ describe.skip('SonarQube API Integration Tests', () => {
       const unreachableClient = new SonarqubeMeasuresClient(
         'http://invalid-sonarqube-url-12345.local',
         SONARQUBE_TOKEN,
-        SONARQUBE_PROJECT
+        SONARQUBE_PROJECT,
+        logger
       );
 
       try {
@@ -115,22 +125,42 @@ describe.skip('SonarQube API Integration Tests', () => {
 
 describe('SonarQube API Unit Tests', () => {
   it('should initialize client with credentials', () => {
-    const client = new SonarqubeMeasuresClient('http://localhost:9000', 'token123', 'my-project');
+    const client = new SonarqubeMeasuresClient(
+      'http://localhost:9000',
+      'token123',
+      'my-project',
+      logger
+    );
 
     expect(client).toBeDefined();
   });
 
   it('should handle URL with trailing slash', () => {
-    const client1 = new SonarqubeMeasuresClient('http://localhost:9000/', 'token123', 'my-project');
+    const client1 = new SonarqubeMeasuresClient(
+      'http://localhost:9000/',
+      'token123',
+      'my-project',
+      logger
+    );
 
-    const client2 = new SonarqubeMeasuresClient('http://localhost:9000', 'token123', 'my-project');
+    const client2 = new SonarqubeMeasuresClient(
+      'http://localhost:9000',
+      'token123',
+      'my-project',
+      logger
+    );
 
     expect(client1).toBeDefined();
     expect(client2).toBeDefined();
   });
 
   it('should create client with default metrics', async () => {
-    const client = new SonarqubeMeasuresClient('http://localhost:9000', 'token123', 'test-project');
+    const client = new SonarqubeMeasuresClient(
+      'http://localhost:9000',
+      'token123',
+      'test-project',
+      logger
+    );
 
     // This should not throw even though we won't hit the API
     expect(client).toBeDefined();
