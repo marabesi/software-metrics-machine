@@ -101,6 +101,14 @@ export class QualityMetricsQueryDto {
 export class ComponentTreeQueryDto {
   @ApiPropertyOptional({
     type: String,
+    description: 'Configured project name to load data for',
+  })
+  @IsOptional()
+  @IsString()
+  project?: string;
+
+  @ApiPropertyOptional({
+    type: String,
     description: 'Component key to fetch tree for',
   })
   @IsOptional()
