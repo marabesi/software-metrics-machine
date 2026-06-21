@@ -4,7 +4,7 @@ export SMM_STORE_DATA_AT=$1
 
 PROJECT=marabesi/json-tool
 
-start_date=2026-03-10
+start_date=2025-01-10
 end_date=2026-06-06
 
 # pnpm run build
