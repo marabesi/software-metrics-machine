@@ -5,8 +5,10 @@ import PipelineFactory from '@smmachine/core/aggregates/pipeline-factory';
 function createPipelineDependencies(command: SmmCommand) {
   const config = command.getConfiguration();
   const logger = command.getLogger('PipelinesCommand');
-  const { pipelineRepository, workflowRepository, workflowJobRepository } =
-    PipelineFactory.create(config, logger);
+  const { pipelineRepository, workflowRepository, workflowJobRepository } = PipelineFactory.create(
+    config,
+    logger
+  );
   const pipelineService = new PipelinesService(pipelineRepository, config, logger);
   return { config, pipelineRepository, workflowRepository, workflowJobRepository, pipelineService };
 }
@@ -36,6 +38,7 @@ export function createPipelinesCommands(program: SmmCommand): void {
   const pipelinesGroup = program
     .subcommand('pipelines')
     .description('Pipeline/workflow operations');
+  const screen = program.getScreen();
 
   pipelinesGroup
     .subcommand('fetch')
@@ -52,7 +55,7 @@ export function createPipelinesCommands(program: SmmCommand): void {
     .actionWithSmm(async (options, command) => {
       const logger = command.getLogger('PipelinesCommand');
       try {
-        logger.info('🔄 Fetching pipeline runs from the configured Git provider...');
+        screen.printLine('🔄 Fetching pipeline runs from the configured Git provider...');
         const { workflowRepository } = createPipelineDependencies(command);
 
         await workflowRepository.fetchPipelines({
@@ -64,7 +67,7 @@ export function createPipelinesCommands(program: SmmCommand): void {
           incrementalUpdate: options.update,
         });
 
-        logger.info('✅ Fetch pipeline data has been completed and stored on disk');
+        screen.printLine('✅ Fetch pipeline data has been completed and stored on disk');
       } catch (error) {
         logger.error('Failed to fetch pipeline runs', error);
         process.exit(1);
@@ -86,7 +89,7 @@ export function createPipelinesCommands(program: SmmCommand): void {
     .actionWithSmm(async (options, command) => {
       const logger = command.getLogger('PipelinesCommand');
       try {
-        logger.info('🔄 Fetching pipeline jobs from the configured Git provider...');
+        screen.printLine('🔄 Fetching pipeline jobs from the configured Git provider...');
         const { workflowJobRepository } = createPipelineDependencies(command);
 
         await workflowJobRepository.fetchJobs({
@@ -98,7 +101,7 @@ export function createPipelinesCommands(program: SmmCommand): void {
           incrementalUpdate: options.update,
         });
 
-        console.log('✅ Fetch pipeline jobs has been completed and stored on disk');
+        screen.printLine('✅ Fetch pipeline jobs has been completed and stored on disk');
       } catch (error) {
         logger.error('Failed to fetch pipeline jobs', error);
         process.exit(1);
@@ -116,20 +119,22 @@ export function createPipelinesCommands(program: SmmCommand): void {
     .actionWithSmm(async (options, command) => {
       const logger = command.getLogger('PipelinesCommand');
       try {
-        console.log('📊 Generating pipeline summary...');
+        screen.printLine('📊 Generating pipeline summary...');
         const { pipelineService } = createPipelineDependencies(command);
 
         const metrics = await pipelineService.getMetrics(buildPipelineFilters(options));
 
         if (options.output === 'json') {
-          console.log(JSON.stringify(metrics, null, 2));
+          screen.printLine(JSON.stringify(metrics, null, 2));
         } else {
-          console.log('\n=== Pipeline Summary ===\n');
-          console.log(`Total Runs: ${metrics.totalRuns}`);
-          console.log(`Successful Runs: ${metrics.successfulRuns}`);
-          console.log(`Failed Runs: ${metrics.failedRuns}`);
-          console.log(`Success Rate: ${(metrics.successRate * 100).toFixed(1)}%`);
-          console.log(`Average Duration: ${metrics.averageDurationMinutes.toFixed(2)} minutes`);
+          screen.printLine('\n=== Pipeline Summary ===\n');
+          screen.printLine(`Total Runs: ${metrics.totalRuns}`);
+          screen.printLine(`Successful Runs: ${metrics.successfulRuns}`);
+          screen.printLine(`Failed Runs: ${metrics.failedRuns}`);
+          screen.printLine(`Success Rate: ${(metrics.successRate * 100).toFixed(1)}%`);
+          screen.printLine(
+            `Average Duration: ${metrics.averageDurationMinutes.toFixed(2)} minutes`
+          );
         }
       } catch (error) {
         logger.error('Failed to generate pipeline summary', error);
@@ -147,13 +152,13 @@ export function createPipelinesCommands(program: SmmCommand): void {
     .actionWithSmm(async (options, command) => {
       const logger = command.getLogger('PipelinesCommand');
       try {
-        console.log('📊 Analyzing pipelines by status...');
+        screen.printLine('📊 Analyzing pipelines by status...');
         const { pipelineService } = createPipelineDependencies(command);
 
         const metrics = await pipelineService.getMetrics(buildPipelineFilters(options));
 
         if (options.output === 'json') {
-          console.log(
+          screen.printLine(
             JSON.stringify(
               {
                 successful: metrics.successfulRuns,
@@ -165,10 +170,10 @@ export function createPipelinesCommands(program: SmmCommand): void {
             )
           );
         } else {
-          console.log('\n=== Pipelines by Status ===\n');
-          console.log(`✅ Successful: ${metrics.successfulRuns}`);
-          console.log(`❌ Failed: ${metrics.failedRuns}`);
-          console.log(`📊 Total: ${metrics.totalRuns}`);
+          screen.printLine('\n=== Pipelines by Status ===\n');
+          screen.printLine(`✅ Successful: ${metrics.successfulRuns}`);
+          screen.printLine(`❌ Failed: ${metrics.failedRuns}`);
+          screen.printLine(`📊 Total: ${metrics.totalRuns}`);
         }
       } catch (error) {
         logger.error('Failed to analyze pipelines by status', error);
@@ -187,20 +192,24 @@ export function createPipelinesCommands(program: SmmCommand): void {
     .actionWithSmm(async (options, command) => {
       const logger = command.getLogger('PipelinesCommand');
       try {
-        console.log('⏱️  Analyzing pipeline run durations...');
+        screen.printLine('⏱️  Analyzing pipeline run durations...');
         const { pipelineService } = createPipelineDependencies(command);
 
         const metrics = await pipelineService.getMetrics(buildPipelineFilters(options));
 
         if (options.output === 'json') {
-          console.log(JSON.stringify({ averageDuration: metrics.averageDurationMinutes }, null, 2));
+          screen.printLine(
+            JSON.stringify({ averageDuration: metrics.averageDurationMinutes }, null, 2)
+          );
         } else {
-          console.log('\n=== Pipeline Run Durations ===\n');
+          screen.printLine('\n=== Pipeline Run Durations ===\n');
           if (options.workflow) {
-            console.log(`Workflow: ${options.workflow}`);
+            screen.printLine(`Workflow: ${options.workflow}`);
           }
-          console.log(`Average Duration: ${metrics.averageDurationMinutes.toFixed(2)} minutes`);
-          console.log(`Total Runs: ${metrics.totalRuns}`);
+          screen.printLine(
+            `Average Duration: ${metrics.averageDurationMinutes.toFixed(2)} minutes`
+          );
+          screen.printLine(`Total Runs: ${metrics.totalRuns}`);
         }
       } catch (error) {
         logger.error('Failed to analyze pipeline run durations', error);
@@ -219,7 +228,7 @@ export function createPipelinesCommands(program: SmmCommand): void {
     .actionWithSmm(async (options, command) => {
       const logger = command.getLogger('PipelinesCommand');
       try {
-        console.log('📈 Analyzing pipeline runs by time period...');
+        screen.printLine('📈 Analyzing pipeline runs by time period...');
         const { pipelineService } = createPipelineDependencies(command);
 
         const metrics = await pipelineService.getDeploymentFrequencyWithAllIntervals(
@@ -227,17 +236,17 @@ export function createPipelinesCommands(program: SmmCommand): void {
         );
 
         if (options.output === 'json') {
-          console.log(JSON.stringify(metrics, null, 2));
+          screen.printLine(JSON.stringify(metrics, null, 2));
         } else {
-          console.log('\n=== Pipeline Runs by Period ===\n');
-          console.log(`Period: ${options.period}`);
+          screen.printLine('\n=== Pipeline Runs by Period ===\n');
+          screen.printLine(`Period: ${options.period}`);
           metrics.forEach((item: DeploymentFrequencyInterval) => {
             if (options.period === 'day') {
-              console.log(`Period: ${item.days} | Total Runs: ${item.daily_counts}`);
+              screen.printLine(`Period: ${item.days} | Total Runs: ${item.daily_counts}`);
             } else if (options.period === 'week') {
-              console.log(`Period: ${item.weeks} | Total Runs: ${item.weekly_counts}`);
+              screen.printLine(`Period: ${item.weeks} | Total Runs: ${item.weekly_counts}`);
             } else {
-              console.log(`Period: ${item.months} | Total Runs: ${item.monthly_counts}`);
+              screen.printLine(`Period: ${item.months} | Total Runs: ${item.monthly_counts}`);
             }
           });
         }
@@ -258,25 +267,25 @@ export function createPipelinesCommands(program: SmmCommand): void {
     .actionWithSmm(async (options, command) => {
       const logger = command.getLogger('PipelinesCommand');
       try {
-        console.log('📊 Generating pipeline jobs summary...');
+        screen.printLine('📊 Generating pipeline jobs summary...');
         const { pipelineService } = createPipelineDependencies(command);
 
         const metrics = await pipelineService.getJobMetrics(buildPipelineFilters(options));
 
         if (options.output === 'json') {
-          console.log(JSON.stringify(metrics, null, 2));
+          screen.printLine(JSON.stringify(metrics, null, 2));
         } else {
-          console.log('\n=== Pipeline Jobs Summary ===\n\n');
+          screen.printLine('\n=== Pipeline Jobs Summary ===\n\n');
 
           metrics.forEach((item) => {
-            console.log(`Job name: ${item.jobName}`);
-            console.log(`Total Jobs: ${item.totalRuns}`);
-            console.log(`Reruns: ${item.rerunCount}`);
-            console.log(`Success rate: ${item.successRate}%`);
-            console.log(`Failure rate: ${item.failureRate}%`);
-            console.log(`Average Duration Minutes: ${item.averageDurationMinutes}`);
-            console.log(`Failure count: ${item.failureCount}`);
-            console.log('\n\n');
+            screen.printLine(`Job name: ${item.jobName}`);
+            screen.printLine(`Total Jobs: ${item.totalRuns}`);
+            screen.printLine(`Reruns: ${item.rerunCount}`);
+            screen.printLine(`Success rate: ${item.successRate}%`);
+            screen.printLine(`Failure rate: ${item.failureRate}%`);
+            screen.printLine(`Average Duration Minutes: ${item.averageDurationMinutes}`);
+            screen.printLine(`Failure count: ${item.failureCount}`);
+            screen.printLine('\n\n');
           });
         }
       } catch (error) {
@@ -296,21 +305,21 @@ export function createPipelinesCommands(program: SmmCommand): void {
     .actionWithSmm(async (options, command) => {
       const logger = command.getLogger('PipelinesCommand');
       try {
-        console.log('⏱️  Analyzing job execution times...');
+        screen.printLine('⏱️  Analyzing job execution times...');
         const { pipelineService } = createPipelineDependencies(command);
 
         const metrics = await pipelineService.getJobMetrics(buildPipelineFilters(options));
 
         if (options.output === 'json') {
-          console.log(JSON.stringify(metrics, null, 2));
+          screen.printLine(JSON.stringify(metrics, null, 2));
         } else {
-          console.log('\n=== Job Execution Times ===\n');
+          screen.printLine('\n=== Job Execution Times ===\n');
           metrics.forEach((item) => {
-            console.log(`Job: ${item.jobName}\n`);
-            console.log(`Total runs: ${item.totalRuns}`);
-            console.log(`Failure count: ${item.failureCount}`);
-            console.log(`Success rate: ${item.successRate}`);
-            console.log(
+            screen.printLine(`Job: ${item.jobName}\n`);
+            screen.printLine(`Total runs: ${item.totalRuns}`);
+            screen.printLine(`Failure count: ${item.failureCount}`);
+            screen.printLine(`Success rate: ${item.successRate}`);
+            screen.printLine(
               `Average Execution Time: ${item.averageDurationMinutes.toFixed(2)} minutes`
             );
           });
@@ -332,21 +341,21 @@ export function createPipelinesCommands(program: SmmCommand): void {
     .actionWithSmm(async (options, command) => {
       const logger = command.getLogger('PipelinesCommand');
       try {
-        console.log('⏱️  Analyzing job steps execution times...');
+        screen.printLine('⏱️  Analyzing job steps execution times...');
         const { pipelineService } = createPipelineDependencies(command);
 
         const metrics = await pipelineService.getJobStepsAverageTime(buildPipelineFilters(options));
 
         if (options.output === 'json') {
-          console.log(JSON.stringify(metrics, null, 2));
+          screen.printLine(JSON.stringify(metrics, null, 2));
         } else {
-          console.log('\n=== Job Steps Execution Times ===\n');
+          screen.printLine('\n=== Job Steps Execution Times ===\n');
           metrics.forEach((item: JobStepAverageTime) => {
-            console.log(`Step: ${item.name}`);
-            console.log(
+            screen.printLine(`Step: ${item.name}`);
+            screen.printLine(
               `Average Execution Time: ${item.averageDurationMinutes.toFixed(2)} minutes`
             );
-            console.log(`Analyzed across ${item.count} step executions\n`);
+            screen.printLine(`Analyzed across ${item.count} step executions\n`);
           });
         }
       } catch (error) {
@@ -369,20 +378,22 @@ export function createPipelinesCommands(program: SmmCommand): void {
     .actionWithSmm(async (options, command) => {
       const logger = command.getLogger('PipelinesCommand');
       try {
-        console.log('📊 Analyzing jobs by status...');
+        screen.printLine('📊 Analyzing jobs by status...');
         const { pipelineService } = createPipelineDependencies(command);
 
         const metrics = await pipelineService.getJobMetrics(buildPipelineFilters(options));
 
         if (options.output === 'json') {
-          console.log(JSON.stringify(metrics, null, 2));
+          screen.printLine(JSON.stringify(metrics, null, 2));
         } else {
           metrics.forEach((item) => {
-            console.log('\n=== Jobs by Status ===\n');
-            console.log(`Name: ${item.jobName}`);
-            console.log(`✅ Successful: ${item.successCount}, success rate: ${item.successRate}%`);
-            console.log(`❌ Failed: ${item.failureCount}, failure rate: ${item.failureRate}%`);
-            console.log(`Average duration in minutes: ${item.averageDurationMinutes}`);
+            screen.printLine('\n=== Jobs by Status ===\n');
+            screen.printLine(`Name: ${item.jobName}`);
+            screen.printLine(
+              `✅ Successful: ${item.successCount}, success rate: ${item.successRate}%`
+            );
+            screen.printLine(`❌ Failed: ${item.failureCount}, failure rate: ${item.failureRate}%`);
+            screen.printLine(`Average duration in minutes: ${item.averageDurationMinutes}`);
           });
         }
       } catch (error) {
@@ -402,7 +413,7 @@ export function createPipelinesCommands(program: SmmCommand): void {
     .actionWithSmm(async (options, command) => {
       const logger = command.getLogger('PipelinesCommand');
       try {
-        console.log('🚀 Calculating deployment frequency...');
+        screen.printLine('🚀 Calculating deployment frequency...');
         const { config, pipelineService } = createPipelineDependencies(command);
 
         const deploymentTargets = config.getDeploymentFrequencyTargets();
@@ -411,22 +422,22 @@ export function createPipelinesCommands(program: SmmCommand): void {
         );
 
         if (options.output === 'json') {
-          console.log(JSON.stringify(metrics, null, 2));
+          screen.printLine(JSON.stringify(metrics, null, 2));
         } else {
-          console.log('\n=== Deployment Frequency (DORA) ===\n');
+          screen.printLine('\n=== Deployment Frequency (DORA) ===\n');
           if (deploymentTargets.length > 0) {
-            console.log('Configured deployment targets:');
+            screen.printLine('Configured deployment targets:');
             deploymentTargets.forEach((target, index) => {
-              console.log(`${index + 1}. ${target.pipeline} / ${target.job}`);
+              screen.printLine(`${index + 1}. ${target.pipeline} / ${target.job}`);
             });
-            console.log('');
+            screen.printLine('');
           }
 
           metrics.forEach((item) => {
-            console.log(
+            screen.printLine(
               `Period: ${item.days} (daily), ${item.weeks} (weekly), ${item.months} (monthly)`
             );
-            console.log(
+            screen.printLine(
               `Total Deployments: ${item.daily_counts} (daily), ${item.weekly_counts} (weekly), ${item.monthly_counts} (monthly)`
             );
 
@@ -439,7 +450,7 @@ export function createPipelinesCommands(program: SmmCommand): void {
             } else if (options.period === 'month' && item.monthly_counts >= 1) {
               rating = 'Medium';
             }
-            console.log(`\n📈 DORA Rating: ${rating}`);
+            screen.printLine(`\n📈 DORA Rating: ${rating}`);
           });
         }
       } catch (error) {
@@ -462,7 +473,7 @@ export function createPipelinesCommands(program: SmmCommand): void {
     .actionWithSmm(async (options, command) => {
       const logger = command.getLogger('PipelinesCommand');
       try {
-        console.log('⏱️  Calculating lead time for changes...');
+        screen.printLine('⏱️  Calculating lead time for changes...');
         const { pipelineService } = createPipelineDependencies(command);
 
         const metrics = await pipelineService.getMetrics(buildPipelineFilters(options));
@@ -470,10 +481,10 @@ export function createPipelinesCommands(program: SmmCommand): void {
         const leadTime = metrics.averageDurationMinutes;
 
         if (options.output === 'json') {
-          console.log(JSON.stringify({ leadTime }, null, 2));
+          screen.printLine(JSON.stringify({ leadTime }, null, 2));
         } else {
-          console.log('\n=== Lead Time for Changes (DORA) ===\n');
-          console.log(`Lead Time: ${leadTime.toFixed(2)} hours`);
+          screen.printLine('\n=== Lead Time for Changes (DORA) ===\n');
+          screen.printLine(`Lead Time: ${leadTime.toFixed(2)} hours`);
 
           // DORA rating
           let rating = 'Low';
@@ -486,7 +497,7 @@ export function createPipelinesCommands(program: SmmCommand): void {
             // 1 month
             rating = 'Medium';
           }
-          console.log(`\n📈 DORA Rating: ${rating}`);
+          screen.printLine(`\n📈 DORA Rating: ${rating}`);
         }
       } catch (error) {
         logger.error('Failed to calculate lead time', error);

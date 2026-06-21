@@ -24,6 +24,7 @@ function createJiraOrchestrator(command: SmmCommand) {
  */
 export function createJiraCommands(program: SmmCommand): void {
   const jiraGroup = program.subcommand('jira').description('Jira integration operations');
+  const screen = program.getScreen();
 
   /**
    * smm jira fetch-issues [options]
@@ -44,7 +45,7 @@ export function createJiraCommands(program: SmmCommand): void {
     .actionWithSmm(async (options, command) => {
       const logger = command.getLogger('JiraCommand');
       try {
-        console.log('🔄 Fetching issues from Jira...');
+        screen.printLine('🔄 Fetching issues from Jira...');
         const orchestrator = createJiraOrchestrator(command);
         const issues = await orchestrator.getIssues({
           forceRefresh: options.force,
@@ -55,9 +56,9 @@ export function createJiraCommands(program: SmmCommand): void {
         });
 
         if (options.output === 'json') {
-          console.log(JSON.stringify(issues, null, 2));
+          screen.printLine(JSON.stringify(issues, null, 2));
         } else {
-          console.log(`\n✅ Fetched ${issues.length || 0} issues from Jira`);
+          screen.printLine(`\n✅ Fetched ${issues.length || 0} issues from Jira`);
         }
       } catch (error) {
         logger.error('Failed to fetch Jira issues', error);
@@ -78,17 +79,17 @@ export function createJiraCommands(program: SmmCommand): void {
       const logger = command.getLogger('JiraCommand');
       try {
         if (!options.issue) {
-          console.error('❌ Error: --issue parameter is required');
+          screen.printLine('❌ Error: --issue parameter is required');
           process.exit(1);
         }
 
-        console.log(`🔄 Fetching changelog for issue ${options.issue}...`);
+        screen.printLine(`🔄 Fetching changelog for issue ${options.issue}...`);
 
         // Note: This uses the issuesRepo directly via the orchestrator
         // The orchestrator doesn't expose getIssueChanges, so we'd need to enhance it
-        console.log('⚠️  Note: Changelog fetching requires direct repository access.');
-        console.log('   Use the Python CLI for full changelog support:');
-        console.log(
+        screen.printLine('⚠️  Note: Changelog fetching requires direct repository access.');
+        screen.printLine('   Use the Python CLI for full changelog support:');
+        screen.printLine(
           `   python -m software_metrics_machine.apps.cli jira fetch-changelog --issue ${options.issue}`
         );
       } catch (error) {
@@ -110,17 +111,17 @@ export function createJiraCommands(program: SmmCommand): void {
       const logger = command.getLogger('JiraCommand');
       try {
         if (!options.issue) {
-          console.error('❌ Error: --issue parameter is required');
+          screen.printLine('❌ Error: --issue parameter is required');
           process.exit(1);
         }
 
-        console.log(`🔄 Fetching comments for issue ${options.issue}...`);
+        screen.printLine(`🔄 Fetching comments for issue ${options.issue}...`);
 
         // Note: This uses the issuesRepo directly via the orchestrator
         // The orchestrator doesn't expose getIssueComments, so we'd need to enhance it
-        console.log('⚠️  Note: Comment fetching requires direct repository access.');
-        console.log('   Use the Python CLI for full comment support:');
-        console.log(
+        screen.printLine('⚠️  Note: Comment fetching requires direct repository access.');
+        screen.printLine('   Use the Python CLI for full comment support:');
+        screen.printLine(
           `   python -m software_metrics_machine.apps.cli jira fetch-comments --issue ${options.issue}`
         );
       } catch (error) {

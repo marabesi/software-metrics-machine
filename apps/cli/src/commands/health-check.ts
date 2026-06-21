@@ -1,6 +1,7 @@
 import { Configuration } from '@smmachine/core/infrastructure/configuration';
 import * as fs from 'fs/promises';
 import type { SmmCommand } from './smm-command';
+import type { Screen } from '../screen';
 
 type DatasetCheck = {
   id: string;
@@ -38,6 +39,8 @@ type DatasetDefinition = {
 };
 
 export function createHealthCheckCommand(program: SmmCommand): void {
+  const screen = program.getScreen();
+
   program
     .subcommand('health-check')
     .description('Analyze local cache data quality (missing, stale, invalid, and coverage gaps)')
@@ -61,11 +64,11 @@ export function createHealthCheckCommand(program: SmmCommand): void {
         const report = await buildHealthReport(config, options.provider, maxGapDays);
 
         if (options.output === 'json') {
-          console.log(JSON.stringify(report, null, 2));
+          screen.printLine(JSON.stringify(report, null, 2));
           return;
         }
 
-        printTextReport(report, maxGapDays);
+        printTextReport(report, maxGapDays, screen);
       } catch (error) {
         logger.error('Failed to run health check', error);
         process.exit(1);
@@ -361,67 +364,69 @@ function getDatasetLevel(dataset: DatasetCheck): 'healthy' | 'warning' | 'error'
   return 'healthy';
 }
 
-function printTextReport(report: HealthReport, maxGapDays: number): void {
-  console.log('🩺 Data Health Check');
-  console.log(`Generated at: ${report.generatedAt}`);
-  console.log(`Base directory: ${report.baseDirectory}`);
-  console.log('');
+function printTextReport(report: HealthReport, maxGapDays: number, screen: Screen): void {
+  screen.printLine('🩺 Data Health Check');
+  screen.printLine(`Generated at: ${report.generatedAt}`);
+  screen.printLine(`Base directory: ${report.baseDirectory}`);
+  screen.printLine('');
 
-  console.log('Summary');
-  console.log(`  Total datasets: ${report.summary.totalDatasets}`);
-  console.log(`  Healthy: ${report.summary.healthyDatasets}`);
-  console.log(`  Warnings: ${report.summary.warningDatasets}`);
-  console.log(`  Errors: ${report.summary.errorDatasets}`);
-  console.log('');
+  screen.printLine('Summary');
+  screen.printLine(`  Total datasets: ${report.summary.totalDatasets}`);
+  screen.printLine(`  Healthy: ${report.summary.healthyDatasets}`);
+  screen.printLine(`  Warnings: ${report.summary.warningDatasets}`);
+  screen.printLine(`  Errors: ${report.summary.errorDatasets}`);
+  screen.printLine('');
 
   for (const dataset of report.datasets) {
     const level = getDatasetLevel(dataset);
     const icon = level === 'healthy' ? '✅' : level === 'warning' ? '⚠️' : '❌';
 
-    console.log(`${icon} ${dataset.id}`);
-    console.log(`  File: ${dataset.filePath}`);
-    console.log(`  Exists: ${dataset.exists ? 'yes' : 'no'}`);
-    console.log(`  Items: ${dataset.itemCount}`);
+    screen.printLine(`${icon} ${dataset.id}`);
+    screen.printLine(`  File: ${dataset.filePath}`);
+    screen.printLine(`  Exists: ${dataset.exists ? 'yes' : 'no'}`);
+    screen.printLine(`  Items: ${dataset.itemCount}`);
 
     if (dataset.lastFetchedAt) {
-      console.log(`  Last fetched: ${dataset.lastFetchedAt} (${dataset.staleDays} day(s) ago)`);
+      screen.printLine(
+        `  Last fetched: ${dataset.lastFetchedAt} (${dataset.staleDays} day(s) ago)`
+      );
     }
 
     if (dataset.coverageStart && dataset.coverageEnd) {
-      console.log(`  Coverage: ${dataset.coverageStart} .. ${dataset.coverageEnd}`);
+      screen.printLine(`  Coverage: ${dataset.coverageStart} .. ${dataset.coverageEnd}`);
     }
 
     if (dataset.invalidDateCount > 0) {
-      console.log(`  Invalid date records: ${dataset.invalidDateCount}`);
+      screen.printLine(`  Invalid date records: ${dataset.invalidDateCount}`);
     }
 
     const missingEntries = Object.entries(dataset.missingRequiredFields).filter(
       ([, count]) => count > 0
     );
     if (missingEntries.length > 0) {
-      console.log('  Missing required fields:');
+      screen.printLine('  Missing required fields:');
       for (const [field, count] of missingEntries) {
-        console.log(`    - ${field}: ${count}`);
+        screen.printLine(`    - ${field}: ${count}`);
       }
     }
 
     if (dataset.potentialGapRanges.length > 0) {
-      console.log(`  Potential gaps (> ${maxGapDays - 1} day(s) between records):`);
+      screen.printLine(`  Potential gaps (> ${maxGapDays - 1} day(s) between records):`);
       for (const gap of dataset.potentialGapRanges.slice(0, 5)) {
-        console.log(`    - ${gap.start} .. ${gap.end} (${gap.days} day(s))`);
+        screen.printLine(`    - ${gap.start} .. ${gap.end} (${gap.days} day(s))`);
       }
       if (dataset.potentialGapRanges.length > 5) {
-        console.log(`    - ... ${dataset.potentialGapRanges.length - 5} more`);
+        screen.printLine(`    - ... ${dataset.potentialGapRanges.length - 5} more`);
       }
     }
 
     if (dataset.notes.length > 0) {
-      console.log('  Notes:');
+      screen.printLine('  Notes:');
       for (const note of dataset.notes) {
-        console.log(`    - ${note}`);
+        screen.printLine(`    - ${note}`);
       }
     }
 
-    console.log('');
+    screen.printLine('');
   }
 }

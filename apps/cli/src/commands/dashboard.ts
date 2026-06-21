@@ -116,6 +116,7 @@ function terminateServices(services: ServiceProcess[]): void {
  */
 export function createDashboardCommands(program: SmmCommand): void {
   const dashboardGroup = program.subcommand('dashboard').description('Dashboard operations');
+  const screen = program.getScreen();
 
   /**
    * smm dashboard serve [options]
@@ -140,19 +141,26 @@ export function createDashboardCommands(program: SmmCommand): void {
         const webappAppDir = resolveWebappAppDir(packageRoot);
         const nextBin = resolveNextBin(packageRoot);
 
-        console.log('🚀 Starting bundled dashboard services...');
-        console.log(`   Host: ${options.host}`);
-        console.log(`   REST API: http://${host}:${restPort}`);
-        console.log(`   Webapp: http://${host}:${webPort}`);
+        screen.printLine('🚀 Starting bundled dashboard services...');
+        screen.printLine(`   Host: ${options.host}`);
+        screen.printLine(`   REST API: http://${host}:${restPort}`);
+        screen.printLine(`   Webapp: http://${host}:${webPort}`);
 
         const services: ServiceProcess[] = [];
         const commonEnv = { ...process.env };
 
-        const restProcess = spawnService('rest', restEntry, [], path.dirname(restEntry), {
-          ...commonEnv,
-          HOST: host,
-          PORT: restPort,
-        }, logger);
+        const restProcess = spawnService(
+          'rest',
+          restEntry,
+          [],
+          path.dirname(restEntry),
+          {
+            ...commonEnv,
+            HOST: host,
+            PORT: restPort,
+          },
+          logger
+        );
         services.push({ name: 'rest', process: restProcess });
 
         const webappProcess = spawnService(

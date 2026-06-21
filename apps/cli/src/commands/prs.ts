@@ -184,6 +184,7 @@ export function formatPRSummary(summary: PRSummary): string {
  */
 export function createPRsCommands(program: SmmCommand): void {
   const prsGroup = program.subcommand('prs').description('Pull request operations');
+  const screen = program.getScreen();
 
   /**
    * smm prs fetch [options]
@@ -203,7 +204,7 @@ export function createPRsCommands(program: SmmCommand): void {
     .actionWithSmm(async (options, command) => {
       const logger = command.getLogger('PRsCommand');
       try {
-        logger.info('🔄 Fetching pull requests from the configured Git provider...');
+        screen.printLine('🔄 Fetching pull requests from the configured Git provider...');
         const orchestrator = createPRsOrchestratorFetch(command);
         await orchestrator.fetchPRs({
           startDate: options.startDate,
@@ -213,7 +214,7 @@ export function createPRsCommands(program: SmmCommand): void {
           incrementalUpdate: options.update,
         });
 
-        console.log('✅ Fetch data has been completed');
+        screen.printLine('✅ Fetch data has been completed');
       } catch (error) {
         logger.error('Failed to fetch pull requests', error);
       }
@@ -230,7 +231,7 @@ export function createPRsCommands(program: SmmCommand): void {
     .actionWithSmm(async (options, command) => {
       const logger = command.getLogger('PRsCommand');
       try {
-        logger.info('🔄 Fetching pull request comments from the configured Git provider...');
+        screen.printLine('🔄 Fetching pull request comments from the configured Git provider...');
         const orchestrator = createPRsOrchestratorRead(command);
         const prs = await orchestrator.loadPrsWithFilters(buildPRFilters(options));
 
@@ -243,7 +244,7 @@ export function createPRsCommands(program: SmmCommand): void {
           });
         }
 
-        console.log('✅ Fetch PR comments data has been completed');
+        screen.printLine('✅ Fetch PR comments data has been completed');
       } catch (error) {
         logger.error('Failed to fetch pull request comments', error);
       }
@@ -270,18 +271,18 @@ export function createPRsCommands(program: SmmCommand): void {
     .actionWithSmm(async (options, command) => {
       const logger = command.getLogger('PRsCommand');
       try {
-        console.log('📊 Generating PR summary...');
+        screen.printLine('📊 Generating PR summary...');
         const service = createPRService(command);
         const filters = buildPRFilters(options);
         const summary = await service.getSummary(filters);
 
         if (options.output === 'json') {
-          console.log(JSON.stringify(summary, null, 2));
+          screen.printLine(JSON.stringify(summary, null, 2));
         } else {
-          console.log(`\n${formatPRSummary(summary.result)}`);
+          screen.printLine(`\n${formatPRSummary(summary.result)}`);
         }
 
-        console.log('\n✅ Summary generated');
+        screen.printLine('\n✅ Summary generated');
       } catch (error) {
         logger.error('Failed to generate PR summary', error);
         process.exit(1);
@@ -304,18 +305,18 @@ export function createPRsCommands(program: SmmCommand): void {
     .actionWithSmm(async (options, command) => {
       const logger = command.getLogger('PRsCommand');
       try {
-        console.log('📊 Analyzing PRs by month...');
+        screen.printLine('📊 Analyzing PRs by month...');
         const service = createPRService(command);
         const metrics = await service.getMetricsByMonth(buildPRFilters(options));
 
         if (options.output === 'json') {
-          console.log(JSON.stringify(metrics, null, 2));
+          screen.printLine(JSON.stringify(metrics, null, 2));
         } else {
-          console.log('\n=== PRs by Month ===\n');
-          console.log(JSON.stringify(metrics, null, 2));
+          screen.printLine('\n=== PRs by Month ===\n');
+          screen.printLine(JSON.stringify(metrics, null, 2));
         }
 
-        console.log('\n✅ Analysis completed');
+        screen.printLine('\n✅ Analysis completed');
       } catch (error) {
         logger.error('Failed to analyze PRs by month', error);
         process.exit(1);
@@ -338,18 +339,18 @@ export function createPRsCommands(program: SmmCommand): void {
     .actionWithSmm(async (options, command) => {
       const logger = command.getLogger('PRsCommand');
       try {
-        console.log('📊 Analyzing PRs by week...');
+        screen.printLine('📊 Analyzing PRs by week...');
         const service = createPRService(command);
         const metrics = await service.getMetricsByWeek(buildPRFilters(options));
 
         if (options.output === 'json') {
-          console.log(JSON.stringify(metrics, null, 2));
+          screen.printLine(JSON.stringify(metrics, null, 2));
         } else {
-          console.log('\n=== PRs by Week ===\n');
-          console.log(JSON.stringify(metrics, null, 2));
+          screen.printLine('\n=== PRs by Week ===\n');
+          screen.printLine(JSON.stringify(metrics, null, 2));
         }
 
-        console.log('\n✅ Analysis completed');
+        screen.printLine('\n✅ Analysis completed');
       } catch (error) {
         logger.error('Failed to analyze PRs by week', error);
         process.exit(1);
@@ -375,21 +376,21 @@ export function createPRsCommands(program: SmmCommand): void {
     .actionWithSmm(async (options, command) => {
       const logger = command.getLogger('PRsCommand');
       try {
-        console.log('📊 Analyzing PRs through time...');
+        screen.printLine('📊 Analyzing PRs through time...');
         const service = createPRService(command);
         const filters = buildPRFilters(options);
         const rows = await service.getThroughTime(filters, options.aggregateBy);
 
         if (options.output === 'json') {
-          console.log(JSON.stringify(rows, null, 2));
+          screen.printLine(JSON.stringify(rows, null, 2));
         } else {
-          console.log('\n=== PRs Through Time ===\n');
+          screen.printLine('\n=== PRs Through Time ===\n');
           for (const row of rows) {
-            console.log(`${row.date} | ${row.kind}: ${row.count}`);
+            screen.printLine(`${row.date} | ${row.kind}: ${row.count}`);
           }
         }
 
-        console.log('\n✅ Analysis completed');
+        screen.printLine('\n✅ Analysis completed');
       } catch (error) {
         logger.error('Failed to analyze PRs through time', error);
         process.exit(1);
@@ -415,21 +416,21 @@ export function createPRsCommands(program: SmmCommand): void {
     .actionWithSmm(async (options, command) => {
       const logger = command.getLogger('PRsCommand');
       try {
-        console.log('📊 Analyzing PRs by author...');
+        screen.printLine('📊 Analyzing PRs by author...');
         const service = createPRService(command);
         const filters = buildPRFilters(options);
         const authors = await service.getByAuthor(filters, Number(options.top));
 
         if (options.output === 'json') {
-          console.log(JSON.stringify(authors, null, 2));
+          screen.printLine(JSON.stringify(authors, null, 2));
         } else {
-          console.log('\n=== PRs by Author ===\n');
+          screen.printLine('\n=== PRs by Author ===\n');
           for (const author of authors) {
-            console.log(`${author.author}: ${author.count} PRs`);
+            screen.printLine(`${author.author}: ${author.count} PRs`);
           }
         }
 
-        console.log('\n✅ Analysis completed');
+        screen.printLine('\n✅ Analysis completed');
       } catch (error) {
         logger.error('Failed to analyze PRs by author', error);
         process.exit(1);
@@ -455,21 +456,21 @@ export function createPRsCommands(program: SmmCommand): void {
     .actionWithSmm(async (options, command) => {
       const logger = command.getLogger('PRsCommand');
       try {
-        console.log('📊 Calculating average review time...');
+        screen.printLine('📊 Calculating average review time...');
         const service = createPRService(command);
         const filters = buildPRFilters(options);
         const reviews = await service.getAverageReviewTime(filters, Number(options.top));
 
         if (options.output === 'json') {
-          console.log(JSON.stringify(reviews, null, 2));
+          screen.printLine(JSON.stringify(reviews, null, 2));
         } else {
-          console.log('\n=== Average Review Time by Author ===\n');
+          screen.printLine('\n=== Average Review Time by Author ===\n');
           for (const review of reviews) {
-            console.log(`${review.author}: ${review.avg_days.toFixed(2)} days`);
+            screen.printLine(`${review.author}: ${review.avg_days.toFixed(2)} days`);
           }
         }
 
-        console.log('\n✅ Analysis completed');
+        screen.printLine('\n✅ Analysis completed');
       } catch (error) {
         logger.error('Failed to calculate average review time', error);
         process.exit(1);
@@ -495,21 +496,21 @@ export function createPRsCommands(program: SmmCommand): void {
     .actionWithSmm(async (options, command) => {
       const logger = command.getLogger('PRsCommand');
       try {
-        console.log('📊 Calculating average PR open time...');
+        screen.printLine('📊 Calculating average PR open time...');
         const service = createPRService(command);
         const filters = buildPRFilters(options);
         const periods = await service.getAverageOpenBy(filters, options.aggregateBy);
 
         if (options.output === 'json') {
-          console.log(JSON.stringify(periods, null, 2));
+          screen.printLine(JSON.stringify(periods, null, 2));
         } else {
-          console.log('\n=== Average PR Open Time ===\n');
+          screen.printLine('\n=== Average PR Open Time ===\n');
           for (const period of periods) {
-            console.log(`${period.period}: ${period.avg_days.toFixed(2)} days`);
+            screen.printLine(`${period.period}: ${period.avg_days.toFixed(2)} days`);
           }
         }
 
-        console.log('\n✅ Analysis completed');
+        screen.printLine('\n✅ Analysis completed');
       } catch (error) {
         logger.error('Failed to calculate average PR open time', error);
         process.exit(1);
@@ -538,7 +539,7 @@ export function createPRsCommands(program: SmmCommand): void {
     .actionWithSmm(async (options, command) => {
       const logger = command.getLogger('PRsCommand');
       try {
-        console.log('📊 Calculating average comments per PR...');
+        screen.printLine('📊 Calculating average comments per PR...');
         const service = createPRService(command);
         const filters = buildPRFilters(options);
 
@@ -550,25 +551,27 @@ export function createPRsCommands(program: SmmCommand): void {
               : await service.getMetricsByWeek(filters);
 
           if (options.output === 'json') {
-            console.log(JSON.stringify(timeframes, null, 2));
+            screen.printLine(JSON.stringify(timeframes, null, 2));
           } else {
-            console.log(`\n=== Average Comments per PR by ${mode} ===\n`);
+            screen.printLine(`\n=== Average Comments per PR by ${mode} ===\n`);
             for (const tf of timeframes) {
-              console.log(`${tf.period}: ${tf.averageComments} avg comments (${tf.count} PRs)`);
+              screen.printLine(
+                `${tf.period}: ${tf.averageComments} avg comments (${tf.count} PRs)`
+              );
             }
           }
         } else {
           const metrics = await service.getMetrics(filters);
 
           if (options.output === 'json') {
-            console.log(JSON.stringify({ avg_comments: metrics.averageComments }, null, 2));
+            screen.printLine(JSON.stringify({ avg_comments: metrics.averageComments }, null, 2));
           } else {
-            console.log(`\n=== Average Comments per PR ===\n`);
-            console.log(`Average Comments: ${metrics.averageComments}`);
+            screen.printLine(`\n=== Average Comments per PR ===\n`);
+            screen.printLine(`Average Comments: ${metrics.averageComments}`);
           }
         }
 
-        console.log('\n✅ Analysis completed');
+        screen.printLine('\n✅ Analysis completed');
       } catch (error) {
         logger.error('Failed to calculate average comments', error);
         process.exit(1);

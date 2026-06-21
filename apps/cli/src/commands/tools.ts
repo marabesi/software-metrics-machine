@@ -12,7 +12,7 @@ type JsonObject = Record<string, unknown>;
  */
 export function createToolsCommands(program: SmmCommand): void {
   const toolsGroup = program.subcommand('tools').description('Utility tools');
-  const logger = program.getLogger('ToolsCommand');
+  const screen = program.getScreen();
 
   /**
    * smm tools json-merge [options]
@@ -24,9 +24,10 @@ export function createToolsCommands(program: SmmCommand): void {
     .option('--input <pattern>', 'Input file pattern (glob)', '*.json')
     .option('--output <file>', 'Output file path', 'merged.json')
     .option('--pretty', 'Pretty print the output JSON')
-    .actionWithSmm(async (options) => {
+    .actionWithSmm(async (options, command) => {
+      const logger = command.getLogger('ToolsCommand');
       try {
-        logger.info('🔄 Merging JSON files...');
+        screen.printLine('🔄 Merging JSON files...');
 
         const inputPattern = options.input;
         const outputFile = options.output;
@@ -38,11 +39,11 @@ export function createToolsCommands(program: SmmCommand): void {
           .filter((file) => file.endsWith('.json') && file !== outputFile);
 
         if (files.length === 0) {
-          console.log('⚠️  No JSON files found matching pattern:', inputPattern);
+          screen.printLine(`⚠️  No JSON files found matching pattern: ${inputPattern}`);
           return;
         }
 
-        console.log(`📁 Found ${files.length} JSON files to merge`);
+        screen.printLine(`📁 Found ${files.length} JSON files to merge`);
 
         const merged: JsonObject = {};
         let isArray = false;
@@ -60,9 +61,9 @@ export function createToolsCommands(program: SmmCommand): void {
               Object.assign(merged, data as JsonObject);
             }
 
-            console.log(`  ✅ Merged: ${file}`);
+            screen.printLine(`  ✅ Merged: ${file}`);
           } catch (error) {
-            console.log(`  ❌ Failed to merge: ${file} - ${error}`);
+            screen.printLine(`  ❌ Failed to merge: ${file} - ${error}`);
           }
         }
 
@@ -71,8 +72,8 @@ export function createToolsCommands(program: SmmCommand): void {
 
         fs.writeFileSync(outputFile, output, 'utf-8');
 
-        console.log(`\n✅ Merged JSON saved to: ${outputFile}`);
-        console.log(`   Total items: ${isArray ? arrays.length : Object.keys(merged).length}`);
+        screen.printLine(`\n✅ Merged JSON saved to: ${outputFile}`);
+        screen.printLine(`   Total items: ${isArray ? arrays.length : Object.keys(merged).length}`);
       } catch (error) {
         logger.error('Failed to merge JSON files', error);
         process.exit(1);

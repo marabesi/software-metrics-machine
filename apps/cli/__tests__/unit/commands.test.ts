@@ -1,4 +1,4 @@
-import { beforeEach, describe, expect, it } from 'vitest';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { commands } from '../../src';
 import {
   formatCodeMetrics,
@@ -11,12 +11,25 @@ import {
   formatSuccess,
 } from '../../src/formatters';
 import { Command } from 'commander';
+import { Screen } from '../../src/screen';
 
 describe('cli: CLI Commands', () => {
   let program: Command;
 
   beforeEach(async () => {
     program = commands();
+  });
+
+  describe('Screen', () => {
+    it('prints lines to the console', () => {
+      const consoleSpy = vi.spyOn(console, 'log').mockImplementation(() => undefined);
+      const screen = new Screen();
+
+      screen.printLine('Command output');
+
+      expect(consoleSpy).toHaveBeenCalledWith('Command output');
+      consoleSpy.mockRestore();
+    });
   });
 
   describe('Output Formatters', () => {

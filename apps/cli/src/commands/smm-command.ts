@@ -2,11 +2,13 @@ import { Command } from 'commander';
 import type { Configuration } from '@smmachine/core/infrastructure/configuration';
 import { ConfigurationRepository } from '@smmachine/core/infrastructure/configuration-repository';
 import { Logger, type LogLevel } from '@smmachine/utils';
+import { Screen } from '../screen';
 
 type GlobalCliOptions = {
   debug?: boolean;
   project?: string;
 };
+
 
 /**
  * Shared CLI command base class.
@@ -16,6 +18,7 @@ type GlobalCliOptions = {
  */
 export class SmmCommand extends Command {
   private configurationRepository?: ConfigurationRepository;
+  private screen?: Screen;
 
   override createCommand(name?: string): SmmCommand {
     return new SmmCommand(name);
@@ -25,11 +28,13 @@ export class SmmCommand extends Command {
     return this.command(nameAndArgs) as SmmCommand;
   }
 
-  actionWithSmm(handler: (options: any, command: SmmCommand) => void | Promise<void>): this {
+  actionWithSmm(
+    handler: (options: any, command: SmmCommand) => void | Promise<void>
+  ): this {
     return this.action((options: unknown, command: Command) => {
       const smmCommand = command as unknown as SmmCommand;
       smmCommand.getConfigurationRepository();
-      return handler(options, smmCommand);
+      return handler(options as any, smmCommand);
     });
   }
 
@@ -43,10 +48,13 @@ export class SmmCommand extends Command {
 
   getConfigurationRepository(): ConfigurationRepository {
     if (!this.configurationRepository) {
+      const logger = new Logger('ConfigurationRepository', process.env.DEBUG ? 'DEBUG' : undefined);
+      logger.debug('Initializing ConfigurationRepository with environment variables and selected project');
+
       this.configurationRepository = new ConfigurationRepository(
         process.env,
         this.getSelectedProject(),
-        new Logger('ConfigurationRepository', process.env.DEBUG ? 'DEBUG' : undefined)
+        logger
       );
     }
 
@@ -55,6 +63,14 @@ export class SmmCommand extends Command {
 
   getConfiguration(): Configuration {
     return this.getConfigurationRepository().getActiveConfiguration();
+  }
+
+  getScreen(): Screen {
+    if (!this.screen) {
+      this.screen = new Screen();
+    }
+
+    return this.screen;
   }
 
   getLogger(name: string): Logger {

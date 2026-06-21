@@ -9,12 +9,7 @@ import path from 'path';
 
 export function createCodeCommands(program: SmmCommand): void {
   const codeGroup = program.subcommand('code').description('Code analysis operations');
-  const logger = program.getLogger('CodeCommand');
-  const config = program.getConfiguration();
-  const fetchRepository = new CodemaatFetchRepository(config, logger);
-
-  const repository = CodemaatFactory.create(config, logger);
-  const codemaatService = new CodemaatService(repository);
+  const screen = program.getScreen();
 
   codeGroup
     .subcommand('summary')
@@ -23,8 +18,9 @@ export function createCodeCommands(program: SmmCommand): void {
     .option('--end-date <date>', 'End date (YYYY-MM-DD)')
     .option('--output <format>', 'Output format (text|json|csv)', 'text')
     .actionWithSmm(async (options, command) => {
+      const logger = command.getLogger('CodeCommand');
       try {
-        logger.info('📊 Generating code summary...');
+        screen.printLine('📊 Generating code summary...');
 
         const pairingService = PairingFactory.create(command.getConfiguration(), logger);
         const summary = await pairingService.getPairingIndex({
@@ -33,7 +29,7 @@ export function createCodeCommands(program: SmmCommand): void {
         });
 
         if (options.output === 'json') {
-          logger.info(JSON.stringify(summary, null, 2));
+          screen.printLine(JSON.stringify(summary, null, 2));
           return;
         }
 
@@ -55,34 +51,34 @@ export function createCodeCommands(program: SmmCommand): void {
             );
           }
 
-          logger.info(lines.join('\n'));
+          screen.printLine(lines.join('\n'));
           return;
         }
 
-        logger.info('\n=== Code Summary ===\n');
-        logger.info(`Pairing Index: ${summary.pairingIndexPercentage ?? 0}%`);
-        logger.info(`Total Commits: ${summary.totalAnalyzedCommits ?? 0}`);
-        logger.info(`Paired Commits: ${summary.pairedCommits ?? 0}`);
+        screen.printLine('\n=== Code Summary ===\n');
+        screen.printLine(`Pairing Index: ${summary.pairingIndexPercentage ?? 0}%`);
+        screen.printLine(`Total Commits: ${summary.totalAnalyzedCommits ?? 0}`);
+        screen.printLine(`Paired Commits: ${summary.pairedCommits ?? 0}`);
 
         if (summary.topPairings && summary.topPairings.length > 0) {
-          logger.info('\nWho paired the most with whom:');
+          screen.printLine('\nWho paired the most with whom:');
           for (const pair of summary.topPairings) {
-            logger.info(`- ${pair.author} + ${pair.coAuthor}: ${pair.pairedCommits}`);
+            screen.printLine(`- ${pair.author} + ${pair.coAuthor}: ${pair.pairedCommits}`);
           }
         }
 
         if (summary.latestPairedCommits && summary.latestPairedCommits.length > 0) {
-          logger.info('\nLatest 20 paired commits:');
+          screen.printLine('\nLatest 20 paired commits:');
           for (const commit of summary.latestPairedCommits) {
             const date = new Date(commit.timestamp).toISOString();
-            logger.info(`- ${commit.hash.slice(0, 8)} ${date}`);
-            logger.info(`  Author: ${commit.author}`);
-            logger.info(`  Co-authors: ${commit.coAuthors.join(', ')}`);
-            logger.info(`  Subject: ${commit.subject || '(no subject)'}`);
+            screen.printLine(`- ${commit.hash.slice(0, 8)} ${date}`);
+            screen.printLine(`  Author: ${commit.author}`);
+            screen.printLine(`  Co-authors: ${commit.coAuthors.join(', ')}`);
+            screen.printLine(`  Subject: ${commit.subject || '(no subject)'}`);
           }
         }
 
-        logger.info('\n✅ Summary generated');
+        screen.printLine('\n✅ Summary generated');
       } catch (error) {
         logger.error('Failed to generate code summary', error);
         process.exit(1);
@@ -99,8 +95,9 @@ export function createCodeCommands(program: SmmCommand): void {
     .option('--buffer <size>', 'Max buffer size in MB for git output (default: 100)', '100')
     .option('--output <format>', 'Output format (text|json)', 'text')
     .actionWithSmm(async (options, command) => {
+      const logger = command.getLogger('CodeCommand');
       try {
-        logger.info('🔍 Analyzing change sets...');
+        screen.printLine('🔍 Analyzing change sets...');
         const config = command.getConfiguration();
         const repoPath = config.gitRepositoryLocation;
 
@@ -115,13 +112,13 @@ export function createCodeCommands(program: SmmCommand): void {
         const commits = result;
 
         if (options.output === 'json') {
-          logger.info(JSON.stringify({ commits: commits.length }, null, 2));
+          screen.printLine(JSON.stringify({ commits: commits.length }, null, 2));
         } else {
-          logger.info('\n=== Change Set Analysis ===\n');
-          logger.info(`Repository: ${repoPath}`);
-          logger.info(`Total Commits: ${commits.length}`);
-          if (options.startDate) logger.info(`Start Date: ${options.startDate}`);
-          if (options.endDate) logger.info(`End Date: ${options.endDate}`);
+          screen.printLine('\n=== Change Set Analysis ===\n');
+          screen.printLine(`Repository: ${repoPath}`);
+          screen.printLine(`Total Commits: ${commits.length}`);
+          if (options.startDate) screen.printLine(`Start Date: ${options.startDate}`);
+          if (options.endDate) screen.printLine(`End Date: ${options.endDate}`);
         }
       } catch (error) {
         const isMaxBufferError = error instanceof Error && error.message.includes('maxBuffer');
@@ -146,9 +143,11 @@ export function createCodeCommands(program: SmmCommand): void {
     .option('--subfolder <path>', 'Subfolder within the repository to analyze', '')
     .option('--force', 'Force regeneration of CodeMaat CSV files')
     .option('--output <format>', 'Output format (text|json)', 'text')
-    .actionWithSmm(async (options) => {
+    .actionWithSmm(async (options, command) => {
+      const logger = command.getLogger('CodeCommand');
       try {
-        logger.info('🔍 Running CodeMaat analysis...');
+        screen.printLine('🔍 Running CodeMaat analysis...');
+        const fetchRepository = new CodemaatFetchRepository(command.getConfiguration(), logger);
         const result = fetchRepository.fetch({
           startDate: options.startDate,
           subfolder: options.subfolder,
@@ -160,7 +159,7 @@ export function createCodeCommands(program: SmmCommand): void {
         });
 
         if (options.output === 'json') {
-          logger.info(
+          screen.printLine(
             JSON.stringify(
               {
                 repository: result.repository,
@@ -172,10 +171,10 @@ export function createCodeCommands(program: SmmCommand): void {
             )
           );
         } else {
-          logger.info('\n=== CodeMaat Fetch ===\n');
-          logger.info(`Repository: ${result.repository}`);
-          logger.info(`Output Directory: ${result.outputDirectory}`);
-          process.stdout.write(result.stdout);
+          screen.printLine('\n=== CodeMaat Fetch ===\n');
+          screen.printLine(`Repository: ${result.repository}`);
+          screen.printLine(`Output Directory: ${result.outputDirectory}`);
+          screen.printLine(result.stdout.trimEnd());
         }
       } catch (error) {
         logger.error('Failed to run CodeMaat analysis', error);
@@ -193,7 +192,9 @@ export function createCodeCommands(program: SmmCommand): void {
     .actionWithSmm(async (options, command) => {
       const logger = command.getLogger('CodeCommand');
       try {
-        logger.info('📊 Calculating code churn...');
+        screen.printLine('📊 Calculating code churn...');
+        const repository = CodemaatFactory.create(command.getConfiguration(), logger);
+        const codemaatService = new CodemaatService(repository);
         const metrics = await codemaatService.getCodeChurn({
           startDate: options.startDate,
           endDate: options.endDate,
@@ -213,14 +214,14 @@ export function createCodeCommands(program: SmmCommand): void {
         );
 
         if (options.output === 'json') {
-          logger.info(JSON.stringify({ codeChurn: churnRows }, null, 2));
+          screen.printLine(JSON.stringify({ codeChurn: churnRows }, null, 2));
         } else {
-          logger.info('\n=== Code Churn Metrics ===\n');
-          logger.info(`Data Points: ${churnRows.length}`);
-          logger.info(`Total Commits: ${totalCommits}`);
-          logger.info(`Lines Added: ${linesAdded}`);
-          logger.info(`Lines Removed: ${linesRemoved}`);
-          logger.info(`Churn: ${linesAdded + linesRemoved}`);
+          screen.printLine('\n=== Code Churn Metrics ===\n');
+          screen.printLine(`Data Points: ${churnRows.length}`);
+          screen.printLine(`Total Commits: ${totalCommits}`);
+          screen.printLine(`Lines Added: ${linesAdded}`);
+          screen.printLine(`Lines Removed: ${linesRemoved}`);
+          screen.printLine(`Churn: ${linesAdded + linesRemoved}`);
         }
       } catch (error) {
         logger.error('Failed to calculate code churn', error);
@@ -238,17 +239,19 @@ export function createCodeCommands(program: SmmCommand): void {
     .actionWithSmm(async (options, command) => {
       const logger = command.getLogger('CodeCommand');
       try {
-        logger.info('🔗 Analyzing code coupling...');
+        screen.printLine('🔗 Analyzing code coupling...');
+        const repository = CodemaatFactory.create(command.getConfiguration(), logger);
+        const codemaatService = new CodemaatService(repository);
         const coupling = await codemaatService.getFileCoupling({
           ignorePatterns: undefined,
         });
 
         if (options.output === 'json') {
-          logger.info(JSON.stringify({ coupling }, null, 2));
+          screen.printLine(JSON.stringify({ coupling }, null, 2));
         } else {
-          logger.info('\n=== Code Coupling Analysis ===\n');
-          logger.info(`Min Coupling Threshold: ${options.minCoupling}`);
-          logger.info(`Relationships: ${coupling.length}`);
+          screen.printLine('\n=== Code Coupling Analysis ===\n');
+          screen.printLine(`Min Coupling Threshold: ${options.minCoupling}`);
+          screen.printLine(`Relationships: ${coupling.length}`);
         }
       } catch (error) {
         logger.error('Failed to analyze code coupling', error);
@@ -266,7 +269,9 @@ export function createCodeCommands(program: SmmCommand): void {
     .actionWithSmm(async (options, command) => {
       const logger = command.getLogger('CodeCommand');
       try {
-        logger.info('📊 Calculating entity churn...');
+        screen.printLine('📊 Calculating entity churn...');
+        const repository = CodemaatFactory.create(command.getConfiguration(), logger);
+        const codemaatService = new CodemaatService(repository);
         const metrics = await codemaatService.getCodeChurn({
           startDate: options.startDate,
           endDate: options.endDate,
@@ -278,11 +283,11 @@ export function createCodeCommands(program: SmmCommand): void {
         );
 
         if (options.output === 'json') {
-          logger.info(JSON.stringify({ codeChurn: churnRows }, null, 2));
+          screen.printLine(JSON.stringify({ codeChurn: churnRows }, null, 2));
         } else {
-          logger.info('\n=== Entity Churn Metrics ===\n');
-          logger.info(`Top Entities: ${options.top}`);
-          logger.info(`Total Churn: ${totalChurn}`);
+          screen.printLine('\n=== Entity Churn Metrics ===\n');
+          screen.printLine(`Top Entities: ${options.top}`);
+          screen.printLine(`Total Churn: ${totalChurn}`);
         }
       } catch (error) {
         logger.error('Failed to calculate entity churn', error);
@@ -300,17 +305,19 @@ export function createCodeCommands(program: SmmCommand): void {
     .actionWithSmm(async (options, command) => {
       const logger = command.getLogger('CodeCommand');
       try {
-        logger.info('⏱️  Calculating entity effort...');
+        screen.printLine('⏱️  Calculating entity effort...');
+        const repository = CodemaatFactory.create(command.getConfiguration(), logger);
+        const codemaatService = new CodemaatService(repository);
         const maxRows = Number(options.top);
         const metrics = await codemaatService.getEntityEffort({
           top: Number.isFinite(maxRows) ? maxRows : undefined,
         });
 
         if (options.output === 'json') {
-          logger.info(JSON.stringify({ entityEffort: metrics || [] }, null, 2));
+          screen.printLine(JSON.stringify({ entityEffort: metrics || [] }, null, 2));
         } else {
-          logger.info('\n=== Entity Effort Metrics ===\n');
-          logger.info(`Top Entities: ${metrics.length}`);
+          screen.printLine('\n=== Entity Effort Metrics ===\n');
+          screen.printLine(`Top Entities: ${metrics.length}`);
         }
       } catch (error) {
         logger.error('Failed to calculate entity effort', error);
@@ -328,7 +335,9 @@ export function createCodeCommands(program: SmmCommand): void {
     .actionWithSmm(async (options, command) => {
       const logger = command.getLogger('CodeCommand');
       try {
-        logger.info('👥 Analyzing entity ownership...');
+        screen.printLine('👥 Analyzing entity ownership...');
+        const repository = CodemaatFactory.create(command.getConfiguration(), logger);
+        const codemaatService = new CodemaatService(repository);
         const metrics = await codemaatService.getEntityOwnership({
           authors: undefined,
           top: 100,
@@ -338,13 +347,13 @@ export function createCodeCommands(program: SmmCommand): void {
           : metrics;
 
         if (options.output === 'json') {
-          logger.info(JSON.stringify({ ownership: filteredMetrics }, null, 2));
+          screen.printLine(JSON.stringify({ ownership: filteredMetrics }, null, 2));
         } else {
-          logger.info('\n=== Entity Ownership Analysis ===\n');
+          screen.printLine('\n=== Entity Ownership Analysis ===\n');
           if (options.entity) {
-            logger.info(`Entity: ${options.entity}`);
+            screen.printLine(`Entity: ${options.entity}`);
           }
-          logger.info(`Ownership Records: ${filteredMetrics.length}`);
+          screen.printLine(`Ownership Records: ${filteredMetrics.length}`);
         }
       } catch (error) {
         logger.error('Failed to analyze entity ownership', error);
@@ -362,7 +371,7 @@ export function createCodeCommands(program: SmmCommand): void {
     .actionWithSmm(async (options, command) => {
       const logger = command.getLogger('CodeCommand');
       try {
-        logger.info('👥 Calculating developer pairing index...');
+        screen.printLine('👥 Calculating developer pairing index...');
         const pairingService = PairingFactory.create(command.getConfiguration(), logger);
         const pairing = await pairingService.getPairingIndex({
           startDate: options.startDate,
@@ -370,13 +379,13 @@ export function createCodeCommands(program: SmmCommand): void {
         });
 
         if (options.output === 'json') {
-          logger.info(JSON.stringify({ pairingIndex: pairing }, null, 2));
+          screen.printLine(JSON.stringify({ pairingIndex: pairing }, null, 2));
         } else {
-          logger.info('\n\n=== Developer Pairing Index ===\n');
-          logger.info(`Min Shared Commits: ${options.minShared}`);
-          logger.info(`Pairing Index: ${pairing.pairingIndexPercentage ?? 0}%`);
-          logger.info(`Total Commits: ${pairing.totalAnalyzedCommits ?? 0}`);
-          logger.info(`Paired Commits: ${pairing.pairedCommits ?? 0}`);
+          screen.printLine('\n\n=== Developer Pairing Index ===\n');
+          screen.printLine(`Min Shared Commits: ${options.minShared}`);
+          screen.printLine(`Pairing Index: ${pairing.pairingIndexPercentage ?? 0}%`);
+          screen.printLine(`Total Commits: ${pairing.totalAnalyzedCommits ?? 0}`);
+          screen.printLine(`Paired Commits: ${pairing.pairedCommits ?? 0}`);
         }
       } catch (error) {
         logger.error('Failed to calculate pairing index', error);

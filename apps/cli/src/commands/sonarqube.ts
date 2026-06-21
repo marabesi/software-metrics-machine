@@ -7,7 +7,6 @@ import {
   SonarqubeLocalAnalysis,
   type SonarqubeLocalAnalysisResult,
 } from '@smmachine/core/providers/sonarqube/sonarqube-local-analysis';
-import type { Logger } from '@smmachine/utils';
 
 type SonarqubeOrchestratorOptions = {
   sonarUrl?: string;
@@ -50,9 +49,9 @@ function createSonarqubeOrchestrator(
 
 async function fetchLocalAnalysisMetrics(
   result: SonarqubeLocalAnalysisResult,
-  command: SmmCommand,
-  logger: Logger
+  command: SmmCommand
 ): Promise<void> {
+  const screen = command.getScreen();
   const orchestrator = createSonarqubeOrchestrator(
     {
       sonarUrl: result.containerUrls.hostUrl,
@@ -62,14 +61,14 @@ async function fetchLocalAnalysisMetrics(
     command
   );
 
-  logger.info('🔄 Fetching SonarQube metrics from local analysis...');
+  screen.printLine('🔄 Fetching SonarQube metrics from local analysis...');
   await orchestrator.fetchQualityMetrics();
   await orchestrator.fetchComponentTree({
     component: result.projectKey,
     depth: -1,
   });
   await orchestrator.fetchHistoricalMeasures();
-  logger.info('✅ Local SonarQube metrics have been fetched');
+  screen.printLine('✅ Local SonarQube metrics have been fetched');
 }
 
 /**
@@ -82,6 +81,7 @@ async function fetchLocalAnalysisMetrics(
  *   smm sonarqube fetch-component-tree   Fetch component tree from SonarQube
  */
 export function createSonarQubeCommands(program: SmmCommand): void {
+  const screen = program.getScreen();
   const sonarqubeGroup = program
     .subcommand('sonarqube')
     .description('SonarQube integration operations');
@@ -138,9 +138,9 @@ export function createSonarQubeCommands(program: SmmCommand): void {
           scannerToken: options.scannerToken,
         });
         // wait to give sonarqube time to process the changes and make metrics available before fetching
-        logger.info('Waiting for SonarQube to process analysis results...');
+        screen.printLine('Waiting for SonarQube to process analysis results...');
         await new Promise((resolve) => setTimeout(resolve, 120_000));
-        await fetchLocalAnalysisMetrics(result, command, logger);
+        await fetchLocalAnalysisMetrics(result, command);
       } catch (error) {
         logger.error('Failed to run SonarQube analysis', error);
         process.exit(1);
@@ -163,7 +163,7 @@ export function createSonarQubeCommands(program: SmmCommand): void {
     .actionWithSmm(async (options, command) => {
       const logger = command.getLogger('SonarQubeCommand');
       try {
-        logger.info('🔄 Fetching quality measures from SonarQube...');
+        screen.printLine('🔄 Fetching quality measures from SonarQube...');
         const orchestrator = createSonarqubeOrchestrator(
           {
             useLocalAnalysisToken: options.local,
@@ -178,23 +178,23 @@ export function createSonarQubeCommands(program: SmmCommand): void {
         const measures = await orchestrator.fetchQualityMetrics(metricsParam);
 
         if (options.output === 'json') {
-          console.log(JSON.stringify(measures, null, 2));
+          screen.printLine(JSON.stringify(measures, null, 2));
         } else {
-          console.log('\n=== SonarQube Quality Measures ===\n');
+          screen.printLine('\n=== SonarQube Quality Measures ===\n');
           const measureList = Array.isArray(measures.measures) ? measures.measures : [];
-          console.log(`Measures Fetched: ${measureList.length}`);
-          console.log(`Project Key: ${measures.key || 'N/A'}`);
-          console.log(`Project Name: ${measures.name || 'N/A'}`);
+          screen.printLine(`Measures Fetched: ${measureList.length}`);
+          screen.printLine(`Project Key: ${measures.key || 'N/A'}`);
+          screen.printLine(`Project Name: ${measures.name || 'N/A'}`);
 
           if (measureList.length > 0) {
-            console.log('\nMeasures:');
+            screen.printLine('\nMeasures:');
             for (const measure of measureList) {
-              console.log(`  ${measure.metric}: ${measure.value ?? 'N/A'}`);
+              screen.printLine(`  ${measure.metric}: ${measure.value ?? 'N/A'}`);
             }
           }
         }
 
-        logger.info('\n✅ Fetch measures has been completed');
+        screen.printLine('\n✅ Fetch measures has been completed');
       } catch (error) {
         logger.error('Failed to fetch SonarQube measures', error);
         process.exit(1);
@@ -219,7 +219,7 @@ export function createSonarQubeCommands(program: SmmCommand): void {
     .actionWithSmm(async (options, command) => {
       const logger = command.getLogger('SonarQubeCommand');
       try {
-        console.log('🔄 Fetching component tree from SonarQube...');
+        screen.printLine('🔄 Fetching component tree from SonarQube...');
         const orchestrator = createSonarqubeOrchestrator(
           {
             useLocalAnalysisToken: options.local,
@@ -243,29 +243,29 @@ export function createSonarQubeCommands(program: SmmCommand): void {
         const components = await orchestrator.fetchComponentTree(treeOptions);
 
         if (options.output === 'json') {
-          console.log(JSON.stringify(components, null, 2));
+          screen.printLine(JSON.stringify(components, null, 2));
         } else {
-          console.log('\n=== SonarQube Component Tree ===\n');
-          console.log(`Components Fetched: ${components.length}`);
+          screen.printLine('\n=== SonarQube Component Tree ===\n');
+          screen.printLine(`Components Fetched: ${components.length}`);
 
           if (components.length > 0) {
             const root = components[0];
-            console.log(`Root Component: ${root.key || 'N/A'}`);
-            console.log(`Root Name: ${root.name || 'N/A'}`);
+            screen.printLine(`Root Component: ${root.key || 'N/A'}`);
+            screen.printLine(`Root Name: ${root.name || 'N/A'}`);
           }
 
           if (components.length > 0) {
-            console.log('\nComponents:');
+            screen.printLine('\nComponents:');
             for (const component of components) {
               const measureCount = Array.isArray(component.measures)
                 ? component.measures.length
                 : 0;
-              console.log(`  ${component.key || 'unknown'} - measures: ${measureCount}`);
+              screen.printLine(`  ${component.key || 'unknown'} - measures: ${measureCount}`);
             }
           }
         }
 
-        console.log('\n✅ Fetch component tree has been completed');
+        screen.printLine('\n✅ Fetch component tree has been completed');
       } catch (error) {
         logger.error('Failed to fetch SonarQube component tree', error);
         process.exit(1);
@@ -295,7 +295,7 @@ export function createSonarQubeCommands(program: SmmCommand): void {
     .actionWithSmm(async (options, command) => {
       const logger = command.getLogger('SonarQubeCommand');
       try {
-        console.log('🔄 Fetching historical measures from SonarQube...');
+        screen.printLine('🔄 Fetching historical measures from SonarQube...');
         const orchestrator = createSonarqubeOrchestrator(
           {
             useLocalAnalysisToken: options.local,
@@ -316,17 +316,17 @@ export function createSonarQubeCommands(program: SmmCommand): void {
 
         if (options.save) {
           writeFileSync(options.save, JSON.stringify(measures, null, 2), 'utf-8');
-          console.log(`\n💾 Results saved to ${options.save}`);
+          screen.printLine(`\n💾 Results saved to ${options.save}`);
         }
 
         if (options.output === 'json') {
-          console.log(JSON.stringify(measures, null, 2));
+          screen.printLine(JSON.stringify(measures, null, 2));
         } else {
-          console.log('\n=== SonarQube Historical Measures ===\n');
-          console.log(`Measurements Fetched: ${measures.length}`);
+          screen.printLine('\n=== SonarQube Historical Measures ===\n');
+          screen.printLine(`Measurements Fetched: ${measures.length}`);
         }
 
-        console.log('\n✅ Fetch historical measures has been completed');
+        screen.printLine('\n✅ Fetch historical measures has been completed');
       } catch (error) {
         logger.error('Failed to fetch SonarQube historical measures', error);
         process.exit(1);
