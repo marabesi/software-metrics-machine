@@ -51,6 +51,39 @@ describe('PipelinesController', () => {
     expect(result).toEqual([{ period: '2026-05-10', workflow: 'ci.yml', runs: 2 }]);
   });
 
+  it('defaults aggregation to week when aggregate_by is omitted or unrecognized', async () => {
+    const { controller } = createController([
+      { path: 'ci.yml', createdAt: '2026-01-05T00:00:00Z' },
+      { path: 'ci.yml', createdAt: '2026-01-06T00:00:00Z' },
+    ]);
+
+    const result = await controller.runsBy(undefined, {});
+
+    expect(result).toEqual([{ period: '2026-W01', workflow: 'ci.yml', runs: 2 }]);
+  });
+
+  it('aggregates by month when aggregate_by is month', async () => {
+    const { controller } = createController([
+      { path: 'ci.yml', createdAt: '2026-01-05T00:00:00Z' },
+      { path: 'ci.yml', createdAt: '2026-01-20T00:00:00Z' },
+    ]);
+
+    const result = await controller.runsBy('month', {});
+
+    expect(result).toEqual([{ period: '2026-01', workflow: 'ci.yml', runs: 2 }]);
+  });
+
+  it('skips runs whose metric date cannot be resolved', async () => {
+    const { controller } = createController([
+      { path: 'ci.yml' },
+      { path: 'ci.yml', createdAt: '2026-01-05T00:00:00Z' },
+    ]);
+
+    const result = await controller.runsBy('day', {});
+
+    expect(result).toEqual([{ period: '2026-01-05', workflow: 'ci.yml', runs: 1 }]);
+  });
+
   it('calculates run duration from jobs instead of stale workflow updated time', async () => {
     const { controller, pipelinesRepo } = createController([
       {
