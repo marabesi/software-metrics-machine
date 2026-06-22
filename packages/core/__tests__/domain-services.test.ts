@@ -2526,6 +2526,60 @@ describe('PipelinesService', () => {
       };
     }
 
+    it('should treat a run with no jobs array as having no steps for that day', async () => {
+      const run: import('../src/domain-types').PipelineRun = {
+        id: 'run-no-jobs',
+        number: 1,
+        name: 'Build',
+        status: 'completed',
+        conclusion: 'success',
+        createdAt: '2025-01-01T08:00:00Z',
+        updatedAt: '2025-01-01T08:15:00Z',
+        branch: 'main',
+        path: '.github/workflows/build.yml',
+        jobs: undefined,
+      };
+
+      mockPipelineRepo = new PipelinesRepositoryBuilder().withPipelineRuns([run]).build();
+      pipelinesService = new PipelinesService(mockPipelineRepo, undefined, logger);
+
+      const result = await pipelinesService.getJobStepsAverageTimeByDay();
+
+      expect(result).toEqual([]);
+    });
+
+    it('should treat a job with no steps array as contributing no step durations for that day', async () => {
+      const run: import('../src/domain-types').PipelineRun = {
+        id: 'run-job-no-steps',
+        number: 1,
+        name: 'Build',
+        status: 'completed',
+        conclusion: 'success',
+        createdAt: '2025-01-01T08:00:00Z',
+        updatedAt: '2025-01-01T08:15:00Z',
+        branch: 'main',
+        path: '.github/workflows/build.yml',
+        jobs: [
+          {
+            id: 'job-no-steps',
+            name: 'build-job',
+            status: 'completed',
+            conclusion: 'success',
+            startedAt: '2025-01-01T08:00:00Z',
+            completedAt: '2025-01-01T08:15:00Z',
+            steps: undefined,
+          },
+        ],
+      };
+
+      mockPipelineRepo = new PipelinesRepositoryBuilder().withPipelineRuns([run]).build();
+      pipelinesService = new PipelinesService(mockPipelineRepo, undefined, logger);
+
+      const result = await pipelinesService.getJobStepsAverageTimeByDay();
+
+      expect(result).toEqual([]);
+    });
+
     it('should skip a run with neither completedAt nor createdAt entirely', async () => {
       const run = runWithStepsOnDay('run-no-date', '', [
         { name: 'checkout', startedAt: '2025-01-01T08:00:00Z', completedAt: '2025-01-01T08:05:00Z' },
