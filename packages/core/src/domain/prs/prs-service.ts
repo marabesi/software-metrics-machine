@@ -130,7 +130,7 @@ export class PRsService implements IPRsService {
     const months = Array.from(byMonth.keys()).sort();
 
     for (const month of months) {
-      const monthPRs = byMonth.get(month) || [];
+      const monthPRs = byMonth.get(month)!;
       const metrics = this.calculateTimeframeMetrics(month, monthPRs);
       result.push(metrics);
     }
@@ -164,7 +164,7 @@ export class PRsService implements IPRsService {
     const weeks = Array.from(byWeek.keys()).sort();
 
     for (const week of weeks) {
-      const weekPRs = byWeek.get(week) || [];
+      const weekPRs = byWeek.get(week)!;
       const metrics = this.calculateTimeframeMetrics(week, weekPRs);
       result.push(metrics);
     }
@@ -194,8 +194,7 @@ export class PRsService implements IPRsService {
 
     for (const [label, labelPRs] of labelMap.entries()) {
       const openDays = labelPRs.map((pr) => this.calculateOpenDays(pr));
-      const averageOpenDays =
-        openDays.length > 0 ? openDays.reduce((a, b) => a + b, 0) / openDays.length : 0;
+      const averageOpenDays = openDays.reduce((a, b) => a + b, 0) / openDays.length;
 
       result.push({
         label,
@@ -226,7 +225,7 @@ export class PRsService implements IPRsService {
 
     const mostCommentedPRs = prs
       .filter((pr) => (pr.totalComments || 0) > 0 && pr.id && pr.title && pr.url)
-      .sort((a, b) => (b.totalComments || 0) - (a.totalComments || 0))
+      .sort((a, b) => b.totalComments - a.totalComments)
       .slice(0, 10)
       .map((pr) => ({
         pull_request_id: pr.id!,
@@ -256,7 +255,7 @@ export class PRsService implements IPRsService {
               number: sortedByComments[0].number,
               title: sortedByComments[0].title,
               author: sortedByComments[0].author?.login || 'unknown',
-              comments: sortedByComments[0].totalComments || 0,
+              comments: sortedByComments[0].totalComments,
             }
           : null,
       most_commented_prs: mostCommentedPRs,
@@ -301,7 +300,7 @@ export class PRsService implements IPRsService {
     const rows: Array<{ date: string; kind: string; count: number }> = [];
 
     for (const date of dates) {
-      const value = counts.get(date) || { Opened: 0, Closed: 0 };
+      const value = counts.get(date)!;
       rows.push({ date, kind: 'Opened', count: value.Opened });
       rows.push({ date, kind: 'Closed', count: value.Closed });
     }
@@ -338,7 +337,7 @@ export class PRsService implements IPRsService {
 
     for (const pr of merged) {
       const start = this.toTimestamp(pr.createdAt);
-      const end = this.toTimestamp(pr.mergedAt || pr.closedAt || pr.createdAt);
+      const end = this.toTimestamp(pr.mergedAt || pr.closedAt);
       const days = (end - start) / (1000 * 60 * 60 * 24);
       const author = pr.author?.login || 'unknown';
       const existing = grouped.get(author) || [];
@@ -350,7 +349,7 @@ export class PRsService implements IPRsService {
     return Array.from(grouped.entries())
       .map(([author, values]) => ({
         author,
-        avg_days: values.length > 0 ? values.reduce((a, b) => a + b, 0) / values.length : 0,
+        avg_days: values.reduce((a, b) => a + b, 0) / values.length,
       }))
       .sort((a, b) => b.avg_days - a.avg_days)
       .slice(0, maxRows);
@@ -377,7 +376,7 @@ export class PRsService implements IPRsService {
     return Array.from(grouped.entries())
       .map(([period, values]) => ({
         period,
-        avg_days: values.length > 0 ? values.reduce((a, b) => a + b, 0) / values.length : 0,
+        avg_days: values.reduce((a, b) => a + b, 0) / values.length,
       }))
       .sort((a, b) => a.period.localeCompare(b.period));
   }
@@ -411,11 +410,10 @@ export class PRsService implements IPRsService {
 
   private calculateTimeframeMetrics(period: string, prs: PRDetails[]): PRsByTimeframe {
     const openDays = prs.map((pr) => this.calculateOpenDays(pr));
-    const averageOpenDays =
-      openDays.length > 0 ? openDays.reduce((a, b) => a + b, 0) / openDays.length : 0;
+    const averageOpenDays = openDays.reduce((a, b) => a + b, 0) / openDays.length;
 
     const totalComments = prs.reduce((sum, pr) => sum + (pr.totalComments || 0), 0);
-    const averageComments = prs.length > 0 ? totalComments / prs.length : 0;
+    const averageComments = totalComments / prs.length;
 
     return {
       period,
@@ -459,10 +457,6 @@ export class PRsService implements IPRsService {
       for (let n = 1; n <= 3; n++) {
         for (let i = 0; i <= words.length - n; i++) {
           const ngram = words.slice(i, i + n).join(' ');
-          // skip ngrams that start/end with a stop word (bigrams/trigrams only)
-          if (n > 1 && (stopWords.has(words[i]) || stopWords.has(words[i + n - 1]))) {
-            continue;
-          }
           ngramCounts.set(ngram, (ngramCounts.get(ngram) || 0) + 1);
         }
       }
@@ -572,14 +566,6 @@ export class PRsService implements IPRsService {
     return mode === 'day' || mode === 'month' ? mode : 'week';
   }
 
-  private toDayKey(dateString?: string): string {
-    return dateString ? this.tz.getDateKey(dateString) : 'unknown';
-  }
-
-  private toMonthKeyShort(dateString?: string): string {
-    return dateString ? this.tz.getMonthKey(dateString) : 'unknown';
-  }
-
   private toPeriodKey(dateString: string | undefined, mode: 'day' | 'week' | 'month'): string {
     return this.tz.getIntervalKey(dateString, mode);
   }
@@ -638,7 +624,7 @@ export class PRsService implements IPRsService {
     return Array.from(grouped.entries())
       .map(([author, values]) => ({
         author,
-        avg_hours: values.length > 0 ? values.reduce((a, b) => a + b, 0) / values.length : 0,
+        avg_hours: values.reduce((a, b) => a + b, 0) / values.length,
         prs_with_comments: values.length,
       }))
       .sort((a, b) => b.avg_hours - a.avg_hours)
