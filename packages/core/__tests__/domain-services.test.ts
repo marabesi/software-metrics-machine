@@ -1984,4 +1984,125 @@ describe('PipelinesService', () => {
       expect(frequency).toEqual([]);
     });
   });
+
+  describe('getJobMetrics', () => {
+    function jobRun(
+      id: string,
+      jobName: string,
+      conclusion: string | undefined,
+      options: { runAttempt?: number; startedAt?: string; completedAt?: string } = {}
+    ): import('../src/domain-types').PipelineRun {
+      return {
+        id,
+        number: 1,
+        name: 'Build',
+        status: 'completed',
+        conclusion: 'success',
+        createdAt: '2025-01-01T08:00:00Z',
+        updatedAt: '2025-01-01T08:15:00Z',
+        branch: 'main',
+        path: '.github/workflows/build.yml',
+        runAttempt: options.runAttempt,
+        jobs: [
+          {
+            id: `${id}-job`,
+            name: jobName,
+            status: 'completed',
+            conclusion: conclusion as string,
+            startedAt: options.startedAt ?? '2025-01-01T08:01:00Z',
+            completedAt: options.completedAt,
+          },
+        ],
+      };
+    }
+
+    it('should count each job conclusion type, including an unrecognized value as unknown', async () => {
+      const runs: import('../src/domain-types').PipelineRun[] = [
+        jobRun('run-success', 'test', 'success', { completedAt: '2025-01-01T08:05:00Z' }),
+        jobRun('run-failure', 'test', 'failure', { completedAt: '2025-01-01T08:05:00Z' }),
+        jobRun('run-cancelled', 'test', 'cancelled', { completedAt: '2025-01-01T08:05:00Z' }),
+        jobRun('run-timed-out', 'test', 'timed_out', { completedAt: '2025-01-01T08:05:00Z' }),
+        jobRun('run-action-required', 'test', 'action_required', {
+          completedAt: '2025-01-01T08:05:00Z',
+        }),
+        jobRun('run-skipped', 'test', 'skipped', { completedAt: '2025-01-01T08:05:00Z' }),
+        jobRun('run-unknown', 'test', 'neutral', { completedAt: '2025-01-01T08:05:00Z' }),
+      ];
+
+      mockPipelineRepo = new PipelinesRepositoryBuilder().withPipelineRuns(runs).build();
+      pipelinesService = new PipelinesService(mockPipelineRepo, undefined, logger);
+
+      const jobMetrics = await pipelinesService.getJobMetrics();
+
+      expect(jobMetrics).toHaveLength(1);
+      const metrics = jobMetrics[0];
+      expect(metrics.jobName).toBe('test');
+      expect(metrics.totalRuns).toBe(7);
+      expect(metrics.successCount).toBe(1);
+      expect(metrics.failureCount).toBe(1);
+      expect(metrics.cancelledCount).toBe(1);
+      expect(metrics.timedOutCount).toBe(1);
+      expect(metrics.actionRequiredCount).toBe(1);
+      expect(metrics.skippedCount).toBe(1);
+      expect(metrics.unknownCount).toBe(1);
+    });
+
+    it('should count reruns from runAttempt > 1 and not count when runAttempt is absent', async () => {
+      const runs: import('../src/domain-types').PipelineRun[] = [
+        jobRun('run-no-attempt', 'test', 'success', { completedAt: '2025-01-01T08:05:00Z' }),
+        jobRun('run-attempt-3', 'test', 'success', {
+          runAttempt: 3,
+          completedAt: '2025-01-01T08:05:00Z',
+        }),
+      ];
+
+      mockPipelineRepo = new PipelinesRepositoryBuilder().withPipelineRuns(runs).build();
+      pipelinesService = new PipelinesService(mockPipelineRepo, undefined, logger);
+
+      const jobMetrics = await pipelinesService.getJobMetrics();
+
+      // run-no-attempt contributes 0 reruns, run-attempt-3 contributes 2
+      expect(jobMetrics[0].rerunCount).toBe(2);
+    });
+
+    it('should merge multiple runs producing the same job name into one entry', async () => {
+      const runs: import('../src/domain-types').PipelineRun[] = [
+        jobRun('run-1', 'shared-job', 'success', { completedAt: '2025-01-01T08:05:00Z' }),
+        jobRun('run-2', 'shared-job', 'failure', { completedAt: '2025-01-01T08:05:00Z' }),
+      ];
+
+      mockPipelineRepo = new PipelinesRepositoryBuilder().withPipelineRuns(runs).build();
+      pipelinesService = new PipelinesService(mockPipelineRepo, undefined, logger);
+
+      const jobMetrics = await pipelinesService.getJobMetrics();
+
+      expect(jobMetrics).toHaveLength(1);
+      expect(jobMetrics[0].totalRuns).toBe(2);
+      expect(jobMetrics[0].successCount).toBe(1);
+      expect(jobMetrics[0].failureCount).toBe(1);
+    });
+
+    it('should include only jobs with both startedAt and completedAt in the duration calculation', async () => {
+      const runs: import('../src/domain-types').PipelineRun[] = [
+        jobRun('run-with-duration', 'test', 'success', {
+          startedAt: '2025-01-01T08:00:00Z',
+          completedAt: '2025-01-01T08:10:00Z', // 10 minutes
+        }),
+        jobRun('run-without-completed', 'test', 'success', {
+          startedAt: '2025-01-01T08:00:00Z',
+          completedAt: undefined,
+        }),
+      ];
+
+      mockPipelineRepo = new PipelinesRepositoryBuilder().withPipelineRuns(runs).build();
+      pipelinesService = new PipelinesService(mockPipelineRepo, undefined, logger);
+
+      const jobMetrics = await pipelinesService.getJobMetrics();
+
+      // Average should be exactly 10 (only from run-with-duration)
+      expect(jobMetrics[0].averageDurationMinutes).toBe(10);
+      expect(jobMetrics[0].successRate).toBe(100);
+      expect(jobMetrics[0].failureRate).toBe(0);
+    });
+  });
 });
