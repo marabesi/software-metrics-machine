@@ -1909,4 +1909,79 @@ describe('PipelinesService', () => {
       );
     });
   });
+
+  describe('getDeploymentFrequencyWithAllIntervals edge cases', () => {
+    it('should skip jobs with neither completedAt nor startedAt', async () => {
+      const deployRuns: import('../src/domain-types').PipelineRun[] = [
+        {
+          id: 'release-run',
+          number: 1,
+          name: 'Release',
+          status: 'completed',
+          conclusion: 'success',
+          createdAt: '2025-01-01T08:00:00Z',
+          updatedAt: '2025-01-01T08:15:00Z',
+          branch: 'main',
+          path: '.github/workflows/release.yml',
+          jobs: [
+            {
+              id: 'release-job-no-timestamps',
+              name: 'deploy-production',
+              status: 'completed',
+              conclusion: 'success',
+              startedAt: undefined as unknown as string,
+              completedAt: undefined,
+            },
+          ],
+        },
+      ];
+
+      mockPipelineRepo = new PipelinesRepositoryBuilder().withPipelineRuns(deployRuns).build();
+      pipelinesService = new PipelinesService(
+        mockPipelineRepo,
+        {
+          getDeploymentFrequencyTargets: () => [
+            { pipeline: '.github/workflows/release.yml', job: 'deploy-production' },
+          ],
+        } as any,
+        logger
+      );
+
+      const frequency = await pipelinesService.getDeploymentFrequencyWithAllIntervals();
+
+      expect(frequency).toEqual([]);
+    });
+
+    it('should return an empty array when targets are configured but no deployments match', async () => {
+      const deployRuns: import('../src/domain-types').PipelineRun[] = [
+        {
+          id: 'unrelated-run',
+          number: 1,
+          name: 'Other',
+          status: 'completed',
+          conclusion: 'success',
+          createdAt: '2025-01-01T08:00:00Z',
+          updatedAt: '2025-01-01T08:15:00Z',
+          branch: 'main',
+          path: '.github/workflows/other.yml',
+          jobs: [],
+        },
+      ];
+
+      mockPipelineRepo = new PipelinesRepositoryBuilder().withPipelineRuns(deployRuns).build();
+      pipelinesService = new PipelinesService(
+        mockPipelineRepo,
+        {
+          getDeploymentFrequencyTargets: () => [
+            { pipeline: '.github/workflows/release.yml', job: 'deploy-production' },
+          ],
+        } as any,
+        logger
+      );
+
+      const frequency = await pipelinesService.getDeploymentFrequencyWithAllIntervals();
+
+      expect(frequency).toEqual([]);
+    });
+  });
 });
