@@ -54,5 +54,24 @@ describe('IssuesRepository', () => {
       expect(result).toHaveLength(3);
       expect(result.map((issue) => issue.id).sort()).toEqual(['1', '2', '3']);
     });
+
+    it('incremental update with an empty cache falls through to a plain fetch', async () => {
+      const cacheDir = await fs.mkdtemp(path.join(os.tmpdir(), 'smm-issues-incr-empty-'));
+      const fresh = [createIssue({ id: '1' })];
+      const fetchIssues = vi.fn().mockResolvedValue(fresh);
+      const jiraClient = createJiraClient({ fetchIssues });
+
+      const repository = new IssuesRepository(jiraClient, cacheDir, logger);
+
+      const options = { incrementalUpdate: true };
+      const result = await repository.refreshIssues(options);
+
+      expect(fetchIssues).toHaveBeenCalledWith({
+        startDate: undefined,
+        endDate: undefined,
+        status: undefined,
+      });
+      expect(result).toEqual(fresh);
+    });
   });
 });
