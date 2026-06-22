@@ -123,4 +123,46 @@ describe('PipelinesController', () => {
     });
   });
 
+  describe('byStatus', () => {
+    it('groups runs by status, defaulting missing status to unknown, sorted by count descending', async () => {
+      const { controller } = createController([
+        { status: 'completed' },
+        { status: 'completed' },
+        { status: 'queued' },
+        {},
+      ]);
+
+      const result = await controller.byStatus({});
+
+      expect(result).toEqual([
+        { status: 'completed', count: 2 },
+        { status: 'queued', count: 1 },
+        { status: 'unknown', count: 1 },
+      ]);
+    });
+  });
+
+  describe('jobsByStatus', () => {
+    it('groups jobs by conclusion, falling back to status, then unknown, sorted by count descending', async () => {
+      const { controller } = createController([
+        {
+          jobs: [
+            { conclusion: 'success' },
+            { conclusion: 'success' },
+            { status: 'in_progress' },
+            {},
+          ],
+        },
+      ]);
+
+      const result = await controller.jobsByStatus({});
+
+      expect(result).toEqual([
+        { Status: 'success', Count: 2 },
+        { Status: 'in_progress', Count: 1 },
+        { Status: 'unknown', Count: 1 },
+      ]);
+    });
+  });
+
 });
