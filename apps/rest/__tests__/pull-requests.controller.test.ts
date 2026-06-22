@@ -97,4 +97,254 @@ describe('PullRequestsController', () => {
       'day'
     );
   });
+
+  describe('byAuthor', () => {
+    it('uses the explicit top value when provided', async () => {
+      const mockPrsService = {
+        getByAuthor: vi.fn().mockResolvedValue([{ author: 'alice', count: 5 }]),
+      };
+      const controller = createController([], mockPrsService);
+
+      const response = await controller.byAuthor(
+        undefined,
+        undefined,
+        undefined,
+        '3'
+      );
+
+      expect(response.result).toEqual([{ author: 'alice', count: 5 }]);
+      expect(mockPrsService.getByAuthor).toHaveBeenCalledWith(expect.anything(), 3);
+    });
+
+    it('defaults top to 10 when omitted', async () => {
+      const mockPrsService = {
+        getByAuthor: vi.fn().mockResolvedValue([]),
+      };
+      const controller = createController([], mockPrsService);
+
+      await controller.byAuthor(undefined, undefined, undefined, undefined);
+
+      expect(mockPrsService.getByAuthor).toHaveBeenCalledWith(expect.anything(), 10);
+    });
+
+    it('falls back to 10 when top is non-numeric', async () => {
+      const mockPrsService = {
+        getByAuthor: vi.fn().mockResolvedValue([]),
+      };
+      const controller = createController([], mockPrsService);
+
+      await controller.byAuthor(undefined, undefined, undefined, 'not-a-number');
+
+      expect(mockPrsService.getByAuthor).toHaveBeenCalledWith(expect.anything(), 10);
+    });
+  });
+
+  describe('averageReviewTime', () => {
+    it('uses the explicit top value when provided', async () => {
+      const mockPrsService = {
+        getAverageReviewTime: vi.fn().mockResolvedValue([{ author: 'bob', avg_days: 1.2 }]),
+      };
+      const controller = createController([], mockPrsService);
+
+      const response = await controller.averageReviewTime(
+        undefined,
+        undefined,
+        undefined,
+        '4'
+      );
+
+      expect(response.result).toEqual([{ author: 'bob', avg_days: 1.2 }]);
+      expect(mockPrsService.getAverageReviewTime).toHaveBeenCalledWith(
+        expect.anything(),
+        4
+      );
+    });
+
+    it('defaults top to 10 when omitted', async () => {
+      const mockPrsService = {
+        getAverageReviewTime: vi.fn().mockResolvedValue([]),
+      };
+      const controller = createController([], mockPrsService);
+
+      await controller.averageReviewTime(undefined, undefined, undefined, undefined);
+
+      expect(mockPrsService.getAverageReviewTime).toHaveBeenCalledWith(
+        expect.anything(),
+        10
+      );
+    });
+
+    it('falls back to 10 when top is non-numeric', async () => {
+      const mockPrsService = {
+        getAverageReviewTime: vi.fn().mockResolvedValue([]),
+      };
+      const controller = createController([], mockPrsService);
+
+      await controller.averageReviewTime(undefined, undefined, undefined, 'nope');
+
+      expect(mockPrsService.getAverageReviewTime).toHaveBeenCalledWith(
+        expect.anything(),
+        10
+      );
+    });
+  });
+
+  describe('averageComments', () => {
+    it('returns avg_comments from service metrics', async () => {
+      const mockPrsService = {
+        getMetrics: vi.fn().mockResolvedValue({ averageComments: 3.5 }),
+      };
+      const controller = createController([], mockPrsService);
+
+      const response = await controller.averageComments();
+
+      expect(response).toEqual({ avg_comments: 3.5 });
+      expect(mockPrsService.getMetrics).toHaveBeenCalledWith(expect.anything());
+    });
+  });
+
+  describe('commentsByAuthor', () => {
+    it('uses the explicit top value when provided', async () => {
+      const mockPrsService = {
+        getCommentsByAuthor: vi.fn().mockResolvedValue([{ author: 'carol', count: 7 }]),
+      };
+      const controller = createController([], mockPrsService);
+
+      const response = await controller.commentsByAuthor(
+        undefined,
+        undefined,
+        undefined,
+        '5'
+      );
+
+      expect(response.result).toEqual([{ author: 'carol', count: 7 }]);
+      expect(mockPrsService.getCommentsByAuthor).toHaveBeenCalledWith(
+        expect.anything(),
+        5
+      );
+    });
+
+    it('defaults top to 10 when omitted', async () => {
+      const mockPrsService = {
+        getCommentsByAuthor: vi.fn().mockResolvedValue([]),
+      };
+      const controller = createController([], mockPrsService);
+
+      await controller.commentsByAuthor(undefined, undefined, undefined, undefined);
+
+      expect(mockPrsService.getCommentsByAuthor).toHaveBeenCalledWith(
+        expect.anything(),
+        10
+      );
+    });
+
+    it('falls back to 10 when top is non-numeric', async () => {
+      const mockPrsService = {
+        getCommentsByAuthor: vi.fn().mockResolvedValue([]),
+      };
+      const controller = createController([], mockPrsService);
+
+      await controller.commentsByAuthor(undefined, undefined, undefined, 'bogus');
+
+      expect(mockPrsService.getCommentsByAuthor).toHaveBeenCalledWith(
+        expect.anything(),
+        10
+      );
+    });
+  });
+
+  describe('firstCommentTime', () => {
+    it('uses the explicit top value when provided', async () => {
+      const mockPrsService = {
+        getFirstCommentTime: vi.fn().mockResolvedValue([
+          { author: 'dave', avg_hours: 2.5, prs_with_comments: 4 },
+        ]),
+      };
+      const controller = createController([], mockPrsService);
+
+      const response = await controller.firstCommentTime(
+        undefined,
+        undefined,
+        undefined,
+        '6'
+      );
+
+      expect(response.result).toEqual([
+        { author: 'dave', avg_hours: 2.5, prs_with_comments: 4 },
+      ]);
+      expect(mockPrsService.getFirstCommentTime).toHaveBeenCalledWith(
+        expect.anything(),
+        6
+      );
+    });
+
+    it('defaults top to 10 when omitted', async () => {
+      const mockPrsService = {
+        getFirstCommentTime: vi.fn().mockResolvedValue([]),
+      };
+      const controller = createController([], mockPrsService);
+
+      await controller.firstCommentTime(undefined, undefined, undefined, undefined);
+
+      expect(mockPrsService.getFirstCommentTime).toHaveBeenCalledWith(
+        expect.anything(),
+        10
+      );
+    });
+
+    it('falls back to 10 when top is non-numeric', async () => {
+      const mockPrsService = {
+        getFirstCommentTime: vi.fn().mockResolvedValue([]),
+      };
+      const controller = createController([], mockPrsService);
+
+      await controller.firstCommentTime(undefined, undefined, undefined, 'NaN-ish');
+
+      expect(mockPrsService.getFirstCommentTime).toHaveBeenCalledWith(
+        expect.anything(),
+        10
+      );
+    });
+  });
+
+  describe('filterOptions', () => {
+    it('delegates to pullRequestFiltersRepository.loadOptions without wrapping', async () => {
+      const controller = createController([], {});
+
+      const response = await controller.filterOptions();
+
+      expect(response).toEqual({ authors: [], labels: [] });
+    });
+  });
+
+  describe('toFilters mapping', () => {
+    it('maps query params to PRFilters, renaming status to state', async () => {
+      const mockPrsService = {
+        getByAuthor: vi.fn().mockResolvedValue([]),
+      };
+      const controller = createController([], mockPrsService);
+
+      await controller.byAuthor(
+        undefined,
+        undefined,
+        'feature',
+        '10',
+        'alice,bob',
+        'carol',
+        'dave',
+        'open'
+      );
+
+      expect(mockPrsService.getByAuthor).toHaveBeenCalledWith(
+        expect.objectContaining({
+          authors: 'alice,bob',
+          excludeAuthors: 'carol',
+          excludeCommenters: 'dave',
+          labels: 'feature',
+          state: 'open',
+        }),
+        10
+      );
+    });
+  });
 });
