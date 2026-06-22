@@ -100,7 +100,7 @@ export class PipelinesService implements IPipelinesService {
     options?: PipelineRunFilterOptions
   ): T[] {
     const start = startDate ? this.toTimestamp(startDate) : 0;
-    const end = endDate ? this.toDateBoundaryTimestamp(endDate, 'end') : 0;
+    const end = endDate ? this.toDateBoundaryTimestamp(endDate) : 0;
     const filteredRuns =
       start || end
         ? runs.filter((run) => {
@@ -266,7 +266,7 @@ export class PipelinesService implements IPipelinesService {
         status: 'completed',
       });
 
-      const jobsOnly = deployments.map((run) => run.jobs || []).flat();
+      const jobsOnly = deployments.map((run) => run.jobs!).flat();
       deploymentJobCount += jobsOnly.length;
 
       for (const job of jobsOnly) {
@@ -399,10 +399,7 @@ export class PipelinesService implements IPipelinesService {
       for (const run of runs) {
         const job = (run.jobs || []).find((j) => j.name === jobName);
         if (job && job.startedAt && job.completedAt) {
-          const duration = this.calculateJobDuration(job);
-          if (duration !== null) {
-            durations.push(duration);
-          }
+          durations.push(this.calculateJobDuration(job));
         }
       }
 
@@ -411,15 +408,8 @@ export class PipelinesService implements IPipelinesService {
           ? Math.round((durations.reduce((a, b) => a + b, 0) / durations.length) * 100) / 100
           : 0;
 
-      metrics.successRate =
-        metrics.totalRuns > 0
-          ? Math.round((metrics.successCount / metrics.totalRuns) * 10000) / 100
-          : 0;
-
-      metrics.failureRate =
-        metrics.totalRuns > 0
-          ? Math.round((metrics.failureCount / metrics.totalRuns) * 10000) / 100
-          : 0;
+      metrics.successRate = Math.round((metrics.successCount / metrics.totalRuns) * 10000) / 100;
+      metrics.failureRate = Math.round((metrics.failureCount / metrics.totalRuns) * 10000) / 100;
 
       result.push(metrics);
     }
@@ -486,8 +476,7 @@ export class PipelinesService implements IPipelinesService {
     const result: Array<{ name: string; averageDurationMinutes: number; count: number }> = [];
 
     for (const [name, durations] of stepDurations.entries()) {
-      const avg =
-        durations.length > 0 ? durations.reduce((a, b) => a + b, 0) / durations.length : 0;
+      const avg = durations.reduce((a, b) => a + b, 0) / durations.length;
       result.push({
         name,
         averageDurationMinutes: Math.round(avg * 100) / 100,
@@ -544,8 +533,7 @@ export class PipelinesService implements IPipelinesService {
     for (const [day, stepMap] of dayStepDurations.entries()) {
       const steps = [];
       for (const [name, durations] of stepMap.entries()) {
-        const avg =
-          durations.length > 0 ? durations.reduce((a, b) => a + b, 0) / durations.length : 0;
+        const avg = durations.reduce((a, b) => a + b, 0) / durations.length;
         steps.push({
           name,
           averageDurationMinutes: Math.round(avg * 100) / 100,
@@ -610,14 +598,10 @@ export class PipelinesService implements IPipelinesService {
     return Number.isFinite(parsed) ? parsed : 0;
   }
 
-  private toDateBoundaryTimestamp(value: string, boundary: 'start' | 'end'): number {
+  private toDateBoundaryTimestamp(value: string): number {
     const isDateOnly = /^\d{4}-\d{2}-\d{2}$/.test(value);
     if (isDateOnly) {
-      const d =
-        boundary === 'end'
-          ? this.tz.getEndOfDayBoundary(value)
-          : this.tz.getStartOfDayBoundary(value);
-      return d.getTime();
+      return this.tz.getEndOfDayBoundary(value).getTime();
     }
 
     return this.toTimestamp(value);
@@ -648,13 +632,9 @@ export class PipelinesService implements IPipelinesService {
     return durations;
   }
 
-  private calculateJobDuration(job: PipelineJob): number | null {
-    if (!job.startedAt || !job.completedAt) {
-      return null;
-    }
-
+  private calculateJobDuration(job: PipelineJob): number {
     const started = new Date(job.startedAt).getTime();
-    const completed = new Date(job.completedAt).getTime();
+    const completed = new Date(job.completedAt!).getTime();
     return (completed - started) / (1000 * 60); // Convert to minutes
   }
 
