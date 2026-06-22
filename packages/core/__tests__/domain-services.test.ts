@@ -2185,4 +2185,86 @@ describe('PipelinesService', () => {
       expect(result).toEqual([{ day: '2025-01-02', rerun_count: 1 }]);
     });
   });
+
+  describe('getJobStepsAverageTime', () => {
+    function runWithSteps(
+      id: string,
+      steps: Array<{ name?: string; startedAt?: string; completedAt?: string }>
+    ): import('../src/domain-types').PipelineRun {
+      return {
+        id,
+        number: 1,
+        name: 'Build',
+        status: 'completed',
+        conclusion: 'success',
+        createdAt: '2025-01-01T08:00:00Z',
+        updatedAt: '2025-01-01T08:15:00Z',
+        branch: 'main',
+        path: '.github/workflows/build.yml',
+        jobs: [
+          {
+            id: `${id}-job`,
+            name: 'build-job',
+            status: 'completed',
+            conclusion: 'success',
+            startedAt: '2025-01-01T08:00:00Z',
+            completedAt: '2025-01-01T08:15:00Z',
+            steps: steps.map((step, index) => ({
+              name: step.name as string,
+              status: 'completed',
+              conclusion: 'success',
+              number: index + 1,
+              startedAt: step.startedAt,
+              completedAt: step.completedAt,
+            })),
+          },
+        ],
+      };
+    }
+
+    it('should skip steps missing a name, startedAt, or completedAt', async () => {
+      const run = runWithSteps('run-1', [
+        { name: undefined, startedAt: '2025-01-01T08:00:00Z', completedAt: '2025-01-01T08:05:00Z' },
+        { name: 'checkout', startedAt: undefined, completedAt: '2025-01-01T08:05:00Z' },
+        { name: 'build', startedAt: '2025-01-01T08:00:00Z', completedAt: undefined },
+      ]);
+
+      mockPipelineRepo = new PipelinesRepositoryBuilder().withPipelineRuns([run]).build();
+      pipelinesService = new PipelinesService(mockPipelineRepo, undefined, logger);
+
+      const result = await pipelinesService.getJobStepsAverageTime();
+
+      expect(result).toEqual([]);
+    });
+
+    it('should compute the average duration and count for a valid step', async () => {
+      const run = runWithSteps('run-1', [
+        { name: 'checkout', startedAt: '2025-01-01T08:00:00Z', completedAt: '2025-01-01T08:05:00Z' },
+      ]);
+
+      mockPipelineRepo = new PipelinesRepositoryBuilder().withPipelineRuns([run]).build();
+      pipelinesService = new PipelinesService(mockPipelineRepo, undefined, logger);
+
+      const result = await pipelinesService.getJobStepsAverageTime();
+
+      expect(result).toEqual([{ name: 'checkout', averageDurationMinutes: 5, count: 1 }]);
+    });
+
+    it('should average durations for the same step name across different jobs and runs', async () => {
+      const runA = runWithSteps('run-a', [
+        { name: 'checkout', startedAt: '2025-01-01T08:00:00Z', completedAt: '2025-01-01T08:04:00Z' },
+      ]);
+      const runB = runWithSteps('run-b', [
+        { name: 'checkout', startedAt: '2025-01-01T09:00:00Z', completedAt: '2025-01-01T09:06:00Z' },
+      ]);
+
+      mockPipelineRepo = new PipelinesRepositoryBuilder().withPipelineRuns([runA, runB]).build();
+      pipelinesService = new PipelinesService(mockPipelineRepo, undefined, logger);
+
+      const result = await pipelinesService.getJobStepsAverageTime();
+
+      // (4 + 6) / 2 = 5 minutes average, across 2 contributing durations
+      expect(result).toEqual([{ name: 'checkout', averageDurationMinutes: 5, count: 2 }]);
+    });
+  });
 });
