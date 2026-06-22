@@ -189,4 +189,56 @@ describe('IssuesRepository', () => {
       expect(result[0].title).toBe('Updated title');
     });
   });
+
+  describe('getIssues', () => {
+    it('delegates to refreshIssues with the given filters', async () => {
+      const cacheDir = await fs.mkdtemp(path.join(os.tmpdir(), 'smm-issues-get-'));
+      const fresh = [createIssue({ id: '1' })];
+      const fetchIssues = vi.fn().mockResolvedValue(fresh);
+      const jiraClient = createJiraClient({ fetchIssues });
+
+      const repository = new IssuesRepository(jiraClient, cacheDir, logger);
+
+      const result = await repository.getIssues({ status: 'Open' });
+
+      expect(fetchIssues).toHaveBeenCalledWith({
+        startDate: undefined,
+        endDate: undefined,
+        status: 'Open',
+      });
+      expect(result).toEqual(fresh);
+    });
+  });
+
+  describe('getIssueChanges', () => {
+    it('delegates to the jira client fetchIssueChanges', async () => {
+      const cacheDir = await fs.mkdtemp(path.join(os.tmpdir(), 'smm-issues-changes-'));
+      const changes = [{ id: 'change-1' }];
+      const fetchIssueChanges = vi.fn().mockResolvedValue(changes);
+      const jiraClient = createJiraClient({ fetchIssueChanges });
+
+      const repository = new IssuesRepository(jiraClient, cacheDir, logger);
+
+      const result = await repository.getIssueChanges('PROJ-1');
+
+      expect(fetchIssueChanges).toHaveBeenCalledWith('PROJ-1');
+      expect(result).toEqual(changes);
+    });
+  });
+
+  describe('getIssueComments', () => {
+    it('delegates to the jira client fetchIssueComments', async () => {
+      const cacheDir = await fs.mkdtemp(path.join(os.tmpdir(), 'smm-issues-comments-'));
+      const comments = [{ id: 'comment-1' }];
+      const fetchIssueComments = vi.fn().mockResolvedValue(comments);
+      const jiraClient = createJiraClient({ fetchIssueComments });
+
+      const repository = new IssuesRepository(jiraClient, cacheDir, logger);
+
+      const result = await repository.getIssueComments('PROJ-1');
+
+      expect(fetchIssueComments).toHaveBeenCalledWith('PROJ-1');
+      expect(result).toEqual(comments);
+    });
+  });
 });
