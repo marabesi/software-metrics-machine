@@ -58,4 +58,34 @@ describe('CodemaatFetchRepository', () => {
       `Could not locate fetch-codemaat.sh at expected path: ${expectedDefaultScriptPath}`
     );
   });
+
+  it('fetches successfully using a real script, creating the output directory and returning its stdout', () => {
+    const configuration = new Configuration({ gitRepositoryLocation: '/some/path' });
+    const repository = new CodemaatFetchRepository(configuration, logger);
+
+    const scriptDirectory = fs.mkdtempSync(path.join(os.tmpdir(), 'smm-codemaat-script-'));
+    const scriptPath = path.join(scriptDirectory, 'fetch-codemaat.sh');
+    fs.writeFileSync(scriptPath, 'echo "ran: $1 $2 $3 $4 $5"');
+
+    const outputDirectory = path.join(
+      fs.mkdtempSync(path.join(os.tmpdir(), 'smm-codemaat-out-')),
+      'nested'
+    );
+
+    const result = repository.fetch({
+      repositoryPath: '/explicit/repo/path',
+      outputDirectory,
+      startDate: '2026-01-01',
+      subfolder: 'sub',
+      force: true,
+      scriptPath,
+    });
+
+    expect(fs.existsSync(outputDirectory)).toBe(true);
+    expect(result).toEqual({
+      repository: '/explicit/repo/path',
+      outputDirectory,
+      stdout: `ran: /explicit/repo/path ${outputDirectory} 2026-01-01 sub true\n`,
+    });
+  });
 });
