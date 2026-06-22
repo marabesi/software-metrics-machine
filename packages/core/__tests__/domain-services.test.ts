@@ -2061,6 +2061,78 @@ describe('PipelinesService', () => {
         ])
       );
     });
+
+    it('should default weekly and monthly counts to zero for a mid-range day in a week/month with no deployments', async () => {
+      const deployRuns: import('../src/domain-types').PipelineRun[] = [
+        {
+          id: 'release-run-jan',
+          number: 1,
+          name: 'Release',
+          status: 'completed',
+          conclusion: 'success',
+          createdAt: '2025-01-01T08:00:00Z',
+          updatedAt: '2025-01-01T08:15:00Z',
+          branch: 'main',
+          path: '.github/workflows/release.yml',
+          jobs: [
+            {
+              id: 'release-job-jan',
+              name: 'deploy-production',
+              status: 'completed',
+              conclusion: 'success',
+              startedAt: '2025-01-01T08:05:00Z',
+              completedAt: '2025-01-01T08:15:00Z',
+            },
+          ],
+        },
+        {
+          id: 'release-run-mar',
+          number: 2,
+          name: 'Release',
+          status: 'completed',
+          conclusion: 'success',
+          createdAt: '2025-03-01T08:00:00Z',
+          updatedAt: '2025-03-01T08:15:00Z',
+          branch: 'main',
+          path: '.github/workflows/release.yml',
+          jobs: [
+            {
+              id: 'release-job-mar',
+              name: 'deploy-production',
+              status: 'completed',
+              conclusion: 'success',
+              startedAt: '2025-03-01T08:05:00Z',
+              completedAt: '2025-03-01T08:15:00Z',
+            },
+          ],
+        },
+      ];
+
+      mockPipelineRepo = new PipelinesRepositoryBuilder().withPipelineRuns(deployRuns).build();
+      pipelinesService = new PipelinesService(
+        mockPipelineRepo,
+        {
+          getDeploymentFrequencyTargets: () => [
+            { pipeline: '.github/workflows/release.yml', job: 'deploy-production' },
+          ],
+        } as any,
+        logger
+      );
+
+      const frequency = await pipelinesService.getDeploymentFrequencyWithAllIntervals();
+
+      // Feb 15 falls in a week and month (February) with zero deployments of its own.
+      expect(frequency).toEqual(
+        expect.arrayContaining([
+          expect.objectContaining({
+            days: '2025-02-15',
+            daily_counts: 0,
+            weekly_counts: 0,
+            monthly_counts: 0,
+          }),
+        ])
+      );
+    });
   });
 
   describe('getJobMetrics', () => {
