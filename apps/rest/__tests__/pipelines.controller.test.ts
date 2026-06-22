@@ -287,6 +287,58 @@ describe('PipelinesController', () => {
     });
   });
 
+  describe('jobsAverageTimeByDay', () => {
+    it('groups job durations by day across all jobs', async () => {
+      const { controller } = createController([
+        {
+          createdAt: '2026-01-01T00:00:00Z',
+          jobs: [
+            { name: 'build', startedAt: '2026-01-01T00:00:00Z', completedAt: '2026-01-01T00:02:00Z' },
+            { name: 'test', startedAt: '2026-01-01T00:00:00Z', completedAt: '2026-01-01T00:04:00Z' },
+          ],
+        },
+      ]);
+
+      const result = await controller.jobsAverageTimeByDay(undefined, {});
+
+      expect(result).toEqual({
+        result: [{ day: '2026-01-01', avg_time: 3, count: 2 }],
+      });
+    });
+
+    it('skips runs entirely when the run metric date cannot be resolved', async () => {
+      const { controller } = createController([
+        {
+          jobs: [
+            { name: 'build', startedAt: '2026-01-01T00:00:00Z', completedAt: '2026-01-01T00:02:00Z' },
+          ],
+        },
+        {
+          createdAt: '2026-01-02T00:00:00Z',
+          jobs: [
+            { name: 'build', startedAt: '2026-01-02T00:00:00Z', completedAt: '2026-01-02T00:02:00Z' },
+          ],
+        },
+      ]);
+
+      const result = await controller.jobsAverageTimeByDay(undefined, {});
+
+      expect(result).toEqual({
+        result: [{ day: '2026-01-02', avg_time: 2, count: 1 }],
+      });
+    });
+
+    it('forwards exclude_jobs to the repository as exclude_job_name', async () => {
+      const { controller, pipelinesRepo } = createController([]);
+
+      await controller.jobsAverageTimeByDay('flaky-job', {});
+
+      expect(pipelinesRepo.loadPipelines).toHaveBeenCalledWith(
+        expect.objectContaining({ excludeJobName: 'flaky-job' })
+      );
+    });
+  });
+
   describe('jobsStepsAverageTime', () => {
     it('wraps the service result in a result envelope', async () => {
       const { controller } = createController([
