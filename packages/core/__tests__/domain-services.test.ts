@@ -820,6 +820,55 @@ describe('PRsService', () => {
       expect(result[0].period).toMatch(/^\d{4}-\d{2}-\d{2}$/);
     });
   });
+
+  describe('extractTopThemes (via getSummary)', () => {
+    it('should skip PRs with no comments and PRs whose comment bodies are empty/whitespace-only', async () => {
+      const noCommentsPr = new PullRequestBuilder().withId(1).withTitle('No comments').build();
+      const whitespaceOnlyPr = {
+        ...new PullRequestBuilder().withId(2).withTitle('Whitespace only').build(),
+        comments: [{ body: '   ' }, { body: '' }],
+      };
+      const meaningfulPr = {
+        ...new PullRequestBuilder().withId(3).withTitle('Meaningful').build(),
+        comments: [{ body: 'database migration database migration' }],
+      };
+
+      prsService = new PRsService(
+        new ReadPullRequestsRepositoryBuilder()
+          .withPullRequests([noCommentsPr, whitespaceOnlyPr, meaningfulPr])
+          .build(),
+        undefined,
+        logger
+      );
+
+      const summary = (await prsService.getSummary()).result;
+
+      expect(summary.top_themes).toEqual(
+        expect.arrayContaining([{ text: 'database migration', value: 2 }])
+      );
+    });
+
+    it('should exclude short words (<3 chars) and numeric-only tokens from themes', async () => {
+      const pr = {
+        ...new PullRequestBuilder().withId(1).withTitle('Short and numeric tokens').build(),
+        comments: [{ body: 'ok 42 cache cache cache' }],
+      };
+
+      prsService = new PRsService(
+        new ReadPullRequestsRepositoryBuilder().withPullRequests([pr]).build(),
+        undefined,
+        logger
+      );
+
+      const summary = (await prsService.getSummary()).result;
+
+      expect(summary.top_themes).toEqual(
+        expect.arrayContaining([{ text: 'cache', value: 3 }])
+      );
+      expect(summary.top_themes.some((theme) => theme.text.includes('ok'))).toBe(false);
+      expect(summary.top_themes.some((theme) => theme.text.includes('42'))).toBe(false);
+    });
+  });
 });
 
 describe('PipelinesService', () => {
