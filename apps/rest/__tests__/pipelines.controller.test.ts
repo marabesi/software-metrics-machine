@@ -84,6 +84,53 @@ describe('PipelinesController', () => {
     ]);
   });
 
+  describe('runsDuration', () => {
+    it('skips runs whose duration cannot be resolved', async () => {
+      const { controller } = createController([
+        { path: 'ci.yml', createdAt: '2026-01-01T00:00:00Z', jobs: [] },
+      ]);
+
+      const result = await controller.runsDuration(undefined, {});
+
+      expect(result).toEqual([]);
+    });
+
+    it.each([
+      ['avg', 6],
+      ['min', 4],
+      ['max', 8],
+    ])(
+      'returns a single-duration shape when aggregation is %s',
+      async (aggregation, expectedDuration) => {
+        const { controller } = createController([
+          {
+            path: 'ci.yml',
+            jobs: [
+              { name: 'build', startedAt: '2026-01-01T00:00:00Z', completedAt: '2026-01-01T00:04:00Z' },
+            ],
+          },
+          {
+            path: 'ci.yml',
+            jobs: [
+              { name: 'build', startedAt: '2026-01-02T00:00:00Z', completedAt: '2026-01-02T00:08:00Z' },
+            ],
+          },
+        ]);
+
+        const result = await controller.runsDuration(aggregation, {});
+
+        expect(result).toEqual([
+          {
+            workflow: 'ci.yml',
+            aggregation,
+            duration: expectedDuration,
+            total_runs: 2,
+          },
+        ]);
+      }
+    );
+  });
+
   describe('pipelineSummary', () => {
     it('returns zeroed summary with null first/last run when there are no runs', async () => {
       const { controller, pipelinesRepo } = createController([]);
