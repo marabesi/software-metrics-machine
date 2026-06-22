@@ -8,6 +8,7 @@ export interface Recommendation {
   severity: RecommendationSeverity;
   currentValue?: string;
   targetValue?: string;
+  contextItems?: string[];
   href?: string;
   hrefLabel?: string;
 }
@@ -30,12 +31,14 @@ export interface RecommendationsProps {
     day_count: number;
   }>;
   jobsSummary?: Array<{
+    workflow_name?: string;
     job_name: string;
     success_rate: number;
     avg_duration_minutes: number;
     rerun_count: number;
     total_runs: number;
   }>;
+  selectedWorkflow?: string;
   averageReviewTime?: Array<{
     author: string;
     avg_hours: number;

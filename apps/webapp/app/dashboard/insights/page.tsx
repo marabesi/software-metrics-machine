@@ -85,10 +85,10 @@ export default async function InsightsSection({
     const pipelineParams = buildPipelineApiParams(filters);
     const [pairing, pipeline, pr, deployment, jobs, reviewTime] = await Promise.all([
       sourceCodeAPI.pairingIndex(apiParams),
-      pipelineAPI.summary(apiParams),
+      pipelineAPI.summary(pipelineParams),
       pullRequestAPI.summary(apiParams),
       pipelineAPI.deploymentFrequency(pipelineParams),
-      pipelineAPI.jobsSummary(apiParams),
+      pipelineAPI.jobsSummary(pipelineParams),
       pullRequestAPI.averageReviewTime(apiParams),
     ]);
     const prData = unwrapResult(pr as PullRequestSummary | ResultWrapper<PullRequestSummary>);
@@ -124,8 +124,32 @@ export default async function InsightsSection({
     pipelineSummary = pipelineData || null;
     prSummary = prData;
     deploymentFrequency = deploymentData;
-    jobsSummary = Array.isArray(jobs) ? jobs : [];
-    averageReviewTime = Array.isArray(reviewTime) ? reviewTime : [];
+    const jobsResult = unwrapResult(
+      jobs as JobsSummaryItem[] | ResultWrapper<JobsSummaryItem[]>
+    );
+    jobsSummary = Array.isArray(jobsResult)
+      ? jobsResult.map((job: JobsSummaryItem): JobsSummaryItem => ({
+          workflow_name: job.workflow_name,
+          job_name: job.job_name || 'Unknown',
+          total_runs: job.total_runs || 0,
+          avg_duration_minutes: job.avg_duration_minutes || 0,
+          success_count: job.success_count || 0,
+          failure_count: job.failure_count || 0,
+          success_rate: job.success_rate || 0,
+          failure_rate: job.failure_rate || 0,
+          rerun_count: job.rerun_count || 0,
+        }))
+      : [];
+
+    const reviewTimeResult = unwrapResult(
+      reviewTime as AverageReviewTimeItem[] | ResultWrapper<AverageReviewTimeItem[]>
+    );
+    averageReviewTime = Array.isArray(reviewTimeResult)
+      ? reviewTimeResult.map((item: AverageReviewTimeItem): AverageReviewTimeItem => ({
+          author: item.author || 'Unknown',
+          avg_hours: item.avg_hours || 0,
+        }))
+      : [];
   } catch (error) {
     console.error('Error fetching insights:', error);
     pairingIndex = null;
@@ -143,6 +167,23 @@ export default async function InsightsSection({
   
   return (
     <div className="space-y-6">
+      <Recommendations
+        pairingIndex={pairingIndex}
+        prSummary={
+          prSummary
+            ? {
+                total: prSummary.total_prs ?? prSummary.total ?? 0,
+                merged: prSummary.merged_prs ?? prSummary.merged ?? 0,
+                closed: prSummary.closed_prs ?? prSummary.closed ?? 0,
+                open: prSummary.open_prs ?? prSummary.open ?? 0,
+              }
+            : null
+        }
+        deploymentFrequency={deploymentFrequency}
+        jobsSummary={jobsSummary}
+        selectedWorkflow={filters.workflowSelector}
+        averageReviewTime={averageReviewTime}
+      />
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         <Card>
           <CardHeader title="Pairing Index">
@@ -238,14 +279,6 @@ export default async function InsightsSection({
           <DeploymentFrequency deploymentFrequency={deploymentFrequency} />
         </CardContent>
       </Card>
-
-      <Recommendations
-        pairingIndex={pairingIndex}
-        prSummary={prSummary ? { total: prSummary.total ?? 0, merged: prSummary.merged ?? 0, closed: prSummary.closed ?? 0, open: prSummary.open ?? 0 } : null}
-        deploymentFrequency={deploymentFrequency}
-        jobsSummary={jobsSummary}
-        averageReviewTime={averageReviewTime}
-      />
     </div>
   );
 }

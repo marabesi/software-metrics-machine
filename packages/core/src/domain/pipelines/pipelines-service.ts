@@ -347,12 +347,15 @@ export class PipelinesService implements IPipelinesService {
 
     for (const run of runs) {
       const jobs = run.jobs || [];
+      const workflowName = run.path;
 
       for (const job of jobs) {
         const jobName = job.name;
-        if (!jobMetricsMap.has(jobName)) {
-          jobMetricsMap.set(jobName, {
+        const key = `${workflowName || 'unknown'}::${jobName}`;
+        if (!jobMetricsMap.has(key)) {
+          jobMetricsMap.set(key, {
             jobName,
+            workflowName,
             totalRuns: 0,
             averageDurationMinutes: 0,
             successCount: 0,
@@ -368,7 +371,7 @@ export class PipelinesService implements IPipelinesService {
           });
         }
 
-        const metrics = jobMetricsMap.get(jobName)!;
+        const metrics = jobMetricsMap.get(key)!;
         metrics.totalRuns += 1;
         metrics.rerunCount += Math.max((run.runAttempt || 1) - 1, 0);
 
@@ -393,11 +396,15 @@ export class PipelinesService implements IPipelinesService {
     // Calculate average durations and success rates
     const result: JobMetrics[] = [];
 
-    for (const [jobName, metrics] of jobMetricsMap.entries()) {
+    for (const metrics of jobMetricsMap.values()) {
       // Extract durations for this job
       const durations: number[] = [];
       for (const run of runs) {
-        const job = (run.jobs || []).find((j) => j.name === jobName);
+        if (run.path !== metrics.workflowName) {
+          continue;
+        }
+
+        const job = (run.jobs || []).find((j) => j.name === metrics.jobName);
         if (job && job.startedAt && job.completedAt) {
           durations.push(this.calculateJobDuration(job));
         }

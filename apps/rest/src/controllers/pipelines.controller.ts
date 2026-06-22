@@ -135,6 +135,7 @@ export class PipelinesController {
 
     return {
       result: metrics.map((item) => ({
+        workflow_name: item.workflowName,
         job_name: item.jobName,
         total_runs: item.totalRuns,
         avg_duration_minutes: item.averageDurationMinutes,

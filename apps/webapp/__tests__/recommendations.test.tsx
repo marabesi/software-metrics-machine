@@ -92,6 +92,7 @@ describe('Recommendations', () => {
           {...defaultProps}
           jobsSummary={[
             {
+              workflow_name: '.github/workflows/ci.yml',
               job_name: 'test',
               success_rate: 80,
               avg_duration_minutes: 3,
@@ -104,6 +105,30 @@ describe('Recommendations', () => {
 
       expect(screen.getByText('Improve Pipeline Reliability')).toBeInTheDocument();
       expect(screen.getByText(/Overall pipeline success rate is 80.0%/)).toBeInTheDocument();
+      expect(screen.getByText(/Most affected: \.github\/workflows\/ci\.yml \/ test \(80\.0%\)/)).toBeInTheDocument();
+      expect(screen.getByText('.github/workflows/ci.yml / test - 80.0% success')).toBeInTheDocument();
+    });
+
+    it('uses the selected workflow as a pipeline name fallback', () => {
+      renderWithProviders(
+        <Recommendations
+          {...defaultProps}
+          selectedWorkflow=".github/workflows/release.yml"
+          jobsSummary={[
+            {
+              job_name: 'deploy',
+              success_rate: 60,
+              avg_duration_minutes: 3,
+              rerun_count: 0,
+              total_runs: 10,
+            },
+          ]}
+        />
+      );
+
+      expect(
+        screen.getByText('.github/workflows/release.yml / deploy - 60.0% success')
+      ).toBeInTheDocument();
     });
 
     it('shows success when success rate is at or above 90%', () => {
@@ -134,6 +159,7 @@ describe('Recommendations', () => {
           {...defaultProps}
           jobsSummary={[
             {
+              workflow_name: '.github/workflows/ci.yml',
               job_name: 'flaky-test',
               success_rate: 90,
               avg_duration_minutes: 4,
@@ -146,6 +172,7 @@ describe('Recommendations', () => {
 
       expect(screen.getByText('Reduce Pipeline Reruns')).toBeInTheDocument();
       expect(screen.getByText(/Detected 5 reruns across 1 job\(s\)/)).toBeInTheDocument();
+      expect(screen.getByText(/\.github\/workflows\/ci\.yml \/ flaky-test \(5\)/)).toBeInTheDocument();
     });
 
     it('does not show rerun warning when reruns are zero', () => {
@@ -175,6 +202,7 @@ describe('Recommendations', () => {
           {...defaultProps}
           jobsSummary={[
             {
+              workflow_name: '.github/workflows/ci.yml',
               job_name: 'slow-job',
               success_rate: 95,
               avg_duration_minutes: 8,
@@ -187,6 +215,7 @@ describe('Recommendations', () => {
 
       expect(screen.getByText('Optimize Job Duration')).toBeInTheDocument();
       expect(screen.getByText(/Average job duration is 8.0 min/)).toBeInTheDocument();
+      expect(screen.getByText(/Slowest jobs: \.github\/workflows\/ci\.yml \/ slow-job \(8\.0 min\)/)).toBeInTheDocument();
     });
 
     it('does not show duration warning when under 5 minutes', () => {
@@ -278,7 +307,7 @@ describe('Recommendations', () => {
       );
 
       expect(screen.getByText('Increase Deployment Frequency')).toBeInTheDocument();
-      expect(screen.getByText(/No deployments detected/)).toBeInTheDocument();
+      expect(screen.getByText(/No deployments detected for deploy \/ prod/)).toBeInTheDocument();
     });
 
     it('does not show deployment warning when deployments exist', () => {

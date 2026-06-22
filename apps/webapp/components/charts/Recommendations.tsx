@@ -18,6 +18,32 @@ import {
 import { METRIC_TARGETS } from './targets';
 import { ContextLink } from '@/components/filters/ContextLink';
 
+type JobSummary = NonNullable<RecommendationsProps['jobsSummary']>[number];
+type DeploymentFrequencyItem = NonNullable<RecommendationsProps['deploymentFrequency']>[number];
+
+function formatPipelineJob(
+  job: Pick<JobSummary, 'workflow_name' | 'job_name'>,
+  selectedWorkflow?: string
+): string {
+  const workflowName = job.workflow_name || selectedWorkflow;
+  return workflowName ? `${workflowName} / ${job.job_name}` : `All pipelines / ${job.job_name}`;
+}
+
+function formatDeploymentTarget(target: Pick<DeploymentFrequencyItem, 'pipeline' | 'job'>): string {
+  return `${target.pipeline} / ${target.job}`;
+}
+
+function formatTopItems<T>(items: T[], formatter: (item: T) => string, limit = 3): string {
+  const visible = items.slice(0, limit).map(formatter);
+  const remaining = items.length - visible.length;
+
+  if (remaining > 0) {
+    return `${visible.join(', ')} and ${remaining} more`;
+  }
+
+  return visible.join(', ');
+}
+
 function getSeverityIcon(severity: RecommendationSeverity) {
   switch (severity) {
     case 'warning':
@@ -59,6 +85,7 @@ export function Recommendations({
   prSummary,
   deploymentFrequency,
   jobsSummary,
+  selectedWorkflow,
   averageReviewTime,
 }: RecommendationsProps) {
   const recommendations = useMemo(() => {
@@ -100,14 +127,24 @@ export function Recommendations({
         jobsSummary.reduce((sum, j) => sum + j.success_rate, 0) / jobsSummary.length;
 
       if (overallSuccessRate < 90) {
+        const affectedJobs = jobsSummary
+          .filter((job) => job.success_rate < 90)
+          .sort((a, b) => a.success_rate - b.success_rate);
+        const affectedJobsMessage = formatTopItems(
+          affectedJobs.length > 0 ? affectedJobs : [...jobsSummary].sort((a, b) => a.success_rate - b.success_rate),
+          (job) => `${formatPipelineJob(job, selectedWorkflow)} (${job.success_rate.toFixed(1)}%)`
+        );
         recs.push({
           id: 'pipeline-success-low',
           metric: 'jobs-success-rate',
           title: 'Improve Pipeline Reliability',
-          message: `Overall pipeline success rate is ${overallSuccessRate.toFixed(1)}%, below the 90% target. Investigate flaky tests and failure patterns to improve CI stability.`,
+          message: `Overall pipeline success rate is ${overallSuccessRate.toFixed(1)}%, below the 90% target. Most affected: ${affectedJobsMessage}. Investigate flaky tests and failure patterns to improve CI stability.`,
           severity: 'warning',
           currentValue: `${overallSuccessRate.toFixed(1)}%`,
           targetValue: target?.target,
+          contextItems: (affectedJobs.length > 0 ? affectedJobs : [...jobsSummary].sort((a, b) => a.success_rate - b.success_rate))
+            .slice(0, 3)
+            .map((job) => `${formatPipelineJob(job, selectedWorkflow)} - ${job.success_rate.toFixed(1)}% success`),
           href: '/dashboard/pipelines',
           hrefLabel: 'View Pipelines',
         });
@@ -130,15 +167,24 @@ export function Recommendations({
       const totalReruns = jobsSummary.reduce((sum, j) => sum + j.rerun_count, 0);
 
       if (totalReruns > 0) {
-        const rerunJobs = jobsSummary.filter((j) => j.rerun_count > 0);
+        const rerunJobs = jobsSummary
+          .filter((j) => j.rerun_count > 0)
+          .sort((a, b) => b.rerun_count - a.rerun_count);
+        const rerunJobsMessage = formatTopItems(
+          rerunJobs,
+          (job) => `${formatPipelineJob(job, selectedWorkflow)} (${job.rerun_count})`
+        );
         recs.push({
           id: 'reruns-detected',
           metric: 'job-reruns',
           title: 'Reduce Pipeline Reruns',
-          message: `Detected ${totalReruns} reruns across ${rerunJobs.length} job(s). Reruns waste compute and erode CI trust — investigate flaky tests as the likely root cause.`,
+          message: `Detected ${totalReruns} reruns across ${rerunJobs.length} job(s): ${rerunJobsMessage}. Reruns waste compute and erode CI trust; investigate flaky tests as the likely root cause.`,
           severity: 'warning',
           currentValue: `${totalReruns} reruns`,
           targetValue: target?.target,
+          contextItems: rerunJobs
+            .slice(0, 3)
+            .map((job) => `${formatPipelineJob(job, selectedWorkflow)} - ${job.rerun_count} reruns`),
           href: '/dashboard/pipelines',
           hrefLabel: 'View Pipelines',
         });
@@ -152,14 +198,24 @@ export function Recommendations({
         jobsSummary.reduce((sum, j) => sum + j.avg_duration_minutes, 0) / jobsSummary.length;
 
       if (avgDuration > 5) {
+        const slowJobs = jobsSummary
+          .filter((job) => job.avg_duration_minutes > 5)
+          .sort((a, b) => b.avg_duration_minutes - a.avg_duration_minutes);
+        const slowJobsMessage = formatTopItems(
+          slowJobs.length > 0 ? slowJobs : [...jobsSummary].sort((a, b) => b.avg_duration_minutes - a.avg_duration_minutes),
+          (job) => `${formatPipelineJob(job, selectedWorkflow)} (${job.avg_duration_minutes.toFixed(1)} min)`
+        );
         recs.push({
           id: 'job-duration-high',
           metric: 'job-avg-time',
           title: 'Optimize Job Duration',
-          message: `Average job duration is ${avgDuration.toFixed(1)} min, exceeding the 5 min target. Consider parallelizing steps, caching dependencies, or splitting large jobs.`,
+          message: `Average job duration is ${avgDuration.toFixed(1)} min, exceeding the 5 min target. Slowest jobs: ${slowJobsMessage}. Consider parallelizing steps, caching dependencies, or splitting large jobs.`,
           severity: 'warning',
           currentValue: `${avgDuration.toFixed(1)} min`,
           targetValue: target?.target,
+          contextItems: (slowJobs.length > 0 ? slowJobs : [...jobsSummary].sort((a, b) => b.avg_duration_minutes - a.avg_duration_minutes))
+            .slice(0, 3)
+            .map((job) => `${formatPipelineJob(job, selectedWorkflow)} - ${job.avg_duration_minutes.toFixed(1)} min avg`),
           href: '/dashboard/pipelines',
           hrefLabel: 'View Pipelines',
         });
@@ -222,14 +278,19 @@ export function Recommendations({
       );
 
       if (totalDailyDeployments === 0) {
+        const deploymentTargetsMessage = formatTopItems(
+          deploymentFrequency,
+          formatDeploymentTarget
+        );
         recs.push({
           id: 'no-deployments',
           metric: 'deployment-frequency',
           title: 'Increase Deployment Frequency',
-          message: 'No deployments detected in the selected period. Elite teams deploy daily or multiple times per day. Consider automating your deployment pipeline.',
+          message: `No deployments detected for ${deploymentTargetsMessage} in the selected period. Elite teams deploy daily or multiple times per day. Consider automating your deployment pipeline.`,
           severity: 'info',
           currentValue: '0 deployments',
           targetValue: target?.target,
+          contextItems: deploymentFrequency.slice(0, 3).map(formatDeploymentTarget),
           href: '/dashboard/pipelines',
           hrefLabel: 'View Pipelines',
         });
@@ -250,7 +311,7 @@ export function Recommendations({
     }
 
     return recs;
-  }, [pairingIndex, prSummary, deploymentFrequency, jobsSummary, averageReviewTime]);
+  }, [pairingIndex, prSummary, deploymentFrequency, jobsSummary, selectedWorkflow, averageReviewTime]);
 
   if (recommendations.length === 0) {
     return null;
@@ -293,6 +354,27 @@ export function Recommendations({
                           Target: <strong>{rec.targetValue}</strong>
                         </Box>
                       )}
+                    </Box>
+                  )}
+                  {rec.contextItems && rec.contextItems.length > 0 && (
+                    <Box sx={{ mt: 1, display: 'flex', flexWrap: 'wrap', gap: 0.75 }}>
+                      {rec.contextItems.map((item) => (
+                        <Box
+                          key={item}
+                          component="span"
+                          sx={{
+                            border: '1px solid',
+                            borderColor: 'divider',
+                            borderRadius: 1,
+                            color: 'text.primary',
+                            fontSize: '0.75rem',
+                            px: 1,
+                            py: 0.25,
+                          }}
+                        >
+                          {item}
+                        </Box>
+                      ))}
                     </Box>
                   )}
                   {rec.href && rec.hrefLabel && (

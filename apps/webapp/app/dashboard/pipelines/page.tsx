@@ -166,6 +166,7 @@ export default async function PipelinesPage({
     );
     const jobsSummaryData = Array.isArray(jobsSummaryResult)
       ? jobsSummaryResult.map((item: JobSummaryResponseItem): JobSummaryData => ({
+          workflow_name: item.workflow_name,
           job_name: item.job_name || 'Unknown',
           total_runs: item.total_runs || 0,
           avg_duration_minutes: item.avg_duration_minutes || 0,

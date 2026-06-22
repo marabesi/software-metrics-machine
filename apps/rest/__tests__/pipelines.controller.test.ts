@@ -718,6 +718,7 @@ describe('PipelinesController', () => {
       expect(result).toEqual({
         result: [
           {
+            workflow_name: undefined,
             job_name: 'build',
             total_runs: 1,
             avg_duration_minutes: 10,
@@ -746,5 +747,4 @@ describe('PipelinesController', () => {
       });
     });
   });
-
 });

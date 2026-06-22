@@ -9,7 +9,6 @@ type GlobalCliOptions = {
   project?: string;
 };
 
-
 /**
  * Shared CLI command base class.
  *
@@ -28,9 +27,7 @@ export class SmmCommand extends Command {
     return this.command(nameAndArgs) as SmmCommand;
   }
 
-  actionWithSmm(
-    handler: (options: any, command: SmmCommand) => void | Promise<void>
-  ): this {
+  actionWithSmm(handler: (options: any, command: SmmCommand) => void | Promise<void>): this {
     return this.action((options: unknown, command: Command) => {
       const smmCommand = command as unknown as SmmCommand;
       smmCommand.getConfigurationRepository();
@@ -49,7 +46,9 @@ export class SmmCommand extends Command {
   getConfigurationRepository(): ConfigurationRepository {
     if (!this.configurationRepository) {
       const logger = new Logger('ConfigurationRepository', process.env.DEBUG ? 'DEBUG' : undefined);
-      logger.debug('Initializing ConfigurationRepository with environment variables and selected project');
+      logger.debug(
+        'Initializing ConfigurationRepository with environment variables and selected project'
+      );
 
       this.configurationRepository = new ConfigurationRepository(
         process.env,

@@ -48,6 +48,7 @@ export interface DeploymentFrequencyPoint {
   month_count: number;
 }
 export interface JobsSummaryItem {
+  workflow_name?: string;
   job_name: string;
   total_runs: number;
   avg_duration_minutes: number;

@@ -70,6 +70,7 @@ export interface JobsAverageTimeByDayData {
 }
 
 export interface JobSummaryResponseItem {
+  workflow_name?: string;
   job_name?: string;
   total_runs?: number;
   avg_duration_minutes?: number;
@@ -81,6 +82,7 @@ export interface JobSummaryResponseItem {
 }
 
 export interface JobSummaryData {
+  workflow_name?: string;
   job_name: string;
   total_runs: number;
   avg_duration_minutes: number;

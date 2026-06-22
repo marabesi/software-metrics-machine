@@ -173,6 +173,7 @@ export type PipelineJobsByStatusResponse = Array<{ Status: string; Count: number
 
 export interface PipelineJobsSummaryResponse {
   result: Array<{
+    workflow_name?: string;
     job_name: string;
     total_runs: number;
     avg_duration_minutes: number;

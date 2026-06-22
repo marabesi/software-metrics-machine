@@ -15,6 +15,7 @@ export const pipelineAPI = {
 
   jobsSummary: (params?: ApiParams) =>
     fetchAPI<Array<{
+      workflow_name?: string;
       job_name: string;
       total_runs: number;
       avg_duration_minutes: number;

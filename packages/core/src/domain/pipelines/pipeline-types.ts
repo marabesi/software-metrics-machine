@@ -75,6 +75,7 @@ export interface PipelineMetrics {
 
 export interface JobMetrics {
   jobName: string;
+  workflowName?: string;
   totalRuns: number;
   averageDurationMinutes: number;
   successCount: number;

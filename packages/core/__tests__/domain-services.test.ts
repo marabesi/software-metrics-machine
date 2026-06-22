@@ -2140,7 +2140,7 @@ describe('PipelinesService', () => {
       id: string,
       jobName: string,
       conclusion: string | undefined,
-      options: { runAttempt?: number; startedAt?: string; completedAt?: string } = {}
+      options: { runAttempt?: number; startedAt?: string; completedAt?: string; path?: string } = {}
     ): import('../src/domain-types').PipelineRun {
       return {
         id,
@@ -2151,7 +2151,7 @@ describe('PipelinesService', () => {
         createdAt: '2025-01-01T08:00:00Z',
         updatedAt: '2025-01-01T08:15:00Z',
         branch: 'main',
-        path: '.github/workflows/build.yml',
+        path: options.path ?? '.github/workflows/build.yml',
         runAttempt: options.runAttempt,
         jobs: [
           {
@@ -2259,6 +2259,30 @@ describe('PipelinesService', () => {
       expect(jobMetrics[0].totalRuns).toBe(2);
       expect(jobMetrics[0].successCount).toBe(1);
       expect(jobMetrics[0].failureCount).toBe(1);
+    });
+
+    it('should keep the same job name separate for different workflows', async () => {
+      const runs: import('../src/domain-types').PipelineRun[] = [
+        jobRun('run-build', 'shared-job', 'success', {
+          completedAt: '2025-01-01T08:05:00Z',
+          path: '.github/workflows/build.yml',
+        }),
+        jobRun('run-release', 'shared-job', 'failure', {
+          completedAt: '2025-01-01T08:05:00Z',
+          path: '.github/workflows/release.yml',
+        }),
+      ];
+
+      mockPipelineRepo = new PipelinesRepositoryBuilder().withPipelineRuns(runs).build();
+      pipelinesService = new PipelinesService(mockPipelineRepo, undefined, logger);
+
+      const jobMetrics = await pipelinesService.getJobMetrics();
+
+      expect(jobMetrics).toHaveLength(2);
+      expect(jobMetrics.map((metric) => metric.workflowName).sort()).toEqual([
+        '.github/workflows/build.yml',
+        '.github/workflows/release.yml',
+      ]);
     });
 
     it('should include only jobs with both startedAt and completedAt in the duration calculation', async () => {
