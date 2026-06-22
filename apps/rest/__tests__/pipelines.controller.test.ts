@@ -208,6 +208,61 @@ describe('PipelinesController', () => {
     });
   });
 
+  describe('jobsStepsAverageTime', () => {
+    it('wraps the service result in a result envelope', async () => {
+      const { controller } = createController([
+        {
+          jobs: [
+            {
+              steps: [
+                {
+                  name: 'install',
+                  startedAt: '2026-01-01T00:00:00Z',
+                  completedAt: '2026-01-01T00:02:00Z',
+                },
+              ],
+            },
+          ],
+        },
+      ]);
+
+      const result = await controller.jobsStepsAverageTime({});
+
+      expect(result).toEqual({
+        result: [{ name: 'install', averageDurationMinutes: 2, count: 1 }],
+      });
+    });
+  });
+
+  describe('jobsStepsAverageTimeByDay', () => {
+    it('wraps the service result in a result envelope', async () => {
+      const { controller } = createController([
+        {
+          createdAt: '2026-01-01T00:00:00Z',
+          jobs: [
+            {
+              steps: [
+                {
+                  name: 'install',
+                  startedAt: '2026-01-01T00:00:00Z',
+                  completedAt: '2026-01-01T00:02:00Z',
+                },
+              ],
+            },
+          ],
+        },
+      ]);
+
+      const result = await controller.jobsStepsAverageTimeByDay({});
+
+      expect(result).toEqual({
+        result: [
+          { day: '2026-01-01', steps: [{ name: 'install', averageDurationMinutes: 2 }] },
+        ],
+      });
+    });
+  });
+
   describe('deploymentFrequency', () => {
     it('delegates to the service and passes through its result', async () => {
       const { controller, pipelinesService } = createController([]);
