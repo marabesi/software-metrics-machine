@@ -652,6 +652,43 @@ describe('PRsService', () => {
       expect(rows[0].date).toMatch(/^\d{4}-W\d{2}$/);
     });
   });
+
+  describe('getByAuthor', () => {
+    it('should group authorless PRs under "unknown"', async () => {
+      const authorlessPr = {
+        ...new PullRequestBuilder().withId(1).withTitle('No author').build(),
+        author: undefined,
+      };
+
+      prsService = new PRsService(
+        new ReadPullRequestsRepositoryBuilder().withPullRequests([authorlessPr]).build(),
+        undefined,
+        logger
+      );
+
+      const result = await prsService.getByAuthor();
+
+      expect(result).toEqual([{ author: 'unknown', count: 1 }]);
+    });
+
+    it('should default to top 10 when top is omitted, and respect an explicit top value', async () => {
+      const prs = Array.from({ length: 12 }, (_, i) =>
+        new PullRequestBuilder().withId(i + 1).withTitle(`PR ${i}`).withAuthor(`author${i}`).build()
+      );
+
+      prsService = new PRsService(
+        new ReadPullRequestsRepositoryBuilder().withPullRequests(prs).build(),
+        undefined,
+        logger
+      );
+
+      const defaultTop = await prsService.getByAuthor();
+      const explicitTop = await prsService.getByAuthor(undefined, 3);
+
+      expect(defaultTop).toHaveLength(10);
+      expect(explicitTop).toHaveLength(3);
+    });
+  });
 });
 
 describe('PipelinesService', () => {
