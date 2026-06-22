@@ -2267,4 +2267,78 @@ describe('PipelinesService', () => {
       expect(result).toEqual([{ name: 'checkout', averageDurationMinutes: 5, count: 2 }]);
     });
   });
+
+  describe('getJobStepsAverageTimeByDay', () => {
+    function runWithStepsOnDay(
+      id: string,
+      createdAt: string,
+      steps: Array<{ name?: string; startedAt?: string; completedAt?: string }>,
+      completedAt?: string
+    ): import('../src/domain-types').PipelineRun {
+      return {
+        id,
+        number: 1,
+        name: 'Build',
+        status: 'completed',
+        conclusion: 'success',
+        createdAt,
+        updatedAt: createdAt,
+        completedAt,
+        branch: 'main',
+        path: '.github/workflows/build.yml',
+        jobs: [
+          {
+            id: `${id}-job`,
+            name: 'build-job',
+            status: 'completed',
+            conclusion: 'success',
+            startedAt: createdAt,
+            completedAt: completedAt ?? createdAt,
+            steps: steps.map((step, index) => ({
+              name: step.name as string,
+              status: 'completed',
+              conclusion: 'success',
+              number: index + 1,
+              startedAt: step.startedAt,
+              completedAt: step.completedAt,
+            })),
+          },
+        ],
+      };
+    }
+
+    it('should skip a run with neither completedAt nor createdAt entirely', async () => {
+      const run = runWithStepsOnDay('run-no-date', '', [
+        { name: 'checkout', startedAt: '2025-01-01T08:00:00Z', completedAt: '2025-01-01T08:05:00Z' },
+      ]);
+
+      mockPipelineRepo = new PipelinesRepositoryBuilder().withPipelineRuns([run]).build();
+      pipelinesService = new PipelinesService(mockPipelineRepo, undefined, logger);
+
+      const result = await pipelinesService.getJobStepsAverageTimeByDay();
+
+      expect(result).toEqual([]);
+    });
+
+    it('should group step averages by day and sort the result by day', async () => {
+      const runDay2 = runWithStepsOnDay('run-day-2', '2025-01-02T08:00:00Z', [
+        { name: 'checkout', startedAt: '2025-01-02T08:00:00Z', completedAt: '2025-01-02T08:06:00Z' },
+      ]);
+      const runDay1 = runWithStepsOnDay('run-day-1', '2025-01-01T08:00:00Z', [
+        { name: 'checkout', startedAt: '2025-01-01T08:00:00Z', completedAt: '2025-01-01T08:04:00Z' },
+      ]);
+
+      mockPipelineRepo = new PipelinesRepositoryBuilder()
+        .withPipelineRuns([runDay2, runDay1])
+        .build();
+      pipelinesService = new PipelinesService(mockPipelineRepo, undefined, logger);
+
+      const result = await pipelinesService.getJobStepsAverageTimeByDay();
+
+      expect(result).toEqual([
+        { day: '2025-01-01', steps: [{ name: 'checkout', averageDurationMinutes: 4 }] },
+        { day: '2025-01-02', steps: [{ name: 'checkout', averageDurationMinutes: 6 }] },
+      ]);
+    });
+  });
 });
