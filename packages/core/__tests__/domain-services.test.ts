@@ -603,6 +603,41 @@ describe('PRsService', () => {
       ]);
     });
 
+    it('should fall back to an empty label list in the summary when a PR has no labels', async () => {
+      const noLabelsPr = {
+        ...new PullRequestBuilder().withId(1).withTitle('No labels').build(),
+        labels: undefined,
+      };
+
+      prsService = new PRsService(
+        new ReadPullRequestsRepositoryBuilder().withPullRequests([noLabelsPr]).build(),
+        undefined,
+        logger
+      );
+
+      const summary = (await prsService.getSummary()).result;
+
+      expect(summary.labels).toEqual([]);
+      expect(summary.unique_labels).toBe(0);
+    });
+
+    it('should fall back to an empty string for a label with no name', async () => {
+      const prWithUnnamedLabel = {
+        ...new PullRequestBuilder().withId(1).withTitle('Unnamed label').build(),
+        labels: [{}],
+      };
+
+      prsService = new PRsService(
+        new ReadPullRequestsRepositoryBuilder().withPullRequests([prWithUnnamedLabel]).build(),
+        undefined,
+        logger
+      );
+
+      const summary = (await prsService.getSummary()).result;
+
+      expect(summary.labels).toEqual([]);
+    });
+
     it('should break comment-count ties alphabetically by commenter login', async () => {
       const pr = {
         ...new PullRequestBuilder().withId(1).withTitle('Tied commenters').build(),
@@ -775,6 +810,31 @@ describe('PRsService', () => {
 
       expect(defaultTop).toHaveLength(10);
       expect(explicitTop).toHaveLength(3);
+    });
+  });
+
+  describe('toTimestamp (via getAverageReviewTime)', () => {
+    it('should treat an unparseable date string as timestamp 0', async () => {
+      const invalidDatePr = {
+        ...new PullRequestBuilder()
+          .withId(1)
+          .withTitle('Invalid date')
+          .withAuthor('alice')
+          .withClosedAt('2025-01-03T00:00:00Z')
+          .build(),
+        createdAt: 'not-a-real-date',
+      };
+
+      prsService = new PRsService(
+        new ReadPullRequestsRepositoryBuilder().withPullRequests([invalidDatePr]).build(),
+        undefined,
+        logger
+      );
+
+      const result = await prsService.getAverageReviewTime();
+
+      expect(result[0].avg_days).toEqual(expect.any(Number));
+      expect(Number.isFinite(result[0].avg_days)).toBe(true);
     });
   });
 
