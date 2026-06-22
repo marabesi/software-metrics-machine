@@ -556,6 +556,52 @@ describe('PRsService', () => {
       expect(summary.top_commenter).toBeNull();
       expect(summary.most_commented_pr).toBeNull();
     });
+
+    it('should break label-count ties alphabetically by label name', async () => {
+      const prWithZebra = new PullRequestBuilder()
+        .withId(1)
+        .withTitle('Zebra labeled')
+        .withLabels([{ name: 'zebra' }])
+        .build();
+      const prWithAlpha = new PullRequestBuilder()
+        .withId(2)
+        .withTitle('Alpha labeled')
+        .withLabels([{ name: 'alpha' }])
+        .build();
+
+      prsService = new PRsService(
+        new ReadPullRequestsRepositoryBuilder().withPullRequests([prWithZebra, prWithAlpha]).build(),
+        undefined,
+        logger
+      );
+
+      const summary = (await prsService.getSummary()).result;
+
+      expect(summary.labels).toEqual([
+        { label: 'alpha', prs: 1 },
+        { label: 'zebra', prs: 1 },
+      ]);
+    });
+
+    it('should break comment-count ties alphabetically by commenter login', async () => {
+      const pr = {
+        ...new PullRequestBuilder().withId(1).withTitle('Tied commenters').build(),
+        comments: [
+          { body: 'hi', author: { login: 'zoe', id: 1 } },
+          { body: 'hi', author: { login: 'amy', id: 2 } },
+        ],
+      };
+
+      prsService = new PRsService(
+        new ReadPullRequestsRepositoryBuilder().withPullRequests([pr]).build(),
+        undefined,
+        logger
+      );
+
+      const summary = (await prsService.getSummary()).result;
+
+      expect(summary.top_commenter).toEqual({ login: 'amy', comments: 1 });
+    });
   });
 
   describe('getThroughTime', () => {
@@ -819,6 +865,31 @@ describe('PRsService', () => {
 
       expect(result[0].period).toMatch(/^\d{4}-\d{2}-\d{2}$/);
     });
+
+    it('should sort multiple periods chronologically', async () => {
+      const laterPr = new PullRequestBuilder()
+        .withId(1)
+        .withTitle('Later PR')
+        .withCreatedAt('2025-02-01T00:00:00Z')
+        .withMergedAt('2025-02-02T00:00:00Z')
+        .build();
+      const earlierPr = new PullRequestBuilder()
+        .withId(2)
+        .withTitle('Earlier PR')
+        .withCreatedAt('2025-01-01T00:00:00Z')
+        .withMergedAt('2025-01-02T00:00:00Z')
+        .build();
+
+      prsService = new PRsService(
+        new ReadPullRequestsRepositoryBuilder().withPullRequests([laterPr, earlierPr]).build(),
+        undefined,
+        logger
+      );
+
+      const result = await prsService.getAverageOpenBy(undefined, 'month');
+
+      expect(result.map((r) => r.period)).toEqual(['2025-01', '2025-02']);
+    });
   });
 
   describe('extractTopThemes (via getSummary)', () => {
@@ -910,6 +981,25 @@ describe('PRsService', () => {
 
       prsService = new PRsService(
         new ReadPullRequestsRepositoryBuilder().withPullRequests([backdatedCommentPr]).build(),
+        undefined,
+        logger
+      );
+
+      const summary = (await prsService.getSummary()).result;
+
+      expect(summary.time_to_first_comment_hours.prs_with_comment).toBe(0);
+      expect(summary.time_to_first_comment_hours.prs_without_comment).toBe(1);
+    });
+
+    it('should skip a PR with an empty createdAt (unparseable PR-opened timestamp)', async () => {
+      const noCreatedAtPr = {
+        ...new PullRequestBuilder().withId(1).withTitle('No createdAt').build(),
+        createdAt: '',
+        comments: [{ body: 'first', createdAt: '2025-01-01T01:00:00Z' }],
+      };
+
+      prsService = new PRsService(
+        new ReadPullRequestsRepositoryBuilder().withPullRequests([noCreatedAtPr]).build(),
         undefined,
         logger
       );
@@ -1085,6 +1175,31 @@ describe('PRsService', () => {
       const result = await prsService.getFirstCommentTime();
 
       expect(result).toEqual([{ author: 'unknown', avg_hours: 1, prs_with_comments: 1 }]);
+    });
+
+    it('should pick the earliest comment as first when a PR has multiple comments', async () => {
+      const pr = {
+        ...new PullRequestBuilder()
+          .withId(1)
+          .withTitle('Multiple comments')
+          .withAuthor('alice')
+          .withCreatedAt('2025-01-01T00:00:00Z')
+          .build(),
+        comments: [
+          { body: 'later', createdAt: '2025-01-01T05:00:00Z' },
+          { body: 'earlier', createdAt: '2025-01-01T01:00:00Z' },
+        ],
+      };
+
+      prsService = new PRsService(
+        new ReadPullRequestsRepositoryBuilder().withPullRequests([pr]).build(),
+        undefined,
+        logger
+      );
+
+      const result = await prsService.getFirstCommentTime();
+
+      expect(result).toEqual([{ author: 'alice', avg_hours: 1, prs_with_comments: 1 }]);
     });
   });
 });
