@@ -40,4 +40,22 @@ describe('CodemaatFetchRepository', () => {
       })
     ).toThrow(`Configured scriptPath does not exist: ${missingScriptPath}`);
   });
+
+  it('throws when no scriptPath is given and the default fetch-codemaat.sh cannot be located', () => {
+    const configuration = new Configuration({ gitRepositoryLocation: '/some/path' });
+    const repository = new CodemaatFetchRepository(configuration, logger);
+    const expectedDefaultScriptPath = path.resolve(
+      __dirname,
+      '../../../src/providers/apps/cli/fetch-codemaat.sh'
+    );
+
+    expect(() =>
+      repository.fetch({
+        startDate: '2026-01-01',
+        outputDirectory: fs.mkdtempSync(path.join(os.tmpdir(), 'smm-codemaat-out-')),
+      })
+    ).toThrow(
+      `Could not locate fetch-codemaat.sh at expected path: ${expectedDefaultScriptPath}`
+    );
+  });
 });
