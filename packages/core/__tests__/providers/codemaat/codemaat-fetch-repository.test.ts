@@ -17,4 +17,13 @@ describe('CodemaatFetchRepository', () => {
       'startDate is required for CodeMaat fetch.'
     );
   });
+
+  it('throws when no repository path is configured', () => {
+    const configuration = new Configuration({ gitRepositoryLocation: '' });
+    const repository = new CodemaatFetchRepository(configuration, logger);
+
+    expect(() => repository.fetch({ startDate: '2026-01-01' })).toThrow(
+      'Git repository path is not configured.'
+    );
+  });
 });
