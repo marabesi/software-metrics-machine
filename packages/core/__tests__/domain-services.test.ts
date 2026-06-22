@@ -2166,6 +2166,35 @@ describe('PipelinesService', () => {
       };
     }
 
+    it('should treat a run with no jobs array as contributing no job metrics', async () => {
+      const runWithoutJobs: import('../src/domain-types').PipelineRun = {
+        id: 'run-no-jobs',
+        number: 1,
+        name: 'Build',
+        status: 'completed',
+        conclusion: 'success',
+        createdAt: '2025-01-01T08:00:00Z',
+        updatedAt: '2025-01-01T08:15:00Z',
+        branch: 'main',
+        path: '.github/workflows/build.yml',
+        jobs: undefined,
+      };
+      const runWithJob = jobRun('run-with-job', 'test', 'success', {
+        completedAt: '2025-01-01T08:05:00Z',
+      });
+
+      mockPipelineRepo = new PipelinesRepositoryBuilder()
+        .withPipelineRuns([runWithoutJobs, runWithJob])
+        .build();
+      pipelinesService = new PipelinesService(mockPipelineRepo, undefined, logger);
+
+      const jobMetrics = await pipelinesService.getJobMetrics();
+
+      expect(jobMetrics).toHaveLength(1);
+      expect(jobMetrics[0].jobName).toBe('test');
+      expect(jobMetrics[0].totalRuns).toBe(1);
+    });
+
     it('should count each job conclusion type, including an unrecognized value as unknown', async () => {
       const runs: import('../src/domain-types').PipelineRun[] = [
         jobRun('run-success', 'test', 'success', { completedAt: '2025-01-01T08:05:00Z' }),
