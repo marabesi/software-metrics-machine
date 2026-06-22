@@ -208,6 +208,85 @@ describe('PipelinesController', () => {
     });
   });
 
+  describe('jobsAverageTime', () => {
+    it('groups by job name, skipping blank names and unresolved durations', async () => {
+      const { controller } = createController([
+        {
+          jobs: [
+            {
+              name: 'build',
+              workflow_name: 'CI',
+              startedAt: '2026-01-01T00:00:00Z',
+              completedAt: '2026-01-01T00:04:00Z',
+            },
+            {
+              name: 'build',
+              workflow_name: 'CI',
+              startedAt: '2026-01-02T00:00:00Z',
+              completedAt: '2026-01-02T00:08:00Z',
+            },
+            { name: '  ', startedAt: '2026-01-01T00:00:00Z', completedAt: '2026-01-01T00:04:00Z' },
+            {
+              name: 'broken',
+              startedAt: '2026-01-01T00:10:00Z',
+              completedAt: '2026-01-01T00:00:00Z',
+            },
+          ],
+        },
+      ]);
+
+      const result = await controller.jobsAverageTime(undefined, undefined, {});
+
+      expect(result).toEqual({
+        result: [{ job_name: 'build', workflow_name: 'CI', avg_time: 6, count: 2 }],
+      });
+    });
+
+    it('limits results using the top query param', async () => {
+      const { controller } = createController([
+        {
+          jobs: [
+            { name: 'a', startedAt: '2026-01-01T00:00:00Z', completedAt: '2026-01-01T00:01:00Z' },
+            { name: 'b', startedAt: '2026-01-01T00:00:00Z', completedAt: '2026-01-01T00:02:00Z' },
+            { name: 'b', startedAt: '2026-01-01T00:00:00Z', completedAt: '2026-01-01T00:02:00Z' },
+          ],
+        },
+      ]);
+
+      const result = await controller.jobsAverageTime(undefined, '1', {});
+
+      expect(result).toEqual({
+        result: [{ job_name: 'b', workflow_name: undefined, avg_time: 2, count: 2 }],
+      });
+    });
+
+    it('falls back to a default top of 20 when top is non-numeric', async () => {
+      const { controller } = createController([
+        {
+          jobs: [
+            { name: 'a', startedAt: '2026-01-01T00:00:00Z', completedAt: '2026-01-01T00:01:00Z' },
+          ],
+        },
+      ]);
+
+      const result = await controller.jobsAverageTime(undefined, 'not-a-number', {});
+
+      expect(result).toEqual({
+        result: [{ job_name: 'a', workflow_name: undefined, avg_time: 1, count: 1 }],
+      });
+    });
+
+    it('forwards exclude_jobs to the repository as exclude_job_name', async () => {
+      const { controller, pipelinesRepo } = createController([]);
+
+      await controller.jobsAverageTime('flaky-job', undefined, {});
+
+      expect(pipelinesRepo.loadPipelines).toHaveBeenCalledWith(
+        expect.objectContaining({ excludeJobName: 'flaky-job' })
+      );
+    });
+  });
+
   describe('jobsStepsAverageTime', () => {
     it('wraps the service result in a result envelope', async () => {
       const { controller } = createController([
