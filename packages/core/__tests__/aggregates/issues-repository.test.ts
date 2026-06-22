@@ -132,5 +132,33 @@ describe('IssuesRepository', () => {
       expect(fetchIssues).not.toHaveBeenCalled();
       expect(result).toEqual(cachedIssues);
     });
+
+    it('forceRefresh does NOT bypass the incremental branch when incrementalUpdate is also set on a non-empty cache', async () => {
+      const cacheDir = await fs.mkdtemp(path.join(os.tmpdir(), 'smm-issues-force-incr-'));
+      const cachedIssue = createIssue({ id: '1', createdAt: '2026-05-01T00:00:00.000Z' });
+      await fs.writeFile(path.join(cacheDir, 'issues.json'), JSON.stringify([cachedIssue]));
+
+      const freshIssue = createIssue({ id: '2', createdAt: '2026-06-01T00:00:00.000Z' });
+      const fetchIssues = vi.fn().mockResolvedValue([freshIssue]);
+      const jiraClient = createJiraClient({ fetchIssues });
+
+      const repository = new IssuesRepository(jiraClient, cacheDir, logger);
+
+      const result = await repository.refreshIssues({
+        incrementalUpdate: true,
+        forceRefresh: true,
+      });
+
+      // Guard 1 only checks `incrementalUpdate && fromCache.length > 0` — it never
+      // inspects forceRefresh. So forceRefresh has no effect here: the incremental
+      // merge branch still runs, fetching from the latest cached date and merging.
+      expect(fetchIssues).toHaveBeenCalledWith({
+        startDate: '2026-05-01T00:00:00.000Z',
+        endDate: undefined,
+        status: undefined,
+      });
+      expect(result).toHaveLength(2);
+      expect(result.map((issue) => issue.id).sort()).toEqual(['1', '2']);
+    });
   });
 });
