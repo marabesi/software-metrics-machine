@@ -1657,4 +1657,63 @@ describe('PipelinesService', () => {
       expect(metrics.averageDurationMinutes).toBe(4);
     });
   });
+
+  describe('getRunMetricDate', () => {
+    it('should use completedAt when present', () => {
+      const date = pipelinesService.getRunMetricDate({
+        createdAt: '2025-01-01T08:00:00Z',
+        completedAt: '2025-01-02T08:00:00Z',
+      });
+
+      expect(date).toBe('2025-01-02T08:00:00Z');
+    });
+
+    it('should fall back to createdAt when completedAt is absent', () => {
+      const date = pipelinesService.getRunMetricDate({
+        createdAt: '2025-01-01T08:00:00Z',
+      });
+
+      expect(date).toBe('2025-01-01T08:00:00Z');
+    });
+  });
+
+  describe('getDurationMinutes', () => {
+    it('should return null when startedAt is missing', () => {
+      const duration = pipelinesService.getDurationMinutes(undefined, '2025-01-01T08:05:00Z');
+
+      expect(duration).toBeNull();
+    });
+
+    it('should return null when completedAt is missing', () => {
+      const duration = pipelinesService.getDurationMinutes('2025-01-01T08:00:00Z', undefined);
+
+      expect(duration).toBeNull();
+    });
+
+    it('should return null when completedAt is before startedAt', () => {
+      const duration = pipelinesService.getDurationMinutes(
+        '2025-01-01T08:05:00Z',
+        '2025-01-01T08:00:00Z'
+      );
+
+      expect(duration).toBeNull();
+    });
+
+    it('should return the minute difference for a valid range', () => {
+      const duration = pipelinesService.getDurationMinutes(
+        '2025-01-01T08:00:00Z',
+        '2025-01-01T08:10:00Z'
+      );
+
+      expect(duration).toBe(10);
+    });
+  });
+
+  describe('getPeriodKey', () => {
+    it('should delegate to the timezone provider for the day interval', () => {
+      const key = pipelinesService.getPeriodKey('2025-01-15T08:00:00Z', 'day');
+
+      expect(key).toBe('2025-01-15');
+    });
+  });
 });
