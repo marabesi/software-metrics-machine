@@ -131,6 +131,50 @@ describe('PipelinesController', () => {
     );
   });
 
+  describe('jobsDurationByWorkflow', () => {
+    it('groups job durations by workflow then job name, skipping blank names and unresolved durations', async () => {
+      const { controller } = createController([
+        {
+          path: 'ci.yml',
+          jobs: [
+            { name: 'build', startedAt: '2026-01-01T00:00:00Z', completedAt: '2026-01-01T00:04:00Z' },
+            { name: 'build', startedAt: '2026-01-02T00:00:00Z', completedAt: '2026-01-02T00:08:00Z' },
+            { name: '   ', startedAt: '2026-01-01T00:00:00Z', completedAt: '2026-01-01T00:04:00Z' },
+            { name: 'broken', startedAt: '2026-01-01T00:10:00Z', completedAt: '2026-01-01T00:00:00Z' },
+          ],
+        },
+      ]);
+
+      const result = await controller.jobsDurationByWorkflow({});
+
+      expect(result).toEqual([{ workflow: 'ci.yml', jobs: { build: 6 } }]);
+    });
+
+    it('sorts multiple workflows alphabetically', async () => {
+      const { controller } = createController([
+        {
+          path: 'zeta.yml',
+          jobs: [
+            { name: 'build', startedAt: '2026-01-01T00:00:00Z', completedAt: '2026-01-01T00:02:00Z' },
+          ],
+        },
+        {
+          path: 'alpha.yml',
+          jobs: [
+            { name: 'build', startedAt: '2026-01-01T00:00:00Z', completedAt: '2026-01-01T00:02:00Z' },
+          ],
+        },
+      ]);
+
+      const result = await controller.jobsDurationByWorkflow({});
+
+      expect(result).toEqual([
+        { workflow: 'alpha.yml', jobs: { build: 2 } },
+        { workflow: 'zeta.yml', jobs: { build: 2 } },
+      ]);
+    });
+  });
+
   describe('pipelineSummary', () => {
     it('returns zeroed summary with null first/last run when there are no runs', async () => {
       const { controller, pipelinesRepo } = createController([]);
