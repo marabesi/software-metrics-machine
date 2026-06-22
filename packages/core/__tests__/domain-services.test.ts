@@ -2341,4 +2341,40 @@ describe('PipelinesService', () => {
       ]);
     });
   });
+
+  describe('loadUniqueWorkflows', () => {
+    function runWithPath(id: string, path: string): import('../src/domain-types').PipelineRun {
+      return {
+        id,
+        number: 1,
+        name: 'Build',
+        status: 'completed',
+        conclusion: 'success',
+        createdAt: '2025-01-01T08:00:00Z',
+        updatedAt: '2025-01-01T08:15:00Z',
+        branch: 'main',
+        path,
+        jobs: [],
+      };
+    }
+
+    it('should return distinct, sorted workflow paths and filter out empty-string paths', async () => {
+      const runs = [
+        runWithPath('run-1', '.github/workflows/release.yml'),
+        runWithPath('run-2', '.github/workflows/build.yml'),
+        runWithPath('run-3', '.github/workflows/release.yml'), // duplicate
+        runWithPath('run-4', ''), // empty, filtered out
+      ];
+
+      mockPipelineRepo = new PipelinesRepositoryBuilder().withPipelineRuns(runs).build();
+      pipelinesService = new PipelinesService(mockPipelineRepo, undefined, logger);
+
+      const workflows = await pipelinesService.loadUniqueWorkflows();
+
+      expect(workflows).toEqual([
+        { name: '.github/workflows/build.yml', path: '.github/workflows/build.yml' },
+        { name: '.github/workflows/release.yml', path: '.github/workflows/release.yml' },
+      ]);
+    });
+  });
 });
