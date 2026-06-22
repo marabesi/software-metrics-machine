@@ -446,6 +446,34 @@ describe('PRsService', () => {
       const totalCounted = weeks.reduce((sum, week) => sum + week.count, 0);
       expect(totalCounted).toBe(1);
     });
+
+    it('should group two merged PRs into the same week bucket', async () => {
+      const firstMergedPr = new PullRequestBuilder()
+        .withId(1)
+        .withTitle('First merged PR')
+        .withCreatedAt('2025-01-01T00:00:00Z')
+        .withMergedAt('2025-01-02T00:00:00Z')
+        .build();
+      const secondMergedPr = new PullRequestBuilder()
+        .withId(2)
+        .withTitle('Second merged PR')
+        .withCreatedAt('2025-01-01T00:00:00Z')
+        .withMergedAt('2025-01-03T00:00:00Z')
+        .build();
+
+      prsService = new PRsService(
+        new ReadPullRequestsRepositoryBuilder()
+          .withPullRequests([firstMergedPr, secondMergedPr])
+          .build(),
+        undefined,
+        logger
+      );
+
+      const weeks = await prsService.getMetricsByWeek();
+
+      expect(weeks).toHaveLength(1);
+      expect(weeks[0].count).toBe(2);
+    });
   });
 
   describe('getLabelSummaries', () => {
@@ -489,6 +517,29 @@ describe('PRsService', () => {
       const labels = await prsService.getLabelSummaries();
 
       expect(labels).toEqual([{ label: 'bug', count: 1, averageOpenDays: 2 }]);
+    });
+
+    it('should accumulate two PRs sharing the same label under one entry', async () => {
+      const firstBugPr = new PullRequestBuilder()
+        .withId(1)
+        .withTitle('First bug PR')
+        .withLabels([{ name: 'bug' }])
+        .build();
+      const secondBugPr = new PullRequestBuilder()
+        .withId(2)
+        .withTitle('Second bug PR')
+        .withLabels([{ name: 'bug' }])
+        .build();
+
+      prsService = new PRsService(
+        new ReadPullRequestsRepositoryBuilder().withPullRequests([firstBugPr, secondBugPr]).build(),
+        undefined,
+        logger
+      );
+
+      const labels = await prsService.getLabelSummaries();
+
+      expect(labels).toEqual([{ label: 'bug', count: 2, averageOpenDays: expect.any(Number) }]);
     });
   });
 
