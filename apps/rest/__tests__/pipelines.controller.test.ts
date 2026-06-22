@@ -84,6 +84,20 @@ describe('PipelinesController', () => {
     expect(result).toEqual([{ period: '2026-01-05', workflow: 'ci.yml', runs: 1 }]);
   });
 
+  it('sorts multiple periods ascending by period key', async () => {
+    const { controller } = createController([
+      { path: 'ci.yml', createdAt: '2026-01-06T00:00:00Z' },
+      { path: 'ci.yml', createdAt: '2026-01-05T00:00:00Z' },
+    ]);
+
+    const result = await controller.runsBy('day', {});
+
+    expect(result).toEqual([
+      { period: '2026-01-05', workflow: 'ci.yml', runs: 1 },
+      { period: '2026-01-06', workflow: 'ci.yml', runs: 1 },
+    ]);
+  });
+
   it('calculates run duration from jobs instead of stale workflow updated time', async () => {
     const { controller, pipelinesRepo } = createController([
       {
@@ -118,6 +132,33 @@ describe('PipelinesController', () => {
   });
 
   describe('runsDuration', () => {
+    it('sorts multiple workflows by total_runs descending', async () => {
+      const { controller } = createController([
+        {
+          path: 'frequent.yml',
+          jobs: [
+            { name: 'build', startedAt: '2026-01-01T00:00:00Z', completedAt: '2026-01-01T00:02:00Z' },
+          ],
+        },
+        {
+          path: 'frequent.yml',
+          jobs: [
+            { name: 'build', startedAt: '2026-01-02T00:00:00Z', completedAt: '2026-01-02T00:02:00Z' },
+          ],
+        },
+        {
+          path: 'rare.yml',
+          jobs: [
+            { name: 'build', startedAt: '2026-01-01T00:00:00Z', completedAt: '2026-01-01T00:02:00Z' },
+          ],
+        },
+      ]);
+
+      const result = await controller.runsDuration(undefined, {});
+
+      expect(result.map((row) => row.workflow)).toEqual(['frequent.yml', 'rare.yml']);
+    });
+
     it('skips runs whose duration cannot be resolved', async () => {
       const { controller } = createController([
         { path: 'ci.yml', createdAt: '2026-01-01T00:00:00Z', jobs: [] },
@@ -126,6 +167,22 @@ describe('PipelinesController', () => {
       const result = await controller.runsDuration(undefined, {});
 
       expect(result).toEqual([]);
+    });
+
+    it('falls back to unknown workflow when path is missing', async () => {
+      const { controller } = createController([
+        {
+          jobs: [
+            { name: 'build', startedAt: '2026-01-01T00:00:00Z', completedAt: '2026-01-01T00:02:00Z' },
+          ],
+        },
+      ]);
+
+      const result = await controller.runsDuration(undefined, {});
+
+      expect(result).toEqual([
+        { workflow: 'unknown', avg_duration: 2, min_duration: 2, max_duration: 2, total_runs: 1 },
+      ]);
     });
 
     it.each([
@@ -181,6 +238,14 @@ describe('PipelinesController', () => {
       const result = await controller.jobsDurationByWorkflow({});
 
       expect(result).toEqual([{ workflow: 'ci.yml', jobs: { build: 6 } }]);
+    });
+
+    it('falls back to unknown workflow and an empty job list when path/jobs are missing', async () => {
+      const { controller } = createController([{}]);
+
+      const result = await controller.jobsDurationByWorkflow({});
+
+      expect(result).toEqual([]);
     });
 
     it('sorts multiple workflows alphabetically', async () => {
@@ -392,6 +457,38 @@ describe('PipelinesController', () => {
       });
     });
 
+    it('skips jobs with blank names or unresolved durations, and sorts multiple days ascending', async () => {
+      const { controller } = createController([
+        {
+          createdAt: '2026-01-02T00:00:00Z',
+          jobs: [
+            { name: 'build', startedAt: '2026-01-02T00:00:00Z', completedAt: '2026-01-02T00:02:00Z' },
+            { name: '   ', startedAt: '2026-01-02T00:00:00Z', completedAt: '2026-01-02T00:02:00Z' },
+            {
+              name: 'broken',
+              startedAt: '2026-01-02T00:10:00Z',
+              completedAt: '2026-01-02T00:00:00Z',
+            },
+          ],
+        },
+        {
+          createdAt: '2026-01-01T00:00:00Z',
+          jobs: [
+            { name: 'build', startedAt: '2026-01-01T00:00:00Z', completedAt: '2026-01-01T00:01:00Z' },
+          ],
+        },
+      ]);
+
+      const result = await controller.jobsAverageTimeByDay(undefined, {});
+
+      expect(result).toEqual({
+        result: [
+          { day: '2026-01-01', avg_time: 1, count: 1 },
+          { day: '2026-01-02', avg_time: 2, count: 1 },
+        ],
+      });
+    });
+
     it('skips runs entirely when the run metric date cannot be resolved', async () => {
       const { controller } = createController([
         {
@@ -546,6 +643,15 @@ describe('PipelinesController', () => {
         in_progress: 1,
         queued: 1,
       });
+    });
+
+    it('treats a missing status as neither in_progress nor queued', async () => {
+      const { controller } = createController([{ path: 'ci.yml', createdAt: '2026-01-01T00:00:00Z' }]);
+
+      const result = await controller.pipelineSummary({});
+
+      expect(result.in_progress).toBe(0);
+      expect(result.queued).toBe(0);
     });
   });
 
