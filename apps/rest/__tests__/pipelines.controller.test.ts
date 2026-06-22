@@ -1,20 +1,25 @@
 import { describe, expect, it, vi } from 'vitest';
 import { PipelinesController } from '../src/controllers/pipelines.controller';
 import { PipelinesService } from '@smmachine/core';
+import { Logger } from '@smmachine/utils';
 
 describe('PipelinesController', () => {
-  function createController(runs: unknown[]) {
+  function createController(runs: unknown[], filtersRepository?: unknown) {
     const pipelinesRepo = {
       loadPipelines: vi.fn().mockResolvedValue(runs),
     };
-    const pipelinesService = new PipelinesService(pipelinesRepo as never);
+    const pipelinesService = new PipelinesService(
+      pipelinesRepo as never,
+      undefined,
+      new Logger('test')
+    );
     const controller = new PipelinesController(
       pipelinesRepo as never,
       pipelinesService,
-      {} as never
+      (filtersRepository || {}) as never
     );
 
-    return { controller, pipelinesRepo };
+    return { controller, pipelinesRepo, pipelinesService };
   }
 
   it('passes date filters to the repository for the runs-by chart', async () => {
@@ -77,6 +82,45 @@ describe('PipelinesController', () => {
         total_runs: 1,
       },
     ]);
+  });
+
+  describe('pipelineSummary', () => {
+    it('returns zeroed summary with null first/last run when there are no runs', async () => {
+      const { controller, pipelinesRepo } = createController([]);
+
+      const result = await controller.pipelineSummary({});
+
+      expect(pipelinesRepo.loadPipelines).toHaveBeenCalledWith(
+        expect.objectContaining({
+          includeJobs: false,
+          sort_by: { created_at: 'asc' },
+        })
+      );
+      expect(result).toEqual({
+        total_runs: 0,
+        first_run: null,
+        last_run: null,
+        in_progress: 0,
+        queued: 0,
+      });
+    });
+
+    it('reports first/last run and case-insensitive in_progress/queued counts', async () => {
+      const firstRun = { path: 'ci.yml', createdAt: '2026-01-01T00:00:00Z', status: 'IN_PROGRESS' };
+      const middleRun = { path: 'ci.yml', createdAt: '2026-01-02T00:00:00Z', status: 'Queued' };
+      const lastRun = { path: 'ci.yml', createdAt: '2026-01-03T00:00:00Z', status: 'completed' };
+      const { controller } = createController([firstRun, middleRun, lastRun]);
+
+      const result = await controller.pipelineSummary({});
+
+      expect(result).toEqual({
+        total_runs: 3,
+        first_run: firstRun,
+        last_run: lastRun,
+        in_progress: 1,
+        queued: 1,
+      });
+    });
   });
 
 });
