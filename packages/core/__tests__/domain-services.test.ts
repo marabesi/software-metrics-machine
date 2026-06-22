@@ -470,6 +470,26 @@ describe('PRsService', () => {
 
       expect(labels).toEqual([{ label: 'bug', count: 1, averageOpenDays: expect.any(Number) }]);
     });
+
+    it('should use closedAt to compute open days for a closed-not-merged labeled PR', async () => {
+      const closedNotMergedPr = new PullRequestBuilder()
+        .withId(1)
+        .withTitle('Closed not merged')
+        .withCreatedAt('2025-01-01T00:00:00Z')
+        .withClosedAt('2025-01-03T00:00:00Z')
+        .withLabels([{ name: 'bug' }])
+        .build();
+
+      prsService = new PRsService(
+        new ReadPullRequestsRepositoryBuilder().withPullRequests([closedNotMergedPr]).build(),
+        undefined,
+        logger
+      );
+
+      const labels = await prsService.getLabelSummaries();
+
+      expect(labels).toEqual([{ label: 'bug', count: 1, averageOpenDays: 2 }]);
+    });
   });
 
   describe('getSummary', () => {
@@ -624,6 +644,28 @@ describe('PRsService', () => {
       expect(closedRow?.count).toBe(0);
       const openedRow = rows.find((row) => row.kind === 'Opened');
       expect(openedRow?.count).toBe(1);
+    });
+
+    it('should record a Closed count on the mergedAt period for a merged PR', async () => {
+      const mergedPr = new PullRequestBuilder()
+        .withId(1)
+        .withTitle('Merged PR')
+        .withCreatedAt('2025-01-01T00:00:00Z')
+        .withMergedAt('2025-01-08T00:00:00Z')
+        .build();
+
+      prsService = new PRsService(
+        new ReadPullRequestsRepositoryBuilder().withPullRequests([mergedPr]).build(),
+        undefined,
+        logger
+      );
+
+      const rows = await prsService.getThroughTime();
+
+      const totalClosed = rows
+        .filter((row) => row.kind === 'Closed')
+        .reduce((sum, row) => sum + row.count, 0);
+      expect(totalClosed).toBe(1);
     });
 
     it('should default to week aggregation when aggregateBy is omitted', async () => {
