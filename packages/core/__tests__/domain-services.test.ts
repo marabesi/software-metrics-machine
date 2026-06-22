@@ -2614,6 +2614,23 @@ describe('PipelinesService', () => {
       ]);
     });
 
+    it('should average multiple steps sharing a name on the same day', async () => {
+      const run = runWithStepsOnDay('run-day-1', '2025-01-01T08:00:00Z', [
+        { name: 'checkout', startedAt: '2025-01-01T08:00:00Z', completedAt: '2025-01-01T08:04:00Z' },
+        { name: 'checkout', startedAt: '2025-01-01T09:00:00Z', completedAt: '2025-01-01T09:06:00Z' },
+      ]);
+
+      mockPipelineRepo = new PipelinesRepositoryBuilder().withPipelineRuns([run]).build();
+      pipelinesService = new PipelinesService(mockPipelineRepo, undefined, logger);
+
+      const result = await pipelinesService.getJobStepsAverageTimeByDay();
+
+      // (4 + 6) / 2 = 5 minutes average for 'checkout' on 2025-01-01
+      expect(result).toEqual([
+        { day: '2025-01-01', steps: [{ name: 'checkout', averageDurationMinutes: 5 }] },
+      ]);
+    });
+
     it('should skip steps missing a name, startedAt, or completedAt', async () => {
       const run = runWithStepsOnDay('run-1', '2025-01-01T08:00:00Z', [
         { name: undefined, startedAt: '2025-01-01T08:00:00Z', completedAt: '2025-01-01T08:05:00Z' },
