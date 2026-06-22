@@ -26,4 +26,18 @@ describe('CodemaatFetchRepository', () => {
       'Git repository path is not configured.'
     );
   });
+
+  it('throws when the configured scriptPath does not exist', () => {
+    const configuration = new Configuration({ gitRepositoryLocation: '/some/path' });
+    const repository = new CodemaatFetchRepository(configuration, logger);
+    const missingScriptPath = path.join(os.tmpdir(), 'smm-codemaat-missing-script.sh');
+
+    expect(() =>
+      repository.fetch({
+        startDate: '2026-01-01',
+        outputDirectory: fs.mkdtempSync(path.join(os.tmpdir(), 'smm-codemaat-out-')),
+        scriptPath: missingScriptPath,
+      })
+    ).toThrow(`Configured scriptPath does not exist: ${missingScriptPath}`);
+  });
 });
