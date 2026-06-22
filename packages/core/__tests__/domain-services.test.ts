@@ -447,6 +447,116 @@ describe('PRsService', () => {
       expect(totalCounted).toBe(1);
     });
   });
+
+  describe('getLabelSummaries', () => {
+    it('should fall back to an empty label list when a PR has no labels', async () => {
+      const noLabelsPr = {
+        ...new PullRequestBuilder().withId(1).withTitle('No labels').build(),
+        labels: undefined,
+      };
+      const labeledPr = new PullRequestBuilder()
+        .withId(2)
+        .withTitle('Labeled')
+        .withLabels([{ name: 'bug' }])
+        .build();
+
+      prsService = new PRsService(
+        new ReadPullRequestsRepositoryBuilder().withPullRequests([noLabelsPr, labeledPr]).build(),
+        undefined,
+        logger
+      );
+
+      const labels = await prsService.getLabelSummaries();
+
+      expect(labels).toEqual([{ label: 'bug', count: 1, averageOpenDays: expect.any(Number) }]);
+    });
+  });
+
+  describe('getSummary', () => {
+    it('should exclude authorless PRs from the unique author count and use "unknown" for most_commented_pr/top_commenter', async () => {
+      const authorlessPr = {
+        ...new PullRequestBuilder()
+          .withId(1)
+          .withTitle('No author')
+          .withComments(2)
+          .build(),
+        author: undefined,
+      };
+
+      prsService = new PRsService(
+        new ReadPullRequestsRepositoryBuilder().withPullRequests([authorlessPr]).build(),
+        undefined,
+        logger
+      );
+
+      const summary = (await prsService.getSummary()).result;
+
+      expect(summary.unique_authors).toBe(0);
+      expect(summary.most_commented_pr?.author).toBe('unknown');
+    });
+
+    it('should exclude PRs missing id, title, or url from most_commented_prs', async () => {
+      const missingId = {
+        ...new PullRequestBuilder().withTitle('Missing id').withComments(5).build(),
+        id: undefined,
+      };
+      const missingTitle = {
+        ...new PullRequestBuilder().withId(2).withComments(4).build(),
+        title: undefined,
+      };
+      const missingUrl = {
+        ...new PullRequestBuilder().withId(3).withTitle('Missing url').withComments(3).build(),
+        url: undefined,
+      };
+      const valid = new PullRequestBuilder()
+        .withId(4)
+        .withTitle('Valid PR')
+        .withComments(1)
+        .build();
+
+      prsService = new PRsService(
+        new ReadPullRequestsRepositoryBuilder()
+          .withPullRequests([missingId, missingTitle, missingUrl, valid])
+          .build(),
+        undefined,
+        logger
+      );
+
+      const summary = (await prsService.getSummary()).result;
+
+      expect(summary.most_commented_prs).toHaveLength(1);
+      expect(summary.most_commented_prs[0].pull_request_id).toBe(4);
+    });
+
+    it('should return null most_commented_pr when the top PR by sort has zero comments', async () => {
+      const noComments = new PullRequestBuilder().withId(1).withTitle('No comments').build();
+
+      prsService = new PRsService(
+        new ReadPullRequestsRepositoryBuilder().withPullRequests([noComments]).build(),
+        undefined,
+        logger
+      );
+
+      const summary = (await prsService.getSummary()).result;
+
+      expect(summary.most_commented_pr).toBeNull();
+    });
+
+    it('should return null first_pr, last_pr, and top_commenter for an empty PR list', async () => {
+      prsService = new PRsService(
+        new ReadPullRequestsRepositoryBuilder().withPullRequests([]).build(),
+        undefined,
+        logger
+      );
+
+      const summary = (await prsService.getSummary()).result;
+
+      expect(summary.first_pr).toBeNull();
+      expect(summary.last_pr).toBeNull();
+      expect(summary.top_commenter).toBeNull();
+      expect(summary.most_commented_pr).toBeNull();
+    });
+  });
 });
 
 describe('PipelinesService', () => {
