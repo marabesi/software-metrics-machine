@@ -869,6 +869,224 @@ describe('PRsService', () => {
       expect(summary.top_themes.some((theme) => theme.text.includes('42'))).toBe(false);
     });
   });
+
+  describe('calculateFirstCommentTimeSummary (via getSummary)', () => {
+    it('should ignore PRs with no comments and PRs whose comments all lack createdAt', async () => {
+      const noCommentsPr = new PullRequestBuilder().withId(1).withTitle('No comments').build();
+      const commentsWithoutCreatedAt = {
+        ...new PullRequestBuilder().withId(2).withTitle('No createdAt on comments').build(),
+        comments: [{ body: 'hi', createdAt: undefined }],
+      };
+
+      prsService = new PRsService(
+        new ReadPullRequestsRepositoryBuilder()
+          .withPullRequests([noCommentsPr, commentsWithoutCreatedAt])
+          .build(),
+        undefined,
+        logger
+      );
+
+      const summary = (await prsService.getSummary()).result;
+
+      expect(summary.time_to_first_comment_hours).toEqual({
+        average: 0,
+        median: 0,
+        min: 0,
+        max: 0,
+        prs_with_comment: 0,
+        prs_without_comment: 2,
+      });
+    });
+
+    it('should skip a PR whose first comment is timestamped before the PR was opened', async () => {
+      const backdatedCommentPr = {
+        ...new PullRequestBuilder()
+          .withId(1)
+          .withTitle('Backdated comment')
+          .withCreatedAt('2025-01-05T00:00:00Z')
+          .build(),
+        comments: [{ body: 'too early', createdAt: '2025-01-01T00:00:00Z' }],
+      };
+
+      prsService = new PRsService(
+        new ReadPullRequestsRepositoryBuilder().withPullRequests([backdatedCommentPr]).build(),
+        undefined,
+        logger
+      );
+
+      const summary = (await prsService.getSummary()).result;
+
+      expect(summary.time_to_first_comment_hours.prs_with_comment).toBe(0);
+      expect(summary.time_to_first_comment_hours.prs_without_comment).toBe(1);
+    });
+
+    it('should compute the odd-length median from a single PR with a comment', async () => {
+      const pr = {
+        ...new PullRequestBuilder()
+          .withId(1)
+          .withTitle('Single comment')
+          .withCreatedAt('2025-01-01T00:00:00Z')
+          .build(),
+        comments: [{ body: 'first', createdAt: '2025-01-01T05:00:00Z' }],
+      };
+
+      prsService = new PRsService(
+        new ReadPullRequestsRepositoryBuilder().withPullRequests([pr]).build(),
+        undefined,
+        logger
+      );
+
+      const summary = (await prsService.getSummary()).result;
+
+      expect(summary.time_to_first_comment_hours).toMatchObject({
+        average: 5,
+        median: 5,
+        min: 5,
+        max: 5,
+        prs_with_comment: 1,
+        prs_without_comment: 0,
+      });
+    });
+
+    it('should compute the even-length median from two PRs with comments', async () => {
+      const prA = {
+        ...new PullRequestBuilder()
+          .withId(1)
+          .withTitle('PR A')
+          .withCreatedAt('2025-01-01T00:00:00Z')
+          .build(),
+        comments: [{ body: 'first', createdAt: '2025-01-01T02:00:00Z' }],
+      };
+      const prB = {
+        ...new PullRequestBuilder()
+          .withId(2)
+          .withTitle('PR B')
+          .withCreatedAt('2025-01-01T00:00:00Z')
+          .build(),
+        comments: [{ body: 'first', createdAt: '2025-01-01T08:00:00Z' }],
+      };
+
+      prsService = new PRsService(
+        new ReadPullRequestsRepositoryBuilder().withPullRequests([prA, prB]).build(),
+        undefined,
+        logger
+      );
+
+      const summary = (await prsService.getSummary()).result;
+
+      expect(summary.time_to_first_comment_hours).toMatchObject({
+        average: 5,
+        median: 5,
+        min: 2,
+        max: 8,
+        prs_with_comment: 2,
+        prs_without_comment: 0,
+      });
+    });
+
+    it('should default average and median to 0 when zero PRs have comments', async () => {
+      const pr = new PullRequestBuilder().withId(1).withTitle('No comments').build();
+
+      prsService = new PRsService(
+        new ReadPullRequestsRepositoryBuilder().withPullRequests([pr]).build(),
+        undefined,
+        logger
+      );
+
+      const summary = (await prsService.getSummary()).result;
+
+      expect(summary.time_to_first_comment_hours.average).toBe(0);
+      expect(summary.time_to_first_comment_hours.median).toBe(0);
+    });
+  });
+
+  describe('getFirstCommentTime', () => {
+    it('should ignore PRs with no comments and PRs whose comments all lack createdAt', async () => {
+      const noCommentsPr = new PullRequestBuilder().withId(1).withTitle('No comments').build();
+      const commentsWithoutCreatedAt = {
+        ...new PullRequestBuilder().withId(2).withTitle('No createdAt').build(),
+        comments: [{ body: 'hi', createdAt: undefined }],
+      };
+
+      prsService = new PRsService(
+        new ReadPullRequestsRepositoryBuilder()
+          .withPullRequests([noCommentsPr, commentsWithoutCreatedAt])
+          .build(),
+        undefined,
+        logger
+      );
+
+      const result = await prsService.getFirstCommentTime();
+
+      expect(result).toEqual([]);
+    });
+
+    it('should skip a PR whose first comment is timestamped before the PR was opened', async () => {
+      const backdatedCommentPr = {
+        ...new PullRequestBuilder()
+          .withId(1)
+          .withTitle('Backdated comment')
+          .withAuthor('alice')
+          .withCreatedAt('2025-01-05T00:00:00Z')
+          .build(),
+        comments: [{ body: 'too early', createdAt: '2025-01-01T00:00:00Z' }],
+      };
+
+      prsService = new PRsService(
+        new ReadPullRequestsRepositoryBuilder().withPullRequests([backdatedCommentPr]).build(),
+        undefined,
+        logger
+      );
+
+      const result = await prsService.getFirstCommentTime();
+
+      expect(result).toEqual([]);
+    });
+
+    it('should group by author and respect the default and explicit top values', async () => {
+      const prs = Array.from({ length: 12 }, (_, i) => ({
+        ...new PullRequestBuilder()
+          .withId(i + 1)
+          .withTitle(`PR ${i}`)
+          .withAuthor(`author${i}`)
+          .withCreatedAt('2025-01-01T00:00:00Z')
+          .build(),
+        comments: [{ body: 'first', createdAt: '2025-01-01T01:00:00Z' }],
+      }));
+
+      prsService = new PRsService(
+        new ReadPullRequestsRepositoryBuilder().withPullRequests(prs).build(),
+        undefined,
+        logger
+      );
+
+      const defaultTop = await prsService.getFirstCommentTime();
+      const explicitTop = await prsService.getFirstCommentTime(undefined, 3);
+
+      expect(defaultTop).toHaveLength(10);
+      expect(explicitTop).toHaveLength(3);
+      expect(defaultTop[0]).toMatchObject({ avg_hours: 1, prs_with_comments: 1 });
+    });
+
+    it('should use "unknown" for PRs with no author', async () => {
+      const authorlessPr = {
+        ...new PullRequestBuilder().withId(1).withTitle('No author').build(),
+        author: undefined,
+        comments: [{ body: 'first', createdAt: '2025-01-01T01:00:00Z' }],
+        createdAt: '2025-01-01T00:00:00Z',
+      };
+
+      prsService = new PRsService(
+        new ReadPullRequestsRepositoryBuilder().withPullRequests([authorlessPr]).build(),
+        undefined,
+        logger
+      );
+
+      const result = await prsService.getFirstCommentTime();
+
+      expect(result).toEqual([{ author: 'unknown', avg_hours: 1, prs_with_comments: 1 }]);
+    });
+  });
 });
 
 describe('PipelinesService', () => {
