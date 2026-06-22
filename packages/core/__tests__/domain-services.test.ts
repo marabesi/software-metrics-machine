@@ -689,6 +689,137 @@ describe('PRsService', () => {
       expect(explicitTop).toHaveLength(3);
     });
   });
+
+  describe('getAverageReviewTime', () => {
+    it('should use closedAt when mergedAt is absent, and mergedAt when both are present', async () => {
+      const closedOnly = new PullRequestBuilder()
+        .withId(1)
+        .withTitle('Closed only')
+        .withAuthor('alice')
+        .withCreatedAt('2025-01-01T00:00:00Z')
+        .withClosedAt('2025-01-03T00:00:00Z')
+        .build();
+      const mergedAndClosed = {
+        ...new PullRequestBuilder()
+          .withId(2)
+          .withTitle('Merged and closed')
+          .withAuthor('bob')
+          .withCreatedAt('2025-01-01T00:00:00Z')
+          .withMergedAt('2025-01-02T00:00:00Z')
+          .build(),
+        closedAt: '2025-01-05T00:00:00Z',
+      };
+      const authorless = {
+        ...new PullRequestBuilder()
+          .withId(3)
+          .withTitle('Authorless')
+          .withCreatedAt('2025-01-01T00:00:00Z')
+          .withClosedAt('2025-01-02T00:00:00Z')
+          .build(),
+        author: undefined,
+      };
+
+      prsService = new PRsService(
+        new ReadPullRequestsRepositoryBuilder()
+          .withPullRequests([closedOnly, mergedAndClosed, authorless])
+          .build(),
+        undefined,
+        logger
+      );
+
+      const result = await prsService.getAverageReviewTime();
+
+      expect(result).toEqual(
+        expect.arrayContaining([
+          expect.objectContaining({ author: 'alice', avg_days: 2 }),
+          expect.objectContaining({ author: 'bob', avg_days: 1 }),
+          expect.objectContaining({ author: 'unknown', avg_days: 1 }),
+        ])
+      );
+    });
+
+    it('should default to top 10 when top is omitted, and respect an explicit top value', async () => {
+      const prs = Array.from({ length: 12 }, (_, i) =>
+        new PullRequestBuilder()
+          .withId(i + 1)
+          .withTitle(`PR ${i}`)
+          .withAuthor(`author${i}`)
+          .withCreatedAt('2025-01-01T00:00:00Z')
+          .withMergedAt('2025-01-02T00:00:00Z')
+          .build()
+      );
+
+      prsService = new PRsService(
+        new ReadPullRequestsRepositoryBuilder().withPullRequests(prs).build(),
+        undefined,
+        logger
+      );
+
+      const defaultTop = await prsService.getAverageReviewTime();
+      const explicitTop = await prsService.getAverageReviewTime(undefined, 3);
+
+      expect(defaultTop).toHaveLength(10);
+      expect(explicitTop).toHaveLength(3);
+    });
+  });
+
+  describe('getAverageOpenBy', () => {
+    it('should fall back to createdAt for the end timestamp when a PR has neither mergedAt nor closedAt', async () => {
+      const stillOpenPr = new PullRequestBuilder()
+        .withId(1)
+        .withTitle('Still open')
+        .withCreatedAt('2025-01-01T00:00:00Z')
+        .build();
+
+      prsService = new PRsService(
+        new ReadPullRequestsRepositoryBuilder().withPullRequests([stillOpenPr]).build(),
+        undefined,
+        logger
+      );
+
+      const result = await prsService.getAverageOpenBy();
+
+      expect(result).toEqual([{ period: expect.any(String), avg_days: 0 }]);
+    });
+
+    it('should use closedAt when mergedAt is absent', async () => {
+      const closedOnly = new PullRequestBuilder()
+        .withId(1)
+        .withTitle('Closed only')
+        .withCreatedAt('2025-01-01T00:00:00Z')
+        .withClosedAt('2025-01-03T00:00:00Z')
+        .build();
+
+      prsService = new PRsService(
+        new ReadPullRequestsRepositoryBuilder().withPullRequests([closedOnly]).build(),
+        undefined,
+        logger
+      );
+
+      const result = await prsService.getAverageOpenBy();
+
+      expect(result).toEqual([{ period: expect.any(String), avg_days: 2 }]);
+    });
+
+    it('should aggregate by day when aggregateBy is "day"', async () => {
+      const pr = new PullRequestBuilder()
+        .withId(1)
+        .withTitle('PR')
+        .withCreatedAt('2025-01-01T00:00:00Z')
+        .withMergedAt('2025-01-02T00:00:00Z')
+        .build();
+
+      prsService = new PRsService(
+        new ReadPullRequestsRepositoryBuilder().withPullRequests([pr]).build(),
+        undefined,
+        logger
+      );
+
+      const result = await prsService.getAverageOpenBy(undefined, 'day');
+
+      expect(result[0].period).toMatch(/^\d{4}-\d{2}-\d{2}$/);
+    });
+  });
 });
 
 describe('PipelinesService', () => {
