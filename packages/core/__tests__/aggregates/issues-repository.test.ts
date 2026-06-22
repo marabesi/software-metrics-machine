@@ -116,5 +116,21 @@ describe('IssuesRepository', () => {
       expect(fetchIssues).toHaveBeenCalledWith(options);
       expect(result).toEqual(fresh);
     });
+
+    it('returns cached issues directly without fetching when no date range or incremental flag is set', async () => {
+      const cacheDir = await fs.mkdtemp(path.join(os.tmpdir(), 'smm-issues-cache-hit-'));
+      const cachedIssues = [createIssue({ id: '1' }), createIssue({ id: '2' })];
+      await fs.writeFile(path.join(cacheDir, 'issues.json'), JSON.stringify(cachedIssues));
+
+      const fetchIssues = vi.fn();
+      const jiraClient = createJiraClient({ fetchIssues });
+
+      const repository = new IssuesRepository(jiraClient, cacheDir, logger);
+
+      const result = await repository.refreshIssues();
+
+      expect(fetchIssues).not.toHaveBeenCalled();
+      expect(result).toEqual(cachedIssues);
+    });
   });
 });
