@@ -2433,6 +2433,22 @@ describe('PipelinesService', () => {
         { day: '2025-01-02', steps: [{ name: 'checkout', averageDurationMinutes: 6 }] },
       ]);
     });
+
+    it('should skip steps missing a name, startedAt, or completedAt', async () => {
+      const run = runWithStepsOnDay('run-1', '2025-01-01T08:00:00Z', [
+        { name: undefined, startedAt: '2025-01-01T08:00:00Z', completedAt: '2025-01-01T08:05:00Z' },
+        { name: 'checkout', startedAt: undefined, completedAt: '2025-01-01T08:05:00Z' },
+        { name: 'build', startedAt: '2025-01-01T08:00:00Z', completedAt: undefined },
+      ]);
+
+      mockPipelineRepo = new PipelinesRepositoryBuilder().withPipelineRuns([run]).build();
+      pipelinesService = new PipelinesService(mockPipelineRepo, undefined, logger);
+
+      const result = await pipelinesService.getJobStepsAverageTimeByDay();
+
+      // All steps were skipped, so the day never enters the result map.
+      expect(result).toEqual([]);
+    });
   });
 
   describe('loadUniqueWorkflows', () => {
