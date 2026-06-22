@@ -557,6 +557,101 @@ describe('PRsService', () => {
       expect(summary.most_commented_pr).toBeNull();
     });
   });
+
+  describe('getThroughTime', () => {
+    it('should not record a Closed count for PRs with neither mergedAt nor closedAt', async () => {
+      const openPr = new PullRequestBuilder()
+        .withId(1)
+        .withTitle('Still open')
+        .withCreatedAt('2025-01-01T00:00:00Z')
+        .build();
+
+      prsService = new PRsService(
+        new ReadPullRequestsRepositoryBuilder().withPullRequests([openPr]).build(),
+        undefined,
+        logger
+      );
+
+      const rows = await prsService.getThroughTime();
+
+      const closedRow = rows.find((row) => row.kind === 'Closed');
+      expect(closedRow?.count).toBe(0);
+      const openedRow = rows.find((row) => row.kind === 'Opened');
+      expect(openedRow?.count).toBe(1);
+    });
+
+    it('should default to week aggregation when aggregateBy is omitted', async () => {
+      const pr = new PullRequestBuilder()
+        .withId(1)
+        .withTitle('PR')
+        .withCreatedAt('2025-01-01T00:00:00Z')
+        .build();
+
+      prsService = new PRsService(
+        new ReadPullRequestsRepositoryBuilder().withPullRequests([pr]).build(),
+        undefined,
+        logger
+      );
+
+      const rows = await prsService.getThroughTime();
+
+      expect(rows[0].date).toMatch(/^\d{4}-W\d{2}$/);
+    });
+
+    it('should aggregate by day when aggregateBy is "day"', async () => {
+      const pr = new PullRequestBuilder()
+        .withId(1)
+        .withTitle('PR')
+        .withCreatedAt('2025-01-01T00:00:00Z')
+        .build();
+
+      prsService = new PRsService(
+        new ReadPullRequestsRepositoryBuilder().withPullRequests([pr]).build(),
+        undefined,
+        logger
+      );
+
+      const rows = await prsService.getThroughTime(undefined, 'day');
+
+      expect(rows[0].date).toMatch(/^\d{4}-\d{2}-\d{2}$/);
+    });
+
+    it('should aggregate by month when aggregateBy is "month"', async () => {
+      const pr = new PullRequestBuilder()
+        .withId(1)
+        .withTitle('PR')
+        .withCreatedAt('2025-01-01T00:00:00Z')
+        .build();
+
+      prsService = new PRsService(
+        new ReadPullRequestsRepositoryBuilder().withPullRequests([pr]).build(),
+        undefined,
+        logger
+      );
+
+      const rows = await prsService.getThroughTime(undefined, 'month');
+
+      expect(rows[0].date).toMatch(/^\d{4}-\d{2}$/);
+    });
+
+    it('should fall back to week aggregation for an invalid aggregateBy value', async () => {
+      const pr = new PullRequestBuilder()
+        .withId(1)
+        .withTitle('PR')
+        .withCreatedAt('2025-01-01T00:00:00Z')
+        .build();
+
+      prsService = new PRsService(
+        new ReadPullRequestsRepositoryBuilder().withPullRequests([pr]).build(),
+        undefined,
+        logger
+      );
+
+      const rows = await prsService.getThroughTime(undefined, 'fortnight');
+
+      expect(rows[0].date).toMatch(/^\d{4}-W\d{2}$/);
+    });
+  });
 });
 
 describe('PipelinesService', () => {
