@@ -287,6 +287,92 @@ describe('PipelinesController', () => {
     });
   });
 
+  describe('filter option endpoints', () => {
+    function buildOptions() {
+      return {
+        workflows: [{ name: 'CI', path: 'ci.yml' }],
+        statuses: ['completed', 'queued'],
+        conclusions: ['success', 'failure'],
+        branches: ['main', 'develop'],
+        events: ['push', 'pull_request'],
+        jobs: [{ name: 'build', id: 'build' }],
+        jobsByWorkflowPath: { 'ci.yml': [{ name: 'build', id: 'build' }] },
+      };
+    }
+
+    it('workflows extracts the workflows field', async () => {
+      const options = buildOptions();
+      const loadOptions = vi.fn().mockResolvedValue(options);
+      const { controller } = createController([], { loadOptions });
+
+      const result = await controller.workflows();
+
+      expect(result).toEqual(options.workflows);
+    });
+
+    it('statuses extracts the statuses field', async () => {
+      const options = buildOptions();
+      const loadOptions = vi.fn().mockResolvedValue(options);
+      const { controller } = createController([], { loadOptions });
+
+      const result = await controller.statuses();
+
+      expect(result).toEqual(options.statuses);
+    });
+
+    it('conclusions extracts the conclusions field', async () => {
+      const options = buildOptions();
+      const loadOptions = vi.fn().mockResolvedValue(options);
+      const { controller } = createController([], { loadOptions });
+
+      const result = await controller.conclusions();
+
+      expect(result).toEqual(options.conclusions);
+    });
+
+    it('branches extracts the branches field', async () => {
+      const options = buildOptions();
+      const loadOptions = vi.fn().mockResolvedValue(options);
+      const { controller } = createController([], { loadOptions });
+
+      const result = await controller.branches();
+
+      expect(result).toEqual(options.branches);
+    });
+
+    it('events extracts the events field', async () => {
+      const options = buildOptions();
+      const loadOptions = vi.fn().mockResolvedValue(options);
+      const { controller } = createController([], { loadOptions });
+
+      const result = await controller.events();
+
+      expect(result).toEqual(options.events);
+    });
+
+    it('jobs forwards workflow_path as a filter and extracts the jobs field', async () => {
+      const options = buildOptions();
+      const loadOptions = vi.fn().mockResolvedValue(options);
+      const { controller } = createController([], { loadOptions });
+
+      const result = await controller.jobs({ workflow_path: 'ci.yml' });
+
+      expect(loadOptions).toHaveBeenCalledWith({ workflowPath: 'ci.yml' });
+      expect(result).toEqual(options.jobs);
+    });
+
+    it('filterOptions forwards workflow_path and returns the whole options object', async () => {
+      const options = buildOptions();
+      const loadOptions = vi.fn().mockResolvedValue(options);
+      const { controller } = createController([], { loadOptions });
+
+      const result = await controller.filterOptions({ workflow_path: 'ci.yml' });
+
+      expect(loadOptions).toHaveBeenCalledWith({ workflowPath: 'ci.yml' });
+      expect(result).toEqual(options);
+    });
+  });
+
   describe('jobsAverageTimeByDay', () => {
     it('groups job durations by day across all jobs', async () => {
       const { controller } = createController([
