@@ -1817,6 +1817,12 @@ describe('PipelinesService', () => {
         { createdAt: '2025-01-01T08:00:00Z' },
       ]);
     });
+
+    it('should treat an unparseable startDate as timestamp 0 (no lower bound applied)', () => {
+      const filtered = pipelinesService.filterRunsByDateRange(runs, 'not-a-real-date');
+
+      expect(filtered).toEqual(runs);
+    });
   });
 
   describe('getDeploymentFrequency with configured targets', () => {
@@ -1983,6 +1989,78 @@ describe('PipelinesService', () => {
 
       expect(frequency).toEqual([]);
     });
+
+    it('should report zero counts for days/weeks/months within the range that have no deployments', async () => {
+      const deployRuns: import('../src/domain-types').PipelineRun[] = [
+        {
+          id: 'release-run-1',
+          number: 1,
+          name: 'Release',
+          status: 'completed',
+          conclusion: 'success',
+          createdAt: '2025-01-01T08:00:00Z',
+          updatedAt: '2025-01-01T08:15:00Z',
+          branch: 'main',
+          path: '.github/workflows/release.yml',
+          jobs: [
+            {
+              id: 'release-job-1',
+              name: 'deploy-production',
+              status: 'completed',
+              conclusion: 'success',
+              startedAt: '2025-01-01T08:05:00Z',
+              completedAt: '2025-01-01T08:15:00Z',
+            },
+          ],
+        },
+        {
+          id: 'release-run-3',
+          number: 2,
+          name: 'Release',
+          status: 'completed',
+          conclusion: 'success',
+          createdAt: '2025-01-03T08:00:00Z',
+          updatedAt: '2025-01-03T08:15:00Z',
+          branch: 'main',
+          path: '.github/workflows/release.yml',
+          jobs: [
+            {
+              id: 'release-job-3',
+              name: 'deploy-production',
+              status: 'completed',
+              conclusion: 'success',
+              startedAt: '2025-01-03T08:05:00Z',
+              completedAt: '2025-01-03T08:15:00Z',
+            },
+          ],
+        },
+      ];
+
+      mockPipelineRepo = new PipelinesRepositoryBuilder().withPipelineRuns(deployRuns).build();
+      pipelinesService = new PipelinesService(
+        mockPipelineRepo,
+        {
+          getDeploymentFrequencyTargets: () => [
+            { pipeline: '.github/workflows/release.yml', job: 'deploy-production' },
+          ],
+        } as any,
+        logger
+      );
+
+      const frequency = await pipelinesService.getDeploymentFrequencyWithAllIntervals();
+
+      // jan 2 falls inside the range but has no deployment, so all its counts default to 0
+      expect(frequency).toEqual(
+        expect.arrayContaining([
+          expect.objectContaining({
+            days: '2025-01-02',
+            daily_counts: 0,
+            weekly_counts: 2,
+            monthly_counts: 2,
+          }),
+        ])
+      );
+    });
   });
 
   describe('getJobMetrics', () => {
@@ -2103,6 +2181,21 @@ describe('PipelinesService', () => {
       expect(jobMetrics[0].averageDurationMinutes).toBe(10);
       expect(jobMetrics[0].successRate).toBe(100);
       expect(jobMetrics[0].failureRate).toBe(0);
+    });
+
+    it('should sort multiple jobs by totalRuns descending', async () => {
+      const runs: import('../src/domain-types').PipelineRun[] = [
+        jobRun('run-a-1', 'job-a', 'success', { completedAt: '2025-01-01T08:05:00Z' }),
+        jobRun('run-b-1', 'job-b', 'success', { completedAt: '2025-01-01T08:05:00Z' }),
+        jobRun('run-b-2', 'job-b', 'success', { completedAt: '2025-01-01T08:05:00Z' }),
+      ];
+
+      mockPipelineRepo = new PipelinesRepositoryBuilder().withPipelineRuns(runs).build();
+      pipelinesService = new PipelinesService(mockPipelineRepo, undefined, logger);
+
+      const jobMetrics = await pipelinesService.getJobMetrics();
+
+      expect(jobMetrics.map((m) => m.jobName)).toEqual(['job-b', 'job-a']);
     });
   });
 
