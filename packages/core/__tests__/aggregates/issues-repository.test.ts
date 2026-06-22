@@ -160,5 +160,33 @@ describe('IssuesRepository', () => {
       expect(result).toHaveLength(2);
       expect(result.map((issue) => issue.id).sort()).toEqual(['1', '2']);
     });
+
+    it('merging by id: the incoming fresh issue wins over the stale cached issue on collision', async () => {
+      const cacheDir = await fs.mkdtemp(path.join(os.tmpdir(), 'smm-issues-merge-collision-'));
+      const cachedIssue = createIssue({
+        id: '1',
+        createdAt: '2026-05-01T00:00:00.000Z',
+        status: 'Open',
+        title: 'Stale title',
+      });
+      await fs.writeFile(path.join(cacheDir, 'issues.json'), JSON.stringify([cachedIssue]));
+
+      const incomingIssue = createIssue({
+        id: '1',
+        createdAt: '2026-05-01T00:00:00.000Z',
+        status: 'Done',
+        title: 'Updated title',
+      });
+      const fetchIssues = vi.fn().mockResolvedValue([incomingIssue]);
+      const jiraClient = createJiraClient({ fetchIssues });
+
+      const repository = new IssuesRepository(jiraClient, cacheDir, logger);
+
+      const result = await repository.refreshIssues({ incrementalUpdate: true });
+
+      expect(result).toHaveLength(1);
+      expect(result[0].status).toBe('Done');
+      expect(result[0].title).toBe('Updated title');
+    });
   });
 });
