@@ -2105,4 +2105,84 @@ describe('PipelinesService', () => {
       expect(jobMetrics[0].failureRate).toBe(0);
     });
   });
+
+  describe('getJobRerunsByDay', () => {
+    function dayRun(
+      id: string,
+      createdAt: string,
+      options: { completedAt?: string; runAttempt?: number } = {}
+    ): import('../src/domain-types').PipelineRun {
+      return {
+        id,
+        number: 1,
+        name: 'Build',
+        status: 'completed',
+        conclusion: 'success',
+        createdAt,
+        updatedAt: createdAt,
+        completedAt: options.completedAt,
+        runAttempt: options.runAttempt,
+        branch: 'main',
+        path: '.github/workflows/build.yml',
+        jobs: [],
+      };
+    }
+
+    it('should skip runs with neither completedAt nor createdAt', async () => {
+      const runWithNoDate = dayRun('run-no-date', '');
+
+      mockPipelineRepo = new PipelinesRepositoryBuilder()
+        .withPipelineRuns([runWithNoDate])
+        .build();
+      pipelinesService = new PipelinesService(mockPipelineRepo, undefined, logger);
+
+      const result = await pipelinesService.getJobRerunsByDay();
+
+      expect(result).toEqual([]);
+    });
+
+    it('should count zero reruns for a run with no runAttempt', async () => {
+      const run = dayRun('run-1', '2025-01-01T08:00:00Z');
+
+      mockPipelineRepo = new PipelinesRepositoryBuilder().withPipelineRuns([run]).build();
+      pipelinesService = new PipelinesService(mockPipelineRepo, undefined, logger);
+
+      const result = await pipelinesService.getJobRerunsByDay();
+
+      expect(result).toEqual([{ day: '2025-01-01', rerun_count: 0 }]);
+    });
+
+    it('should accumulate reruns for multiple runs on the same day and sort by day', async () => {
+      const runs = [
+        dayRun('run-jan-2-a', '2025-01-02T08:00:00Z', { runAttempt: 2 }),
+        dayRun('run-jan-1-a', '2025-01-01T08:00:00Z', { runAttempt: 3 }),
+        dayRun('run-jan-1-b', '2025-01-01T09:00:00Z', { runAttempt: 2 }),
+      ];
+
+      mockPipelineRepo = new PipelinesRepositoryBuilder().withPipelineRuns(runs).build();
+      pipelinesService = new PipelinesService(mockPipelineRepo, undefined, logger);
+
+      const result = await pipelinesService.getJobRerunsByDay();
+
+      // jan 1: (3-1) + (2-1) = 3 reruns; jan 2: (2-1) = 1 rerun
+      expect(result).toEqual([
+        { day: '2025-01-01', rerun_count: 3 },
+        { day: '2025-01-02', rerun_count: 1 },
+      ]);
+    });
+
+    it('should use completedAt over createdAt to determine the day when both are present', async () => {
+      const run = dayRun('run-1', '2025-01-01T08:00:00Z', {
+        completedAt: '2025-01-02T08:00:00Z',
+        runAttempt: 2,
+      });
+
+      mockPipelineRepo = new PipelinesRepositoryBuilder().withPipelineRuns([run]).build();
+      pipelinesService = new PipelinesService(mockPipelineRepo, undefined, logger);
+
+      const result = await pipelinesService.getJobRerunsByDay();
+
+      expect(result).toEqual([{ day: '2025-01-02', rerun_count: 1 }]);
+    });
+  });
 });
