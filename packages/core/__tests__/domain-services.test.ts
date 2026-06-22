@@ -1818,4 +1818,95 @@ describe('PipelinesService', () => {
       ]);
     });
   });
+
+  describe('getDeploymentFrequency with configured targets', () => {
+    beforeEach(() => {
+      const deployRuns: import('../src/domain-types').PipelineRun[] = [
+        {
+          id: 'release-run-1',
+          number: 1,
+          name: 'Release',
+          status: 'completed',
+          conclusion: 'success',
+          createdAt: '2025-01-01T08:00:00Z',
+          updatedAt: '2025-01-01T08:15:00Z',
+          branch: 'main',
+          path: '.github/workflows/release.yml',
+          jobs: [
+            {
+              id: 'release-job-1',
+              name: 'deploy-production',
+              status: 'completed',
+              conclusion: 'success',
+              startedAt: '2025-01-01T08:05:00Z',
+              completedAt: '2025-01-01T08:15:00Z',
+            },
+          ],
+        },
+        {
+          id: 'release-run-2',
+          number: 2,
+          name: 'Release',
+          status: 'completed',
+          conclusion: 'success',
+          createdAt: '2025-01-02T08:00:00Z',
+          updatedAt: '2025-01-02T08:15:00Z',
+          branch: 'main',
+          path: '.github/workflows/release.yml',
+          jobs: [
+            {
+              id: 'release-job-2',
+              name: 'deploy-production',
+              status: 'completed',
+              conclusion: 'success',
+              startedAt: '2025-01-02T08:05:00Z',
+              completedAt: '2025-01-02T08:15:00Z',
+            },
+          ],
+        },
+      ];
+
+      mockPipelineRepo = new PipelinesRepositoryBuilder().withPipelineRuns(deployRuns).build();
+
+      pipelinesService = new PipelinesService(
+        mockPipelineRepo,
+        {
+          getDeploymentFrequencyTargets: () => [
+            { pipeline: '.github/workflows/release.yml', job: 'deploy-production' },
+          ],
+        } as any,
+        logger
+      );
+    });
+
+    it('should group counts by day across the deployment date range', async () => {
+      const frequency = await pipelinesService.getDeploymentFrequency('day');
+
+      expect(frequency).toEqual(
+        expect.arrayContaining([
+          expect.objectContaining({ period: '2025-01-01', count: 1 }),
+          expect.objectContaining({ period: '2025-01-02', count: 1 }),
+        ])
+      );
+    });
+
+    it('should group counts by week across the deployment date range', async () => {
+      const frequency = await pipelinesService.getDeploymentFrequency('week');
+
+      expect(frequency.length).toBeGreaterThan(0);
+      const total = frequency.reduce((sum, item) => sum + item.count, 0);
+      expect(total).toBe(2);
+      for (const item of frequency) {
+        expect(item.period).toMatch(/^\d{4}-W\d{2}$/);
+      }
+    });
+
+    it('should group counts by month across the deployment date range', async () => {
+      const frequency = await pipelinesService.getDeploymentFrequency('month');
+
+      expect(frequency).toEqual(
+        expect.arrayContaining([expect.objectContaining({ period: '2025-01', count: 2 })])
+      );
+    });
+  });
 });
