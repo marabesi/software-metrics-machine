@@ -342,6 +342,111 @@ describe('PRsService', () => {
 
     expect(metrics.mergedPRs).toBeGreaterThanOrEqual(0);
   });
+
+  describe('getMetrics', () => {
+    it('should classify open, closed-not-merged, and merged PRs and apply the totalComments fallback', async () => {
+      const openPr = { ...new PullRequestBuilder().withId(1).withTitle('Open PR').build() };
+      const closedNotMergedPr = new PullRequestBuilder()
+        .withId(2)
+        .withTitle('Closed not merged')
+        .withClosedAt('2025-01-05T00:00:00Z')
+        .build();
+      const mergedPr = new PullRequestBuilder()
+        .withId(3)
+        .withTitle('Merged PR')
+        .withCreatedAt('2025-01-01T00:00:00Z')
+        .withMergedAt('2025-01-02T00:00:00Z')
+        .build();
+      const prWithUndefinedTotalComments = {
+        ...new PullRequestBuilder().withId(4).withTitle('No comments field').build(),
+        totalComments: undefined,
+      };
+
+      prsService = new PRsService(
+        new ReadPullRequestsRepositoryBuilder()
+          .withPullRequests([openPr, closedNotMergedPr, mergedPr, prWithUndefinedTotalComments])
+          .build(),
+        undefined,
+        logger
+      );
+
+      const metrics = await prsService.getMetrics();
+
+      expect(metrics.openPRs).toBe(2);
+      expect(metrics.closedPRs).toBe(1);
+      expect(metrics.mergedPRs).toBe(1);
+      expect(metrics.totalPRs).toBe(4);
+      expect(metrics.averageComments).toBe(0);
+    });
+
+    it('should exclude PRs with zero or negative totalComments from most_commented_prs', async () => {
+      const zeroComments = new PullRequestBuilder().withId(1).withTitle('Zero comments').build();
+      const negativeComments = {
+        ...new PullRequestBuilder().withId(2).withTitle('Negative comments').build(),
+        totalComments: -1,
+      };
+      const withComments = new PullRequestBuilder()
+        .withId(3)
+        .withTitle('Has comments')
+        .withComments(3)
+        .build();
+
+      prsService = new PRsService(
+        new ReadPullRequestsRepositoryBuilder()
+          .withPullRequests([zeroComments, negativeComments, withComments])
+          .build(),
+        undefined,
+        logger
+      );
+
+      const metrics = await prsService.getMetrics();
+
+      expect(metrics.most_commented_prs).toHaveLength(1);
+      expect(metrics.most_commented_prs[0].pull_request_id).toBe(3);
+    });
+
+    it('should default averageOpenDays and averageComments to 0 for an empty PR list', async () => {
+      prsService = new PRsService(
+        new ReadPullRequestsRepositoryBuilder().withPullRequests([]).build(),
+        undefined,
+        logger
+      );
+
+      const metrics = await prsService.getMetrics();
+
+      expect(metrics.totalPRs).toBe(0);
+      expect(metrics.averageOpenDays).toBe(0);
+      expect(metrics.averageComments).toBe(0);
+      expect(metrics.most_commented_prs).toEqual([]);
+    });
+  });
+
+  describe('getMetricsByWeek', () => {
+    it('should skip PRs with no mergedAt when grouping by week', async () => {
+      const mergedPr = new PullRequestBuilder()
+        .withId(1)
+        .withTitle('Merged PR')
+        .withCreatedAt('2025-01-01T00:00:00Z')
+        .withMergedAt('2025-01-02T00:00:00Z')
+        .build();
+      const unmergedPr = new PullRequestBuilder()
+        .withId(2)
+        .withTitle('Unmerged PR')
+        .withCreatedAt('2025-01-01T00:00:00Z')
+        .build();
+
+      prsService = new PRsService(
+        new ReadPullRequestsRepositoryBuilder().withPullRequests([mergedPr, unmergedPr]).build(),
+        undefined,
+        logger
+      );
+
+      const weeks = await prsService.getMetricsByWeek();
+
+      const totalCounted = weeks.reduce((sum, week) => sum + week.count, 0);
+      expect(totalCounted).toBe(1);
+    });
+  });
 });
 
 describe('PipelinesService', () => {
