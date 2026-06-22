@@ -165,4 +165,54 @@ describe('PipelinesController', () => {
     });
   });
 
+  describe('jobsSummary', () => {
+    it('maps job metrics fields from the service to the response shape', async () => {
+      const { controller } = createController([
+        {
+          runAttempt: 2,
+          jobs: [
+            {
+              name: 'build',
+              conclusion: 'success',
+              startedAt: '2026-01-01T00:00:00Z',
+              completedAt: '2026-01-01T00:10:00Z',
+            },
+          ],
+        },
+      ]);
+
+      const result = await controller.jobsSummary({});
+
+      expect(result).toEqual({
+        result: [
+          {
+            job_name: 'build',
+            total_runs: 1,
+            avg_duration_minutes: 10,
+            success_count: 1,
+            failure_count: 0,
+            success_rate: 100,
+            failure_rate: 0,
+            rerun_count: 1,
+          },
+        ],
+      });
+    });
+  });
+
+  describe('jobsRerunsByDay', () => {
+    it('wraps the service result in a result envelope', async () => {
+      const { controller } = createController([
+        { createdAt: '2026-01-01T00:00:00Z', runAttempt: 3 },
+        { createdAt: '2026-01-01T05:00:00Z', runAttempt: 1 },
+      ]);
+
+      const result = await controller.jobsRerunsByDay({});
+
+      expect(result).toEqual({
+        result: [{ day: '2026-01-01', rerun_count: 2 }],
+      });
+    });
+  });
+
 });
