@@ -280,6 +280,516 @@ describe('SonarqubeRepository', () => {
     });
   });
 
+  describe('loadComponentTree', () => {
+    it('returns an empty array when there is no data in the component tree repository', async () => {
+      const repository = new SonarqubeRepository(
+        new InMemoryRepository<TimestampedStore<SonarqubeComponentMeasure>>(),
+        new InMemoryRepository<TimestampedStore<SonarqubeComponentTreeMeasure[]>>()
+      );
+
+      expect(await repository.loadComponentTree()).toEqual([]);
+    });
+
+    it('returns components unchanged when no filters are supplied', async () => {
+      const componentTreeRepository = new InMemoryRepository<
+        TimestampedStore<SonarqubeComponentTreeMeasure[]>
+      >();
+      const components: SonarqubeComponentTreeMeasure[] = [
+        {
+          key: 'src/index.ts',
+          name: 'index.ts',
+          qualifier: 'FIL',
+          measures: [{ key: 'coverage', name: 'coverage', value: '80', formatter: 'PERCENT' }],
+        },
+      ];
+      await componentTreeRepository.save({
+        entries: [{ fetchedAt: '2024-03-01T00:00:00.000Z', data: components }],
+      });
+
+      const repository = new SonarqubeRepository(
+        new InMemoryRepository<TimestampedStore<SonarqubeComponentMeasure>>(),
+        componentTreeRepository
+      );
+
+      expect(await repository.loadComponentTree()).toEqual(components);
+    });
+
+    it('removes folders identified via type when remove_folders is true', async () => {
+      const componentTreeRepository = new InMemoryRepository<
+        TimestampedStore<SonarqubeComponentTreeMeasure[]>
+      >();
+      const file: SonarqubeComponentTreeMeasure = {
+        key: 'src/index.ts',
+        name: 'index.ts',
+        type: 'FIL',
+        measures: [],
+      };
+      const folder: SonarqubeComponentTreeMeasure = {
+        key: 'src',
+        name: 'src',
+        type: 'DIR',
+        measures: [],
+      };
+      await componentTreeRepository.save({
+        entries: [{ fetchedAt: '2024-03-01T00:00:00.000Z', data: [file, folder] }],
+      });
+
+      const repository = new SonarqubeRepository(
+        new InMemoryRepository<TimestampedStore<SonarqubeComponentMeasure>>(),
+        componentTreeRepository
+      );
+
+      expect(await repository.loadComponentTree({ remove_folders: true })).toEqual([file]);
+    });
+
+    it('removes the project root identified via qualifier (TRK) when remove_folders is true', async () => {
+      const componentTreeRepository = new InMemoryRepository<
+        TimestampedStore<SonarqubeComponentTreeMeasure[]>
+      >();
+      const file: SonarqubeComponentTreeMeasure = {
+        key: 'src/index.ts',
+        name: 'index.ts',
+        qualifier: 'FIL',
+        measures: [],
+      };
+      const root: SonarqubeComponentTreeMeasure = {
+        key: 'my-project',
+        name: 'my-project',
+        qualifier: 'TRK',
+        measures: [],
+      };
+      await componentTreeRepository.save({
+        entries: [{ fetchedAt: '2024-03-01T00:00:00.000Z', data: [file, root] }],
+      });
+
+      const repository = new SonarqubeRepository(
+        new InMemoryRepository<TimestampedStore<SonarqubeComponentMeasure>>(),
+        componentTreeRepository
+      );
+
+      expect(await repository.loadComponentTree({ remove_folders: true })).toEqual([file]);
+    });
+
+    it('keeps folders when remove_folders is omitted', async () => {
+      const componentTreeRepository = new InMemoryRepository<
+        TimestampedStore<SonarqubeComponentTreeMeasure[]>
+      >();
+      const folder: SonarqubeComponentTreeMeasure = {
+        key: 'src',
+        name: 'src',
+        qualifier: 'DIR',
+        measures: [],
+      };
+      await componentTreeRepository.save({
+        entries: [{ fetchedAt: '2024-03-01T00:00:00.000Z', data: [folder] }],
+      });
+
+      const repository = new SonarqubeRepository(
+        new InMemoryRepository<TimestampedStore<SonarqubeComponentMeasure>>(),
+        componentTreeRepository
+      );
+
+      expect(await repository.loadComponentTree()).toEqual([folder]);
+    });
+
+    it('keeps only components whose key or name match an include_files pattern', async () => {
+      const componentTreeRepository = new InMemoryRepository<
+        TimestampedStore<SonarqubeComponentTreeMeasure[]>
+      >();
+      const matchesByKey: SonarqubeComponentTreeMeasure = {
+        key: 'src/payments/index.ts',
+        name: 'index.ts',
+        measures: [],
+      };
+      const matchesByName: SonarqubeComponentTreeMeasure = {
+        key: 'src/other.ts',
+        name: 'special-name.ts',
+        measures: [],
+      };
+      const matchesNeither: SonarqubeComponentTreeMeasure = {
+        key: 'src/unrelated.ts',
+        name: 'unrelated.ts',
+        measures: [],
+      };
+      await componentTreeRepository.save({
+        entries: [
+          {
+            fetchedAt: '2024-03-01T00:00:00.000Z',
+            data: [matchesByKey, matchesByName, matchesNeither],
+          },
+        ],
+      });
+
+      const repository = new SonarqubeRepository(
+        new InMemoryRepository<TimestampedStore<SonarqubeComponentMeasure>>(),
+        componentTreeRepository
+      );
+
+      expect(
+        await repository.loadComponentTree({ include_files: ['payments', 'special-name'] })
+      ).toEqual([matchesByKey, matchesByName]);
+    });
+
+    it('excludes components whose key or name match an ignore_files pattern', async () => {
+      const componentTreeRepository = new InMemoryRepository<
+        TimestampedStore<SonarqubeComponentTreeMeasure[]>
+      >();
+      const ignoredByKey: SonarqubeComponentTreeMeasure = {
+        key: 'src/generated/index.ts',
+        name: 'index.ts',
+        measures: [],
+      };
+      const ignoredByName: SonarqubeComponentTreeMeasure = {
+        key: 'src/other.ts',
+        name: 'generated-name.ts',
+        measures: [],
+      };
+      const kept: SonarqubeComponentTreeMeasure = {
+        key: 'src/keep.ts',
+        name: 'keep.ts',
+        measures: [],
+      };
+      await componentTreeRepository.save({
+        entries: [
+          {
+            fetchedAt: '2024-03-01T00:00:00.000Z',
+            data: [ignoredByKey, ignoredByName, kept],
+          },
+        ],
+      });
+
+      const repository = new SonarqubeRepository(
+        new InMemoryRepository<TimestampedStore<SonarqubeComponentMeasure>>(),
+        componentTreeRepository
+      );
+
+      expect(await repository.loadComponentTree({ ignore_files: ['generated'] })).toEqual([kept]);
+    });
+
+    it('combines include_files and ignore_files filters', async () => {
+      const componentTreeRepository = new InMemoryRepository<
+        TimestampedStore<SonarqubeComponentTreeMeasure[]>
+      >();
+      const includedAndNotIgnored: SonarqubeComponentTreeMeasure = {
+        key: 'src/payments/index.ts',
+        name: 'index.ts',
+        measures: [],
+      };
+      const includedButIgnored: SonarqubeComponentTreeMeasure = {
+        key: 'src/payments/generated.ts',
+        name: 'generated.ts',
+        measures: [],
+      };
+      const notIncluded: SonarqubeComponentTreeMeasure = {
+        key: 'src/other.ts',
+        name: 'other.ts',
+        measures: [],
+      };
+      await componentTreeRepository.save({
+        entries: [
+          {
+            fetchedAt: '2024-03-01T00:00:00.000Z',
+            data: [includedAndNotIgnored, includedButIgnored, notIncluded],
+          },
+        ],
+      });
+
+      const repository = new SonarqubeRepository(
+        new InMemoryRepository<TimestampedStore<SonarqubeComponentMeasure>>(),
+        componentTreeRepository
+      );
+
+      expect(
+        await repository.loadComponentTree({
+          include_files: ['payments'],
+          ignore_files: ['generated'],
+        })
+      ).toEqual([includedAndNotIgnored]);
+    });
+
+    it('filters component measures to the given metrics list, defaulting missing measures to an empty array', async () => {
+      const componentTreeRepository = new InMemoryRepository<
+        TimestampedStore<SonarqubeComponentTreeMeasure[]>
+      >();
+      const withMeasures: SonarqubeComponentTreeMeasure = {
+        key: 'src/index.ts',
+        name: 'index.ts',
+        measures: [
+          { key: 'coverage', name: 'coverage', value: '80', formatter: 'PERCENT' },
+          { key: 'bugs', name: 'bugs', value: '1', formatter: 'NUMBER' },
+        ],
+      };
+      const withoutMeasures = {
+        key: 'src/other.ts',
+        name: 'other.ts',
+      } as unknown as SonarqubeComponentTreeMeasure;
+      await componentTreeRepository.save({
+        entries: [
+          { fetchedAt: '2024-03-01T00:00:00.000Z', data: [withMeasures, withoutMeasures] },
+        ],
+      });
+
+      const repository = new SonarqubeRepository(
+        new InMemoryRepository<TimestampedStore<SonarqubeComponentMeasure>>(),
+        componentTreeRepository
+      );
+
+      expect(await repository.loadComponentTree({ metrics: ['coverage'] })).toEqual([
+        {
+          ...withMeasures,
+          measures: [{ key: 'coverage', name: 'coverage', value: '80', formatter: 'PERCENT' }],
+        },
+        { ...withoutMeasures, measures: [] },
+      ]);
+    });
+
+    it('treats missing key and name as empty strings before pattern matching', async () => {
+      const componentTreeRepository = new InMemoryRepository<
+        TimestampedStore<SonarqubeComponentTreeMeasure[]>
+      >();
+      const noKeyOrName = {
+        measures: [],
+      } as unknown as SonarqubeComponentTreeMeasure;
+      await componentTreeRepository.save({
+        entries: [{ fetchedAt: '2024-03-01T00:00:00.000Z', data: [noKeyOrName] }],
+      });
+
+      const repository = new SonarqubeRepository(
+        new InMemoryRepository<TimestampedStore<SonarqubeComponentMeasure>>(),
+        componentTreeRepository
+      );
+
+      expect(await repository.loadComponentTree({ ignore_files: ['anything'] })).toEqual([
+        noKeyOrName,
+      ]);
+    });
+  });
+
+  describe('loadAllComponentTreeEntries', () => {
+    it('returns an empty array when there is no store', async () => {
+      const repository = new SonarqubeRepository(
+        new InMemoryRepository<TimestampedStore<SonarqubeComponentMeasure>>(),
+        new InMemoryRepository<TimestampedStore<SonarqubeComponentTreeMeasure[]>>()
+      );
+
+      expect(await repository.loadAllComponentTreeEntries()).toEqual([]);
+    });
+
+    it('treats a malformed (non-array) entry data as an empty array', async () => {
+      const componentTreeRepository = new InMemoryRepository<
+        TimestampedStore<SonarqubeComponentTreeMeasure[]>
+      >();
+      await componentTreeRepository.save({
+        entries: [
+          {
+            fetchedAt: '2024-03-01T00:00:00.000Z',
+            data: 'not-an-array' as unknown as SonarqubeComponentTreeMeasure[],
+          },
+        ],
+      });
+
+      const repository = new SonarqubeRepository(
+        new InMemoryRepository<TimestampedStore<SonarqubeComponentMeasure>>(),
+        componentTreeRepository
+      );
+
+      expect(await repository.loadAllComponentTreeEntries()).toEqual([
+        { fetchedAt: '2024-03-01T00:00:00.000Z', data: [] },
+      ]);
+    });
+
+    it('filters every entry independently using the supplied options', async () => {
+      const componentTreeRepository = new InMemoryRepository<
+        TimestampedStore<SonarqubeComponentTreeMeasure[]>
+      >();
+      const folder: SonarqubeComponentTreeMeasure = {
+        key: 'src',
+        name: 'src',
+        type: 'DIR',
+        measures: [],
+      };
+      const file: SonarqubeComponentTreeMeasure = {
+        key: 'src/index.ts',
+        name: 'index.ts',
+        type: 'FIL',
+        measures: [],
+      };
+      await componentTreeRepository.save({
+        entries: [
+          { fetchedAt: '2024-01-01T00:00:00.000Z', data: [folder] },
+          { fetchedAt: '2024-02-01T00:00:00.000Z', data: [folder, file] },
+        ],
+      });
+
+      const repository = new SonarqubeRepository(
+        new InMemoryRepository<TimestampedStore<SonarqubeComponentMeasure>>(),
+        componentTreeRepository
+      );
+
+      expect(
+        await repository.loadAllComponentTreeEntries({ remove_folders: true })
+      ).toEqual([
+        { fetchedAt: '2024-01-01T00:00:00.000Z', data: [] },
+        { fetchedAt: '2024-02-01T00:00:00.000Z', data: [file] },
+      ]);
+    });
+  });
+
+  describe('matchesPattern (via include_files/ignore_files)', () => {
+    it('matches a plain substring pattern case-insensitively', async () => {
+      const componentTreeRepository = new InMemoryRepository<
+        TimestampedStore<SonarqubeComponentTreeMeasure[]>
+      >();
+      const component: SonarqubeComponentTreeMeasure = {
+        key: 'src/Payments/Index.ts',
+        name: 'Index.ts',
+        measures: [],
+      };
+      await componentTreeRepository.save({
+        entries: [{ fetchedAt: '2024-03-01T00:00:00.000Z', data: [component] }],
+      });
+
+      const repository = new SonarqubeRepository(
+        new InMemoryRepository<TimestampedStore<SonarqubeComponentMeasure>>(),
+        componentTreeRepository
+      );
+
+      expect(await repository.loadComponentTree({ include_files: ['PAYMENTS'] })).toEqual([
+        component,
+      ]);
+    });
+
+    it('matches a single-* glob against any run of non-slash characters in the basename', async () => {
+      const componentTreeRepository = new InMemoryRepository<
+        TimestampedStore<SonarqubeComponentTreeMeasure[]>
+      >();
+      const matching: SonarqubeComponentTreeMeasure = {
+        key: 'src/index.test.ts',
+        name: 'index.test.ts',
+        measures: [],
+      };
+      const nonMatching: SonarqubeComponentTreeMeasure = {
+        key: 'src/nested/dir/other.ts',
+        name: 'other.ts',
+        measures: [],
+      };
+      await componentTreeRepository.save({
+        entries: [{ fetchedAt: '2024-03-01T00:00:00.000Z', data: [matching, nonMatching] }],
+      });
+
+      const repository = new SonarqubeRepository(
+        new InMemoryRepository<TimestampedStore<SonarqubeComponentMeasure>>(),
+        componentTreeRepository
+      );
+
+      expect(
+        await repository.loadComponentTree({ include_files: ['*.test.ts'] })
+      ).toEqual([matching]);
+    });
+
+    it('matches a ** glob across path separators against the full normalized path', async () => {
+      const componentTreeRepository = new InMemoryRepository<
+        TimestampedStore<SonarqubeComponentTreeMeasure[]>
+      >();
+      const matching: SonarqubeComponentTreeMeasure = {
+        key: 'src/nested/dir/index.ts',
+        name: 'index.ts',
+        measures: [],
+      };
+      const nonMatching: SonarqubeComponentTreeMeasure = {
+        key: 'other/index.ts',
+        name: 'index.ts',
+        measures: [],
+      };
+      await componentTreeRepository.save({
+        entries: [{ fetchedAt: '2024-03-01T00:00:00.000Z', data: [matching, nonMatching] }],
+      });
+
+      const repository = new SonarqubeRepository(
+        new InMemoryRepository<TimestampedStore<SonarqubeComponentMeasure>>(),
+        componentTreeRepository
+      );
+
+      expect(
+        await repository.loadComponentTree({ include_files: ['src/**/index.ts'] })
+      ).toEqual([matching]);
+    });
+
+    it('matches a ? glob against exactly one non-slash character', async () => {
+      const componentTreeRepository = new InMemoryRepository<
+        TimestampedStore<SonarqubeComponentTreeMeasure[]>
+      >();
+      const matching: SonarqubeComponentTreeMeasure = {
+        key: 'src/file1.ts',
+        name: 'file1.ts',
+        measures: [],
+      };
+      const nonMatching: SonarqubeComponentTreeMeasure = {
+        key: 'src/file10.ts',
+        name: 'file10.ts',
+        measures: [],
+      };
+      await componentTreeRepository.save({
+        entries: [{ fetchedAt: '2024-03-01T00:00:00.000Z', data: [matching, nonMatching] }],
+      });
+
+      const repository = new SonarqubeRepository(
+        new InMemoryRepository<TimestampedStore<SonarqubeComponentMeasure>>(),
+        componentTreeRepository
+      );
+
+      expect(
+        await repository.loadComponentTree({ include_files: ['file?.ts'] })
+      ).toEqual([matching]);
+    });
+
+    it('matches a pattern without a slash only against the basename', async () => {
+      const componentTreeRepository = new InMemoryRepository<
+        TimestampedStore<SonarqubeComponentTreeMeasure[]>
+      >();
+      const component: SonarqubeComponentTreeMeasure = {
+        key: 'src/nested/index.ts',
+        name: 'unrelated-name',
+        measures: [],
+      };
+      await componentTreeRepository.save({
+        entries: [{ fetchedAt: '2024-03-01T00:00:00.000Z', data: [component] }],
+      });
+
+      const repository = new SonarqubeRepository(
+        new InMemoryRepository<TimestampedStore<SonarqubeComponentMeasure>>(),
+        componentTreeRepository
+      );
+
+      expect(
+        await repository.loadComponentTree({ include_files: ['*.ts'] })
+      ).toEqual([component]);
+    });
+
+    it('normalizes backslash separators to forward slashes before matching', async () => {
+      const componentTreeRepository = new InMemoryRepository<
+        TimestampedStore<SonarqubeComponentTreeMeasure[]>
+      >();
+      const component: SonarqubeComponentTreeMeasure = {
+        key: 'src\\nested\\index.ts',
+        name: 'index.ts',
+        measures: [],
+      };
+      await componentTreeRepository.save({
+        entries: [{ fetchedAt: '2024-03-01T00:00:00.000Z', data: [component] }],
+      });
+
+      const repository = new SonarqubeRepository(
+        new InMemoryRepository<TimestampedStore<SonarqubeComponentMeasure>>(),
+        componentTreeRepository
+      );
+
+      expect(
+        await repository.loadComponentTree({ include_files: ['src/**/index.ts'] })
+      ).toEqual([component]);
+    });
+  });
+
   it('loads coverage history from timestamped historical measures', async () => {
     const historicalRepository = new InMemoryRepository<TimestampedStore<CodeMetric[]>>();
     await historicalRepository.save({
