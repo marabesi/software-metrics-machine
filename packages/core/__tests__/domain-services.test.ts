@@ -149,6 +149,47 @@ describe('PairingIndexService', () => {
     expect(result.totalAnalyzedCommits).toBe(1);
     expect(result.pairedCommits).toBe(1);
   });
+
+  it('should parse includeAuthors comma-separated string, trimming whitespace and dropping empty segments', async () => {
+    pairingService = new PairingIndexService(
+      new RepositoryBuilder<Commit>()
+        .withLoadAll([
+          new CommitBuilder().withAuthor('Alice').build(),
+          new CommitBuilder().withAuthor('Bob').build(),
+          new CommitBuilder().withAuthor('Carol').build(),
+        ])
+        .build(),
+      undefined,
+      logger
+    );
+
+    const result = await pairingService.getPairingIndex({
+      includeAuthors: 'Alice, Bob,',
+    });
+
+    expect(result.totalAnalyzedCommits).toBe(2);
+  });
+
+  it('should merge includeAuthors string with selectedAuthors array', async () => {
+    pairingService = new PairingIndexService(
+      new RepositoryBuilder<Commit>()
+        .withLoadAll([
+          new CommitBuilder().withAuthor('Alice').build(),
+          new CommitBuilder().withAuthor('Bob').build(),
+          new CommitBuilder().withAuthor('Carol').build(),
+        ])
+        .build(),
+      undefined,
+      logger
+    );
+
+    const result = await pairingService.getPairingIndex({
+      selectedAuthors: ['Alice'],
+      includeAuthors: 'Bob',
+    });
+
+    expect(result.totalAnalyzedCommits).toBe(2);
+  });
 });
 
 describe('PRsService', () => {
