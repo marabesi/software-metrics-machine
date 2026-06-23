@@ -237,6 +237,134 @@ src/api.ts,src/utils.ts,78`;
     });
   });
 
+  describe('Code Churn typeChurn Overload', () => {
+    beforeAll(() => {
+      const csvContent = `date,added,deleted,commits
+2024-01-01,50,10,5
+2024-01-02,120,30,8`;
+
+      fs.writeFileSync(path.join(tempDir, 'abs-churn.csv'), csvContent);
+    });
+
+    it('should map to added value when typeChurn is "added"', async () => {
+      const result = await analyzer.getCodeChurn({ typeChurn: 'added' });
+
+      expect(result.data).toEqual([
+        { date: '2024-01-01', type: 'added', value: 50 },
+        { date: '2024-01-02', type: 'added', value: 120 },
+      ]);
+    });
+
+    it('should map to deleted value when typeChurn is "deleted"', async () => {
+      const result = await analyzer.getCodeChurn({ typeChurn: 'deleted' });
+
+      expect(result.data).toEqual([
+        { date: '2024-01-01', type: 'deleted', value: 10 },
+        { date: '2024-01-02', type: 'deleted', value: 30 },
+      ]);
+    });
+
+    it('should map to commits value when typeChurn is "commits"', async () => {
+      const result = await analyzer.getCodeChurn({ typeChurn: 'commits' });
+
+      expect(result.data).toEqual([
+        { date: '2024-01-01', type: 'commits', value: 5 },
+        { date: '2024-01-02', type: 'commits', value: 8 },
+      ]);
+    });
+
+    it('should default to added+deleted total for an unrecognized typeChurn value', async () => {
+      const result = await analyzer.getCodeChurn({ typeChurn: 'bogus' });
+
+      expect(result.data).toEqual([
+        { date: '2024-01-01', type: 'bogus', value: 60 },
+        { date: '2024-01-02', type: 'bogus', value: 150 },
+      ]);
+    });
+
+    it('should default to added+deleted total when typeChurn key is present but undefined', async () => {
+      const result = await analyzer.getCodeChurn({ typeChurn: undefined });
+
+      expect(result.data).toEqual([
+        { date: '2024-01-01', type: 'total', value: 60 },
+        { date: '2024-01-02', type: 'total', value: 150 },
+      ]);
+    });
+
+    it('should return the plain (non-mapped) shape when no options are passed', async () => {
+      const result = await analyzer.getCodeChurn();
+
+      expect(result.data).toEqual([
+        { date: '2024-01-01', added: 50, deleted: 10, commits: 5 },
+        { date: '2024-01-02', added: 120, deleted: 30, commits: 8 },
+      ]);
+    });
+
+    it('should return the plain (non-mapped) shape when options omit the typeChurn key', async () => {
+      const result = await analyzer.getCodeChurn({ startDate: '2024-01-01' });
+
+      expect(result.data).toEqual([
+        { date: '2024-01-01', added: 50, deleted: 10, commits: 5 },
+        { date: '2024-01-02', added: 120, deleted: 30, commits: 8 },
+      ]);
+    });
+  });
+
+  describe('Entity Churn Analysis', () => {
+    it('should parse a valid entity-churn CSV', async () => {
+      const csvContent = `entity,added,deleted,commits
+src/index.ts,50,10,5
+src/utils.ts,20,5,2`;
+
+      fs.writeFileSync(path.join(tempDir, 'entity-churn.csv'), csvContent);
+
+      const result = await analyzer.getEntityChurn();
+
+      expect(result).toEqual([
+        { entity: 'src/index.ts', added: 50, deleted: 10, commits: 5 },
+        { entity: 'src/utils.ts', added: 20, deleted: 5, commits: 2 },
+      ]);
+    });
+
+    it('should exclude rows with a blank entity', async () => {
+      const csvContent = `entity,added,deleted,commits
+src/index.ts,50,10,5
+,20,5,2`;
+
+      fs.writeFileSync(path.join(tempDir, 'entity-churn.csv'), csvContent);
+
+      const result = await analyzer.getEntityChurn();
+
+      expect(result).toEqual([{ entity: 'src/index.ts', added: 50, deleted: 10, commits: 5 }]);
+    });
+
+    it('should sort rows by added+deleted descending', async () => {
+      const csvContent = `entity,added,deleted,commits
+src/small.ts,1,1,1
+src/big.ts,50,40,9
+src/medium.ts,10,5,3`;
+
+      fs.writeFileSync(path.join(tempDir, 'entity-churn.csv'), csvContent);
+
+      const result = await analyzer.getEntityChurn();
+
+      expect(result.map((row) => row.entity)).toEqual(['src/big.ts', 'src/medium.ts', 'src/small.ts']);
+    });
+
+    it('should limit results when top is provided', async () => {
+      const csvContent = `entity,added,deleted,commits
+src/small.ts,1,1,1
+src/big.ts,50,40,9
+src/medium.ts,10,5,3`;
+
+      fs.writeFileSync(path.join(tempDir, 'entity-churn.csv'), csvContent);
+
+      const result = await analyzer.getEntityChurn({ top: 2 });
+
+      expect(result.map((row) => row.entity)).toEqual(['src/big.ts', 'src/medium.ts']);
+    });
+  });
+
   describe('Error Handling', () => {
     it('should handle directory with no CSV files', async () => {
       const emptyDir = fs.mkdtempSync(path.join(os.tmpdir(), 'codemaat-empty-'));
