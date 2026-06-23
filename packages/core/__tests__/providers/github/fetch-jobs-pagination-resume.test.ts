@@ -1,0 +1,167 @@
+import { mkdtempSync, rmSync } from 'node:fs';
+import { readFile } from 'node:fs/promises';
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { PipelineGitHubJobBuilder, PipelineGitHubRunBuilder } from '../../../src';
+import { InMemoryRepository } from '../../../src/test/in-memory-repository';
+import {
+  WorkflowJobJsonResponse,
+  WorkflowJsonResponse,
+} from '../../../src/providers/github/github-response-types';
+import { PipelinesJobFetchRepository } from '../../../src/providers/github/pipelines-job-fetch-repository';
+import { IGithubWorkflowJobClient } from '../../../src/providers/github/workflow-types';
+import { MockLoggerBuilder } from '../../mock-logger-builder';
+
+describe('Fetch jobs pipeline repository - pagination error handling and resume', () => {
+  let tempDir: string;
+  let configuration: { getPathFromGitProvider: () => string };
+  let pipelineRunRepository: InMemoryRepository<WorkflowJsonResponse>;
+  let pipelineJobsRepository: InMemoryRepository<WorkflowJobJsonResponse>;
+  const logger = new MockLoggerBuilder().build();
+
+  beforeEach(() => {
+    tempDir = mkdtempSync(join(tmpdir(), 'smm-jobs-resume-'));
+    configuration = { getPathFromGitProvider: () => tempDir };
+    pipelineRunRepository = new InMemoryRepository<WorkflowJsonResponse>();
+    pipelineJobsRepository = new InMemoryRepository<WorkflowJobJsonResponse>();
+  });
+
+  afterEach(() => {
+    rmSync(tempDir, { recursive: true, force: true });
+  });
+
+  const createRepository = (githubWorkflowClient: IGithubWorkflowJobClient) => {
+    return new PipelinesJobFetchRepository(
+      configuration as never,
+      githubWorkflowClient,
+      pipelineRunRepository,
+      pipelineJobsRepository,
+      undefined,
+      logger
+    );
+  };
+
+  const buildRun = (id: string, createdAt: string) =>
+    new PipelineGitHubRunBuilder()
+      .id(id)
+      .number('1')
+      .name('CI')
+      .status('completed')
+      .createdAt(createdAt)
+      .branch('main')
+      .path('.github/workflows/ci.yml')
+      .build();
+
+  it('should mark the run as processed and continue when fetchJobsPage rejects with status 404', async () => {
+    const run1 = buildRun('run-1', '2026-05-10T00:00:00Z');
+    const run2 = buildRun('run-2', '2026-05-11T00:00:00Z');
+    await pipelineRunRepository.saveAll([run1, run2]);
+
+    const job2 = new PipelineGitHubJobBuilder().id('job-2').runId('run-2').name('build').build();
+
+    const fetchJobsPage = vi.fn().mockImplementation((runId: string) => {
+      if (runId === 'run-1') {
+        return Promise.reject({ status: 404 });
+      }
+      return Promise.resolve({ jobs: [job2], hasNext: false });
+    });
+
+    const githubWorkflowClient: IGithubWorkflowJobClient = { fetchJobsPage };
+    const repository = createRepository(githubWorkflowClient);
+
+    const jobs = await repository.fetchJobsWithResume([run1, run2]);
+
+    expect(jobs).toHaveLength(1);
+    expect(jobs[0].id).toBe('job-2');
+    expect(fetchJobsPage).toHaveBeenCalledTimes(2);
+    expect(logger.error).toHaveBeenCalledWith(expect.stringContaining('run-1'));
+  });
+
+  it('should mark the run as processed and continue when fetchJobsPage rejects with response.status 404', async () => {
+    const run1 = buildRun('run-1', '2026-05-10T00:00:00Z');
+    await pipelineRunRepository.saveAll([run1]);
+
+    const fetchJobsPage = vi.fn().mockRejectedValueOnce({ response: { status: 404 } });
+    const githubWorkflowClient: IGithubWorkflowJobClient = { fetchJobsPage };
+    const repository = createRepository(githubWorkflowClient);
+
+    const jobs = await repository.fetchJobsWithResume([run1]);
+
+    expect(jobs).toHaveLength(0);
+    expect(fetchJobsPage).toHaveBeenCalledTimes(1);
+  });
+
+  it('should mark the run as processed and continue when fetchJobsPage rejects with status 502', async () => {
+    const run1 = buildRun('run-1', '2026-05-10T00:00:00Z');
+    const run2 = buildRun('run-2', '2026-05-11T00:00:00Z');
+    await pipelineRunRepository.saveAll([run1, run2]);
+
+    const job2 = new PipelineGitHubJobBuilder().id('job-2').runId('run-2').name('build').build();
+
+    const fetchJobsPage = vi.fn().mockImplementation((runId: string) => {
+      if (runId === 'run-1') {
+        return Promise.reject({ status: 502 });
+      }
+      return Promise.resolve({ jobs: [job2], hasNext: false });
+    });
+
+    const githubWorkflowClient: IGithubWorkflowJobClient = { fetchJobsPage };
+    const repository = createRepository(githubWorkflowClient);
+
+    const jobs = await repository.fetchJobsWithResume([run1, run2]);
+
+    expect(jobs).toHaveLength(1);
+    expect(jobs[0].id).toBe('job-2');
+    expect(fetchJobsPage).toHaveBeenCalledTimes(2);
+  });
+
+  it('should save partial progress and rethrow when fetchJobsPage rejects with a non-404/502 status', async () => {
+    const run1 = buildRun('run-1', '2026-05-10T00:00:00Z');
+    await pipelineRunRepository.saveAll([run1]);
+
+    const fetchJobsPage = vi.fn().mockRejectedValueOnce({ status: 500 });
+    const githubWorkflowClient: IGithubWorkflowJobClient = { fetchJobsPage };
+    const repository = createRepository(githubWorkflowClient);
+
+    await expect(repository.fetchJobsWithResume([run1])).rejects.toEqual({ status: 500 });
+  });
+
+  it('should save partial progress and rethrow when fetchJobsPage rejects with no status at all', async () => {
+    const run1 = buildRun('run-1', '2026-05-10T00:00:00Z');
+    await pipelineRunRepository.saveAll([run1]);
+
+    const fetchJobsPage = vi.fn().mockRejectedValueOnce(new Error('boom'));
+    const githubWorkflowClient: IGithubWorkflowJobClient = { fetchJobsPage };
+    const repository = createRepository(githubWorkflowClient);
+
+    await expect(repository.fetchJobsWithResume([run1])).rejects.toThrow('boom');
+  });
+
+  it('should persist partial jobs collected so far before rethrowing on a non-404/502 error', async () => {
+    const run1 = buildRun('run-1', '2026-05-10T00:00:00Z');
+    const run2 = buildRun('run-2', '2026-05-11T00:00:00Z');
+    await pipelineRunRepository.saveAll([run1, run2]);
+
+    const job1 = new PipelineGitHubJobBuilder().id('job-1').runId('run-1').name('build').build();
+
+    const fetchJobsPage = vi.fn().mockImplementation((runId: string) => {
+      if (runId === 'run-1') {
+        return Promise.resolve({ jobs: [job1], hasNext: false });
+      }
+      return Promise.reject({ status: 500 });
+    });
+
+    const githubWorkflowClient: IGithubWorkflowJobClient = { fetchJobsPage };
+    const repository = createRepository(githubWorkflowClient);
+
+    await expect(repository.fetchJobsWithResume([run1, run2])).rejects.toEqual({ status: 500 });
+
+    const incompletedPath = join(tempDir, 'jobs_incompleted.json');
+    const raw = await readFile(incompletedPath, 'utf-8');
+    const persisted = JSON.parse(raw) as WorkflowJobJsonResponse[];
+
+    expect(persisted).toHaveLength(1);
+    expect(persisted[0].id).toBe('job-1');
+  });
+});
