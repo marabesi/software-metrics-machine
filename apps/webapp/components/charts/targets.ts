@@ -295,6 +295,25 @@ export const METRIC_TARGETS: Record<string, TargetDefinition> = {
       },
     ],
   },
+  'big-o-classification': {
+    target: 'Review O(n^2+) hotspots',
+    description:
+      'Higher asymptotic complexity can become a scalability risk as input size grows. Prioritize files with high scores or polynomial classifications for performance review.',
+    sources: [
+      {
+        label: 'Cormen et al. (2022) — Introduction to Algorithms, 4th edition',
+        url: 'https://mitpress.mit.edu/9780262046305/introduction-to-algorithms/',
+      },
+      {
+        label: 'Khan Academy — Big-O notation and asymptotic analysis',
+        url: 'https://www.khanacademy.org/computing/computer-science/algorithms/asymptotic-notation/a/big-o-notation',
+      },
+      {
+        label: 'NIST Dictionary of Algorithms and Data Structures — big-O notation',
+        url: 'https://xlinux.nist.gov/dads/HTML/bigOnotation.html',
+      },
+    ],
+  },
   'sonarqube-reliability': {
     target: 'A (Rating 1)',
     description:

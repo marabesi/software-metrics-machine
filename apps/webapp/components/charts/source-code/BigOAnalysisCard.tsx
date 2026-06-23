@@ -20,10 +20,12 @@ import {
   TableContainer,
   TableHead,
   TableRow,
+  TableSortLabel,
   TextField,
   Typography,
 } from '@mui/material';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { TargetInfo } from '@/components/charts/TargetInfo';
 import type { BigOFileAnalysis, BigOFileSummary } from '@/server/api/sourceCode';
 
 type BigOAnalysisCardProps = {
@@ -31,11 +33,14 @@ type BigOAnalysisCardProps = {
   search: string;
 };
 
+type SortDirection = 'asc' | 'desc';
+
 export function BigOAnalysisCard({ files, search }: BigOAnalysisCardProps) {
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
   const [query, setQuery] = useState(search);
+  const [scoreSortDirection, setScoreSortDirection] = useState<SortDirection>('desc');
   const [selectedFile, setSelectedFile] = useState<string | null>(null);
   const [analysis, setAnalysis] = useState<BigOFileAnalysis | null>(null);
   const [loading, setLoading] = useState(false);
@@ -44,6 +49,24 @@ export function BigOAnalysisCard({ files, search }: BigOAnalysisCardProps) {
   const lineClassifications = useMemo(() => {
     return new Map(analysis?.lines.map((line) => [line.lineNumber, line]) ?? []);
   }, [analysis]);
+
+  const sortedFiles = useMemo(() => {
+    const sortDirection = scoreSortDirection === 'asc' ? 1 : -1;
+
+    return [...files].sort((left, right) => {
+      const scoreComparison = (left.score - right.score) * sortDirection;
+
+      if (scoreComparison !== 0) {
+        return scoreComparison;
+      }
+
+      return left.filePath.localeCompare(right.filePath);
+    });
+  }, [files, scoreSortDirection]);
+
+  const toggleScoreSort = () => {
+    setScoreSortDirection((direction) => (direction === 'asc' ? 'desc' : 'asc'));
+  };
 
   const submitSearch = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -91,7 +114,10 @@ export function BigOAnalysisCard({ files, search }: BigOAnalysisCardProps) {
           alignItems={{ xs: 'stretch', sm: 'center' }}
         >
           <Box>
-            <CardTitle>Big O Classification</CardTitle>
+            <Stack direction="row" spacing={1} alignItems="center">
+              <CardTitle>Big O Classification</CardTitle>
+              <TargetInfo metric="big-o-classification" />
+            </Stack>
             <Typography variant="body2" color="text.secondary" sx={{ mt: 0.5 }}>
               Heuristic static complexity risk by source file.
             </Typography>
@@ -118,11 +144,19 @@ export function BigOAnalysisCard({ files, search }: BigOAnalysisCardProps) {
               <TableRow>
                 <TableCell>File path + file name</TableCell>
                 <TableCell>Big O classification</TableCell>
-                <TableCell align="right">Score</TableCell>
+                <TableCell align="right">
+                  <TableSortLabel
+                    active
+                    direction={scoreSortDirection}
+                    onClick={toggleScoreSort}
+                  >
+                    Score
+                  </TableSortLabel>
+                </TableCell>
               </TableRow>
             </TableHead>
             <TableBody>
-              {files.map((file) => (
+              {sortedFiles.map((file) => (
                 <TableRow
                   key={file.filePath}
                   hover

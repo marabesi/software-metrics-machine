@@ -28,6 +28,7 @@ const CATEGORIES: MetricCategory[] = [
       { key: 'entity-effort', definition: METRIC_TARGETS['entity-effort'] },
       { key: 'ownership', definition: METRIC_TARGETS['ownership'] },
       { key: 'code-coupling', definition: METRIC_TARGETS['code-coupling'] },
+      { key: 'big-o-classification', definition: METRIC_TARGETS['big-o-classification'] },
     ],
   },
   {

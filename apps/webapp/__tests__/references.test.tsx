@@ -65,6 +65,9 @@ describe('ReferencesPage', () => {
       screen.getByText(/Higher paired commit percentage/)
     ).toBeInTheDocument();
 
+    expect(screen.getByText('Big O Classification')).toBeInTheDocument();
+    expect(screen.getByText('Review O(n^2+) hotspots')).toBeInTheDocument();
+
     expect(screen.getByText('Deployment Frequency')).toBeInTheDocument();
     expect(screen.getByText('Daily (Elite)')).toBeInTheDocument();
   });
@@ -122,6 +125,7 @@ describe('ReferencesPage', () => {
       'Entity Effort',
       'Ownership',
       'Code Coupling',
+      'Big O Classification',
       'Deployment Frequency',
       'Pipeline Duration',
       'Job Avg Time',
