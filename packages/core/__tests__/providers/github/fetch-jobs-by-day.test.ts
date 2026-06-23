@@ -519,4 +519,81 @@ describe('Fetch jobs pipeline repository - By day', () => {
     // Day 3
     expect(fetchJobsPage).toHaveBeenNthCalledWith(4, 'run-4', 1, 100, { rawFilters: undefined });
   });
+
+  it('should take the fetchJobsByDay branch when incrementalUpdate is combined with byDay and endDate', async () => {
+    const oldRun = new PipelineGitHubRunBuilder()
+      .id('run-old')
+      .number('1')
+      .name('CI')
+      .status('completed')
+      .createdAt('2026-05-10T10:00:00Z')
+      .branch('main')
+      .path('.github/workflows/ci.yml')
+      .build();
+
+    const newRun = new PipelineGitHubRunBuilder()
+      .id('run-new')
+      .number('2')
+      .name('CI')
+      .status('completed')
+      .createdAt('2026-05-11T10:00:00Z')
+      .branch('main')
+      .path('.github/workflows/ci.yml')
+      .build();
+
+    const cachedJob = new PipelineGitHubJobBuilder()
+      .id('job-old')
+      .runId('run-old')
+      .name('build')
+      .completedAt('2026-05-10T10:02:00Z')
+      .build();
+
+    await pipelineJobsRepository.saveAll([cachedJob]);
+    await storeFetchedWorkflows([oldRun, newRun]);
+
+    // latestDate resolves to the cached job's completed_at (2026-05-10), so the byDay
+    // branch re-walks that whole day (re-fetching run-old) through endDate (2026-05-12).
+    const refetchedOldJob = new PipelineGitHubJobBuilder()
+      .id('job-old-refetched')
+      .runId('run-old')
+      .name('build')
+      .completedAt('2026-05-10T10:02:00Z')
+      .build();
+
+    const freshJob = new PipelineGitHubJobBuilder()
+      .id('job-new')
+      .runId('run-new')
+      .name('build')
+      .completedAt('2026-05-11T10:02:00Z')
+      .build();
+
+    const fetchJobsPage = vi.fn().mockImplementation((runId) => {
+      if (runId === 'run-old') {
+        return Promise.resolve({ jobs: [refetchedOldJob], hasNext: false });
+      }
+      if (runId === 'run-new') {
+        return Promise.resolve({ jobs: [freshJob], hasNext: false });
+      }
+      return Promise.resolve({ jobs: [], hasNext: false });
+    });
+
+    const githubWorkflowClient: IGithubWorkflowJobClient = {
+      fetchJobsPage,
+    };
+
+    const { repository } = await createRepository(githubWorkflowClient);
+
+    const jobs = await repository.fetchJobs({
+      incrementalUpdate: true,
+      byDay: true,
+      endDate: '2026-05-12',
+    });
+
+    expect(fetchJobsPage).toHaveBeenCalledTimes(2);
+    expect(fetchJobsPage).toHaveBeenNthCalledWith(1, 'run-old', 1, 100, { rawFilters: undefined });
+    expect(fetchJobsPage).toHaveBeenNthCalledWith(2, 'run-new', 1, 100, { rawFilters: undefined });
+    expect(jobs.map((j) => j.id).sort()).toEqual(['job-new', 'job-old', 'job-old-refetched']);
+
+    await pipelineJobsRepository.delete();
+  });
 });

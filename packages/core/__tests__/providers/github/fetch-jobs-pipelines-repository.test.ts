@@ -542,4 +542,91 @@ describe('Fetch jobs pipeline repository', () => {
     expect(fetchJobsPage).toHaveBeenCalledWith('run-new', 1, 100, { rawFilters: undefined });
     expect(jobs.map((j) => j.id).sort()).toEqual(['job-new', 'job-old']);
   });
+
+  it('should fall through to fetching all runs when incrementalUpdate is true but the jobs cache is empty', async () => {
+    const run = new PipelineGitHubRunBuilder()
+      .id('run-1')
+      .number('1')
+      .name('CI')
+      .status('completed')
+      .createdAt('2026-05-10T00:00:00Z')
+      .path('.github/workflows/ci.yml')
+      .build();
+
+    await storeFetchedWorkflows([run]);
+
+    const fetchJobsPage = vi.fn().mockResolvedValueOnce({
+      jobs: [new PipelineGitHubJobBuilder().id('job-1').runId('run-1').name('build').build()],
+      hasNext: false,
+    });
+
+    const githubWorkflowClient: IGithubWorkflowJobClient = {
+      fetchJobsPage,
+    };
+
+    const { repository } = await createRepository(githubWorkflowClient);
+
+    const jobs = await repository.fetchJobs({ incrementalUpdate: true });
+
+    expect(fetchJobsPage).toHaveBeenCalledTimes(1);
+    expect(fetchJobsPage).toHaveBeenCalledWith('run-1', 1, 100, { rawFilters: undefined });
+    expect(jobs).toHaveLength(1);
+    expect(jobs[0].id).toBe('job-1');
+  });
+
+  it('should still take the incremental path when forceRefresh is also true and the jobs cache is non-empty', async () => {
+    const oldRun = new PipelineGitHubRunBuilder()
+      .id('run-old')
+      .number('1')
+      .name('CI')
+      .status('completed')
+      .createdAt('2026-05-05T00:00:00Z')
+      .path('.github/workflows/ci.yml')
+      .build();
+
+    const newRun = new PipelineGitHubRunBuilder()
+      .id('run-new')
+      .number('2')
+      .name('CI')
+      .status('completed')
+      .createdAt('2026-05-20T00:00:00Z')
+      .path('.github/workflows/ci.yml')
+      .build();
+
+    const cachedJob = new PipelineGitHubJobBuilder()
+      .id('job-old')
+      .runId('run-old')
+      .name('build')
+      .completedAt('2026-05-05T00:02:00Z')
+      .build();
+
+    await pipelineJobsRepository.saveAll([cachedJob]);
+    await storeFetchedWorkflows([oldRun, newRun]);
+
+    const freshJob = new PipelineGitHubJobBuilder()
+      .id('job-new')
+      .runId('run-new')
+      .name('build')
+      .completedAt('2026-05-20T00:02:00Z')
+      .build();
+
+    const fetchJobsPage = vi.fn().mockResolvedValueOnce({
+      jobs: [freshJob],
+      hasNext: false,
+    });
+
+    const githubWorkflowClient: IGithubWorkflowJobClient = {
+      fetchJobsPage,
+    };
+
+    const { repository } = await createRepository(githubWorkflowClient);
+
+    // forceRefresh is set alongside incrementalUpdate: the incremental guard has no
+    // forceRefresh check, so it still only fetches the newer run, not the whole cache.
+    const jobs = await repository.fetchJobs({ incrementalUpdate: true, forceRefresh: true });
+
+    expect(fetchJobsPage).toHaveBeenCalledTimes(1);
+    expect(fetchJobsPage).toHaveBeenCalledWith('run-new', 1, 100, { rawFilters: undefined });
+    expect(jobs.map((j) => j.id).sort()).toEqual(['job-new', 'job-old']);
+  });
 });
