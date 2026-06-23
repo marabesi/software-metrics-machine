@@ -1,5 +1,5 @@
 import { mkdtempSync, rmSync } from 'node:fs';
-import { readFile } from 'node:fs/promises';
+import { readFile, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
@@ -163,5 +163,119 @@ describe('Fetch jobs pipeline repository - pagination error handling and resume'
 
     expect(persisted).toHaveLength(1);
     expect(persisted[0].id).toBe('job-1');
+  });
+});
+
+describe('Fetch jobs pipeline repository - resume from existing partial progress', () => {
+  let tempDir: string;
+  let configuration: { getPathFromGitProvider: () => string };
+  let pipelineRunRepository: InMemoryRepository<WorkflowJsonResponse>;
+  let pipelineJobsRepository: InMemoryRepository<WorkflowJobJsonResponse>;
+  const logger = new MockLoggerBuilder().build();
+
+  beforeEach(() => {
+    tempDir = mkdtempSync(join(tmpdir(), 'smm-jobs-resume-progress-'));
+    configuration = { getPathFromGitProvider: () => tempDir };
+    pipelineRunRepository = new InMemoryRepository<WorkflowJsonResponse>();
+    pipelineJobsRepository = new InMemoryRepository<WorkflowJobJsonResponse>();
+  });
+
+  afterEach(() => {
+    rmSync(tempDir, { recursive: true, force: true });
+  });
+
+  const createRepository = (githubWorkflowClient: IGithubWorkflowJobClient) => {
+    return new PipelinesJobFetchRepository(
+      configuration as never,
+      githubWorkflowClient,
+      pipelineRunRepository,
+      pipelineJobsRepository,
+      undefined,
+      logger
+    );
+  };
+
+  const buildRun = (id: string, createdAt: string) =>
+    new PipelineGitHubRunBuilder()
+      .id(id)
+      .number('1')
+      .name('CI')
+      .status('completed')
+      .createdAt(createdAt)
+      .branch('main')
+      .path('.github/workflows/ci.yml')
+      .build();
+
+  const writeProgress = (progress: {
+    processedRunIds: string[];
+    partial?: { runId: string; page: number } | null;
+  }) => writeFile(join(tempDir, 'jobs_progress.json'), JSON.stringify(progress), 'utf-8');
+
+  const writeIncompleted = (jobs: WorkflowJobJsonResponse[]) =>
+    writeFile(join(tempDir, 'jobs_incompleted.json'), JSON.stringify(jobs), 'utf-8');
+
+  it('should skip a run already listed in processedRunIds without calling fetchJobsPage for it', async () => {
+    const run1 = buildRun('run-1', '2026-05-10T00:00:00Z');
+    const run2 = buildRun('run-2', '2026-05-11T00:00:00Z');
+    await pipelineRunRepository.saveAll([run1, run2]);
+
+    await writeProgress({ processedRunIds: ['run-1'], partial: null });
+
+    const job2 = new PipelineGitHubJobBuilder().id('job-2').runId('run-2').name('build').build();
+    const fetchJobsPage = vi.fn().mockResolvedValueOnce({ jobs: [job2], hasNext: false });
+    const githubWorkflowClient: IGithubWorkflowJobClient = { fetchJobsPage };
+    const repository = createRepository(githubWorkflowClient);
+
+    const jobs = await repository.fetchJobsWithResume([run1, run2]);
+
+    expect(fetchJobsPage).toHaveBeenCalledTimes(1);
+    expect(fetchJobsPage).toHaveBeenCalledWith('run-2', 1, 100, { rawFilters: undefined });
+    expect(jobs.map((j) => j.id)).toEqual(['job-2']);
+  });
+
+  it('should resume a run from partial.page rather than starting at page 1', async () => {
+    const run1 = buildRun('run-1', '2026-05-10T00:00:00Z');
+    await pipelineRunRepository.saveAll([run1]);
+
+    await writeProgress({ processedRunIds: [], partial: { runId: 'run-1', page: 3 } });
+
+    const job = new PipelineGitHubJobBuilder()
+      .id('job-page-3')
+      .runId('run-1')
+      .name('build')
+      .build();
+    const fetchJobsPage = vi.fn().mockResolvedValueOnce({ jobs: [job], hasNext: false });
+    const githubWorkflowClient: IGithubWorkflowJobClient = { fetchJobsPage };
+    const repository = createRepository(githubWorkflowClient);
+
+    const jobs = await repository.fetchJobsWithResume([run1]);
+
+    expect(fetchJobsPage).toHaveBeenCalledTimes(1);
+    expect(fetchJobsPage).toHaveBeenCalledWith('run-1', 3, 100, { rawFilters: undefined });
+    expect(jobs.map((j) => j.id)).toEqual(['job-page-3']);
+  });
+
+  it('should include jobs already in jobs_incompleted.json in the final merged result', async () => {
+    const run1 = buildRun('run-1', '2026-05-10T00:00:00Z');
+    const run2 = buildRun('run-2', '2026-05-11T00:00:00Z');
+    await pipelineRunRepository.saveAll([run1, run2]);
+
+    const priorJob = new PipelineGitHubJobBuilder()
+      .id('job-prior')
+      .runId('run-1')
+      .name('build')
+      .build();
+
+    await writeProgress({ processedRunIds: ['run-1'], partial: null });
+    await writeIncompleted([priorJob]);
+
+    const job2 = new PipelineGitHubJobBuilder().id('job-2').runId('run-2').name('build').build();
+    const fetchJobsPage = vi.fn().mockResolvedValueOnce({ jobs: [job2], hasNext: false });
+    const githubWorkflowClient: IGithubWorkflowJobClient = { fetchJobsPage };
+    const repository = createRepository(githubWorkflowClient);
+
+    const jobs = await repository.fetchJobsWithResume([run1, run2]);
+
+    expect(jobs.map((j) => j.id).sort()).toEqual(['job-2', 'job-prior']);
   });
 });
