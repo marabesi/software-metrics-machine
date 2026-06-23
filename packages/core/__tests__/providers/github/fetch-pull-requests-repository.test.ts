@@ -120,6 +120,34 @@ describe('GitHubPullRequestsFetchRepository', () => {
     expect(ids).toEqual(['1', '2', '3']);
   });
 
+  it('falls through to a plain fetch when incrementalUpdate is true but the cache is empty', async () => {
+    const providerDir = await fs.mkdtemp(path.join(os.tmpdir(), 'smm-pr-incr-empty-'));
+    const newPrs = [createPullRequest({ id: '1' })];
+
+    const fetchPRs = vi.fn().mockResolvedValue(newPrs);
+    const githubPrsClient: IGithubPrsClient = {
+      fetchPRs,
+      fetchPRComments: vi.fn(),
+    };
+    const config = {
+      getPathFromGitProvider: () => providerDir,
+    };
+
+    const repository = new GitHubPullRequestsFetchRepository(
+      githubPrsClient,
+      config as never,
+      logger
+    );
+
+    const result = await repository.fetchPRs({ incrementalUpdate: true });
+
+    expect(fetchPRs).toHaveBeenCalledWith({
+      startDate: undefined,
+      endDate: undefined,
+    });
+    expect(result).toEqual(newPrs);
+  });
+
   it('creates pull request filter options after fetching pull requests', async () => {
     const providerDir = await fs.mkdtemp(path.join(os.tmpdir(), 'smm-pr-filters-'));
     const githubPrsClient: IGithubPrsClient = {
