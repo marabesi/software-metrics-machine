@@ -214,6 +214,72 @@ describe('SonarqubeRepository', () => {
     });
   });
 
+  describe('loadAllMeasurementEntries', () => {
+    it('returns an empty array when there is no store', async () => {
+      const repository = new SonarqubeRepository(
+        new InMemoryRepository<TimestampedStore<SonarqubeComponentMeasure>>(),
+        new InMemoryRepository<TimestampedStore<SonarqubeComponentTreeMeasure[]>>()
+      );
+
+      expect(await repository.loadAllMeasurementEntries()).toEqual([]);
+    });
+
+    it('returns an empty array when store.entries is not an array', async () => {
+      const measurementRepository = new InMemoryRepository<
+        TimestampedStore<SonarqubeComponentMeasure>
+      >();
+      await measurementRepository.save({
+        entries: 'not-an-array',
+      } as unknown as TimestampedStore<SonarqubeComponentMeasure>);
+
+      const repository = new SonarqubeRepository(
+        measurementRepository,
+        new InMemoryRepository<TimestampedStore<SonarqubeComponentTreeMeasure[]>>()
+      );
+
+      expect(await repository.loadAllMeasurementEntries()).toEqual([]);
+    });
+
+    it('maps every entry independently, defaulting missing measures to an empty array', async () => {
+      const measurementRepository = new InMemoryRepository<
+        TimestampedStore<SonarqubeComponentMeasure>
+      >();
+      await measurementRepository.save({
+        entries: [
+          {
+            fetchedAt: '2024-01-01T00:00:00.000Z',
+            data: {
+              id: '1',
+              key: 'project-a',
+              name: 'Project A',
+              measures: [{ metric: 'coverage', value: '50' }],
+            } as unknown as SonarqubeComponentMeasure,
+          },
+          {
+            fetchedAt: '2024-02-01T00:00:00.000Z',
+            data: { id: '1', key: 'project-a', name: 'Project A' } as unknown as SonarqubeComponentMeasure,
+          },
+        ],
+      });
+
+      const repository = new SonarqubeRepository(
+        measurementRepository,
+        new InMemoryRepository<TimestampedStore<SonarqubeComponentTreeMeasure[]>>()
+      );
+
+      expect(await repository.loadAllMeasurementEntries()).toEqual([
+        {
+          fetchedAt: '2024-01-01T00:00:00.000Z',
+          data: [{ metric: 'coverage', value: '50' }],
+        },
+        {
+          fetchedAt: '2024-02-01T00:00:00.000Z',
+          data: [],
+        },
+      ]);
+    });
+  });
+
   it('loads coverage history from timestamped historical measures', async () => {
     const historicalRepository = new InMemoryRepository<TimestampedStore<CodeMetric[]>>();
     await historicalRepository.save({
