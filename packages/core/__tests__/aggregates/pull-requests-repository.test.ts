@@ -330,4 +330,32 @@ describe('PullRequestsRepository filters', () => {
 
     expect(prs.map((pr) => pr.number)).toEqual([1, 2]);
   });
+
+  it('falls back to defaults when body, merged_at, closed_at, user, labels and html_url are missing', async () => {
+    const pr = new PullRequestJsonResponseBuilder().withId('1').withNumber('1').build();
+    const {
+      body: _body,
+      merged_at: _mergedAt,
+      closed_at: _closedAt,
+      user: _user,
+      labels: _labels,
+      html_url: _htmlUrl,
+      ...prWithoutOptionalFields
+    } = pr;
+
+    const repository = new PullRequestsRepository(
+      { loadAll: vi.fn().mockResolvedValue([prWithoutOptionalFields]) } as any,
+      { loadAll: vi.fn().mockResolvedValue([]) } as any
+    );
+
+    const prs = await repository.loadPrsWithFilters();
+
+    expect(prs).toHaveLength(1);
+    expect(prs[0].description).toBe('');
+    expect(prs[0].mergedAt).toBeUndefined();
+    expect(prs[0].closedAt).toBeUndefined();
+    expect(prs[0].author).toEqual({ login: 'unknown', id: 0 });
+    expect(prs[0].labels).toEqual([]);
+    expect(prs[0].url).toBe('');
+  });
 });
