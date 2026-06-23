@@ -1,5 +1,25 @@
 import { ApiParams, fetchAPI } from './client';
 
+export type BigOFileSummary = {
+  filePath: string;
+  fileName: string;
+  classification: string;
+  score: number;
+  needsHelp: boolean;
+};
+
+export type BigOLineClassification = {
+  lineNumber: number;
+  content: string;
+  classification: string;
+  reason: string;
+};
+
+export type BigOFileAnalysis = BigOFileSummary & {
+  content: string;
+  lines: BigOLineClassification[];
+};
+
 export const sourceCodeAPI = {
   pairingIndex: (params?: ApiParams) =>
     fetchAPI<{
@@ -51,4 +71,7 @@ export const sourceCodeAPI = {
   
   getAuthors: () =>
     fetchAPI<string[]>('/code/authors'),
+
+  bigOFiles: (params?: ApiParams) =>
+    fetchAPI<BigOFileSummary[]>('/code/big-o', params),
 };

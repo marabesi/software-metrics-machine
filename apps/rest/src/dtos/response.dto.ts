@@ -16,6 +16,8 @@ import type {
   CodeChurnResult,
   FileCoupling,
   SonarqubeComponentMeasure,
+  BigOFileAnalysis as CoreBigOFileAnalysis,
+  BigOFileSummary as CoreBigOFileSummary,
 } from '@smmachine/core';
 
 // Types defined in core but not re-exported through the public API,
@@ -34,6 +36,9 @@ export interface PairingIndexResult {
     subject: string;
   }>;
 }
+
+export type BigOFileSummary = CoreBigOFileSummary;
+export type BigOFileAnalysis = CoreBigOFileAnalysis;
 
 export interface DeploymentFrequencyRow {
   pipeline: string;

@@ -222,6 +222,21 @@ describe('cli: CLI Commands', () => {
       expect(summaryCmd).toBeDefined();
     });
 
+    it('code command should register big-o subcommand with search and file options', () => {
+      const codeCmd = program.commands.find((cmd) => cmd.name() === 'code');
+      const bigOCmd = codeCmd?.commands.find((cmd) => cmd.name() === 'big-o');
+      const searchOption = bigOCmd?.options.find((opt) => opt.long === '--search');
+      const fileOption = bigOCmd?.options.find((opt) => opt.long === '--file');
+      const ignoreOption = bigOCmd?.options.find((opt) => opt.long === '--ignore-files');
+      const includeOption = bigOCmd?.options.find((opt) => opt.long === '--include-only');
+
+      expect(bigOCmd).toBeDefined();
+      expect(searchOption).toBeDefined();
+      expect(fileOption).toBeDefined();
+      expect(ignoreOption).toBeDefined();
+      expect(includeOption).toBeDefined();
+    });
+
     it('deployment command should have start-date option', () => {
       const pipelinesCmd = program.commands.find((cmd) => cmd.name() === 'pipelines');
       const fetchCmd = pipelinesCmd?.commands.find((cmd) => cmd.name() === 'fetch');

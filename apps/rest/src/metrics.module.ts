@@ -29,6 +29,7 @@ import {
   SonarqubeRepository,
   SonarqubeFactory,
   PairingFactory,
+  BigOService,
 } from '@smmachine/core';
 import PipelineFactory from '@smmachine/core/aggregates/pipeline-factory';
 import { PairingService } from '@smmachine/core/domain/code/pairing-service';
@@ -243,6 +244,13 @@ function createLogger(config: Configuration, name: string): Logger {
       provide: PairingService,
       useFactory: (config: Configuration) => {
         return PairingFactory.create(config, createLogger(config, 'PairingService'));
+      },
+      inject: [Configuration],
+    },
+    {
+      provide: BigOService,
+      useFactory: (config: Configuration) => {
+        return new BigOService(config);
       },
       inject: [Configuration],
     },

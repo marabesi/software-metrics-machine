@@ -1,8 +1,10 @@
 import { Controller, Get, Query } from '@nestjs/common';
 import { ApiQuery, ApiTags } from '@nestjs/swagger';
-import { CodeMaatMetricsRepository } from '@smmachine/core';
+import { BigOService, CodeMaatMetricsRepository } from '@smmachine/core';
 import { PairingService } from '@smmachine/core/domain/code/pairing-service';
 import type {
+  BigOFileAnalysis,
+  BigOFileSummary,
   CodePairingIndexResponse,
   CodeChurnResponse,
   CodeCouplingResponse,
@@ -21,7 +23,8 @@ import type {
 export class CodeController {
   constructor(
     private readonly pairingService: PairingService,
-    private readonly codemaat: CodeMaatMetricsRepository
+    private readonly codemaat: CodeMaatMetricsRepository,
+    private readonly bigOService: BigOService
   ) {}
 
   @Get('/code/pairing-index')
@@ -154,5 +157,55 @@ export class CodeController {
   @Get('/code/authors')
   async codeAuthors(): Promise<CodeAuthorsResponse> {
     return this.codemaat.getEntityOwnership({ select: 'authors' });
+  }
+
+  @Get('/code/big-o')
+  @ApiQuery({
+    name: 'search',
+    required: false,
+    type: String,
+    description: 'Repository-relative file path search filter',
+  })
+  @ApiQuery({
+    name: 'limit',
+    required: false,
+    type: Number,
+    description: 'Maximum number of files to analyze',
+  })
+  @ApiQuery({
+    name: 'ignore_files',
+    required: false,
+    type: String,
+    description: 'Comma-separated repository-relative patterns to ignore',
+  })
+  @ApiQuery({
+    name: 'include_only',
+    required: false,
+    type: String,
+    description: 'Comma-separated repository-relative patterns to include',
+  })
+  async bigOFiles(
+    @Query('search') search?: string,
+    @Query('limit') limit?: string,
+    @Query('ignore_files') ignoreFiles?: string,
+    @Query('include_only') includeOnly?: string
+  ): Promise<BigOFileSummary[]> {
+    return this.bigOService.listFiles({
+      search,
+      ignorePatterns: ignoreFiles,
+      includePatterns: includeOnly,
+      limit: limit ? Number(limit) : undefined,
+    });
+  }
+
+  @Get('/code/big-o/file')
+  @ApiQuery({
+    name: 'file_path',
+    required: true,
+    type: String,
+    description: 'Repository-relative file path',
+  })
+  async bigOFile(@Query('file_path') filePath: string): Promise<BigOFileAnalysis> {
+    return this.bigOService.analyzeFile(filePath);
   }
 }

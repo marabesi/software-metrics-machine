@@ -17,6 +17,8 @@ import {
 } from '@/components/charts/source-code/types';
 import { LatestPairedCommitsCard } from "@/components/charts/source-code/LatestPairedCommitsCard";
 import { TopPairingsCard } from '@/components/charts/source-code/TopPairingsCard';
+import { BigOAnalysisCard } from '@/components/charts/source-code/BigOAnalysisCard';
+import type { BigOFileSummary as BigOFileSummaryResponse } from '@/server/api/sourceCode';
 
 type ResultWrapper<T> = {
   result: T;
@@ -48,12 +50,16 @@ export default async function SourceCodePage({
 }: {
   searchParams?: Promise<Record<string, string | string[] | undefined>>;
 }) {
-  const filters = parseDashboardFilters(await searchParams ?? {}, defaultFilters);
+  const resolvedSearchParams = await searchParams ?? {};
+  const filters = parseDashboardFilters(resolvedSearchParams, defaultFilters);
+  const bigOSearchParam = resolvedSearchParams.big_o_search;
+  const bigOSearch = Array.isArray(bigOSearchParam) ? bigOSearchParam[0] ?? '' : bigOSearchParam ?? '';
   let entityChurn: EntityChurnData[] = [];
   let coupling: CouplingData[] = [];
   let entityEffort: EntityEffortData[] = [];
   let codeChurn: CodeChurnData[] = [];
   let entityOwnership: EntityOwnershipData[] = [];
+  let bigOFiles: BigOFileSummaryResponse[] = [];
   let topPairings: Array<{ author: string; co_author: string; paired_commits: number }> = [];
   let latestPairedCommits: Array<{
     hash: string;
@@ -65,13 +71,14 @@ export default async function SourceCodePage({
 
   try {
     const apiParams = buildSourceCodeApiParams(filters);
-    const [churn, couplingData, effort, churnOverTime, ownership, pairing] = await Promise.all([
+    const [churn, couplingData, effort, churnOverTime, ownership, pairing, bigO] = await Promise.all([
       sourceCodeAPI.entityChurn(apiParams),
       sourceCodeAPI.coupling(apiParams),
       sourceCodeAPI.entityEffort(apiParams),
       sourceCodeAPI.codeChurn(apiParams),
       sourceCodeAPI.entityOwnership(apiParams),
       sourceCodeAPI.pairingIndex(apiParams),
+      sourceCodeAPI.bigOFiles({ ...apiParams, search: bigOSearch, limit: 200 }),
     ]);
     // Handle both direct array responses and wrapped responses
     entityChurn = ensureArray<EntityChurnData>(unwrapResult(churn as EntityChurnData[] | ResultWrapper<EntityChurnData[]>));
@@ -79,6 +86,7 @@ export default async function SourceCodePage({
     entityEffort = ensureArray<EntityEffortData>(unwrapResult(effort as EntityEffortData[] | ResultWrapper<EntityEffortData[]>));
     codeChurn = ensureArray<CodeChurnData>(unwrapResult(churnOverTime as CodeChurnData[] | ResultWrapper<CodeChurnData[]>));
     entityOwnership = ensureArray<EntityOwnershipData>(unwrapResult(ownership as EntityOwnershipData[] | ResultWrapper<EntityOwnershipData[]>));
+    bigOFiles = ensureArray<BigOFileSummaryResponse>(unwrapResult(bigO as BigOFileSummaryResponse[] | ResultWrapper<BigOFileSummaryResponse[]>));
     const pairingData = unwrapResult(pairing as PairingIndexResponse | ResultWrapper<PairingIndexResponse>);
     topPairings = Array.isArray(pairingData?.top_pairs) ? pairingData.top_pairs.slice(0, 10) : [];
     latestPairedCommits = Array.isArray(pairingData?.latest_paired_commits)
@@ -92,12 +100,17 @@ export default async function SourceCodePage({
     entityEffort = [];
     codeChurn = [];
     entityOwnership = [];
+    bigOFiles = [];
     topPairings = [];
     latestPairedCommits = [];
   }
 
   return (
     <div className="space-y-6">
+      <div className="grid grid-cols-1 gap-6">
+        <BigOAnalysisCard files={bigOFiles} search={bigOSearch} />
+      </div>
+
       <div className="grid grid-cols-1 gap-6">
         <CodeChurnOverTimeCard data={codeChurn} />
       </div>

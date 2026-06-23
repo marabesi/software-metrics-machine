@@ -2,6 +2,7 @@ import type { SmmCommand } from './smm-command';
 import { GitFactory } from '@smmachine/core/aggregates/git-factory';
 import { CodemaatFetchRepository } from '@smmachine/core/providers/codemaat/codemaat-fetch-repository';
 import { CodemaatService } from '@smmachine/core/domain/code/codemaat-service';
+import { BigOService } from '@smmachine/core';
 import { CodemaatFactory } from '@smmachine/core/aggregates/codemaat-factory';
 import { PairingFactory } from '@smmachine/core/aggregates/pairing-factory';
 import type { CodeChurn } from '@smmachine/core/providers/codemaat/types';
@@ -10,6 +11,99 @@ import path from 'path';
 export function createCodeCommands(program: SmmCommand): void {
   const codeGroup = program.subcommand('code').description('Code analysis operations');
   const screen = program.getScreen();
+
+  codeGroup
+    .subcommand('big-o')
+    .description('Analyze Big O complexity risk for source files')
+    .option('--search <text>', 'Filter files by repository-relative path')
+    .option('--ignore-files <patterns>', 'Comma-separated repository-relative patterns to ignore')
+    .option('--include-only <patterns>', 'Comma-separated repository-relative patterns to include')
+    .option('--file <path>', 'Show line-level Big O analysis for a repository-relative file')
+    .option('--limit <number>', 'Maximum files to analyze when listing summaries', '200')
+    .option('--output <format>', 'Output format (text|json|csv)', 'text')
+    .actionWithSmm(async (options, command) => {
+      const logger = command.getLogger('CodeCommand');
+      try {
+        const service = new BigOService(command.getConfiguration());
+
+        if (options.file) {
+          const analysis = await service.analyzeFile(options.file);
+
+          if (options.output === 'json') {
+            screen.printLine(JSON.stringify(analysis, null, 2));
+            return;
+          }
+
+          if (options.output === 'csv') {
+            const rows = ['line_number,classification,reason,content'];
+            for (const line of analysis.lines) {
+              rows.push(
+                [
+                  line.lineNumber,
+                  line.classification,
+                  line.reason,
+                  `"${line.content.replace(/"/g, '""')}"`,
+                ].join(',')
+              );
+            }
+            screen.printLine(rows.join('\n'));
+            return;
+          }
+
+          screen.printLine('\n=== Big O File Analysis ===\n');
+          screen.printLine(`File: ${analysis.filePath}`);
+          screen.printLine(`Classification: ${analysis.classification}`);
+          screen.printLine(
+            `Score: ${analysis.score}${analysis.needsHelp ? ' (needs performance attention)' : ''}`
+          );
+          screen.printLine('\nClassified lines:');
+          for (const line of analysis.lines) {
+            screen.printLine(
+              `- ${line.lineNumber}: ${line.classification} (${line.reason}) ${line.content.trim()}`
+            );
+          }
+          return;
+        }
+
+        const files = await service.listFiles({
+          search: options.search,
+          ignorePatterns: options.ignoreFiles,
+          includePatterns: options.includeOnly,
+          limit: Number(options.limit),
+        });
+
+        if (options.output === 'json') {
+          screen.printLine(JSON.stringify({ files }, null, 2));
+          return;
+        }
+
+        if (options.output === 'csv') {
+          const rows = ['file_path,classification,score,needs_help'];
+          for (const file of files) {
+            rows.push(
+              [
+                `"${file.filePath.replace(/"/g, '""')}"`,
+                file.classification,
+                file.score,
+                file.needsHelp,
+              ].join(',')
+            );
+          }
+          screen.printLine(rows.join('\n'));
+          return;
+        }
+
+        screen.printLine('\n=== Big O Source File Analysis ===\n');
+        screen.printLine(`Files analyzed: ${files.length}`);
+        for (const file of files) {
+          const help = file.needsHelp ? ' needs performance attention' : '';
+          screen.printLine(`- ${file.filePath}: ${file.classification}, score ${file.score}${help}`);
+        }
+      } catch (error) {
+        logger.error('Failed to analyze Big O complexity', error);
+        process.exit(1);
+      }
+    });
 
   codeGroup
     .subcommand('summary')

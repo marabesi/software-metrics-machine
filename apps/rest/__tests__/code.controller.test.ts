@@ -13,9 +13,17 @@ describe('CodeController', () => {
       getEntityEffort: vi.fn(),
       getEntityOwnership: vi.fn(),
     };
-    const controller = new CodeController(pairingService as never, codemaat as never);
+    const bigOService = {
+      listFiles: vi.fn(),
+      analyzeFile: vi.fn(),
+    };
+    const controller = new CodeController(
+      pairingService as never,
+      codemaat as never,
+      bigOService as never
+    );
 
-    return { controller, pairingService, codemaat };
+    return { controller, pairingService, codemaat, bigOService };
   }
 
   describe('pairingIndex', () => {
@@ -179,6 +187,60 @@ describe('CodeController', () => {
 
       expect(codemaat.getEntityOwnership).toHaveBeenCalledWith({ select: 'authors' });
       expect(result).toBe(authors);
+    });
+  });
+
+  describe('bigOFiles', () => {
+    it('forwards search and limit to the Big O service', async () => {
+      const { controller, bigOService } = createController();
+      const files = [
+        {
+          filePath: 'src/index.ts',
+          fileName: 'index.ts',
+          classification: 'O(n)',
+          score: 38,
+          needsHelp: false,
+        },
+      ];
+      bigOService.listFiles.mockResolvedValue(files);
+
+      const result = await controller.bigOFiles('src', '25', '*.test.ts', 'src/**');
+
+      expect(bigOService.listFiles).toHaveBeenCalledWith({
+        search: 'src',
+        ignorePatterns: '*.test.ts',
+        includePatterns: 'src/**',
+        limit: 25,
+      });
+      expect(result).toBe(files);
+    });
+  });
+
+  describe('bigOFile', () => {
+    it('returns line-level analysis for a file', async () => {
+      const { controller, bigOService } = createController();
+      const analysis = {
+        filePath: 'src/index.ts',
+        fileName: 'index.ts',
+        classification: 'O(n)',
+        score: 38,
+        needsHelp: false,
+        content: 'for (const item of items) {}',
+        lines: [
+          {
+            lineNumber: 1,
+            content: 'for (const item of items) {}',
+            classification: 'O(n)',
+            reason: 'linear iteration',
+          },
+        ],
+      };
+      bigOService.analyzeFile.mockResolvedValue(analysis);
+
+      const result = await controller.bigOFile('src/index.ts');
+
+      expect(bigOService.analyzeFile).toHaveBeenCalledWith('src/index.ts');
+      expect(result).toBe(analysis);
     });
   });
 });
