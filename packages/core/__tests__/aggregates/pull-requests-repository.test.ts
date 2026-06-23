@@ -199,4 +199,38 @@ describe('PullRequestsRepository filters', () => {
 
     expect(prs.map((pr) => pr.number)).toEqual([1]);
   });
+
+  it('keeps only PRs with a label matching the labels filter, case-insensitively, excluding label-less PRs', async () => {
+    const labelFixture = {
+      id: 'l1',
+      node_id: '',
+      url: '',
+      color: '',
+      default: false,
+      description: '',
+    };
+
+    const repository = new PullRequestsRepository(
+      {
+        loadAll: vi.fn().mockResolvedValue([
+          new PullRequestJsonResponseBuilder()
+            .withId('1')
+            .withNumber('1')
+            .withLabels([{ ...labelFixture, name: 'Bug' }])
+            .build(),
+          new PullRequestJsonResponseBuilder()
+            .withId('2')
+            .withNumber('2')
+            .withLabels([{ ...labelFixture, name: 'enhancement' }])
+            .build(),
+          new PullRequestJsonResponseBuilder().withId('3').withNumber('3').withLabels([]).build(),
+        ]),
+      } as any,
+      { loadAll: vi.fn().mockResolvedValue([]) } as any
+    );
+
+    const prs = await repository.loadPrsWithFilters({ labels: ['bug'] });
+
+    expect(prs.map((pr) => pr.number)).toEqual([1]);
+  });
 });
