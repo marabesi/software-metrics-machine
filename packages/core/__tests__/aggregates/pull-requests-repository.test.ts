@@ -95,4 +95,84 @@ describe('PullRequestsRepository filters', () => {
 
     expect(prs.map((pr) => pr.number)).toEqual([1]);
   });
+
+  it('excludes PRs created before the startDate', async () => {
+    const repository = new PullRequestsRepository(
+      {
+        loadAll: vi.fn().mockResolvedValue([
+          new PullRequestJsonResponseBuilder()
+            .withId('1')
+            .withNumber('1')
+            .withCreatedAt('2026-01-01T00:00:00Z')
+            .build(),
+          new PullRequestJsonResponseBuilder()
+            .withId('2')
+            .withNumber('2')
+            .withCreatedAt('2026-02-01T00:00:00Z')
+            .build(),
+        ]),
+      } as any,
+      { loadAll: vi.fn().mockResolvedValue([]) } as any
+    );
+
+    const prs = await repository.loadPrsWithFilters({ startDate: '2026-01-15' });
+
+    expect(prs.map((pr) => pr.number)).toEqual([2]);
+  });
+
+  it('excludes PRs created after the endDate', async () => {
+    const repository = new PullRequestsRepository(
+      {
+        loadAll: vi.fn().mockResolvedValue([
+          new PullRequestJsonResponseBuilder()
+            .withId('1')
+            .withNumber('1')
+            .withCreatedAt('2026-01-01T00:00:00Z')
+            .build(),
+          new PullRequestJsonResponseBuilder()
+            .withId('2')
+            .withNumber('2')
+            .withCreatedAt('2026-02-01T00:00:00Z')
+            .build(),
+        ]),
+      } as any,
+      { loadAll: vi.fn().mockResolvedValue([]) } as any
+    );
+
+    const prs = await repository.loadPrsWithFilters({ endDate: '2026-01-15' });
+
+    expect(prs.map((pr) => pr.number)).toEqual([1]);
+  });
+
+  it('includes PRs created within both the startDate and endDate bounds', async () => {
+    const repository = new PullRequestsRepository(
+      {
+        loadAll: vi.fn().mockResolvedValue([
+          new PullRequestJsonResponseBuilder()
+            .withId('1')
+            .withNumber('1')
+            .withCreatedAt('2026-01-01T00:00:00Z')
+            .build(),
+          new PullRequestJsonResponseBuilder()
+            .withId('2')
+            .withNumber('2')
+            .withCreatedAt('2026-01-15T00:00:00Z')
+            .build(),
+          new PullRequestJsonResponseBuilder()
+            .withId('3')
+            .withNumber('3')
+            .withCreatedAt('2026-02-01T00:00:00Z')
+            .build(),
+        ]),
+      } as any,
+      { loadAll: vi.fn().mockResolvedValue([]) } as any
+    );
+
+    const prs = await repository.loadPrsWithFilters({
+      startDate: '2026-01-10',
+      endDate: '2026-01-20',
+    });
+
+    expect(prs.map((pr) => pr.number)).toEqual([2]);
+  });
 });
