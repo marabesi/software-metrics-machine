@@ -488,4 +488,58 @@ describe('Fetch jobs pipeline repository', () => {
 
     expect(jobs).toHaveLength(0);
   });
+
+  it('should fetch only newer runs and merge with cache when incrementalUpdate is true', async () => {
+    const oldRun = new PipelineGitHubRunBuilder()
+      .id('run-old')
+      .number('1')
+      .name('CI')
+      .status('completed')
+      .createdAt('2026-05-05T00:00:00Z')
+      .path('.github/workflows/ci.yml')
+      .build();
+
+    const newRun = new PipelineGitHubRunBuilder()
+      .id('run-new')
+      .number('2')
+      .name('CI')
+      .status('completed')
+      .createdAt('2026-05-20T00:00:00Z')
+      .path('.github/workflows/ci.yml')
+      .build();
+
+    const cachedJob = new PipelineGitHubJobBuilder()
+      .id('job-old')
+      .runId('run-old')
+      .name('build')
+      .completedAt('2026-05-05T00:02:00Z')
+      .build();
+
+    await pipelineJobsRepository.saveAll([cachedJob]);
+    await storeFetchedWorkflows([oldRun, newRun]);
+
+    const freshJob = new PipelineGitHubJobBuilder()
+      .id('job-new')
+      .runId('run-new')
+      .name('build')
+      .completedAt('2026-05-20T00:02:00Z')
+      .build();
+
+    const fetchJobsPage = vi.fn().mockResolvedValueOnce({
+      jobs: [freshJob],
+      hasNext: false,
+    });
+
+    const githubWorkflowClient: IGithubWorkflowJobClient = {
+      fetchJobsPage,
+    };
+
+    const { repository } = await createRepository(githubWorkflowClient);
+
+    const jobs = await repository.fetchJobs({ incrementalUpdate: true });
+
+    expect(fetchJobsPage).toHaveBeenCalledTimes(1);
+    expect(fetchJobsPage).toHaveBeenCalledWith('run-new', 1, 100, { rawFilters: undefined });
+    expect(jobs.map((j) => j.id).sort()).toEqual(['job-new', 'job-old']);
+  });
 });
