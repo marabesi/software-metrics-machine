@@ -288,6 +288,53 @@ src/b.ts,src/utils.ts,90`;
     });
   });
 
+  describe('Glob Pattern Matching', () => {
+    it('should match a "**" pattern across path separators', async () => {
+      const csvContent = `entity,coupled,degree
+src/nested/dir/utils.ts,other.ts,10
+src/other.ts,another.ts,20`;
+
+      fs.writeFileSync(path.join(tempDir, 'coupling.csv'), csvContent);
+
+      const result = await analyzer.getFileCoupling({
+        ignorePatterns: ['src/**/utils.ts'],
+      });
+
+      expect(result.length).toBe(1);
+      expect(result[0].entity).toBe('src/other.ts');
+    });
+
+    it('should match a "?" pattern to exactly one non-slash character', async () => {
+      const csvContent = `entity,coupled,degree
+src/a.ts,other.ts,10
+src/ab.ts,other.ts,20`;
+
+      fs.writeFileSync(path.join(tempDir, 'coupling.csv'), csvContent);
+
+      const result = await analyzer.getFileCoupling({
+        ignorePatterns: ['src/?.ts'],
+      });
+
+      expect(result.length).toBe(1);
+      expect(result[0].entity).toBe('src/ab.ts');
+    });
+
+    it('should match a glob pattern containing "/" against the full path, not the basename', async () => {
+      const csvContent = `entity,coupled,degree
+src/foo.test.ts,other.ts,10
+other/dir/foo.test.ts,other.ts,20`;
+
+      fs.writeFileSync(path.join(tempDir, 'coupling.csv'), csvContent);
+
+      const result = await analyzer.getFileCoupling({
+        ignorePatterns: ['src/*.test.ts'],
+      });
+
+      expect(result.length).toBe(1);
+      expect(result[0].entity).toBe('other/dir/foo.test.ts');
+    });
+  });
+
   describe('Full Analysis', () => {
     beforeAll(() => {
       // Set up test CSV files
