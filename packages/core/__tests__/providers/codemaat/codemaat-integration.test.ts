@@ -191,6 +191,101 @@ src/api.ts,src/utils.ts,78,5`;
         averageRevs: 5,
       });
     });
+
+    it('should only keep entities matching an includePatterns entry', async () => {
+      const csvContent = `entity,coupled,degree
+src/index.ts,src/utils.ts,45
+docs/readme.md,docs/changelog.md,78`;
+
+      fs.writeFileSync(path.join(tempDir, 'coupling.csv'), csvContent);
+
+      const result = await analyzer.getFileCoupling({
+        includePatterns: ['src/'],
+      });
+
+      expect(result.length).toBe(1);
+      expect(result[0].entity).toBe('src/index.ts');
+    });
+
+    it('should not filter by inclusion when includePatterns is empty', async () => {
+      const csvContent = `entity,coupled,degree
+src/index.ts,src/utils.ts,45
+docs/readme.md,docs/changelog.md,78`;
+
+      fs.writeFileSync(path.join(tempDir, 'coupling.csv'), csvContent);
+
+      const result = await analyzer.getFileCoupling({ includePatterns: [] });
+
+      expect(result.length).toBe(2);
+    });
+
+    it('should reorder rows by degree descending when sortBy is "degree"', async () => {
+      const csvContent = `entity,coupled,degree
+src/low.ts,src/utils.ts,10
+src/high.ts,src/utils.ts,90
+src/mid.ts,src/utils.ts,50`;
+
+      fs.writeFileSync(path.join(tempDir, 'coupling.csv'), csvContent);
+
+      const result = await analyzer.getFileCoupling({ sortBy: 'degree' });
+
+      expect(result.map((row) => row.entity)).toEqual(['src/high.ts', 'src/mid.ts', 'src/low.ts']);
+    });
+
+    it('should preserve file order when sortBy is omitted', async () => {
+      const csvContent = `entity,coupled,degree
+src/low.ts,src/utils.ts,10
+src/high.ts,src/utils.ts,90
+src/mid.ts,src/utils.ts,50`;
+
+      fs.writeFileSync(path.join(tempDir, 'coupling.csv'), csvContent);
+
+      const result = await analyzer.getFileCoupling();
+
+      expect(result.map((row) => row.entity)).toEqual(['src/low.ts', 'src/high.ts', 'src/mid.ts']);
+    });
+
+    it('should limit results when top is a valid numeric string', async () => {
+      const csvContent = `entity,coupled,degree
+src/a.ts,src/utils.ts,10
+src/b.ts,src/utils.ts,90
+src/c.ts,src/utils.ts,50`;
+
+      fs.writeFileSync(path.join(tempDir, 'coupling.csv'), csvContent);
+
+      const result = await analyzer.getFileCoupling({ top: '2' });
+
+      expect(result.length).toBe(2);
+    });
+
+    it('should not limit results when top is a non-numeric string', async () => {
+      const csvContent = `entity,coupled,degree
+src/a.ts,src/utils.ts,10
+src/b.ts,src/utils.ts,90
+src/c.ts,src/utils.ts,50`;
+
+      fs.writeFileSync(path.join(tempDir, 'coupling.csv'), csvContent);
+
+      const result = await analyzer.getFileCoupling({ top: 'not-a-number' });
+
+      expect(result.length).toBe(3);
+    });
+
+    it('should not limit results when top is undefined, null, or an empty string', async () => {
+      const csvContent = `entity,coupled,degree
+src/a.ts,src/utils.ts,10
+src/b.ts,src/utils.ts,90`;
+
+      fs.writeFileSync(path.join(tempDir, 'coupling.csv'), csvContent);
+
+      const undefinedResult = await analyzer.getFileCoupling({ top: undefined });
+      const nullResult = await analyzer.getFileCoupling({ top: null as unknown as undefined });
+      const emptyStringResult = await analyzer.getFileCoupling({ top: '' });
+
+      expect(undefinedResult.length).toBe(2);
+      expect(nullResult.length).toBe(2);
+      expect(emptyStringResult.length).toBe(2);
+    });
   });
 
   describe('Full Analysis', () => {
