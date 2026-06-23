@@ -267,4 +267,197 @@ describe('PipelinesRepository', () => {
     expect(workflows[0].id).toBe('run-1');
     expect(fetchWorkflowRunsPage).toHaveBeenCalledTimes(2);
   });
+
+  it('should fetch only runs created after the latest cached date on incremental update', async () => {
+    const cachedRun = new PipelineGitHubRunBuilder()
+      .id('cached-run')
+      .number('1')
+      .name('CI')
+      .status('completed')
+      .createdAt('2026-05-10T00:00:00Z')
+      .updatedAt('2026-05-10T00:05:00Z')
+      .startedAt('2026-05-10T00:00:00Z')
+      .branch('main')
+      .path('.github/workflows/ci.yml')
+      .build();
+
+    const freshRun = new PipelineGitHubRunBuilder()
+      .id('fresh-run')
+      .number('2')
+      .name('CI')
+      .status('completed')
+      .createdAt('2026-05-12T00:00:00Z')
+      .updatedAt('2026-05-12T00:05:00Z')
+      .startedAt('2026-05-12T00:00:00Z')
+      .branch('main')
+      .path('.github/workflows/ci.yml')
+      .build();
+
+    const fetchWorkflowRunsPage = vi.fn().mockResolvedValueOnce({
+      runs: [freshRun],
+      hasNext: false,
+    });
+
+    const githubWorkflowClient: IGithubWorkflowClient = {
+      fetchWorkflows: vi.fn(),
+      fetchWorkflowRunsPage,
+    };
+
+    const { repository } = await createRepository(githubWorkflowClient);
+    await storeFetchedWorkflows([cachedRun]);
+
+    const workflows = await repository.fetchPipelines({ incrementalUpdate: true });
+
+    expect(workflows.map((w) => w.id).sort()).toEqual(['cached-run', 'fresh-run']);
+    expect(fetchWorkflowRunsPage).toHaveBeenCalledTimes(1);
+    expect(fetchWorkflowRunsPage).toHaveBeenCalledWith(1, 100, {
+      created: '>2026-05-10T00:00:00.000Z',
+      rawFilters: undefined,
+    });
+  });
+
+  it('should let the freshly fetched run win when it shares an id with a cached run on incremental update', async () => {
+    const cachedRun = new PipelineGitHubRunBuilder()
+      .id('shared-id')
+      .number('1')
+      .name('CI')
+      .status('in_progress')
+      .createdAt('2026-05-10T00:00:00Z')
+      .updatedAt('2026-05-10T00:05:00Z')
+      .startedAt('2026-05-10T00:00:00Z')
+      .branch('main')
+      .path('.github/workflows/ci.yml')
+      .build();
+
+    const updatedRun = new PipelineGitHubRunBuilder()
+      .id('shared-id')
+      .number('1')
+      .name('CI')
+      .status('completed')
+      .createdAt('2026-05-10T00:00:00Z')
+      .updatedAt('2026-05-12T00:05:00Z')
+      .startedAt('2026-05-10T00:00:00Z')
+      .branch('main')
+      .path('.github/workflows/ci.yml')
+      .build();
+
+    const fetchWorkflowRunsPage = vi.fn().mockResolvedValueOnce({
+      runs: [updatedRun],
+      hasNext: false,
+    });
+
+    const githubWorkflowClient: IGithubWorkflowClient = {
+      fetchWorkflows: vi.fn(),
+      fetchWorkflowRunsPage,
+    };
+
+    const { repository } = await createRepository(githubWorkflowClient);
+    await storeFetchedWorkflows([cachedRun]);
+
+    const workflows = await repository.fetchPipelines({ incrementalUpdate: true });
+
+    expect(workflows).toHaveLength(1);
+    expect(workflows[0].status).toBe('completed');
+  });
+
+  it('should take the byDay branch inside the incremental block when byDay and endDate are set', async () => {
+    const cachedRun = new PipelineGitHubRunBuilder()
+      .id('cached-run')
+      .number('1')
+      .name('CI')
+      .status('completed')
+      .createdAt('2026-05-10T00:00:00Z')
+      .updatedAt('2026-05-10T00:05:00Z')
+      .startedAt('2026-05-10T00:00:00Z')
+      .branch('main')
+      .path('.github/workflows/ci.yml')
+      .build();
+
+    const freshRun = new PipelineGitHubRunBuilder()
+      .id('fresh-run')
+      .number('2')
+      .name('CI')
+      .status('completed')
+      .createdAt('2026-05-12T00:00:00Z')
+      .updatedAt('2026-05-12T00:05:00Z')
+      .startedAt('2026-05-12T00:00:00Z')
+      .branch('main')
+      .path('.github/workflows/ci.yml')
+      .build();
+
+    const fetchWorkflowRunsPage = vi.fn().mockResolvedValue({
+      runs: [freshRun],
+      hasNext: false,
+    });
+
+    const githubWorkflowClient: IGithubWorkflowClient = {
+      fetchWorkflows: vi.fn(),
+      fetchWorkflowRunsPage,
+    };
+
+    const { repository } = await createRepository(githubWorkflowClient);
+    await storeFetchedWorkflows([cachedRun]);
+
+    const workflows = await repository.fetchPipelines({
+      incrementalUpdate: true,
+      byDay: true,
+      endDate: '2026-05-12T23:59:59Z',
+    });
+
+    expect(workflows.map((w) => w.id).sort()).toEqual(['cached-run', 'fresh-run']);
+    // fetchWorkflowsByDay is called per-day with a `created` range, not the single `>` filter
+    // that fetchWorkflowsWithResume would use directly.
+    for (const call of fetchWorkflowRunsPage.mock.calls) {
+      expect(call[2].created).toContain('..');
+    }
+  });
+
+  it('should bypass the incremental-update guard when forceRefresh is also set on a non-empty cache', async () => {
+    const cachedRun = new PipelineGitHubRunBuilder()
+      .id('cached-run')
+      .number('1')
+      .name('CI')
+      .status('completed')
+      .createdAt('2026-05-10T00:00:00Z')
+      .updatedAt('2026-05-10T00:05:00Z')
+      .startedAt('2026-05-10T00:00:00Z')
+      .branch('main')
+      .path('.github/workflows/ci.yml')
+      .build();
+
+    const refetchedRun = new PipelineGitHubRunBuilder()
+      .id('refetched-run')
+      .number('2')
+      .name('CI')
+      .status('completed')
+      .createdAt('2026-05-01T00:00:00Z')
+      .updatedAt('2026-05-01T00:05:00Z')
+      .startedAt('2026-05-01T00:00:00Z')
+      .branch('main')
+      .path('.github/workflows/ci.yml')
+      .build();
+
+    const fetchWorkflowRunsPage = vi.fn().mockResolvedValueOnce({
+      runs: [refetchedRun],
+      hasNext: false,
+    });
+
+    const githubWorkflowClient: IGithubWorkflowClient = {
+      fetchWorkflows: vi.fn(),
+      fetchWorkflowRunsPage,
+    };
+
+    const { repository } = await createRepository(githubWorkflowClient);
+    await storeFetchedWorkflows([cachedRun]);
+
+    await repository.fetchPipelines({ incrementalUpdate: true, forceRefresh: true });
+
+    // The incremental guard only checks `incrementalUpdate && fromCache.length > 0` —
+    // it does not special-case `forceRefresh`, so the call is still filtered by the
+    // latest cached date (`>2026-05-10...`), not re-fetched from scratch.
+    expect(fetchWorkflowRunsPage).toHaveBeenCalledWith(1, 100, {
+      created: '>2026-05-10T00:00:00.000Z',
+      rawFilters: undefined,
+    });
+  });
 });
