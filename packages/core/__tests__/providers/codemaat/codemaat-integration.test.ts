@@ -505,6 +505,39 @@ src/medium.ts,10,5,3`;
 
       expect(result.map((row) => row.entity)).toEqual(['src/big.ts', 'src/medium.ts']);
     });
+
+    it('should parse a semicolon-delimited entity-churn CSV', async () => {
+      const csvContent = `entity;added;deleted;commits
+src/index.ts;50;10;5`;
+
+      fs.writeFileSync(path.join(tempDir, 'entity-churn.csv'), csvContent);
+
+      const result = await analyzer.getEntityChurn();
+
+      expect(result).toEqual([{ entity: 'src/index.ts', added: 50, deleted: 10, commits: 5 }]);
+    });
+
+    it('should default missing trailing values to empty string when a row has fewer columns than the header', async () => {
+      const csvContent = `entity,added,deleted,commits
+src/index.ts,50`;
+
+      fs.writeFileSync(path.join(tempDir, 'entity-churn.csv'), csvContent);
+
+      const result = await analyzer.getEntityChurn();
+
+      expect(result).toEqual([{ entity: 'src/index.ts', added: 50, deleted: 0, commits: 0 }]);
+    });
+
+    it('should fall back to 0 when a numeric column contains a non-numeric value', async () => {
+      const csvContent = `entity,added,deleted,commits
+src/index.ts,N/A,10,5`;
+
+      fs.writeFileSync(path.join(tempDir, 'entity-churn.csv'), csvContent);
+
+      const result = await analyzer.getEntityChurn();
+
+      expect(result).toEqual([{ entity: 'src/index.ts', added: 0, deleted: 10, commits: 5 }]);
+    });
   });
 
   describe('Entity Effort Analysis', () => {
