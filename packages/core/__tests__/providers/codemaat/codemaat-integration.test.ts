@@ -480,6 +480,30 @@ src/index.ts,50,10,5
       expect(result).toEqual([{ entity: 'src/index.ts', added: 50, deleted: 10, commits: 5 }]);
     });
 
+    it('should exclude an entity matching an ignorePatterns entry', async () => {
+      const csvContent = `entity,added,deleted,commits
+src/index.ts,50,10,5
+dist/bundle.js,20,5,2`;
+
+      fs.writeFileSync(path.join(tempDir, 'entity-churn.csv'), csvContent);
+
+      const result = await analyzer.getEntityChurn({ ignorePatterns: ['dist/'] });
+
+      expect(result).toEqual([{ entity: 'src/index.ts', added: 50, deleted: 10, commits: 5 }]);
+    });
+
+    it('should only keep an entity matching an includePatterns entry', async () => {
+      const csvContent = `entity,added,deleted,commits
+src/index.ts,50,10,5
+docs/readme.md,20,5,2`;
+
+      fs.writeFileSync(path.join(tempDir, 'entity-churn.csv'), csvContent);
+
+      const result = await analyzer.getEntityChurn({ includePatterns: ['src/'] });
+
+      expect(result).toEqual([{ entity: 'src/index.ts', added: 50, deleted: 10, commits: 5 }]);
+    });
+
     it('should sort rows by added+deleted descending', async () => {
       const csvContent = `entity,added,deleted,commits
 src/small.ts,1,1,1
