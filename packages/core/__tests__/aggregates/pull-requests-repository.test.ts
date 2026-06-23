@@ -175,4 +175,28 @@ describe('PullRequestsRepository filters', () => {
 
     expect(prs.map((pr) => pr.number)).toEqual([2]);
   });
+
+  it('keeps only PRs whose author matches the authors filter, case-insensitively', async () => {
+    const repository = new PullRequestsRepository(
+      {
+        loadAll: vi.fn().mockResolvedValue([
+          new PullRequestJsonResponseBuilder()
+            .withId('1')
+            .withNumber('1')
+            .withAuthor('Alice')
+            .build(),
+          new PullRequestJsonResponseBuilder()
+            .withId('2')
+            .withNumber('2')
+            .withAuthor('bob')
+            .build(),
+        ]),
+      } as any,
+      { loadAll: vi.fn().mockResolvedValue([]) } as any
+    );
+
+    const prs = await repository.loadPrsWithFilters({ authors: ['alice'] });
+
+    expect(prs.map((pr) => pr.number)).toEqual([1]);
+  });
 });
