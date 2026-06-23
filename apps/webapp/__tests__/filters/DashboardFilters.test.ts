@@ -25,4 +25,13 @@ describe('DashboardFilters', () => {
     expect(filters.workflowSelector).toBe('release.yml');
     expect(filters.workflowStatus).toEqual(['completed']);
   });
+
+  it('parses false boolean filters from search params', () => {
+    const filters = parseDashboardFilters(
+      { sonarqubeRemoveFolders: 'false' },
+      defaultFilters,
+    );
+
+    expect(filters.sonarqubeRemoveFolders).toBe(false);
+  });
 });

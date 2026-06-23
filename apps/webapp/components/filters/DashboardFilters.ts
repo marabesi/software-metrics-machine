@@ -93,6 +93,20 @@ function toNumber(value: string | undefined, fallback: number | undefined): numb
   return Number.isFinite(parsedValue) ? parsedValue : fallback;
 }
 
+function toBoolean(value: SearchParamValue, fallback: boolean): boolean {
+  const singleValue = getSingleValue(value);
+
+  if (singleValue === 'true') {
+    return true;
+  }
+
+  if (singleValue === 'false') {
+    return false;
+  }
+
+  return fallback;
+}
+
 export function parseDashboardFilters(
   searchParams: SearchParamSource,
   fallback: DashboardFilters = defaultFilters,
@@ -123,7 +137,7 @@ export function parseDashboardFilters(
       getSingleValue(searchParams.sonarqubeIgnorePatternFiles) || fallback.sonarqubeIgnorePatternFiles,
     sonarqubeIncludePatternFiles:
       getSingleValue(searchParams.sonarqubeIncludePatternFiles) || fallback.sonarqubeIncludePatternFiles,
-    sonarqubeRemoveFolders: searchParams.sonarqubeRemoveFolders === 'true' || fallback.sonarqubeRemoveFolders,
+    sonarqubeRemoveFolders: toBoolean(searchParams.sonarqubeRemoveFolders, fallback.sonarqubeRemoveFolders),
   };
 }
 

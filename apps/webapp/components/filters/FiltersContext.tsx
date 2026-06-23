@@ -12,6 +12,10 @@ interface FiltersContextInterface {
 
 const FiltersContext = createContext<FiltersContextInterface | undefined>(undefined);
 
+function areDashboardFiltersEqual(left: DashboardFilters, right: DashboardFilters): boolean {
+  return JSON.stringify(left) === JSON.stringify(right);
+}
+
 export const useFilters = () => {
   const context = useContext(FiltersContext);
   if (context === undefined) {
@@ -30,6 +34,7 @@ export const FiltersProvider = ({
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
+  const searchParamsString = searchParams.toString();
 
   const initialUrlFilters = useMemo(
     () => parseDashboardFilters(Object.fromEntries(searchParams.entries()), initialFilters),
@@ -38,6 +43,16 @@ export const FiltersProvider = ({
 
   const [filters, setFilters] = useState<DashboardFilters>(initialUrlFilters);
   const shouldSyncToUrl = useRef(false);
+
+  useEffect(() => {
+    if (shouldSyncToUrl.current) return;
+
+    const urlFilters = parseDashboardFilters(Object.fromEntries(searchParams.entries()), initialFilters);
+
+    setFilters((currentFilters) => (
+      areDashboardFiltersEqual(currentFilters, urlFilters) ? currentFilters : urlFilters
+    ));
+  }, [initialFilters, searchParams, searchParamsString]);
 
   useEffect(() => {
     if (!shouldSyncToUrl.current) return;

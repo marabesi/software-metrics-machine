@@ -1,8 +1,15 @@
 import React from 'react';
 import { renderHook, act } from '@testing-library/react';
+import { useSearchParams } from 'next/navigation';
 import { FiltersProvider, useFilters } from '@/components/filters/FiltersContext';
 
+const mockUseSearchParams = useSearchParams as jest.Mock;
+
 describe('FiltersContext', () => {
+  beforeEach(() => {
+    mockUseSearchParams.mockReturnValue(new URLSearchParams());
+  });
+
   it('throws error when useFilters is used outside provider', () => {
     // Suppress console.error for this test
     const spy = jest.spyOn(console, 'error').mockImplementation(() => {});
@@ -27,6 +34,26 @@ describe('FiltersContext', () => {
     expect(result.current.filters.workflowStatus).toEqual([]);
     expect(result.current.filters.aggregateBy).toBe('week');
     expect(result.current.filters.topEntries).toBe(20);
+  });
+
+  it('updates filter state when URL search params change', () => {
+    mockUseSearchParams.mockReturnValue(new URLSearchParams('startDate=2024-01-01&workflowStatus=completed'));
+
+    const wrapper = ({ children }: { children: React.ReactNode }) => (
+      <FiltersProvider>{children}</FiltersProvider>
+    );
+
+    const { result, rerender } = renderHook(() => useFilters(), { wrapper });
+
+    expect(result.current.filters.startDate).toBe('2024-01-01');
+    expect(result.current.filters.workflowStatus).toEqual(['completed']);
+
+    mockUseSearchParams.mockReturnValue(new URLSearchParams('startDate=2024-02-01&workflowStatus=queued,in_progress'));
+
+    rerender();
+
+    expect(result.current.filters.startDate).toBe('2024-02-01');
+    expect(result.current.filters.workflowStatus).toEqual(['queued', 'in_progress']);
   });
 
   it('updates filter value', () => {
