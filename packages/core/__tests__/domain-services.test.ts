@@ -190,6 +190,183 @@ describe('PairingIndexService', () => {
 
     expect(result.totalAnalyzedCommits).toBe(2);
   });
+
+  describe('calculateTopPairings (via getPairingIndex)', () => {
+    it('should produce one pairing entry per coAuthor on a commit with multiple coAuthors', async () => {
+      pairingService = new PairingIndexService(
+        new RepositoryBuilder<Commit>()
+          .withLoadAll([
+            {
+              ...new CommitBuilder().withAuthor('Alice').build(),
+              coAuthors: ['Bob', 'Carol'],
+            },
+          ])
+          .build(),
+        undefined,
+        logger
+      );
+
+      const result = await pairingService.getPairingIndex();
+
+      expect(result.topPairings).toEqual(
+        expect.arrayContaining([
+          { author: 'Alice', coAuthor: 'Bob', pairedCommits: 1 },
+          { author: 'Alice', coAuthor: 'Carol', pairedCommits: 1 },
+        ])
+      );
+      expect(result.topPairings).toHaveLength(2);
+    });
+
+    it('should merge the same pair from two commits regardless of which author is primary', async () => {
+      pairingService = new PairingIndexService(
+        new RepositoryBuilder<Commit>()
+          .withLoadAll([
+            {
+              ...new CommitBuilder().withAuthor('Alice').build(),
+              coAuthors: ['Bob'],
+            },
+            {
+              ...new CommitBuilder().withAuthor('Bob').build(),
+              coAuthors: ['Alice'],
+            },
+          ])
+          .build(),
+        undefined,
+        logger
+      );
+
+      const result = await pairingService.getPairingIndex();
+
+      expect(result.topPairings).toEqual([
+        { author: 'Alice', coAuthor: 'Bob', pairedCommits: 2 },
+      ]);
+    });
+
+    it('should exclude a self-pair where the author and coAuthor are the same person case-insensitively', async () => {
+      pairingService = new PairingIndexService(
+        new RepositoryBuilder<Commit>()
+          .withLoadAll([
+            {
+              ...new CommitBuilder().withAuthor('Alice').build(),
+              coAuthors: ['alice'],
+            },
+          ])
+          .build(),
+        undefined,
+        logger
+      );
+
+      const result = await pairingService.getPairingIndex();
+
+      expect(result.topPairings).toEqual([]);
+    });
+
+    it('should skip an empty-string or whitespace-only coAuthor entry', async () => {
+      pairingService = new PairingIndexService(
+        new RepositoryBuilder<Commit>()
+          .withLoadAll([
+            {
+              ...new CommitBuilder().withAuthor('Alice').build(),
+              coAuthors: ['   '],
+            },
+          ])
+          .build(),
+        undefined,
+        logger
+      );
+
+      const result = await pairingService.getPairingIndex();
+
+      expect(result.topPairings).toEqual([]);
+    });
+
+    it('should skip a commit whose author is empty or whitespace-only', async () => {
+      pairingService = new PairingIndexService(
+        new RepositoryBuilder<Commit>()
+          .withLoadAll([
+            {
+              ...new CommitBuilder().withAuthor('   ').build(),
+              coAuthors: ['Bob'],
+            },
+          ])
+          .build(),
+        undefined,
+        logger
+      );
+
+      const result = await pairingService.getPairingIndex();
+
+      expect(result.topPairings).toEqual([]);
+    });
+
+    it('should sort pairings descending by pairedCommits, then by author, then by coAuthor', async () => {
+      pairingService = new PairingIndexService(
+        new RepositoryBuilder<Commit>()
+          .withLoadAll([
+            // Alice/Bob paired twice -> highest count
+            {
+              ...new CommitBuilder().withAuthor('Alice').withHash('c1').build(),
+              coAuthors: ['Bob'],
+            },
+            {
+              ...new CommitBuilder().withAuthor('Alice').withHash('c2').build(),
+              coAuthors: ['Bob'],
+            },
+            // Alice/Zoe and Alice/Yara both paired once -> tie broken by coAuthor
+            {
+              ...new CommitBuilder().withAuthor('Alice').withHash('c3').build(),
+              coAuthors: ['Zoe'],
+            },
+            {
+              ...new CommitBuilder().withAuthor('Alice').withHash('c4').build(),
+              coAuthors: ['Yara'],
+            },
+          ])
+          .build(),
+        undefined,
+        logger
+      );
+
+      const result = await pairingService.getPairingIndex();
+
+      expect(result.topPairings).toEqual([
+        { author: 'Alice', coAuthor: 'Bob', pairedCommits: 2 },
+        { author: 'Alice', coAuthor: 'Yara', pairedCommits: 1 },
+        { author: 'Alice', coAuthor: 'Zoe', pairedCommits: 1 },
+      ]);
+    });
+
+    it('should sort same-count, same-author pairings by coAuthor alphabetically using a third distinct pair', async () => {
+      pairingService = new PairingIndexService(
+        new RepositoryBuilder<Commit>()
+          .withLoadAll([
+            {
+              ...new CommitBuilder().withAuthor('Bob').withHash('c1').build(),
+              coAuthors: ['Carol'],
+            },
+            {
+              ...new CommitBuilder().withAuthor('Alice').withHash('c2').build(),
+              coAuthors: ['Zoe'],
+            },
+            {
+              ...new CommitBuilder().withAuthor('Alice').withHash('c3').build(),
+              coAuthors: ['Yara'],
+            },
+          ])
+          .build(),
+        undefined,
+        logger
+      );
+
+      const result = await pairingService.getPairingIndex();
+
+      expect(result.topPairings).toEqual([
+        { author: 'Alice', coAuthor: 'Yara', pairedCommits: 1 },
+        { author: 'Alice', coAuthor: 'Zoe', pairedCommits: 1 },
+        { author: 'Bob', coAuthor: 'Carol', pairedCommits: 1 },
+      ]);
+    });
+  });
 });
 
 describe('PRsService', () => {
