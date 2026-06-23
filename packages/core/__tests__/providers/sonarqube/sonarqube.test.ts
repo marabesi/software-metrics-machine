@@ -151,6 +151,87 @@ describe('SonarqubeMeasuresClient', () => {
     });
   });
 
+  it('should map 403 errors to access denied message for fetchComponentMeasures', async () => {
+    const axiosError = Object.assign(new Error('Request failed'), {
+      isAxiosError: true,
+      response: { status: 403 },
+      code: undefined,
+    });
+    mockGet.mockRejectedValueOnce(axiosError);
+    vi.mocked(axios.isAxiosError).mockReturnValueOnce(true);
+
+    await expect(client.fetchComponentMeasures()).rejects.toThrow(
+      'SonarQube access denied for project project-key. Ensure the token user has Browse permission for this project.'
+    );
+  });
+
+  it('should map 404 errors to project not found message for fetchComponentMeasures', async () => {
+    const axiosError = Object.assign(new Error('Request failed'), {
+      isAxiosError: true,
+      response: { status: 404 },
+      code: undefined,
+    });
+    mockGet.mockRejectedValueOnce(axiosError);
+    vi.mocked(axios.isAxiosError).mockReturnValueOnce(true);
+
+    await expect(client.fetchComponentMeasures()).rejects.toThrow(
+      'SonarQube project project-key not found.'
+    );
+  });
+
+  it('should map ECONNABORTED errors to timeout message for fetchComponentMeasures', async () => {
+    const axiosError = Object.assign(new Error('timeout'), {
+      isAxiosError: true,
+      response: undefined,
+      code: 'ECONNABORTED',
+    });
+    mockGet.mockRejectedValueOnce(axiosError);
+    vi.mocked(axios.isAxiosError).mockReturnValueOnce(true);
+
+    await expect(client.fetchComponentMeasures()).rejects.toThrow(
+      'SonarQube API request timeout (30s).'
+    );
+  });
+
+  it('should rethrow axios errors with no matching status/code for fetchComponentMeasures', async () => {
+    const axiosError = Object.assign(new Error('Internal Server Error'), {
+      isAxiosError: true,
+      response: { status: 500 },
+      code: undefined,
+    });
+    mockGet.mockRejectedValueOnce(axiosError);
+    vi.mocked(axios.isAxiosError).mockReturnValueOnce(true);
+
+    await expect(client.fetchComponentMeasures()).rejects.toBe(axiosError);
+  });
+
+  it('should rethrow non-axios errors unmodified for fetchComponentMeasures', async () => {
+    const plainError = new Error('plain failure');
+    mockGet.mockRejectedValueOnce(plainError);
+    vi.mocked(axios.isAxiosError).mockReturnValueOnce(false);
+
+    await expect(client.fetchComponentMeasures()).rejects.toBe(plainError);
+  });
+
+  it('should throw when response component is missing for fetchComponentMeasures', async () => {
+    mockGet.mockResolvedValueOnce({ data: {} });
+
+    await expect(client.fetchComponentMeasures()).rejects.toThrow(
+      'Project project-key not found in SonarQube.'
+    );
+  });
+
+  it('should use default metrics when none are provided for fetchComponentMeasures', async () => {
+    await client.fetchComponentMeasures();
+
+    expect(mockGet).toHaveBeenCalledWith('/api/measures/component', {
+      params: {
+        component: 'project-key',
+        metricKeys: 'coverage,sqale_rating,complexity,duplicated_lines_density,ncloc,code_smells,bugs',
+      },
+    });
+  });
+
   it('should use depth param for sonarcloud.io component tree', async () => {
     const sonarCloudClient = new SonarqubeMeasuresClient(
       'https://sonarcloud.io',
