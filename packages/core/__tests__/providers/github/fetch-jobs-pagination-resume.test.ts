@@ -279,3 +279,49 @@ describe('Fetch jobs pipeline repository - resume from existing partial progress
     expect(jobs.map((j) => j.id).sort()).toEqual(['job-2', 'job-prior']);
   });
 });
+
+describe('Fetch jobs pipeline repository - readJson malformed content', () => {
+  let tempDir: string;
+  let configuration: { getPathFromGitProvider: () => string };
+  let pipelineRunRepository: InMemoryRepository<WorkflowJsonResponse>;
+  let pipelineJobsRepository: InMemoryRepository<WorkflowJobJsonResponse>;
+  const logger = new MockLoggerBuilder().build();
+
+  beforeEach(() => {
+    tempDir = mkdtempSync(join(tmpdir(), 'smm-jobs-malformed-'));
+    configuration = { getPathFromGitProvider: () => tempDir };
+    pipelineRunRepository = new InMemoryRepository<WorkflowJsonResponse>();
+    pipelineJobsRepository = new InMemoryRepository<WorkflowJobJsonResponse>();
+  });
+
+  afterEach(() => {
+    rmSync(tempDir, { recursive: true, force: true });
+  });
+
+  it('should reject with a parse error rather than falling back to the default when progress JSON is malformed', async () => {
+    const run1 = new PipelineGitHubRunBuilder()
+      .id('run-1')
+      .number('1')
+      .name('CI')
+      .status('completed')
+      .createdAt('2026-05-10T00:00:00Z')
+      .branch('main')
+      .path('.github/workflows/ci.yml')
+      .build();
+    await pipelineRunRepository.saveAll([run1]);
+
+    await writeFile(join(tempDir, 'jobs_progress.json'), '{not valid json', 'utf-8');
+
+    const githubWorkflowClient: IGithubWorkflowJobClient = { fetchJobsPage: vi.fn() };
+    const repository = new PipelinesJobFetchRepository(
+      configuration as never,
+      githubWorkflowClient,
+      pipelineRunRepository,
+      pipelineJobsRepository,
+      undefined,
+      logger
+    );
+
+    await expect(repository.fetchJobsWithResume([run1])).rejects.toBeInstanceOf(SyntaxError);
+  });
+});

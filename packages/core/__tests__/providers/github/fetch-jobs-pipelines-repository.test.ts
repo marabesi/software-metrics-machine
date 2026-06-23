@@ -629,4 +629,34 @@ describe('Fetch jobs pipeline repository', () => {
     expect(fetchJobsPage).toHaveBeenCalledWith('run-new', 1, 100, { rawFilters: undefined });
     expect(jobs.map((j) => j.id).sort()).toEqual(['job-new', 'job-old']);
   });
+
+  it('should treat an unparseable startDate as no boundary instead of throwing or filtering everything out', async () => {
+    const run = new PipelineGitHubRunBuilder()
+      .id('run-1')
+      .number('1')
+      .name('CI')
+      .status('completed')
+      .createdAt('2026-05-10T00:00:00Z')
+      .path('.github/workflows/ci.yml')
+      .build();
+
+    await storeFetchedWorkflows([run]);
+
+    const fetchJobsPage = vi.fn().mockResolvedValueOnce({
+      jobs: [new PipelineGitHubJobBuilder().id('job-1').runId('run-1').name('build').build()],
+      hasNext: false,
+    });
+
+    const githubWorkflowClient: IGithubWorkflowJobClient = {
+      fetchJobsPage,
+    };
+
+    const { repository } = await createRepository(githubWorkflowClient);
+
+    const jobs = await repository.fetchJobs({ startDate: 'not-a-date' });
+
+    expect(fetchJobsPage).toHaveBeenCalledTimes(1);
+    expect(fetchJobsPage).toHaveBeenCalledWith('run-1', 1, 100, { rawFilters: undefined });
+    expect(jobs).toHaveLength(1);
+  });
 });
