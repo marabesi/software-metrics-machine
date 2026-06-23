@@ -365,6 +365,66 @@ src/medium.ts,10,5,3`;
     });
   });
 
+  describe('Entity Effort Analysis', () => {
+    it('should parse total-revs from the "total-revs" header', async () => {
+      const csvContent = `entity,total-revs
+src/index.ts,12
+src/utils.ts,5`;
+
+      fs.writeFileSync(path.join(tempDir, 'entity-effort.csv'), csvContent);
+
+      const result = await analyzer.getEntityEffort();
+
+      expect(result).toEqual([
+        { entity: 'src/index.ts', 'total-revs': 12 },
+        { entity: 'src/utils.ts', 'total-revs': 5 },
+      ]);
+    });
+
+    it('should fall back to the "total_revs" header when "total-revs" is absent', async () => {
+      const csvContent = `entity,total_revs
+src/index.ts,7
+src/utils.ts,3`;
+
+      fs.writeFileSync(path.join(tempDir, 'entity-effort.csv'), csvContent);
+
+      const result = await analyzer.getEntityEffort();
+
+      expect(result).toEqual([
+        { entity: 'src/index.ts', 'total-revs': 7 },
+        { entity: 'src/utils.ts', 'total-revs': 3 },
+      ]);
+    });
+
+    it('should fall back to the "revs" header when neither "total-revs" nor "total_revs" is present', async () => {
+      const csvContent = `entity,revs
+src/index.ts,9
+src/utils.ts,4`;
+
+      fs.writeFileSync(path.join(tempDir, 'entity-effort.csv'), csvContent);
+
+      const result = await analyzer.getEntityEffort();
+
+      expect(result).toEqual([
+        { entity: 'src/index.ts', 'total-revs': 9 },
+        { entity: 'src/utils.ts', 'total-revs': 4 },
+      ]);
+    });
+
+    it('should sort rows by total-revs descending', async () => {
+      const csvContent = `entity,total-revs
+src/small.ts,1
+src/big.ts,50
+src/medium.ts,10`;
+
+      fs.writeFileSync(path.join(tempDir, 'entity-effort.csv'), csvContent);
+
+      const result = await analyzer.getEntityEffort();
+
+      expect(result.map((row) => row.entity)).toEqual(['src/big.ts', 'src/medium.ts', 'src/small.ts']);
+    });
+  });
+
   describe('Error Handling', () => {
     it('should handle directory with no CSV files', async () => {
       const emptyDir = fs.mkdtempSync(path.join(os.tmpdir(), 'codemaat-empty-'));
