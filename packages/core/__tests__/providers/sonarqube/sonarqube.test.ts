@@ -122,6 +122,205 @@ describe('SonarqubeMeasuresClient', () => {
     });
   });
 
+  it('should map 401 errors to auth error message for fetchHistoricalMeasures', async () => {
+    const axiosError = Object.assign(new Error('Request failed'), {
+      isAxiosError: true,
+      response: { status: 401 },
+      code: undefined,
+    });
+    mockGet.mockRejectedValueOnce(axiosError);
+    vi.mocked(axios.isAxiosError).mockReturnValueOnce(true);
+
+    await expect(client.fetchHistoricalMeasures()).rejects.toThrow(
+      'SonarQube authentication failed. Check token.'
+    );
+  });
+
+  it('should map 403 errors to access denied message for fetchHistoricalMeasures', async () => {
+    const axiosError = Object.assign(new Error('Request failed'), {
+      isAxiosError: true,
+      response: { status: 403 },
+      code: undefined,
+    });
+    mockGet.mockRejectedValueOnce(axiosError);
+    vi.mocked(axios.isAxiosError).mockReturnValueOnce(true);
+
+    await expect(client.fetchHistoricalMeasures()).rejects.toThrow(
+      'SonarQube access denied for project project-key. Ensure the token user has Browse permission for this project.'
+    );
+  });
+
+  it('should map ECONNABORTED errors to timeout message for fetchHistoricalMeasures', async () => {
+    const axiosError = Object.assign(new Error('timeout'), {
+      isAxiosError: true,
+      response: undefined,
+      code: 'ECONNABORTED',
+    });
+    mockGet.mockRejectedValueOnce(axiosError);
+    vi.mocked(axios.isAxiosError).mockReturnValueOnce(true);
+
+    await expect(client.fetchHistoricalMeasures()).rejects.toThrow(
+      'SonarQube API request timeout (30s).'
+    );
+  });
+
+  it('should rethrow 404 errors unmodified for fetchHistoricalMeasures (not mapped)', async () => {
+    const axiosError = Object.assign(new Error('Not Found'), {
+      isAxiosError: true,
+      response: { status: 404 },
+      code: undefined,
+    });
+    mockGet.mockRejectedValueOnce(axiosError);
+    vi.mocked(axios.isAxiosError).mockReturnValueOnce(true);
+
+    await expect(client.fetchHistoricalMeasures()).rejects.toBe(axiosError);
+  });
+
+  it('should rethrow axios errors with no matching status/code for fetchHistoricalMeasures', async () => {
+    const axiosError = Object.assign(new Error('Internal Server Error'), {
+      isAxiosError: true,
+      response: { status: 500 },
+      code: undefined,
+    });
+    mockGet.mockRejectedValueOnce(axiosError);
+    vi.mocked(axios.isAxiosError).mockReturnValueOnce(true);
+
+    await expect(client.fetchHistoricalMeasures()).rejects.toBe(axiosError);
+  });
+
+  it('should rethrow non-axios errors unmodified for fetchHistoricalMeasures', async () => {
+    const plainError = new Error('plain failure');
+    mockGet.mockRejectedValueOnce(plainError);
+    vi.mocked(axios.isAxiosError).mockReturnValueOnce(false);
+
+    await expect(client.fetchHistoricalMeasures()).rejects.toBe(plainError);
+  });
+
+  it('should return an empty array when no historical measures are found', async () => {
+    mockGet.mockResolvedValueOnce({ data: { measures: [] } });
+
+    const measures = await client.fetchHistoricalMeasures();
+
+    expect(measures).toEqual([]);
+  });
+
+  it('should return an empty array when measures is missing entirely', async () => {
+    mockGet.mockResolvedValueOnce({ data: {} });
+
+    const measures = await client.fetchHistoricalMeasures();
+
+    expect(measures).toEqual([]);
+  });
+
+  it('should flatten multiple measures each with multiple history entries', async () => {
+    mockGet.mockResolvedValueOnce({
+      data: {
+        measures: [
+          {
+            metric: 'coverage',
+            history: [
+              { date: '2024-01-01', value: '80' },
+              { date: '2024-02-01', value: '85' },
+            ],
+          },
+          {
+            metric: 'complexity',
+            history: [{ date: '2024-01-01', value: '10' }],
+          },
+        ],
+      },
+    });
+
+    const measures = await client.fetchHistoricalMeasures();
+
+    expect(measures).toHaveLength(3);
+    expect(measures).toEqual([
+      {
+        key: 'coverage_2024-01-01',
+        name: 'coverage on 2024-01-01',
+        metric: 'coverage',
+        value: '80',
+        formatter: 'PERCENT',
+        timestamp: '2024-01-01',
+      },
+      {
+        key: 'coverage_2024-02-01',
+        name: 'coverage on 2024-02-01',
+        metric: 'coverage',
+        value: '85',
+        formatter: 'PERCENT',
+        timestamp: '2024-02-01',
+      },
+      {
+        key: 'complexity_2024-01-01',
+        name: 'complexity on 2024-01-01',
+        metric: 'complexity',
+        value: '10',
+        formatter: 'NUMBER',
+        timestamp: '2024-01-01',
+      },
+    ]);
+  });
+
+  it('should fall back to 0 when a history entry value is missing', async () => {
+    mockGet.mockResolvedValueOnce({
+      data: {
+        measures: [
+          {
+            metric: 'coverage',
+            history: [{ date: '2024-01-01', value: undefined }],
+          },
+        ],
+      },
+    });
+
+    const measures = await client.fetchHistoricalMeasures();
+
+    expect(measures[0].value).toBe(0);
+  });
+
+  it('should use NUMBER formatter for non-coverage metrics', async () => {
+    mockGet.mockResolvedValueOnce({
+      data: {
+        measures: [
+          {
+            metric: 'complexity',
+            history: [{ date: '2024-01-01', value: '5' }],
+          },
+        ],
+      },
+    });
+
+    const measures = await client.fetchHistoricalMeasures();
+
+    expect(measures[0].formatter).toBe('NUMBER');
+  });
+
+  it('should use default metrics when none are provided for fetchHistoricalMeasures', async () => {
+    mockGet.mockResolvedValueOnce({ data: { measures: [] } });
+
+    await client.fetchHistoricalMeasures();
+
+    expect(mockGet).toHaveBeenCalledWith('/api/measures/search_history', {
+      params: {
+        component: 'project-key',
+        metrics: 'sqale_rating,coverage,duplicated_lines_density',
+        p: 1,
+        ps: 100,
+      },
+    });
+  });
+
+  it('should omit from/to params when startDate and endDate are not provided', async () => {
+    mockGet.mockResolvedValueOnce({ data: { measures: [] } });
+
+    await client.fetchHistoricalMeasures();
+
+    const callParams = mockGet.mock.calls[0][1].params;
+    expect(callParams).not.toHaveProperty('from');
+    expect(callParams).not.toHaveProperty('to');
+  });
+
   it('should map 401 errors to auth error message', async () => {
     const axiosError = Object.assign(new Error('Request failed'), {
       isAxiosError: true,
