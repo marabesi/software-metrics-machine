@@ -129,6 +129,26 @@ describe('PairingIndexService', () => {
 
     expect(result.totalAnalyzedCommits).toBe(0);
   });
+
+  it('should count a commit with coAuthors but no files as paired', async () => {
+    pairingService = new PairingIndexService(
+      new RepositoryBuilder<Commit>()
+        .withLoadAll([
+          {
+            ...new CommitBuilder().withAuthor('Alice').withFiles([]).build(),
+            coAuthors: ['Bob'],
+          },
+        ])
+        .build(),
+      undefined,
+      logger
+    );
+
+    const result = await pairingService.getPairingIndex();
+
+    expect(result.totalAnalyzedCommits).toBe(1);
+    expect(result.pairedCommits).toBe(1);
+  });
 });
 
 describe('PRsService', () => {
