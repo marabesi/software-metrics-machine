@@ -16,7 +16,11 @@ export interface UrlBuilder {
   // Pipeline/Workflow links
   getPipelinesUrl(filters?: { status?: string; workflow?: string }): string;
   getPipelineRunUrl(runId: string, runNumber?: number): string;
-  getJobRunsUrl(jobName: string, workflowName?: string): string;
+  getJobRunsUrl(
+    jobName: string,
+    workflowName?: string,
+    dateRange?: { startDate?: string; endDate?: string }
+  ): string;
   
   // SonarQube links
   getSonarqubeComponentUrl(componentKey: string): string;
@@ -51,6 +55,37 @@ const computeRange = (dateStr: string, granularity: 'day' | 'week' | 'month'): {
   const nextMonthStart = Date.UTC(year, month, 1);
   const monthEnd = nextMonthStart - 1;
   return { start: monthStart, end: monthEnd };
+};
+
+const normalizeWorkflowFileName = (workflowName: string): string => {
+  const parts = workflowName.split('/').filter(Boolean);
+  return parts[parts.length - 1] || workflowName;
+};
+
+const buildGithubActionsJobFilters = (jobName: string, workflowName?: string): string => {
+  const filters = [
+    workflowName ? `workflow_file_name:"${normalizeWorkflowFileName(workflowName)}"` : undefined,
+    `job_name:"${jobName}"`,
+  ].filter((filter): filter is string => Boolean(filter));
+
+  return filters.map((filter) => encodeURIComponent(filter)).join('+');
+};
+
+const buildGithubJobMetricsQuery = (
+  filters: string,
+  dateRange?: { startDate?: string; endDate?: string }
+): string => {
+  if (!dateRange?.startDate || !dateRange?.endDate) {
+    return `tab=jobs&filters=${filters}`;
+  }
+
+  const start = computeRange(dateRange.startDate, 'day').start;
+  const end = computeRange(dateRange.endDate, 'day').end;
+  if (!Number.isFinite(start) || !Number.isFinite(end) || start > end) {
+    return `tab=jobs&filters=${filters}`;
+  }
+
+  return `dateRangeType=DATE_RANGE_TYPE_CUSTOM&tab=jobs&filters=${filters}&range=${start}-${end}`;
 };
 
 /**
@@ -119,12 +154,9 @@ function createGitHubBuilder(config: DashboardGlobalConfiguration): UrlBuilder {
       return `${baseUrl}/actions/runs/${runId}`;
     },
 
-    getJobRunsUrl(jobName, workflowName) {
-      const encodedJobName = jobName.includes(' ') ? encodeURIComponent(`"${jobName}"`) : encodeURIComponent(jobName);
-      if (!workflowName) {
-        return `${baseUrl}/actions/metrics/performance?tab=jobs&filters=job_name%3A${encodedJobName}`;
-      }
-      return `${baseUrl}/actions/metrics/performance/?tab=jobs&filters=workflow_file_name=${encodeURIComponent(workflowName)}&job_name%3A${encodedJobName}`;
+    getJobRunsUrl(jobName, workflowName, dateRange) {
+      const filters = buildGithubActionsJobFilters(jobName, workflowName);
+      return `${baseUrl}/actions/metrics/performance?${buildGithubJobMetricsQuery(filters, dateRange)}`;
     },
 
     getSonarqubeComponentUrl(componentKey) {
@@ -160,7 +192,7 @@ function createGitHubBuilder(config: DashboardGlobalConfiguration): UrlBuilder {
     getActionPerformanceForJobUrl(jobName: string, workflowName: string, granularity: 'day' | 'week' | 'month', date: string): string {
       const range = computeRange(date, granularity);
 
-      const filterParam = encodeURIComponent(`workflow_file_name:${workflowName}`) + `+${encodeURIComponent('job_name:"' + jobName + '"')}`;
+      const filterParam = buildGithubActionsJobFilters(jobName, workflowName);
       const url = `https://github.com/${config.github_repository.replace(/\/$/, '')}/actions/metrics/usage?dateRangeType=DATE_RANGE_TYPE_CUSTOM&tab=jobs&filters=${filterParam}&range=${range.start}-${range.end}`;
       return url;
     }
@@ -224,9 +256,21 @@ function createGitLabBuilder(config: DashboardGlobalConfiguration): UrlBuilder {
       return `${baseUrl}/-/pipelines/${runId}`;
     },
     
-    getJobRunsUrl(_jobName, _workflowName) {
-      // GitLab pipeline jobs can be filtered by name - best effort without direct filter
-      return `${baseUrl}/-/pipelines/${_workflowName}/${_jobName}?scope=all`;
+    getJobRunsUrl(jobName, workflowName, dateRange) {
+      const params = new URLSearchParams();
+      params.set('scope[]', 'all');
+      params.set('search', jobName);
+      if (workflowName) {
+        params.set('ref', workflowName);
+      }
+      if (dateRange?.startDate) {
+        params.set('created_after', `${dateRange.startDate}T00:00:00Z`);
+      }
+      if (dateRange?.endDate) {
+        params.set('created_before', `${dateRange.endDate}T23:59:59Z`);
+      }
+
+      return `${baseUrl}/-/jobs?${params.toString()}`;
     },
     
     getSonarqubeComponentUrl(componentKey) {

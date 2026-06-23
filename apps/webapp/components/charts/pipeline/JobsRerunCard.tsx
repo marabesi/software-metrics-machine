@@ -5,6 +5,8 @@ import { SortableTable } from '@/components/ui/sortable-table';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
 import { JobSummaryData, JobRerunsByDayData } from './types';
 import { TargetInfo } from '@/components/charts/TargetInfo';
+import { useLinkBuilder } from '@/components/providers/LinkBuilderContext';
+import { useFilters } from '@/components/filters/FiltersContext';
 
 interface JobsRerunCardProps {
   data: JobSummaryData[];
@@ -12,10 +14,28 @@ interface JobsRerunCardProps {
 }
 
 export default function JobsRerunCard({ data, dataByDay }: JobsRerunCardProps) {
+  const { urlBuilder } = useLinkBuilder();
+  const { filters } = useFilters();
   const totalByDayReruns = dataByDay.reduce((sum, item) => sum + (item.rerun_count || 0), 0);
 
   const columns = [
-    { key: 'job_name', label: 'Job' },
+    {
+      key: 'job_name',
+      label: 'Job',
+      renderCell: (item: JobSummaryData) => (
+        <a
+          href={urlBuilder.getJobRunsUrl(item.job_name, item.workflow_name, {
+            startDate: filters.startDate,
+            endDate: filters.endDate,
+          })}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="font-medium text-blue-700 underline-offset-2 hover:underline"
+        >
+          {item.job_name || 'Unknown'}
+        </a>
+      ),
+    },
     { key: 'total_runs', label: 'Total Runs', align: 'right' as const },
     {
       key: 'success_rate',
@@ -97,7 +117,7 @@ export default function JobsRerunCard({ data, dataByDay }: JobsRerunCardProps) {
           <SortableTable
             columns={columns}
             rows={Array.isArray(data) ? data : []}
-            getRowKey={(item) => item.job_name || 'unknown'}
+            getRowKey={(item) => `${item.workflow_name || 'unknown'}:${item.job_name || 'unknown'}`}
             defaultSort={{ key: 'rerun_count', direction: 'desc' }}
           />
         </div>

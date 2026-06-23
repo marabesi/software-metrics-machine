@@ -22,7 +22,10 @@ export default function JobsAverageTimeCard({ data, dataByDay }: JobsAverageTime
   const [activeTab, setActiveTab] = react.useState<'by-job' | 'by-day'>('by-job');
 
   const handleBarClick = (entry: JobsAverageTimeData) => {
-    const url = urlBuilder.getJobRunsUrl(entry.job_name, entry.workflow_name);
+    const url = urlBuilder.getJobRunsUrl(entry.job_name, entry.workflow_name, {
+      startDate: filters.startDate,
+      endDate: filters.endDate,
+    });
     window.open(url, '_blank');
   };
 
