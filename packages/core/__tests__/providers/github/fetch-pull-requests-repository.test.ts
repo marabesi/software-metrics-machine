@@ -3,7 +3,10 @@ import * as os from 'os';
 import * as path from 'path';
 import { describe, expect, it, vi } from 'vitest';
 import { GitHubPullRequestsFetchRepository, IGithubPrsClient } from '../../../src';
-import { PullRequestJsonResponse } from '../../../src/providers/github/github-response-types';
+import {
+  PullRequestCommentJsonResponse,
+  PullRequestJsonResponse,
+} from '../../../src/providers/github/github-response-types';
 import { MockLoggerBuilder } from '../../mock-logger-builder';
 
 function createPullRequest(
@@ -57,6 +60,43 @@ function createPullRequest(
       type: 'User',
       user_view_type: '',
       site_admin: false,
+    },
+    ...overrides,
+  };
+}
+
+function createComment(
+  overrides: Partial<PullRequestCommentJsonResponse> = {}
+): PullRequestCommentJsonResponse {
+  return {
+    url: '',
+    pull_request_review_id: 1,
+    id: 1,
+    node_id: '',
+    diff_hunk: '',
+    path: '',
+    commit_id: '',
+    original_commit_id: '',
+    user: {
+      login: 'reviewer',
+      id: 1,
+    },
+    body: 'Looks good',
+    created_at: '2026-05-10T00:00:00Z',
+    updated_at: '2026-05-10T00:00:00Z',
+    html_url: '',
+    pull_request_url: 'https://api.github.com/repos/org/repo/pulls/1',
+    reactions: {
+      url: '',
+      total_count: 0,
+      '+1': 0,
+      '-1': 0,
+      laugh: 0,
+      hooray: 0,
+      confused: 0,
+      heart: 0,
+      rocket: 0,
+      eyes: 0,
     },
     ...overrides,
   };
@@ -331,6 +371,227 @@ describe('GitHubPullRequestsFetchRepository', () => {
     expect(options).toEqual({
       authors: ['alice', 'bob'],
       labels: ['bug', 'feature'],
+    });
+  });
+
+  describe('fetchPRComments', () => {
+    it('incrementally updates: fetches all fresh comments, filters out ones older than the cached latest, always includes ones with no updated_at, and merges with cache, preserving other PRs untouched', async () => {
+      const providerDir = await fs.mkdtemp(path.join(os.tmpdir(), 'smm-comments-incr-'));
+      const cachedCommentForPR1 = createComment({
+        id: 1,
+        pull_request_url: 'https://api.github.com/repos/org/repo/pulls/1',
+        updated_at: '2026-05-10T00:00:00Z',
+      });
+      const cachedCommentForOtherPR = createComment({
+        id: 99,
+        pull_request_url: 'https://api.github.com/repos/org/repo/pulls/2',
+        updated_at: '2026-05-01T00:00:00Z',
+      });
+      await fs.writeFile(
+        path.join(providerDir, 'pr-comments.json'),
+        JSON.stringify([cachedCommentForPR1, cachedCommentForOtherPR])
+      );
+
+      const staleFreshComment = {
+        ...createComment({ id: 1, pull_request_url: 'https://api.github.com/repos/org/repo/pulls/1' }),
+        updated_at: '2026-05-09T00:00:00Z',
+        body: 'should be excluded, older than cached latest',
+      };
+      const freshComment = {
+        ...createComment({ id: 2, pull_request_url: 'https://api.github.com/repos/org/repo/pulls/1' }),
+        updated_at: '2026-05-12T00:00:00Z',
+        body: 'new comment after cached latest',
+      };
+      const noDateComment = {
+        ...createComment({ id: 3, pull_request_url: 'https://api.github.com/repos/org/repo/pulls/1' }),
+        updated_at: undefined as unknown as string,
+        body: 'always included regardless of date',
+      };
+
+      const fetchPRComments = vi
+        .fn()
+        .mockResolvedValue([staleFreshComment, freshComment, noDateComment]);
+      const githubPrsClient: IGithubPrsClient = {
+        fetchPRs: vi.fn(),
+        fetchPRComments,
+      };
+      const config = {
+        getPathFromGitProvider: () => providerDir,
+      };
+
+      const repository = new GitHubPullRequestsFetchRepository(
+        githubPrsClient,
+        config as never,
+        logger
+      );
+
+      const result = await repository.fetchPRComments(1, { incrementalUpdate: true });
+
+      expect(fetchPRComments).toHaveBeenCalledWith(1);
+
+      const ids = result.map((c) => c.id).sort();
+      expect(ids).toEqual([1, 2, 3]);
+      expect(result.some((c) => c.body.includes('older than cached latest'))).toBe(false);
+
+      const saved = JSON.parse(
+        await fs.readFile(path.join(providerDir, 'pr-comments.json'), 'utf-8')
+      ) as PullRequestCommentJsonResponse[];
+      const savedForOtherPR = saved.find((c) => c.id === 99);
+      expect(savedForOtherPR).toEqual(cachedCommentForOtherPR);
+    });
+
+    it('falls through past the incremental guard when there are no cached comments for this PR', async () => {
+      const providerDir = await fs.mkdtemp(path.join(os.tmpdir(), 'smm-comments-incr-empty-'));
+      const cachedCommentForOtherPR = createComment({
+        id: 99,
+        pull_request_url: 'https://api.github.com/repos/org/repo/pulls/2',
+      });
+      await fs.writeFile(
+        path.join(providerDir, 'pr-comments.json'),
+        JSON.stringify([cachedCommentForOtherPR])
+      );
+
+      const freshComment = createComment({
+        id: 1,
+        pull_request_url: 'https://api.github.com/repos/org/repo/pulls/1',
+      });
+      const fetchPRComments = vi.fn().mockResolvedValue([freshComment]);
+      const githubPrsClient: IGithubPrsClient = {
+        fetchPRs: vi.fn(),
+        fetchPRComments,
+      };
+      const config = {
+        getPathFromGitProvider: () => providerDir,
+      };
+
+      const repository = new GitHubPullRequestsFetchRepository(
+        githubPrsClient,
+        config as never,
+        logger
+      );
+
+      const result = await repository.fetchPRComments(1, { incrementalUpdate: true });
+
+      expect(fetchPRComments).toHaveBeenCalledWith(1);
+      expect(result).toEqual([freshComment]);
+    });
+
+    it('serves cached comments for the PR directly on a cache hit, without calling fetchPRComments', async () => {
+      const providerDir = await fs.mkdtemp(path.join(os.tmpdir(), 'smm-comments-cache-hit-'));
+      const cachedCommentForPR1 = createComment({
+        id: 1,
+        pull_request_url: 'https://api.github.com/repos/org/repo/pulls/1',
+      });
+      await fs.writeFile(
+        path.join(providerDir, 'pr-comments.json'),
+        JSON.stringify([cachedCommentForPR1])
+      );
+
+      const fetchPRComments = vi.fn().mockResolvedValue([]);
+      const githubPrsClient: IGithubPrsClient = {
+        fetchPRs: vi.fn(),
+        fetchPRComments,
+      };
+      const config = {
+        getPathFromGitProvider: () => providerDir,
+      };
+
+      const repository = new GitHubPullRequestsFetchRepository(
+        githubPrsClient,
+        config as never,
+        logger
+      );
+
+      const result = await repository.fetchPRComments(1);
+
+      expect(fetchPRComments).not.toHaveBeenCalled();
+      expect(result).toEqual([cachedCommentForPR1]);
+    });
+
+    it('plain-fetches when the cache for this PR is empty, replacing this PR slice without merging, leaving other PRs untouched', async () => {
+      const providerDir = await fs.mkdtemp(path.join(os.tmpdir(), 'smm-comments-plain-fetch-'));
+      const cachedCommentForOtherPR = createComment({
+        id: 99,
+        pull_request_url: 'https://api.github.com/repos/org/repo/pulls/2',
+      });
+      await fs.writeFile(
+        path.join(providerDir, 'pr-comments.json'),
+        JSON.stringify([cachedCommentForOtherPR])
+      );
+
+      const freshComment = createComment({
+        id: 1,
+        pull_request_url: 'https://api.github.com/repos/org/repo/pulls/1',
+      });
+      const fetchPRComments = vi.fn().mockResolvedValue([freshComment]);
+      const githubPrsClient: IGithubPrsClient = {
+        fetchPRs: vi.fn(),
+        fetchPRComments,
+      };
+      const config = {
+        getPathFromGitProvider: () => providerDir,
+      };
+
+      const repository = new GitHubPullRequestsFetchRepository(
+        githubPrsClient,
+        config as never,
+        logger
+      );
+
+      const result = await repository.fetchPRComments(1);
+
+      expect(fetchPRComments).toHaveBeenCalledWith(1);
+      expect(result).toEqual([freshComment]);
+
+      const saved = JSON.parse(
+        await fs.readFile(path.join(providerDir, 'pr-comments.json'), 'utf-8')
+      ) as PullRequestCommentJsonResponse[];
+      const ids = saved.map((c) => c.id).sort();
+      expect(ids).toEqual([1, 99]);
+    });
+
+    it('bypasses the cache-hit guard but not the incremental guard when forceRefresh and incrementalUpdate are both set with cached comments present', async () => {
+      const providerDir = await fs.mkdtemp(path.join(os.tmpdir(), 'smm-comments-force-incr-'));
+      const cachedCommentForPR1 = createComment({
+        id: 1,
+        pull_request_url: 'https://api.github.com/repos/org/repo/pulls/1',
+        updated_at: '2026-05-10T00:00:00Z',
+      });
+      await fs.writeFile(
+        path.join(providerDir, 'pr-comments.json'),
+        JSON.stringify([cachedCommentForPR1])
+      );
+
+      const freshComment = createComment({
+        id: 2,
+        pull_request_url: 'https://api.github.com/repos/org/repo/pulls/1',
+        updated_at: '2026-05-12T00:00:00Z',
+      });
+      const fetchPRComments = vi.fn().mockResolvedValue([freshComment]);
+      const githubPrsClient: IGithubPrsClient = {
+        fetchPRs: vi.fn(),
+        fetchPRComments,
+      };
+      const config = {
+        getPathFromGitProvider: () => providerDir,
+      };
+
+      const repository = new GitHubPullRequestsFetchRepository(
+        githubPrsClient,
+        config as never,
+        logger
+      );
+
+      const result = await repository.fetchPRComments(1, {
+        incrementalUpdate: true,
+        forceRefresh: true,
+      });
+
+      // forceRefresh does NOT bypass the incremental guard: the merge path still runs,
+      // not the plain-fetch/replace path.
+      expect(fetchPRComments).toHaveBeenCalledWith(1);
+      const ids = result.map((c) => c.id).sort();
+      expect(ids).toEqual([1, 2]);
     });
   });
 });
