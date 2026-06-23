@@ -484,6 +484,28 @@ describe('PairingIndexService', () => {
       expect(byHash.get('neither')).toBe('');
     });
   });
+
+  describe('filterByAuthors (via getPairingIndex)', () => {
+    it('should exclude an author even when that author is also in selectedAuthors', async () => {
+      pairingService = new PairingIndexService(
+        new RepositoryBuilder<Commit>()
+          .withLoadAll([
+            new CommitBuilder().withAuthor('Alice').withHash('alice-commit').build(),
+            new CommitBuilder().withAuthor('Bob').withHash('bob-commit').build(),
+          ])
+          .build(),
+        undefined,
+        logger
+      );
+
+      const result = await pairingService.getPairingIndex({
+        selectedAuthors: ['Alice', 'Bob'],
+        excludeAuthors: 'Alice',
+      });
+
+      expect(result.totalAnalyzedCommits).toBe(1);
+    });
+  });
 });
 
 describe('PRsService', () => {
