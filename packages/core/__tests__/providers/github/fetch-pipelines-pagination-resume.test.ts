@@ -240,3 +240,125 @@ describe('PipelinesFetchRepository - resume from existing partial progress', () 
     expect(workflows.map((r) => r.id).sort()).toEqual(['new-run', 'prior-run']);
   });
 });
+
+describe('PipelinesFetchRepository - empty and missing runs branches', () => {
+  let tempDir: string;
+  let configuration: { getPathFromGitProvider: () => string };
+  let pipelineRunRepository: InMemoryRepository<WorkflowJsonResponse>;
+  const logger = new MockLoggerBuilder().build();
+
+  beforeEach(() => {
+    tempDir = mkdtempSync(join(tmpdir(), 'smm-pipelines-empty-runs-'));
+    configuration = { getPathFromGitProvider: () => tempDir };
+    pipelineRunRepository = new InMemoryRepository<WorkflowJsonResponse>();
+  });
+
+  afterEach(() => {
+    rmSync(tempDir, { recursive: true, force: true });
+  });
+
+  const createRepository = (githubWorkflowClient: IGithubWorkflowClient) =>
+    new PipelinesFetchRepository(
+      configuration as never,
+      githubWorkflowClient,
+      pipelineRunRepository,
+      undefined,
+      logger
+    );
+
+  it('should stop pagination when runs is an empty array even though hasNext is true', async () => {
+    const fetchWorkflowRunsPage = vi.fn().mockResolvedValueOnce({
+      runs: [],
+      hasNext: true,
+    });
+
+    const githubWorkflowClient: IGithubWorkflowClient = {
+      fetchWorkflows: vi.fn(),
+      fetchWorkflowRunsPage,
+    };
+    const repository = createRepository(githubWorkflowClient);
+    await pipelineRunRepository.saveAll([]);
+
+    const workflows = await repository.fetchPipelines({ forceRefresh: true });
+
+    expect(workflows).toHaveLength(0);
+    expect(fetchWorkflowRunsPage).toHaveBeenCalledTimes(1);
+  });
+
+  it('should treat a response with no runs key as an empty page and stop pagination', async () => {
+    const fetchWorkflowRunsPage = vi.fn().mockResolvedValueOnce({
+      hasNext: false,
+    });
+
+    const githubWorkflowClient: IGithubWorkflowClient = {
+      fetchWorkflows: vi.fn(),
+      fetchWorkflowRunsPage,
+    };
+    const repository = createRepository(githubWorkflowClient);
+    await pipelineRunRepository.saveAll([]);
+
+    const workflows = await repository.fetchPipelines({ forceRefresh: true });
+
+    expect(workflows).toHaveLength(0);
+    expect(fetchWorkflowRunsPage).toHaveBeenCalledTimes(1);
+  });
+});
+
+describe('PipelinesFetchRepository - readJson malformed content', () => {
+  let tempDir: string;
+  let configuration: { getPathFromGitProvider: () => string };
+  let pipelineRunRepository: InMemoryRepository<WorkflowJsonResponse>;
+  const logger = new MockLoggerBuilder().build();
+
+  beforeEach(() => {
+    tempDir = mkdtempSync(join(tmpdir(), 'smm-pipelines-malformed-'));
+    configuration = { getPathFromGitProvider: () => tempDir };
+    pipelineRunRepository = new InMemoryRepository<WorkflowJsonResponse>();
+  });
+
+  afterEach(() => {
+    rmSync(tempDir, { recursive: true, force: true });
+  });
+
+  it('should reject with a parse error rather than falling back to the default when progress JSON is malformed', async () => {
+    await writeFile(join(tempDir, 'workflows_progress.json'), '{not valid json', 'utf-8');
+
+    const githubWorkflowClient: IGithubWorkflowClient = {
+      fetchWorkflows: vi.fn(),
+      fetchWorkflowRunsPage: vi.fn(),
+    };
+    const repository = new PipelinesFetchRepository(
+      configuration as never,
+      githubWorkflowClient,
+      pipelineRunRepository,
+      undefined,
+      logger
+    );
+    await pipelineRunRepository.saveAll([]);
+
+    await expect(repository.fetchPipelines({ forceRefresh: true })).rejects.toBeInstanceOf(
+      SyntaxError
+    );
+  });
+
+  it('should reject with a parse error rather than falling back to the default when incompleted JSON is malformed', async () => {
+    await writeFile(join(tempDir, 'workflows_incompleted.json'), '{not valid json', 'utf-8');
+
+    const githubWorkflowClient: IGithubWorkflowClient = {
+      fetchWorkflows: vi.fn(),
+      fetchWorkflowRunsPage: vi.fn(),
+    };
+    const repository = new PipelinesFetchRepository(
+      configuration as never,
+      githubWorkflowClient,
+      pipelineRunRepository,
+      undefined,
+      logger
+    );
+    await pipelineRunRepository.saveAll([]);
+
+    await expect(repository.fetchPipelines({ forceRefresh: true })).rejects.toBeInstanceOf(
+      SyntaxError
+    );
+  });
+});
