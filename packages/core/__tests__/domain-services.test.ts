@@ -367,6 +367,123 @@ describe('PairingIndexService', () => {
       ]);
     });
   });
+
+  describe('getLatestPairedCommits (via getPairingIndex)', () => {
+    it('should only include commits with coAuthors, excluding unpaired commits from the latest list', async () => {
+      pairingService = new PairingIndexService(
+        new RepositoryBuilder<Commit>()
+          .withLoadAll([
+            {
+              ...new CommitBuilder().withAuthor('Alice').withHash('paired-1').build(),
+              coAuthors: ['Bob'],
+            },
+            new CommitBuilder().withAuthor('Carol').withHash('unpaired-1').build(),
+          ])
+          .build(),
+        undefined,
+        logger
+      );
+
+      const result = await pairingService.getPairingIndex();
+
+      expect(result.totalAnalyzedCommits).toBe(2);
+      expect(result.latestPairedCommits).toHaveLength(1);
+      expect(result.latestPairedCommits?.[0].hash).toBe('paired-1');
+    });
+
+    it('should sort latest paired commits by timestamp descending', async () => {
+      pairingService = new PairingIndexService(
+        new RepositoryBuilder<Commit>()
+          .withLoadAll([
+            {
+              ...new CommitBuilder()
+                .withAuthor('Alice')
+                .withHash('older')
+                .withTimestamp('2024-01-01T10:00:00Z')
+                .build(),
+              coAuthors: ['Bob'],
+            },
+            {
+              ...new CommitBuilder()
+                .withAuthor('Alice')
+                .withHash('newer')
+                .withTimestamp('2024-01-05T10:00:00Z')
+                .build(),
+              coAuthors: ['Bob'],
+            },
+          ])
+          .build(),
+        undefined,
+        logger
+      );
+
+      const result = await pairingService.getPairingIndex();
+
+      expect(result.latestPairedCommits?.map((c) => c.hash)).toEqual(['newer', 'older']);
+    });
+
+    it('should serialize a Date timestamp via toISOString', async () => {
+      const dateTimestamp = new Date('2024-01-01T10:00:00Z');
+      pairingService = new PairingIndexService(
+        new RepositoryBuilder<Commit>()
+          .withLoadAll([
+            {
+              ...new CommitBuilder().withAuthor('Alice').withHash('date-commit').build(),
+              coAuthors: ['Bob'],
+              timestamp: dateTimestamp,
+            },
+          ])
+          .build(),
+        undefined,
+        logger
+      );
+
+      const result = await pairingService.getPairingIndex();
+
+      expect(result.latestPairedCommits?.[0].timestamp).toBe(dateTimestamp.toISOString());
+    });
+
+    it('should use subject when set, falling back to msg, then to an empty string', async () => {
+      pairingService = new PairingIndexService(
+        new RepositoryBuilder<Commit>()
+          .withLoadAll([
+            {
+              ...new CommitBuilder()
+                .withAuthor('Alice')
+                .withHash('with-subject')
+                .withMessage('fallback msg')
+                .build(),
+              coAuthors: ['Bob'],
+              subject: 'explicit subject',
+            },
+            {
+              ...new CommitBuilder()
+                .withAuthor('Alice')
+                .withHash('without-subject')
+                .withMessage('used as fallback')
+                .build(),
+              coAuthors: ['Bob'],
+            },
+            {
+              ...new CommitBuilder().withAuthor('Alice').withHash('neither').build(),
+              coAuthors: ['Bob'],
+              subject: '',
+              msg: '',
+            },
+          ])
+          .build(),
+        undefined,
+        logger
+      );
+
+      const result = await pairingService.getPairingIndex();
+
+      const byHash = new Map(result.latestPairedCommits?.map((c) => [c.hash, c.subject]));
+      expect(byHash.get('with-subject')).toBe('explicit subject');
+      expect(byHash.get('without-subject')).toBe('used as fallback');
+      expect(byHash.get('neither')).toBe('');
+    });
+  });
 });
 
 describe('PRsService', () => {
