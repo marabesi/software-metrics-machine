@@ -6,6 +6,7 @@ import { DeploymentFrequency } from '@/components/charts/DeploymentFrequency';
 import { Recommendations } from '@/components/charts/Recommendations';
 import { ContextLink } from '@/components/filters/ContextLink';
 import { AverageReviewTimeItem, DeploymentFrequencyPoint, DeploymentFrequencyResponseItem, JobsSummaryItem, PairingIndex, PipelineSummary, PullRequestSummary, ResultWrapper } from './insights-types';
+import { buildPullRequestApiParams } from '@/server/utils/apiParams';
 
 function unwrapResult<T>(data: T | ResultWrapper<T>): T {
   if (typeof data === 'object' && data !== null && 'result' in data) {
@@ -14,7 +15,7 @@ function unwrapResult<T>(data: T | ResultWrapper<T>): T {
   return data;
 }
 
-function buildApiParams(filters: DashboardFilters): ApiParams {
+function buildSourceCodeApiParams(filters: DashboardFilters): ApiParams {
   return {
     start_date: filters.startDate,
     end_date: filters.endDate,
@@ -36,7 +37,7 @@ function buildPipelineApiParams(filters: DashboardFilters): ApiParams {
   };
 }
 
-function extractDate(value?: { createdAt?: string; created_at?: string } | string | null): string | null {
+function extractDate(value?: { created?: string; createdAt?: string; created_at?: string } | string | null): string | null {
   const formatDate = (rawDate: string): string | null => {
     const parsed = new Date(rawDate);
     if (Number.isNaN(parsed.getTime())) {
@@ -58,7 +59,7 @@ function extractDate(value?: { createdAt?: string; created_at?: string } | strin
     return formatDate(value);
   }
 
-  const raw = value.createdAt || value.created_at;
+  const raw = value.created || value.createdAt || value.created_at;
   if (!raw) {
     return null;
   }
@@ -81,15 +82,16 @@ export default async function InsightsSection({
   let averageReviewTime: AverageReviewTimeItem[] = [];
 
   try {
-    const apiParams = buildApiParams(filters);
+    const sourceCodeParams = buildSourceCodeApiParams(filters);
+    const pullRequestParams = buildPullRequestApiParams(filters);
     const pipelineParams = buildPipelineApiParams(filters);
     const [pairing, pipeline, pr, deployment, jobs, reviewTime] = await Promise.all([
-      sourceCodeAPI.pairingIndex(apiParams),
+      sourceCodeAPI.pairingIndex(sourceCodeParams),
       pipelineAPI.summary(pipelineParams),
-      pullRequestAPI.summary(apiParams),
+      pullRequestAPI.summary(pullRequestParams),
       pipelineAPI.deploymentFrequency(pipelineParams),
       pipelineAPI.jobsSummary(pipelineParams),
-      pullRequestAPI.averageReviewTime(apiParams),
+      pullRequestAPI.averageReviewTime(pullRequestParams),
     ]);
     const prData = unwrapResult(pr as PullRequestSummary | ResultWrapper<PullRequestSummary>);
     const pairingData = unwrapResult(pairing as PairingIndex | ResultWrapper<PairingIndex>);

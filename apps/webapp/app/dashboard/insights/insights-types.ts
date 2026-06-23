@@ -22,8 +22,8 @@ export interface PullRequestSummary {
   closed?: number;
   open_prs?: number;
   open?: number;
-  first_pr?: { createdAt?: string; created_at?: string } | string | null;
-  last_pr?: { createdAt?: string; created_at?: string } | string | null;
+  first_pr?: { created?: string; createdAt?: string; created_at?: string } | string | null;
+  last_pr?: { created?: string; createdAt?: string; created_at?: string } | string | null;
 }
 export interface DeploymentFrequencyResponseItem {
   pipeline?: string;

@@ -133,4 +133,26 @@ describe('Insights context', () => {
     expect(screen.getByText('Speed Up Code Reviews')).toBeInTheDocument();
     expect(screen.getByText('Review Open Pull Requests')).toBeInTheDocument();
   });
+
+  it('renders pull request data frame dates from summary-created fields', async () => {
+    mockPullRequestAPI.summary.mockResolvedValue({
+      result: {
+        total_prs: 2,
+        merged_prs: 1,
+        closed_prs: 1,
+        open_prs: 0,
+        first_pr: {
+          created: '2026-01-02T00:00:00Z',
+        },
+        last_pr: {
+          created: '2026-01-05T00:00:00Z',
+        },
+      },
+    } as never);
+
+    const ui = await InsightsSection({ searchParams: Promise.resolve({}) });
+    render(<FiltersProvider>{ui}</FiltersProvider>);
+
+    expect(screen.getByText('Data frame: Jan 02, 2026 to Jan 05, 2026')).toBeInTheDocument();
+  });
 });
