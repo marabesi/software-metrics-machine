@@ -425,6 +425,62 @@ src/medium.ts,10`;
     });
   });
 
+  describe('Entity Ownership Analysis', () => {
+    it('should return deduped, alphabetically-sorted authors when select is "authors"', async () => {
+      const csvContent = `entity,author,added,deleted
+src/index.ts,Bob,10,2
+src/utils.ts,Alice,5,1
+src/api.ts,Bob,3,1`;
+
+      fs.writeFileSync(path.join(tempDir, 'entity-ownership.csv'), csvContent);
+
+      const result = await analyzer.getEntityOwnership({ select: 'authors' });
+
+      expect(result).toEqual(['Alice', 'Bob']);
+    });
+
+    it('should filter rows by authors case-insensitively', async () => {
+      const csvContent = `entity,author,added,deleted
+src/index.ts,Bob,10,2
+src/utils.ts,Alice,5,1`;
+
+      fs.writeFileSync(path.join(tempDir, 'entity-ownership.csv'), csvContent);
+
+      const result = await analyzer.getEntityOwnership({ authors: 'ALICE' });
+
+      expect(result).toEqual([{ entity: 'src/utils.ts', author: 'Alice', added: 5, deleted: 1 }]);
+    });
+
+    it('should return rows sorted by added+deleted descending and apply top limiting when select is omitted', async () => {
+      const csvContent = `entity,author,added,deleted
+src/small.ts,Alice,1,1
+src/big.ts,Bob,50,40
+src/medium.ts,Carol,10,5`;
+
+      fs.writeFileSync(path.join(tempDir, 'entity-ownership.csv'), csvContent);
+
+      const result = await analyzer.getEntityOwnership({ top: 2 });
+
+      expect(result).toEqual([
+        { entity: 'src/big.ts', author: 'Bob', added: 50, deleted: 40 },
+        { entity: 'src/medium.ts', author: 'Carol', added: 10, deleted: 5 },
+      ]);
+    });
+
+    it('should exclude rows with a blank entity or blank author', async () => {
+      const csvContent = `entity,author,added,deleted
+src/index.ts,Bob,10,2
+,Alice,5,1
+src/utils.ts,,3,1`;
+
+      fs.writeFileSync(path.join(tempDir, 'entity-ownership.csv'), csvContent);
+
+      const result = await analyzer.getEntityOwnership();
+
+      expect(result).toEqual([{ entity: 'src/index.ts', author: 'Bob', added: 10, deleted: 2 }]);
+    });
+  });
+
   describe('Error Handling', () => {
     it('should handle directory with no CSV files', async () => {
       const emptyDir = fs.mkdtempSync(path.join(os.tmpdir(), 'codemaat-empty-'));
