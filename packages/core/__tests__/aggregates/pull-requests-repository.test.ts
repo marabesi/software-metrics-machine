@@ -233,4 +233,101 @@ describe('PullRequestsRepository filters', () => {
 
     expect(prs.map((pr) => pr.number)).toEqual([1]);
   });
+
+  it('keeps only merged PRs when filters.state is "merged"', async () => {
+    const repository = new PullRequestsRepository(
+      {
+        loadAll: vi.fn().mockResolvedValue([
+          new PullRequestJsonResponseBuilder()
+            .withId('1')
+            .withNumber('1')
+            .withMergedAt('2026-01-02T00:00:00Z')
+            .build(),
+          new PullRequestJsonResponseBuilder().withId('2').withNumber('2').build(),
+        ]),
+      } as any,
+      { loadAll: vi.fn().mockResolvedValue([]) } as any
+    );
+
+    const prs = await repository.loadPrsWithFilters({ state: 'merged' });
+
+    expect(prs.map((pr) => pr.number)).toEqual([1]);
+  });
+
+  it('excludes a PR that is both merged and closed when filters.state is "closed"', async () => {
+    const repository = new PullRequestsRepository(
+      {
+        loadAll: vi.fn().mockResolvedValue([
+          new PullRequestJsonResponseBuilder()
+            .withId('1')
+            .withNumber('1')
+            .withClosedAt('2026-01-02T00:00:00Z')
+            .build(),
+          new PullRequestJsonResponseBuilder()
+            .withId('2')
+            .withNumber('2')
+            .withClosedAt('2026-01-03T00:00:00Z')
+            .withMergedAt('2026-01-03T00:00:00Z')
+            .build(),
+        ]),
+      } as any,
+      { loadAll: vi.fn().mockResolvedValue([]) } as any
+    );
+
+    const prs = await repository.loadPrsWithFilters({ state: 'closed' });
+
+    expect(prs.map((pr) => pr.number)).toEqual([1]);
+  });
+
+  it('keeps only PRs with neither closedAt nor mergedAt when filters.state is "open"', async () => {
+    const repository = new PullRequestsRepository(
+      {
+        loadAll: vi.fn().mockResolvedValue([
+          new PullRequestJsonResponseBuilder().withId('1').withNumber('1').build(),
+          new PullRequestJsonResponseBuilder()
+            .withId('2')
+            .withNumber('2')
+            .withClosedAt('2026-01-03T00:00:00Z')
+            .build(),
+        ]),
+      } as any,
+      { loadAll: vi.fn().mockResolvedValue([]) } as any
+    );
+
+    const prs = await repository.loadPrsWithFilters({ state: 'open' });
+
+    expect(prs.map((pr) => pr.number)).toEqual([1]);
+  });
+
+  it('keeps only PRs with a truthy draft field when filters.state is "draft"', async () => {
+    const repository = new PullRequestsRepository(
+      {
+        loadAll: vi.fn().mockResolvedValue([
+          { ...new PullRequestJsonResponseBuilder().withId('1').withNumber('1').build(), draft: true },
+          new PullRequestJsonResponseBuilder().withId('2').withNumber('2').build(),
+        ]),
+      } as any,
+      { loadAll: vi.fn().mockResolvedValue([]) } as any
+    );
+
+    const prs = await repository.loadPrsWithFilters({ state: 'draft' });
+
+    expect(prs.map((pr) => pr.number)).toEqual([1]);
+  });
+
+  it('returns all cached PRs mapped, unfiltered, when no filters argument is passed', async () => {
+    const repository = new PullRequestsRepository(
+      {
+        loadAll: vi.fn().mockResolvedValue([
+          new PullRequestJsonResponseBuilder().withId('1').withNumber('1').build(),
+          new PullRequestJsonResponseBuilder().withId('2').withNumber('2').build(),
+        ]),
+      } as any,
+      { loadAll: vi.fn().mockResolvedValue([]) } as any
+    );
+
+    const prs = await repository.loadPrsWithFilters();
+
+    expect(prs.map((pr) => pr.number)).toEqual([1, 2]);
+  });
 });
