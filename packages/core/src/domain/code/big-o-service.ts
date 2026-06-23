@@ -1,6 +1,12 @@
 import { promises as fs, readFileSync } from 'fs';
 import * as path from 'path';
 import type { Configuration } from '../../infrastructure/configuration';
+import {
+  createPathMatchers,
+  isGlobPattern,
+  matchesAnyPathPattern,
+  matchesIncludePatterns,
+} from './pattern-filters';
 
 export type BigOClassification = 'O(1)' | 'O(log n)' | 'O(n)' | 'O(n log n)' | 'O(n^2)' | 'O(n^3+)';
 
@@ -84,8 +90,8 @@ export class BigOService {
     const repository = this.getRepositoryLocation();
     const files = await this.walk(repository);
     const matcher = this.createSearchMatcher(options.search);
-    const includeMatchers = this.createPatternMatchers(options.includePatterns);
-    const ignoreMatchers = this.createPatternMatchers(options.ignorePatterns);
+    const includeMatchers = createPathMatchers(options.includePatterns, { splitOnNewline: true });
+    const ignoreMatchers = createPathMatchers(options.ignorePatterns, { splitOnNewline: true });
     const limit = options.limit ?? 200;
 
     return files
@@ -284,101 +290,29 @@ export class BigOService {
       return null;
     }
 
-    if (!this.isGlobPattern(normalizedSearch)) {
+    if (!isGlobPattern(normalizedSearch)) {
       const loweredSearch = normalizedSearch.toLowerCase();
       return (filePath) => filePath.toLowerCase().includes(loweredSearch);
     }
 
-    const regex = this.globToRegex(normalizedSearch);
-    return (filePath) => regex.test(filePath);
-  }
-
-  private createPatternMatchers(value?: string | string[]): Array<(filePath: string) => boolean> {
-    return this.normalizePatterns(value).map((pattern) => this.createPathMatcher(pattern));
-  }
-
-  private normalizePatterns(value?: string | string[]): string[] {
-    if (!value) {
-      return [];
-    }
-
-    const values = Array.isArray(value) ? value : [value];
-    return values
-      .flatMap((item) => String(item).split(/[,\n]/))
-      .map((item) => item.trim())
-      .filter((item) => item.length > 0);
-  }
-
-  private createPathMatcher(pattern: string): (filePath: string) => boolean {
-    const normalizedPattern = pattern.trim().replace(/\\/g, '/');
-
-    if (!this.isGlobPattern(normalizedPattern)) {
-      const loweredPattern = normalizedPattern.toLowerCase();
-      return (filePath) => filePath.toLowerCase().includes(loweredPattern);
-    }
-
-    const regex = this.globToRegex(normalizedPattern);
-
-    if (!normalizedPattern.includes('/')) {
-      return (filePath) => regex.test(path.posix.basename(filePath));
-    }
-
-    return (filePath) => regex.test(filePath);
+    const searchMatcher = createPathMatchers(normalizedSearch, {
+      matchBasenameWhenPatternHasNoSlash: false,
+    })[0];
+    return searchMatcher;
   }
 
   private matchesIncludePatterns(
     filePath: string,
     includeMatchers: Array<(filePath: string) => boolean>
   ): boolean {
-    if (includeMatchers.length === 0) {
-      return true;
-    }
-
-    return this.matchesAnyPattern(filePath, includeMatchers);
+    return matchesIncludePatterns(filePath, includeMatchers);
   }
 
   private matchesAnyPattern(
     filePath: string,
     matchers: Array<(filePath: string) => boolean>
   ): boolean {
-    return matchers.some((matcher) => matcher(filePath));
-  }
-
-  private isGlobPattern(search: string): boolean {
-    return /[*?[\]]/.test(search);
-  }
-
-  private globToRegex(pattern: string): RegExp {
-    let expression = '^';
-
-    for (let index = 0; index < pattern.length; index += 1) {
-      const character = pattern[index];
-      const nextCharacter = pattern[index + 1];
-
-      if (character === '*' && nextCharacter === '*') {
-        expression += '.*';
-        index += 1;
-        continue;
-      }
-
-      if (character === '*') {
-        expression += '[^/]*';
-        continue;
-      }
-
-      if (character === '?') {
-        expression += '[^/]';
-        continue;
-      }
-
-      expression += this.escapeRegexCharacter(character);
-    }
-
-    return new RegExp(`${expression}$`, 'i');
-  }
-
-  private escapeRegexCharacter(character: string): string {
-    return character.replace(/[|\\{}()[\]^$+*?.]/g, '\\$&');
+    return matchesAnyPathPattern(filePath, matchers);
   }
 
   private isLoop(line: string): boolean {

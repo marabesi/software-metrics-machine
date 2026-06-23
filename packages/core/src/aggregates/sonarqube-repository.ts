@@ -1,5 +1,4 @@
 import { SonarqubeComponentMeasure } from '..';
-import path from 'path';
 import { IRepository } from '../infrastructure';
 import {
   CodeMetric,
@@ -9,6 +8,10 @@ import {
   TimestampedStore,
   extractLatestData,
 } from '../providers/sonarqube/types';
+import {
+  matchesPathPattern,
+  normalizePatternList,
+} from '../domain/code/pattern-filters';
 
 type StoredMeasure = {
   metric?: string;
@@ -136,7 +139,7 @@ export class SonarqubeRepository {
 
   private normalizeMeasures(options?: SonarqubeMeasureFilters | string[]): string[] {
     const value = Array.isArray(options) ? options : options?.measures;
-    return this.normalizeList(value);
+    return normalizePatternList(value);
   }
 
   private filterHistoricalMeasures(
@@ -158,9 +161,9 @@ export class SonarqubeRepository {
     components: SonarqubeComponentTreeMeasure[],
     options?: SonarqubeComponentTreeFilters
   ): SonarqubeComponentTreeMeasure[] {
-    const ignorePatterns = this.normalizeList(options?.ignore_files);
-    const includePatterns = this.normalizeList(options?.include_files);
-    const metricFilters = this.normalizeList(options?.metrics);
+    const ignorePatterns = normalizePatternList(options?.ignore_files);
+    const includePatterns = normalizePatternList(options?.include_files);
+    const metricFilters = normalizePatternList(options?.metrics);
     const removeFolders = options?.remove_folders || false;
 
     return components
@@ -200,71 +203,11 @@ export class SonarqubeRepository {
       });
   }
 
-  private normalizeList(value?: string | string[]): string[] {
-    if (!value) {
-      return [];
-    }
-
-    const values = Array.isArray(value) ? value : [value];
-    return values
-      .flatMap((item) => String(item).split(','))
-      .map((item) => item.trim())
-      .filter((item) => item.length > 0);
-  }
-
   private matchesPattern(entity: string, pattern: string): boolean {
     if (!entity) {
       return false;
     }
 
-    const normalizedEntity = entity.toLowerCase().replace(/\\/g, '/');
-    const normalizedPattern = pattern.toLowerCase();
-
-    if (!this.containsGlobToken(normalizedPattern)) {
-      return normalizedEntity.includes(normalizedPattern);
-    }
-
-    const regex = this.globToRegExp(normalizedPattern);
-
-    if (!normalizedPattern.includes('/')) {
-      const basename = path.posix.basename(normalizedEntity);
-      return regex.test(basename);
-    }
-
-    return regex.test(normalizedEntity);
-  }
-
-  private containsGlobToken(value: string): boolean {
-    return /[*?[\]]/.test(value);
-  }
-
-  private globToRegExp(globPattern: string): RegExp {
-    let regexPattern = '^';
-
-    for (let index = 0; index < globPattern.length; index += 1) {
-      const current = globPattern[index];
-      const next = globPattern[index + 1];
-
-      if (current === '*' && next === '*') {
-        regexPattern += '.*';
-        index += 1;
-        continue;
-      }
-
-      if (current === '*') {
-        regexPattern += '[^/]*';
-        continue;
-      }
-
-      if (current === '?') {
-        regexPattern += '[^/]';
-        continue;
-      }
-
-      regexPattern += current.replace(/[|\\{}()[\]^$+?.]/g, '\\$&');
-    }
-
-    regexPattern += '$';
-    return new RegExp(regexPattern);
+    return matchesPathPattern(entity, pattern);
   }
 }

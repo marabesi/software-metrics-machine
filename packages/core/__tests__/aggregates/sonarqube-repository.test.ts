@@ -9,6 +9,54 @@ import type {
 } from '../../src/providers/sonarqube/types';
 
 describe('SonarqubeRepository', () => {
+  it('filters component tree entries with shared include and ignore patterns', async () => {
+    const componentTreeRepository = new InMemoryRepository<
+      TimestampedStore<SonarqubeComponentTreeMeasure[]>
+    >();
+    await componentTreeRepository.save({
+      entries: [
+        {
+          fetchedAt: '2024-03-01T00:00:00.000Z',
+          data: [
+            {
+              key: 'src/Button.ts',
+              name: 'Button.ts',
+              qualifier: 'FIL',
+            },
+            {
+              key: 'src/Button.test.ts',
+              name: 'Button.test.ts',
+              qualifier: 'FIL',
+            },
+            {
+              key: 'docs/readme.md',
+              name: 'readme.md',
+              qualifier: 'FIL',
+            },
+          ],
+        },
+      ],
+    });
+
+    const repository = new SonarqubeRepository(
+      new InMemoryRepository<TimestampedStore<SonarqubeComponentMeasure>>(),
+      componentTreeRepository
+    );
+
+    await expect(
+      repository.loadComponentTree({
+        include_files: 'src/**',
+        ignore_files: '*.test.ts',
+      })
+    ).resolves.toEqual([
+      {
+        key: 'src/Button.ts',
+        name: 'Button.ts',
+        qualifier: 'FIL',
+      },
+    ]);
+  });
+
   it('loads coverage history from timestamped historical measures', async () => {
     const historicalRepository = new InMemoryRepository<TimestampedStore<CodeMetric[]>>();
     await historicalRepository.save({

@@ -8,6 +8,10 @@ import {
 } from '../providers/codemaat';
 import { Configuration } from 'src';
 import path from 'path';
+import {
+  matchesPathPattern,
+  normalizePatternList,
+} from '../domain/code/pattern-filters';
 
 export interface ICodeMetricsRepository {
   getCodeChurn(options: CodeMaatChurnOptions & { typeChurn: string }): Promise<CodeChurnValueResult>;
@@ -419,7 +423,7 @@ export class CodeMaatMetricsRepository implements ICodeMetricsRepository {
         .filter((row) => row.entity.length > 0 && row.author.length > 0)
         .filter((row) => this.matchesEntityFilters(row.entity, options))
         .filter((row) => {
-          const authors = this.normalizeList(options?.authors).map((author) => author.toLowerCase());
+          const authors = normalizePatternList(options?.authors).map((author) => author.toLowerCase());
           return authors.length === 0 || authors.includes(row.author.toLowerCase());
         })
         .sort((a, b) => b.added + b.deleted - (a.added + a.deleted));
@@ -520,25 +524,13 @@ export class CodeMaatMetricsRepository implements ICodeMetricsRepository {
     return Number.isFinite(parsed) ? parsed : fallback;
   }
 
-  private normalizeList(value?: string | string[]): string[] {
-    if (!value) {
-      return [];
-    }
-
-    const values = Array.isArray(value) ? value : [value];
-    return values
-      .flatMap((item) => String(item).split(','))
-      .map((item) => item.trim())
-      .filter((item) => item.length > 0);
-  }
-
   private matchesEntityFilters(entity: string, options?: CodeMaatEntityFilterOptions): boolean {
     if (!entity) {
       return false;
     }
 
-    const ignorePatterns = this.normalizeList(options?.ignorePatterns);
-    const includePatterns = this.normalizeList(options?.includePatterns);
+    const ignorePatterns = normalizePatternList(options?.ignorePatterns);
+    const includePatterns = normalizePatternList(options?.includePatterns);
 
     if (ignorePatterns.some((pattern) => this.matchesPattern(entity, pattern))) {
       return false;
@@ -559,8 +551,8 @@ export class CodeMaatMetricsRepository implements ICodeMetricsRepository {
     coupled: string,
     options?: CodeMaatEntityFilterOptions
   ): boolean {
-    const ignorePatterns = this.normalizeList(options?.ignorePatterns);
-    const includePatterns = this.normalizeList(options?.includePatterns);
+    const ignorePatterns = normalizePatternList(options?.ignorePatterns);
+    const includePatterns = normalizePatternList(options?.includePatterns);
 
     if (
       ignorePatterns.some(
@@ -580,54 +572,6 @@ export class CodeMaatMetricsRepository implements ICodeMetricsRepository {
   }
 
   private matchesPattern(entity: string, pattern: string): boolean {
-    const normalizedEntity = entity.toLowerCase().replace(/\\/g, '/');
-    const normalizedPattern = pattern.toLowerCase();
-
-    if (!this.containsGlobToken(normalizedPattern)) {
-      return normalizedEntity.includes(normalizedPattern);
-    }
-
-    const regex = this.globToRegExp(normalizedPattern);
-
-    if (!normalizedPattern.includes('/')) {
-      const basename = path.posix.basename(normalizedEntity);
-      return regex.test(basename);
-    }
-
-    return regex.test(normalizedEntity);
-  }
-
-  private containsGlobToken(value: string): boolean {
-    return /[*?[\]]/.test(value);
-  }
-
-  private globToRegExp(globPattern: string): RegExp {
-    let regexPattern = '^';
-
-    for (let index = 0; index < globPattern.length; index += 1) {
-      const current = globPattern[index];
-      const next = globPattern[index + 1];
-
-      if (current === '*' && next === '*') {
-        regexPattern += '.*';
-        index += 1;
-        continue;
-      }
-
-      if (current === '*') {
-        regexPattern += '[^/]*';
-        continue;
-      }
-
-      if (current === '?') {
-        regexPattern += '[^/]';
-        continue;
-      }
-
-      regexPattern += current.replace(/[|\\{}()[\]^$+?.]/g, '\\$&');
-    }
-
-    regexPattern += '$';
-    return new RegExp(regexPattern);
+    return matchesPathPattern(entity, pattern);
   }
 }
