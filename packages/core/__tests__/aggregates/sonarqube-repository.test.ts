@@ -173,6 +173,47 @@ describe('SonarqubeRepository', () => {
     });
   });
 
+  describe('loadMeasurements', () => {
+    it('returns an empty array when there is no data', async () => {
+      const repository = new SonarqubeRepository(
+        new InMemoryRepository<TimestampedStore<SonarqubeComponentMeasure>>(),
+        new InMemoryRepository<TimestampedStore<SonarqubeComponentTreeMeasure[]>>()
+      );
+
+      expect(await repository.loadMeasurements()).toEqual([]);
+    });
+
+    it('maps measures, falling back through key/name when metric is missing and using value or empty string', async () => {
+      const measurementRepository = new InMemoryRepository<
+        TimestampedStore<SonarqubeComponentMeasure>
+      >();
+      const measure = {
+        id: '1',
+        key: 'project-a',
+        name: 'Project A',
+        measures: [
+          { metric: 'coverage', value: 81.3 },
+          { key: 'bugs', value: '2' },
+          { name: 'sqale_rating' },
+        ],
+      } as unknown as SonarqubeComponentMeasure;
+      await measurementRepository.save({
+        entries: [{ fetchedAt: '2024-03-01T00:00:00.000Z', data: measure }],
+      });
+
+      const repository = new SonarqubeRepository(
+        measurementRepository,
+        new InMemoryRepository<TimestampedStore<SonarqubeComponentTreeMeasure[]>>()
+      );
+
+      expect(await repository.loadMeasurements()).toEqual([
+        { metric: 'coverage', value: '81.3' },
+        { metric: 'bugs', value: '2' },
+        { metric: 'sqale_rating', value: '' },
+      ]);
+    });
+  });
+
   it('loads coverage history from timestamped historical measures', async () => {
     const historicalRepository = new InMemoryRepository<TimestampedStore<CodeMetric[]>>();
     await historicalRepository.save({
