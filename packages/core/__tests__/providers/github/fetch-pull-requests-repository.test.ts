@@ -148,6 +148,147 @@ describe('GitHubPullRequestsFetchRepository', () => {
     expect(result).toEqual(newPrs);
   });
 
+  it('fetches a manual date range and merges with a non-empty cache, with incoming PRs winning collisions', async () => {
+    const providerDir = await fs.mkdtemp(path.join(os.tmpdir(), 'smm-pr-range-merge-'));
+    const cachedPrs = [
+      createPullRequest({ id: '1', title: 'Stale title' }),
+      createPullRequest({ id: '2', title: 'Untouched PR' }),
+    ];
+
+    await fs.writeFile(path.join(providerDir, 'prs.json'), JSON.stringify(cachedPrs));
+
+    const freshPrs = [createPullRequest({ id: '1', title: 'Fresh title' })];
+
+    const fetchPRs = vi.fn().mockResolvedValue(freshPrs);
+    const githubPrsClient: IGithubPrsClient = {
+      fetchPRs,
+      fetchPRComments: vi.fn(),
+    };
+    const config = {
+      getPathFromGitProvider: () => providerDir,
+    };
+
+    const repository = new GitHubPullRequestsFetchRepository(
+      githubPrsClient,
+      config as never,
+      logger
+    );
+
+    const result = await repository.fetchPRs({
+      startDate: '2026-05-01T00:00:00Z',
+      endDate: '2026-05-31T00:00:00Z',
+    });
+
+    expect(fetchPRs).toHaveBeenCalledWith({
+      startDate: '2026-05-01T00:00:00Z',
+      endDate: '2026-05-31T00:00:00Z',
+    });
+
+    expect(result).toHaveLength(2);
+    const merged = result.find((pr) => pr.id === '1');
+    expect(merged?.title).toBe('Fresh title');
+  });
+
+  it('falls through to a plain fetch for a manual date range when the cache is empty', async () => {
+    const providerDir = await fs.mkdtemp(path.join(os.tmpdir(), 'smm-pr-range-empty-'));
+    const freshPrs = [createPullRequest({ id: '1' })];
+
+    const fetchPRs = vi.fn().mockResolvedValue(freshPrs);
+    const githubPrsClient: IGithubPrsClient = {
+      fetchPRs,
+      fetchPRComments: vi.fn(),
+    };
+    const config = {
+      getPathFromGitProvider: () => providerDir,
+    };
+
+    const repository = new GitHubPullRequestsFetchRepository(
+      githubPrsClient,
+      config as never,
+      logger
+    );
+
+    const result = await repository.fetchPRs({
+      startDate: '2026-05-01T00:00:00Z',
+      endDate: '2026-05-31T00:00:00Z',
+    });
+
+    expect(fetchPRs).toHaveBeenCalledWith({
+      startDate: '2026-05-01T00:00:00Z',
+      endDate: '2026-05-31T00:00:00Z',
+    });
+    expect(result).toEqual(freshPrs);
+  });
+
+  it('serves cached PRs directly when there is no date range or incrementalUpdate and forceRefresh is not set', async () => {
+    const providerDir = await fs.mkdtemp(path.join(os.tmpdir(), 'smm-pr-cache-hit-'));
+    const cachedPrs = [createPullRequest({ id: '1' }), createPullRequest({ id: '2' })];
+    await fs.writeFile(path.join(providerDir, 'prs.json'), JSON.stringify(cachedPrs));
+
+    const fetchPRs = vi.fn().mockResolvedValue([]);
+    const githubPrsClient: IGithubPrsClient = {
+      fetchPRs,
+      fetchPRComments: vi.fn(),
+    };
+    const config = {
+      getPathFromGitProvider: () => providerDir,
+    };
+
+    const repository = new GitHubPullRequestsFetchRepository(
+      githubPrsClient,
+      config as never,
+      logger
+    );
+
+    const result = await repository.fetchPRs();
+
+    expect(fetchPRs).not.toHaveBeenCalled();
+    expect(result).toEqual(cachedPrs);
+
+    const filterOptionsExist = await fs
+      .access(path.join(providerDir, 'pull-request-filter-options.json'))
+      .then(() => true)
+      .catch(() => false);
+    expect(filterOptionsExist).toBe(false);
+  });
+
+  it('bypasses the date-range merge guard but not the incremental guard when forceRefresh and incrementalUpdate are both set', async () => {
+    const providerDir = await fs.mkdtemp(path.join(os.tmpdir(), 'smm-pr-force-incr-'));
+    const cachedPrs = [
+      createPullRequest({
+        id: '1',
+        updated_at: '2026-05-15T00:00:00Z',
+      }),
+    ];
+    await fs.writeFile(path.join(providerDir, 'prs.json'), JSON.stringify(cachedPrs));
+
+    const freshPrs = [createPullRequest({ id: '2' })];
+    const fetchPRs = vi.fn().mockResolvedValue(freshPrs);
+    const githubPrsClient: IGithubPrsClient = {
+      fetchPRs,
+      fetchPRComments: vi.fn(),
+    };
+    const config = {
+      getPathFromGitProvider: () => providerDir,
+    };
+
+    const repository = new GitHubPullRequestsFetchRepository(
+      githubPrsClient,
+      config as never,
+      logger
+    );
+
+    const result = await repository.fetchPRs({ incrementalUpdate: true, forceRefresh: true });
+
+    // forceRefresh does NOT bypass guard 1 (incremental): the client is still called
+    // with startDate derived from the cache's latest updated_at, not a plain fetch.
+    expect(fetchPRs).toHaveBeenCalledWith({
+      startDate: '2026-05-15T00:00:00.000Z',
+      endDate: undefined,
+    });
+    expect(result).toHaveLength(2);
+  });
+
   it('creates pull request filter options after fetching pull requests', async () => {
     const providerDir = await fs.mkdtemp(path.join(os.tmpdir(), 'smm-pr-filters-'));
     const githubPrsClient: IGithubPrsClient = {
