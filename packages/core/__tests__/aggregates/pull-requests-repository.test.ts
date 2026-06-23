@@ -358,4 +358,46 @@ describe('PullRequestsRepository filters', () => {
     expect(prs[0].labels).toEqual([]);
     expect(prs[0].url).toBe('');
   });
+
+  it('falls back to defaults when a comment has no pull_request_review_id, user or reactions', async () => {
+    const pr = new PullRequestJsonResponseBuilder()
+      .withId('1')
+      .withNumber('1')
+      .build();
+
+    const comment = new PullRequestCommentJsonResponseBuilder()
+      .withId(1)
+      .withPullRequestUrl(`https://api.github.com/repos/acme/app/pulls/${pr.number}`)
+      .build();
+    const {
+      pull_request_review_id: _reviewId,
+      user: _user,
+      reactions: _reactions,
+      ...commentWithoutOptionalFields
+    } = comment;
+
+    const repository = new PullRequestsRepository(
+      { loadAll: vi.fn().mockResolvedValue([pr]) } as any,
+      { loadAll: vi.fn().mockResolvedValue([commentWithoutOptionalFields]) } as any
+    );
+
+    const prs = await repository.loadPrsWithFilters();
+
+    expect(prs).toHaveLength(1);
+    const [mappedComment] = prs[0].comments;
+    expect(mappedComment.pull_request_review_id).toBe(0);
+    expect(mappedComment.author).toEqual({ login: 'unknown', id: 0 });
+    expect(mappedComment.reactions).toEqual({
+      url: '',
+      total_count: 0,
+      '+1': 0,
+      '-1': 0,
+      laugh: 0,
+      hooray: 0,
+      confused: 0,
+      heart: 0,
+      rocket: 0,
+      eyes: 0,
+    });
+  });
 });
