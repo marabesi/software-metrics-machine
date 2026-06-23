@@ -1,0 +1,150 @@
+import { mkdtempSync, rmSync } from 'node:fs';
+import { readFile, writeFile } from 'node:fs/promises';
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { PipelineGitHubRunBuilder } from '../../../src';
+import { InMemoryRepository } from '../../../src/test/in-memory-repository';
+import { IGithubWorkflowClient } from '../../../src';
+import { WorkflowJsonResponse } from '../../../src/providers/github/github-response-types';
+import { PipelinesFetchRepository } from '../../../src/providers/github/pipelines-fetch-repository';
+import { MockLoggerBuilder } from '../../mock-logger-builder';
+
+describe('PipelinesFetchRepository - pagination error handling and resume', () => {
+  let tempDir: string;
+  let configuration: { getPathFromGitProvider: () => string };
+  let pipelineRunRepository: InMemoryRepository<WorkflowJsonResponse>;
+  const logger = new MockLoggerBuilder().build();
+
+  beforeEach(() => {
+    tempDir = mkdtempSync(join(tmpdir(), 'smm-pipelines-resume-'));
+    configuration = { getPathFromGitProvider: () => tempDir };
+    pipelineRunRepository = new InMemoryRepository<WorkflowJsonResponse>();
+  });
+
+  afterEach(() => {
+    rmSync(tempDir, { recursive: true, force: true });
+  });
+
+  const createRepository = (githubWorkflowClient: IGithubWorkflowClient) =>
+    new PipelinesFetchRepository(
+      configuration as never,
+      githubWorkflowClient,
+      pipelineRunRepository,
+      undefined,
+      logger
+    );
+
+  const buildRun = (id: string, createdAt: string) =>
+    new PipelineGitHubRunBuilder()
+      .id(id)
+      .number('1')
+      .name('CI')
+      .status('completed')
+      .createdAt(createdAt)
+      .branch('main')
+      .path('.github/workflows/ci.yml')
+      .build();
+
+  it('should save partial progress and rethrow when fetchWorkflowRunsPage rejects with a non-422 status', async () => {
+    const fetchWorkflowRunsPage = vi.fn().mockRejectedValueOnce({ status: 500 });
+    const githubWorkflowClient: IGithubWorkflowClient = {
+      fetchWorkflows: vi.fn(),
+      fetchWorkflowRunsPage,
+    };
+    const repository = createRepository(githubWorkflowClient);
+    await pipelineRunRepository.saveAll([]);
+
+    await expect(repository.fetchPipelines({ forceRefresh: true })).rejects.toEqual({
+      status: 500,
+    });
+  });
+
+  it('should save partial progress and rethrow when fetchWorkflowRunsPage rejects with a plain Error with no status', async () => {
+    const fetchWorkflowRunsPage = vi.fn().mockRejectedValueOnce(new Error('boom'));
+    const githubWorkflowClient: IGithubWorkflowClient = {
+      fetchWorkflows: vi.fn(),
+      fetchWorkflowRunsPage,
+    };
+    const repository = createRepository(githubWorkflowClient);
+    await pipelineRunRepository.saveAll([]);
+
+    await expect(repository.fetchPipelines({ forceRefresh: true })).rejects.toThrow('boom');
+  });
+
+  it('should persist partial runs and the current page before rethrowing on a non-422 error', async () => {
+    const run1 = buildRun('run-1', '2026-05-10T00:00:00Z');
+
+    const fetchWorkflowRunsPage = vi
+      .fn()
+      .mockResolvedValueOnce({ runs: [run1], hasNext: true })
+      .mockRejectedValueOnce({ status: 500 });
+
+    const githubWorkflowClient: IGithubWorkflowClient = {
+      fetchWorkflows: vi.fn(),
+      fetchWorkflowRunsPage,
+    };
+    const repository = createRepository(githubWorkflowClient);
+    await pipelineRunRepository.saveAll([]);
+
+    await expect(repository.fetchPipelines({ forceRefresh: true })).rejects.toEqual({
+      status: 500,
+    });
+
+    const incompletedRaw = await readFile(join(tempDir, 'workflows_incompleted.json'), 'utf-8');
+    const incompleted = JSON.parse(incompletedRaw) as WorkflowJsonResponse[];
+    expect(incompleted.map((r) => r.id)).toEqual(['run-1']);
+
+    const progressRaw = await readFile(join(tempDir, 'workflows_progress.json'), 'utf-8');
+    const progress = JSON.parse(progressRaw) as { page: number };
+    expect(progress.page).toBe(2);
+  });
+
+  it('should stop pagination gracefully when the 422 status is on the error directly (not nested under response)', async () => {
+    const run1 = buildRun('run-1', '2026-05-10T00:00:00Z');
+
+    const fetchWorkflowRunsPage = vi
+      .fn()
+      .mockResolvedValueOnce({ runs: [run1], hasNext: true })
+      .mockRejectedValueOnce({ status: 422 });
+
+    const githubWorkflowClient: IGithubWorkflowClient = {
+      fetchWorkflows: vi.fn(),
+      fetchWorkflowRunsPage,
+    };
+    const repository = createRepository(githubWorkflowClient);
+    await pipelineRunRepository.saveAll([]);
+
+    const workflows = await repository.fetchPipelines({ forceRefresh: true });
+
+    expect(workflows).toHaveLength(1);
+    expect(workflows[0].id).toBe('run-1');
+    expect(fetchWorkflowRunsPage).toHaveBeenCalledTimes(2);
+  });
+
+  it('should rethrow rather than treat as 422 when a non-object value is thrown', async () => {
+    const fetchWorkflowRunsPage = vi.fn().mockRejectedValueOnce('plain string error');
+    const githubWorkflowClient: IGithubWorkflowClient = {
+      fetchWorkflows: vi.fn(),
+      fetchWorkflowRunsPage,
+    };
+    const repository = createRepository(githubWorkflowClient);
+    await pipelineRunRepository.saveAll([]);
+
+    await expect(repository.fetchPipelines({ forceRefresh: true })).rejects.toBe(
+      'plain string error'
+    );
+  });
+
+  it('should rethrow rather than treat as 422 when undefined is thrown', async () => {
+    const fetchWorkflowRunsPage = vi.fn().mockRejectedValueOnce(undefined);
+    const githubWorkflowClient: IGithubWorkflowClient = {
+      fetchWorkflows: vi.fn(),
+      fetchWorkflowRunsPage,
+    };
+    const repository = createRepository(githubWorkflowClient);
+    await pipelineRunRepository.saveAll([]);
+
+    await expect(repository.fetchPipelines({ forceRefresh: true })).rejects.toBeUndefined();
+  });
+});
