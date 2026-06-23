@@ -11,6 +11,7 @@ import { JobsDurationByWorkflowItem, RunsByDayData, RunsDurationData } from './t
 import { useLinkBuilder } from '@/components/providers/LinkBuilderContext';
 import { formatDurationMinutes } from './duration-format';
 import { TargetInfo } from '@/components/charts/TargetInfo';
+import { useFilters } from '@/components/filters/FiltersContext';
 
 type ActiveTab = 'duration' | 'job-breakdown' | 'daily-runs';
 
@@ -71,6 +72,7 @@ export default function PipelineRunsDurationCard({
   jobsDurationByWorkflow: JobsDurationByWorkflowItem[];
 }) {
   const { urlBuilder } = useLinkBuilder();
+  const { filters } = useFilters();
   const [activeTab, setActiveTab] = useState<ActiveTab>('duration');
   const [hiddenJobNames, setHiddenJobNames] = useState<Set<string>>(new Set());
 
@@ -203,7 +205,17 @@ export default function PipelineRunsDurationCard({
                     label: 'Average',
                     align: 'right' as const,
                     renderCell: (item: (typeof durationRangeData)[number]) => (
-                      <span className="tabular-nums">{formatDurationMinutes(item.avg)}</span>
+                      <a
+                        href={urlBuilder.getWorkflowJobsMetricsUrl(item.workflow, {
+                          startDate: filters.startDate,
+                          endDate: filters.endDate,
+                        })}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="tabular-nums text-blue-700 underline-offset-2 hover:underline"
+                      >
+                        {formatDurationMinutes(item.avg)}
+                      </a>
                     ),
                   },
                   {

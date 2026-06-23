@@ -53,6 +53,19 @@ describe('createUrlBuilder', () => {
     );
   });
 
+  it('builds a GitHub Actions workflow metrics link with the dashboard date range', () => {
+    const builder = createUrlBuilder(createConfig());
+
+    expect(
+      builder.getWorkflowJobsMetricsUrl('.github/workflows/ci.yml', {
+        startDate: '2026-01-01',
+        endDate: '2026-01-31',
+      })
+    ).toBe(
+      'https://github.com/acme/widgets/actions/metrics/performance?dateRangeType=DATE_RANGE_TYPE_CUSTOM&tab=jobs&filters=workflow_file_name%3A%22ci.yml%22&range=1767225600000-1769903999999'
+    );
+  });
+
   it('builds a GitLab CI jobs link filtered by job search and ref', () => {
     const builder = createUrlBuilder(createConfig({ git_provider: 'gitlab' }));
 

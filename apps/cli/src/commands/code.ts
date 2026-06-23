@@ -97,7 +97,9 @@ export function createCodeCommands(program: SmmCommand): void {
         screen.printLine(`Files analyzed: ${files.length}`);
         for (const file of files) {
           const help = file.needsHelp ? ' needs performance attention' : '';
-          screen.printLine(`- ${file.filePath}: ${file.classification}, score ${file.score}${help}`);
+          screen.printLine(
+            `- ${file.filePath}: ${file.classification}, score ${file.score}${help}`
+          );
         }
       } catch (error) {
         logger.error('Failed to analyze Big O complexity', error);

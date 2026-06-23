@@ -21,6 +21,10 @@ export interface UrlBuilder {
     workflowName?: string,
     dateRange?: { startDate?: string; endDate?: string }
   ): string;
+  getWorkflowJobsMetricsUrl(
+    workflowName: string,
+    dateRange?: { startDate?: string; endDate?: string }
+  ): string;
   
   // SonarQube links
   getSonarqubeComponentUrl(componentKey: string): string;
@@ -62,10 +66,10 @@ const normalizeWorkflowFileName = (workflowName: string): string => {
   return parts[parts.length - 1] || workflowName;
 };
 
-const buildGithubActionsJobFilters = (jobName: string, workflowName?: string): string => {
+const buildGithubActionsMetricsFilters = (workflowName?: string, jobName?: string): string => {
   const filters = [
     workflowName ? `workflow_file_name:"${normalizeWorkflowFileName(workflowName)}"` : undefined,
-    `job_name:"${jobName}"`,
+    jobName ? `job_name:"${jobName}"` : undefined,
   ].filter((filter): filter is string => Boolean(filter));
 
   return filters.map((filter) => encodeURIComponent(filter)).join('+');
@@ -155,7 +159,12 @@ function createGitHubBuilder(config: DashboardGlobalConfiguration): UrlBuilder {
     },
 
     getJobRunsUrl(jobName, workflowName, dateRange) {
-      const filters = buildGithubActionsJobFilters(jobName, workflowName);
+      const filters = buildGithubActionsMetricsFilters(workflowName, jobName);
+      return `${baseUrl}/actions/metrics/performance?${buildGithubJobMetricsQuery(filters, dateRange)}`;
+    },
+
+    getWorkflowJobsMetricsUrl(workflowName, dateRange) {
+      const filters = buildGithubActionsMetricsFilters(workflowName);
       return `${baseUrl}/actions/metrics/performance?${buildGithubJobMetricsQuery(filters, dateRange)}`;
     },
 
@@ -192,7 +201,7 @@ function createGitHubBuilder(config: DashboardGlobalConfiguration): UrlBuilder {
     getActionPerformanceForJobUrl(jobName: string, workflowName: string, granularity: 'day' | 'week' | 'month', date: string): string {
       const range = computeRange(date, granularity);
 
-      const filterParam = buildGithubActionsJobFilters(jobName, workflowName);
+      const filterParam = buildGithubActionsMetricsFilters(workflowName, jobName);
       const url = `https://github.com/${config.github_repository.replace(/\/$/, '')}/actions/metrics/usage?dateRangeType=DATE_RANGE_TYPE_CUSTOM&tab=jobs&filters=${filterParam}&range=${range.start}-${range.end}`;
       return url;
     }
@@ -263,6 +272,20 @@ function createGitLabBuilder(config: DashboardGlobalConfiguration): UrlBuilder {
       if (workflowName) {
         params.set('ref', workflowName);
       }
+      if (dateRange?.startDate) {
+        params.set('created_after', `${dateRange.startDate}T00:00:00Z`);
+      }
+      if (dateRange?.endDate) {
+        params.set('created_before', `${dateRange.endDate}T23:59:59Z`);
+      }
+
+      return `${baseUrl}/-/jobs?${params.toString()}`;
+    },
+
+    getWorkflowJobsMetricsUrl(workflowName, dateRange) {
+      const params = new URLSearchParams();
+      params.set('scope[]', 'all');
+      params.set('ref', workflowName);
       if (dateRange?.startDate) {
         params.set('created_after', `${dateRange.startDate}T00:00:00Z`);
       }
