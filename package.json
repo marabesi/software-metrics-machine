@@ -8,7 +8,7 @@
     "smm": "dist/index.cjs"
   },
   "repository": {
-    "url": "https://github.com/marabesi/software-metrics-machine"
+    "url": "https://github.com/Side-Projects-4-Fun/software-metrics-machine"
   },
   "files": [
     "dist",
