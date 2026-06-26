@@ -253,7 +253,7 @@ export default function DateRangePicker() {
 
   return (
     <LocalizationProvider dateAdapter={AdapterDayjs}>
-      <Box sx={{ m: 1, width: { xs: '100%', sm: 520 }, maxWidth: '100%' }}>
+      <Box sx={{ my: 1, mx: 'auto', width: { xs: '100%', sm: 520 }, maxWidth: '100%' }}>
         <TextField
           fullWidth
           label="Date range"

@@ -622,6 +622,23 @@ src/medium.ts,10`;
 
       expect(result.map((row) => row.entity)).toEqual(['src/big.ts', 'src/medium.ts', 'src/small.ts']);
     });
+
+    it('should collapse author-expanded rows into one effort row per entity', async () => {
+      const csvContent = `entity,author,author-revs,total-revs
+src/shared.ts,Alice,3,5
+src/shared.ts,Bob,2,5
+src/big.ts,Alice,7,7
+src/small.ts,Carol,1,1`;
+
+      fs.writeFileSync(path.join(tempDir, 'entity-effort.csv'), csvContent);
+
+      const result = await analyzer.getEntityEffort({ top: 2 });
+
+      expect(result).toEqual([
+        { entity: 'src/big.ts', 'total-revs': 7 },
+        { entity: 'src/shared.ts', 'total-revs': 5 },
+      ]);
+    });
   });
 
   describe('Entity Ownership Analysis', () => {

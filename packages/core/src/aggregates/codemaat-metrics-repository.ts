@@ -388,13 +388,26 @@ export class CodeMaatMetricsRepository implements ICodeMetricsRepository {
     try {
       const records = this.readCsvRecords('entity-effort.csv');
 
-      return records
+      const effortByEntity = new Map<string, number>();
+
+      records
         .map((record) => ({
           entity: String(record.entity || ''),
           'total-revs': this.toNumber(record['total-revs'] || record.total_revs || record.revs),
         }))
         .filter((row) => row.entity.length > 0)
         .filter((row) => this.matchesEntityFilters(row.entity, options))
+        .forEach((row) => {
+          effortByEntity.set(
+            row.entity,
+            Math.max(effortByEntity.get(row.entity) ?? 0, row['total-revs'])
+          );
+        });
+
+      return Array.from(effortByEntity, ([entity, totalRevs]) => ({
+        entity,
+        'total-revs': totalRevs,
+      }))
         .sort((a, b) => b['total-revs'] - a['total-revs'])
         .slice(0, this.resolveLimit(options?.top, Number.POSITIVE_INFINITY));
     } catch (error) {
