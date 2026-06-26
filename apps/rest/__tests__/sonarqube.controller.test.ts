@@ -134,17 +134,13 @@ describe('Sonarqube controller', () => {
   });
 
   it('returns a 500 when loading component tree history fails', async () => {
-    sonarqubeRepository.loadAllComponentTreeEntries.mockRejectedValueOnce(
-      new Error('boom')
-    );
+    sonarqubeRepository.loadAllComponentTreeEntries.mockRejectedValueOnce(new Error('boom'));
 
     await request(app.getHttpServer())
       .get('/sonarqube/component-tree/history')
       .expect(500)
       .expect((res) => {
-        expect(res.body.message).toBe(
-          'Failed to fetch SonarQube component tree history: boom'
-        );
+        expect(res.body.message).toBe('Failed to fetch SonarQube component tree history: boom');
       });
   });
 
@@ -251,9 +247,7 @@ describe('Sonarqube controller', () => {
         .get('/sonarqube/measurements/history')
         .expect(200)
         .expect((res) => {
-          expect(res.body).toEqual([
-            { fetchedAt: '2024-01-01T00:00:00.000Z', data: [] },
-          ]);
+          expect(res.body).toEqual([{ fetchedAt: '2024-01-01T00:00:00.000Z', data: [] }]);
         });
     });
 

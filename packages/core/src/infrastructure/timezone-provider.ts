@@ -1,9 +1,9 @@
 /**
  * Provides timezone-aware date operations using the built-in Intl API.
  *
- * All date grouping, filtering, and boundary calculations should go through
- * this provider so that dates are consistently interpreted in the configured
- * IANA timezone (e.g. "Europe/Madrid", "UTC").
+ * Date grouping and date-only fetch boundary calculations use this provider
+ * when they need to be interpreted in a specific IANA timezone
+ * (e.g. "Europe/Madrid", "UTC").
  */
 export class TimeZoneProvider {
   readonly timezone: string;
@@ -97,6 +97,10 @@ export class TimeZoneProvider {
    * returns the UTC instant corresponding to `2025-03-15T00:00:00+01:00`.
    */
   getStartOfDayBoundary(dateStr: string): Date {
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(dateStr)) {
+      return new Date(dateStr);
+    }
+
     const [year, month, day] = dateStr.split('-').map(Number);
 
     // Use noon UTC as a reference point to determine the UTC offset for this
@@ -114,6 +118,10 @@ export class TimeZoneProvider {
    * configured timezone.
    */
   getEndOfDayBoundary(dateStr: string): Date {
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(dateStr)) {
+      return new Date(dateStr);
+    }
+
     const [year, month, day] = dateStr.split('-').map(Number);
 
     const noonUtc = new Date(Date.UTC(year, month - 1, day, 12, 0, 0));
@@ -147,7 +155,7 @@ export class TimeZoneProvider {
       day: '2-digit',
     });
     const parts = formatter.formatToParts(date);
-    const get = (type: string) => parts.find((p) => p.type === type)?.value ?? '01';
+    const get = (type: string): string => parts.find((p) => p.type === type)?.value ?? '01';
     return {
       year: Number(get('year')),
       month: Number(get('month')),

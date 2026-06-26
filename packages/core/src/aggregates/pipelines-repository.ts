@@ -33,14 +33,16 @@ export interface IPipelinesRepository {
 }
 
 export class PipelinesRepository extends CommonRepository implements IPipelinesRepository {
-  private tz = new TimeZoneProvider();
+  private tz: TimeZoneProvider;
 
   constructor(
     private pipelineRunFileSystemRepository: IRepository<WorkflowJsonResponse>,
     private pipelineJobsFileSystemRepository: IRepository<WorkflowJobJsonResponse>,
-    private logger: Logger
+    private logger: Logger,
+    timeZoneProvider: TimeZoneProvider
   ) {
     super();
+    this.tz = timeZoneProvider;
   }
 
   private async loadPipelineRuns(): Promise<PipelineRun[]> {
@@ -109,7 +111,12 @@ export class PipelinesRepository extends CommonRepository implements IPipelinesR
         ? jobFilteredRuns
         : jobFilteredRuns.map((run) => ({
             ...run,
-            jobs: this.filterJobs(run.jobs || [], selectedJobNames, excludedJobNames, targetJobConclusion),
+            jobs: this.filterJobs(
+              run.jobs || [],
+              selectedJobNames,
+              excludedJobNames,
+              targetJobConclusion
+            ),
           }));
 
     const rawFilteredRuns = this.applyRawFilters(namedFilteredRuns, rawFilters);
@@ -241,8 +248,8 @@ export class PipelinesRepository extends CommonRepository implements IPipelinesR
 
     return runs.filter(
       (run) =>
-        this.filterJobs(run.jobs || [], selectedJobNames, excludedJobNames, targetJobConclusion).length >
-        0
+        this.filterJobs(run.jobs || [], selectedJobNames, excludedJobNames, targetJobConclusion)
+          .length > 0
     );
   }
 
@@ -334,10 +341,7 @@ export class PipelinesRepository extends CommonRepository implements IPipelinesR
     return this.toTimestamp(value);
   }
 
-  private sortRunsByMetricDate(
-    runs: PipelineRun[],
-    direction: 'asc' | 'desc'
-  ): PipelineRun[] {
+  private sortRunsByMetricDate(runs: PipelineRun[], direction: 'asc' | 'desc'): PipelineRun[] {
     const sortDirection = direction === 'asc' ? 1 : -1;
     return [...runs].sort(
       (a, b) =>

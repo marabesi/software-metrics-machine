@@ -15,6 +15,7 @@ import { IReadPullRequestsRepository } from '../src/aggregates/pull-requests-rep
 import { IPipelinesRepository } from '../src/aggregates/pipelines-repository';
 import { Commit } from '../src/domain-types';
 import { MockLoggerBuilder } from './mock-logger-builder';
+import { TimeZoneProvider } from '../src/infrastructure/timezone-provider';
 
 const logger = new MockLoggerBuilder().build();
 
@@ -40,7 +41,7 @@ describe('PairingIndexService', () => {
       ])
       .build();
 
-    pairingService = new PairingIndexService(mockCommitRepo, undefined, logger);
+    pairingService = new PairingIndexService(mockCommitRepo, new TimeZoneProvider('UTC'), logger);
   });
 
   it('should calculate pairing index correctly', async () => {
@@ -54,7 +55,7 @@ describe('PairingIndexService', () => {
   it('should return 0 for pairing index when no commits', async () => {
     pairingService = new PairingIndexService(
       new RepositoryBuilder<Commit>().withLoadAll([]).build(),
-      undefined,
+      new TimeZoneProvider('UTC'),
       logger
     );
 
@@ -140,7 +141,7 @@ describe('PairingIndexService', () => {
           },
         ])
         .build(),
-      undefined,
+      new TimeZoneProvider('UTC'),
       logger
     );
 
@@ -159,7 +160,7 @@ describe('PairingIndexService', () => {
           new CommitBuilder().withAuthor('Carol').build(),
         ])
         .build(),
-      undefined,
+      new TimeZoneProvider('UTC'),
       logger
     );
 
@@ -179,7 +180,7 @@ describe('PairingIndexService', () => {
           new CommitBuilder().withAuthor('Carol').build(),
         ])
         .build(),
-      undefined,
+      new TimeZoneProvider('UTC'),
       logger
     );
 
@@ -202,7 +203,7 @@ describe('PairingIndexService', () => {
             },
           ])
           .build(),
-        undefined,
+        new TimeZoneProvider('UTC'),
         logger
       );
 
@@ -231,15 +232,13 @@ describe('PairingIndexService', () => {
             },
           ])
           .build(),
-        undefined,
+        new TimeZoneProvider('UTC'),
         logger
       );
 
       const result = await pairingService.getPairingIndex();
 
-      expect(result.topPairings).toEqual([
-        { author: 'Alice', coAuthor: 'Bob', pairedCommits: 2 },
-      ]);
+      expect(result.topPairings).toEqual([{ author: 'Alice', coAuthor: 'Bob', pairedCommits: 2 }]);
     });
 
     it('should exclude a self-pair where the author and coAuthor are the same person case-insensitively', async () => {
@@ -252,7 +251,7 @@ describe('PairingIndexService', () => {
             },
           ])
           .build(),
-        undefined,
+        new TimeZoneProvider('UTC'),
         logger
       );
 
@@ -271,7 +270,7 @@ describe('PairingIndexService', () => {
             },
           ])
           .build(),
-        undefined,
+        new TimeZoneProvider('UTC'),
         logger
       );
 
@@ -290,7 +289,7 @@ describe('PairingIndexService', () => {
             },
           ])
           .build(),
-        undefined,
+        new TimeZoneProvider('UTC'),
         logger
       );
 
@@ -323,7 +322,7 @@ describe('PairingIndexService', () => {
             },
           ])
           .build(),
-        undefined,
+        new TimeZoneProvider('UTC'),
         logger
       );
 
@@ -354,7 +353,7 @@ describe('PairingIndexService', () => {
             },
           ])
           .build(),
-        undefined,
+        new TimeZoneProvider('UTC'),
         logger
       );
 
@@ -380,7 +379,7 @@ describe('PairingIndexService', () => {
             new CommitBuilder().withAuthor('Carol').withHash('unpaired-1').build(),
           ])
           .build(),
-        undefined,
+        new TimeZoneProvider('UTC'),
         logger
       );
 
@@ -413,7 +412,7 @@ describe('PairingIndexService', () => {
             },
           ])
           .build(),
-        undefined,
+        new TimeZoneProvider('UTC'),
         logger
       );
 
@@ -434,7 +433,7 @@ describe('PairingIndexService', () => {
             },
           ])
           .build(),
-        undefined,
+        new TimeZoneProvider('UTC'),
         logger
       );
 
@@ -472,7 +471,7 @@ describe('PairingIndexService', () => {
             },
           ])
           .build(),
-        undefined,
+        new TimeZoneProvider('UTC'),
         logger
       );
 
@@ -494,7 +493,7 @@ describe('PairingIndexService', () => {
             new CommitBuilder().withAuthor('Bob').withHash('bob-commit').build(),
           ])
           .build(),
-        undefined,
+        new TimeZoneProvider('UTC'),
         logger
       );
 
@@ -537,7 +536,7 @@ describe('PRsService', () => {
 
     mockPrRepo = new ReadPullRequestsRepositoryBuilder().withPullRequests(prs).build();
 
-    prsService = new PRsService(mockPrRepo, undefined, logger);
+    prsService = new PRsService(mockPrRepo, new TimeZoneProvider('UTC'), logger);
   });
 
   it('should calculate overall metrics', async () => {
@@ -645,7 +644,7 @@ describe('PRsService', () => {
     ];
     prsService = new PRsService(
       new ReadPullRequestsRepositoryBuilder().withPullRequests(prs).build(),
-      undefined,
+      new TimeZoneProvider('UTC'),
       logger
     );
 
@@ -743,7 +742,7 @@ describe('PRsService', () => {
         new ReadPullRequestsRepositoryBuilder()
           .withPullRequests([openPr, closedNotMergedPr, mergedPr, prWithUndefinedTotalComments])
           .build(),
-        undefined,
+        new TimeZoneProvider('UTC'),
         logger
       );
 
@@ -772,7 +771,7 @@ describe('PRsService', () => {
         new ReadPullRequestsRepositoryBuilder()
           .withPullRequests([zeroComments, negativeComments, withComments])
           .build(),
-        undefined,
+        new TimeZoneProvider('UTC'),
         logger
       );
 
@@ -785,7 +784,7 @@ describe('PRsService', () => {
     it('should default averageOpenDays and averageComments to 0 for an empty PR list', async () => {
       prsService = new PRsService(
         new ReadPullRequestsRepositoryBuilder().withPullRequests([]).build(),
-        undefined,
+        new TimeZoneProvider('UTC'),
         logger
       );
 
@@ -814,7 +813,7 @@ describe('PRsService', () => {
 
       prsService = new PRsService(
         new ReadPullRequestsRepositoryBuilder().withPullRequests([mergedPr, unmergedPr]).build(),
-        undefined,
+        new TimeZoneProvider('UTC'),
         logger
       );
 
@@ -842,7 +841,7 @@ describe('PRsService', () => {
         new ReadPullRequestsRepositoryBuilder()
           .withPullRequests([firstMergedPr, secondMergedPr])
           .build(),
-        undefined,
+        new TimeZoneProvider('UTC'),
         logger
       );
 
@@ -867,7 +866,7 @@ describe('PRsService', () => {
 
       prsService = new PRsService(
         new ReadPullRequestsRepositoryBuilder().withPullRequests([noLabelsPr, labeledPr]).build(),
-        undefined,
+        new TimeZoneProvider('UTC'),
         logger
       );
 
@@ -887,7 +886,7 @@ describe('PRsService', () => {
 
       prsService = new PRsService(
         new ReadPullRequestsRepositoryBuilder().withPullRequests([closedNotMergedPr]).build(),
-        undefined,
+        new TimeZoneProvider('UTC'),
         logger
       );
 
@@ -910,7 +909,7 @@ describe('PRsService', () => {
 
       prsService = new PRsService(
         new ReadPullRequestsRepositoryBuilder().withPullRequests([firstBugPr, secondBugPr]).build(),
-        undefined,
+        new TimeZoneProvider('UTC'),
         logger
       );
 
@@ -923,17 +922,13 @@ describe('PRsService', () => {
   describe('getSummary', () => {
     it('should exclude authorless PRs from the unique author count and use "unknown" for most_commented_pr/top_commenter', async () => {
       const authorlessPr = {
-        ...new PullRequestBuilder()
-          .withId(1)
-          .withTitle('No author')
-          .withComments(2)
-          .build(),
+        ...new PullRequestBuilder().withId(1).withTitle('No author').withComments(2).build(),
         author: undefined,
       };
 
       prsService = new PRsService(
         new ReadPullRequestsRepositoryBuilder().withPullRequests([authorlessPr]).build(),
-        undefined,
+        new TimeZoneProvider('UTC'),
         logger
       );
 
@@ -966,7 +961,7 @@ describe('PRsService', () => {
         new ReadPullRequestsRepositoryBuilder()
           .withPullRequests([missingId, missingTitle, missingUrl, valid])
           .build(),
-        undefined,
+        new TimeZoneProvider('UTC'),
         logger
       );
 
@@ -981,7 +976,7 @@ describe('PRsService', () => {
 
       prsService = new PRsService(
         new ReadPullRequestsRepositoryBuilder().withPullRequests([noComments]).build(),
-        undefined,
+        new TimeZoneProvider('UTC'),
         logger
       );
 
@@ -993,7 +988,7 @@ describe('PRsService', () => {
     it('should return null first_pr, last_pr, and top_commenter for an empty PR list', async () => {
       prsService = new PRsService(
         new ReadPullRequestsRepositoryBuilder().withPullRequests([]).build(),
-        undefined,
+        new TimeZoneProvider('UTC'),
         logger
       );
 
@@ -1018,8 +1013,10 @@ describe('PRsService', () => {
         .build();
 
       prsService = new PRsService(
-        new ReadPullRequestsRepositoryBuilder().withPullRequests([prWithZebra, prWithAlpha]).build(),
-        undefined,
+        new ReadPullRequestsRepositoryBuilder()
+          .withPullRequests([prWithZebra, prWithAlpha])
+          .build(),
+        new TimeZoneProvider('UTC'),
         logger
       );
 
@@ -1039,7 +1036,7 @@ describe('PRsService', () => {
 
       prsService = new PRsService(
         new ReadPullRequestsRepositoryBuilder().withPullRequests([noLabelsPr]).build(),
-        undefined,
+        new TimeZoneProvider('UTC'),
         logger
       );
 
@@ -1057,7 +1054,7 @@ describe('PRsService', () => {
 
       prsService = new PRsService(
         new ReadPullRequestsRepositoryBuilder().withPullRequests([prWithUnnamedLabel]).build(),
-        undefined,
+        new TimeZoneProvider('UTC'),
         logger
       );
 
@@ -1077,7 +1074,7 @@ describe('PRsService', () => {
 
       prsService = new PRsService(
         new ReadPullRequestsRepositoryBuilder().withPullRequests([pr]).build(),
-        undefined,
+        new TimeZoneProvider('UTC'),
         logger
       );
 
@@ -1097,7 +1094,7 @@ describe('PRsService', () => {
 
       prsService = new PRsService(
         new ReadPullRequestsRepositoryBuilder().withPullRequests([openPr]).build(),
-        undefined,
+        new TimeZoneProvider('UTC'),
         logger
       );
 
@@ -1119,7 +1116,7 @@ describe('PRsService', () => {
 
       prsService = new PRsService(
         new ReadPullRequestsRepositoryBuilder().withPullRequests([mergedPr]).build(),
-        undefined,
+        new TimeZoneProvider('UTC'),
         logger
       );
 
@@ -1140,7 +1137,7 @@ describe('PRsService', () => {
 
       prsService = new PRsService(
         new ReadPullRequestsRepositoryBuilder().withPullRequests([pr]).build(),
-        undefined,
+        new TimeZoneProvider('UTC'),
         logger
       );
 
@@ -1158,7 +1155,7 @@ describe('PRsService', () => {
 
       prsService = new PRsService(
         new ReadPullRequestsRepositoryBuilder().withPullRequests([pr]).build(),
-        undefined,
+        new TimeZoneProvider('UTC'),
         logger
       );
 
@@ -1176,7 +1173,7 @@ describe('PRsService', () => {
 
       prsService = new PRsService(
         new ReadPullRequestsRepositoryBuilder().withPullRequests([pr]).build(),
-        undefined,
+        new TimeZoneProvider('UTC'),
         logger
       );
 
@@ -1194,7 +1191,7 @@ describe('PRsService', () => {
 
       prsService = new PRsService(
         new ReadPullRequestsRepositoryBuilder().withPullRequests([pr]).build(),
-        undefined,
+        new TimeZoneProvider('UTC'),
         logger
       );
 
@@ -1213,7 +1210,7 @@ describe('PRsService', () => {
 
       prsService = new PRsService(
         new ReadPullRequestsRepositoryBuilder().withPullRequests([authorlessPr]).build(),
-        undefined,
+        new TimeZoneProvider('UTC'),
         logger
       );
 
@@ -1224,12 +1221,16 @@ describe('PRsService', () => {
 
     it('should default to top 10 when top is omitted, and respect an explicit top value', async () => {
       const prs = Array.from({ length: 12 }, (_, i) =>
-        new PullRequestBuilder().withId(i + 1).withTitle(`PR ${i}`).withAuthor(`author${i}`).build()
+        new PullRequestBuilder()
+          .withId(i + 1)
+          .withTitle(`PR ${i}`)
+          .withAuthor(`author${i}`)
+          .build()
       );
 
       prsService = new PRsService(
         new ReadPullRequestsRepositoryBuilder().withPullRequests(prs).build(),
-        undefined,
+        new TimeZoneProvider('UTC'),
         logger
       );
 
@@ -1255,7 +1256,7 @@ describe('PRsService', () => {
 
       prsService = new PRsService(
         new ReadPullRequestsRepositoryBuilder().withPullRequests([invalidDatePr]).build(),
-        undefined,
+        new TimeZoneProvider('UTC'),
         logger
       );
 
@@ -1299,7 +1300,7 @@ describe('PRsService', () => {
         new ReadPullRequestsRepositoryBuilder()
           .withPullRequests([closedOnly, mergedAndClosed, authorless])
           .build(),
-        undefined,
+        new TimeZoneProvider('UTC'),
         logger
       );
 
@@ -1327,7 +1328,7 @@ describe('PRsService', () => {
 
       prsService = new PRsService(
         new ReadPullRequestsRepositoryBuilder().withPullRequests(prs).build(),
-        undefined,
+        new TimeZoneProvider('UTC'),
         logger
       );
 
@@ -1349,7 +1350,7 @@ describe('PRsService', () => {
 
       prsService = new PRsService(
         new ReadPullRequestsRepositoryBuilder().withPullRequests([stillOpenPr]).build(),
-        undefined,
+        new TimeZoneProvider('UTC'),
         logger
       );
 
@@ -1368,7 +1369,7 @@ describe('PRsService', () => {
 
       prsService = new PRsService(
         new ReadPullRequestsRepositoryBuilder().withPullRequests([closedOnly]).build(),
-        undefined,
+        new TimeZoneProvider('UTC'),
         logger
       );
 
@@ -1387,7 +1388,7 @@ describe('PRsService', () => {
 
       prsService = new PRsService(
         new ReadPullRequestsRepositoryBuilder().withPullRequests([pr]).build(),
-        undefined,
+        new TimeZoneProvider('UTC'),
         logger
       );
 
@@ -1412,7 +1413,7 @@ describe('PRsService', () => {
 
       prsService = new PRsService(
         new ReadPullRequestsRepositoryBuilder().withPullRequests([laterPr, earlierPr]).build(),
-        undefined,
+        new TimeZoneProvider('UTC'),
         logger
       );
 
@@ -1438,7 +1439,7 @@ describe('PRsService', () => {
         new ReadPullRequestsRepositoryBuilder()
           .withPullRequests([noCommentsPr, whitespaceOnlyPr, meaningfulPr])
           .build(),
-        undefined,
+        new TimeZoneProvider('UTC'),
         logger
       );
 
@@ -1457,15 +1458,13 @@ describe('PRsService', () => {
 
       prsService = new PRsService(
         new ReadPullRequestsRepositoryBuilder().withPullRequests([pr]).build(),
-        undefined,
+        new TimeZoneProvider('UTC'),
         logger
       );
 
       const summary = (await prsService.getSummary()).result;
 
-      expect(summary.top_themes).toEqual(
-        expect.arrayContaining([{ text: 'cache', value: 3 }])
-      );
+      expect(summary.top_themes).toEqual(expect.arrayContaining([{ text: 'cache', value: 3 }]));
       expect(summary.top_themes.some((theme) => theme.text.includes('ok'))).toBe(false);
       expect(summary.top_themes.some((theme) => theme.text.includes('42'))).toBe(false);
     });
@@ -1483,7 +1482,7 @@ describe('PRsService', () => {
         new ReadPullRequestsRepositoryBuilder()
           .withPullRequests([noCommentsPr, commentsWithoutCreatedAt])
           .build(),
-        undefined,
+        new TimeZoneProvider('UTC'),
         logger
       );
 
@@ -1511,7 +1510,7 @@ describe('PRsService', () => {
 
       prsService = new PRsService(
         new ReadPullRequestsRepositoryBuilder().withPullRequests([backdatedCommentPr]).build(),
-        undefined,
+        new TimeZoneProvider('UTC'),
         logger
       );
 
@@ -1530,7 +1529,7 @@ describe('PRsService', () => {
 
       prsService = new PRsService(
         new ReadPullRequestsRepositoryBuilder().withPullRequests([noCreatedAtPr]).build(),
-        undefined,
+        new TimeZoneProvider('UTC'),
         logger
       );
 
@@ -1552,7 +1551,7 @@ describe('PRsService', () => {
 
       prsService = new PRsService(
         new ReadPullRequestsRepositoryBuilder().withPullRequests([pr]).build(),
-        undefined,
+        new TimeZoneProvider('UTC'),
         logger
       );
 
@@ -1588,7 +1587,7 @@ describe('PRsService', () => {
 
       prsService = new PRsService(
         new ReadPullRequestsRepositoryBuilder().withPullRequests([prA, prB]).build(),
-        undefined,
+        new TimeZoneProvider('UTC'),
         logger
       );
 
@@ -1609,7 +1608,7 @@ describe('PRsService', () => {
 
       prsService = new PRsService(
         new ReadPullRequestsRepositoryBuilder().withPullRequests([pr]).build(),
-        undefined,
+        new TimeZoneProvider('UTC'),
         logger
       );
 
@@ -1632,7 +1631,7 @@ describe('PRsService', () => {
         new ReadPullRequestsRepositoryBuilder()
           .withPullRequests([noCommentsPr, commentsWithoutCreatedAt])
           .build(),
-        undefined,
+        new TimeZoneProvider('UTC'),
         logger
       );
 
@@ -1654,7 +1653,7 @@ describe('PRsService', () => {
 
       prsService = new PRsService(
         new ReadPullRequestsRepositoryBuilder().withPullRequests([backdatedCommentPr]).build(),
-        undefined,
+        new TimeZoneProvider('UTC'),
         logger
       );
 
@@ -1676,7 +1675,7 @@ describe('PRsService', () => {
 
       prsService = new PRsService(
         new ReadPullRequestsRepositoryBuilder().withPullRequests(prs).build(),
-        undefined,
+        new TimeZoneProvider('UTC'),
         logger
       );
 
@@ -1698,7 +1697,7 @@ describe('PRsService', () => {
 
       prsService = new PRsService(
         new ReadPullRequestsRepositoryBuilder().withPullRequests([authorlessPr]).build(),
-        undefined,
+        new TimeZoneProvider('UTC'),
         logger
       );
 
@@ -1723,7 +1722,7 @@ describe('PRsService', () => {
 
       prsService = new PRsService(
         new ReadPullRequestsRepositoryBuilder().withPullRequests([pr]).build(),
-        undefined,
+        new TimeZoneProvider('UTC'),
         logger
       );
 
@@ -1765,7 +1764,12 @@ describe('PipelinesService', () => {
 
     mockPipelineRepo = new PipelinesRepositoryBuilder().withPipelineRuns(runs).build();
 
-    pipelinesService = new PipelinesService(mockPipelineRepo, undefined, logger);
+    pipelinesService = new PipelinesService(
+      mockPipelineRepo,
+      undefined,
+      logger,
+      new TimeZoneProvider('UTC')
+    );
   });
 
   it('should calculate overall metrics', async () => {
@@ -1887,7 +1891,8 @@ describe('PipelinesService', () => {
           { pipeline: '.github/workflows/mobile.yml', job: 'deploy-mobile' },
         ],
       } as any,
-      logger
+      logger,
+      new TimeZoneProvider('UTC')
     );
 
     const frequency = await pipelinesService.getDeploymentFrequencyWithAllIntervals();
@@ -2026,7 +2031,12 @@ describe('PipelinesService', () => {
       ];
 
       mockPipelineRepo = new PipelinesRepositoryBuilder().withPipelineRuns(runs).build();
-      pipelinesService = new PipelinesService(mockPipelineRepo, undefined, logger);
+      pipelinesService = new PipelinesService(
+        mockPipelineRepo,
+        undefined,
+        logger,
+        new TimeZoneProvider('UTC')
+      );
 
       const metrics = await pipelinesService.getMetrics();
 
@@ -2258,7 +2268,8 @@ describe('PipelinesService', () => {
             { pipeline: '.github/workflows/release.yml', job: 'deploy-production' },
           ],
         } as any,
-        logger
+        logger,
+        new TimeZoneProvider('UTC')
       );
     });
 
@@ -2327,7 +2338,8 @@ describe('PipelinesService', () => {
             { pipeline: '.github/workflows/release.yml', job: 'deploy-production' },
           ],
         } as any,
-        logger
+        logger,
+        new TimeZoneProvider('UTC')
       );
 
       const frequency = await pipelinesService.getDeploymentFrequencyWithAllIntervals();
@@ -2359,7 +2371,8 @@ describe('PipelinesService', () => {
             { pipeline: '.github/workflows/release.yml', job: 'deploy-production' },
           ],
         } as any,
-        logger
+        logger,
+        new TimeZoneProvider('UTC')
       );
 
       const frequency = await pipelinesService.getDeploymentFrequencyWithAllIntervals();
@@ -2421,7 +2434,8 @@ describe('PipelinesService', () => {
             { pipeline: '.github/workflows/release.yml', job: 'deploy-production' },
           ],
         } as any,
-        logger
+        logger,
+        new TimeZoneProvider('UTC')
       );
 
       const frequency = await pipelinesService.getDeploymentFrequencyWithAllIntervals();
@@ -2493,7 +2507,8 @@ describe('PipelinesService', () => {
             { pipeline: '.github/workflows/release.yml', job: 'deploy-production' },
           ],
         } as any,
-        logger
+        logger,
+        new TimeZoneProvider('UTC')
       );
 
       const frequency = await pipelinesService.getDeploymentFrequencyWithAllIntervals();
@@ -2563,7 +2578,12 @@ describe('PipelinesService', () => {
       mockPipelineRepo = new PipelinesRepositoryBuilder()
         .withPipelineRuns([runWithoutJobs, runWithJob])
         .build();
-      pipelinesService = new PipelinesService(mockPipelineRepo, undefined, logger);
+      pipelinesService = new PipelinesService(
+        mockPipelineRepo,
+        undefined,
+        logger,
+        new TimeZoneProvider('UTC')
+      );
 
       const jobMetrics = await pipelinesService.getJobMetrics();
 
@@ -2586,7 +2606,12 @@ describe('PipelinesService', () => {
       ];
 
       mockPipelineRepo = new PipelinesRepositoryBuilder().withPipelineRuns(runs).build();
-      pipelinesService = new PipelinesService(mockPipelineRepo, undefined, logger);
+      pipelinesService = new PipelinesService(
+        mockPipelineRepo,
+        undefined,
+        logger,
+        new TimeZoneProvider('UTC')
+      );
 
       const jobMetrics = await pipelinesService.getJobMetrics();
 
@@ -2613,7 +2638,12 @@ describe('PipelinesService', () => {
       ];
 
       mockPipelineRepo = new PipelinesRepositoryBuilder().withPipelineRuns(runs).build();
-      pipelinesService = new PipelinesService(mockPipelineRepo, undefined, logger);
+      pipelinesService = new PipelinesService(
+        mockPipelineRepo,
+        undefined,
+        logger,
+        new TimeZoneProvider('UTC')
+      );
 
       const jobMetrics = await pipelinesService.getJobMetrics();
 
@@ -2628,7 +2658,12 @@ describe('PipelinesService', () => {
       ];
 
       mockPipelineRepo = new PipelinesRepositoryBuilder().withPipelineRuns(runs).build();
-      pipelinesService = new PipelinesService(mockPipelineRepo, undefined, logger);
+      pipelinesService = new PipelinesService(
+        mockPipelineRepo,
+        undefined,
+        logger,
+        new TimeZoneProvider('UTC')
+      );
 
       const jobMetrics = await pipelinesService.getJobMetrics();
 
@@ -2651,7 +2686,12 @@ describe('PipelinesService', () => {
       ];
 
       mockPipelineRepo = new PipelinesRepositoryBuilder().withPipelineRuns(runs).build();
-      pipelinesService = new PipelinesService(mockPipelineRepo, undefined, logger);
+      pipelinesService = new PipelinesService(
+        mockPipelineRepo,
+        undefined,
+        logger,
+        new TimeZoneProvider('UTC')
+      );
 
       const jobMetrics = await pipelinesService.getJobMetrics();
 
@@ -2675,7 +2715,12 @@ describe('PipelinesService', () => {
       ];
 
       mockPipelineRepo = new PipelinesRepositoryBuilder().withPipelineRuns(runs).build();
-      pipelinesService = new PipelinesService(mockPipelineRepo, undefined, logger);
+      pipelinesService = new PipelinesService(
+        mockPipelineRepo,
+        undefined,
+        logger,
+        new TimeZoneProvider('UTC')
+      );
 
       const jobMetrics = await pipelinesService.getJobMetrics();
 
@@ -2693,7 +2738,12 @@ describe('PipelinesService', () => {
       ];
 
       mockPipelineRepo = new PipelinesRepositoryBuilder().withPipelineRuns(runs).build();
-      pipelinesService = new PipelinesService(mockPipelineRepo, undefined, logger);
+      pipelinesService = new PipelinesService(
+        mockPipelineRepo,
+        undefined,
+        logger,
+        new TimeZoneProvider('UTC')
+      );
 
       const jobMetrics = await pipelinesService.getJobMetrics();
 
@@ -2726,10 +2776,13 @@ describe('PipelinesService', () => {
     it('should skip runs with neither completedAt nor createdAt', async () => {
       const runWithNoDate = dayRun('run-no-date', '');
 
-      mockPipelineRepo = new PipelinesRepositoryBuilder()
-        .withPipelineRuns([runWithNoDate])
-        .build();
-      pipelinesService = new PipelinesService(mockPipelineRepo, undefined, logger);
+      mockPipelineRepo = new PipelinesRepositoryBuilder().withPipelineRuns([runWithNoDate]).build();
+      pipelinesService = new PipelinesService(
+        mockPipelineRepo,
+        undefined,
+        logger,
+        new TimeZoneProvider('UTC')
+      );
 
       const result = await pipelinesService.getJobRerunsByDay();
 
@@ -2740,7 +2793,12 @@ describe('PipelinesService', () => {
       const run = dayRun('run-1', '2025-01-01T08:00:00Z');
 
       mockPipelineRepo = new PipelinesRepositoryBuilder().withPipelineRuns([run]).build();
-      pipelinesService = new PipelinesService(mockPipelineRepo, undefined, logger);
+      pipelinesService = new PipelinesService(
+        mockPipelineRepo,
+        undefined,
+        logger,
+        new TimeZoneProvider('UTC')
+      );
 
       const result = await pipelinesService.getJobRerunsByDay();
 
@@ -2755,7 +2813,12 @@ describe('PipelinesService', () => {
       ];
 
       mockPipelineRepo = new PipelinesRepositoryBuilder().withPipelineRuns(runs).build();
-      pipelinesService = new PipelinesService(mockPipelineRepo, undefined, logger);
+      pipelinesService = new PipelinesService(
+        mockPipelineRepo,
+        undefined,
+        logger,
+        new TimeZoneProvider('UTC')
+      );
 
       const result = await pipelinesService.getJobRerunsByDay();
 
@@ -2773,7 +2836,12 @@ describe('PipelinesService', () => {
       });
 
       mockPipelineRepo = new PipelinesRepositoryBuilder().withPipelineRuns([run]).build();
-      pipelinesService = new PipelinesService(mockPipelineRepo, undefined, logger);
+      pipelinesService = new PipelinesService(
+        mockPipelineRepo,
+        undefined,
+        logger,
+        new TimeZoneProvider('UTC')
+      );
 
       const result = await pipelinesService.getJobRerunsByDay();
 
@@ -2825,7 +2893,12 @@ describe('PipelinesService', () => {
       ]);
 
       mockPipelineRepo = new PipelinesRepositoryBuilder().withPipelineRuns([run]).build();
-      pipelinesService = new PipelinesService(mockPipelineRepo, undefined, logger);
+      pipelinesService = new PipelinesService(
+        mockPipelineRepo,
+        undefined,
+        logger,
+        new TimeZoneProvider('UTC')
+      );
 
       const result = await pipelinesService.getJobStepsAverageTime();
 
@@ -2847,7 +2920,12 @@ describe('PipelinesService', () => {
       };
 
       mockPipelineRepo = new PipelinesRepositoryBuilder().withPipelineRuns([run]).build();
-      pipelinesService = new PipelinesService(mockPipelineRepo, undefined, logger);
+      pipelinesService = new PipelinesService(
+        mockPipelineRepo,
+        undefined,
+        logger,
+        new TimeZoneProvider('UTC')
+      );
 
       const result = await pipelinesService.getJobStepsAverageTime();
 
@@ -2879,7 +2957,12 @@ describe('PipelinesService', () => {
       };
 
       mockPipelineRepo = new PipelinesRepositoryBuilder().withPipelineRuns([run]).build();
-      pipelinesService = new PipelinesService(mockPipelineRepo, undefined, logger);
+      pipelinesService = new PipelinesService(
+        mockPipelineRepo,
+        undefined,
+        logger,
+        new TimeZoneProvider('UTC')
+      );
 
       const result = await pipelinesService.getJobStepsAverageTime();
 
@@ -2888,11 +2971,20 @@ describe('PipelinesService', () => {
 
     it('should compute the average duration and count for a valid step', async () => {
       const run = runWithSteps('run-1', [
-        { name: 'checkout', startedAt: '2025-01-01T08:00:00Z', completedAt: '2025-01-01T08:05:00Z' },
+        {
+          name: 'checkout',
+          startedAt: '2025-01-01T08:00:00Z',
+          completedAt: '2025-01-01T08:05:00Z',
+        },
       ]);
 
       mockPipelineRepo = new PipelinesRepositoryBuilder().withPipelineRuns([run]).build();
-      pipelinesService = new PipelinesService(mockPipelineRepo, undefined, logger);
+      pipelinesService = new PipelinesService(
+        mockPipelineRepo,
+        undefined,
+        logger,
+        new TimeZoneProvider('UTC')
+      );
 
       const result = await pipelinesService.getJobStepsAverageTime();
 
@@ -2901,14 +2993,27 @@ describe('PipelinesService', () => {
 
     it('should average durations for the same step name across different jobs and runs', async () => {
       const runA = runWithSteps('run-a', [
-        { name: 'checkout', startedAt: '2025-01-01T08:00:00Z', completedAt: '2025-01-01T08:04:00Z' },
+        {
+          name: 'checkout',
+          startedAt: '2025-01-01T08:00:00Z',
+          completedAt: '2025-01-01T08:04:00Z',
+        },
       ]);
       const runB = runWithSteps('run-b', [
-        { name: 'checkout', startedAt: '2025-01-01T09:00:00Z', completedAt: '2025-01-01T09:06:00Z' },
+        {
+          name: 'checkout',
+          startedAt: '2025-01-01T09:00:00Z',
+          completedAt: '2025-01-01T09:06:00Z',
+        },
       ]);
 
       mockPipelineRepo = new PipelinesRepositoryBuilder().withPipelineRuns([runA, runB]).build();
-      pipelinesService = new PipelinesService(mockPipelineRepo, undefined, logger);
+      pipelinesService = new PipelinesService(
+        mockPipelineRepo,
+        undefined,
+        logger,
+        new TimeZoneProvider('UTC')
+      );
 
       const result = await pipelinesService.getJobStepsAverageTime();
 
@@ -2971,7 +3076,12 @@ describe('PipelinesService', () => {
       };
 
       mockPipelineRepo = new PipelinesRepositoryBuilder().withPipelineRuns([run]).build();
-      pipelinesService = new PipelinesService(mockPipelineRepo, undefined, logger);
+      pipelinesService = new PipelinesService(
+        mockPipelineRepo,
+        undefined,
+        logger,
+        new TimeZoneProvider('UTC')
+      );
 
       const result = await pipelinesService.getJobStepsAverageTimeByDay();
 
@@ -3003,7 +3113,12 @@ describe('PipelinesService', () => {
       };
 
       mockPipelineRepo = new PipelinesRepositoryBuilder().withPipelineRuns([run]).build();
-      pipelinesService = new PipelinesService(mockPipelineRepo, undefined, logger);
+      pipelinesService = new PipelinesService(
+        mockPipelineRepo,
+        undefined,
+        logger,
+        new TimeZoneProvider('UTC')
+      );
 
       const result = await pipelinesService.getJobStepsAverageTimeByDay();
 
@@ -3012,11 +3127,20 @@ describe('PipelinesService', () => {
 
     it('should skip a run with neither completedAt nor createdAt entirely', async () => {
       const run = runWithStepsOnDay('run-no-date', '', [
-        { name: 'checkout', startedAt: '2025-01-01T08:00:00Z', completedAt: '2025-01-01T08:05:00Z' },
+        {
+          name: 'checkout',
+          startedAt: '2025-01-01T08:00:00Z',
+          completedAt: '2025-01-01T08:05:00Z',
+        },
       ]);
 
       mockPipelineRepo = new PipelinesRepositoryBuilder().withPipelineRuns([run]).build();
-      pipelinesService = new PipelinesService(mockPipelineRepo, undefined, logger);
+      pipelinesService = new PipelinesService(
+        mockPipelineRepo,
+        undefined,
+        logger,
+        new TimeZoneProvider('UTC')
+      );
 
       const result = await pipelinesService.getJobStepsAverageTimeByDay();
 
@@ -3025,16 +3149,29 @@ describe('PipelinesService', () => {
 
     it('should group step averages by day and sort the result by day', async () => {
       const runDay2 = runWithStepsOnDay('run-day-2', '2025-01-02T08:00:00Z', [
-        { name: 'checkout', startedAt: '2025-01-02T08:00:00Z', completedAt: '2025-01-02T08:06:00Z' },
+        {
+          name: 'checkout',
+          startedAt: '2025-01-02T08:00:00Z',
+          completedAt: '2025-01-02T08:06:00Z',
+        },
       ]);
       const runDay1 = runWithStepsOnDay('run-day-1', '2025-01-01T08:00:00Z', [
-        { name: 'checkout', startedAt: '2025-01-01T08:00:00Z', completedAt: '2025-01-01T08:04:00Z' },
+        {
+          name: 'checkout',
+          startedAt: '2025-01-01T08:00:00Z',
+          completedAt: '2025-01-01T08:04:00Z',
+        },
       ]);
 
       mockPipelineRepo = new PipelinesRepositoryBuilder()
         .withPipelineRuns([runDay2, runDay1])
         .build();
-      pipelinesService = new PipelinesService(mockPipelineRepo, undefined, logger);
+      pipelinesService = new PipelinesService(
+        mockPipelineRepo,
+        undefined,
+        logger,
+        new TimeZoneProvider('UTC')
+      );
 
       const result = await pipelinesService.getJobStepsAverageTimeByDay();
 
@@ -3046,12 +3183,25 @@ describe('PipelinesService', () => {
 
     it('should average multiple steps sharing a name on the same day', async () => {
       const run = runWithStepsOnDay('run-day-1', '2025-01-01T08:00:00Z', [
-        { name: 'checkout', startedAt: '2025-01-01T08:00:00Z', completedAt: '2025-01-01T08:04:00Z' },
-        { name: 'checkout', startedAt: '2025-01-01T09:00:00Z', completedAt: '2025-01-01T09:06:00Z' },
+        {
+          name: 'checkout',
+          startedAt: '2025-01-01T08:00:00Z',
+          completedAt: '2025-01-01T08:04:00Z',
+        },
+        {
+          name: 'checkout',
+          startedAt: '2025-01-01T09:00:00Z',
+          completedAt: '2025-01-01T09:06:00Z',
+        },
       ]);
 
       mockPipelineRepo = new PipelinesRepositoryBuilder().withPipelineRuns([run]).build();
-      pipelinesService = new PipelinesService(mockPipelineRepo, undefined, logger);
+      pipelinesService = new PipelinesService(
+        mockPipelineRepo,
+        undefined,
+        logger,
+        new TimeZoneProvider('UTC')
+      );
 
       const result = await pipelinesService.getJobStepsAverageTimeByDay();
 
@@ -3069,7 +3219,12 @@ describe('PipelinesService', () => {
       ]);
 
       mockPipelineRepo = new PipelinesRepositoryBuilder().withPipelineRuns([run]).build();
-      pipelinesService = new PipelinesService(mockPipelineRepo, undefined, logger);
+      pipelinesService = new PipelinesService(
+        mockPipelineRepo,
+        undefined,
+        logger,
+        new TimeZoneProvider('UTC')
+      );
 
       const result = await pipelinesService.getJobStepsAverageTimeByDay();
 
@@ -3103,7 +3258,12 @@ describe('PipelinesService', () => {
       ];
 
       mockPipelineRepo = new PipelinesRepositoryBuilder().withPipelineRuns(runs).build();
-      pipelinesService = new PipelinesService(mockPipelineRepo, undefined, logger);
+      pipelinesService = new PipelinesService(
+        mockPipelineRepo,
+        undefined,
+        logger,
+        new TimeZoneProvider('UTC')
+      );
 
       const workflows = await pipelinesService.loadUniqueWorkflows();
 

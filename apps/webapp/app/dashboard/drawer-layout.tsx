@@ -22,7 +22,7 @@ import ProjectsSidebar from '@/components/ProjectsSidebar';
 import DashboardTabs from '@/components/tabs/TabContext';
 import { ThemeToggle } from '@/components/ThemeToggle';
 
-const drawerWidth = 400;
+const drawerWidth = 410;
 const leftDrawerWidth = 280;
 
 const Main = styled('main', {

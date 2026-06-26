@@ -15,6 +15,10 @@ interface JobsProgress {
   } | null;
 }
 
+function isDateOnly(value?: string): value is string {
+  return Boolean(value && /^\d{4}-\d{2}-\d{2}$/.test(value));
+}
+
 export class PipelinesJobFetchRepository {
   private tz: TimeZoneProvider;
 
@@ -46,7 +50,7 @@ export class PipelinesJobFetchRepository {
       const startDate = this.toDateBoundary(latestDate, 'start');
       let freshJobs: WorkflowJobJsonResponse[];
 
-      if (filters?.byDay && filters?.endDate) {
+      if (filters?.byDay && isDateOnly(latestDate) && isDateOnly(filters?.endDate)) {
         freshJobs = await this.fetchJobsByDay(
           cachedRuns,
           latestDate,
@@ -76,7 +80,7 @@ export class PipelinesJobFetchRepository {
       const cachedRuns = await this.pipelineRunFileSystemRepository.loadAll();
       let freshJobs: WorkflowJobJsonResponse[];
 
-      if (filters?.byDay && filters?.startDate && filters?.endDate) {
+      if (filters?.byDay && isDateOnly(filters?.startDate) && isDateOnly(filters?.endDate)) {
         freshJobs = await this.fetchJobsByDay(
           cachedRuns,
           filters.startDate,
@@ -103,7 +107,7 @@ export class PipelinesJobFetchRepository {
 
     const cachedRuns = await this.pipelineRunFileSystemRepository.loadAll();
 
-    if (filters?.byDay && filters?.startDate && filters?.endDate) {
+    if (filters?.byDay && isDateOnly(filters?.startDate) && isDateOnly(filters?.endDate)) {
       return this.fetchJobsByDay(
         cachedRuns,
         filters.startDate,
@@ -259,7 +263,7 @@ export class PipelinesJobFetchRepository {
 
       while (true) {
         try {
-          console.log(`Fetching jobs for workflow run ${runId} in page ${page}...`);
+          this.logger.info(`Fetching jobs for workflow run ${runId} in page ${page}...`);
           const response = await this.githubWorkflowClient.fetchJobsPage(runId, page, perPage, {
             rawFilters,
           });

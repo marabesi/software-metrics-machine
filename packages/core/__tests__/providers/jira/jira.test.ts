@@ -40,6 +40,24 @@ describe('JiraIssuesClient', () => {
       );
     });
 
+    it('should format datetime filters for Jira JQL', async () => {
+      getMock.mockResolvedValueOnce({ data: { issues: [], total: 0 } });
+
+      await client.fetchIssues({
+        startDate: '2026-01-05T08:30:00+01:00',
+        endDate: '2026-01-05T17:45:00+01:00',
+      });
+
+      expect(getMock).toHaveBeenCalledWith(
+        '/rest/api/3/search/jql',
+        expect.objectContaining({
+          params: expect.objectContaining({
+            jql: 'project = "PROJECT" AND created >= "2026-01-05 08:30" AND created <= "2026-01-05 17:45"',
+          }),
+        })
+      );
+    });
+
     it('should map Jira response to domain Issue shape', async () => {
       getMock.mockResolvedValueOnce({
         data: {

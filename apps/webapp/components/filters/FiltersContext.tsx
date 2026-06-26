@@ -1,6 +1,15 @@
 'use client';
 
-import { createContext, ReactNode, useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react';
+import {
+  createContext,
+  ReactNode,
+  useCallback,
+  useContext,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from 'react';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import { DashboardFilters, defaultFilters, parseDashboardFilters, serializeDashboardFilters } from './DashboardFilters';
 
@@ -14,6 +23,19 @@ const FiltersContext = createContext<FiltersContextInterface | undefined>(undefi
 
 function areDashboardFiltersEqual(left: DashboardFilters, right: DashboardFilters): boolean {
   return JSON.stringify(left) === JSON.stringify(right);
+}
+
+function getBrowserTimezone(): string {
+  return Intl.DateTimeFormat().resolvedOptions().timeZone || '';
+}
+
+function applyBrowserTimezone(filters: DashboardFilters): DashboardFilters {
+  const browserTimezone = getBrowserTimezone();
+  if (!browserTimezone || filters.timezone === browserTimezone) {
+    return filters;
+  }
+
+  return { ...filters, timezone: browserTimezone };
 }
 
 export const useFilters = () => {
@@ -35,24 +57,33 @@ export const FiltersProvider = ({
   const pathname = usePathname();
   const searchParams = useSearchParams();
   const searchParamsString = searchParams.toString();
+  const urlSyncKey = useMemo(
+    () => JSON.stringify({ initialFilters, searchParams: searchParamsString }),
+    [initialFilters, searchParamsString],
+  );
 
   const initialUrlFilters = useMemo(
-    () => parseDashboardFilters(Object.fromEntries(searchParams.entries()), initialFilters),
+    () => applyBrowserTimezone(parseDashboardFilters(Object.fromEntries(searchParams.entries()), initialFilters)),
     [initialFilters, searchParams],
   );
 
   const [filters, setFilters] = useState<DashboardFilters>(initialUrlFilters);
   const shouldSyncToUrl = useRef(false);
+  const lastUrlSyncKey = useRef(urlSyncKey);
 
   useEffect(() => {
     if (shouldSyncToUrl.current) return;
+    if (lastUrlSyncKey.current === urlSyncKey) return;
+    lastUrlSyncKey.current = urlSyncKey;
 
-    const urlFilters = parseDashboardFilters(Object.fromEntries(searchParams.entries()), initialFilters);
+    const urlFilters = applyBrowserTimezone(parseDashboardFilters(Object.fromEntries(searchParams.entries()), initialFilters));
 
-    setFilters((currentFilters) => (
-      areDashboardFiltersEqual(currentFilters, urlFilters) ? currentFilters : urlFilters
-    ));
-  }, [initialFilters, searchParams, searchParamsString]);
+    queueMicrotask(() => {
+      setFilters((currentFilters) =>
+        areDashboardFiltersEqual(currentFilters, urlFilters) ? currentFilters : urlFilters,
+      );
+    });
+  }, [initialFilters, searchParams, urlSyncKey]);
 
   useEffect(() => {
     if (!shouldSyncToUrl.current) return;
@@ -69,7 +100,7 @@ export const FiltersProvider = ({
   }, []);
 
   const resetFilters = useCallback(() => {
-    setFilters(defaultFilters);
+    setFilters({ ...defaultFilters, timezone: getBrowserTimezone() });
     shouldSyncToUrl.current = true;
   }, []);
 

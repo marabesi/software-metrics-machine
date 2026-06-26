@@ -83,8 +83,8 @@ describe('PipelinesFetchRepository - Fetch workflows by day', () => {
 
     const workflows = await repository.fetchPipelines({
       forceRefresh: true,
-      startDate: '2026-05-10T00:00:00Z',
-      endDate: '2026-05-11T23:59:59Z',
+      startDate: '2026-05-10',
+      endDate: '2026-05-11',
       byDay: true,
     });
 
@@ -168,8 +168,8 @@ describe('PipelinesFetchRepository - Fetch workflows by day', () => {
 
     const workflows = await repository.fetchPipelines({
       forceRefresh: true,
-      startDate: '2026-05-10T00:00:00Z',
-      endDate: '2026-05-11T23:59:59Z',
+      startDate: '2026-05-10',
+      endDate: '2026-05-11',
       byDay: true,
     });
 
@@ -214,8 +214,8 @@ describe('PipelinesFetchRepository - Fetch workflows by day', () => {
 
     const workflows = await repository.fetchPipelines({
       forceRefresh: true,
-      startDate: '2026-05-10T00:00:00Z',
-      endDate: '2026-05-10T23:59:59Z',
+      startDate: '2026-05-10',
+      endDate: '2026-05-10',
       byDay: true,
     });
 
@@ -292,8 +292,8 @@ describe('PipelinesFetchRepository - Fetch workflows by day', () => {
 
     const workflows = await repository.fetchPipelines({
       forceRefresh: true,
-      startDate: '2026-05-10T00:00:00Z',
-      endDate: '2026-05-10T23:59:59Z',
+      startDate: '2026-05-10',
+      endDate: '2026-05-10',
       rawFilters: 'status=success',
       byDay: true,
     });
@@ -345,8 +345,8 @@ describe('PipelinesFetchRepository - Fetch workflows by day', () => {
 
     const workflows = await repository.fetchPipelines({
       forceRefresh: true,
-      startDate: '2026-05-10T00:00:00Z',
-      endDate: '2026-05-11T23:59:59Z',
+      startDate: '2026-05-10',
+      endDate: '2026-05-11',
       byDay: true,
     });
 
@@ -415,8 +415,8 @@ describe('PipelinesFetchRepository - Fetch workflows by day', () => {
 
     const workflows = await repository.fetchPipelines({
       forceRefresh: true,
-      startDate: '2026-05-10T00:00:00Z',
-      endDate: '2026-05-12T23:59:59Z',
+      startDate: '2026-05-10',
+      endDate: '2026-05-12',
       byDay: true,
     });
 

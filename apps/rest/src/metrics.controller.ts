@@ -25,8 +25,8 @@ import {
  * All endpoints delegate to MetricsOrchestrator for business logic.
  *
  * Each endpoint supports date filtering via query parameters:
- * - startDate: ISO 8601 format (YYYY-MM-DD)
- * - endDate: ISO 8601 format (YYYY-MM-DD)
+ * - startDate: ISO 8601 date or datetime
+ * - endDate: ISO 8601 date or datetime
  */
 @ApiTags('Metrics')
 @Controller('')
@@ -42,8 +42,8 @@ export class MetricsController {
   @Get('api/metrics/issues')
   @ApiOperation({ summary: 'Get issue metrics' })
   @ApiQuery({ name: 'status', required: false, type: String, example: 'Done' })
-  @ApiQuery({ name: 'startDate', required: false, type: String, example: '2024-01-01' })
-  @ApiQuery({ name: 'endDate', required: false, type: String, example: '2024-12-31' })
+  @ApiQuery({ name: 'startDate', required: false, type: String, example: '2024-01-01T08:30:00Z' })
+  @ApiQuery({ name: 'endDate', required: false, type: String, example: '2024-12-31T17:45:00Z' })
   @ApiOkResponse({ description: 'Issue metrics retrieved successfully', type: Object })
   @ApiResponse({ status: 400, description: 'Invalid query parameters', type: ErrorResponse })
   async getIssueMetrics(@Query() query: IssueMetricsQueryDto): Promise<MetricsIssueResponse> {
@@ -72,8 +72,8 @@ export class MetricsController {
    */
   @Get('api/metrics/pr')
   @ApiOperation({ summary: 'Get pull request metrics' })
-  @ApiQuery({ name: 'startDate', required: false, type: String, example: '2024-01-01' })
-  @ApiQuery({ name: 'endDate', required: false, type: String, example: '2024-12-31' })
+  @ApiQuery({ name: 'startDate', required: false, type: String, example: '2024-01-01T08:30:00Z' })
+  @ApiQuery({ name: 'endDate', required: false, type: String, example: '2024-12-31T17:45:00Z' })
   @ApiOkResponse({ description: 'Pull request metrics retrieved successfully', type: Object })
   @ApiResponse({ status: 500, description: 'Internal server error', type: ErrorResponse })
   async getPRMetrics(@Query() query: PRMetricsQueryDto): Promise<MetricsPRResponse> {

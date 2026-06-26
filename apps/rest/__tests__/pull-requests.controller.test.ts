@@ -6,10 +6,7 @@ const createController = (prs: any[] = [], prsService: any = {}) => {
     loadOptions: vi.fn().mockResolvedValue({ authors: [], labels: [] }),
   };
 
-  return new PullRequestsController(
-    prsService as any,
-    pullRequestFiltersRepository as any
-  );
+  return new PullRequestsController(prsService as any, pullRequestFiltersRepository as any);
 };
 
 describe('PullRequestsController', () => {
@@ -105,12 +102,7 @@ describe('PullRequestsController', () => {
       };
       const controller = createController([], mockPrsService);
 
-      const response = await controller.byAuthor(
-        undefined,
-        undefined,
-        undefined,
-        '3'
-      );
+      const response = await controller.byAuthor(undefined, undefined, undefined, '3');
 
       expect(response.result).toEqual([{ author: 'alice', count: 5 }]);
       expect(mockPrsService.getByAuthor).toHaveBeenCalledWith(expect.anything(), 3);
@@ -146,18 +138,10 @@ describe('PullRequestsController', () => {
       };
       const controller = createController([], mockPrsService);
 
-      const response = await controller.averageReviewTime(
-        undefined,
-        undefined,
-        undefined,
-        '4'
-      );
+      const response = await controller.averageReviewTime(undefined, undefined, undefined, '4');
 
       expect(response.result).toEqual([{ author: 'bob', avg_days: 1.2 }]);
-      expect(mockPrsService.getAverageReviewTime).toHaveBeenCalledWith(
-        expect.anything(),
-        4
-      );
+      expect(mockPrsService.getAverageReviewTime).toHaveBeenCalledWith(expect.anything(), 4);
     });
 
     it('defaults top to 10 when omitted', async () => {
@@ -168,10 +152,7 @@ describe('PullRequestsController', () => {
 
       await controller.averageReviewTime(undefined, undefined, undefined, undefined);
 
-      expect(mockPrsService.getAverageReviewTime).toHaveBeenCalledWith(
-        expect.anything(),
-        10
-      );
+      expect(mockPrsService.getAverageReviewTime).toHaveBeenCalledWith(expect.anything(), 10);
     });
 
     it('falls back to 10 when top is non-numeric', async () => {
@@ -182,10 +163,7 @@ describe('PullRequestsController', () => {
 
       await controller.averageReviewTime(undefined, undefined, undefined, 'nope');
 
-      expect(mockPrsService.getAverageReviewTime).toHaveBeenCalledWith(
-        expect.anything(),
-        10
-      );
+      expect(mockPrsService.getAverageReviewTime).toHaveBeenCalledWith(expect.anything(), 10);
     });
   });
 
@@ -210,18 +188,10 @@ describe('PullRequestsController', () => {
       };
       const controller = createController([], mockPrsService);
 
-      const response = await controller.commentsByAuthor(
-        undefined,
-        undefined,
-        undefined,
-        '5'
-      );
+      const response = await controller.commentsByAuthor(undefined, undefined, undefined, '5');
 
       expect(response.result).toEqual([{ author: 'carol', count: 7 }]);
-      expect(mockPrsService.getCommentsByAuthor).toHaveBeenCalledWith(
-        expect.anything(),
-        5
-      );
+      expect(mockPrsService.getCommentsByAuthor).toHaveBeenCalledWith(expect.anything(), 5);
     });
 
     it('defaults top to 10 when omitted', async () => {
@@ -232,10 +202,7 @@ describe('PullRequestsController', () => {
 
       await controller.commentsByAuthor(undefined, undefined, undefined, undefined);
 
-      expect(mockPrsService.getCommentsByAuthor).toHaveBeenCalledWith(
-        expect.anything(),
-        10
-      );
+      expect(mockPrsService.getCommentsByAuthor).toHaveBeenCalledWith(expect.anything(), 10);
     });
 
     it('falls back to 10 when top is non-numeric', async () => {
@@ -246,36 +213,23 @@ describe('PullRequestsController', () => {
 
       await controller.commentsByAuthor(undefined, undefined, undefined, 'bogus');
 
-      expect(mockPrsService.getCommentsByAuthor).toHaveBeenCalledWith(
-        expect.anything(),
-        10
-      );
+      expect(mockPrsService.getCommentsByAuthor).toHaveBeenCalledWith(expect.anything(), 10);
     });
   });
 
   describe('firstCommentTime', () => {
     it('uses the explicit top value when provided', async () => {
       const mockPrsService = {
-        getFirstCommentTime: vi.fn().mockResolvedValue([
-          { author: 'dave', avg_hours: 2.5, prs_with_comments: 4 },
-        ]),
+        getFirstCommentTime: vi
+          .fn()
+          .mockResolvedValue([{ author: 'dave', avg_hours: 2.5, prs_with_comments: 4 }]),
       };
       const controller = createController([], mockPrsService);
 
-      const response = await controller.firstCommentTime(
-        undefined,
-        undefined,
-        undefined,
-        '6'
-      );
+      const response = await controller.firstCommentTime(undefined, undefined, undefined, '6');
 
-      expect(response.result).toEqual([
-        { author: 'dave', avg_hours: 2.5, prs_with_comments: 4 },
-      ]);
-      expect(mockPrsService.getFirstCommentTime).toHaveBeenCalledWith(
-        expect.anything(),
-        6
-      );
+      expect(response.result).toEqual([{ author: 'dave', avg_hours: 2.5, prs_with_comments: 4 }]);
+      expect(mockPrsService.getFirstCommentTime).toHaveBeenCalledWith(expect.anything(), 6);
     });
 
     it('defaults top to 10 when omitted', async () => {
@@ -286,10 +240,7 @@ describe('PullRequestsController', () => {
 
       await controller.firstCommentTime(undefined, undefined, undefined, undefined);
 
-      expect(mockPrsService.getFirstCommentTime).toHaveBeenCalledWith(
-        expect.anything(),
-        10
-      );
+      expect(mockPrsService.getFirstCommentTime).toHaveBeenCalledWith(expect.anything(), 10);
     });
 
     it('falls back to 10 when top is non-numeric', async () => {
@@ -300,10 +251,7 @@ describe('PullRequestsController', () => {
 
       await controller.firstCommentTime(undefined, undefined, undefined, 'NaN-ish');
 
-      expect(mockPrsService.getFirstCommentTime).toHaveBeenCalledWith(
-        expect.anything(),
-        10
-      );
+      expect(mockPrsService.getFirstCommentTime).toHaveBeenCalledWith(expect.anything(), 10);
     });
   });
 

@@ -66,8 +66,8 @@ describe('GithubWorkflowClient - Fetch workflows by day', () => {
       );
 
     const result = await client.fetchWorkflows({
-      startDate: '2026-05-10T00:00:00Z',
-      endDate: '2026-05-11T23:59:59Z',
+      startDate: '2026-05-10',
+      endDate: '2026-05-11',
       byDay: true,
     });
 
@@ -78,7 +78,13 @@ describe('GithubWorkflowClient - Fetch workflows by day', () => {
   });
 
   it('should fetch all pages for each day before moving to next day', async () => {
-    const client = new GithubWorkflowClient(token, owner, repo, new GitHubRateLimitManager(logger), logger);
+    const client = new GithubWorkflowClient(
+      token,
+      owner,
+      repo,
+      new GitHubRateLimitManager(logger),
+      logger
+    );
 
     const mockPage1Day1 = [
       {
@@ -150,8 +156,8 @@ describe('GithubWorkflowClient - Fetch workflows by day', () => {
       );
 
     const result = await client.fetchWorkflows({
-      startDate: '2026-05-10T00:00:00Z',
-      endDate: '2026-05-11T23:59:59Z',
+      startDate: '2026-05-10',
+      endDate: '2026-05-11',
       byDay: true,
     });
 
@@ -169,7 +175,13 @@ describe('GithubWorkflowClient - Fetch workflows by day', () => {
   });
 
   it('should use original behavior when byDay is false', async () => {
-    const client = new GithubWorkflowClient(token, owner, repo, new GitHubRateLimitManager(logger), logger);
+    const client = new GithubWorkflowClient(
+      token,
+      owner,
+      repo,
+      new GitHubRateLimitManager(logger),
+      logger
+    );
 
     const mockRuns = [
       {
@@ -207,8 +219,43 @@ describe('GithubWorkflowClient - Fetch workflows by day', () => {
     expect(params?.created).toContain('..');
   });
 
+  it('should use exact datetime range when byDay is true with datetime filters', async () => {
+    const client = new GithubWorkflowClient(
+      token,
+      owner,
+      repo,
+      new GitHubRateLimitManager(logger),
+      logger
+    );
+
+    const fetchWorkflowRunsPageSpy = vi
+      .spyOn(client, 'fetchWorkflowRunsPage')
+      .mockResolvedValueOnce({
+        runs: [],
+        hasNext: false,
+      });
+
+    await client.fetchWorkflows({
+      startDate: '2026-05-10T08:30:00+01:00',
+      endDate: '2026-05-10T17:45:00+01:00',
+      byDay: true,
+    });
+
+    expect(fetchWorkflowRunsPageSpy).toHaveBeenCalledTimes(1);
+    expect(fetchWorkflowRunsPageSpy).toHaveBeenCalledWith(1, 100, {
+      created: '2026-05-10T08:30:00+01:00..2026-05-10T17:45:00+01:00',
+      rawFilters: undefined,
+    });
+  });
+
   it('should use original behavior when byDay is not provided', async () => {
-    const client = new GithubWorkflowClient(token, owner, repo, new GitHubRateLimitManager(logger), logger);
+    const client = new GithubWorkflowClient(
+      token,
+      owner,
+      repo,
+      new GitHubRateLimitManager(logger),
+      logger
+    );
 
     const mockRuns = [
       {
@@ -243,7 +290,13 @@ describe('GithubWorkflowClient - Fetch workflows by day', () => {
   });
 
   it('should handle single day with byDay flag', async () => {
-    const client = new GithubWorkflowClient(token, owner, repo, new GitHubRateLimitManager(logger), logger);
+    const client = new GithubWorkflowClient(
+      token,
+      owner,
+      repo,
+      new GitHubRateLimitManager(logger),
+      logger
+    );
 
     const mockRuns = [
       {
@@ -269,8 +322,8 @@ describe('GithubWorkflowClient - Fetch workflows by day', () => {
       });
 
     const result = await client.fetchWorkflows({
-      startDate: '2026-05-10T00:00:00Z',
-      endDate: '2026-05-10T23:59:59Z',
+      startDate: '2026-05-10',
+      endDate: '2026-05-10',
       byDay: true,
     });
 
@@ -279,7 +332,13 @@ describe('GithubWorkflowClient - Fetch workflows by day', () => {
   });
 
   it('should handle raw filters with byDay', async () => {
-    const client = new GithubWorkflowClient(token, owner, repo, new GitHubRateLimitManager(logger), logger);
+    const client = new GithubWorkflowClient(
+      token,
+      owner,
+      repo,
+      new GitHubRateLimitManager(logger),
+      logger
+    );
 
     const mockRuns = [
       {
@@ -309,8 +368,8 @@ describe('GithubWorkflowClient - Fetch workflows by day', () => {
       });
 
     const result = await client.fetchWorkflows({
-      startDate: '2026-05-10T00:00:00Z',
-      endDate: '2026-05-11T23:59:59Z',
+      startDate: '2026-05-10',
+      endDate: '2026-05-11',
       rawFilters: 'status=success,branch=main',
       byDay: true,
     });

@@ -121,9 +121,6 @@ export default function FiltersContainer({ repository }: { repository: string })
 
       {/* Date Range - Always Show */}
       <Box sx={{ mb: 3 }}>
-        <Typography variant="subtitle2" sx={{ mb: 1, fontWeight: 600 }}>
-          Date Range
-        </Typography>
         <DateRangePicker />
       </Box>
 

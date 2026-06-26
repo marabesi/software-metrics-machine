@@ -1,15 +1,23 @@
 import type { SmmCommand } from './smm-command';
 import { PipelinesService, type PipelineFilters } from '@smmachine/core';
 import PipelineFactory from '@smmachine/core/aggregates/pipeline-factory';
+import { TimeZoneProvider } from '@smmachine/core/infrastructure/timezone-provider';
 
 function createPipelineDependencies(command: SmmCommand) {
   const config = command.getConfiguration();
   const logger = command.getLogger('PipelinesCommand');
+  const timeZoneProvider = new TimeZoneProvider(config.timezone);
   const { pipelineRepository, workflowRepository, workflowJobRepository } = PipelineFactory.create(
     config,
-    logger
+    logger,
+    timeZoneProvider
   );
-  const pipelineService = new PipelinesService(pipelineRepository, config, logger);
+  const pipelineService = new PipelinesService(
+    pipelineRepository,
+    config,
+    logger,
+    timeZoneProvider
+  );
   return { config, pipelineRepository, workflowRepository, workflowJobRepository, pipelineService };
 }
 

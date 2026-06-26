@@ -27,6 +27,7 @@ export default function JobsRerunCard({ data, dataByDay }: JobsRerunCardProps) {
           href={urlBuilder.getJobRunsUrl(item.job_name, item.workflow_name, {
             startDate: filters.startDate,
             endDate: filters.endDate,
+            timezone: filters.timezone,
           })}
           target="_blank"
           rel="noopener noreferrer"

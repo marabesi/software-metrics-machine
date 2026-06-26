@@ -28,8 +28,9 @@ Current version does not require authentication. Authentication will be added in
 ## Query Parameters
 
 All endpoints support optional filtering:
-- \`startDate\`: Start date in ISO 8601 format (YYYY-MM-DD)
-- \`endDate\`: End date in ISO 8601 format (YYYY-MM-DD)
+- \`startDate\`: Start date or datetime in ISO 8601 format
+- \`endDate\`: End date or datetime in ISO 8601 format
+- \`timezone\`: Browser IANA timezone used by REST date grouping and date-only filtering
 
 ## Response Format
 

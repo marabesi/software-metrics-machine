@@ -1,4 +1,4 @@
-import { Configuration, RepositoryFactory } from '../infrastructure';
+import { Configuration, IRepository, RepositoryFactory } from '../infrastructure';
 import { TimeZoneProvider } from '../infrastructure/timezone-provider';
 import { PullRequestsRepository } from './pull-requests-repository';
 import {
@@ -15,20 +15,17 @@ export class PullRequestFactory {
   static create(
     config: Configuration,
     logger: Logger,
+    timeZoneProvider: TimeZoneProvider
   ): PullRequestsRepository {
     const repositories = this.createRepositories(config, logger);
-    const tz = new TimeZoneProvider(config.timezone);
     return new PullRequestsRepository(
       repositories.cache,
       repositories.pullRequestCommentsStoreFile,
-      tz
+      timeZoneProvider
     );
   }
 
-  static createFilters(
-    config: Configuration,
-    logger: Logger,
-  ): PullRequestFiltersRepository {
+  static createFilters(config: Configuration, logger: Logger): PullRequestFiltersRepository {
     const repositories = this.createRepositories(config, logger);
     return new PullRequestFiltersRepository(
       repositories.cache,
@@ -39,8 +36,12 @@ export class PullRequestFactory {
 
   private static createRepositories(
     config: Configuration,
-    logger: Logger,
-  ) {
+    logger: Logger
+  ): {
+    cache: IRepository<PullRequestJsonResponse>;
+    pullRequestCommentsStoreFile: IRepository<PullRequestCommentJsonResponse>;
+    pullRequestFiltersStoreFile: IRepository<PullRequestFilterOptions>;
+  } {
     const cache = RepositoryFactory.create<PullRequestJsonResponse>(
       `${config.getPathFromGitProvider()}/prs.json`,
       logger,

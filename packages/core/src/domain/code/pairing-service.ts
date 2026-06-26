@@ -29,10 +29,10 @@ export class PairingService implements IPairingIndexService {
 
   constructor(
     private commitRepository: IRepository<Commit>,
-    timeZoneProvider: TimeZoneProvider | undefined,
+    timeZoneProvider: TimeZoneProvider,
     private logger: Logger
   ) {
-    this.tz = timeZoneProvider || new TimeZoneProvider('UTC');
+    this.tz = timeZoneProvider;
   }
 
   async getPairingIndex(options?: {

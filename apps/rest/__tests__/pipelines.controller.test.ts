@@ -1,6 +1,7 @@
 import { describe, expect, it, vi } from 'vitest';
 import { PipelinesController } from '../src/controllers/pipelines.controller';
 import { PipelinesService } from '@smmachine/core';
+import { TimeZoneProvider } from '@smmachine/core/infrastructure/timezone-provider';
 import { Logger } from '@smmachine/utils';
 
 describe('PipelinesController', () => {
@@ -11,7 +12,8 @@ describe('PipelinesController', () => {
     const pipelinesService = new PipelinesService(
       pipelinesRepo as never,
       undefined,
-      new Logger('test')
+      new Logger('test'),
+      new TimeZoneProvider('UTC')
     );
     const controller = new PipelinesController(
       pipelinesRepo as never,
@@ -137,19 +139,31 @@ describe('PipelinesController', () => {
         {
           path: 'frequent.yml',
           jobs: [
-            { name: 'build', startedAt: '2026-01-01T00:00:00Z', completedAt: '2026-01-01T00:02:00Z' },
+            {
+              name: 'build',
+              startedAt: '2026-01-01T00:00:00Z',
+              completedAt: '2026-01-01T00:02:00Z',
+            },
           ],
         },
         {
           path: 'frequent.yml',
           jobs: [
-            { name: 'build', startedAt: '2026-01-02T00:00:00Z', completedAt: '2026-01-02T00:02:00Z' },
+            {
+              name: 'build',
+              startedAt: '2026-01-02T00:00:00Z',
+              completedAt: '2026-01-02T00:02:00Z',
+            },
           ],
         },
         {
           path: 'rare.yml',
           jobs: [
-            { name: 'build', startedAt: '2026-01-01T00:00:00Z', completedAt: '2026-01-01T00:02:00Z' },
+            {
+              name: 'build',
+              startedAt: '2026-01-01T00:00:00Z',
+              completedAt: '2026-01-01T00:02:00Z',
+            },
           ],
         },
       ]);
@@ -173,7 +187,11 @@ describe('PipelinesController', () => {
       const { controller } = createController([
         {
           jobs: [
-            { name: 'build', startedAt: '2026-01-01T00:00:00Z', completedAt: '2026-01-01T00:02:00Z' },
+            {
+              name: 'build',
+              startedAt: '2026-01-01T00:00:00Z',
+              completedAt: '2026-01-01T00:02:00Z',
+            },
           ],
         },
       ]);
@@ -196,13 +214,21 @@ describe('PipelinesController', () => {
           {
             path: 'ci.yml',
             jobs: [
-              { name: 'build', startedAt: '2026-01-01T00:00:00Z', completedAt: '2026-01-01T00:04:00Z' },
+              {
+                name: 'build',
+                startedAt: '2026-01-01T00:00:00Z',
+                completedAt: '2026-01-01T00:04:00Z',
+              },
             ],
           },
           {
             path: 'ci.yml',
             jobs: [
-              { name: 'build', startedAt: '2026-01-02T00:00:00Z', completedAt: '2026-01-02T00:08:00Z' },
+              {
+                name: 'build',
+                startedAt: '2026-01-02T00:00:00Z',
+                completedAt: '2026-01-02T00:08:00Z',
+              },
             ],
           },
         ]);
@@ -227,10 +253,22 @@ describe('PipelinesController', () => {
         {
           path: 'ci.yml',
           jobs: [
-            { name: 'build', startedAt: '2026-01-01T00:00:00Z', completedAt: '2026-01-01T00:04:00Z' },
-            { name: 'build', startedAt: '2026-01-02T00:00:00Z', completedAt: '2026-01-02T00:08:00Z' },
+            {
+              name: 'build',
+              startedAt: '2026-01-01T00:00:00Z',
+              completedAt: '2026-01-01T00:04:00Z',
+            },
+            {
+              name: 'build',
+              startedAt: '2026-01-02T00:00:00Z',
+              completedAt: '2026-01-02T00:08:00Z',
+            },
             { name: '   ', startedAt: '2026-01-01T00:00:00Z', completedAt: '2026-01-01T00:04:00Z' },
-            { name: 'broken', startedAt: '2026-01-01T00:10:00Z', completedAt: '2026-01-01T00:00:00Z' },
+            {
+              name: 'broken',
+              startedAt: '2026-01-01T00:10:00Z',
+              completedAt: '2026-01-01T00:00:00Z',
+            },
           ],
         },
       ]);
@@ -253,13 +291,21 @@ describe('PipelinesController', () => {
         {
           path: 'zeta.yml',
           jobs: [
-            { name: 'build', startedAt: '2026-01-01T00:00:00Z', completedAt: '2026-01-01T00:02:00Z' },
+            {
+              name: 'build',
+              startedAt: '2026-01-01T00:00:00Z',
+              completedAt: '2026-01-01T00:02:00Z',
+            },
           ],
         },
         {
           path: 'alpha.yml',
           jobs: [
-            { name: 'build', startedAt: '2026-01-01T00:00:00Z', completedAt: '2026-01-01T00:02:00Z' },
+            {
+              name: 'build',
+              startedAt: '2026-01-01T00:00:00Z',
+              completedAt: '2026-01-01T00:02:00Z',
+            },
           ],
         },
       ]);
@@ -444,8 +490,16 @@ describe('PipelinesController', () => {
         {
           createdAt: '2026-01-01T00:00:00Z',
           jobs: [
-            { name: 'build', startedAt: '2026-01-01T00:00:00Z', completedAt: '2026-01-01T00:02:00Z' },
-            { name: 'test', startedAt: '2026-01-01T00:00:00Z', completedAt: '2026-01-01T00:04:00Z' },
+            {
+              name: 'build',
+              startedAt: '2026-01-01T00:00:00Z',
+              completedAt: '2026-01-01T00:02:00Z',
+            },
+            {
+              name: 'test',
+              startedAt: '2026-01-01T00:00:00Z',
+              completedAt: '2026-01-01T00:04:00Z',
+            },
           ],
         },
       ]);
@@ -462,7 +516,11 @@ describe('PipelinesController', () => {
         {
           createdAt: '2026-01-02T00:00:00Z',
           jobs: [
-            { name: 'build', startedAt: '2026-01-02T00:00:00Z', completedAt: '2026-01-02T00:02:00Z' },
+            {
+              name: 'build',
+              startedAt: '2026-01-02T00:00:00Z',
+              completedAt: '2026-01-02T00:02:00Z',
+            },
             { name: '   ', startedAt: '2026-01-02T00:00:00Z', completedAt: '2026-01-02T00:02:00Z' },
             {
               name: 'broken',
@@ -474,7 +532,11 @@ describe('PipelinesController', () => {
         {
           createdAt: '2026-01-01T00:00:00Z',
           jobs: [
-            { name: 'build', startedAt: '2026-01-01T00:00:00Z', completedAt: '2026-01-01T00:01:00Z' },
+            {
+              name: 'build',
+              startedAt: '2026-01-01T00:00:00Z',
+              completedAt: '2026-01-01T00:01:00Z',
+            },
           ],
         },
       ]);
@@ -493,13 +555,21 @@ describe('PipelinesController', () => {
       const { controller } = createController([
         {
           jobs: [
-            { name: 'build', startedAt: '2026-01-01T00:00:00Z', completedAt: '2026-01-01T00:02:00Z' },
+            {
+              name: 'build',
+              startedAt: '2026-01-01T00:00:00Z',
+              completedAt: '2026-01-01T00:02:00Z',
+            },
           ],
         },
         {
           createdAt: '2026-01-02T00:00:00Z',
           jobs: [
-            { name: 'build', startedAt: '2026-01-02T00:00:00Z', completedAt: '2026-01-02T00:02:00Z' },
+            {
+              name: 'build',
+              startedAt: '2026-01-02T00:00:00Z',
+              completedAt: '2026-01-02T00:02:00Z',
+            },
           ],
         },
       ]);
@@ -570,9 +640,7 @@ describe('PipelinesController', () => {
       const result = await controller.jobsStepsAverageTimeByDay({});
 
       expect(result).toEqual({
-        result: [
-          { day: '2026-01-01', steps: [{ name: 'install', averageDurationMinutes: 2 }] },
-        ],
+        result: [{ day: '2026-01-01', steps: [{ name: 'install', averageDurationMinutes: 2 }] }],
       });
     });
   });
@@ -646,7 +714,9 @@ describe('PipelinesController', () => {
     });
 
     it('treats a missing status as neither in_progress nor queued', async () => {
-      const { controller } = createController([{ path: 'ci.yml', createdAt: '2026-01-01T00:00:00Z' }]);
+      const { controller } = createController([
+        { path: 'ci.yml', createdAt: '2026-01-01T00:00:00Z' },
+      ]);
 
       const result = await controller.pipelineSummary({});
 

@@ -14,9 +14,19 @@ import {
 import { PipelinesJobFetchRepository } from '../providers/github/pipelines-job-fetch-repository';
 import { PipelineFiltersRepository, PipelineFilterOptions } from './pipeline-filters-repository';
 import { Logger } from '@smmachine/utils';
+import { TimeZoneProvider } from '../infrastructure/timezone-provider';
 
 export default class PipelineFactory {
-  static create(config: Configuration, logger: Logger) {
+  static create(
+    config: Configuration,
+    logger: Logger,
+    timeZoneProvider: TimeZoneProvider
+  ): {
+    pipelineRepository: PipelinesRepository;
+    pipelineFiltersRepository: PipelineFiltersRepository;
+    workflowRepository: PipelinesFetchRepository;
+    workflowJobRepository: PipelinesJobFetchRepository;
+  } {
     const [githubOwner, githubRepo] = config.githubRepository!.split('/');
     const isGitlab = config.gitProvider?.toLowerCase() === 'gitlab';
 
@@ -61,7 +71,8 @@ export default class PipelineFactory {
     const pipelineRepository = new PipelinesRepository(
       pipelineRunFileSystemRepository,
       pipelineJobsFileSystemRepository,
-      logger
+      logger,
+      timeZoneProvider
     );
     const pipelineFiltersRepository = new PipelineFiltersRepository(
       pipelineRunFileSystemRepository,

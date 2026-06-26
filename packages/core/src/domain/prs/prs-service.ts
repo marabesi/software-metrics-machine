@@ -51,10 +51,10 @@ export class PRsService implements IPRsService {
 
   constructor(
     private prRepository: IReadPullRequestsRepository,
-    timeZoneProvider: TimeZoneProvider | undefined,
+    timeZoneProvider: TimeZoneProvider,
     private logger: Logger
   ) {
-    this.tz = timeZoneProvider || new TimeZoneProvider('UTC');
+    this.tz = timeZoneProvider;
   }
 
   /**
@@ -221,7 +221,9 @@ export class PRsService implements IPRsService {
     const sorted = [...prs].sort(
       (a, b) => this.toTimestamp(a.createdAt) - this.toTimestamp(b.createdAt)
     );
-    const sortedByComments = [...prs].sort((a, b) => (b.totalComments || 0) - (a.totalComments || 0));
+    const sortedByComments = [...prs].sort(
+      (a, b) => (b.totalComments || 0) - (a.totalComments || 0)
+    );
 
     const mostCommentedPRs = prs
       .filter((pr) => (pr.totalComments || 0) > 0 && pr.id && pr.title && pr.url)

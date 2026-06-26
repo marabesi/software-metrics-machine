@@ -11,6 +11,7 @@ describe('buildPullRequestApiParams', () => {
       labelSelector: ['bug'],
       pullRequestStatus: 'merged',
       aggregateBy: 'week',
+      timezone: 'Europe/Madrid',
     });
 
     expect(params.status).toBe('merged');
@@ -20,6 +21,7 @@ describe('buildPullRequestApiParams', () => {
     expect(params.exclude_authors).toBe('bot');
     expect(params.exclude_commenters).toBe('renovate');
     expect(params.labels).toBe('bug');
+    expect(params.timezone).toBe('Europe/Madrid');
   });
 
   it('omits status when pullRequestStatus is not provided', () => {

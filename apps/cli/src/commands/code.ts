@@ -5,6 +5,7 @@ import { CodemaatService } from '@smmachine/core/domain/code/codemaat-service';
 import { BigOService } from '@smmachine/core';
 import { CodemaatFactory } from '@smmachine/core/aggregates/codemaat-factory';
 import { PairingFactory } from '@smmachine/core/aggregates/pairing-factory';
+import { TimeZoneProvider } from '@smmachine/core/infrastructure/timezone-provider';
 import type { CodeChurn } from '@smmachine/core/providers/codemaat/types';
 import path from 'path';
 
@@ -118,7 +119,12 @@ export function createCodeCommands(program: SmmCommand): void {
       try {
         screen.printLine('📊 Generating code summary...');
 
-        const pairingService = PairingFactory.create(command.getConfiguration(), logger);
+        const config = command.getConfiguration();
+        const pairingService = PairingFactory.create(
+          config,
+          logger,
+          new TimeZoneProvider(config.timezone)
+        );
         const summary = await pairingService.getPairingIndex({
           startDate: options.startDate,
           endDate: options.endDate,
@@ -468,7 +474,12 @@ export function createCodeCommands(program: SmmCommand): void {
       const logger = command.getLogger('CodeCommand');
       try {
         screen.printLine('👥 Calculating developer pairing index...');
-        const pairingService = PairingFactory.create(command.getConfiguration(), logger);
+        const config = command.getConfiguration();
+        const pairingService = PairingFactory.create(
+          config,
+          logger,
+          new TimeZoneProvider(config.timezone)
+        );
         const pairing = await pairingService.getPairingIndex({
           startDate: options.startDate,
           endDate: options.endDate,

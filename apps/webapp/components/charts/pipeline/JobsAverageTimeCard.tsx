@@ -25,6 +25,7 @@ export default function JobsAverageTimeCard({ data, dataByDay }: JobsAverageTime
     const url = urlBuilder.getJobRunsUrl(entry.job_name, entry.workflow_name, {
       startDate: filters.startDate,
       endDate: filters.endDate,
+      timezone: filters.timezone,
     });
     window.open(url, '_blank');
   };

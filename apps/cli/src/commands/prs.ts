@@ -14,7 +14,11 @@ import {
 
 function createPRsOrchestratorRead(command: SmmCommand): PullRequestsRepository {
   const config = command.getConfiguration();
-  return PullRequestFactory.create(config, command.getLogger('PRsCommand'));
+  return PullRequestFactory.create(
+    config,
+    command.getLogger('PRsCommand'),
+    new TimeZoneProvider(config.timezone)
+  );
 }
 
 function createPRsOrchestratorFetch(command: SmmCommand): GitHubPullRequestsFetchRepository {

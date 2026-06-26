@@ -61,12 +61,9 @@ describe('CodeMaatMetricsRepository', () => {
     );
     writeFileSync(
       path.join(dataDir, 'entity-effort.csv'),
-      [
-        'entity,total-revs',
-        'src/Button.ts,3',
-        'src/Button.test.ts,9',
-        'docs/readme.md,5',
-      ].join('\n')
+      ['entity,total-revs', 'src/Button.ts,3', 'src/Button.test.ts,9', 'docs/readme.md,5'].join(
+        '\n'
+      )
     );
     writeFileSync(
       path.join(dataDir, 'entity-ownership.csv'),
@@ -105,5 +102,35 @@ describe('CodeMaatMetricsRepository', () => {
         deleted: 2,
       },
     ]);
+  });
+
+  it('filters daily code churn rows when date-time filters are provided', async () => {
+    writeFileSync(
+      path.join(dataDir, 'abs-churn.csv'),
+      [
+        'date,added,deleted,commits',
+        '2026-01-04,10,1,1',
+        '2026-01-05,20,2,2',
+        '2026-01-06,30,3,3',
+      ].join('\n')
+    );
+
+    await expect(
+      repository.getCodeChurn({
+        startDate: '2026-01-05T08:30:00+01:00',
+        endDate: '2026-01-05T17:45:00+01:00',
+      })
+    ).resolves.toEqual({
+      data: [
+        {
+          date: '2026-01-05',
+          added: 20,
+          deleted: 2,
+          commits: 2,
+        },
+      ],
+      startDate: '2026-01-05T08:30:00+01:00',
+      endDate: '2026-01-05T17:45:00+01:00',
+    });
   });
 });

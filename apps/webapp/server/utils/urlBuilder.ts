@@ -19,11 +19,11 @@ export interface UrlBuilder {
   getJobRunsUrl(
     jobName: string,
     workflowName?: string,
-    dateRange?: { startDate?: string; endDate?: string }
+    dateRange?: { startDate?: string; endDate?: string; timezone?: string }
   ): string;
   getWorkflowJobsMetricsUrl(
     workflowName: string,
-    dateRange?: { startDate?: string; endDate?: string }
+    dateRange?: { startDate?: string; endDate?: string; timezone?: string }
   ): string;
   
   // SonarQube links
@@ -32,33 +32,125 @@ export interface UrlBuilder {
   getSonarqubeProjectMeasuresUrl(metric: string): string;
   getSonarqubeProjectUrl(): string;
 
-  getActionPerformanceForJobUrl(jobName: string, workflowName: string, granularity: 'day' | 'week' | 'month', date: string): string
+  getActionPerformanceForJobUrl(jobName: string, workflowName: string, granularity: 'day' | 'week' | 'month', date: string, timezone?: string): string
 }
 
 
+type DateRange = { startDate?: string; endDate?: string; timezone?: string };
+type DateParts = { year: number; month: number; day: number };
+type DateTimeParts = DateParts & { hour: number; minute: number; second: number; millisecond: number };
+
+const parseDateParts = (dateStr: string): DateParts | null => {
+  const match = /^(\d{4})-(\d{2})-(\d{2})$/.exec(dateStr);
+  if (!match) {
+    return null;
+  }
+
+  return {
+    year: Number(match[1]),
+    month: Number(match[2]),
+    day: Number(match[3]),
+  };
+};
+
+const addDays = (date: DateParts, days: number): DateParts => {
+  const next = new Date(Date.UTC(date.year, date.month - 1, date.day + days));
+  return {
+    year: next.getUTCFullYear(),
+    month: next.getUTCMonth() + 1,
+    day: next.getUTCDate(),
+  };
+};
+
+const toUtcTimestamp = (date: DateTimeParts): number =>
+  Date.UTC(
+    date.year,
+    date.month - 1,
+    date.day,
+    date.hour,
+    date.minute,
+    date.second,
+    date.millisecond,
+  );
+
+const startOfUtcDay = (date: DateParts): number =>
+  toUtcTimestamp({ ...date, hour: 0, minute: 0, second: 0, millisecond: 0 });
+
+const parseDateTimeParts = (dateStr: string): DateTimeParts | null => {
+  const match = /^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2})(?::(\d{2}))?(?:\.(\d{1,3}))?/.exec(dateStr);
+  if (!match) {
+    return null;
+  }
+
+  return {
+    year: Number(match[1]),
+    month: Number(match[2]),
+    day: Number(match[3]),
+    hour: Number(match[4]),
+    minute: Number(match[5]),
+    second: Number(match[6] || 0),
+    millisecond: Number((match[7] || '0').padEnd(3, '0')),
+  };
+};
+
 const computeRange = (dateStr: string, granularity: 'day' | 'week' | 'month'): { start: number; end: number } => {
-  const parts = dateStr.split('-').map((p) => Number(p));
-  const [year, month, day] = parts;
-  const startUtc = Date.UTC(year, month - 1, day, 0, 0, 0, 0);
+  const date = parseDateParts(dateStr);
+  if (!date) {
+    return { start: Number.NaN, end: Number.NaN };
+  }
 
   if (granularity === 'day') {
-    const endUtc = startUtc + 24 * 60 * 60 * 1000 - 1;
-    return { start: startUtc, end: endUtc };
+    return {
+      start: startOfUtcDay(date),
+      end: startOfUtcDay(addDays(date, 1)) - 1,
+    };
   }
+
+  const startUtc = Date.UTC(date.year, date.month - 1, date.day, 0, 0, 0, 0);
+  const [year, month, day] = [date.year, date.month, date.day];
+
   if (granularity === 'week') {
-    const d = new Date(Date.UTC(year, month - 1, day));
+    const d = new Date(startUtc);
     const utcDay = d.getUTCDay();
     const diffToMonday = (utcDay + 6) % 7;
-    const monday = new Date(d);
-    monday.setUTCDate(d.getUTCDate() - diffToMonday);
-    const mondayStart = Date.UTC(monday.getUTCFullYear(), monday.getUTCMonth(), monday.getUTCDate());
-    const sundayEnd = mondayStart + 7 * 24 * 60 * 60 * 1000 - 1;
-    return { start: mondayStart, end: sundayEnd };
+    const monday = addDays({ year, month, day }, -diffToMonday);
+    const nextMonday = addDays(monday, 7);
+
+    return {
+      start: startOfUtcDay(monday),
+      end: startOfUtcDay(nextMonday) - 1,
+    };
   }
-  const monthStart = Date.UTC(year, month - 1, 1);
-  const nextMonthStart = Date.UTC(year, month, 1);
-  const monthEnd = nextMonthStart - 1;
-  return { start: monthStart, end: monthEnd };
+
+  const monthStart = { year, month, day: 1 };
+  const nextMonthStart = month === 12
+    ? { year: year + 1, month: 1, day: 1 }
+    : { year, month: month + 1, day: 1 };
+
+  return {
+    start: startOfUtcDay(monthStart),
+    end: startOfUtcDay(nextMonthStart) - 1,
+  };
+};
+
+const isDateTimeValue = (dateStr: string): boolean => /^\d{4}-\d{2}-\d{2}T/.test(dateStr);
+
+const computeDateRangeBoundary = (dateStr: string, boundary: 'start' | 'end'): number => {
+  if (isDateTimeValue(dateStr)) {
+    const date = parseDateTimeParts(dateStr);
+    return date ? toUtcTimestamp(date) : Number.NaN;
+  }
+
+  const range = computeRange(dateStr, 'day');
+  return boundary === 'start' ? range.start : range.end;
+};
+
+const formatProviderDateBoundary = (dateStr: string, boundary: 'start' | 'end'): string => {
+  if (isDateTimeValue(dateStr)) {
+    return dateStr;
+  }
+
+  return boundary === 'start' ? `${dateStr}T00:00:00Z` : `${dateStr}T23:59:59Z`;
 };
 
 const normalizeWorkflowFileName = (workflowName: string): string => {
@@ -77,14 +169,14 @@ const buildGithubActionsMetricsFilters = (workflowName?: string, jobName?: strin
 
 const buildGithubJobMetricsQuery = (
   filters: string,
-  dateRange?: { startDate?: string; endDate?: string }
+  dateRange?: DateRange
 ): string => {
   if (!dateRange?.startDate || !dateRange?.endDate) {
     return `tab=jobs&filters=${filters}`;
   }
 
-  const start = computeRange(dateRange.startDate, 'day').start;
-  const end = computeRange(dateRange.endDate, 'day').end;
+  const start = computeDateRangeBoundary(dateRange.startDate, 'start');
+  const end = computeDateRangeBoundary(dateRange.endDate, 'end');
   if (!Number.isFinite(start) || !Number.isFinite(end) || start > end) {
     return `tab=jobs&filters=${filters}`;
   }
@@ -198,7 +290,7 @@ function createGitHubBuilder(config: DashboardGlobalConfiguration): UrlBuilder {
         : `${config.sonar_url}/dashboard`;
     },
 
-    getActionPerformanceForJobUrl(jobName: string, workflowName: string, granularity: 'day' | 'week' | 'month', date: string): string {
+    getActionPerformanceForJobUrl(jobName: string, workflowName: string, granularity: 'day' | 'week' | 'month', date: string, _timezone?: string): string {
       const range = computeRange(date, granularity);
 
       const filterParam = buildGithubActionsMetricsFilters(workflowName, jobName);
@@ -273,10 +365,10 @@ function createGitLabBuilder(config: DashboardGlobalConfiguration): UrlBuilder {
         params.set('ref', workflowName);
       }
       if (dateRange?.startDate) {
-        params.set('created_after', `${dateRange.startDate}T00:00:00Z`);
+        params.set('created_after', formatProviderDateBoundary(dateRange.startDate, 'start'));
       }
       if (dateRange?.endDate) {
-        params.set('created_before', `${dateRange.endDate}T23:59:59Z`);
+        params.set('created_before', formatProviderDateBoundary(dateRange.endDate, 'end'));
       }
 
       return `${baseUrl}/-/jobs?${params.toString()}`;
@@ -287,10 +379,10 @@ function createGitLabBuilder(config: DashboardGlobalConfiguration): UrlBuilder {
       params.set('scope[]', 'all');
       params.set('ref', workflowName);
       if (dateRange?.startDate) {
-        params.set('created_after', `${dateRange.startDate}T00:00:00Z`);
+        params.set('created_after', formatProviderDateBoundary(dateRange.startDate, 'start'));
       }
       if (dateRange?.endDate) {
-        params.set('created_before', `${dateRange.endDate}T23:59:59Z`);
+        params.set('created_before', formatProviderDateBoundary(dateRange.endDate, 'end'));
       }
 
       return `${baseUrl}/-/jobs?${params.toString()}`;
@@ -326,7 +418,7 @@ function createGitLabBuilder(config: DashboardGlobalConfiguration): UrlBuilder {
         : `${config.sonar_url}/dashboard`;
     },
 
-    getActionPerformanceForJobUrl(_jobName: string, _workflowName: string, _granularity: 'day' | 'week' | 'month', _date: string): string {
+    getActionPerformanceForJobUrl(_jobName: string, _workflowName: string, _granularity: 'day' | 'week' | 'month', _date: string, _timezone?: string): string {
       return `#need+custom+implementation+for+GitLab: ${_jobName}, ${_workflowName}, ${_granularity}, ${_date}`;
     }
 

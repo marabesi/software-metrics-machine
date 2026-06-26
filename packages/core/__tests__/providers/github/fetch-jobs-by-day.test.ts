@@ -97,14 +97,61 @@ describe('Fetch jobs pipeline repository - By day', () => {
 
     await repository.fetchJobs({
       forceRefresh: true,
-      startDate: '2026-05-10T00:00:00Z',
-      endDate: '2026-05-11T23:59:59Z',
+      startDate: '2026-05-10',
+      endDate: '2026-05-11',
       byDay: true,
     });
 
     expect(fetchJobsPage).toHaveBeenCalledTimes(2);
     expect(fetchJobsPage).toHaveBeenNthCalledWith(1, 'run-1', 1, 100, { rawFilters: undefined });
     expect(fetchJobsPage).toHaveBeenNthCalledWith(2, 'run-2', 1, 100, { rawFilters: undefined });
+  });
+
+  it('should use exact datetime filters when byDay is requested with datetime values', async () => {
+    const beforeRange = new PipelineGitHubRunBuilder()
+      .id('run-before')
+      .number('1')
+      .name('CI')
+      .status('completed')
+      .createdAt('2026-05-10T07:00:00Z')
+      .updatedAt('2026-05-10T07:05:00Z')
+      .startedAt('2026-05-10T07:00:00Z')
+      .branch('main')
+      .path('.github/workflows/ci.yml')
+      .build();
+    const inRange = new PipelineGitHubRunBuilder()
+      .id('run-in-range')
+      .number('2')
+      .name('CI')
+      .status('completed')
+      .createdAt('2026-05-10T08:00:00Z')
+      .updatedAt('2026-05-10T08:05:00Z')
+      .startedAt('2026-05-10T08:00:00Z')
+      .branch('main')
+      .path('.github/workflows/ci.yml')
+      .build();
+
+    const fetchJobsPage = vi.fn().mockResolvedValue({
+      jobs: [],
+      hasNext: false,
+    });
+
+    const githubWorkflowClient: IGithubWorkflowJobClient = {
+      fetchJobsPage,
+    };
+
+    const { repository } = await createRepository(githubWorkflowClient);
+    await storeFetchedWorkflows([beforeRange, inRange]);
+
+    await repository.fetchJobs({
+      forceRefresh: true,
+      startDate: '2026-05-10T08:30:00+01:00',
+      endDate: '2026-05-10T17:45:00+01:00',
+      byDay: true,
+    });
+
+    expect(fetchJobsPage).toHaveBeenCalledTimes(1);
+    expect(fetchJobsPage).toHaveBeenCalledWith('run-in-range', 1, 100, { rawFilters: undefined });
   });
 
   it('should fetch all pages within each run on the same day before moving to next day', async () => {
@@ -193,8 +240,8 @@ describe('Fetch jobs pipeline repository - By day', () => {
 
     await repository.fetchJobs({
       forceRefresh: true,
-      startDate: '2026-05-10T00:00:00Z',
-      endDate: '2026-05-11T23:59:59Z',
+      startDate: '2026-05-10',
+      endDate: '2026-05-11',
       byDay: true,
     });
 
@@ -257,8 +304,8 @@ describe('Fetch jobs pipeline repository - By day', () => {
 
     await repository.fetchJobs({
       forceRefresh: true,
-      startDate: '2026-05-10T00:00:00Z',
-      endDate: '2026-05-10T23:59:59Z',
+      startDate: '2026-05-10',
+      endDate: '2026-05-10',
       byDay: true,
     });
 
@@ -305,8 +352,8 @@ describe('Fetch jobs pipeline repository - By day', () => {
 
     await repository.fetchJobs({
       forceRefresh: true,
-      startDate: '2026-05-10T00:00:00Z',
-      endDate: '2026-05-11T23:59:59Z',
+      startDate: '2026-05-10',
+      endDate: '2026-05-11',
       byDay: true,
     });
 
@@ -422,8 +469,8 @@ describe('Fetch jobs pipeline repository - By day', () => {
 
     await repository.fetchJobs({
       forceRefresh: true,
-      startDate: '2026-05-10T00:00:00Z',
-      endDate: '2026-05-10T23:59:59Z',
+      startDate: '2026-05-10',
+      endDate: '2026-05-10',
       rawFilters: 'status=completed',
       byDay: true,
     });
@@ -505,8 +552,8 @@ describe('Fetch jobs pipeline repository - By day', () => {
 
     await repository.fetchJobs({
       forceRefresh: true,
-      startDate: '2026-05-10T00:00:00Z',
-      endDate: '2026-05-12T23:59:59Z',
+      startDate: '2026-05-10',
+      endDate: '2026-05-12',
       byDay: true,
     });
 
@@ -520,7 +567,7 @@ describe('Fetch jobs pipeline repository - By day', () => {
     expect(fetchJobsPage).toHaveBeenNthCalledWith(4, 'run-4', 1, 100, { rawFilters: undefined });
   });
 
-  it('should take the fetchJobsByDay branch when incrementalUpdate is combined with byDay and endDate', async () => {
+  it('should use exact latest cached job time when incrementalUpdate is combined with byDay', async () => {
     const oldRun = new PipelineGitHubRunBuilder()
       .id('run-old')
       .number('1')
@@ -551,15 +598,6 @@ describe('Fetch jobs pipeline repository - By day', () => {
     await pipelineJobsRepository.saveAll([cachedJob]);
     await storeFetchedWorkflows([oldRun, newRun]);
 
-    // latestDate resolves to the cached job's completed_at (2026-05-10), so the byDay
-    // branch re-walks that whole day (re-fetching run-old) through endDate (2026-05-12).
-    const refetchedOldJob = new PipelineGitHubJobBuilder()
-      .id('job-old-refetched')
-      .runId('run-old')
-      .name('build')
-      .completedAt('2026-05-10T10:02:00Z')
-      .build();
-
     const freshJob = new PipelineGitHubJobBuilder()
       .id('job-new')
       .runId('run-new')
@@ -568,9 +606,6 @@ describe('Fetch jobs pipeline repository - By day', () => {
       .build();
 
     const fetchJobsPage = vi.fn().mockImplementation((runId) => {
-      if (runId === 'run-old') {
-        return Promise.resolve({ jobs: [refetchedOldJob], hasNext: false });
-      }
       if (runId === 'run-new') {
         return Promise.resolve({ jobs: [freshJob], hasNext: false });
       }
@@ -589,10 +624,9 @@ describe('Fetch jobs pipeline repository - By day', () => {
       endDate: '2026-05-12',
     });
 
-    expect(fetchJobsPage).toHaveBeenCalledTimes(2);
-    expect(fetchJobsPage).toHaveBeenNthCalledWith(1, 'run-old', 1, 100, { rawFilters: undefined });
-    expect(fetchJobsPage).toHaveBeenNthCalledWith(2, 'run-new', 1, 100, { rawFilters: undefined });
-    expect(jobs.map((j) => j.id).sort()).toEqual(['job-new', 'job-old', 'job-old-refetched']);
+    expect(fetchJobsPage).toHaveBeenCalledTimes(1);
+    expect(fetchJobsPage).toHaveBeenCalledWith('run-new', 1, 100, { rawFilters: undefined });
+    expect(jobs.map((j) => j.id).sort()).toEqual(['job-new', 'job-old']);
 
     await pipelineJobsRepository.delete();
   });

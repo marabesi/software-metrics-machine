@@ -12,11 +12,14 @@ export interface IReadPullRequestsRepository {
   loadPrsWithFilters(filters?: PRFilters): Promise<PRDetails[]>;
 }
 
-export class PullRequestsRepository extends CommonRepository implements IReadPullRequestsRepository {
+export class PullRequestsRepository
+  extends CommonRepository
+  implements IReadPullRequestsRepository
+{
   constructor(
     private cache: IRepository<PullRequestJsonResponse>,
     private pullRequestCommentsStoreFile: IRepository<PullRequestCommentJsonResponse>,
-    private timeZoneProvider: TimeZoneProvider = new TimeZoneProvider('UTC')
+    private timeZoneProvider: TimeZoneProvider
   ) {
     super();
   }
@@ -37,15 +40,11 @@ export class PullRequestsRepository extends CommonRepository implements IReadPul
       const authors = this.normalizeList(filters.authors);
       const excludeAuthors = this.normalizeList(filters.excludeAuthors);
       const labels = this.normalizeList(filters.labels);
-      const authorSet = authors.length
-        ? new Set(authors.map((a) => a.toLowerCase()))
-        : null;
+      const authorSet = authors.length ? new Set(authors.map((a) => a.toLowerCase())) : null;
       const excludeAuthorSet = excludeAuthors.length
         ? new Set(excludeAuthors.map((a) => a.toLowerCase()))
         : null;
-      const labelSet = labels.length
-        ? new Set(labels.map((l) => l.toLowerCase()))
-        : null;
+      const labelSet = labels.length ? new Set(labels.map((l) => l.toLowerCase())) : null;
 
       rawPrs = rawPrs.filter((pr) => {
         if (start || end) {
@@ -70,7 +69,10 @@ export class PullRequestsRepository extends CommonRepository implements IReadPul
           if (filters.state === 'merged' && !pr.merged_at) return false;
           if (filters.state === 'closed' && (!pr.closed_at || pr.merged_at)) return false;
           if (filters.state === 'open' && (pr.closed_at || pr.merged_at)) return false;
-          if (filters.state === 'draft' && !(pr as PullRequestJsonResponse & { draft?: boolean }).draft)
+          if (
+            filters.state === 'draft' &&
+            !(pr as PullRequestJsonResponse & { draft?: boolean }).draft
+          )
             return false;
         }
 

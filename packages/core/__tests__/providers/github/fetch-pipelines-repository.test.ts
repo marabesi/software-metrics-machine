@@ -170,6 +170,34 @@ describe('PipelinesRepository', () => {
     });
   });
 
+  it('should not widen datetime filters when byDay is requested', async () => {
+    const fetchWorkflowRunsPage = vi.fn().mockResolvedValueOnce({
+      runs: [],
+      hasNext: false,
+    });
+
+    const githubWorkflowClient: IGithubWorkflowClient = {
+      fetchWorkflows: vi.fn(),
+      fetchWorkflowRunsPage,
+    };
+
+    const { repository } = await createRepository(githubWorkflowClient);
+    await storeFetchedWorkflows([]);
+
+    await repository.fetchPipelines({
+      forceRefresh: true,
+      startDate: '2026-05-10T08:30:00+01:00',
+      endDate: '2026-05-10T17:45:00+01:00',
+      byDay: true,
+    });
+
+    expect(fetchWorkflowRunsPage).toHaveBeenCalledTimes(1);
+    expect(fetchWorkflowRunsPage).toHaveBeenCalledWith(1, 100, {
+      created: '2026-05-10T08:30:00+01:00..2026-05-10T17:45:00+01:00',
+      rawFilters: undefined,
+    });
+  });
+
   it('should paginate workflows until hasNext is false', async () => {
     const fetchWorkflowRunsPage = vi
       .fn()
@@ -360,7 +388,7 @@ describe('PipelinesRepository', () => {
     expect(workflows[0].status).toBe('completed');
   });
 
-  it('should take the byDay branch inside the incremental block when byDay and endDate are set', async () => {
+  it('should keep exact incremental timestamp when byDay and datetime endDate are set', async () => {
     const cachedRun = new PipelineGitHubRunBuilder()
       .id('cached-run')
       .number('1')
@@ -405,11 +433,11 @@ describe('PipelinesRepository', () => {
     });
 
     expect(workflows.map((w) => w.id).sort()).toEqual(['cached-run', 'fresh-run']);
-    // fetchWorkflowsByDay is called per-day with a `created` range, not the single `>` filter
-    // that fetchWorkflowsWithResume would use directly.
-    for (const call of fetchWorkflowRunsPage.mock.calls) {
-      expect(call[2].created).toContain('..');
-    }
+    expect(fetchWorkflowRunsPage).toHaveBeenCalledTimes(1);
+    expect(fetchWorkflowRunsPage).toHaveBeenCalledWith(1, 100, {
+      created: '2026-05-10T00:00:00.000Z..2026-05-12T23:59:59Z',
+      rawFilters: undefined,
+    });
   });
 
   it('should bypass the incremental-update guard when forceRefresh is also set on a non-empty cache', async () => {

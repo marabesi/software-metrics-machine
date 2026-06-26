@@ -24,15 +24,20 @@ function normalizeArrayQueryParam(value: unknown): string[] | undefined {
  * Base DTO for common query parameters
  */
 export class BaseQueryDto {
-  @ApiPropertyOptional({ description: 'Start date in ISO 8601 format (YYYY-MM-DD)' })
+  @ApiPropertyOptional({ description: 'Start date or datetime in ISO 8601 format' })
   @IsOptional()
   @IsDateString()
   startDate?: string;
 
-  @ApiPropertyOptional({ description: 'End date in ISO 8601 format (YYYY-MM-DD)' })
+  @ApiPropertyOptional({ description: 'End date or datetime in ISO 8601 format' })
   @IsOptional()
   @IsDateString()
   endDate?: string;
+
+  @ApiPropertyOptional({ description: 'Browser IANA timezone, for example Europe/Madrid' })
+  @IsOptional()
+  @IsString()
+  timezone?: string;
 }
 
 /**

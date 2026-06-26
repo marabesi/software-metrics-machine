@@ -19,6 +19,7 @@ function buildSourceCodeApiParams(filters: DashboardFilters): ApiParams {
   return {
     start_date: filters.startDate,
     end_date: filters.endDate,
+    timezone: filters.timezone,
     authors: filters.authorSelect && filters.authorSelect.length > 0 ? filters.authorSelect.join(',') : undefined,
   };
 }
@@ -27,6 +28,7 @@ function buildPipelineApiParams(filters: DashboardFilters): ApiParams {
   return {
     start_date: filters.startDate,
     end_date: filters.endDate,
+    timezone: filters.timezone,
     workflow_path: filters.workflowSelector,
     status: filters.workflowStatus?.length ? filters.workflowStatus.join(',') : undefined,
     conclusion: filters.workflowConclusions?.length ? filters.workflowConclusions.join(',') : undefined,

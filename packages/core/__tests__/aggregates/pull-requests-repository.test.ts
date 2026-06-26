@@ -4,6 +4,9 @@ import {
   PullRequestJsonResponseBuilder,
   PullRequestCommentJsonResponseBuilder,
 } from '../../src/test/builders';
+import { TimeZoneProvider } from '../../src/infrastructure/timezone-provider';
+
+const timeZoneProvider = new TimeZoneProvider('UTC');
 
 describe('PullRequestsRepository filters', () => {
   it('excludes PR authors from loaded results', async () => {
@@ -24,7 +27,8 @@ describe('PullRequestsRepository filters', () => {
               .build(),
           ]),
       } as any,
-      { loadAll: vi.fn().mockResolvedValue([]) } as any
+      { loadAll: vi.fn().mockResolvedValue([]) } as any,
+      timeZoneProvider
     );
 
     const prs = await repository.loadPrsWithFilters({ excludeAuthors: ['bot'] });
@@ -58,7 +62,8 @@ describe('PullRequestsRepository filters', () => {
               .withPullRequestUrl('https://api.github.com/repos/acme/app/pulls/1')
               .build(),
           ]),
-      } as any
+      } as any,
+      timeZoneProvider
     );
 
     const prs = await repository.loadPrsWithFilters({ excludeCommenters: ['bot'] });
@@ -71,22 +76,25 @@ describe('PullRequestsRepository filters', () => {
   it('applies raw filters as a final generic filter over loaded pull requests', async () => {
     const repository = new PullRequestsRepository(
       {
-        loadAll: vi.fn().mockResolvedValue([
-          new PullRequestJsonResponseBuilder()
-            .withId('1')
-            .withNumber('1')
-            .withAuthor('alice')
-            .withTitle('Keep this PR')
-            .build(),
-          new PullRequestJsonResponseBuilder()
-            .withId('2')
-            .withNumber('2')
-            .withAuthor('bob')
-            .withTitle('Ignore this PR')
-            .build(),
-        ]),
+        loadAll: vi
+          .fn()
+          .mockResolvedValue([
+            new PullRequestJsonResponseBuilder()
+              .withId('1')
+              .withNumber('1')
+              .withAuthor('alice')
+              .withTitle('Keep this PR')
+              .build(),
+            new PullRequestJsonResponseBuilder()
+              .withId('2')
+              .withNumber('2')
+              .withAuthor('bob')
+              .withTitle('Ignore this PR')
+              .build(),
+          ]),
       } as any,
-      { loadAll: vi.fn().mockResolvedValue([]) } as any
+      { loadAll: vi.fn().mockResolvedValue([]) } as any,
+      timeZoneProvider
     );
 
     const prs = await repository.loadPrsWithFilters({
@@ -99,20 +107,23 @@ describe('PullRequestsRepository filters', () => {
   it('excludes PRs created before the startDate', async () => {
     const repository = new PullRequestsRepository(
       {
-        loadAll: vi.fn().mockResolvedValue([
-          new PullRequestJsonResponseBuilder()
-            .withId('1')
-            .withNumber('1')
-            .withCreatedAt('2026-01-01T00:00:00Z')
-            .build(),
-          new PullRequestJsonResponseBuilder()
-            .withId('2')
-            .withNumber('2')
-            .withCreatedAt('2026-02-01T00:00:00Z')
-            .build(),
-        ]),
+        loadAll: vi
+          .fn()
+          .mockResolvedValue([
+            new PullRequestJsonResponseBuilder()
+              .withId('1')
+              .withNumber('1')
+              .withCreatedAt('2026-01-01T00:00:00Z')
+              .build(),
+            new PullRequestJsonResponseBuilder()
+              .withId('2')
+              .withNumber('2')
+              .withCreatedAt('2026-02-01T00:00:00Z')
+              .build(),
+          ]),
       } as any,
-      { loadAll: vi.fn().mockResolvedValue([]) } as any
+      { loadAll: vi.fn().mockResolvedValue([]) } as any,
+      timeZoneProvider
     );
 
     const prs = await repository.loadPrsWithFilters({ startDate: '2026-01-15' });
@@ -123,20 +134,23 @@ describe('PullRequestsRepository filters', () => {
   it('excludes PRs created after the endDate', async () => {
     const repository = new PullRequestsRepository(
       {
-        loadAll: vi.fn().mockResolvedValue([
-          new PullRequestJsonResponseBuilder()
-            .withId('1')
-            .withNumber('1')
-            .withCreatedAt('2026-01-01T00:00:00Z')
-            .build(),
-          new PullRequestJsonResponseBuilder()
-            .withId('2')
-            .withNumber('2')
-            .withCreatedAt('2026-02-01T00:00:00Z')
-            .build(),
-        ]),
+        loadAll: vi
+          .fn()
+          .mockResolvedValue([
+            new PullRequestJsonResponseBuilder()
+              .withId('1')
+              .withNumber('1')
+              .withCreatedAt('2026-01-01T00:00:00Z')
+              .build(),
+            new PullRequestJsonResponseBuilder()
+              .withId('2')
+              .withNumber('2')
+              .withCreatedAt('2026-02-01T00:00:00Z')
+              .build(),
+          ]),
       } as any,
-      { loadAll: vi.fn().mockResolvedValue([]) } as any
+      { loadAll: vi.fn().mockResolvedValue([]) } as any,
+      timeZoneProvider
     );
 
     const prs = await repository.loadPrsWithFilters({ endDate: '2026-01-15' });
@@ -147,25 +161,28 @@ describe('PullRequestsRepository filters', () => {
   it('includes PRs created within both the startDate and endDate bounds', async () => {
     const repository = new PullRequestsRepository(
       {
-        loadAll: vi.fn().mockResolvedValue([
-          new PullRequestJsonResponseBuilder()
-            .withId('1')
-            .withNumber('1')
-            .withCreatedAt('2026-01-01T00:00:00Z')
-            .build(),
-          new PullRequestJsonResponseBuilder()
-            .withId('2')
-            .withNumber('2')
-            .withCreatedAt('2026-01-15T00:00:00Z')
-            .build(),
-          new PullRequestJsonResponseBuilder()
-            .withId('3')
-            .withNumber('3')
-            .withCreatedAt('2026-02-01T00:00:00Z')
-            .build(),
-        ]),
+        loadAll: vi
+          .fn()
+          .mockResolvedValue([
+            new PullRequestJsonResponseBuilder()
+              .withId('1')
+              .withNumber('1')
+              .withCreatedAt('2026-01-01T00:00:00Z')
+              .build(),
+            new PullRequestJsonResponseBuilder()
+              .withId('2')
+              .withNumber('2')
+              .withCreatedAt('2026-01-15T00:00:00Z')
+              .build(),
+            new PullRequestJsonResponseBuilder()
+              .withId('3')
+              .withNumber('3')
+              .withCreatedAt('2026-02-01T00:00:00Z')
+              .build(),
+          ]),
       } as any,
-      { loadAll: vi.fn().mockResolvedValue([]) } as any
+      { loadAll: vi.fn().mockResolvedValue([]) } as any,
+      timeZoneProvider
     );
 
     const prs = await repository.loadPrsWithFilters({
@@ -179,20 +196,23 @@ describe('PullRequestsRepository filters', () => {
   it('keeps only PRs whose author matches the authors filter, case-insensitively', async () => {
     const repository = new PullRequestsRepository(
       {
-        loadAll: vi.fn().mockResolvedValue([
-          new PullRequestJsonResponseBuilder()
-            .withId('1')
-            .withNumber('1')
-            .withAuthor('Alice')
-            .build(),
-          new PullRequestJsonResponseBuilder()
-            .withId('2')
-            .withNumber('2')
-            .withAuthor('bob')
-            .build(),
-        ]),
+        loadAll: vi
+          .fn()
+          .mockResolvedValue([
+            new PullRequestJsonResponseBuilder()
+              .withId('1')
+              .withNumber('1')
+              .withAuthor('Alice')
+              .build(),
+            new PullRequestJsonResponseBuilder()
+              .withId('2')
+              .withNumber('2')
+              .withAuthor('bob')
+              .build(),
+          ]),
       } as any,
-      { loadAll: vi.fn().mockResolvedValue([]) } as any
+      { loadAll: vi.fn().mockResolvedValue([]) } as any,
+      timeZoneProvider
     );
 
     const prs = await repository.loadPrsWithFilters({ authors: ['alice'] });
@@ -226,7 +246,8 @@ describe('PullRequestsRepository filters', () => {
           new PullRequestJsonResponseBuilder().withId('3').withNumber('3').withLabels([]).build(),
         ]),
       } as any,
-      { loadAll: vi.fn().mockResolvedValue([]) } as any
+      { loadAll: vi.fn().mockResolvedValue([]) } as any,
+      timeZoneProvider
     );
 
     const prs = await repository.loadPrsWithFilters({ labels: ['bug'] });
@@ -237,16 +258,19 @@ describe('PullRequestsRepository filters', () => {
   it('keeps only merged PRs when filters.state is "merged"', async () => {
     const repository = new PullRequestsRepository(
       {
-        loadAll: vi.fn().mockResolvedValue([
-          new PullRequestJsonResponseBuilder()
-            .withId('1')
-            .withNumber('1')
-            .withMergedAt('2026-01-02T00:00:00Z')
-            .build(),
-          new PullRequestJsonResponseBuilder().withId('2').withNumber('2').build(),
-        ]),
+        loadAll: vi
+          .fn()
+          .mockResolvedValue([
+            new PullRequestJsonResponseBuilder()
+              .withId('1')
+              .withNumber('1')
+              .withMergedAt('2026-01-02T00:00:00Z')
+              .build(),
+            new PullRequestJsonResponseBuilder().withId('2').withNumber('2').build(),
+          ]),
       } as any,
-      { loadAll: vi.fn().mockResolvedValue([]) } as any
+      { loadAll: vi.fn().mockResolvedValue([]) } as any,
+      timeZoneProvider
     );
 
     const prs = await repository.loadPrsWithFilters({ state: 'merged' });
@@ -257,21 +281,24 @@ describe('PullRequestsRepository filters', () => {
   it('excludes a PR that is both merged and closed when filters.state is "closed"', async () => {
     const repository = new PullRequestsRepository(
       {
-        loadAll: vi.fn().mockResolvedValue([
-          new PullRequestJsonResponseBuilder()
-            .withId('1')
-            .withNumber('1')
-            .withClosedAt('2026-01-02T00:00:00Z')
-            .build(),
-          new PullRequestJsonResponseBuilder()
-            .withId('2')
-            .withNumber('2')
-            .withClosedAt('2026-01-03T00:00:00Z')
-            .withMergedAt('2026-01-03T00:00:00Z')
-            .build(),
-        ]),
+        loadAll: vi
+          .fn()
+          .mockResolvedValue([
+            new PullRequestJsonResponseBuilder()
+              .withId('1')
+              .withNumber('1')
+              .withClosedAt('2026-01-02T00:00:00Z')
+              .build(),
+            new PullRequestJsonResponseBuilder()
+              .withId('2')
+              .withNumber('2')
+              .withClosedAt('2026-01-03T00:00:00Z')
+              .withMergedAt('2026-01-03T00:00:00Z')
+              .build(),
+          ]),
       } as any,
-      { loadAll: vi.fn().mockResolvedValue([]) } as any
+      { loadAll: vi.fn().mockResolvedValue([]) } as any,
+      timeZoneProvider
     );
 
     const prs = await repository.loadPrsWithFilters({ state: 'closed' });
@@ -282,16 +309,19 @@ describe('PullRequestsRepository filters', () => {
   it('keeps only PRs with neither closedAt nor mergedAt when filters.state is "open"', async () => {
     const repository = new PullRequestsRepository(
       {
-        loadAll: vi.fn().mockResolvedValue([
-          new PullRequestJsonResponseBuilder().withId('1').withNumber('1').build(),
-          new PullRequestJsonResponseBuilder()
-            .withId('2')
-            .withNumber('2')
-            .withClosedAt('2026-01-03T00:00:00Z')
-            .build(),
-        ]),
+        loadAll: vi
+          .fn()
+          .mockResolvedValue([
+            new PullRequestJsonResponseBuilder().withId('1').withNumber('1').build(),
+            new PullRequestJsonResponseBuilder()
+              .withId('2')
+              .withNumber('2')
+              .withClosedAt('2026-01-03T00:00:00Z')
+              .build(),
+          ]),
       } as any,
-      { loadAll: vi.fn().mockResolvedValue([]) } as any
+      { loadAll: vi.fn().mockResolvedValue([]) } as any,
+      timeZoneProvider
     );
 
     const prs = await repository.loadPrsWithFilters({ state: 'open' });
@@ -303,11 +333,15 @@ describe('PullRequestsRepository filters', () => {
     const repository = new PullRequestsRepository(
       {
         loadAll: vi.fn().mockResolvedValue([
-          { ...new PullRequestJsonResponseBuilder().withId('1').withNumber('1').build(), draft: true },
+          {
+            ...new PullRequestJsonResponseBuilder().withId('1').withNumber('1').build(),
+            draft: true,
+          },
           new PullRequestJsonResponseBuilder().withId('2').withNumber('2').build(),
         ]),
       } as any,
-      { loadAll: vi.fn().mockResolvedValue([]) } as any
+      { loadAll: vi.fn().mockResolvedValue([]) } as any,
+      timeZoneProvider
     );
 
     const prs = await repository.loadPrsWithFilters({ state: 'draft' });
@@ -318,12 +352,15 @@ describe('PullRequestsRepository filters', () => {
   it('returns all cached PRs mapped, unfiltered, when no filters argument is passed', async () => {
     const repository = new PullRequestsRepository(
       {
-        loadAll: vi.fn().mockResolvedValue([
-          new PullRequestJsonResponseBuilder().withId('1').withNumber('1').build(),
-          new PullRequestJsonResponseBuilder().withId('2').withNumber('2').build(),
-        ]),
+        loadAll: vi
+          .fn()
+          .mockResolvedValue([
+            new PullRequestJsonResponseBuilder().withId('1').withNumber('1').build(),
+            new PullRequestJsonResponseBuilder().withId('2').withNumber('2').build(),
+          ]),
       } as any,
-      { loadAll: vi.fn().mockResolvedValue([]) } as any
+      { loadAll: vi.fn().mockResolvedValue([]) } as any,
+      timeZoneProvider
     );
 
     const prs = await repository.loadPrsWithFilters();
@@ -332,20 +369,21 @@ describe('PullRequestsRepository filters', () => {
   });
 
   it('falls back to defaults when body, merged_at, closed_at, user, labels and html_url are missing', async () => {
-    const pr = new PullRequestJsonResponseBuilder().withId('1').withNumber('1').build();
-    const {
-      body: _body,
-      merged_at: _mergedAt,
-      closed_at: _closedAt,
-      user: _user,
-      labels: _labels,
-      html_url: _htmlUrl,
-      ...prWithoutOptionalFields
-    } = pr;
+    const prWithoutOptionalFields = new PullRequestJsonResponseBuilder()
+      .withId('1')
+      .withNumber('1')
+      .build();
+    delete (prWithoutOptionalFields as Partial<typeof prWithoutOptionalFields>).body;
+    delete (prWithoutOptionalFields as Partial<typeof prWithoutOptionalFields>).merged_at;
+    delete (prWithoutOptionalFields as Partial<typeof prWithoutOptionalFields>).closed_at;
+    delete (prWithoutOptionalFields as Partial<typeof prWithoutOptionalFields>).user;
+    delete (prWithoutOptionalFields as Partial<typeof prWithoutOptionalFields>).labels;
+    delete (prWithoutOptionalFields as Partial<typeof prWithoutOptionalFields>).html_url;
 
     const repository = new PullRequestsRepository(
       { loadAll: vi.fn().mockResolvedValue([prWithoutOptionalFields]) } as any,
-      { loadAll: vi.fn().mockResolvedValue([]) } as any
+      { loadAll: vi.fn().mockResolvedValue([]) } as any,
+      timeZoneProvider
     );
 
     const prs = await repository.loadPrsWithFilters();
@@ -360,25 +398,22 @@ describe('PullRequestsRepository filters', () => {
   });
 
   it('falls back to defaults when a comment has no pull_request_review_id, user or reactions', async () => {
-    const pr = new PullRequestJsonResponseBuilder()
-      .withId('1')
-      .withNumber('1')
-      .build();
+    const pr = new PullRequestJsonResponseBuilder().withId('1').withNumber('1').build();
 
     const comment = new PullRequestCommentJsonResponseBuilder()
       .withId(1)
       .withPullRequestUrl(`https://api.github.com/repos/acme/app/pulls/${pr.number}`)
       .build();
-    const {
-      pull_request_review_id: _reviewId,
-      user: _user,
-      reactions: _reactions,
-      ...commentWithoutOptionalFields
-    } = comment;
+    const commentWithoutOptionalFields = { ...comment };
+    delete (commentWithoutOptionalFields as Partial<typeof commentWithoutOptionalFields>)
+      .pull_request_review_id;
+    delete (commentWithoutOptionalFields as Partial<typeof commentWithoutOptionalFields>).user;
+    delete (commentWithoutOptionalFields as Partial<typeof commentWithoutOptionalFields>).reactions;
 
     const repository = new PullRequestsRepository(
       { loadAll: vi.fn().mockResolvedValue([pr]) } as any,
-      { loadAll: vi.fn().mockResolvedValue([commentWithoutOptionalFields]) } as any
+      { loadAll: vi.fn().mockResolvedValue([commentWithoutOptionalFields]) } as any,
+      timeZoneProvider
     );
 
     const prs = await repository.loadPrsWithFilters();

@@ -1,5 +1,6 @@
 import { IssuesRepository } from '@smmachine/core/aggregates/issues-repository';
 import { Configuration } from '@smmachine/core/infrastructure/configuration';
+import { TimeZoneProvider } from '@smmachine/core/infrastructure/timezone-provider';
 import { JiraIssuesClient } from '@smmachine/core/providers/jira/jira-client';
 import type { Logger } from '@smmachine/utils';
 
@@ -19,6 +20,12 @@ export function createJiraDependencies(
   );
 
   return {
-    issuesRepository: new IssuesRepository(jiraClient, jiraDirectory, logger),
+    issuesRepository: new IssuesRepository(
+      jiraClient,
+      jiraDirectory,
+      logger,
+      new TimeZoneProvider(config.timezone),
+      config
+    ),
   };
 }

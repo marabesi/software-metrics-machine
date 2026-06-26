@@ -6,6 +6,7 @@ import { ensureArray } from '@/server/utils/chartData';
 import { DeploymentFrequencyPoint } from '@/app/dashboard/insights/insights-types';
 import { useConfiguration } from '../providers/ConfigurationContext';
 import { useLinkBuilder } from '../providers/LinkBuilderContext';
+import { useFilters } from '../filters/FiltersContext';
 import { TargetInfo } from './TargetInfo';
 
 type Granularity = 'day' | 'week' | 'month';
@@ -25,6 +26,7 @@ export function DeploymentFrequency({ deploymentFrequency }: { deploymentFrequen
   const configuredTargets = (configuration.deployment_frequency_targets || [])
     .filter((target) => target.pipeline && target.job);
   const { urlBuilder } = useLinkBuilder();
+  const { filters } = useFilters();
   const points = ensureArray<DeploymentFrequencyPoint>(deploymentFrequency);
   const targetByLabel = useMemo(() => {
     const targets = new Map<string, DeploymentTarget>();
@@ -76,9 +78,9 @@ export function DeploymentFrequency({ deploymentFrequency }: { deploymentFrequen
 
     const workflowSegments = target.pipeline.split('/').filter(Boolean);
     const workflowFileName = workflowSegments.length > 0 ? workflowSegments[workflowSegments.length - 1] : target.pipeline;
-    const url = urlBuilder.getActionPerformanceForJobUrl(target.job, workflowFileName, granularity, date);
+    const url = urlBuilder.getActionPerformanceForJobUrl(target.job, workflowFileName, granularity, date, filters.timezone);
     window.open(url, '_blank');
-  }, [targetByLabel, urlBuilder]);
+  }, [filters.timezone, targetByLabel, urlBuilder]);
 
   const ClickDot = useCallback((granularity: Granularity, targetLabel: string) => {
     const DotComponent = (props: { cx?: number; cy?: number; payload?: { period?: string } }) => {

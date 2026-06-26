@@ -12,6 +12,10 @@ interface WorkflowsProgress {
   page: number;
 }
 
+function isDateOnly(value?: string): value is string {
+  return Boolean(value && /^\d{4}-\d{2}-\d{2}$/.test(value));
+}
+
 export class PipelinesFetchRepository {
   private tz: TimeZoneProvider;
 
@@ -40,7 +44,7 @@ export class PipelinesFetchRepository {
       this.logger.info(`Incremental update: fetching pipelines created after ${latestDate}...`);
       let freshRuns: WorkflowJsonResponse[];
 
-      if (options?.byDay && options?.endDate) {
+      if (options?.byDay && isDateOnly(latestDate) && isDateOnly(options?.endDate)) {
         freshRuns = await this.fetchWorkflowsByDay(latestDate, options.endDate, options.rawFilters);
       } else {
         freshRuns = await this.fetchWorkflowsWithResume({
@@ -65,7 +69,7 @@ export class PipelinesFetchRepository {
         `Fetching pipelines for range [${options?.startDate || 'any'}..${options?.endDate || 'any'}] and merging with cache...`
       );
       let workflows: WorkflowJsonResponse[];
-      if (options?.byDay && options?.startDate && options?.endDate) {
+      if (options?.byDay && isDateOnly(options?.startDate) && isDateOnly(options?.endDate)) {
         workflows = await this.fetchWorkflowsByDay(
           options.startDate,
           options.endDate,
@@ -88,10 +92,12 @@ export class PipelinesFetchRepository {
       return fromCache;
     }
 
-    this.logger.info(`Fetching workflows from GitHub ${options?.startDate} - ${options?.endDate}...`);
+    this.logger.info(
+      `Fetching workflows from GitHub ${options?.startDate} - ${options?.endDate}...`
+    );
     let workflows: WorkflowJsonResponse[];
 
-    if (options?.byDay && options?.startDate && options?.endDate) {
+    if (options?.byDay && isDateOnly(options?.startDate) && isDateOnly(options?.endDate)) {
       workflows = await this.fetchWorkflowsByDay(
         options.startDate,
         options.endDate,
@@ -133,7 +139,9 @@ export class PipelinesFetchRepository {
       const dayStartStr = dayStart.toISOString();
       const dayEndStr = dayEnd.toISOString();
 
-      this.logger.info(`Fetching workflows for day ${dayDate} (UTC: ${dayStartStr}..${dayEndStr})...`);
+      this.logger.info(
+        `Fetching workflows for day ${dayDate} (UTC: ${dayStartStr}..${dayEndStr})...`
+      );
 
       const dayRuns = await this.fetchWorkflowsWithResume({
         created: `${dayStartStr}..${dayEndStr}`,

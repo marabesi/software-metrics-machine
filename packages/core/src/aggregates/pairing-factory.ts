@@ -8,13 +8,13 @@ export class PairingFactory {
   static create(
     configuration: Configuration,
     logger: Logger,
+    timeZoneProvider: TimeZoneProvider
   ): PairingService {
     const commitRepository = RepositoryFactory.create<Commit>(
       `${configuration.getGitPath()}/commits.json`,
       logger,
       configuration
     );
-    const tz = new TimeZoneProvider(configuration.timezone);
-    return new PairingService(commitRepository, tz, logger);
+    return new PairingService(commitRepository, timeZoneProvider, logger);
   }
 }

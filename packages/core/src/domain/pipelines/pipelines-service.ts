@@ -88,9 +88,10 @@ export class PipelinesService implements IPipelinesService {
   constructor(
     private pipelineRepository: IPipelinesRepository,
     private configuration: Configuration | undefined,
-    private logger: Logger
+    private logger: Logger,
+    timeZoneProvider: TimeZoneProvider
   ) {
-    this.tz = new TimeZoneProvider(configuration?.timezone);
+    this.tz = timeZoneProvider;
   }
 
   filterRunsByDateRange<T extends PipelineDateFields>(

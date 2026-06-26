@@ -1,5 +1,5 @@
 import React from 'react';
-import { renderHook, act } from '@testing-library/react';
+import { renderHook, act, render, screen, waitFor } from '@testing-library/react';
 import { useSearchParams } from 'next/navigation';
 import { FiltersProvider, useFilters } from '@/components/filters/FiltersContext';
 
@@ -36,24 +36,40 @@ describe('FiltersContext', () => {
     expect(result.current.filters.topEntries).toBe(20);
   });
 
-  it('updates filter state when URL search params change', () => {
+  it('updates filter state when URL search params change', async () => {
     mockUseSearchParams.mockReturnValue(new URLSearchParams('startDate=2024-01-01&workflowStatus=completed'));
 
-    const wrapper = ({ children }: { children: React.ReactNode }) => (
-      <FiltersProvider>{children}</FiltersProvider>
+    const Consumer = () => {
+      const { filters } = useFilters();
+      return (
+        <>
+          <span data-testid="start-date">{filters.startDate}</span>
+          <span data-testid="workflow-status">{filters.workflowStatus.join(',')}</span>
+        </>
+      );
+    };
+
+    const { rerender } = render(
+      <FiltersProvider key="initial">
+        <Consumer />
+      </FiltersProvider>,
     );
 
-    const { result, rerender } = renderHook(() => useFilters(), { wrapper });
-
-    expect(result.current.filters.startDate).toBe('2024-01-01');
-    expect(result.current.filters.workflowStatus).toEqual(['completed']);
+    expect(screen.getByTestId('start-date')).toHaveTextContent('2024-01-01');
+    expect(screen.getByTestId('workflow-status')).toHaveTextContent('completed');
 
     mockUseSearchParams.mockReturnValue(new URLSearchParams('startDate=2024-02-01&workflowStatus=queued,in_progress'));
 
-    rerender();
+    rerender(
+      <FiltersProvider key="updated">
+        <Consumer />
+      </FiltersProvider>,
+    );
 
-    expect(result.current.filters.startDate).toBe('2024-02-01');
-    expect(result.current.filters.workflowStatus).toEqual(['queued', 'in_progress']);
+    await waitFor(() => {
+      expect(screen.getByTestId('start-date')).toHaveTextContent('2024-02-01');
+      expect(screen.getByTestId('workflow-status')).toHaveTextContent('queued,in_progress');
+    });
   });
 
   it('updates filter value', () => {

@@ -209,6 +209,7 @@ export default function PipelineRunsDurationCard({
                         href={urlBuilder.getWorkflowJobsMetricsUrl(item.workflow, {
                           startDate: filters.startDate,
                           endDate: filters.endDate,
+                          timezone: filters.timezone,
                         })}
                         target="_blank"
                         rel="noopener noreferrer"

@@ -2,6 +2,7 @@ export interface DashboardFilters {
   // Date filters
   startDate: string;
   endDate: string;
+  timezone?: string;
 
   // Pipeline filters
   workflowSelector?: string;
@@ -38,6 +39,7 @@ export interface DashboardFilters {
 export const defaultFilters: DashboardFilters = {
   startDate: '',
   endDate: '',
+  timezone: '',
   workflowSelector: undefined,
   workflowStatus: [],
   workflowConclusions: [],
@@ -115,6 +117,7 @@ export function parseDashboardFilters(
     ...fallback,
     startDate: getSingleValue(searchParams.startDate) || fallback.startDate,
     endDate: getSingleValue(searchParams.endDate) || fallback.endDate,
+    timezone: getSingleValue(searchParams.timezone) || fallback.timezone,
     workflowSelector: getSingleValue(searchParams.workflowSelector) || undefined,
     workflowStatus: getArrayValue(searchParams.workflowStatus),
     workflowConclusions: getArrayValue(searchParams.workflowConclusions),
@@ -158,6 +161,7 @@ export function serializeDashboardFilters(filters: DashboardFilters): URLSearchP
 
   append('startDate', filters.startDate);
   append('endDate', filters.endDate);
+  append('timezone', filters.timezone);
   append('workflowSelector', filters.workflowSelector);
   appendList('workflowStatus', filters.workflowStatus);
   appendList('workflowConclusions', filters.workflowConclusions);

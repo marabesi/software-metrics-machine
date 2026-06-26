@@ -7,14 +7,21 @@ import {
   WorkflowJsonResponse,
 } from '../../../src/providers/github/github-response-types';
 import { MockLoggerBuilder } from '../../mock-logger-builder';
+import { TimeZoneProvider } from '../../../src/infrastructure/timezone-provider';
 
 describe('PipelinesRepository loadPipelines', () => {
   const pipelineRunRepository = new InMemoryRepository<WorkflowJsonResponse>();
   const pipelineJobsRepository = new InMemoryRepository<WorkflowJobJsonResponse>();
   const logger = new MockLoggerBuilder().build();
+  const timeZoneProvider = new TimeZoneProvider('UTC');
 
   const createRepository = () => {
-    return new PipelinesRepository(pipelineRunRepository, pipelineJobsRepository, logger);
+    return new PipelinesRepository(
+      pipelineRunRepository,
+      pipelineJobsRepository,
+      logger,
+      timeZoneProvider
+    );
   };
 
   it('should load pipelines with corresponding jobs attached', async () => {

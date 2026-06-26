@@ -1,5 +1,5 @@
 import { Logger } from '@smmachine/utils';
-import { IRepository, RepositoryFactory, Configuration } from '../infrastructure';
+import { IRepository, RepositoryFactory, Configuration, TimeZoneProvider } from '../infrastructure';
 import { Issue } from '../domain-types';
 import { type IJiraIssuesClient } from '../providers/jira';
 
@@ -27,18 +27,17 @@ export interface IIssuesRepository {
  */
 export class IssuesRepository implements IIssuesRepository {
   private cache: IRepository<Issue>;
+  private timeZoneProvider: TimeZoneProvider;
 
   constructor(
     private jiraClient: IJiraIssuesClient,
     cacheDir: string,
     private logger: Logger,
+    timeZoneProvider: TimeZoneProvider,
     private config: Configuration = new Configuration()
   ) {
-    this.cache = RepositoryFactory.create<Issue>(
-      `${cacheDir}/issues.json`,
-      logger,
-      this.config
-    );
+    this.timeZoneProvider = timeZoneProvider;
+    this.cache = RepositoryFactory.create<Issue>(`${cacheDir}/issues.json`, logger, this.config);
   }
 
   /**
@@ -63,7 +62,7 @@ export class IssuesRepository implements IIssuesRepository {
       });
       const merged = this.mergeIssuesById(fromCache, freshIssues);
       await this.cache.saveAll(merged);
-      return merged;
+      return this.applyFilters(merged, options);
     }
 
     // Manual date range with merge
@@ -82,12 +81,12 @@ export class IssuesRepository implements IIssuesRepository {
       });
       const merged = this.mergeIssuesById(fromCache, freshIssues);
       await this.cache.saveAll(merged);
-      return merged;
+      return this.applyFilters(merged, options);
     }
 
     if (!options?.forceRefresh && fromCache.length > 0) {
       this.logger.info(`Using cached issues: ${fromCache.length} records`);
-      return fromCache;
+      return this.applyFilters(fromCache, options);
     }
 
     this.logger.info('Fetching issues from Jira...');
@@ -99,7 +98,7 @@ export class IssuesRepository implements IIssuesRepository {
 
     await this.cache.saveAll(freshIssues);
 
-    return freshIssues;
+    return this.applyFilters(freshIssues, options);
   }
 
   /**
@@ -126,6 +125,35 @@ export class IssuesRepository implements IIssuesRepository {
     for (const issue of existing) map.set(issue.id, issue);
     for (const issue of incoming) map.set(issue.id, issue);
     return Array.from(map.values());
+  }
+
+  private applyFilters(issues: Issue[], filters?: IssueFilters): Issue[] {
+    if (!filters) {
+      return issues;
+    }
+
+    const start = filters.startDate
+      ? this.timeZoneProvider.getStartOfDayBoundary(filters.startDate)
+      : null;
+    const end = filters.endDate ? this.timeZoneProvider.getEndOfDayBoundary(filters.endDate) : null;
+    const status = filters.status?.toLowerCase();
+
+    return issues.filter((issue) => {
+      if (start || end) {
+        const createdAt = new Date(issue.createdAt);
+        if (Number.isNaN(createdAt.getTime())) {
+          return false;
+        }
+        if (start && createdAt < start) return false;
+        if (end && createdAt > end) return false;
+      }
+
+      if (status && issue.status.toLowerCase() !== status) {
+        return false;
+      }
+
+      return true;
+    });
   }
 
   /**

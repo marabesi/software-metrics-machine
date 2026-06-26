@@ -1,11 +1,6 @@
 import { Controller, Get, Query } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
-import {
-  PRsService,
-  PRDetails,
-  PullRequestFiltersRepository,
-  PRFilters,
-} from '@smmachine/core';
+import { PRsService, PRDetails, PullRequestFiltersRepository, PRFilters } from '@smmachine/core';
 import type {
   PRSummaryResponse,
   PRThroughTimeResponse,
@@ -53,7 +48,15 @@ export class PullRequestsController {
     @Query('status') status?: PRDetails['state']
   ): Promise<PRThroughTimeResponse> {
     const rows = await this.prsService.getThroughTime(
-      this.toFilters(startDate, endDate, authors, excludeAuthors, excludeCommenters, labels, status),
+      this.toFilters(
+        startDate,
+        endDate,
+        authors,
+        excludeAuthors,
+        excludeCommenters,
+        labels,
+        status
+      ),
       aggregateBy
     );
     return { result: rows };
@@ -72,7 +75,15 @@ export class PullRequestsController {
   ): Promise<PRByAuthorResponse> {
     const maxRows = top ? Number(top) : 10;
     const result = await this.prsService.getByAuthor(
-      this.toFilters(startDate, endDate, authors, excludeAuthors, excludeCommenters, labels, status),
+      this.toFilters(
+        startDate,
+        endDate,
+        authors,
+        excludeAuthors,
+        excludeCommenters,
+        labels,
+        status
+      ),
       Number.isFinite(maxRows) ? maxRows : 10
     );
 
@@ -92,7 +103,15 @@ export class PullRequestsController {
   ): Promise<PRAverageReviewTimeResponse> {
     const maxRows = top ? Number(top) : 10;
     const result = await this.prsService.getAverageReviewTime(
-      this.toFilters(startDate, endDate, authors, excludeAuthors, excludeCommenters, labels, status),
+      this.toFilters(
+        startDate,
+        endDate,
+        authors,
+        excludeAuthors,
+        excludeCommenters,
+        labels,
+        status
+      ),
       Number.isFinite(maxRows) ? maxRows : 10
     );
 
@@ -111,7 +130,15 @@ export class PullRequestsController {
     @Query('status') status?: PRDetails['state']
   ): Promise<PRAverageOpenByResponse> {
     return this.prsService.getAverageOpenBy(
-      this.toFilters(startDate, endDate, authors, excludeAuthors, excludeCommenters, labels, status),
+      this.toFilters(
+        startDate,
+        endDate,
+        authors,
+        excludeAuthors,
+        excludeCommenters,
+        labels,
+        status
+      ),
       aggregateBy
     );
   }
@@ -145,7 +172,15 @@ export class PullRequestsController {
   ): Promise<PRCommentsByAuthorResponse> {
     const maxRows = top ? Number(top) : 10;
     const result = await this.prsService.getCommentsByAuthor(
-      this.toFilters(startDate, endDate, authors, excludeAuthors, excludeCommenters, labels, status),
+      this.toFilters(
+        startDate,
+        endDate,
+        authors,
+        excludeAuthors,
+        excludeCommenters,
+        labels,
+        status
+      ),
       Number.isFinite(maxRows) ? maxRows : 10
     );
 
@@ -165,7 +200,15 @@ export class PullRequestsController {
   ): Promise<PRFirstCommentTimeResponse> {
     const maxRows = top ? Number(top) : 10;
     const result = await this.prsService.getFirstCommentTime(
-      this.toFilters(startDate, endDate, authors, excludeAuthors, excludeCommenters, labels, status),
+      this.toFilters(
+        startDate,
+        endDate,
+        authors,
+        excludeAuthors,
+        excludeCommenters,
+        labels,
+        status
+      ),
       Number.isFinite(maxRows) ? maxRows : 10
     );
 

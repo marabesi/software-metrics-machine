@@ -8,6 +8,10 @@ import { buildCreatedFilter, toISODateString } from './github-date-utils';
 import { GithubClientRetriable } from './github-client-retriable';
 import { RawFiltersParser } from './raw-filters-parser';
 
+function isDateOnly(value?: string): value is string {
+  return Boolean(value && /^\d{4}-\d{2}-\d{2}$/.test(value));
+}
+
 export class GithubWorkflowClient implements IGithubWorkflowClient {
   private readonly axiosInstance: AxiosInstance;
   private readonly logger: Logger;
@@ -49,7 +53,7 @@ export class GithubWorkflowClient implements IGithubWorkflowClient {
     const allRuns: PipelineRun[] = [];
 
     try {
-      if (options?.byDay && options?.startDate && options?.endDate) {
+      if (options?.byDay && isDateOnly(options?.startDate) && isDateOnly(options?.endDate)) {
         // Fetch workflows day by day
         const days = this.generateDayRange(options.startDate, options.endDate);
         this.logger.info(`Fetching workflows by day: ${days.length} day(s)`);
@@ -196,5 +200,4 @@ export class GithubWorkflowClient implements IGithubWorkflowClient {
     }
     return linkHeader.includes('rel="next"');
   }
-
 }

@@ -8,13 +8,12 @@ import {
 } from '../providers/codemaat';
 import { Configuration } from 'src';
 import path from 'path';
-import {
-  matchesPathPattern,
-  normalizePatternList,
-} from '../domain/code/pattern-filters';
+import { matchesPathPattern, normalizePatternList } from '../domain/code/pattern-filters';
 
 export interface ICodeMetricsRepository {
-  getCodeChurn(options: CodeMaatChurnOptions & { typeChurn: string }): Promise<CodeChurnValueResult>;
+  getCodeChurn(
+    options: CodeMaatChurnOptions & { typeChurn: string }
+  ): Promise<CodeChurnValueResult>;
   getCodeChurn(options?: CodeMaatChurnOptions): Promise<CodeChurnResult>;
   getFileCoupling(options?: CodeMaatEntityFilterOptions): Promise<FileCoupling[]>;
   getEntityChurn(
@@ -70,17 +69,18 @@ export class CodeMaatMetricsRepository implements ICodeMetricsRepository {
   private logger: Logger;
   private dataDir: string;
 
-  constructor(
-    configuration: Configuration,
-    logger: Logger
-  ) {
+  constructor(configuration: Configuration, logger: Logger) {
     this.dataDir = configuration.getCodeMaatPath();
     this.logger = logger;
   }
 
-  async getCodeChurn(options: CodeMaatChurnOptions & { typeChurn: string }): Promise<CodeChurnValueResult>;
+  async getCodeChurn(
+    options: CodeMaatChurnOptions & { typeChurn: string }
+  ): Promise<CodeChurnValueResult>;
   async getCodeChurn(options?: CodeMaatChurnOptions): Promise<CodeChurnResult>;
-  async getCodeChurn(options?: CodeMaatChurnOptions): Promise<CodeChurnResult | CodeChurnValueResult> {
+  async getCodeChurn(
+    options?: CodeMaatChurnOptions
+  ): Promise<CodeChurnResult | CodeChurnValueResult> {
     try {
       const csvPath = path.join(this.dataDir, 'abs-churn.csv');
 
@@ -152,11 +152,14 @@ export class CodeMaatMetricsRepository implements ICodeMetricsRepository {
         }
         const commits = commitsIdx >= 0 ? parseInt(row[commitsIdx], 10) || 0 : 1;
 
-        // Filter by date range if provided
-        if (options?.startDate && date < options.startDate) {
+        const startDate = options?.startDate ? this.toDateOnly(options.startDate) : undefined;
+        const endDate = options?.endDate ? this.toDateOnly(options.endDate) : undefined;
+
+        // CodeMaat churn rows are daily, so datetime filters are applied at day precision.
+        if (startDate && date < startDate) {
           continue;
         }
-        if (options?.endDate && date > options.endDate) {
+        if (endDate && date > endDate) {
           continue;
         }
 
@@ -423,13 +426,17 @@ export class CodeMaatMetricsRepository implements ICodeMetricsRepository {
         .filter((row) => row.entity.length > 0 && row.author.length > 0)
         .filter((row) => this.matchesEntityFilters(row.entity, options))
         .filter((row) => {
-          const authors = normalizePatternList(options?.authors).map((author) => author.toLowerCase());
+          const authors = normalizePatternList(options?.authors).map((author) =>
+            author.toLowerCase()
+          );
           return authors.length === 0 || authors.includes(row.author.toLowerCase());
         })
         .sort((a, b) => b.added + b.deleted - (a.added + a.deleted));
 
       if (options?.select === 'authors') {
-        return Array.from(new Set(rows.map((row) => row.author).filter((author) => author.length > 0))).sort();
+        return Array.from(
+          new Set(rows.map((row) => row.author).filter((author) => author.length > 0))
+        ).sort();
       }
 
       return rows.slice(0, this.resolveLimit(options?.top, Number.POSITIVE_INFINITY));
@@ -508,6 +515,15 @@ export class CodeMaatMetricsRepository implements ICodeMetricsRepository {
       return row.commits;
     }
     return row.added + row.deleted;
+  }
+
+  private toDateOnly(value: string): string {
+    const parsed = new Date(value);
+    if (Number.isFinite(parsed.getTime())) {
+      return parsed.toISOString().split('T')[0];
+    }
+
+    return value.split('T')[0];
   }
 
   private limitRows<T>(rows: T[], top?: string | number): T[] {

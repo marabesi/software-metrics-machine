@@ -33,14 +33,14 @@ describe('DateRangePicker', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Last 7 days' }));
 
     const today = dayjs();
-    const startDate = today.subtract(6, 'day');
+    const startDate = today.subtract(7, 'day');
 
     expect(screen.getByLabelText('Date range')).toHaveValue(
-      `${startDate.format('YYYY-MM-DD')} - ${today.format('YYYY-MM-DD')}`,
+      `${startDate.format('YYYY-MM-DD HH:mm')} - ${today.format('YYYY-MM-DD HH:mm')}`,
     );
   });
 
-  it('lets users select and apply a custom range from one calendar', () => {
+  it('lets users select date and time for a custom range', () => {
     render(
       <DateRangePickerWithProvider
         initialFilters={{
@@ -54,8 +54,14 @@ describe('DateRangePicker', () => {
     fireEvent.click(screen.getByLabelText('Date range'));
     fireEvent.click(screen.getByRole('gridcell', { name: '5' }));
     fireEvent.click(screen.getByRole('gridcell', { name: '10' }));
+    fireEvent.change(screen.getByLabelText('Start date and time'), {
+      target: { value: '2026-01-05T08:30' },
+    });
+    fireEvent.change(screen.getByLabelText('End date and time'), {
+      target: { value: '2026-01-10T17:45' },
+    });
     fireEvent.click(screen.getByRole('button', { name: 'Apply' }));
 
-    expect(screen.getByLabelText('Date range')).toHaveValue('2026-01-05 - 2026-01-10');
+    expect(screen.getByLabelText('Date range')).toHaveValue('2026-01-05 08:30 - 2026-01-10 17:45');
   });
 });

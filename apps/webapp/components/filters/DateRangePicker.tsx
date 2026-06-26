@@ -29,35 +29,37 @@ interface RangePickersDayProps extends PickersDayProps {
   previewEnd?: Dayjs | null;
 }
 
-const DATE_FORMAT = 'YYYY-MM-DD';
+const DATE_TIME_FORMAT = 'YYYY-MM-DDTHH:mm:ssZ';
+const DISPLAY_DATE_TIME_FORMAT = 'YYYY-MM-DD HH:mm';
+const DATE_TIME_INPUT_FORMAT = 'YYYY-MM-DDTHH:mm';
 
 const presets: PresetRange[] = [
   {
     label: 'Today',
     getRange: () => {
       const today = dayjs();
-      return [today, today];
+      return [today.startOf('day'), today];
     },
   },
   {
     label: 'Yesterday',
     getRange: () => {
       const yesterday = dayjs().subtract(1, 'day');
-      return [yesterday, yesterday];
+      return [yesterday.startOf('day'), yesterday.endOf('day')];
     },
   },
   {
     label: 'Last 7 days',
     getRange: () => {
-      const today = dayjs();
-      return [today.subtract(6, 'day'), today];
+      const now = dayjs();
+      return [now.subtract(7, 'day'), now];
     },
   },
   {
     label: 'Last 30 days',
     getRange: () => {
-      const today = dayjs();
-      return [today.subtract(29, 'day'), today];
+      const now = dayjs();
+      return [now.subtract(30, 'day'), now];
     },
   },
   {
@@ -76,30 +78,62 @@ const presets: PresetRange[] = [
   },
 ];
 
-function parseFilterDate(value: string): Dayjs | null {
+function isDateOnly(value: string): boolean {
+  return /^\d{4}-\d{2}-\d{2}$/.test(value);
+}
+
+function parseFilterDate(value: string, boundary: 'start' | 'end'): Dayjs | null {
   if (!value) {
     return null;
   }
 
   const parsedDate = dayjs(value);
-  return parsedDate.isValid() ? parsedDate : null;
+  if (!parsedDate.isValid()) {
+    return null;
+  }
+
+  if (isDateOnly(value)) {
+    return boundary === 'start' ? parsedDate.startOf('day') : parsedDate.endOf('day');
+  }
+
+  return parsedDate;
 }
 
 function formatDate(value: Dayjs | null): string {
-  return value ? value.format(DATE_FORMAT) : '';
+  return value ? value.format(DATE_TIME_FORMAT) : '';
+}
+
+function formatDisplayDate(value: Dayjs | null): string {
+  return value ? value.format(DISPLAY_DATE_TIME_FORMAT) : '';
+}
+
+function formatInputDate(value: Dayjs | null): string {
+  return value ? value.format(DATE_TIME_INPUT_FORMAT) : '';
+}
+
+function parseInputDate(value: string): Dayjs | null {
+  if (!value) {
+    return null;
+  }
+
+  const parsedDate = dayjs(value);
+  return parsedDate.isValid() ? parsedDate.second(0).millisecond(0) : null;
 }
 
 function getDisplayValue(startDate: string, endDate: string): string {
-  if (startDate && endDate) {
-    return `${startDate} - ${endDate}`;
+  const parsedStartDate = parseFilterDate(startDate, 'start');
+  const parsedEndDate = parseFilterDate(endDate, 'end');
+
+  if (parsedStartDate && parsedEndDate) {
+    return `${formatDisplayDate(parsedStartDate)} - ${formatDisplayDate(parsedEndDate)}`;
   }
 
-  if (startDate) {
-    return `${startDate} -`;
+  if (parsedStartDate) {
+    return `${formatDisplayDate(parsedStartDate)} -`;
   }
 
-  if (endDate) {
-    return `- ${endDate}`;
+  if (parsedEndDate) {
+    return `- ${formatDisplayDate(parsedEndDate)}`;
   }
 
   return '';
@@ -119,6 +153,10 @@ function isDayInRange(day: Dayjs, start: Dayjs | null, end: Dayjs | null): boole
   const endTime = end.startOf('day').valueOf();
 
   return currentTime >= Math.min(startTime, endTime) && currentTime <= Math.max(startTime, endTime);
+}
+
+function withDateBoundary(date: Dayjs, boundary: 'start' | 'end'): Dayjs {
+  return boundary === 'start' ? date.startOf('day') : date.endOf('day');
 }
 
 function RangePickersDay({
@@ -159,8 +197,8 @@ export default function DateRangePicker() {
   const { filters, updateFilter } = useFilters();
   const { startDate, endDate } = filters;
   const [anchorEl, setAnchorEl] = useState<HTMLElement | null>(null);
-  const [tempStartDate, setTempStartDate] = useState<Dayjs | null>(parseFilterDate(startDate));
-  const [tempEndDate, setTempEndDate] = useState<Dayjs | null>(parseFilterDate(endDate));
+  const [tempStartDate, setTempStartDate] = useState<Dayjs | null>(parseFilterDate(startDate, 'start'));
+  const [tempEndDate, setTempEndDate] = useState<Dayjs | null>(parseFilterDate(endDate, 'end'));
   const [hoveredDate, setHoveredDate] = useState<Dayjs | null>(null);
   const isOpen = Boolean(anchorEl);
   const displayValue = getDisplayValue(startDate, endDate);
@@ -176,8 +214,8 @@ export default function DateRangePicker() {
   })?.label, [endDate, startDate]);
 
   const openPicker = (event: React.MouseEvent<HTMLElement>) => {
-    setTempStartDate(parseFilterDate(startDate));
-    setTempEndDate(parseFilterDate(endDate));
+    setTempStartDate(parseFilterDate(startDate, 'start'));
+    setTempEndDate(parseFilterDate(endDate, 'end'));
     setHoveredDate(null);
     setAnchorEl(event.currentTarget);
   };
@@ -199,23 +237,23 @@ export default function DateRangePicker() {
     }
 
     if (!tempStartDate || tempEndDate) {
-      setTempStartDate(date);
+      setTempStartDate(withDateBoundary(date, 'start'));
       setTempEndDate(null);
       return;
     }
 
     if (date.isBefore(tempStartDate, 'day')) {
-      setTempStartDate(date);
+      setTempStartDate(withDateBoundary(date, 'start'));
       setTempEndDate(null);
       return;
     }
 
-    setTempEndDate(date);
+    setTempEndDate(withDateBoundary(date, 'end'));
   };
 
   return (
     <LocalizationProvider dateAdapter={AdapterDayjs}>
-      <Box sx={{ m: 1, maxWidth: 320 }}>
+      <Box sx={{ m: 1, width: { xs: '100%', sm: 520 }, maxWidth: '100%' }}>
         <TextField
           fullWidth
           label="Date range"
@@ -243,7 +281,7 @@ export default function DateRangePicker() {
             sx={{
               display: 'flex',
               flexDirection: { xs: 'column', sm: 'row' },
-              width: { xs: 320, sm: 520 },
+              width: { xs: 360, sm: 680 },
               maxWidth: '100vw',
             }}
           >
@@ -276,20 +314,28 @@ export default function DateRangePicker() {
 
             <Box sx={{ flex: 1, p: 2 }}>
               <Typography variant="subtitle2" sx={{ mb: 1 }}>
-                Custom range
+                Absolute range
               </Typography>
-              <Stack direction="row" spacing={1} sx={{ mb: 1 }}>
+              <Stack direction={{ xs: 'column', md: 'row' }} spacing={1} sx={{ mb: 1 }}>
                 <TextField
+                  fullWidth
                   label="Start"
                   size="small"
-                  value={formatDate(tempStartDate)}
-                  inputProps={{ readOnly: true }}
+                  type="datetime-local"
+                  value={formatInputDate(tempStartDate)}
+                  onChange={(event) => setTempStartDate(parseInputDate(event.target.value))}
+                  InputLabelProps={{ shrink: true }}
+                  inputProps={{ step: 60, 'aria-label': 'Start date and time' }}
                 />
                 <TextField
+                  fullWidth
                   label="End"
                   size="small"
-                  value={formatDate(tempEndDate)}
-                  inputProps={{ readOnly: true }}
+                  type="datetime-local"
+                  value={formatInputDate(tempEndDate)}
+                  onChange={(event) => setTempEndDate(parseInputDate(event.target.value))}
+                  InputLabelProps={{ shrink: true }}
+                  inputProps={{ step: 60, 'aria-label': 'End date and time' }}
                 />
               </Stack>
 

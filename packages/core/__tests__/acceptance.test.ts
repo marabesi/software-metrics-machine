@@ -11,6 +11,7 @@ import { SonarqubeFactory } from '../src';
 import { PairingFactory } from '../src';
 import PipelineFactory from '../src/aggregates/pipeline-factory';
 import { MockLoggerBuilder } from './mock-logger-builder';
+import { TimeZoneProvider } from '../src/infrastructure/timezone-provider';
 
 /**
  * Acceptance tests for the complete metrics system.
@@ -41,6 +42,7 @@ describe('Metrics System Acceptance Tests', () => {
       internal: { storageType: 'json' as const },
     } as any;
     const logger = new MockLoggerBuilder().build();
+    const timeZoneProvider = new TimeZoneProvider(config.timezone);
 
     const jiraClient: IJiraIssuesClient = {
       fetchIssues: async () => [],
@@ -49,17 +51,28 @@ describe('Metrics System Acceptance Tests', () => {
     };
 
     // Repositories
-    const prsRepository = PullRequestFactory.create(config, logger);
-    const { pipelineRepository } = PipelineFactory.create(config, logger);
+    const prsRepository = PullRequestFactory.create(config, logger, timeZoneProvider);
+    const { pipelineRepository } = PipelineFactory.create(config, logger, timeZoneProvider);
     const codeRepo = new CodeMetricsRepository(config, logger);
-    const issuesRepo = new IssuesRepository(jiraClient, `${cacheDir}/jira`, logger, config);
+    const issuesRepo = new IssuesRepository(
+      jiraClient,
+      `${cacheDir}/jira`,
+      logger,
+      timeZoneProvider,
+      config
+    );
     const sonarqubeRepository = SonarqubeFactory.create(config, logger);
 
     // Services
-    const prsService = new PRsService(prsRepository, undefined, logger);
-    const pipelinesService = new PipelinesService(pipelineRepository, undefined, logger);
+    const prsService = new PRsService(prsRepository, timeZoneProvider, logger);
+    const pipelinesService = new PipelinesService(
+      pipelineRepository,
+      undefined,
+      logger,
+      timeZoneProvider
+    );
     const sonarqubeService = new SonarQubeService(sonarqubeRepository, logger);
-    const pairingService = PairingFactory.create(config, logger);
+    const pairingService = PairingFactory.create(config, logger, timeZoneProvider);
 
     orchestrator = new MetricsOrchestrator(
       prsService,

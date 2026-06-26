@@ -58,6 +58,18 @@ function createLogger(config: Configuration, name: string): Logger {
   });
 }
 
+function createRequestTimeZoneProvider(config: Configuration, req: Record<string, unknown>) {
+  const request = req as { query?: { timezone?: string } };
+  const requestTimezone = request.query?.timezone;
+  const timezone = requestTimezone || config.timezone || 'UTC';
+
+  try {
+    return new TimeZoneProvider(timezone);
+  } catch {
+    return new TimeZoneProvider(config.timezone || 'UTC');
+  }
+}
+
 /**
  * REST API Module
  *
@@ -89,11 +101,7 @@ function createLogger(config: Configuration, name: string): Logger {
     {
       provide: ConfigurationRepository,
       useFactory: () =>
-        new ConfigurationRepository(
-          process.env,
-          undefined,
-          new Logger('ConfigurationRepository')
-        ),
+        new ConfigurationRepository(process.env, undefined, new Logger('ConfigurationRepository')),
     },
 
     // Configuration (request-scoped — resolved per request from ?project= query param)
@@ -113,6 +121,13 @@ function createLogger(config: Configuration, name: string): Logger {
         return configRepo.getActiveConfiguration();
       },
       inject: [ConfigurationRepository, REQUEST],
+    },
+    {
+      provide: TimeZoneProvider,
+      scope: Scope.REQUEST,
+      useFactory: (config: Configuration, req: Record<string, unknown>) =>
+        createRequestTimeZoneProvider(config, req),
+      inject: [Configuration, REQUEST],
     },
 
     // Jira Client
@@ -155,47 +170,62 @@ function createLogger(config: Configuration, name: string): Logger {
     // Repositories
     {
       provide: PullRequestsRepository,
-      useFactory: (config: Configuration) => {
-        return PullRequestFactory.create(config, createLogger(config, 'PullRequestsRepository'));
+      useFactory: (config: Configuration, timeZoneProvider: TimeZoneProvider) => {
+        return PullRequestFactory.create(
+          config,
+          createLogger(config, 'PullRequestsRepository'),
+          timeZoneProvider
+        );
       },
-      inject: [Configuration],
+      inject: [Configuration, TimeZoneProvider],
     },
     {
       provide: PullRequestFiltersRepository,
       useFactory: (config: Configuration) => {
         return PullRequestFactory.createFilters(
           config,
-          createLogger(config, 'PullRequestFiltersRepository'),
+          createLogger(config, 'PullRequestFiltersRepository')
         );
       },
       inject: [Configuration],
     },
     {
       provide: PipelinesRepository,
-      useFactory: (config: Configuration) => {
-        return PipelineFactory.create(config, createLogger(config, 'PipelinesRepository'))
-          .pipelineRepository;
+      useFactory: (config: Configuration, timeZoneProvider: TimeZoneProvider) => {
+        return PipelineFactory.create(
+          config,
+          createLogger(config, 'PipelinesRepository'),
+          timeZoneProvider
+        ).pipelineRepository;
       },
-      inject: [Configuration],
+      inject: [Configuration, TimeZoneProvider],
     },
     {
       provide: PipelineFiltersRepository,
-      useFactory: (config: Configuration) => {
-        return PipelineFactory.create(config, createLogger(config, 'PipelineFiltersRepository'))
-          .pipelineFiltersRepository;
+      useFactory: (config: Configuration, timeZoneProvider: TimeZoneProvider) => {
+        return PipelineFactory.create(
+          config,
+          createLogger(config, 'PipelineFiltersRepository'),
+          timeZoneProvider
+        ).pipelineFiltersRepository;
       },
-      inject: [Configuration],
+      inject: [Configuration, TimeZoneProvider],
     },
     {
       provide: PipelinesService,
-      useFactory: (pipelineRepository: PipelinesRepository, configuration: Configuration) => {
+      useFactory: (
+        pipelineRepository: PipelinesRepository,
+        configuration: Configuration,
+        timeZoneProvider: TimeZoneProvider
+      ) => {
         return new PipelinesService(
           pipelineRepository,
           configuration,
-          createLogger(configuration, 'PipelinesService')
+          createLogger(configuration, 'PipelinesService'),
+          timeZoneProvider
         );
       },
-      inject: [PipelinesRepository, Configuration],
+      inject: [PipelinesRepository, Configuration, TimeZoneProvider],
     },
     {
       provide: CodeMetricsRepository,
@@ -206,16 +236,21 @@ function createLogger(config: Configuration, name: string): Logger {
     },
     {
       provide: IssuesRepository,
-      useFactory: (client: JiraIssuesClient, config: Configuration) => {
+      useFactory: (
+        client: JiraIssuesClient,
+        config: Configuration,
+        timeZoneProvider: TimeZoneProvider
+      ) => {
         const paths = buildDataDirectories(config);
         return new IssuesRepository(
           client,
           paths.jiraDirectory,
           createLogger(config, 'IssuesRepository'),
+          timeZoneProvider,
           config
         );
       },
-      inject: [JiraIssuesClient, Configuration],
+      inject: [JiraIssuesClient, Configuration, TimeZoneProvider],
     },
     {
       provide: SonarqubeRepository,
@@ -227,11 +262,18 @@ function createLogger(config: Configuration, name: string): Logger {
     },
     {
       provide: PRsService,
-      useFactory: (pullRequestRepository: PullRequestsRepository, config: Configuration) => {
-        const tz = new TimeZoneProvider(config.timezone);
-        return new PRsService(pullRequestRepository, tz, createLogger(config, 'PRsService'));
+      useFactory: (
+        pullRequestRepository: PullRequestsRepository,
+        config: Configuration,
+        timeZoneProvider: TimeZoneProvider
+      ) => {
+        return new PRsService(
+          pullRequestRepository,
+          timeZoneProvider,
+          createLogger(config, 'PRsService')
+        );
       },
-      inject: [PullRequestsRepository, Configuration],
+      inject: [PullRequestsRepository, Configuration, TimeZoneProvider],
     },
     {
       provide: SonarQubeService,
@@ -242,10 +284,14 @@ function createLogger(config: Configuration, name: string): Logger {
     },
     {
       provide: PairingService,
-      useFactory: (config: Configuration) => {
-        return PairingFactory.create(config, createLogger(config, 'PairingService'));
+      useFactory: (config: Configuration, timeZoneProvider: TimeZoneProvider) => {
+        return PairingFactory.create(
+          config,
+          createLogger(config, 'PairingService'),
+          timeZoneProvider
+        );
       },
-      inject: [Configuration],
+      inject: [Configuration, TimeZoneProvider],
     },
     {
       provide: BigOService,

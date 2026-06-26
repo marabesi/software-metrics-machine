@@ -3,6 +3,7 @@ import { ApiParams } from '@/server/api';
 export interface DashboardFilters {
   startDate: string;
   endDate: string;
+  timezone?: string;
   workflowSelector?: string;
   workflowStatus?: string[];
   workflowConclusions?: string[];
@@ -33,6 +34,7 @@ export function buildPipelineApiParams(filters: DashboardFilters): ApiParams {
   return {
     start_date: filters.startDate,
     end_date: filters.endDate,
+    timezone: filters.timezone,
     workflow_path: filters.workflowSelector,
     status: filters.workflowStatus?.length ? filters.workflowStatus.join(',') : undefined,
     conclusion: filters.workflowConclusions?.length ? filters.workflowConclusions.join(',') : undefined,
@@ -50,6 +52,7 @@ export function buildSourceCodeApiParams(filters: DashboardFilters): ApiParams {
   return {
     start_date: filters.startDate,
     end_date: filters.endDate,
+    timezone: filters.timezone,
     ignore_files: filters.ignorePatternFiles || undefined,
     include_only: filters.includePatternFiles || undefined,
     authors: filters.authorSelectSourceCode?.length
@@ -67,6 +70,7 @@ export function buildPullRequestApiParams(filters: DashboardFilters): ApiParams 
   return {
     start_date: filters.startDate,
     end_date: filters.endDate,
+    timezone: filters.timezone,
     authors: filters.authorSelect?.length ? filters.authorSelect.join(',') : undefined,
     exclude_authors: filters.excludeAuthorSelect?.length
       ? filters.excludeAuthorSelect.join(',')

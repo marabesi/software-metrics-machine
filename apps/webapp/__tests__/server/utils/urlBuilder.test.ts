@@ -53,6 +53,20 @@ describe('createUrlBuilder', () => {
     );
   });
 
+  it('builds a GitHub Actions job metrics link with GitHub-visible date boundaries', () => {
+    const builder = createUrlBuilder(createConfig());
+
+    expect(
+      builder.getJobRunsUrl('deploy', '.github/workflows/release.yml', {
+        startDate: '2026-01-01',
+        endDate: '2026-01-31',
+        timezone: 'Europe/Madrid',
+      })
+    ).toBe(
+      'https://github.com/acme/widgets/actions/metrics/performance?dateRangeType=DATE_RANGE_TYPE_CUSTOM&tab=jobs&filters=workflow_file_name%3A%22release.yml%22+job_name%3A%22deploy%22&range=1767225600000-1769903999999'
+    );
+  });
+
   it('builds a GitHub Actions workflow metrics link with the dashboard date range', () => {
     const builder = createUrlBuilder(createConfig());
 
@@ -63,6 +77,53 @@ describe('createUrlBuilder', () => {
       })
     ).toBe(
       'https://github.com/acme/widgets/actions/metrics/performance?dateRangeType=DATE_RANGE_TYPE_CUSTOM&tab=jobs&filters=workflow_file_name%3A%22ci.yml%22&range=1767225600000-1769903999999'
+    );
+  });
+
+  it('builds a GitHub Actions metrics link with exact dashboard datetime boundaries', () => {
+    const builder = createUrlBuilder(createConfig());
+
+    expect(
+      builder.getJobRunsUrl('deploy', '.github/workflows/release.yml', {
+        startDate: '2026-01-01T08:30:00+01:00',
+        endDate: '2026-01-31T17:45:00+01:00',
+      })
+    ).toBe(
+      'https://github.com/acme/widgets/actions/metrics/performance?dateRangeType=DATE_RANGE_TYPE_CUSTOM&tab=jobs&filters=workflow_file_name%3A%22release.yml%22+job_name%3A%22deploy%22&range=1767256200000-1769881500000'
+    );
+  });
+
+  it('preserves the selected Madrid wall-clock datetimes for GitHub metrics links', () => {
+    const builder = createUrlBuilder(createConfig());
+
+    expect(
+      builder.getJobRunsUrl('deploy', '.github/workflows/release.yml', {
+        startDate: '2026-05-01T00:00:00+02:00',
+        endDate: '2026-05-31T23:59:00+02:00',
+        timezone: 'Europe/Madrid',
+      })
+    ).toBe(
+      'https://github.com/acme/widgets/actions/metrics/performance?dateRangeType=DATE_RANGE_TYPE_CUSTOM&tab=jobs&filters=workflow_file_name%3A%22release.yml%22+job_name%3A%22deploy%22&range=1777593600000-1780271940000'
+    );
+  });
+
+  it('builds a GitHub Actions usage link with GitHub-visible DST day boundaries', () => {
+    const builder = createUrlBuilder(createConfig());
+
+    expect(
+      builder.getActionPerformanceForJobUrl('deploy', 'release.yml', 'day', '2026-03-29', 'Europe/Madrid')
+    ).toBe(
+      'https://github.com/acme/widgets/actions/metrics/usage?dateRangeType=DATE_RANGE_TYPE_CUSTOM&tab=jobs&filters=workflow_file_name%3A%22release.yml%22+job_name%3A%22deploy%22&range=1774742400000-1774828799999'
+    );
+  });
+
+  it('builds a GitHub Actions usage link with GitHub-visible month boundaries', () => {
+    const builder = createUrlBuilder(createConfig());
+
+    expect(
+      builder.getActionPerformanceForJobUrl('deploy', 'release.yml', 'month', '2026-03-15', 'Europe/Madrid')
+    ).toBe(
+      'https://github.com/acme/widgets/actions/metrics/usage?dateRangeType=DATE_RANGE_TYPE_CUSTOM&tab=jobs&filters=workflow_file_name%3A%22release.yml%22+job_name%3A%22deploy%22&range=1772323200000-1775001599999'
     );
   });
 

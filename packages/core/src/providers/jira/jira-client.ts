@@ -2,6 +2,15 @@ import axios, { AxiosInstance } from 'axios';
 import { Issue } from '../../domain-types';
 import { Logger } from '@smmachine/utils';
 
+function toJiraDateBoundary(value: string): string {
+  const match = value.match(/^(\d{4}-\d{2}-\d{2})T(\d{2}:\d{2})/);
+  if (match) {
+    return `${match[1]} ${match[2]}`;
+  }
+
+  return value;
+}
+
 export interface IJiraIssuesClient {
   fetchIssues(options?: {
     startDate?: string;
@@ -72,11 +81,11 @@ export class JiraIssuesClient implements IJiraIssuesClient {
       }
 
       if (options?.startDate) {
-        jqlParts.push(`created >= "${options.startDate}"`);
+        jqlParts.push(`created >= "${toJiraDateBoundary(options.startDate)}"`);
       }
 
       if (options?.endDate) {
-        jqlParts.push(`created <= "${options.endDate}"`);
+        jqlParts.push(`created <= "${toJiraDateBoundary(options.endDate)}"`);
       }
 
       if (options?.status) {
