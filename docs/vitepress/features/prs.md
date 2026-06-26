@@ -6,8 +6,8 @@ outline: deep
 
 <!--@include: ../parts/supported-by-all.md{,2}-->
 
-This dashboard provides insights into Pull Request (PR) activity within a software repository. It includes four distinct
-charts, each designed to highlight different aspects of PR management and team dynamics.
+This dashboard provides insights into Pull Request (PR) activity within a software repository. It includes charts and
+tables designed to highlight review speed, comment patterns, throughput, themes, and team dynamics.
 
 Each chart in the dashboard is interactive and supports filtering by author, labels, and date range, allowing you to
 drill down into the data that matters most for your team. This enables you to monitor team flow and identify bottlenecks.
@@ -22,17 +22,42 @@ Use these filters in the Pull Requests dashboard tab.
 |------------------|-------------------------|
 | `startDate`      | `start_date`            |
 | `endDate`        | `end_date`              |
+| `timezone`       | `timezone`              |
 
 ### Pull Requests-specific filters
 
 | Dashboard filter      | Backend query parameter |
 |-----------------------|-------------------------|
 | `authorSelect[]`      | `authors`               |
+| `excludeAuthorSelect[]` | `exclude_authors`      |
+| `excludeCommenterSelect[]` | `exclude_commenters` |
 | `labelSelector[]`     | `labels`                |
 | `pullRequestStatus`   | `status`                |
 | `aggregateBy`         | `aggregate_by`          |
 
 For list filters (`[]`), the dashboard sends comma-separated values.
+
+The status filter supports `open`, `closed`, `merged`, and `draft`. The aggregation filter supports `day`, `week`, and
+`month`.
+
+The shared date picker, timezone behavior, saved views, and tab navigation are documented in
+[Dashboard](./dashboard.md).
+
+## Dashboard cards
+
+The Pull Requests tab includes:
+
+- **Average Review Time**: review time grouped by author.
+- **Who Comments The Most**: comment volume by commenter.
+- **Time To First Comment**: elapsed time until the first PR comment.
+- **PRs by Author**: number of PRs opened by author.
+- **Most Commented Pull Requests**: PRs with the most discussion, with direct PR links.
+- **Top Themes in Comments**: common terms in PR comments, with links to search for each theme.
+- **Open PRs Through Time**: opened and closed PR volume over time.
+- **Average Days PRs Remain Open**: trend of how long PRs stay open.
+- **PR Statistics**: totals, status counts, label distribution, and summary details.
+
+Statistics and label values link to provider PR pages when the configured provider supports those URLs.
 
 ## Summary PRs data
 
@@ -41,7 +66,7 @@ Show a summary of the PRs fetched from the repository, including total PRs, aver
 :::tabs key:cli
 == Dashboard
 
-Not available yet.
+Available as the PR Statistics card in the Pull Requests tab and as the Pull Requests summary card in the Insights tab.
 
 == CLI
 

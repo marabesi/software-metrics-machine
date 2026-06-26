@@ -58,6 +58,22 @@ smm --project your-org/frontend-app prs fetch
 
 If `smm_config.json` has more than one project and `--project` is not provided, SMM throws an error and asks you to specify a project.
 
+In the dashboard, configured projects appear in the project drawer. Selecting a project stores the repository name in the
+`smm_active_project` browser cookie and reloads the current page without stale filter query parameters.
+
+## Dashboard configuration
+
+These keys affect dashboard behavior:
+
+- `dashboard_start_date` and `dashboard_end_date`: default dashboard date range when no URL filters are provided.
+- `dashboard_color`: theme color value exposed by the configuration API.
+- `deployment_frequency_targets`: pipeline/job pairs used by the Insights deployment frequency chart.
+- `timezone`: configured project timezone for CLI and provider fetch behavior.
+
+Dashboard filtering uses the browser timezone and sends it as the `timezone` query parameter. This keeps dashboard
+date-time filtering aligned with the user viewing the dashboard. See [Dashboard](./dashboard.md) for shared dashboard
+behavior.
+
 ## Key reference
 
 | Key | Description | Required |

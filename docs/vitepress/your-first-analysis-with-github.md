@@ -128,6 +128,12 @@ Machine. To start the dashboard, run the following command:
 smm dashboard serve
 ```
 
+For large repositories or long date ranges, start the dashboard with a larger Node.js heap:
+
+```bash
+NODE_OPTIONS="--max-old-space-size=8192" smm dashboard serve
+```
+
 This will start a local server, and you can access the dashboard by navigating to `http://localhost:3000` in
 your web browser.
 

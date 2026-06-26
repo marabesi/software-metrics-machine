@@ -25,8 +25,13 @@ The dashboard, is available under the local url `http://localhost:3000` in your 
 The dashboard provides the following features:
 
 - **Data Visualization**: View your data in various formats such as tables, charts, and graphs.
-- **Filtering and Sorting**: Easily filter and sort your data to find specific information.
+- **Filtering and Sorting**: Filter by date, timezone, provider-specific fields, authors, labels, paths, branches, and events.
+- **Saved Views**: Save frequently used filters per project and dashboard section.
+- **Project Switching**: Move between configured repositories from the project drawer.
 - **Cross-domain Insights**: PRs, pipelines, source code, and SonarQube.
+- **References and Targets**: Review the sources used to define metric targets and recommendations.
+
+See [Dashboard](./features/dashboard.md) for the shared dashboard behavior.
 
 ## CLI
 
@@ -66,6 +71,7 @@ See [REST API](./rest-api.md) for endpoint overview.
 Each feature has its own page:
 
 - [Insights](./features/insights.md)
+- [Dashboard](./features/dashboard.md)
 - [Source Code](./features/code.md)
 - [Pull Requests](./features/prs.md)
 - [Pipelines](./features/pipelines.md)

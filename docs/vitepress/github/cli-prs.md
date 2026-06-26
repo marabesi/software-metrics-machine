@@ -88,6 +88,36 @@ Forcing the fetch to ignore already fetched comments (this overrides the data st
 smm prs fetch-comments --force=true
 ```
 
+### Troubleshooting - Invalid GitHub comments JSON
+
+When the dashboard or REST API reads comments, a malformed comments cache can surface as a 500 error:
+
+```plaintext
+Unhandled Exception - Status: 500, Message: Bad control character in string literal in JSON at position 2391798 (line 41110 column 134), Path: /pull-requests/filter-options?project=easyjet-dev%2Fwebapps
+```
+
+This usually means the local `pr-comments.json` file contains invalid JSON. One observed case was GitHub comment data
+containing repeated `@@@@@@` content around the position reported by the error.
+
+The comments cache is stored under:
+
+```plaintext
+$SMM_STORE_DATA_AT/github_<owner>_<repo>/github/pr-comments.json
+```
+
+For example, `easyjet-dev/webapps` is stored at:
+
+```plaintext
+$SMM_STORE_DATA_AT/github_easyjet-dev_webapps/github/pr-comments.json
+```
+
+To recover, inspect the file around the reported line and remove the malformed entry, or fetch the comments again with
+`--force=true`:
+
+```bash
+smm prs fetch-comments --force=true
+```
+
 ## Data quality
 
 Once data is fetched, you might want to check the quality of it and if the data matches the expected values. To achieve that,

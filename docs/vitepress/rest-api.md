@@ -27,14 +27,17 @@ Default port is `3000` unless `PORT` is set.
 - `GET /pull-requests/average-review-time`
 - `GET /pull-requests/average-open-by`
 - `GET /pull-requests/average-comments`
-- `GET /pull-requests/authors`
-- `GET /pull-requests/labels`
+- `GET /pull-requests/comments-by-author`
+- `GET /pull-requests/first-comment-time`
+- `GET /pull-requests/filter-options`
 
 Common query params:
 
 - `start_date`, `end_date`
-- `authors`, `labels`
+- `timezone`
+- `authors`, `exclude_authors`, `exclude_commenters`, `labels`
 - `status`
+- `aggregate_by`
 
 ## Pipelines
 
@@ -46,16 +49,17 @@ Common query params:
 - `GET /pipelines/deployment-frequency`
 - `GET /pipelines/runs-by`
 - `GET /pipelines/jobs-average-time`
-- `GET /pipelines/workflows`
+- `GET /pipelines/jobs-average-time-by-day`
+- `GET /pipelines/jobs-reruns-by-day`
+- `GET /pipelines/jobs-steps-average-time`
+- `GET /pipelines/jobs-steps-average-time-by-day`
+- `GET /pipelines/filter-options`
 - `GET /pipelines/jobs`
-- `GET /pipelines/statuses`
-- `GET /pipelines/conclusions`
-- `GET /pipelines/branches`
-- `GET /pipelines/events`
 
 Common query params:
 
 - `start_date`, `end_date`
+- `timezone`
 - `workflow_path`
 - `status`, `conclusion`
 - `job_name`, `branch`, `event`
@@ -70,10 +74,13 @@ Common query params:
 - `GET /code/entity-effort`
 - `GET /code/entity-ownership`
 - `GET /code/authors`
+- `GET /code/big-o`
+- `GET /code/big-o/file`
 
 Common query params:
 
 - `start_date`, `end_date`
+- `timezone`
 - `authors`
 - `ignore_files`, `include_only`
 - `top`
@@ -92,6 +99,9 @@ Common query params:
 
 - `GET /sonarqube/quality`
 - `GET /sonarqube/component-tree`
+- `GET /sonarqube/measurements`
+- `GET /sonarqube/measurements/history`
+- `GET /sonarqube/component-tree/history`
 
 Common query params:
 

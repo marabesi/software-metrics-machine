@@ -117,6 +117,18 @@ following command:
 smm dashboard serve
 ```
 
+If the dashboard needs to load a large local dataset, increase the Node.js heap before starting it:
+
+```bash
+NODE_OPTIONS="--max-old-space-size=8192" smm dashboard serve
+```
+
+On Windows PowerShell:
+
+```powershell
+$env:NODE_OPTIONS="--max-old-space-size=8192"; smm dashboard serve
+```
+
 ### CLI commands
 
 The CLI commands are designed to generate specific charts based on the fetched data. Each command corresponds to a

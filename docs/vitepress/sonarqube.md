@@ -134,6 +134,9 @@ Main endpoints:
 
 - `GET /sonarqube/quality`
 - `GET /sonarqube/component-tree`
+- `GET /sonarqube/measurements`
+- `GET /sonarqube/measurements/history`
+- `GET /sonarqube/component-tree/history`
 
 See [REST API](./rest-api.md) for details.
 
@@ -145,11 +148,27 @@ Open dashboard:
 smm dashboard serve
 ```
 
-Then open the `SonarQube` tab and use filters for:
+Then open the `SonarQube` tab. The dashboard includes:
+
+- **Reliability Rating**: top-level reliability score from the main component.
+- **Security Rating**: top-level security score from the main component.
+- **Maintainability Rating**: top-level maintainability score from the main component.
+- **Duplication Density**: duplicated lines density from the main component.
+- **SonarQube Measurements**: current metric values and historical measurement snapshots.
+- **Top N by Complexity**: components with the highest cyclomatic complexity.
+- **Top N by NLOC**: largest components by non-commented lines of code.
+- **Component Tree Metrics**: sortable component table with complexity, cognitive complexity, NLOC, coverage, and maintainability.
+- **Component Tree Metrics History**: historical component trends for file-level components.
+
+Several cards include target info popovers with metric targets, explanations, and supporting sources. Component names,
+complexity, and cognitive complexity values link to SonarQube pages when `sonar_url` and `sonar_project` are configured.
+
+Use filters for:
 
 - include patterns
 - ignore patterns
 - remove folders
+- top entries
 
 ### SonarQube dashboard filters
 
@@ -158,6 +177,10 @@ Then open the `SonarQube` tab and use filters for:
 | `sonarqubeIgnorePatternFiles`  | `ignore_files`          |
 | `sonarqubeIncludePatternFiles` | `include_files`         |
 | `sonarqubeRemoveFolders`       | `remove_folders=true`   |
+| `topEntries`                   | Dashboard display limit |
+
+The shared date picker, timezone behavior, saved views, and tab navigation are documented in
+[Dashboard](./features/dashboard.md).
 
 ### Pattern filtering notes
 

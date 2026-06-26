@@ -12,6 +12,16 @@ actionable insights into code quality, complexity, and change patterns. By visua
 metrics, the dashboard helps you identify areas for refactoring, monitor technical debt,
 and track the impact of development practices over time.
 
+The Source Code dashboard tab includes:
+
+- Big O Classification.
+- Code Churn Over Time.
+- Top pairings and latest paired commits.
+- Entity Churn.
+- Entity Effort chart and treemap.
+- Ownership by author, file, and entity.
+- Code Coupling.
+
 ## Code churn
 
 A stacked bar chart showing the total number of lines added (blue) and deleted (red) across
@@ -184,7 +194,7 @@ smm code entity-ownership
 
 ### Type of Chart
 
-Stacked bar chart showing lines changed per file, broken down by author.
+Stacked bar chart and tabbed views showing ownership by author, by file, and by entity.
 
 ### Insight Provided
 
@@ -225,6 +235,20 @@ smm code coupling
 
 :::
 
+## Pairing
+
+The dashboard shows pairing data in two cards:
+
+- **Who Paired The Most With Whom**: top author/co-author pairs by paired commit count.
+- **Latest 20 Paired Commits**: recent commits with co-authors, linked to the commit in the configured provider.
+
+The Insights tab also shows the Pairing Index summary.
+
+## Big O Classification
+
+The Big O Classification card lists analyzed files with their detected complexity classification and score. The card
+includes a search field backed by the `big_o_search` query parameter and a sortable score column.
+
 
 ## Dashboard coverage
 
@@ -236,6 +260,7 @@ The Source Code tab is backed by:
 - `GET /code/entity-effort`
 - `GET /code/entity-ownership`
 - `GET /code/pairing-index`
+- `GET /code/big-o`
 
 ## Dashboard filters
 
@@ -247,6 +272,7 @@ Use these filters in the Source Code dashboard tab.
 |------------------|-------------------------|
 | `startDate`      | `start_date`            |
 | `endDate`        | `end_date`              |
+| `timezone`       | `timezone`              |
 
 ### Source Code-specific filters
 
@@ -259,6 +285,9 @@ Use these filters in the Source Code dashboard tab.
 | `typeChurn`                 | `type_churn`            |
 
 For list filters (`[]`), the dashboard sends comma-separated values.
+
+The shared date picker, timezone behavior, saved views, and tab navigation are documented in
+[Dashboard](./dashboard.md).
 
 ### Pattern filtering notes
 

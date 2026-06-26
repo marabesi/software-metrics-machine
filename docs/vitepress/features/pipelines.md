@@ -10,6 +10,17 @@ The pipelines section is at the core of any CI/CD system. It provides a high-lev
 been executed, their statuses, and key metrics related to their performance at a glance. It focuses on first, a quick
 statuses run for the pipelines, and second, on the time it takes to run them.
 
+The dashboard tab currently includes:
+
+- Total runs summary.
+- Pipeline Runs Duration with Min-Max Range, Job Breakdown, and Runs by Day tabs.
+- Jobs Average Time with By Job and By Day tabs.
+- Job Reruns with a reruns-by-day chart and jobs summary table.
+- Jobs by Status.
+- Job Steps Analysis when exactly one job is selected.
+
+Several tables link to provider pages such as workflow runs, job runs, and workflow metrics when the configured provider
+supports those URLs.
 
 
 
@@ -69,6 +80,7 @@ Use these filters in the Pipelines dashboard tab.
 |------------------|-------------------------|
 | `startDate`      | `start_date`            |
 | `endDate`        | `end_date`              |
+| `timezone`       | `timezone`              |
 
 ### Pipelines-specific filters
 
@@ -83,6 +95,12 @@ Use these filters in the Pipelines dashboard tab.
 | `aggregateMetric`        | `metric`                |
 
 For list filters (`[]`), the dashboard sends comma-separated values.
+
+Filter options are loaded from the API. Workflows, statuses, conclusions, branches, events, and jobs reflect the data
+available in the configured project. When a workflow is selected, the jobs filter refreshes to the jobs for that workflow.
+
+The shared date picker, timezone behavior, saved views, and tab navigation are documented in
+[Dashboard](./dashboard.md).
 
 :::tabs key:cli
 == Dashboard
@@ -126,7 +144,7 @@ Summary of pipelines executed showing total runs, statuses, first and last run a
 :::tabs key:cli
 == Dashboard
 
-Not available yet.
+Available in the Insights tab as the Pipeline Runs summary card and in the Pipelines tab as the Total runs summary.
 
 == CLI
 
@@ -152,6 +170,8 @@ smm pipelines summary
 
 Jobs are the building blocks of any pipeline. They represent individual tasks or steps that need to be executed as
 part of the overall pipeline process. This command associates the jobs wih their corresponding pipeline execution.
+
+In the dashboard, the Jobs Average Time card can be viewed by job or by day.
 
 :::tabs key:cli
 == Dashboard
@@ -196,7 +216,7 @@ smm pipelines jobs-by-status
 :::tabs key:cli
 == Dashboard
 
-Not available yet.
+Available as the Jobs by Status card in the Pipelines tab.
 
 == CLI
 
@@ -240,7 +260,8 @@ smm pipelines jobs-summary
 :::tabs key:cli
 == Dashboard
 
-Not available yet.
+Available in the Job Reruns card as the Jobs Summary table. It includes total runs, average duration, success/failure
+counts, success/failure rates, and rerun count.
 
 == CLI
 
@@ -256,5 +277,13 @@ smm pipelines jobs-summary
 
 :::
 
+## Job Steps Analysis
+
+When exactly one job is selected in the dashboard filters, the Pipelines tab shows step-level analysis for that job. The
+card includes:
+
+- Average step duration by day.
+- Overall time proportion by step.
+- A sortable table of steps, average duration, and count.
 
 
