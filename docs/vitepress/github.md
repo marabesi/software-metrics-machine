@@ -31,21 +31,21 @@ Follow these steps:
    - `workflow` (for accessing GitHub Actions workflows)
    - `pull requests` (for accessing pull request data)
 4. Generate the token and copy it. Make sure to store it securely, as you won't be able to see it again.
-5. Store it in the configuration file [smm_config.json](./getting-started.md#configuration-options) under the key `github_token`.
+5. Store it in the configuration file [smm_config.json](./getting-started.md#configuration-options) under the key `github_token`, or use the project-specific token environment variable documented in [Configuration](./features/configuration.md#project-specific-environment-variables).
 
 ### Check token is working
 
-To check if the token is working, you can set it as an environment variable in your terminal session and then do a test
-request. Start running the following command:
+To check if the token is working before adding it to SMM configuration, you can set a temporary shell variable and then
+do a test request. Start running the following command:
 
 ```bash
-export SMM_GITHUB_TOKEN=ghp_123123123
+export TOKEN_TO_TEST=ghp_123123123
 ```
 
 Once the variables have been set, test your connection with Github with the following command:
 
 ```bash
-curl -H "Authorization: token $SMM_GITHUB_TOKEN" https://api.github.com/user
+curl -H "Authorization: token $TOKEN_TO_TEST" https://api.github.com/user
 ```
 
 A JSON response should be return with the user information, something similar to the following:

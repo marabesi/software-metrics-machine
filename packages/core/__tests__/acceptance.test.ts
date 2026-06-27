@@ -22,17 +22,23 @@ describe('Metrics System Acceptance Tests', () => {
 
   beforeEach(() => {
     const cacheDir = process.env.CACHE_DIR || '/tmp/smm-cache';
+    const githubRepository = `${process.env.SMM_TEST_GITHUB_OWNER || 'owner'}/${process.env.SMM_TEST_GITHUB_REPO || 'repo'}`;
+    const projectEnvPrefix = githubRepository
+      .replace(/[^a-zA-Z0-9]+/g, '_')
+      .replace(/^_+|_+$/g, '')
+      .toUpperCase();
+    const projectEnv = (name: string) => process.env[`${projectEnvPrefix}_${name}`];
 
     const config = {
-      githubToken: process.env.GITHUB_TOKEN || 'test-token',
-      githubRepository: `${process.env.GITHUB_OWNER || 'owner'}/${process.env.GITHUB_REPO || 'repo'}`,
-      jiraUrl: process.env.JIRA_URL || 'https://jira.example.com',
-      jiraEmail: process.env.JIRA_EMAIL || 'user@example.com',
-      jiraToken: process.env.JIRA_TOKEN || 'test-token',
-      jiraProject: process.env.JIRA_PROJECT || 'PROJECT',
-      sonarUrl: process.env.SONARQUBE_URL || 'https://sonar.example.com',
-      sonarToken: process.env.SONARQUBE_TOKEN || 'test-token',
-      sonarProject: process.env.SONARQUBE_PROJECT || 'project-key',
+      githubToken: projectEnv('GITHUB_TOKEN') || 'test-token',
+      githubRepository,
+      jiraUrl: projectEnv('JIRA_URL') || 'https://jira.example.com',
+      jiraEmail: projectEnv('JIRA_EMAIL') || 'user@example.com',
+      jiraToken: projectEnv('JIRA_TOKEN') || 'test-token',
+      jiraProject: projectEnv('JIRA_PROJECT') || 'PROJECT',
+      sonarUrl: projectEnv('SONAR_URL') || 'https://sonar.example.com',
+      sonarToken: projectEnv('SONAR_TOKEN') || 'test-token',
+      sonarProject: projectEnv('SONAR_PROJECT') || 'project-key',
       storeData: cacheDir,
       gitProvider: 'github',
       getPathFromGitProvider: () => cacheDir,

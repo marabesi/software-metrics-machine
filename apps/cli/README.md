@@ -75,18 +75,21 @@ smm dashboard serve
 ```
 
 Multiple projects are supported. Select the active one with `smm --project owner/repo <command>`.
+If `--project` is omitted, SMM uses the first project in the `projects` array before resolving project-specific
+environment variables.
 
-GitHub tokens can be provided through environment variables instead of `smm_config.json`.
-For project-specific tokens, uppercase the `github_repository` value and replace non-alphanumeric
-characters with `_`, then append `_GITHUB_TOKEN`:
+Project configuration can be provided through project-specific environment variables instead of `smm_config.json`.
+Uppercase the `github_repository` value and replace non-alphanumeric
+characters with `_`, then append the setting environment variable name:
 
 ```bash
 export BLA_123_GITHUB_TOKEN=xxx   # used for github_repository "bla/123"
-export BU_456_GITHUB_TOKEN=xxx    # used for github_repository "bu/456"
+export BLA_123_JIRA_TOKEN=xxx     # used for github_repository "bla/123"
+export BLA_123_SMM_TIMEZONE=UTC   # used for github_repository "bla/123"
 ```
 
-Project-specific token environment variables take precedence over project `github_token`,
-root `github_token`, and the generic `GITHUB_TOKEN`.
+`SMM_STORE_DATA_AT` is the only global configuration environment variable. Generic variables such as
+`GITHUB_TOKEN`, `JIRA_TOKEN`, `SONAR_TOKEN`, `SMM_TIMEZONE`, and `GIT_REPOSITORY_PATH` are not used.
 
 ## Global options
 

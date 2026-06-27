@@ -47,15 +47,18 @@ describe('Infrastructure', () => {
     it('should create configuration from environment variables', () => {
       const env = {
         SMM_STORE_DATA_AT: '/tmp',
-        GITHUB_TOKEN: 'gh_test',
-        LOGGING_LEVEL: 'DEBUG',
-        GIT_REPOSITORY_PATH: '/tmp/repo',
+        OWNER_REPO_GIT_PROVIDER: 'github',
+        OWNER_REPO_GITHUB_TOKEN: 'gh_test',
+        OWNER_REPO_LOGGING_LEVEL: 'DEBUG',
+        OWNER_REPO_GIT_REPOSITORY_PATH: '/tmp/repo',
       };
-      const config = new ConfigurationRepository(env).getActiveConfiguration();
+      const config = new ConfigurationRepository(env, 'owner/repo').getActiveConfiguration();
+      expect(config.githubRepository).toBe('owner/repo');
+      expect(config.gitProvider).toBe('github');
       expect(config.githubToken).toBe('gh_test');
       expect(config.loggingLevel).toBe('DEBUG');
       expect(config.storeData).toBe('/tmp');
-      expect(config.getLogPath()).toBe(join('/tmp', 'github_', 'smm.log'));
+      expect(config.getLogPath()).toBe(join('/tmp', 'github_owner_repo', 'smm.log'));
     });
 
     it('should load store logs configuration', () => {
@@ -94,8 +97,8 @@ describe('Infrastructure', () => {
     it('should validate configuration', () => {
       const config = new ConfigurationRepository({
         SMM_STORE_DATA_AT: '/tmp',
-        GIT_REPOSITORY_PATH: '/tmp/repo',
-      }).getActiveConfiguration();
+        OWNER_REPO_GIT_REPOSITORY_PATH: '/tmp/repo',
+      }, 'owner/repo').getActiveConfiguration();
       const validation = config.validate();
       expect(validation.valid).toBe(true);
       expect(validation.errors).toHaveLength(0);

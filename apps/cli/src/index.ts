@@ -81,14 +81,13 @@ export function commands() {
  *     "dashboard_end_date": "2024-12-31"
  *   }
  *
- *   Alternatively, you can use individual environment variables:
- *   GITHUB_TOKEN, GITHUB_REPOSITORY, GIT_REPOSITORY_LOCATION,
- *   JIRA_URL, JIRA_EMAIL, JIRA_TOKEN, JIRA_PROJECT,
- *   SONAR_URL, SONAR_TOKEN, SONAR_PROJECT
+ *   Alternatively, you can use project-specific environment variables:
+ *   uppercase github_repository, replace non-alphanumeric characters with
+ *   underscores, and append the setting name:
+ *   BLA_123_GITHUB_TOKEN, BLA_123_JIRA_TOKEN, BLA_123_SMM_TIMEZONE
+ *   for github_repository "bla/123".
  *
- *   For project-specific GitHub tokens, uppercase github_repository, replace
- *   non-alphanumeric characters with underscores, and append _GITHUB_TOKEN:
- *   BLA_123_GITHUB_TOKEN for github_repository "bla/123".
+ *   SMM_STORE_DATA_AT is the only global configuration environment variable.
  */
 export async function main() {
   const program = commands();

@@ -135,6 +135,137 @@ describe('ConfigurationRepository', () => {
       expect(repo.fromProjectConfig(projectConfig!).githubToken).toBe('default-token');
     });
 
+    it('should ignore generic GITHUB_TOKEN environment variable', () => {
+      writeFileSync(
+        join(tempDir, 'smm_config.json'),
+        JSON.stringify({
+          projects: [
+            {
+              github_repository: 'org/repo-a',
+              git_repository_location: '/tmp/repo-a',
+            },
+          ],
+        }),
+        'utf-8'
+      );
+
+      const repo = new ConfigurationRepository(
+        {
+          SMM_STORE_DATA_AT: tempDir,
+          GITHUB_TOKEN: 'generic-env-token',
+        },
+        'org/repo-a'
+      );
+
+      expect(repo.getActiveConfiguration().githubToken).toBeUndefined();
+    });
+
+    it('should use project-specific environment variables for project configuration', () => {
+      writeFileSync(
+        join(tempDir, 'smm_config.json'),
+        JSON.stringify({
+          projects: [
+            {
+              github_repository: 'org/repo-a',
+            },
+          ],
+        }),
+        'utf-8'
+      );
+
+      const repo = new ConfigurationRepository(
+        {
+          SMM_STORE_DATA_AT: tempDir,
+          ORG_REPO_A_GIT_PROVIDER: 'github',
+          ORG_REPO_A_GITHUB_TOKEN: 'github-token',
+          ORG_REPO_A_GITLAB_TOKEN: 'gitlab-token',
+          ORG_REPO_A_GIT_REPOSITORY_PATH: '/tmp/repo-a',
+          ORG_REPO_A_LOGGING_LEVEL: 'DEBUG',
+          ORG_REPO_A_JIRA_URL: 'https://jira.example.com',
+          ORG_REPO_A_JIRA_EMAIL: 'user@example.com',
+          ORG_REPO_A_JIRA_TOKEN: 'jira-token',
+          ORG_REPO_A_JIRA_PROJECT: 'JIRA',
+          ORG_REPO_A_SONAR_URL: 'https://sonar.example.com',
+          ORG_REPO_A_SONAR_TOKEN: 'sonar-token',
+          ORG_REPO_A_SONAR_PROJECT: 'sonar-project',
+          ORG_REPO_A_STORE_LOGS: 'true',
+          ORG_REPO_A_SMM_TIMEZONE: 'Europe/Madrid',
+          ORG_REPO_A_SMM_STORAGE_TYPE: 'sqlite',
+        },
+        'org/repo-a'
+      );
+
+      const config = repo.getActiveConfiguration();
+      expect(config.gitProvider).toBe('github');
+      expect(config.githubToken).toBe('github-token');
+      expect(config.gitlabToken).toBe('gitlab-token');
+      expect(config.gitRepositoryLocation).toBe('/tmp/repo-a');
+      expect(config.loggingLevel).toBe('DEBUG');
+      expect(config.jiraUrl).toBe('https://jira.example.com');
+      expect(config.jiraEmail).toBe('user@example.com');
+      expect(config.jiraToken).toBe('jira-token');
+      expect(config.jiraProject).toBe('JIRA');
+      expect(config.sonarUrl).toBe('https://sonar.example.com');
+      expect(config.sonarToken).toBe('sonar-token');
+      expect(config.sonarProject).toBe('sonar-project');
+      expect(config.storeLogs).toBe(true);
+      expect(config.timezone).toBe('Europe/Madrid');
+      expect(config.internal.storageType).toBe('sqlite');
+    });
+
+    it('should ignore generic project configuration environment variables', () => {
+      writeFileSync(
+        join(tempDir, 'smm_config.json'),
+        JSON.stringify({
+          projects: [
+            {
+              github_repository: 'org/repo-a',
+            },
+          ],
+        }),
+        'utf-8'
+      );
+
+      const repo = new ConfigurationRepository(
+        {
+          SMM_STORE_DATA_AT: tempDir,
+          GIT_PROVIDER: 'github',
+          GITHUB_TOKEN: 'github-token',
+          GITLAB_TOKEN: 'gitlab-token',
+          GIT_REPOSITORY_PATH: '/tmp/repo-a',
+          LOGGING_LEVEL: 'DEBUG',
+          JIRA_URL: 'https://jira.example.com',
+          JIRA_EMAIL: 'user@example.com',
+          JIRA_TOKEN: 'jira-token',
+          JIRA_PROJECT: 'JIRA',
+          SONAR_URL: 'https://sonar.example.com',
+          SONAR_TOKEN: 'sonar-token',
+          SONAR_PROJECT: 'sonar-project',
+          STORE_LOGS: 'true',
+          SMM_TIMEZONE: 'Europe/Madrid',
+          SMM_STORAGE_TYPE: 'sqlite',
+        },
+        'org/repo-a'
+      );
+
+      const config = repo.getActiveConfiguration();
+      expect(config.gitProvider).toBeUndefined();
+      expect(config.githubToken).toBeUndefined();
+      expect(config.gitlabToken).toBeUndefined();
+      expect(config.gitRepositoryLocation).toBe('');
+      expect(config.loggingLevel).toBe('CRITICAL');
+      expect(config.jiraUrl).toBeUndefined();
+      expect(config.jiraEmail).toBeUndefined();
+      expect(config.jiraToken).toBeUndefined();
+      expect(config.jiraProject).toBeUndefined();
+      expect(config.sonarUrl).toBeUndefined();
+      expect(config.sonarToken).toBeUndefined();
+      expect(config.sonarProject).toBeUndefined();
+      expect(config.storeLogs).toBeUndefined();
+      expect(config.timezone).toBe('UTC');
+      expect(config.internal.storageType).toBe('json');
+    });
+
     it('should use project-specific GitHub token from environment', () => {
       writeFileSync(
         join(tempDir, 'smm_config.json'),
@@ -199,6 +330,36 @@ describe('ConfigurationRepository', () => {
       expect(config.githubRepository).toBe('org/repo-a');
       expect(config.gitRepositoryLocation).toBe('/tmp/repo-a');
       expect(config.githubToken).toBe('token-a');
+    });
+
+    it('should resolve project-specific environment variables for the first project when project is not specified', () => {
+      writeFileSync(
+        join(tempDir, 'smm_config.json'),
+        JSON.stringify({
+          projects: [
+            {
+              github_repository: 'org/repo-a',
+            },
+            {
+              github_repository: 'org/repo-b',
+            },
+          ],
+        }),
+        'utf-8'
+      );
+
+      const repo = new ConfigurationRepository({
+        SMM_STORE_DATA_AT: tempDir,
+        ORG_REPO_A_GITHUB_TOKEN: 'first-project-token',
+        ORG_REPO_A_GIT_REPOSITORY_PATH: '/tmp/repo-a-from-env',
+        ORG_REPO_B_GITHUB_TOKEN: 'second-project-token',
+        ORG_REPO_B_GIT_REPOSITORY_PATH: '/tmp/repo-b-from-env',
+      });
+
+      const config = repo.getActiveConfiguration();
+      expect(config.githubRepository).toBe('org/repo-a');
+      expect(config.githubToken).toBe('first-project-token');
+      expect(config.gitRepositoryLocation).toBe('/tmp/repo-a-from-env');
     });
 
     it('should find project by repository', () => {

@@ -106,7 +106,7 @@ export class ConfigurationRepository implements IConfigurationRepository {
     if (this.projects.length > 0) {
       this.configuration = this.fromProjectConfig(this.projects[this.activeProjectIndex]);
     } else {
-      this.configuration = this.fromRootConfig(this.rawConfig);
+      this.configuration = this.fromRootConfig(this.rawConfig, projectName);
     }
   }
 
@@ -118,28 +118,27 @@ export class ConfigurationRepository implements IConfigurationRepository {
     return this.buildConfiguration(projectConfig);
   }
 
-  private fromRootConfig(configData: JsonObject): Configuration {
-    return this.buildConfiguration(configData);
+  private fromRootConfig(configData: JsonObject, projectName?: string): Configuration {
+    return this.buildConfiguration(configData, projectName);
   }
 
-  private buildConfiguration(configData: JsonObject): Configuration {
+  private buildConfiguration(configData: JsonObject, projectName?: string): Configuration {
     const config = new Configuration();
+    const repository = this.getString(configData, 'github_repository') || projectName;
 
-    config.gitProvider = this.getString(configData, 'git_provider') || this.env.GIT_PROVIDER;
-    config.githubRepository =
-      this.getString(configData, 'github_repository') ||
-      this.env.GITHUB_REPO ||
-      this.env.GITHUB_REPOSITORY;
+    config.gitProvider =
+      this.getString(configData, 'git_provider') || this.getProjectEnv(repository, 'GIT_PROVIDER');
+    config.githubRepository = repository;
     config.githubToken =
-      this.getProjectGithubTokenFromEnv(config.githubRepository) ||
+      this.getProjectEnv(config.githubRepository, 'GITHUB_TOKEN') ||
       this.getString(configData, 'github_token') ||
-      this.getDefaultGithubToken() ||
-      this.env.GITHUB_TOKEN;
-    config.gitlabToken = this.getString(configData, 'gitlab_token') || this.env.GITLAB_TOKEN;
+      this.getDefaultGithubToken();
+    config.gitlabToken =
+      this.getString(configData, 'gitlab_token') || this.getProjectEnv(repository, 'GITLAB_TOKEN');
     config.storeData = this.env.SMM_STORE_DATA_AT!;
     config.gitRepositoryLocation =
       this.getString(configData, 'git_repository_location') ||
-      this.env.GIT_REPOSITORY_PATH ||
+      this.getProjectEnv(repository, 'GIT_REPOSITORY_PATH') ||
       '';
     config.deploymentFrequencyTargets = this.normalizeDeploymentFrequencyTargets(configData);
     config.mainBranch = this.getString(configData, 'main_branch');
@@ -152,23 +151,31 @@ export class ConfigurationRepository implements IConfigurationRepository {
     if (configuredLogLevel) {
       logLevel = configuredLogLevel;
     }
-    if (this.env.LOGGING_LEVEL) {
-      logLevel = this.env.LOGGING_LEVEL;
+    const projectLogLevel = this.getProjectEnv(repository, 'LOGGING_LEVEL');
+    if (projectLogLevel) {
+      logLevel = projectLogLevel;
     }
     config.loggingLevel = logLevel as IConfiguration['loggingLevel'];
 
-    config.jiraUrl = this.getString(configData, 'jira_url') || this.env.JIRA_URL;
-    config.jiraEmail = this.getString(configData, 'jira_email') || this.env.JIRA_EMAIL;
-    config.jiraToken = this.getString(configData, 'jira_token') || this.env.JIRA_TOKEN;
-    config.jiraProject = this.getString(configData, 'jira_project') || this.env.JIRA_PROJECT;
-    config.sonarUrl = this.getString(configData, 'sonar_url') || this.env.SONAR_URL;
-    config.sonarToken = this.getString(configData, 'sonar_token') || this.env.SONAR_TOKEN;
-    config.sonarProject = this.getString(configData, 'sonar_project') || this.env.SONAR_PROJECT;
+    config.jiraUrl = this.getString(configData, 'jira_url') || this.getProjectEnv(repository, 'JIRA_URL');
+    config.jiraEmail =
+      this.getString(configData, 'jira_email') || this.getProjectEnv(repository, 'JIRA_EMAIL');
+    config.jiraToken =
+      this.getString(configData, 'jira_token') || this.getProjectEnv(repository, 'JIRA_TOKEN');
+    config.jiraProject =
+      this.getString(configData, 'jira_project') || this.getProjectEnv(repository, 'JIRA_PROJECT');
+    config.sonarUrl =
+      this.getString(configData, 'sonar_url') || this.getProjectEnv(repository, 'SONAR_URL');
+    config.sonarToken =
+      this.getString(configData, 'sonar_token') || this.getProjectEnv(repository, 'SONAR_TOKEN');
+    config.sonarProject =
+      this.getString(configData, 'sonar_project') || this.getProjectEnv(repository, 'SONAR_PROJECT');
     config.sonarLocalRunnerToken = this.getString(configData, 'sonar_local_runner_token');
-    config.storeLogs = configData.store_logs === true || configData.STORE_LOGS === true;
-    config.timezone = this.getString(configData, 'timezone') || this.env.SMM_TIMEZONE || 'UTC';
+    config.storeLogs = this.resolveStoreLogs(configData, repository);
+    config.timezone =
+      this.getString(configData, 'timezone') || this.getProjectEnv(repository, 'SMM_TIMEZONE') || 'UTC';
     config.internal = {
-      storageType: this.resolveStorageType(configData),
+      storageType: this.resolveStorageType(configData, repository),
     };
     config.validate();
 
@@ -202,19 +209,30 @@ export class ConfigurationRepository implements IConfigurationRepository {
     return typeof this.rawConfig.github_token === 'string' ? this.rawConfig.github_token : undefined;
   }
 
-  private getProjectGithubTokenFromEnv(repository: string | undefined): string | undefined {
-    const envVarName = this.getProjectGithubTokenEnvVarName(repository);
-    return envVarName ? this.env[envVarName] : undefined;
+  private getProjectEnv(repository: string | undefined, envName: string): string | undefined {
+    const normalizedRepository = this.normalizeRepositoryForEnv(repository);
+    return normalizedRepository ? this.env[`${normalizedRepository}_${envName}`] : undefined;
   }
 
-  private getProjectGithubTokenEnvVarName(repository: string | undefined): string | undefined {
+  private getProjectBooleanEnv(repository: string | undefined, envName: string): boolean | undefined {
+    const value = this.getProjectEnv(repository, envName)?.trim().toLowerCase();
+    if (value === 'true') {
+      return true;
+    }
+    if (value === 'false') {
+      return false;
+    }
+    return undefined;
+  }
+
+  private normalizeRepositoryForEnv(repository: string | undefined): string | undefined {
     const normalizedRepository = repository
       ?.trim()
       .replace(/[^a-zA-Z0-9]+/g, '_')
       .replace(/^_+|_+$/g, '')
       .toUpperCase();
 
-    return normalizedRepository ? `${normalizedRepository}_GITHUB_TOKEN` : undefined;
+    return normalizedRepository || undefined;
   }
 
   save(): void {
@@ -427,13 +445,6 @@ export class ConfigurationRepository implements IConfigurationRepository {
 
   private resolveActiveProjectIndex(projectName?: string): number {
     if (!projectName) {
-      if (this.projects.length > 1) {
-        this.logger?.warn(
-          `smm_config.json has ${this.projects.length} projects. Please specify one with --project <name>. Available: ${this.projects.map((p) => p.github_repository || '(unnamed)').join(', ')}`
-        );
-      }
-
-      // No project specified: default to first project.
       return 0;
     }
     const found = this.projects.findIndex((p) => p.github_repository === projectName);
@@ -480,14 +491,26 @@ export class ConfigurationRepository implements IConfigurationRepository {
     return value !== null && typeof value === 'object' && !Array.isArray(value) ? value : undefined;
   }
 
-  private resolveStorageType(configData: JsonObject): StorageType {
+  private resolveStoreLogs(configData: JsonObject, repository: string | undefined): boolean | undefined {
+    if (typeof configData.store_logs === 'boolean') {
+      return configData.store_logs;
+    }
+
+    if (typeof configData.STORE_LOGS === 'boolean') {
+      return configData.STORE_LOGS;
+    }
+
+    return this.getProjectBooleanEnv(repository, 'STORE_LOGS');
+  }
+
+  private resolveStorageType(configData: JsonObject, repository: string | undefined): StorageType {
     const projectInternalConfig = this.getJsonObject(configData, 'internal');
     const rootInternalConfig =
       configData === this.rawConfig ? undefined : this.getJsonObject(this.rawConfig, 'internal');
     const storageType =
       this.getConfiguredStorageType(projectInternalConfig) ||
       this.getConfiguredStorageType(rootInternalConfig) ||
-      this.env.SMM_STORAGE_TYPE ||
+      this.getProjectEnv(repository, 'SMM_STORAGE_TYPE') ||
       'json';
 
     return storageType as StorageType;

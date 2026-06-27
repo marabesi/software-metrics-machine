@@ -30,18 +30,19 @@ To interact with the Jira API and fetch the data needed for this project, you ne
 
 ### Check token is working
 
-To check if the token is working, you can set it as environment variables in your terminal session and then do a test request. Start by running the following commands:
+To check if the token is working before adding it to SMM configuration, you can set temporary shell variables and then do
+a test request. Start by running the following commands:
 
 ```bash
-export JIRA_URL="https://your-domain.atlassian.net"
-export JIRA_TOKEN="your_api_token"
-export JIRA_EMAIL="your-email@example.com"
+export JIRA_URL_TO_TEST="https://your-domain.atlassian.net"
+export JIRA_TOKEN_TO_TEST="your_api_token"
+export JIRA_EMAIL_TO_TEST="your-email@example.com"
 ```
 
 Once the variables have been set, test your connection with Jira using the following command:
 
 ```bash
-curl -u "$JIRA_EMAIL:$JIRA_TOKEN" "$JIRA_URL/rest/api/3/myself"
+curl -u "$JIRA_EMAIL_TO_TEST:$JIRA_TOKEN_TO_TEST" "$JIRA_URL_TO_TEST/rest/api/3/myself"
 ```
 
 A JSON response should be returned with your user information, something similar to the following:
@@ -95,13 +96,13 @@ The Jira provider requires these fields in `smm_config.json`:
 - **`jira_token`**: Your Jira API token generated from https://id.atlassian.com/manage-profile/security/api-tokens
 - **`jira_project`**: The Jira project key you want to analyze (e.g., `PROJ`, `DEV`, `BUG`)
 
-You can also provide these as environment variables:
+You can also provide these as project-specific environment variables:
 
 ```bash
-export JIRA_URL="https://your-domain.atlassian.net"
-export JIRA_EMAIL="your-email@example.com"
-export JIRA_TOKEN="your_api_token"
-export JIRA_PROJECT="PROJ"
+export OWNER_REPO_JIRA_URL="https://your-domain.atlassian.net"
+export OWNER_REPO_JIRA_EMAIL="your-email@example.com"
+export OWNER_REPO_JIRA_TOKEN="your_api_token"
+export OWNER_REPO_JIRA_PROJECT="PROJ"
 ```
 
 ## Fetching data

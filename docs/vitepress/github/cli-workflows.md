@@ -3,7 +3,8 @@
 ## Fetch Workflows
 
 Date-only values passed to pipeline commands are interpreted with the selected project's configured `timezone` from
-`smm_config.json`. If the project does not set `timezone`, SMM uses `SMM_TIMEZONE`, then `UTC`.
+`smm_config.json`. If the project does not set `timezone`, SMM uses the project-specific `SMM_TIMEZONE` environment
+variable, then `UTC`.
 
 ```bash
 smm pipelines fetch
@@ -18,7 +19,7 @@ smm pipelines fetch
 Example with an explicit timezone from the environment:
 
 ```bash
-SMM_TIMEZONE=Europe/Madrid smm pipelines fetch --start-date=2025-01-01 --end-date=2025-12-31
+YOUR_ORG_FRONTEND_APP_SMM_TIMEZONE=Europe/Madrid smm --project your-org/frontend-app pipelines fetch --start-date=2025-01-01 --end-date=2025-12-31
 ```
 
 ## Fetch Jobs
