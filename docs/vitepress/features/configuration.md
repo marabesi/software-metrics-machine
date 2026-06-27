@@ -28,6 +28,7 @@ SMM uses a multi-project configuration format. Wrap your project configurations 
         { "pipeline": ".github/workflows/ci.yml", "job": "deploy" }
       ],
       "main_branch": "main",
+      "timezone": "Europe/Madrid",
       "dashboard_start_date": "2025-01-01",
       "dashboard_end_date": "2025-12-31",
       "dashboard_color": "#1976d2",
@@ -73,6 +74,41 @@ These keys affect dashboard behavior:
 Dashboard filtering uses the browser timezone and sends it as the `timezone` query parameter. This keeps dashboard
 date-time filtering aligned with the user viewing the dashboard. See [Dashboard](./dashboard.md) for shared dashboard
 behavior.
+
+## Timezone configuration
+
+Set `timezone` in each project to an IANA timezone identifier such as `Europe/Madrid`, `America/New_York`, or `UTC`.
+This value is used by CLI commands when they interpret date-only filters and group time-based metrics.
+
+```json
+{
+  "projects": [
+    {
+      "github_repository": "your-org/frontend-app",
+      "timezone": "Europe/Madrid"
+    }
+  ]
+}
+```
+
+If `timezone` is omitted from the selected project, CLI commands use the `SMM_TIMEZONE` environment variable. If neither
+is set, SMM uses `UTC`.
+
+```bash
+export SMM_TIMEZONE=Europe/Madrid
+smm --project your-org/frontend-app prs summary --start-date 2026-01-01 --end-date 2026-01-31
+```
+
+For client dashboards and REST API calls, send the browser or viewer timezone as the `timezone` query parameter. The
+dashboard does this automatically from the browser's `Intl.DateTimeFormat().resolvedOptions().timeZone` value. REST API
+clients should pass the same kind of IANA identifier:
+
+```text
+/pull-requests/summary?start_date=2026-01-01&end_date=2026-01-31&timezone=Europe%2FMadrid
+```
+
+Date-only filters such as `2026-01-01` are expanded to the beginning or end of that day in the selected timezone.
+Offset-aware date-time values such as `2026-01-01T09:00:00+01:00` are treated as exact instants.
 
 ## Key reference
 

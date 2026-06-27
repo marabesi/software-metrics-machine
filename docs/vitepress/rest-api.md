@@ -19,6 +19,24 @@ smm dashboard serve
 
 Default port is `3000` unless `PORT` is set.
 
+## Timezone query parameter
+
+Time-based endpoints accept `timezone` as an optional IANA timezone identifier, for example `Europe/Madrid`,
+`America/New_York`, or `UTC`.
+
+Use this parameter when sending date-only filters or when consuming grouped metrics from a dashboard or client
+application:
+
+```text
+GET /pull-requests/summary?start_date=2026-01-01&end_date=2026-01-31&timezone=Europe%2FMadrid
+```
+
+REST requests use the `timezone` query parameter first. If it is missing or invalid, SMM falls back to the active
+project's configured `timezone`, then to `UTC`.
+
+Date-only values such as `2026-01-01` are interpreted as calendar dates in the selected timezone. Offset-aware date-time
+values such as `2026-01-01T09:00:00+01:00` are treated as exact instants.
+
 ## Pull Requests
 
 - `GET /pull-requests/summary`

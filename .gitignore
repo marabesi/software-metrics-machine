@@ -222,6 +222,7 @@ __marimo__/
 node_modules/
 .turbo/
 **/.vitepress/cache
+**/.vitepress/.temp
 tmp_test/
 
 ./e2e/**

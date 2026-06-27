@@ -51,6 +51,14 @@ The dashboard serializes selected dates into the URL as `startDate` and `endDate
 also sends the browser timezone as the `timezone` query parameter so date-only filtering and time grouping match the
 person using the dashboard.
 
+The timezone is detected in the browser with `Intl.DateTimeFormat().resolvedOptions().timeZone` and should be an IANA
+timezone identifier, for example `Europe/Madrid`, `America/New_York`, or `UTC`. Users do not normally need to configure
+this manually in the dashboard. When sharing a dashboard URL with clients, keep the `timezone` parameter in the URL if
+you want everyone opening the link to see the same date boundaries and grouped periods.
+
+If the dashboard request does not include a valid `timezone`, the API falls back to the active project's configured
+`timezone`, then to `UTC`.
+
 ## Saved views
 
 Filters can be saved from the filter drawer. A saved view records:

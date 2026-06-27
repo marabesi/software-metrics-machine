@@ -15,6 +15,9 @@ must step in order to analyze PRs data using the CLI or [the dashboard](../featu
 Fetching PR data from GitHub is the first step before performing any analysis. The CLI provide comments to fetch PRs from
 a specified repository from GitHub.
 
+Date-only values passed to `--start-date` and `--end-date` are interpreted with the selected project's configured
+`timezone` from `smm_config.json`. If the project does not set `timezone`, SMM uses `SMM_TIMEZONE`, then `UTC`.
+
 ```bash
 smm prs fetch
 ```
@@ -42,6 +45,12 @@ Fetching PRs created between January 1, 2025, and June 30, 2025:
 
 ```bash
 smm prs fetch --start-date=2025-01-01 --end-date=2025-06-30
+```
+
+Using a temporary timezone for CLI execution:
+
+```bash
+SMM_TIMEZONE=Europe/Madrid smm prs fetch --start-date=2025-01-01 --end-date=2025-06-30
 ```
 
 Fetching only open PRs:

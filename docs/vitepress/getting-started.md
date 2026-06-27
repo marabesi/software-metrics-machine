@@ -62,15 +62,17 @@ In the folder pointed to store the data, create a configuration file named `smm_
       "git_provider": "github",
       "github_token": "your_github_token",
       "github_repository": "marabesi/json-tool",
-      "git_repository_location": "/your/local/repo"
+      "git_repository_location": "/your/local/repo",
+      "timezone": "Europe/Madrid"
     }
   ]
 }
 ```
 
 This configuration is the central point to configure the project and give it default values. Replace `your_github_token` with
-the token you generated, and `/your/local/repo` with the path where you cloned the repository. A table with the full
-configuration options is available at [Configuration options](./features/configuration.md).
+the token you generated, `/your/local/repo` with the path where you cloned the repository, and `Europe/Madrid` with the
+IANA timezone used by your team. CLI commands use this timezone for date-only filters and time grouping. A table with the
+full configuration options is available at [Configuration options](./features/configuration.md).
 
 ### Checkpoint store data
 
