@@ -22,7 +22,7 @@
   "author": "Marabesi",
   "license": "MIT",
   "scripts": {
-    "build:local": "pnpm run build; pnpm run lint -- --fix",
+    "build:local": "pnpm run lint -- --fix; pnpm run build; pnpm run test",
     "build": "turbo run build",
     "clean": "turbo run clean",
     "lint": "turbo run lint",

@@ -9,7 +9,6 @@ import { setupSwagger } from './config/swagger.config';
  * Software Metrics Machine - REST API Server
  *
  * Exposes metrics through HTTP endpoints.
- * Powered by MetricsOrchestrator.
  *
  * Features:
  * - Comprehensive metrics from GitHub, Jira, SonarQube, Git, CodeMaat

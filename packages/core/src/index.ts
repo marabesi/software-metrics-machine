@@ -6,7 +6,7 @@
  * - infrastructure: Configuration, repos, external service clients
  * - domain: Business logic services, aggregates, calculations
  * - providers: Integrations with GitHub, GitLab, Jira, SonarQube, Git, CodeMaat
- * - aggregates: Repository adapters, orchestrators
+ * - aggregates: Repository adapters
  */
 
 export * from './infrastructure/index';

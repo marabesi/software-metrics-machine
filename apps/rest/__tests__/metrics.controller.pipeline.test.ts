@@ -1,16 +1,16 @@
 import { INestApplication } from '@nestjs/common';
 import request from 'supertest';
 import { afterAll, beforeAll, describe, expect, it, vi } from 'vitest';
-import { createMetricsTestApp, MockedMetricsOrchestrator } from './helpers/metrics-test-app';
+import { createMetricsTestApp, MockedMetricsServices } from './helpers/metrics-test-app';
 
 describe('MetricsController - Pipeline Metrics', () => {
   let app: INestApplication;
-  let orchestrator: MockedMetricsOrchestrator;
+  let services: MockedMetricsServices;
 
   beforeAll(async () => {
     const testApp = await createMetricsTestApp();
     app = testApp.app;
-    orchestrator = testApp.orchestrator;
+    services = testApp.services;
   });
 
   afterAll(async () => {
@@ -33,7 +33,7 @@ describe('MetricsController - Pipeline Metrics', () => {
       .get('/api/metrics/deployment?frequency=day')
       .expect(200)
       .expect(() => {
-        expect(orchestrator.getDeploymentMetrics).toHaveBeenCalledWith(
+        expect(services.pipelinesService.getMetrics).toHaveBeenCalledWith(
           expect.objectContaining({
             frequency: 'day',
           })
@@ -46,7 +46,7 @@ describe('MetricsController - Pipeline Metrics', () => {
   });
 
   it('should handle missing pipeline data', async () => {
-    vi.spyOn(orchestrator, 'getDeploymentMetrics').mockRejectedValueOnce(
+    vi.spyOn(services.pipelinesService, 'getMetrics').mockRejectedValueOnce(
       new Error('No workflow data available')
     );
 

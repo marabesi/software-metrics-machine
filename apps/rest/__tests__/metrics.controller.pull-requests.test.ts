@@ -1,16 +1,16 @@
 import { INestApplication } from '@nestjs/common';
 import request from 'supertest';
 import { afterAll, beforeAll, describe, expect, it, vi } from 'vitest';
-import { createMetricsTestApp, MockedMetricsOrchestrator } from './helpers/metrics-test-app';
+import { createMetricsTestApp, MockedMetricsServices } from './helpers/metrics-test-app';
 
 describe('MetricsController - Pull Request Metrics', () => {
   let app: INestApplication;
-  let orchestrator: MockedMetricsOrchestrator;
+  let services: MockedMetricsServices;
 
   beforeAll(async () => {
     const testApp = await createMetricsTestApp();
     app = testApp.app;
-    orchestrator = testApp.orchestrator;
+    services = testApp.services;
   });
 
   afterAll(async () => {
@@ -34,7 +34,7 @@ describe('MetricsController - Pull Request Metrics', () => {
       .get('/api/metrics/pr?startDate=2024-01-01&endDate=2024-03-31')
       .expect(200)
       .expect(() => {
-        expect(orchestrator.getPRMetrics).toHaveBeenCalledWith(
+        expect(services.prsService.getMetrics).toHaveBeenCalledWith(
           expect.objectContaining({
             startDate: '2024-01-01',
             endDate: '2024-03-31',
@@ -48,7 +48,7 @@ describe('MetricsController - Pull Request Metrics', () => {
   });
 
   it('should handle missing required data gracefully', async () => {
-    vi.spyOn(orchestrator, 'getPRMetrics').mockRejectedValueOnce(
+    vi.spyOn(services.prsService, 'getMetrics').mockRejectedValueOnce(
       new Error('GitHub API unavailable')
     );
 

@@ -1,6 +1,13 @@
 import { Controller, Get, Query, HttpException, HttpStatus, Logger } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiQuery, ApiResponse, ApiOkResponse } from '@nestjs/swagger';
-import { MetricsOrchestrator } from '@smmachine/core';
+import {
+  CodeMetricsRepository,
+  IssuesRepository,
+  PairingIndexService,
+  PipelinesService,
+  PRsService,
+  SonarQubeService,
+} from '@smmachine/core';
 import {
   IssueMetricsQueryDto,
   PRMetricsQueryDto,
@@ -22,7 +29,6 @@ import {
  * Metrics API Controller
  *
  * Exposes all metrics through REST endpoints.
- * All endpoints delegate to MetricsOrchestrator for business logic.
  *
  * Each endpoint supports date filtering via query parameters:
  * - startDate: ISO 8601 date or datetime
@@ -33,7 +39,14 @@ import {
 export class MetricsController {
   private readonly logger = new Logger('MetricsController');
 
-  constructor(private orchestrator: MetricsOrchestrator) {}
+  constructor(
+    private prsService: PRsService,
+    private pipelinesService: PipelinesService,
+    private codeMetricsRepository: CodeMetricsRepository,
+    private issuesRepository: IssuesRepository,
+    private sonarqubeService: SonarQubeService,
+    private pairingService: PairingIndexService
+  ) {}
 
   /**
    * GET /api/metrics/issues
@@ -49,7 +62,7 @@ export class MetricsController {
   async getIssueMetrics(@Query() query: IssueMetricsQueryDto): Promise<MetricsIssueResponse> {
     try {
       this.logger.debug(`Fetching issue metrics: ${JSON.stringify(query)}`);
-      return (await this.orchestrator.getIssueMetrics({
+      return (await this.getIssueMetricsReport({
         status: query.status,
         startDate: query.startDate,
         endDate: query.endDate,
@@ -79,7 +92,7 @@ export class MetricsController {
   async getPRMetrics(@Query() query: PRMetricsQueryDto): Promise<MetricsPRResponse> {
     try {
       this.logger.debug(`Fetching PR metrics: ${JSON.stringify(query)}`);
-      return (await this.orchestrator.getPRMetrics({
+      return (await this.prsService.getMetrics({
         startDate: query.startDate,
         endDate: query.endDate,
       })) as MetricsPRResponse;
@@ -114,7 +127,7 @@ export class MetricsController {
   ): Promise<MetricsDeploymentResponse> {
     try {
       this.logger.debug(`Fetching deployment metrics: ${JSON.stringify(query)}`);
-      return (await this.orchestrator.getDeploymentMetrics({
+      return (await this.getDeploymentMetricsReport({
         frequency: query.frequency,
         startDate: query.startDate,
         endDate: query.endDate,
@@ -145,7 +158,7 @@ export class MetricsController {
   async getCodeMetrics(@Query() query: CodeMetricsQueryDto): Promise<MetricsCodeResponse> {
     try {
       this.logger.debug(`Fetching code metrics: ${JSON.stringify(query)}`);
-      return (await this.orchestrator.getCodeMetrics({
+      return (await this.getCodeMetricsReport({
         selectedAuthors: query.selectedAuthors,
         startDate: query.startDate,
         endDate: query.endDate,
@@ -174,7 +187,9 @@ export class MetricsController {
   async getQualityMetrics(@Query() query: QualityMetricsQueryDto): Promise<MetricsQualityResponse> {
     try {
       this.logger.debug(`Fetching quality metrics: ${JSON.stringify(query)}`);
-      return (await this.orchestrator.getQualityMetrics(query.measures)) as MetricsQualityResponse;
+      return (await this.sonarqubeService.getQualityMetrics(
+        query.measures
+      )) as MetricsQualityResponse;
     } catch (error) {
       this.logger.error(
         `Failed to fetch quality metrics: ${error}`,
@@ -198,7 +213,22 @@ export class MetricsController {
   async getFullReport(): Promise<MetricsFullReportResponse> {
     try {
       this.logger.debug('Fetching full metrics report');
-      return (await this.orchestrator.getFullReport()) as MetricsFullReportResponse;
+      const [pullRequests, deployment, code, issues, quality] = await Promise.all([
+        this.prsService.getMetrics(),
+        this.getDeploymentMetricsReport(),
+        this.getCodeMetricsReport(),
+        this.getIssueMetricsReport(),
+        this.sonarqubeService.getQualityMetrics(),
+      ]);
+
+      return {
+        timestamp: new Date().toISOString(),
+        pullRequests,
+        deployment,
+        code,
+        issues,
+        quality,
+      } as MetricsFullReportResponse;
     } catch (error) {
       this.logger.error(
         `Failed to fetch full report: ${error}`,
@@ -209,5 +239,44 @@ export class MetricsController {
         HttpStatus.INTERNAL_SERVER_ERROR
       );
     }
+  }
+
+  private async getDeploymentMetricsReport(filters?: DeploymentMetricsQueryDto) {
+    const pipelineMetrics = await this.pipelinesService.getMetrics(filters);
+    const deploymentFrequency =
+      await this.pipelinesService.getDeploymentFrequencyWithAllIntervals(filters);
+    const jobMetrics = await this.pipelinesService.getJobMetrics(filters);
+
+    return {
+      pipelineMetrics,
+      deploymentFrequency,
+      jobMetrics,
+    };
+  }
+
+  private async getCodeMetricsReport(filters?: CodeMetricsQueryDto) {
+    const pairingIndex = await this.pairingService.getPairingIndex(filters);
+    const codeChurn = await this.codeMetricsRepository.getCodeChurn({
+      startDate: filters?.startDate,
+      endDate: filters?.endDate,
+    });
+    const fileCoupling = await this.codeMetricsRepository.getFileCoupling({
+      authors: filters?.selectedAuthors,
+    });
+
+    return {
+      pairingIndex,
+      codeChurn,
+      fileCoupling,
+    };
+  }
+
+  private async getIssueMetricsReport(filters?: IssueMetricsQueryDto) {
+    const issues = await this.issuesRepository.getIssues(filters);
+
+    return {
+      totalIssues: issues.length,
+      issues,
+    };
   }
 }

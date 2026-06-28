@@ -1,16 +1,16 @@
 import { INestApplication } from '@nestjs/common';
 import request from 'supertest';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
-import { createMetricsTestApp, MockedMetricsOrchestrator } from './helpers/metrics-test-app';
+import { createMetricsTestApp, MockedMetricsServices } from './helpers/metrics-test-app';
 
 describe('Jira', () => {
   let app: INestApplication;
-  let orchestrator: MockedMetricsOrchestrator;
+  let services: MockedMetricsServices;
 
   beforeAll(async () => {
     const testApp = await createMetricsTestApp();
     app = testApp.app;
-    orchestrator = testApp.orchestrator;
+    services = testApp.services;
   });
 
   afterAll(async () => {
@@ -32,7 +32,7 @@ describe('Jira', () => {
       .get('/api/metrics/issues?status=Done')
       .expect(200)
       .expect(() => {
-        expect(orchestrator.getIssueMetrics).toHaveBeenCalledWith(
+        expect(services.issuesRepository.getIssues).toHaveBeenCalledWith(
           expect.objectContaining({
             status: 'Done',
           })

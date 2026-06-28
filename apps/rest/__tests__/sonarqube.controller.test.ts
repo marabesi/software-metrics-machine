@@ -5,16 +5,16 @@ import request from 'supertest';
 import { afterAll, beforeAll, beforeEach, describe, expect, it, vi } from 'vitest';
 import { SonarqubeController } from '../src/controllers/sonarqube.controller';
 import { HttpExceptionFilter, AllExceptionsFilter } from '../src/filters/http-exception.filter';
-import { createMetricsTestApp, MockedMetricsOrchestrator } from './helpers/metrics-test-app';
+import { createMetricsTestApp, MockedMetricsServices } from './helpers/metrics-test-app';
 
 describe('Sonarqube', () => {
   let app: INestApplication;
-  let orchestrator: MockedMetricsOrchestrator;
+  let services: MockedMetricsServices;
 
   beforeAll(async () => {
     const testApp = await createMetricsTestApp();
     app = testApp.app;
-    orchestrator = testApp.orchestrator;
+    services = testApp.services;
   });
 
   afterAll(async () => {
@@ -36,7 +36,7 @@ describe('Sonarqube', () => {
       .get('/api/metrics/quality?measures=coverage&measures=complexity')
       .expect(200)
       .expect(() => {
-        expect(orchestrator.getQualityMetrics).toHaveBeenCalledWith(
+        expect(services.sonarqubeService.getQualityMetrics).toHaveBeenCalledWith(
           expect.arrayContaining(['coverage', 'complexity'])
         );
       });

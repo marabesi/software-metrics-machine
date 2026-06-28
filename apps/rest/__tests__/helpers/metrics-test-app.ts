@@ -2,83 +2,116 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { INestApplication, ValidationPipe, BadRequestException } from '@nestjs/common';
 import { MetricsController } from '../../src/metrics.controller';
 import { HttpExceptionFilter, AllExceptionsFilter } from '../../src/filters/http-exception.filter';
-import { MetricsOrchestrator } from '@smmachine/core';
+import {
+  CodeMetricsRepository,
+  IssuesRepository,
+  PairingIndexService,
+  PipelinesService,
+  PRsService,
+  SonarQubeService,
+} from '@smmachine/core';
 import { vi } from 'vitest';
 
-export interface MockedMetricsOrchestrator {
-  getPRMetrics: ReturnType<typeof vi.fn>;
-  getDeploymentMetrics: ReturnType<typeof vi.fn>;
-  getCodeMetrics: ReturnType<typeof vi.fn>;
-  getIssueMetrics: ReturnType<typeof vi.fn>;
-  getQualityMetrics: ReturnType<typeof vi.fn>;
-  getFullReport: ReturnType<typeof vi.fn>;
+export interface MockedMetricsServices {
+  prsService: {
+    getMetrics: ReturnType<typeof vi.fn>;
+  };
+  pipelinesService: {
+    getMetrics: ReturnType<typeof vi.fn>;
+    getDeploymentFrequencyWithAllIntervals: ReturnType<typeof vi.fn>;
+    getJobMetrics: ReturnType<typeof vi.fn>;
+  };
+  codeMetricsRepository: {
+    getCodeChurn: ReturnType<typeof vi.fn>;
+    getFileCoupling: ReturnType<typeof vi.fn>;
+  };
+  issuesRepository: {
+    getIssues: ReturnType<typeof vi.fn>;
+  };
+  sonarqubeService: {
+    getQualityMetrics: ReturnType<typeof vi.fn>;
+  };
+  pairingService: {
+    getPairingIndex: ReturnType<typeof vi.fn>;
+  };
 }
 
 export async function createMetricsTestApp(): Promise<{
   app: INestApplication;
-  orchestrator: MockedMetricsOrchestrator;
+  services: MockedMetricsServices;
 }> {
-  const mockOrchestrator: MockedMetricsOrchestrator = {
-    getPRMetrics: vi.fn().mockResolvedValue({
-      totalPRs: 42,
-      leadTime: { average: 2.5, unit: 'days' },
-      commentSummary: { total: 156 },
-      labelSummary: { bug: 5, feature: 12 },
-      filters: {},
-    }),
-    getDeploymentMetrics: vi.fn().mockResolvedValue({
-      pipelineMetrics: { totalRuns: 100, successRate: 0.95 },
-      deploymentFrequency: [
-        { date: '2024-01-01', value: 3 },
-        { date: '2024-01-02', value: 5 },
-      ],
-      jobMetrics: [{ jobName: 'build', avgDuration: 120 }],
-      filters: {},
-    }),
-    getCodeMetrics: vi.fn().mockResolvedValue({
-      pairingIndex: { pairingIndexPercentage: 45 },
-      codeChurn: { data: { additions: 1520, deletions: 890 } },
-      fileCoupling: [],
-      filters: {},
-    }),
-    getIssueMetrics: vi.fn().mockResolvedValue({
-      totalIssues: 320,
-      issues: [],
-      filters: {},
-    }),
-    getQualityMetrics: vi.fn().mockResolvedValue({
-      coverage: 78.5,
-      complexity: 42,
-      filters: {},
-    }),
-    getFullReport: vi.fn().mockResolvedValue({
-      timestamp: '2024-01-15T10:30:00Z',
-      pullRequests: {
+  const services: MockedMetricsServices = {
+    prsService: {
+      getMetrics: vi.fn().mockResolvedValue({
         totalPRs: 42,
         leadTime: { average: 2.5, unit: 'days' },
-      },
-      deployment: {
-        pipelineMetrics: { totalRuns: 100, successRate: 0.95 },
-      },
-      code: {
-        pairingIndex: { pairingIndexPercentage: 45 },
-      },
-      issues: {
-        totalIssues: 320,
-      },
-      quality: {
+        commentSummary: { total: 156 },
+        labelSummary: { bug: 5, feature: 12 },
+        filters: {},
+      }),
+    },
+    pipelinesService: {
+      getMetrics: vi.fn().mockResolvedValue({ totalRuns: 100, successRate: 0.95 }),
+      getDeploymentFrequencyWithAllIntervals: vi.fn().mockResolvedValue([
+        { date: '2024-01-01', value: 3 },
+        { date: '2024-01-02', value: 5 },
+      ]),
+      getJobMetrics: vi.fn().mockResolvedValue([{ jobName: 'build', avgDuration: 120 }]),
+    },
+    codeMetricsRepository: {
+      getCodeChurn: vi.fn().mockResolvedValue({ data: { additions: 1520, deletions: 890 } }),
+      getFileCoupling: vi.fn().mockResolvedValue([]),
+    },
+    issuesRepository: {
+      getIssues: vi.fn().mockResolvedValue(
+        Array.from({ length: 320 }, (_, index) => ({
+          id: String(index + 1),
+          key: `ISSUE-${index + 1}`,
+          status: 'Done',
+          createdAt: '2024-01-01T00:00:00Z',
+        }))
+      ),
+    },
+    sonarqubeService: {
+      getQualityMetrics: vi.fn().mockResolvedValue({
         coverage: 78.5,
-      },
-      filters: {},
-    }),
+        complexity: 42,
+        filters: {},
+      }),
+    },
+    pairingService: {
+      getPairingIndex: vi.fn().mockResolvedValue({
+        pairingIndexPercentage: 45,
+      }),
+    },
   };
 
   const moduleFixture: TestingModule = await Test.createTestingModule({
     controllers: [MetricsController],
     providers: [
       {
-        provide: MetricsOrchestrator,
-        useValue: mockOrchestrator,
+        provide: PRsService,
+        useValue: services.prsService,
+      },
+      {
+        provide: PipelinesService,
+        useValue: services.pipelinesService,
+      },
+      {
+        provide: CodeMetricsRepository,
+        useValue: services.codeMetricsRepository,
+      },
+      {
+        provide: IssuesRepository,
+        useValue: services.issuesRepository,
+      },
+      {
+        provide: SonarQubeService,
+        useValue: services.sonarqubeService,
+      },
+      {
+        provide: PairingIndexService,
+        useValue: services.pairingService,
       },
     ],
   }).compile();
@@ -105,6 +138,6 @@ export async function createMetricsTestApp(): Promise<{
 
   return {
     app,
-    orchestrator: mockOrchestrator,
+    services,
   };
 }

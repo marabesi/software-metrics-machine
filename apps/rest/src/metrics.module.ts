@@ -10,7 +10,6 @@ import { ProjectsController } from './controllers/projects.controller';
 import { SonarqubeController } from './controllers/sonarqube.controller';
 import { LoggingMiddleware } from './middleware/logging.middleware';
 import {
-  MetricsOrchestrator,
   PullRequestsRepository,
   PullRequestFiltersRepository,
   PipelinesRepository,
@@ -84,7 +83,6 @@ function createRequestTimeZoneProvider(config: Configuration, req: Record<string
  * - Git Traverser: Local repository analysis
  * - CodeMaat Analyzer: Code churn and coupling
  * - Repositories: Data access layer
- * - MetricsOrchestrator: Business logic orchestration
  */
 @Module({
   controllers: [
@@ -300,41 +298,8 @@ function createRequestTimeZoneProvider(config: Configuration, req: Record<string
       },
       inject: [Configuration],
     },
-
-    // Orchestrator
-    {
-      provide: MetricsOrchestrator,
-      useFactory: (
-        prsService: PRsService,
-        pipelinesService: PipelinesService,
-        pairingService: PairingService,
-        codeMetricsRepository: CodeMetricsRepository,
-        issuesRepository: IssuesRepository,
-        sonarqubeService: SonarQubeService,
-        config: Configuration
-      ) => {
-        return new MetricsOrchestrator(
-          prsService,
-          pipelinesService,
-          codeMetricsRepository,
-          issuesRepository,
-          sonarqubeService,
-          pairingService,
-          createLogger(config, 'MetricsOrchestrator')
-        );
-      },
-      inject: [
-        PRsService,
-        PipelinesService,
-        PairingService,
-        CodeMetricsRepository,
-        IssuesRepository,
-        SonarQubeService,
-        Configuration,
-      ],
-    },
   ],
-  exports: [MetricsOrchestrator, Configuration, ConfigurationRepository],
+  exports: [Configuration, ConfigurationRepository],
 })
 export class MetricsModule implements NestModule {
   configure(consumer: MiddlewareConsumer) {

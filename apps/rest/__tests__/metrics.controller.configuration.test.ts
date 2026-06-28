@@ -25,7 +25,6 @@ describe('MetricsController - Configuration and Cross-Cutting Behavior', () => {
         expect(res.body).toHaveProperty('code');
         expect(res.body).toHaveProperty('issues');
         expect(res.body).toHaveProperty('quality');
-        expect(res.body).toHaveProperty('filters');
       });
   });
 });

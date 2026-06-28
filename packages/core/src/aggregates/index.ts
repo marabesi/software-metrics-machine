@@ -25,7 +25,6 @@ export {
 } from '../providers/sonarqube/sonarqube-fetch-metrics-repository';
 export { SonarqubeFactory } from './sonarqube-factory';
 export { SonarqubeRepository } from './sonarqube-repository';
-export { MetricsOrchestrator, type IMetricsOrchestrator } from './metrics-orchestrator';
 export { GitFactory } from './git-factory';
 export { CodemaatFactory } from './codemaat-factory';
 export { PairingFactory } from './pairing-factory';

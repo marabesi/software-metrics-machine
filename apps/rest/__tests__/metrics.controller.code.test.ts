@@ -1,16 +1,16 @@
 import { INestApplication } from '@nestjs/common';
 import request from 'supertest';
 import { afterAll, beforeAll, describe, expect, it, vi } from 'vitest';
-import { createMetricsTestApp, MockedMetricsOrchestrator } from './helpers/metrics-test-app';
+import { createMetricsTestApp, MockedMetricsServices } from './helpers/metrics-test-app';
 
 describe('MetricsController - Code Metrics', () => {
   let app: INestApplication;
-  let orchestrator: MockedMetricsOrchestrator;
+  let services: MockedMetricsServices;
 
   beforeAll(async () => {
     const testApp = await createMetricsTestApp();
     app = testApp.app;
-    orchestrator = testApp.orchestrator;
+    services = testApp.services;
   });
 
   afterAll(async () => {
@@ -35,7 +35,7 @@ describe('MetricsController - Code Metrics', () => {
   });
 
   it('should handle missing repository', async () => {
-    vi.spyOn(orchestrator, 'getCodeMetrics').mockRejectedValueOnce(
+    vi.spyOn(services.pairingService, 'getPairingIndex').mockRejectedValueOnce(
       new Error('Repository not found')
     );
 
