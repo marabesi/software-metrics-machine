@@ -5,6 +5,7 @@ export type DashboardSection =
   | 'pipelines'
   | 'pull-requests'
   | 'source-code'
+  | 'architecture'
   | 'sonarqube';
 
 export type SavedFilterEntry = {
@@ -109,6 +110,10 @@ export function dashboardSectionFromPathname(pathname: string): DashboardSection
 
   if (pathname.includes('/source-code')) {
     return 'source-code';
+  }
+
+  if (pathname.includes('/architecture')) {
+    return 'architecture';
   }
 
   if (pathname.includes('/sonarqube')) {

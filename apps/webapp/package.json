@@ -25,6 +25,7 @@
     "clsx": "catalog:",
     "date-fns": "catalog:",
     "dayjs": "catalog:",
+    "mermaid": "^11.16.0",
     "next": "catalog:",
     "react": "catalog:",
     "react-dom": "catalog:",

@@ -265,4 +265,8 @@ export class Configuration implements IConfiguration {
   getGitPath(): string {
     return path.join(this.getBaseDirectory(), 'git');
   }
+
+  getArchitecturePath(): string {
+    return path.join(this.getBaseDirectory(), 'architecture');
+  }
 }

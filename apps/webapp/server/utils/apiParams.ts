@@ -22,8 +22,6 @@ export interface DashboardFilters {
   labelSelector?: string[];
   pullRequestStatus?: 'open' | 'closed' | 'merged' | 'draft';
   aggregateBy?: string;
-  sonarqubeIgnorePatternFiles?: string;
-  sonarqubeIncludePatternFiles?: string;
   sonarqubeRemoveFolders?: boolean;
 }
 
@@ -89,8 +87,8 @@ export function buildPullRequestApiParams(filters: DashboardFilters): ApiParams 
  */
 export function buildSonarqubeApiParams(filters: DashboardFilters): ApiParams {
   return {
-    ignore_files: filters.sonarqubeIgnorePatternFiles || undefined,
-    include_files: filters.sonarqubeIncludePatternFiles || undefined,
+    ignore_files: filters.ignorePatternFiles || undefined,
+    include_files: filters.includePatternFiles || undefined,
     remove_folders: filters.sonarqubeRemoveFolders ? 'true' : undefined,
   };
 }

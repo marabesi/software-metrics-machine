@@ -227,10 +227,10 @@ export default function FiltersContainer({ repository }: { repository: string })
 
 
       {/* Source Code / SonarQube Tab - Source Code-like Filters */}
-      {activeSection === 'source-code' && (
+      {(activeSection === 'source-code' || activeSection === 'architecture') && (
         <Box sx={{ mb: 3 }}>
           <Typography variant="subtitle2" sx={{ mb: 1, fontWeight: 600 }}>
-            {activeSection === 'source-code' ? 'Source Code Filters' : 'SonarQube Filters'}
+            {activeSection === 'architecture' ? 'Architecture Filters' : 'Source Code Filters'}
           </Typography>
           <Stack direction="column" spacing={2} flexWrap="wrap">
             <TextInputFilter
@@ -245,6 +245,8 @@ export default function FiltersContainer({ repository }: { repository: string })
               onChange={(value) => updateFilter('includePatternFiles', value)}
               placeholder="e.g., *.ts, src/**"
             />
+            {activeSection === 'source-code' && (
+              <>
             <MultiSelectFilter
               label="Authors (Source Code)"
               values={filters.authorSelectSourceCode}
@@ -265,6 +267,8 @@ export default function FiltersContainer({ repository }: { repository: string })
               max={TOP_ENTRIES_MAX}
               step={STEP}
             />
+              </>
+            )}
           </Stack>
         </Box>
       )}
@@ -277,14 +281,14 @@ export default function FiltersContainer({ repository }: { repository: string })
           <Stack direction="column" spacing={2} flexWrap="wrap">
             <TextInputFilter
               label="Ignore Pattern Files"
-              value={filters.sonarqubeIgnorePatternFiles}
-              onChange={(value) => updateFilter('sonarqubeIgnorePatternFiles', value)}
+              value={filters.ignorePatternFiles}
+              onChange={(value) => updateFilter('ignorePatternFiles', value)}
               placeholder="e.g., *.test.ts, node_modules/*, *.json"
             />
             <TextInputFilter
               label="Include Pattern Files"
-              value={filters.sonarqubeIncludePatternFiles}
-              onChange={(value) => updateFilter('sonarqubeIncludePatternFiles', value)}
+              value={filters.includePatternFiles}
+              onChange={(value) => updateFilter('includePatternFiles', value)}
               placeholder="e.g., *.ts, src/**, app/**"
             />
             <FormControlLabel

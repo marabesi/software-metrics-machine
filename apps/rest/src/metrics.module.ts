@@ -8,6 +8,7 @@ import { PullRequestsController } from './controllers/pull-requests.controller';
 import { ConfigurationController } from './controllers/configuration.controller';
 import { ProjectsController } from './controllers/projects.controller';
 import { SonarqubeController } from './controllers/sonarqube.controller';
+import { ArchitectureController } from './controllers/architecture.controller';
 import { LoggingMiddleware } from './middleware/logging.middleware';
 import {
   PullRequestsRepository,
@@ -29,6 +30,7 @@ import {
   SonarqubeFactory,
   PairingFactory,
   BigOService,
+  ArchitectureService,
 } from '@smmachine/core';
 import PipelineFactory from '@smmachine/core/aggregates/pipeline-factory';
 import { PairingService } from '@smmachine/core/domain/code/pairing-service';
@@ -93,6 +95,7 @@ function createRequestTimeZoneProvider(config: Configuration, req: Record<string
     ConfigurationController,
     ProjectsController,
     SonarqubeController,
+    ArchitectureController,
   ],
   providers: [
     // Configuration Repository (singleton — caches project list)
@@ -295,6 +298,14 @@ function createRequestTimeZoneProvider(config: Configuration, req: Record<string
       provide: BigOService,
       useFactory: (config: Configuration) => {
         return new BigOService(config);
+      },
+      inject: [Configuration],
+    },
+    {
+      provide: ArchitectureService,
+      scope: Scope.REQUEST,
+      useFactory: (config: Configuration) => {
+        return new ArchitectureService(config, createLogger(config, 'ArchitectureService'));
       },
       inject: [Configuration],
     },

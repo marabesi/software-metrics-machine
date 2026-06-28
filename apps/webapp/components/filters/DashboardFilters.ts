@@ -31,10 +31,33 @@ export interface DashboardFilters {
   aggregateMetric: string;
 
   // SonarQube filters
-  sonarqubeIgnorePatternFiles: string;
-  sonarqubeIncludePatternFiles: string;
   sonarqubeRemoveFolders: boolean;
 }
+
+export const DASHBOARD_FILTER_QUERY_KEYS = [
+  'startDate',
+  'endDate',
+  'timezone',
+  'workflowSelector',
+  'workflowStatus',
+  'workflowConclusions',
+  'jobSelector',
+  'branch',
+  'event',
+  'aggregateMetric',
+  'ignorePatternFiles',
+  'includePatternFiles',
+  'authorSelectSourceCode',
+  'topEntries',
+  'typeChurn',
+  'authorSelect',
+  'excludeAuthorSelect',
+  'excludeCommenterSelect',
+  'labelSelector',
+  'pullRequestStatus',
+  'aggregateBy',
+  'sonarqubeRemoveFolders',
+] as const;
 
 export const defaultFilters: DashboardFilters = {
   startDate: '',
@@ -57,8 +80,6 @@ export const defaultFilters: DashboardFilters = {
   topEntries: 20,
   typeChurn: 'added',
   aggregateMetric: 'avg',
-  sonarqubeIgnorePatternFiles: '',
-  sonarqubeIncludePatternFiles: '',
   sonarqubeRemoveFolders: true,
 };
 
@@ -136,10 +157,6 @@ export function parseDashboardFilters(
     labelSelector: getArrayValue(searchParams.labelSelector),
     pullRequestStatus: getSingleValue(searchParams.pullRequestStatus) as DashboardFilters['pullRequestStatus'] || fallback.pullRequestStatus,
     aggregateBy: getSingleValue(searchParams.aggregateBy) || fallback.aggregateBy,
-    sonarqubeIgnorePatternFiles:
-      getSingleValue(searchParams.sonarqubeIgnorePatternFiles) || fallback.sonarqubeIgnorePatternFiles,
-    sonarqubeIncludePatternFiles:
-      getSingleValue(searchParams.sonarqubeIncludePatternFiles) || fallback.sonarqubeIncludePatternFiles,
     sonarqubeRemoveFolders: toBoolean(searchParams.sonarqubeRemoveFolders, fallback.sonarqubeRemoveFolders),
   };
 }
@@ -180,8 +197,6 @@ export function serializeDashboardFilters(filters: DashboardFilters): URLSearchP
   appendList('labelSelector', filters.labelSelector);
   append('pullRequestStatus', filters.pullRequestStatus);
   append('aggregateBy', filters.aggregateBy);
-  append('sonarqubeIgnorePatternFiles', filters.sonarqubeIgnorePatternFiles);
-  append('sonarqubeIncludePatternFiles', filters.sonarqubeIncludePatternFiles);
   append('sonarqubeRemoveFolders', filters.sonarqubeRemoveFolders ? 'true' : 'false');
 
   return params;

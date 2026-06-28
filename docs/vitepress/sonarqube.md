@@ -174,8 +174,8 @@ Use filters for:
 
 | Dashboard filter               | Backend query parameter |
 |--------------------------------|-------------------------|
-| `sonarqubeIgnorePatternFiles`  | `ignore_files`          |
-| `sonarqubeIncludePatternFiles` | `include_files`         |
+| `ignorePatternFiles`           | `ignore_files`          |
+| `includePatternFiles`          | `include_files`         |
 | `sonarqubeRemoveFolders`       | `remove_folders=true`   |
 | `topEntries`                   | Dashboard display limit |
 

@@ -7,6 +7,7 @@ import { createDashboardCommands } from './commands/dashboard';
 import { createToolsCommands } from './commands/tools';
 import { createHealthCheckCommand } from './commands/health-check';
 import { createMcpCommands } from './commands/mcp';
+import { createArchitectureCommands } from './commands/architecture';
 import { Logger } from '@smmachine/utils';
 import { SmmCommand } from './commands/smm-command';
 
@@ -30,6 +31,7 @@ export function commands() {
   createToolsCommands(program);
   createHealthCheckCommand(program);
   createMcpCommands(program);
+  createArchitectureCommands(program);
 
   // Global help
   program

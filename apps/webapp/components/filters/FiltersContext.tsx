@@ -11,7 +11,13 @@ import {
   useState,
 } from 'react';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
-import { DashboardFilters, defaultFilters, parseDashboardFilters, serializeDashboardFilters } from './DashboardFilters';
+import {
+  DASHBOARD_FILTER_QUERY_KEYS,
+  DashboardFilters,
+  defaultFilters,
+  parseDashboardFilters,
+  serializeDashboardFilters,
+} from './DashboardFilters';
 
 interface FiltersContextInterface {
   filters: DashboardFilters;
@@ -90,9 +96,19 @@ export const FiltersProvider = ({
 
     shouldSyncToUrl.current = false;
     const nextParams = serializeDashboardFilters(filters);
-    const queryString = nextParams.toString();
+    const mergedParams = new URLSearchParams(searchParamsString);
+
+    for (const key of DASHBOARD_FILTER_QUERY_KEYS) {
+      mergedParams.delete(key);
+    }
+
+    for (const [key, value] of nextParams.entries()) {
+      mergedParams.append(key, value);
+    }
+
+    const queryString = mergedParams.toString();
     router.replace(queryString ? `${pathname}?${queryString}` : pathname, { scroll: false });
-  }, [filters, pathname, router]);
+  }, [filters, pathname, router, searchParamsString]);
 
   const updateFilter = useCallback(<K extends keyof DashboardFilters>(key: K, value: DashboardFilters[K]) => {
     setFilters((prev) => ({ ...prev, [key]: value }));
