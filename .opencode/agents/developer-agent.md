@@ -122,6 +122,16 @@ apps/cli  ────── apps/rest ────── apps/webapp
 
 ### Key patterns
 
+#### Data Mutability Boundary (Critical)
+Software Metrics Machine follows a strict write boundary across apps:
+
+- **CLI is the only write-capable app** for project data under `SMM_STORE_DATA_AT`.
+- **REST API is read-only** and must only serve already-generated data.
+- **Webapp is read-only** and must only consume REST API responses.
+- **MCP server is read-only** and must not mutate local data/configuration.
+
+For new features (including architecture generation), generation and persistence happen in CLI commands. REST and webapp must never generate snapshots, write files, or mutate caches.
+
 #### Service Pattern
 Services in `packages/core/src/domain/` contain business logic, accept typed filter objects, return domain types. No I/O.
 
@@ -189,6 +199,8 @@ All config comes from environment variables consumed by `Configuration` class (`
 - Run the mandatory build verification after any change (build + test + lint)
 - Keep MCP tools read-only unless a human explicitly approves a write-capable design
 - Redact tokens and credential-like fields from MCP resources
+- Keep REST endpoints and webapp flows read-only over persisted analysis data
+- Implement all data generation/persistence flows through CLI commands
 
 ### ❌ NEVER DO
 - Add `"type": "module"` to `packages/core` or `packages/utils`
@@ -199,6 +211,8 @@ All config comes from environment variables consumed by `Configuration` class (`
 - Read dist/ files directly they are for distribution only, not for internal imports. Always import from `src/` and let the build handle the rest.
 - Add or restore `MetricsOrchestrator`; MCP, REST, and CLI should compose existing core services directly
 - Add MCP fetch/write tools that mutate local data or configuration without an explicit architecture discussion
+- Add write paths in REST controllers (no generation, no snapshot persistence, no cache mutation side effects)
+- Add write paths in webapp server/client code (no filesystem writes, no generation jobs)
 
 ## Development Workflows
 

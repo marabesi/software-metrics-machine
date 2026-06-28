@@ -67,6 +67,16 @@ nvm use          # if using nvm, reads .nvmrc
 - **`apps/rest`** — NestJS REST API. Depends on `@smmachine/core`.
 - **`apps/webapp`** — Next.js 16 dashboard with MUI. Fetches from the REST API.
 
+### Data mutability boundary (critical)
+
+SMM enforces a strict write boundary across applications:
+
+- **CLI is the only write-capable application** for project data and generated artifacts in `SMM_STORE_DATA_AT`.
+- **REST API is read-only** and must only serve previously generated/persisted data.
+- **Webapp is read-only** and must only consume REST responses.
+
+When implementing features (for example architecture generation), generation and persistence must happen in CLI commands. REST and webapp must not create files, trigger generation jobs, or mutate caches as side effects.
+
 ## Getting Started
 
 ### 1. Clone and install

@@ -2,6 +2,14 @@
 
 NestJS REST API for Software Metrics Machine. Serves all metrics over HTTP and is consumed by the webapp dashboard.
 
+## Data mutability boundary
+
+The REST API is strictly read-only.
+
+- It must serve data that was previously generated and persisted by CLI commands.
+- It must not generate analysis artifacts, write files, or persist snapshots.
+- Any feature that needs data generation (including architecture models) must run in CLI first.
+
 ## Supported data sources
 
 - **GitHub**: pull requests, pipeline runs, CI/CD jobs

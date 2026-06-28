@@ -2,6 +2,14 @@
 
 Next.js dashboard for Software Metrics Machine. Displays pull request, pipeline, and code metrics served by the REST API.
 
+## Data mutability boundary
+
+The webapp is strictly read-only.
+
+- It must only visualize data exposed by the REST API.
+- It must not generate analysis artifacts, write files, or persist snapshots.
+- Data generation and persistence are CLI responsibilities.
+
 ## Features
 
 - **Pull request metrics**: review times, author contributions, PR trends
