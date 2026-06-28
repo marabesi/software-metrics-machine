@@ -237,6 +237,16 @@ describe('cli: CLI Commands', () => {
       expect(includeOption).toBeDefined();
     });
 
+    it('mcp command should register server start subcommand', () => {
+      const mcpCmd = program.commands.find((cmd) => cmd.name() === 'mcp');
+      const serverCmd = mcpCmd?.commands.find((cmd) => cmd.name() === 'server');
+      const startCmd = serverCmd?.commands.find((cmd) => cmd.name() === 'start');
+
+      expect(mcpCmd).toBeDefined();
+      expect(serverCmd).toBeDefined();
+      expect(startCmd).toBeDefined();
+    });
+
     it('deployment command should have start-date option', () => {
       const pipelinesCmd = program.commands.find((cmd) => cmd.name() === 'pipelines');
       const fetchCmd = pipelinesCmd?.commands.find((cmd) => cmd.name() === 'fetch');

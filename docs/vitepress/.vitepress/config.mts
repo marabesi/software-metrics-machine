@@ -79,6 +79,7 @@ export default withMermaid(
             { text: 'Source code', link: '/features/code' },
             { text: 'SonarQube', link: '/sonarqube' },
             { text: 'REST API', link: '/rest-api' },
+            { text: 'MCP server', link: '/mcp' },
             { text: 'Configuration', link: '/features/configuration' },
           ]
         },

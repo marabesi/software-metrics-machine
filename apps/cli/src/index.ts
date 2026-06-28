@@ -6,6 +6,7 @@ import { createSonarQubeCommands } from './commands/sonarqube';
 import { createDashboardCommands } from './commands/dashboard';
 import { createToolsCommands } from './commands/tools';
 import { createHealthCheckCommand } from './commands/health-check';
+import { createMcpCommands } from './commands/mcp';
 import { Logger } from '@smmachine/utils';
 import { SmmCommand } from './commands/smm-command';
 
@@ -28,6 +29,7 @@ export function commands() {
   createDashboardCommands(program);
   createToolsCommands(program);
   createHealthCheckCommand(program);
+  createMcpCommands(program);
 
   // Global help
   program
@@ -53,6 +55,7 @@ export function commands() {
  *   - smm sonarqube     SonarQube integration (fetch quality measures)
  *   - smm dashboard     Dashboard server operations
  *   - smm tools         Utility tools (JSON merge, etc.)
+ *   - smm mcp           MCP server operations
  *
  * Configuration:
  *   Set SMM_STORE_DATA_AT environment variable to point to a JSON configuration file:

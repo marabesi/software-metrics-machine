@@ -19,6 +19,7 @@ This agent assists developers in contributing to Software Metrics Machine, a Typ
 - **Issue Tracking** (`smm jira *`) — Jira issue metrics
 - **Quality** (`smm sonarqube *`) — SonarQube quality measures
 - **Dashboard** (`smm dashboard serve`) — bundled REST API + Next.js webapp
+- **MCP server** (`smm mcp server start`, `smm-mcp`) — read-only stdio interface for agent clients
 
 ## Key Responsibilities
 
@@ -33,6 +34,7 @@ This agent assists developers in contributing to Software Metrics Machine, a Typ
 - Help create new metric calculations in `packages/core/src/domain/`
 - Support adding new CLI commands in `apps/cli/src/commands/`
 - Guide through adding REST endpoints in `apps/rest/src/controllers/`
+- Support MCP tools and resources in `apps/mcp/src/` while keeping the server read-only
 
 ### 3. Bug Fixing
 - Help identify root causes in metric calculations
@@ -82,6 +84,7 @@ This agent assists developers in contributing to Software Metrics Machine, a Typ
 ```
 ├── apps/
 │   ├── cli/              # CLI application (@smmachine/cli, CommonJS)
+│   ├── mcp/              # MCP stdio server (@smmachine/mcp, CommonJS)
 │   ├── rest/             # REST API (@smmachine/rest, NestJS)
 │   └── webapp/           # Next.js dashboard (@smmachine/webapp)
 ├── packages/
@@ -101,6 +104,7 @@ This agent assists developers in contributing to Software Metrics Machine, a Typ
 - **`packages/core`** — Domain types (`pr-types.ts`), services (`PRsService`, etc.), providers (GitHub, GitLab, CodeMaat, SonarQube, Jira), infrastructure (`Configuration`, file-system cache). Depends on `@smmachine/utils`. The logic to calculate metrics lives here, as do the provider clients and repositories.
 - **`apps/cli`** — Commander.js CLI. Thin layer: parses options, calls services. Depends on `@smmachine/core`.
 - **`apps/rest`** — NestJS REST API. Controllers call core services. Depends on `@smmachine/core`.
+- **`apps/mcp`** — Local MCP stdio server. Registers read-only tools/resources and wires existing core services directly for agent clients. Depends on `@smmachine/core`.
 - **`apps/webapp`** — Next.js 16 App Router. Fetches from REST API. MUI components + Recharts.
 
 ## Architecture
@@ -112,9 +116,8 @@ This agent assists developers in contributing to Software Metrics Machine, a Typ
        ↓
 @packages/core   (depends on @packages/utils)
        ↓
-apps/cli  ────── apps/rest
-                       ↓
-                 apps/webapp
+apps/cli  ────── apps/rest ────── apps/webapp
+       └─────── apps/mcp
 ```
 
 ### Key patterns
@@ -152,6 +155,11 @@ prsGroup
   });
 ```
 
+#### MCP Server Pattern
+The MCP server in `apps/mcp` is a thin stdio adapter. It registers read-only tools/resources, validates simple inputs, redacts token-like configuration fields, and calls existing core services directly through `McpMetricsReader`.
+
+Do not introduce or restore a `MetricsOrchestrator` abstraction. If an MCP operation needs multiple metrics, compose the existing services inside `apps/mcp/src/metrics-reader.ts`.
+
 #### Configuration Pattern
 All config comes from environment variables consumed by `Configuration` class (`packages/core/src/infrastructure/configuration.ts`).
 
@@ -162,6 +170,7 @@ All config comes from environment variables consumed by `Configuration` class (`
 | `packages/core` | CommonJS | Compiled by `tsc` to `dist/` |
 | `packages/utils` | CommonJS | Compiled by `tsc` to `dist/` |
 | `apps/cli` | CommonJS | Bundled by `tsup` to `dist/index.cjs` |
+| `apps/mcp` | CommonJS | Bundled by `tsup` to `dist/index.cjs`; root launcher also emits `dist/mcp.cjs` |
 | `apps/rest` | CommonJS | Run via `ts-node` |
 | `apps/webapp` | ESM | Next.js |
 
@@ -178,6 +187,8 @@ All config comes from environment variables consumed by `Configuration` class (`
 - Write tests for new features and bug fixes. Follow the princciples of Test-Driven Development and keep the human in the loop by asking the agent to generate test cases and expected outputs before writing code.
 - Update documentation for any new features or changes
 - Run the mandatory build verification after any change (build + test + lint)
+- Keep MCP tools read-only unless a human explicitly approves a write-capable design
+- Redact tokens and credential-like fields from MCP resources
 
 ### ❌ NEVER DO
 - Add `"type": "module"` to `packages/core` or `packages/utils`
@@ -186,6 +197,8 @@ All config comes from environment variables consumed by `Configuration` class (`
 - Commit secrets, tokens, or `.env` files
 - Add runtime dependencies without using the pnpm catalog
 - Read dist/ files directly they are for distribution only, not for internal imports. Always import from `src/` and let the build handle the rest.
+- Add or restore `MetricsOrchestrator`; MCP, REST, and CLI should compose existing core services directly
+- Add MCP fetch/write tools that mutate local data or configuration without an explicit architecture discussion
 
 ## Development Workflows
 
@@ -214,6 +227,17 @@ pnpm --filter @smmachine/rest dev    # port 8000
 ```
 
 Swagger docs at `http://localhost:8000/api`.
+
+### MCP server development
+
+```bash
+SMM_STORE_DATA_AT=/path/to/smm-data pnpm --filter @smmachine/mcp dev
+SMM_STORE_DATA_AT=/path/to/smm-data pnpm cli -- mcp server start
+pnpm --filter @smmachine/mcp test
+pnpm --filter @smmachine/mcp build
+```
+
+The MCP server uses stdio and is intended for local agent clients. Public documentation lives at `docs/vitepress/mcp.md`.
 
 ### Webapp development
 
@@ -245,6 +269,7 @@ pnpm test
 # Single workspace
 pnpm --filter @smmachine/core test
 pnpm --filter @smmachine/cli test
+pnpm --filter @smmachine/mcp test
 pnpm --filter @smmachine/rest test
 pnpm --filter @smmachine/webapp test  # uses Jest
 

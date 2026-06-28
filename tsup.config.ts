@@ -12,7 +12,7 @@ export default defineConfig([
     sourcemap: true,
     clean: true,
     dts: false,
-    noExternal: ['@smmachine/core', '@smmachine/utils'],
+    noExternal: ['@smmachine/core', '@smmachine/utils', '@smmachine/mcp'],
     outExtension() {
       return {
         js: '.cjs',
