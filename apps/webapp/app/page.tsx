@@ -3,6 +3,7 @@ import Link from 'next/link';
 import SavedFiltersOverview from '@/components/home/SavedFiltersOverview';
 import AppProviders from '@/components/providers/AppProviders';
 import { loadAppProviderData } from '@/server/app-provider-data';
+import { getApplicationVersion } from '@smmachine/utils';
 
 const resources = [
   {
@@ -46,6 +47,7 @@ const resources = [
 export default async function Home() {
   const { smmRestBaseUrl: apiBaseUrl } = getServerEnv();
   const providerData = await loadAppProviderData();
+  const applicationVersion = getApplicationVersion();
 
   return (
     <AppProviders {...providerData}>
@@ -80,6 +82,9 @@ export default async function Home() {
           </div>
 
           <div className="mb-16">
+            <div className="mb-4 text-center text-sm font-medium text-gray-600">
+              Version {applicationVersion}
+            </div>
             <SavedFiltersOverview />
           </div>
 

@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest';
+import { getApplicationVersion } from '@smmachine/utils';
 import { handleRequest } from '../src/server';
 
 describe('MCP server request handling', () => {
@@ -21,7 +22,7 @@ describe('MCP server request handling', () => {
         },
         serverInfo: {
           name: 'software-metrics-machine',
-          version: '0.1.0',
+          version: getApplicationVersion(),
         },
       },
     });

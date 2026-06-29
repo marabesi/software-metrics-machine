@@ -1,5 +1,6 @@
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { INestApplication } from '@nestjs/common';
+import { getApplicationVersion } from '@smmachine/utils';
 
 /**
  * Configure Swagger/OpenAPI documentation for the REST API
@@ -52,7 +53,7 @@ Errors return HTTP status codes with JSON error response:
 \`\`\`
       `
     )
-    .setVersion('1.0.0')
+    .setVersion(getApplicationVersion())
     .addTag('Metrics', 'All metrics endpoints')
     .addServer(`http://localhost:${process.env.PORT}`, 'Development')
     .addServer('https://api.metrics.example.com', 'Production')

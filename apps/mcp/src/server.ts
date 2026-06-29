@@ -1,11 +1,12 @@
 import { createInterface } from 'node:readline';
+import { getApplicationVersion } from '@smmachine/utils';
 import type { JsonObject, JsonRpcRequest, JsonRpcResponse, JsonValue } from './mcp-types';
 import { listResources, readResource } from './resources';
 import { findTool, tools } from './tools';
 
 const SERVER_INFO = {
   name: 'software-metrics-machine',
-  version: '0.1.0',
+  version: getApplicationVersion(),
 };
 
 type McpLog = (message: string) => void;
@@ -133,7 +134,7 @@ async function handleRequestWithLogging(
 }
 
 export async function startMcpServer(): Promise<void> {
-  stderrLog('Starting Software Metrics Machine MCP server over stdio');
+  stderrLog(`Starting Software Metrics Machine MCP server v${SERVER_INFO.version} over stdio`);
   stderrLog(`Configuration directory: ${process.env.SMM_STORE_DATA_AT || '<not set>'}`);
   stderrLog(`Available tools: ${tools.map((tool) => tool.name).join(', ')}`);
 

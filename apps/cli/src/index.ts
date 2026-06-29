@@ -8,7 +8,7 @@ import { createToolsCommands } from './commands/tools';
 import { createHealthCheckCommand } from './commands/health-check';
 import { createMcpCommands } from './commands/mcp';
 import { createArchitectureCommands } from './commands/architecture';
-import { Logger } from '@smmachine/utils';
+import { getApplicationVersion, Logger } from '@smmachine/utils';
 import { SmmCommand } from './commands/smm-command';
 
 export function commands() {
@@ -17,7 +17,7 @@ export function commands() {
   program
     .name('smm')
     .description('Software Metrics Machine - High-performing team metrics')
-    .version('1.0.0')
+    .version(getApplicationVersion())
     .option('--debug', 'Enable debug logging')
     .option('--project <name>', 'Select active project by name (github_repository)');
 
